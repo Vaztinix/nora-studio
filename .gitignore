@@ -3,4 +3,3 @@ node_modules/
 *.db
 *.sqlite
 countingData.json
-package-lock.json
