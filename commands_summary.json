@@ -1,0 +1,583 @@
+[
+  {
+    "options": [
+      {
+        "max_value": 100,
+        "min_value": 1,
+        "type": 4,
+        "name": "number",
+        "description": "Your guess (between 1 and 100)",
+        "required": true
+      }
+    ],
+    "name": "guess",
+    "description": "Play a number guessing game. Can you beat the odds?",
+    "contexts": [
+      0,
+      1,
+      2
+    ],
+    "integration_types": [
+      0,
+      1
+    ],
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "min_value": 1,
+        "type": 4,
+        "name": "page",
+        "description": "Page number to view (10 users per page)",
+        "required": false
+      }
+    ],
+    "name": "leaderboard",
+    "description": "View the most active users in the server.",
+    "contexts": [
+      0
+    ],
+    "default_member_permissions": null,
+    "dm_permission": false,
+    "integration_types": [
+      0
+    ],
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "target",
+        "description": "The user to check",
+        "required": false,
+        "type": 6
+      }
+    ],
+    "name": "rank",
+    "description": "Check your or another user's rank with a beautiful card.",
+    "contexts": [
+      0
+    ],
+    "default_member_permissions": null,
+    "dm_permission": false,
+    "integration_types": [
+      0
+    ],
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "channel_types": [
+          0,
+          5
+        ],
+        "name": "channel",
+        "description": "The channel to send the announcement to",
+        "required": true,
+        "type": 7
+      },
+      {
+        "type": 3,
+        "name": "title",
+        "description": "The title of the announcement",
+        "required": true
+      },
+      {
+        "type": 3,
+        "name": "message",
+        "description": "The main text of the announcement. Use \\n for newlines if needed.",
+        "required": true
+      },
+      {
+        "name": "ping",
+        "description": "A role to mention with the announcement",
+        "required": false,
+        "type": 8
+      },
+      {
+        "type": 3,
+        "name": "color",
+        "description": "Hex color code (e.g. #FF5555) for the embed sidebar",
+        "required": false
+      }
+    ],
+    "name": "announce",
+    "description": "Create a beautiful embedded announcement in a specific channel.",
+    "default_member_permissions": "8192",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "target",
+        "description": "The user to ban",
+        "required": true,
+        "type": 6
+      },
+      {
+        "type": 3,
+        "name": "reason",
+        "description": "Reason for the ban",
+        "required": false
+      }
+    ],
+    "name": "ban",
+    "description": "Ban a user from the server with detailed logging.",
+    "default_member_permissions": "4",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "user",
+        "description": "The user to clear warnings for",
+        "required": true,
+        "type": 6
+      }
+    ],
+    "name": "clear-warns",
+    "description": "Wipe all warnings for a specific user.",
+    "default_member_permissions": "1099511627776",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "type": 4,
+        "name": "id",
+        "description": "The ID of the warning to delete",
+        "required": true
+      }
+    ],
+    "name": "delete-warns",
+    "description": "Delete a specific warning by its ID.",
+    "default_member_permissions": "1099511627776",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "type": 4,
+        "name": "id",
+        "description": "The ID of the warning to edit",
+        "required": true
+      },
+      {
+        "type": 3,
+        "name": "reason",
+        "description": "The new reason for the warning",
+        "required": true
+      }
+    ],
+    "name": "edit-warns",
+    "description": "Edit the reason for a specific warning.",
+    "default_member_permissions": "1099511627776",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "target",
+        "description": "The user to kick",
+        "required": true,
+        "type": 6
+      },
+      {
+        "type": 3,
+        "name": "reason",
+        "description": "Reason for the kick",
+        "required": false
+      }
+    ],
+    "name": "kick",
+    "description": "Kick a user from the server with detailed logging.",
+    "default_member_permissions": "2",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "target",
+        "description": "The user to mute",
+        "required": true,
+        "type": 6
+      },
+      {
+        "type": 4,
+        "name": "duration",
+        "description": "Duration in minutes (max 28 days -> 40320 min)",
+        "required": true
+      },
+      {
+        "type": 3,
+        "name": "reason",
+        "description": "Reason for the mute",
+        "required": false
+      }
+    ],
+    "name": "mute",
+    "description": "Time out a user with robust error handling.",
+    "default_member_permissions": "1099511627776",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "max_value": 100,
+        "min_value": 1,
+        "type": 4,
+        "name": "amount",
+        "description": "Total messages to scan (Max 100)",
+        "required": true
+      },
+      {
+        "type": 3,
+        "choices": [
+          {
+            "name": "Delete EVERYTHING",
+            "value": "all"
+          },
+          {
+            "name": "Only BOT Messages",
+            "value": "bots"
+          },
+          {
+            "name": "Only HUMAN Messages",
+            "value": "users"
+          }
+        ],
+        "name": "filter",
+        "description": "Who to delete messages from",
+        "required": false
+      },
+      {
+        "name": "target",
+        "description": "Only delete messages from a specific user",
+        "required": false,
+        "type": 6
+      },
+      {
+        "type": 3,
+        "name": "match",
+        "description": "Only delete messages containing this exact text",
+        "required": false
+      }
+    ],
+    "name": "purge",
+    "description": "Massively delete messages in this channel with advanced filtering.",
+    "contexts": [
+      0
+    ],
+    "default_member_permissions": "8192",
+    "dm_permission": false,
+    "integration_types": [
+      0
+    ],
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "type": 1,
+        "name": "add",
+        "description": "Add a role to a user",
+        "options": [
+          {
+            "name": "target",
+            "description": "The user",
+            "required": true,
+            "type": 6
+          },
+          {
+            "name": "role",
+            "description": "The role",
+            "required": true,
+            "type": 8
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "remove",
+        "description": "Remove a role from a user",
+        "options": [
+          {
+            "name": "target",
+            "description": "The user",
+            "required": true,
+            "type": 6
+          },
+          {
+            "name": "role",
+            "description": "The role",
+            "required": true,
+            "type": 8
+          }
+        ]
+      }
+    ],
+    "name": "role",
+    "description": "Manage a user's roles with extensive hierarchy checks.",
+    "default_member_permissions": "268435456",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "target",
+        "description": "The user you want to modify",
+        "required": true,
+        "type": 6
+      },
+      {
+        "max_value": 100,
+        "min_value": 0,
+        "type": 4,
+        "name": "level",
+        "description": "The level you are setting them to",
+        "required": true
+      }
+    ],
+    "name": "setlevel",
+    "description": "Force-update a user's current level and progress.",
+    "default_member_permissions": "32",
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "target",
+        "description": "The user to unmute",
+        "required": true,
+        "type": 6
+      },
+      {
+        "type": 3,
+        "name": "reason",
+        "description": "Reason for the unmute",
+        "required": false
+      }
+    ],
+    "name": "unmute",
+    "description": "Remove a user's timeout with secure hierarchy checks.",
+    "default_member_permissions": "1099511627776",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "user",
+        "description": "The user to warn",
+        "required": true,
+        "type": 6
+      },
+      {
+        "type": 3,
+        "name": "reason",
+        "description": "The reason for the warning",
+        "required": false
+      }
+    ],
+    "name": "warn",
+    "description": "Add a warning to a user.",
+    "default_member_permissions": "1099511627776",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "user",
+        "description": "The user to view warnings for",
+        "required": true,
+        "type": 6
+      }
+    ],
+    "name": "warnings",
+    "description": "View warnings for a user.",
+    "default_member_permissions": "1099511627776",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "type": 1,
+        "name": "backup",
+        "description": "Generate a physical JSON export of all system leveling and configuration data.",
+        "options": []
+      }
+    ],
+    "name": "nora-admin",
+    "description": "Nora Systems Control Unit (Owner Only)",
+    "default_member_permissions": "0",
+    "dm_permission": true,
+    "type": 1
+  },
+  {
+    "options": [],
+    "name": "configure",
+    "description": "Simple settings menu for managing Nora.",
+    "default_member_permissions": "32",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "type": 3,
+        "name": "prompt",
+        "description": "What would you like to know?",
+        "required": true
+      }
+    ],
+    "name": "ask",
+    "description": "Ask the Nora AI a question privately.",
+    "contexts": [
+      0,
+      1,
+      2
+    ],
+    "integration_types": [
+      0,
+      1
+    ],
+    "type": 1
+  },
+  {
+    "options": [],
+    "name": "help",
+    "description": "See all the ways Nora can help your server.",
+    "contexts": [
+      0,
+      1,
+      2
+    ],
+    "integration_types": [
+      0,
+      1
+    ],
+    "type": 1
+  },
+  {
+    "options": [],
+    "name": "info",
+    "description": "View Nora's current status and performance.",
+    "contexts": [
+      0,
+      1,
+      2
+    ],
+    "dm_permission": true,
+    "integration_types": [
+      0,
+      1
+    ],
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "type": 4,
+        "name": "max_uses",
+        "description": "Max number of users before link breaks (0 for unlimited)",
+        "required": false
+      },
+      {
+        "type": 3,
+        "choices": [
+          {
+            "name": "30 Minutes",
+            "value": "1800"
+          },
+          {
+            "name": "1 Hour",
+            "value": "3600"
+          },
+          {
+            "name": "6 Hours",
+            "value": "21600"
+          },
+          {
+            "name": "12 Hours",
+            "value": "43200"
+          },
+          {
+            "name": "24 Hours",
+            "value": "86400"
+          },
+          {
+            "name": "7 Days",
+            "value": "604800"
+          },
+          {
+            "name": "Never (Admin)",
+            "value": "0"
+          }
+        ],
+        "name": "expiry",
+        "description": "How long until the invite link expires",
+        "required": false
+      },
+      {
+        "name": "role",
+        "description": "Assign a role automatically to users who join via this invite",
+        "required": false,
+        "type": 8
+      }
+    ],
+    "name": "invite",
+    "description": "Generate a customizable invite for this channel.",
+    "dm_permission": false,
+    "type": 1
+  },
+  {
+    "options": [
+      {
+        "name": "target",
+        "description": "The user to view (or leave blank for yourself)",
+        "required": false,
+        "type": 6
+      }
+    ],
+    "name": "mycard",
+    "description": "View your complete profile and server data in one card.",
+    "contexts": [
+      0,
+      1,
+      2
+    ],
+    "default_member_permissions": null,
+    "integration_types": [
+      0,
+      1
+    ],
+    "type": 1
+  },
+  {
+    "options": [],
+    "name": "vote",
+    "description": "Support Nora by voting on Top.gg.",
+    "contexts": [
+      0,
+      1,
+      2
+    ],
+    "integration_types": [
+      0,
+      1
+    ],
+    "type": 1
+  }
+]

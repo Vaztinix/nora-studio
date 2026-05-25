@@ -1,0 +1,42 @@
+[2026-05-16T02:05:42.418Z] [Channel: 💬general-chat (1384291455593611284)] vaztinix (1214048435632603137): <a:jerk:461208673985757202>
+[2026-05-17T01:42:29.612Z] [Channel: 🔔notifs (1445240841466810369)] nabil.devs (1049516005887586374): *Empty/Embed Only*
+[2026-05-17T03:41:24.708Z] [Channel: 🎗️testing (1484357379402502255)] vaztinix (1214048435632603137): Frmboys are **hot** tbh
+[2026-05-19T02:50:57.226Z] [Channel: ✨updates (1402504709981474816)] vaztinix (1214048435632603137): # **Update Reminder**
+
+Hello Nora Community,  
+This is a quick reminder about the latest Nora update released on **May 24th**. I’m excited to share all the new improvements added to the Nora Studio Dashboard.
+
+## **Redesigned Tabs & Icons**
+You’ll notice a refreshed look across the dashboard with redesigned tabs and a wide variety of new icons. These updates make navigation clearer and more intuitive throughout Nora.
+
+## **New Members List**
+Each server configuration now includes a detailed members list showing:
+- Member level  
+- Message count  
+- Premium subscription status  
+- Linked Roblox account status  
+
+Badge display is still being developed and will be added soon.
+
+## **Expanded Language Support**
+We’ve begun rolling out broader language support. While still in progress, we are working to support:
+**English, Spanish, French, German, Portuguese, Italian, Russian, Hindi, Japanese, Korean, and Chinese.**
+
+## **Redesigned Notification Panel**
+The notification panel has been fully updated with:
+- Notification filtering  
+- A new reminder system that lets you choose preset notifications or create your own message to be delivered later  
+
+Thank you for being part of the Nora community — more updates are on the way.
+[2026-05-21T22:03:47.174Z] [Channel: ⋆˙⟡🎗️chat⟡˙⋆ (1484357180332179466)] vaztinix (1214048435632603137): ### Permission Roles: 
+
+Nora -><@1375943730951098549> 
+Owner (Remove Owner) -> Senior Admin 
+Slow-mode Immunity
+Auto-mod Bypass
+
+### Cosmetic Roles:
+
+Cosmetic Roles
+╰➤ The Pierrot ♡
+[2026-05-22T22:15:44.016Z] [Channel: ⋆˙⟡🎗️chat⟡˙⋆ (1484357180332179466)] vaztinix (1214048435632603137): *Empty/Embed Only* [Attachments: https://media.discordapp.net/attachments/1484357180332179466/1507507218549968997/nora_chatlog_2026-05-17.txt?ex=6a122701&is=6a10d581&hm=ceb3d51ccef0c8b63dac84edc73c8ed80bbbf2489a855f7f0f3a9ebe74315777&]

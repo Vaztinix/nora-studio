@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora - Legal</title>
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="/translate.js"></script>
+    <script>
+        (function() {
+            const savedColor = localStorage.getItem('nora_theme_color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--primary', savedColor);
+                const r = parseInt(savedColor.slice(1, 3), 16);
+                const g = parseInt(savedColor.slice(3, 5), 16);
+                const b = parseInt(savedColor.slice(5, 7), 16);
+                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
+                document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --bg-soft: #12182b;
+            --bg-glow: rgba(174, 239, 255, 0.1);
+            --card: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.08);
+            --primary: #aeefff;
+            --text: #ffffff;
+            --muted: rgba(255, 255, 255, 0.7);
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", system-ui, sans-serif;
+            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
+                        radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
+                        var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 30, 0.75);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; color: white; text-decoration: none; }
+        .brand img { width: 40px; height: 40px; border-radius: 10px; }
+
+        .nav-links { display: flex; gap: 22px; }
+        .nav-links a { font-weight: 600; color: white; text-decoration: none; transition: 0.25s; opacity: 0.8; }
+        .nav-links a:hover { color: var(--primary); opacity: 1; }
+        .nav-links a.active { color: var(--primary); opacity: 1; }
+
+        .legal-container { max-width: 900px; margin: 4rem auto; padding: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 24px; backdrop-filter: blur(15px); }
+        
+        h1 { font-size: 2.5rem; margin-bottom: 10px; color: white; font-weight: 800; text-align: center; }
+        .subtitle { color: var(--muted); text-align: center; margin-bottom: 40px; }
+
+        /* PREMIUM SLIDER SWITCH */
+        .switch-container { display: flex; justify-content: center; margin-bottom: 60px; }
+        .legal-switch {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px;
+            display: flex;
+            position: relative;
+            width: 400px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .switch-slider {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 192px;
+            height: calc(100% - 16px);
+            background: var(--primary);
+            border-radius: 14px;
+            transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            z-index: 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .legal-switch.active .switch-slider { left: 200px; }
+        
+        .switch-label {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            z-index: 1;
+            transition: 0.3s;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+        }
+        .switch-label.active { color: #000; }
+        .legal-switch:not(.active) #label-tos { color: #000; }
+        .legal-switch.active #label-privacy { color: #000; }
+
+        .legal-content { position: relative; min-height: 400px; }
+        .legal-section { 
+            display: none; 
+            animation: fadeIn 0.4s ease forwards;
+        }
+        .legal-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { font-size: 1.8rem; color: var(--primary); margin-top: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; }
+        h2::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        
+        h3 { font-size: 1.2rem; color: var(--primary); margin-top: 30px; margin-bottom: 10px; }
+        p { color: var(--muted); line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px; }
+        section { margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                <span>Nora</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/team">Team</a>
+                <a href="/ai">Nora AI</a>
+                <a href="/legal" class="active">Legal</a>
+                <a href="/dashboard">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="legal-container">
+        <h1>Transparency & Trust</h1>
+        <p class="subtitle">Last Updated: March 17, 2026</p>
+
+        <div class="switch-container">
+            <div class="legal-switch" id="legal-switch" onclick="toggleLegal()">
+                <div class="switch-slider"></div>
+                <div class="switch-label active" id="label-tos">Terms of Service</div>
+                <div class="switch-label" id="label-privacy">Privacy Policy</div>
+            </div>
+        </div>
+
+        <div class="legal-content">
+            <!-- TERMS OF SERVICE -->
+            <div id="tos-content" class="legal-section active">
+                <h2>Terms of Service</h2>
+                <section>
+                    <h3>1. Agreement to Terms</h3>
+                    <p>By inviting, installing, or using Nora within a Discord server, you acknowledge that you have read and agreed to these Terms of Service. If you do not agree with these terms you must remove the bot from your server.</p>
+                </section>
+                <section>
+                    <h3>2. Relationship with Discord</h3>
+                    <p>Nora operates through the Discord platform and relies on the Discord API. Users must comply with Discord's Terms of Service and Community Guidelines.</p>
+                </section>
+                <section>
+                    <h3>3. Description of the Service</h3>
+                    <p>Nora is a community moderation and management tool designed for Discord servers. The service provides configurable tools for automated moderation and interaction.</p>
+                </section>
+                <section>
+                    <h3>4. Moderation Responsibility</h3>
+                    <p>Nora provides automation tools but does not replace human moderation. Server administrators remain fully responsible for moderation decisions.</p>
+                </section>
+                <section>
+                    <h3>5. Command and Permission Usage</h3>
+                    <p>Nora operates using the permissions granted to it by server administrators. Commands may only execute actions that the bot has been granted permission to perform.</p>
+                </section>
+                <section>
+                    <h3>6. AI Assistance Features</h3>
+                    <p>Some Nora features include AI-generated responses. These systems are designed to assist moderators but are not guaranteed to be accurate in all situations.</p>
+                </section>
+                <section>
+                    <h3>7. Payments and Subscriptions</h3>
+                    <p>All payments for Nora premium features are handled exclusively through Discord's official subscription system. Nora does not directly process or store payment information.</p>
+                </section>
+            </div>
+
+            <!-- PRIVACY POLICY -->
+            <div id="privacy-content" class="legal-section">
+                <h2>Privacy Policy</h2>
+                <section>
+                    <h3>1. Privacy-First Design</h3>
+                    <p>Nora is designed with privacy as a core principle. The system only processes the minimum data necessary for functionality.</p>
+                </section>
+                <section>
+                    <h3>2. Operational Data</h3>
+                    <p>The system may store limited operational information required to function, such as server identifiers and configuration settings.</p>
+                </section>
+                <section>
+                    <h3>3. Message Processing</h3>
+                    <p>Message content may be temporarily processed for moderation filters or AI context. This processing occurs in memory and is not permanently stored.</p>
+                </section>
+                <section>
+                    <h3>4. AI Data Handling</h3>
+                    <p>Nora does not use server data to train AI models. Any AI-related processing is performed for real-time functionality only.</p>
+                </section>
+                <section>
+                    <h3>5. Data Isolation</h3>
+                    <p>Each server's data is isolated. Data generated in one server is never shared with or visible to other servers.</p>
+                </section>
+                <section>
+                    <h3>6. Data Retention</h3>
+                    <p>Removing Nora from a server deletes configuration data associated with that server.</p>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleLegal() {
+            const switcher = document.getElementById('legal-switch');
+            const tos = document.getElementById('tos-content');
+            const privacy = document.getElementById('privacy-content');
+            const labelTos = document.getElementById('label-tos');
+            const labelPrivacy = document.getElementById('label-privacy');
+            
+            switcher.classList.toggle('active');
+            
+            if (switcher.classList.contains('active')) {
+                tos.classList.remove('active');
+                privacy.classList.add('active');
+                labelTos.classList.remove('active');
+                labelPrivacy.classList.add('active');
+            } else {
+                tos.classList.add('active');
+                privacy.classList.remove('active');
+                labelTos.classList.add('active');
+                labelPrivacy.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

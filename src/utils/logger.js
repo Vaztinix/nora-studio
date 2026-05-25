@@ -1,0 +1,60 @@
+const { WebhookClient } = require('discord.js');
+
+/**
+ * Centralized Nora Logging Engine
+ * Provides clean, transparent terminal logs and optional webhook escalation.
+ */
+class Logger {
+    constructor() {
+        this.webhookUrl = process.env.ERROR_WEBHOOK_URL || 'https://discord.com/api/webhooks/1446358991075676172/zlAPHTkqBdjw-8ilFOjGXvgVf3PgKLkWbVK8gYZcNibhTGGsXAH6aVGXnrh29PzsgBUP';
+    }
+
+    /**
+     * Log a command error to the terminal and escalation channel
+     */
+    async logCommandError(interaction, error) {
+        const cmdName = interaction.commandName || 'Unknown Command';
+        const user = interaction.user ? `${interaction.user.tag} (${interaction.user.id})` : 'Unknown User';
+        const guild = interaction.guild ? `${interaction.guild.name} (${interaction.guild.id})` : 'DMs';
+
+        // 💻 Terminal Output (High Visibility)
+        console.error('\x1b[31m%s\x1b[0m', '--- 🚨 NORA COMMAND ERROR 🚨 ---');
+        console.error(`Command: /${cmdName}`);
+        console.error(`User:    ${user}`);
+        console.error(`Guild:   ${guild}`);
+        console.error(`Reason:  ${error.message}`);
+        console.error('\x1b[31m%s\x1b[0m', '--- TRACE ---');
+        console.error(error.stack);
+        console.error('\x1b[31m%s\x1b[0m', '--------------------------------');
+
+        //  escalation
+        if (this.webhookUrl) {
+            try {
+                const webhook = new WebhookClient({ url: this.webhookUrl });
+                await webhook.send({
+                    content: `🚨 **Command Error Alert**\n**Command:** \`/${cmdName}\`\n**User:** ${user}\n**Error:** \`${error.message}\`\n**Mode:** Priority 1 Fallback\n<t:${Math.floor(Date.now()/1000)}:R>`,
+                    username: 'Nora Internal Logs'
+                });
+            } catch (e) {
+                console.error('[Logger] Failed to send escalation webhook:', e.message);
+            }
+        }
+    }
+
+    /**
+     * Log a general system error
+     */
+    error(context, error) {
+        console.error('\x1b[41m%s\x1b[0m', `[${context}] Error: ${error.message}`);
+        if (error.stack) console.error(error.stack);
+    }
+
+    /**
+     * Success log
+     */
+    info(context, message) {
+        console.log('\x1b[32m%s\x1b[0m', `[${context}] ${message}`);
+    }
+}
+
+module.exports = new Logger();

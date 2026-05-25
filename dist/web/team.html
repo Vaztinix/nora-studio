@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nora — Staff</title>
+    <link rel="icon" type="image/png" href="nora.png">
+    <script src="/translate.js"></script>
+    <script>
+        (function() {
+            const savedColor = localStorage.getItem('nora_theme_color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--primary', savedColor);
+                const r = parseInt(savedColor.slice(1, 3), 16);
+                const g = parseInt(savedColor.slice(3, 5), 16);
+                const b = parseInt(savedColor.slice(5, 7), 16);
+                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
+                document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --bg-soft: #12182b;
+            --bg-glow: rgba(174, 239, 255, 0.1);
+            --card: rgba(255, 255, 255, 0.04);
+            --card-hover: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.1);
+            --primary: #aeefff;
+            --accent: #7aa2ff;
+            --text: #ffffff;
+            --muted: rgba(255, 255, 255, 0.6);
+            --radius: 22px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
+                radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
+                var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            background: rgba(10, 14, 30, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand img {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 22px;
+        }
+
+        .nav-links a { font-weight: 600; color: white; text-decoration: none; transition: color 0.2s ease; opacity: 0.8; }
+        .nav-links a:hover { color: var(--primary); opacity: 1; }
+        .nav-links a.active { color: var(--primary); opacity: 1; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+        }
+
+        .page-hero {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(174, 239, 255, 0.12);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.75rem;
+            margin-bottom: 18px;
+        }
+
+        .page-hero h1 {
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            margin-bottom: 14px;
+        }
+
+        .page-hero p {
+            color: var(--muted);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 26px;
+            transition: .25s;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card:hover {
+            background: var(--card-hover);
+            transform: translateY(-6px);
+            border-color: rgba(174, 239, 255, 0.3);
+        }
+
+        .avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 14px;
+            border: 2px solid var(--border);
+            background: #161b2c;
+            transition: 0.3s;
+        }
+
+        .card:hover .avatar {
+            border-color: var(--primary);
+        }
+
+        .role {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .card h5 {
+            margin: 4px 0 16px;
+            color: var(--muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .bio {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .social-links a {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            color: #0b0f1a;
+            transform: scale(1.05);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 32px 1.5rem;
+            text-align: center;
+            color: var(--muted);
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 600px) {
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="nav">
+            <div class="brand">
+                <img src="nora.png" alt="Nora" />
+                <span>Nora</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/team" class="active">Team</a>
+                <a href="/ai">Nora AI</a>
+                <a href="/legal">Legal</a>
+                <a href="/dashboard">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="page-hero">
+            <div class="badge">Nora's Team and Friends</div>
+            <h1>Our Group</h1>
+            <p>Nora is built to ensure communities have a safer and better experience on Discord while keeping their
+                data secure and fully under their control.</p>
+        </section>
+
+        <div class="grid">
+            <div class="card" data-user="1214048435632603137">
+                <img class="avatar" src="ReVaztinix.jpeg" alt="vaztinix" />
+                <div class="role">Founder & Developer</div>
+                <h2 class="display-name">Vaz</h2>
+                <h5 class="handle">vaztinix</h5>
+                <p class="bio">💕 | I care for everyone, but those closest to me will never understand the trust they
+                    have.</p>
+                <div class="social-links">
+                    <a href="https://github.com/Vaztinix" target="_blank">GitHub</a>
+                    <a href="https://www.youtube.com/@Vaztinix" target="_blank">YouTube</a>
+                    <a href="https://www.twitch.tv/vaztinix" target="_blank">Twitch</a>
+                    <a href="https://www.roblox.com/users/3089063186/profile" target="_blank">Roblox Profile</a>
+                    <a href="https://discord.com/users/1214048435632603137" target="_blank">Discord</a>
+                </div>
+            </div>
+
+            <div class="card" data-user="1366229304257544213">
+                <img class="avatar" src="waffles.png" alt="sillywillywood" />
+                <div class="role">Co-Owner and our friendly Rage Baiter</div>
+                <h2 class="display-name">HALLUCINOGENIC™</h2>
+                <h5 class="handle">sillywillywood</h5>
+                <p class="bio">D1 Hater</p>
+                <div class="social-links">
+                    <a href="https://1angel1.straw.page/" target="_blank">1angel1</a>
+                    <a href="https://discord.com/users/1366229304257544213" target="_blank">Discord</a>
+                </div>
+            </div>
+
+            <div class="card" data-user="1375943730951098549">
+                <img class="avatar" src="nora.png" alt="Nora" />
+                <div class="role">Privacy-First App</div>
+                <h2 class="display-name">Nora</h2>
+                <h5 class="handle">nora</h5>
+                <p class="bio">The project we all love and is the reason we are all here today!</p>
+                <div class="social-links">
+                    <a href="https://vaztinix.github.io/Nora" target="_blank">Nora's Official Site</a>
+                    <a href="https://discord.com/users/1375943730951098549" target="_blank">Discord</a>
+                </div>
+            </div>
+
+            <div class="card" data-user="941084096673755188">
+                <img class="avatar" src="solorads_pfp.png" alt="solorads" />
+                <div class="role">Tester and Friend</div>
+                <h2 class="display-name">solorads</h2>
+                <h5 class="handle">solorads</h5>
+                <p class="bio">Create's idea's and tests Nora from time to time to ensure stability.</p>
+                <div class="social-links">
+                    <a href="https://www.roblox.com/communities/32778698/SMRP-United-States-Military#!/about"
+                        target="_blank">Roblox Community</a>
+                    <a href="https://www.roblox.com/users/2987228682/profile" target="_blank">Roblox Profile</a>
+                    <a href="https://discord.com/users/941084096673755188" target="_blank">Discord</a>
+                </div>
+            </div>
+
+            <div class="card" data-user="1223693570662334604">
+                <img class="avatar" src="silasvr8.png" alt="silasvr8" />
+                <div class="role">Staff Manager and Friend</div>
+                <h2 class="display-name">silasvr8</h2>
+                <h5 class="handle">silasvr8</h5>
+                <p class="bio">Helps manage Nora and its community, testing features to repair them early to keep Nora
+                    running smoothly.</p>
+                <div class="social-links">
+                    <a href="https://www.youtube.com/@SilasVR8" target="_blank">YouTube</a>
+                    <a href="https://guns.lol/silasvr8" target="_blank">guns.lol</a>
+                    <a href="https://discord.com/users/1223693570662334604" target="_blank">Discord</a>
+                </div>
+            </div>
+
+            <div class="card" data-user="1301949827701149697">
+                <img class="avatar" src="beecet.png" alt="discounted_chaos" />
+                <div class="role">Administrator and the femboy</div>
+                <h2 class="display-name">discounted_chaos</h2>
+                <h5 class="handle">discounted_chaos</h5>
+                <p class="bio">"The dumbass"</p>
+                <div class="social-links">
+                    <a href="https://discord.com/users/1301949827701149697" target="_blank">Discord</a>
+                </div>
+            </div>
+
+            <div class="card" data-user="1364634555977564230">
+                <img class="avatar" src="aryarec.jpg" alt="poppys.ang3l" />
+                <div class="role">Administrator and Local Trans Queen</div>
+                <h2 class="display-name">✦Arya/Vixen┆She/Fae/It✦</h2>
+                <h5 class="handle">poppys.ang3l</h5>
+                <p class="bio">A very silly person</p>
+                <div class="social-links">
+                    <a href="https://poppys-ang3l.straw.page/" target="_blank">Strawpage</a>
+                    <a href="https://prns.cc/eprnd" target="_blank">pronouns.cc</a>
+                    <a href="https://discord.com/users/1364634555977564230" target="_blank">Discord</a>
+                </div>
+            </div>
+
+            <div class="card" data-user="734113955986931734">
+                <img class="avatar" src="sanedish.png" alt="sanedish" />
+                <div class="role">Tester and the gayest lesbian</div>
+                <h2 class="display-name">sanedish</h2>
+                <h5 class="handle">sanedish</h5>
+                <p class="bio">The one who suffers from acute silliness and "gay lesbian"</p>
+                <div class="social-links">
+                    <a href="https://discord.com/users/734113955986931734" target="_blank">Discord</a>
+                </div>
+            </div>
+
+            <div class="card" data-user="1387499169870254230">
+                <img class="avatar" src="boris.png" alt="boris10106" />
+                <div class="role">BIG TOE and FRIEND</div>
+                <h2 class="display-name">boris10106</h2>
+                <h5 class="handle">boris10106</h5>
+                <p class="bio">The cameras are on my big toe now.</p>
+                <div class="social-links">
+                    <a href="https://discord.com/users/1387499169870254230" target="_blank">Discord</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        © 2026 Nora | Privacy-First AI & Moderation
+    </footer>
+
+    <script>
+        document.querySelectorAll('.card').forEach(card => {
+            const userId = card.getAttribute('data-user');
+            const img = card.querySelector('.avatar');
+            const nameHeading = card.querySelector('.display-name');
+            const handleHeading = card.querySelector('.handle');
+
+            if (!userId) return;
+
+            // Skip Lanyard for bots (Bot IDs usually start with 13 or similar, but we'll check if it's the Nora bot ID)
+            if (userId === '1375943730951098549') return;
+
+            fetch(`https://api.lanyard.rest/v1/users/${userId}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        const user = res.data.discord_user;
+                        const isAnimated = user.avatar && user.avatar.startsWith('a_');
+                        const liveUrl = user.avatar
+                            ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`
+                            : img.src;
+
+                        const temp = new Image();
+                        temp.src = liveUrl;
+                        temp.onload = () => { img.src = liveUrl; };
+
+                        if (user.global_name) {
+                            nameHeading.textContent = user.global_name;
+                            handleHeading.textContent = `@${user.username}`;
+                        } else {
+                            nameHeading.textContent = user.username;
+                            handleHeading.textContent = `@${user.username}`;
+                        }
+
+                        // Auto-update Bio if available in Lanyard (KV or Custom Status)
+                        const bioPara = card.querySelector('.bio');
+                        if (res.data.kv && res.data.kv.bio) {
+                            bioPara.textContent = res.data.kv.bio;
+                        } else if (res.data.activities && res.data.activities.length > 0) {
+                            const customStatus = res.data.activities.find(a => a.type === 4);
+                            if (customStatus && customStatus.state) {
+                                bioPara.textContent = (customStatus.emoji ? customStatus.emoji.name + ' ' : '') + customStatus.state;
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error("Update failed for " + userId));
+        });
+    </script>
+
+</body>
+
+</html>
