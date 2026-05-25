@@ -1,0 +1,16 @@
+const { Events } = require('discord.js');
+const { updateStats } = require('../utils/topgg');
+const { logEvent } = require('../utils/logistics');
+
+module.exports = {
+    name: Events.GuildDelete,
+    async execute(guild) {
+        console.log(`[System] System Link Deactivated: ${guild.name} (ID: ${guild.id})`);
+        
+        // Update Top.gg Stats
+        await updateStats(guild.client);
+
+        // Log to Master HQ Logistics Webhook
+        await logEvent(guild, 'leave');
+    },
+};

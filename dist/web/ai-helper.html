@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kite AI - Helper Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --bg-soft: #12182b;
+            --card: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.08);
+            --primary: #aeefff;
+            --text: #ffffff;
+            --muted: rgba(255, 255, 255, 0.7);
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", system-ui, sans-serif;
+            background: radial-gradient(1200px 600px at 10% -10%, #1b2a55, transparent),
+                        radial-gradient(900px 500px at 90% 10%, #2a1b55, transparent),
+                        var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 30, 0.75);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; color: white; }
+        .brand img { width: 40px; height: 40px; border-radius: 10px; }
+
+        .nav-links { display: flex; gap: 22px; }
+        .nav-links a { font-weight: 600; color: var(--muted); text-decoration: none; transition: color 0.2s ease; }
+        .nav-links a:hover { color: var(--text); }
+
+        .container { max-width: 800px; margin: 6rem auto; padding: 0 1.5rem; text-align: center; }
+        
+        h1 { font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 20px; color: white; font-weight: 800;}
+        p.subtitle { color: var(--muted); font-size: 1.2rem; margin-bottom: 40px; line-height: 1.6;}
+        
+        .hero-img { width: 150px; border-radius: 24px; box-shadow: 0 15px 40px rgba(174,239,255,0.15); margin-bottom: 30px; border: 1px solid var(--border);}
+        
+        .btn {
+            padding: 14px 26px;
+            border-radius: 999px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            transition: .25s;
+            display: inline-flex;
+            align-items: center;
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 10px 30px rgba(174,239,255,.25);
+            text-decoration: none;
+        }
+        .btn:hover { transform: translateY(-4px); }
+    </style>
+    <script src="/translate.js"></script>
+</head>
+<body>
+    <header>
+        <div class="nav">
+            <div class="brand">
+                <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                <span>Nora</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/team">Team</a>
+                <a href="/ai-helper">Kite AI</a>
+                <a href="/ai">Nora AI</a>
+                <a href="/tos">Legal</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <img src="nora.png" class="hero-img" alt="Kite AI" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+        <h1>Meet Kite AI</h1>
+        <p class="subtitle">Kite is a conceptual sub-agent framework designed to assist Nora with background tasks, auto-moderation ticket summaries, and rapid context fetching.</p>
+        <a href="/dashboard" class="btn">Enter Studio Dashboard</a>
+    </div>
+</body>
+</html>

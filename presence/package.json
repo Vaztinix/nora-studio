@@ -1,0 +1,12 @@
+{
+  "name": "corn-hub-presence",
+  "version": "1.0.0",
+  "description": "Personal Discord Rich Presence for Corn Hub",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1"
+  }
+}

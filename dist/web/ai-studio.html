@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Studio | AI Workspace</title>
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script>
+        (function() {
+            const savedColor = localStorage.getItem('nora_theme_color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--primary', savedColor);
+                const r = parseInt(savedColor.slice(1, 3), 16);
+                const g = parseInt(savedColor.slice(3, 5), 16);
+                const b = parseInt(savedColor.slice(5, 7), 16);
+                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.18)`);
+                document.documentElement.style.setProperty('--glow', `rgba(${r}, ${g}, ${b}, 0.18)`);
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #090d18;
+            --bg-secondary: #11182a;
+            --card: rgba(17, 24, 42, 0.88);
+            --card-strong: rgba(24, 30, 53, 0.95);
+            --border: rgba(255,255,255,0.08);
+            --text: #f8fbff;
+            --muted: #a1adc6;
+            --primary: #aeefff;
+            --accent: rgba(174, 239, 255, 0.18);
+            --glow: rgba(174, 239, 255, 0.16);
+            --success: #2ea043;
+            --warning: #f4b942;
+            --danger: #ff6666;
+            --radius: 22px;
+            --shadow: 0 24px 60px rgba(0,0,0,0.35);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 20% 20%, rgba(174,239,255,0.12), transparent 14%),
+                radial-gradient(circle at 80% 10%, rgba(114, 125, 255, 0.12), transparent 16%),
+                linear-gradient(135deg, #060a14, #0d1325 50%, #0a0f1c 100%);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            background: rgba(8, 12, 22, 0.85);
+        }
+
+        .topbar-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .brand img {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            transition: 0.2s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text);
+            border-color: var(--border);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .container {
+            width: min(1300px, calc(100% - 32px));
+            margin: 24px auto 80px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.3fr 0.9fr;
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .hero-card {
+            background: linear-gradient(135deg, rgba(19,25,45,0.96), rgba(27,36,60,0.88));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(174,239,255,0.25);
+            background: rgba(174,239,255,0.08);
+            color: var(--primary);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .hero h1 {
+            margin: 0 0 14px;
+            font-size: clamp(1.9rem, 2vw + 1.2rem, 2.6rem);
+            line-height: 1.08;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 0.97rem;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .stat-tile {
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+            padding: 16px;
+        }
+
+        .stat-tile strong {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-tile span {
+            color: var(--muted);
+            font-size: 0.84rem;
+            line-height: 1.5;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .primary-btn, .secondary-btn, .danger-btn {
+            border: none;
+            border-radius: 999px;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .primary-btn:hover, .secondary-btn:hover, .danger-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--primary), #8ee7ff);
+            color: #07111d;
+            box-shadow: 0 12px 32px rgba(174,239,255,0.18);
+        }
+
+        .secondary-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .danger-btn {
+            background: rgba(255,102,102,0.15);
+            border: 1px solid rgba(255,102,102,0.25);
+            color: #ffd8d8;
+        }
+
+        .module-grid {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .module-pane {
+            grid-column: span 12;
+            display: grid;
+            gap: 18px;
+        }
+
+        .module-card {
+            background: rgba(12, 17, 31, 0.94);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .module-card h2 {
+            margin: 0 0 8px;
+            font-size: 1.2rem;
+        }
+
+        .module-card > p {
+            color: var(--muted);
+            line-height: 1.6;
+            margin: 0 0 18px;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field.full { grid-column: 1 / -1; }
+
+        .field label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .field input, .field select, .field textarea {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+            color: var(--text);
+            font: inherit;
+            padding: 12px 14px;
+        }
+
+        .field textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .switch-row:first-of-type {
+            border-top: none;
+        }
+
+        .switch-row p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .switch {
+            position: relative;
+            width: 54px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .switch input { display: none; }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 999px;
+            transition: 0.2s ease;
+        }
+
+        .slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 4px;
+            top: 4px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.2s ease;
+        }
+
+        .switch input:checked + .slider {
+            background: linear-gradient(135deg, var(--primary), #7de4ff);
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(26px);
+        }
+
+        .mini-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag-pill {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+            font-size: 0.82rem;
+            color: var(--text);
+        }
+
+        .code-block {
+            background: rgba(0,0,0,0.28);
+            border: 1px solid var(--border);
+            color: #d5f6ff;
+            font-family: 'Courier New', monospace;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 0.88rem;
+            max-height: 320px;
+            overflow: auto;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .table-card {
+            padding: 18px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.015);
+        }
+
+        .table-card + .table-card {
+            margin-top: 12px;
+        }
+
+        .table-card h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+        }
+
+        .table-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge-row span {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+        }
+
+        .bot-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .bot-item {
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.018);
+        }
+
+        .bot-item header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .bot-item h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .bot-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .bot-meta span {
+            border-radius: 999px;
+            padding: 5px 9px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .bot-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .command-list {
+            margin-top: 12px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .command-item {
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.015);
+            padding: 14px 16px;
+        }
+
+        .command-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .command-item p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .notice {
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(174,239,255,0.16);
+            background: rgba(174,239,255,0.08);
+            color: var(--text);
+            font-size: 0.92rem;
+            margin-top: 12px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-ok { background: var(--success); }
+        .status-warn { background: var(--warning); }
+        .status-bad { background: var(--danger); }
+
+        .footer-note {
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.6;
+        }
+
+        .empty-state {
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px dashed var(--border);
+            color: var(--muted);
+            background: rgba(255,255,255,0.01);
+        }
+
+        @media (max-width: 980px) {
+            .hero, .field-grid { grid-template-columns: 1fr; }
+            .module-grid { grid-template-columns: 1fr; }
+            .module-pane { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <img src="nora.png" alt="Nora">
+                <span>Nora Studio</span>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/ai">AI</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/ai-studio" class="active">AI Studio</a>
+                <a href="/health">Health</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="hero">
+            <div class="hero-card">
+                <div class="eyebrow">
+                    <i class="fas fa-brain"></i>
+                    Operational Workspace
+                </div>
+                <h1>Design Nora’s AI behavior, memory, and hosted-bot workflows from one place.</h1>
+                <p>This workspace gives you live controls for persona tuning, current-memory visibility, bot profile management, and automation templates. It is built to make Nora feel faster, more personalized, and honest about what it is doing.</p>
+                <div class="hero-actions">
+                    <button id="save-ai-profile" class="primary-btn"><i class="fas fa-save"></i> Save AI Profile</button>
+                    <button id="save-hosted-bot" class="secondary-btn"><i class="fas fa-robot"></i> Create Hosted Bot</button>
+                    <button id="refresh-studio" class="secondary-btn"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-tile">
+                        <strong id="system-guilds">–</strong>
+                        <span>Guilds currently connected to Nora.</span>
+                    </div>
+                    <div class="stat-tile">
+                        <strong id="system-uptime">–</strong>
+                        <span>Memory and process uptime summary.</span>
+                    </div>
+                    <div class="stat-tile">
+                        <strong id="ai-requests">–</strong>
+                        <span>AI requests used this billing cycle.</span>
+                    </div>
+                    <div class="stat-tile">
+                        <strong id="ai-tokens">–</strong>
+                        <span>Estimated tokens consumed by your AI usage.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-card">
+                <div class="eyebrow">
+                    <i class="fas fa-signal"></i>
+                    Live Operating Notes
+                </div>
+                <div class="table-card">
+                    <h3>Bot Status</h3>
+                    <p id="system-status">Loading system health…</p>
+                </div>
+                <div class="table-card">
+                    <h3>Current Persona</h3>
+                    <p id="persona-summary">Loading your AI profile…</p>
+                </div>
+                <div class="table-card">
+                    <h3>Current Workspace Route</h3>
+                    <p>Use this workspace to keep Nora aligned with your community, your style, and your hosted-bot plans.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-grid">
+            <div class="module-pane">
+                <div class="module-card">
+                    <h2>AI Persona & Response Tuning</h2>
+                    <p>Shape what Nora says, how much context it uses, and when it reaches out to live web data. These settings are stored in your account preferences and available for future expansion.</p>
+                    <div class="field-grid">
+                        <div class="field">
+                            <label for="ai-mode">Primary AI Mode</label>
+                            <select id="ai-mode">
+                                <option value="balanced">Balanced</option>
+                                <option value="direct">Direct</option>
+                                <option value="creative">Creative</option>
+                                <option value="supportive">Supportive</option>
+                                <option value="strict">Strict</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="ai-voice">Voice Style</label>
+                            <select id="ai-voice">
+                                <option value="friendly">Friendly</option>
+                                <option value="professional">Professional</option>
+                                <option value="playful">Playful</option>
+                                <option value="succinct">Succinct</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="context-days">Recent Context Window</label>
+                            <select id="context-days">
+                                <option value="7">7 days</option>
+                                <option value="14">14 days</option>
+                                <option value="30">30 days</option>
+                                <option value="60">60 days</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="response-length">Response Length</label>
+                            <select id="response-length">
+                                <option value="brief">Brief</option>
+                                <option value="medium">Medium</option>
+                                <option value="detailed">Detailed</option>
+                            </select>
+                        </div>
+                        <div class="field full">
+                            <label for="custom-instructions">Custom Instructions</label>
+                            <textarea id="custom-instructions" placeholder="Add personality rules, safety preferences, or community-specific phrasing here."></textarea>
+                        </div>
+                    </div>
+                    <div class="switch-row">
+                        <div>
+                            <strong>Use live web context</strong>
+                            <p>Allow Nora to pull live search context when the prompt asks for current information.</p>
+                        </div>
+                        <label class="switch">
+                            <input id="web-search-enabled" type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="switch-row">
+                        <div>
+                            <strong>Auto-summarize long history</strong>
+                            <p>Compress old messages into a shorter recap before the AI response is generated.</p>
+                        </div>
+                        <label class="switch">
+                            <input id="history-summarize" type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="switch-row">
+                        <div>
+                            <strong>Show explanation note on fallback</strong>
+                            <p>Let users know when Nora is running on a fallback engine or local path.</p>
+                        </div>
+                        <label class="switch">
+                            <input id="show-fallback-note" type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toolbar">
+                        <button id="build-prompt-preview" class="secondary-btn"><i class="fas fa-file-alt"></i> Build Prompt Preview</button>
+                        <button id="load-history-preview" class="secondary-btn"><i class="fas fa-history"></i> Preview 30-Day Memory</button>
+                        <button id="save-draft" class="secondary-btn"><i class="fas fa-floppy-disk"></i> Save Draft Locally</button>
+                    </div>
+                    <div class="notice" id="ai-notice">Your prompt preview will appear here once the settings are loaded.</div>
+                    <div class="code-block" id="prompt-preview">No prompt preview generated yet.</div>
+                </div>
+
+                <div class="module-card">
+                    <h2>Memory Lab</h2>
+                    <p>Inspect the context Nora can actually use from the selected channel and use that information to spot drift, missing data, or stale context.</p>
+                    <div class="field-grid">
+                        <div class="field">
+                            <label for="history-guild">Guild</label>
+                            <select id="history-guild"></select>
+                        </div>
+                        <div class="field">
+                            <label for="history-channel">Channel</label>
+                            <select id="history-channel"></select>
+                        </div>
+                        <div class="field full">
+                            <label for="history-filter">Optional keyword filter</label>
+                            <input id="history-filter" type="text" placeholder="e.g. onboarding, premium, event" />
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <button id="fetch-history" class="primary-btn"><i class="fas fa-search"></i> Fetch Channel Context</button>
+                        <button id="copy-history" class="secondary-btn"><i class="fas fa-copy"></i> Copy Context</button>
+                    </div>
+                    <div class="code-block" id="history-preview">No channel context has been fetched yet.</div>
+                </div>
+
+                <div class="module-card">
+                    <h2>Automation Templates</h2>
+                    <p>Draft custom workflow scenarios for your hosted bots and your community. These are stored locally, so you can iterate without needing to touch live commands.</p>
+                    <div class="field-grid">
+                        <div class="field">
+                            <label for="automation-name">Template Name</label>
+                            <input id="automation-name" type="text" placeholder="Welcome Flow" />
+                        </div>
+                        <div class="field">
+                            <label for="automation-type">Template Type</label>
+                            <select id="automation-type">
+                                <option value="welcome">Welcome</option>
+                                <option value="moderation">Moderation</option>
+                                <option value="support">Support</option>
+                                <option value="event">Event</option>
+                            </select>
+                        </div>
+                        <div class="field full">
+                            <label for="automation-body">Template Instructions</label>
+                            <textarea id="automation-body" placeholder="Describe the behavior you want Nora to guide users through."></textarea>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <button id="save-template" class="primary-btn"><i class="fas fa-layer-group"></i> Save Template</button>
+                        <button id="load-template" class="secondary-btn"><i class="fas fa-folder-open"></i> Load Saved Templates</button>
+                    </div>
+                    <div id="template-list" class="mini-stack"></div>
+                </div>
+            </div>
+
+            <div class="module-pane">
+                <div class="module-card">
+                    <h2>Hosted Bot Builder</h2>
+                    <p>Create or update hosted bot profiles from the dashboard, then bind reusable custom commands directly to the bot’s command set.</p>
+                    <div class="field-grid">
+                        <div class="field full">
+                            <label for="hosted-token">Bot Token</label>
+                            <input id="hosted-token" type="password" placeholder="Paste a bot token here" />
+                        </div>
+                        <div class="field">
+                            <label for="hosted-prefix">Prefix</label>
+                            <input id="hosted-prefix" type="text" value="!" placeholder="!" />
+                        </div>
+                        <div class="field">
+                            <label for="hosted-label">Internal Label</label>
+                            <input id="hosted-label" type="text" placeholder="Community Support Bot" />
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <button id="create-bot-btn" class="primary-btn"><i class="fas fa-plus"></i> Add Bot Profile</button>
+                        <button id="refresh-bots" class="secondary-btn"><i class="fas fa-sync-alt"></i> Refresh Bots</button>
+                    </div>
+                    <div id="bot-list" class="bot-list"></div>
+                </div>
+
+                <div class="module-card">
+                    <h2>Custom Command Composer</h2>
+                    <p>Define command metadata and response payloads for a selected bot. The response can be plain text, structured embed JSON, or an action blueprint.</p>
+                    <div class="field-grid">
+                        <div class="field">
+                            <label for="command-bot">Bot</label>
+                            <select id="command-bot"></select>
+                        </div>
+                        <div class="field">
+                            <label for="command-name">Command Name</label>
+                            <input id="command-name" type="text" placeholder="ticket" />
+                        </div>
+                        <div class="field">
+                            <label for="command-type">Response Type</label>
+                            <select id="command-type">
+                                <option value="text">Text</option>
+                                <option value="embed">Embed JSON</option>
+                                <option value="action">Action</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="command-trigger">Trigger</label>
+                            <select id="command-trigger">
+                                <option value="message">Message</option>
+                                <option value="reaction">Reaction</option>
+                                <option value="timer">Timer</option>
+                            </select>
+                        </div>
+                        <div class="field full">
+                            <label for="command-description">Description</label>
+                            <input id="command-description" type="text" placeholder="Responds with support instructions" />
+                        </div>
+                        <div class="field full">
+                            <label for="command-response">Response Content</label>
+                            <textarea id="command-response" placeholder="Plain text, JSON, or action blueprint"></textarea>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <button id="save-command-btn" class="primary-btn"><i class="fas fa-save"></i> Save Command</button>
+                        <button id="clear-command-form" class="secondary-btn"><i class="fas fa-eraser"></i> Clear Form</button>
+                    </div>
+                    <div id="command-preview" class="code-block">Select a bot to build a command preview.</div>
+                </div>
+
+                <div class="module-card">
+                    <h2>Community Transparency</h2>
+                    <p>Understand what Nora is doing right now and what the workspace is using to build context and automate responses.</p>
+                    <div class="badge-row" id="transparency-badges"></div>
+                    <div class="notice" id="transparency-note">Fetching live system snapshot…</div>
+                    <div class="footer-note">
+                        <strong>Why this matters:</strong> Nora can be more helpful when you can see the current memory window, the active workflow settings, and the hosted-bot setup. This transparency layer is designed to make the system feel safe, honest, and expandable.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = sessionStorage.getItem('discord_token');
+        const state = {
+            user: null,
+            aiProfile: null,
+            bots: [],
+            selectedBotId: null,
+            guilds: [],
+            channels: [],
+            templates: []
+        };
+
+        const authHeaders = () => ({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        });
+
+        const notify = (message, tone = 'info') => {
+            const notice = document.getElementById('transparency-note');
+            notice.textContent = message;
+            notice.style.background = tone === 'error' ? 'rgba(255,102,102,0.12)' : 'rgba(174,239,255,0.12)';
+            notice.style.borderColor = tone === 'error' ? 'rgba(255,102,102,0.24)' : 'rgba(174,239,255,0.24)';
+        };
+
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        };
+
+        const setValue = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.value = value ?? '';
+        };
+
+        const setChecked = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.checked = !!value;
+        };
+
+        async function jsonFetch(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    ...authHeaders(),
+                    ...(options.headers || {})
+                }
+            });
+            const text = await response.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (e) {
+                throw new Error(`Non-JSON response from ${url}`);
+            }
+            if (!response.ok) {
+                throw new Error(data.error || 'Request failed');
+            }
+            return data;
+        }
+
+        function defaultProfile() {
+            return {
+                mode: 'balanced',
+                voice: 'friendly',
+                contextDays: '30',
+                responseLength: 'medium',
+                customInstructions: 'Be helpful, transparent, and respectful. Keep answers concise and community-focused.',
+                webSearchEnabled: true,
+                historySummarize: true,
+                showFallbackNote: true
+            };
+        }
+
+        function renderBadges(system) {
+            const badges = document.getElementById('transparency-badges');
+            badges.innerHTML = '';
+            const items = [
+                ['Ready', system?.ready ? 'status-ok' : 'status-bad', system?.ready ? 'Bot is ready' : 'Bot is offline'],
+                ['Mode', 'status-warn', `${state.aiProfile?.mode || 'balanced'} mode`],
+                ['History', 'status-ok', `${state.aiProfile?.contextDays || 30} day context`],
+                ['Hosted Bots', 'status-ok', `${state.bots.length} profile(s) attached`]
+            ];
+            items.forEach(([label, klass, text]) => {
+                const span = document.createElement('span');
+                span.innerHTML = `<span class="status-dot ${klass}"></span>${label}: ${text}`;
+                badges.appendChild(span);
+            });
+        }
+
+        function renderPromptPreview() {
+            const p = state.aiProfile || defaultProfile();
+            const preview = [
+                `You are Nora, a community-first assistant.`,
+                `Primary mode: ${p.mode}.`,
+                `Voice style: ${p.voice}.`,
+                `Recent context window: ${p.contextDays} days.`,
+                `Response length: ${p.responseLength}.`,
+                `Use web context: ${p.webSearchEnabled ? 'enabled' : 'disabled'}.`,
+                `Summarize long history: ${p.historySummarize ? 'enabled' : 'disabled'}.`,
+                `Fallback note: ${p.showFallbackNote ? 'enabled' : 'disabled'}.`,
+                `Custom instructions: ${p.customInstructions}`
+            ];
+            document.getElementById('prompt-preview').textContent = preview.join('\n');
+            document.getElementById('persona-summary').textContent = `${p.mode} / ${p.voice} / ${p.contextDays}-day memory / ${p.responseLength} responses`;
+        }
+
+        function renderTemplates() {
+            const list = document.getElementById('template-list');
+            list.innerHTML = '';
+            if (!state.templates.length) {
+                list.innerHTML = '<div class="empty-state">No automation templates saved yet. Save one to build a reusable workflow.</div>';
+                return;
+            }
+            state.templates.forEach((template, index) => {
+                const item = document.createElement('div');
+                item.className = 'table-card';
+                item.innerHTML = `
+                    <div class="row-between">
+                        <div>
+                            <h3>${template.name}</h3>
+                            <p>${template.type} • ${template.body.slice(0, 100)}${template.body.length > 100 ? '…' : ''}</p>
+                        </div>
+                        <button data-index="${index}" class="secondary-btn remove-template">Remove</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+            list.querySelectorAll('.remove-template').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = Number(btn.dataset.index);
+                    state.templates.splice(idx, 1);
+                    localStorage.setItem('nora_ai_templates', JSON.stringify(state.templates));
+                    renderTemplates();
+                });
+            });
+        }
+
+        async function loadSystemHealth() {
+            try {
+                const system = await jsonFetch('/api/system/health');
+                setText('system-guilds', system.guilds);
+                setText('system-uptime', `${Math.round(system.uptime)}s`);
+                setText('system-status', `PID ${system.pid} • ${system.ready ? 'ready' : 'not ready'} • memory ${system.memoryMB} MB`);
+                renderBadges(system);
+            } catch (err) {
+                notify(`System health unavailable: ${err.message}`, 'error');
+            }
+        }
+
+        async function loadAiProfile() {
+            try {
+                const result = await jsonFetch('/api/user/ai-profile');
+                state.aiProfile = result.profile;
+                setValue('ai-mode', result.profile.mode);
+                setValue('ai-voice', result.profile.voice);
+                setValue('context-days', result.profile.contextDays);
+                setValue('response-length', result.profile.responseLength);
+                setValue('custom-instructions', result.profile.customInstructions || '');
+                setChecked('web-search-enabled', result.profile.webSearchEnabled);
+                setChecked('history-summarize', result.profile.historySummarize);
+                setChecked('show-fallback-note', result.profile.showFallbackNote);
+                setText('ai-requests', result.usage.requestsThisMonth);
+                setText('ai-tokens', result.usage.tokensThisMonth);
+                renderPromptPreview();
+                notify('AI profile loaded successfully.');
+            } catch (err) {
+                state.aiProfile = defaultProfile();
+                renderPromptPreview();
+                notify(`AI profile could not be loaded: ${err.message}`, 'error');
+            }
+        }
+
+        async function saveAiProfile() {
+            const profile = {
+                mode: document.getElementById('ai-mode').value,
+                voice: document.getElementById('ai-voice').value,
+                contextDays: document.getElementById('context-days').value,
+                responseLength: document.getElementById('response-length').value,
+                customInstructions: document.getElementById('custom-instructions').value,
+                webSearchEnabled: document.getElementById('web-search-enabled').checked,
+                historySummarize: document.getElementById('history-summarize').checked,
+                showFallbackNote: document.getElementById('show-fallback-note').checked
+            };
+            try {
+                await jsonFetch('/api/user/ai-profile', {
+                    method: 'POST',
+                    body: JSON.stringify(profile)
+                });
+                state.aiProfile = profile;
+                renderPromptPreview();
+                notify('AI profile saved to your account preferences.');
+            } catch (err) {
+                notify(`Unable to save AI profile: ${err.message}`, 'error');
+            }
+        }
+
+        async function loadGuilds() {
+            try {
+                const guilds = await jsonFetch('/api/user/guilds');
+                state.guilds = guilds;
+                const guildSelect = document.getElementById('history-guild');
+                guildSelect.innerHTML = '';
+                guilds.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = g.name;
+                    guildSelect.appendChild(opt);
+                });
+                if (guilds.length) {
+                    await loadChannels(guilds[0].id);
+                }
+            } catch (err) {
+                notify(`Guild data unavailable: ${err.message}`, 'error');
+            }
+        }
+
+        async function loadChannels(guildId) {
+            try {
+                const response = await fetch(`/api/guilds/${guildId}/channels`, { headers: { Authorization: `Bearer ${token}` } });
+                const data = await response.json();
+                state.channels = data;
+                const channelSelect = document.getElementById('history-channel');
+                channelSelect.innerHTML = '';
+                data.forEach(channel => {
+                    const opt = document.createElement('option');
+                    opt.value = channel.id;
+                    opt.textContent = channel.name;
+                    channelSelect.appendChild(opt);
+                });
+            } catch (err) {
+                notify(`Channel data unavailable: ${err.message}`, 'error');
+            }
+        }
+
+        async function loadHistoryPreview() {
+            const guildId = document.getElementById('history-guild').value;
+            const channelId = document.getElementById('history-channel').value;
+            const filter = document.getElementById('history-filter').value.trim();
+            try {
+                let url = `/api/user/ai-history?guildId=${encodeURIComponent(guildId)}&channelId=${encodeURIComponent(channelId)}`;
+                if (filter) url += `&filter=${encodeURIComponent(filter)}`;
+                const result = await jsonFetch(url);
+                document.getElementById('history-preview').textContent = result.summary || 'No context available.';
+                notify('Recent history loaded successfully.');
+            } catch (err) {
+                notify(`History fetch failed: ${err.message}`, 'error');
+            }
+        }
+
+        async function loadHostedBots() {
+            try {
+                const bots = await jsonFetch('/api/user/hosted-bots');
+                state.bots = bots;
+                const list = document.getElementById('bot-list');
+                const select = document.getElementById('command-bot');
+                list.innerHTML = '';
+                select.innerHTML = '';
+                if (!bots.length) {
+                    list.innerHTML = '<div class="empty-state">No hosted bots are connected yet. Add one to start building custom command workflows.</div>';
+                } else {
+                    bots.forEach(bot => {
+                        const option = document.createElement('option');
+                        option.value = bot.id;
+                        option.textContent = bot.name;
+                        select.appendChild(option);
+
+                        const item = document.createElement('div');
+                        item.className = 'bot-item';
+                        item.innerHTML = `
+                            <header>
+                                <div>
+                                    <h3>${bot.name}</h3>
+                                    <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;">${bot.id}</p>
+                                </div>
+                                <span style="font-size: 0.8rem; color: var(--primary);">${bot.isEnabled ? 'Enabled' : 'Disabled'}</span>
+                            </header>
+                            <p style="margin: 0; color: var(--muted); line-height: 1.5;">Prefix: ${bot.prefix} • Command count: ${bot.commandCount} • Tokens used: ${bot.totalTokensUsed}</p>
+                            <div class="bot-meta">
+                                <span>${bot.inviteUrl ? 'Invite URL ready' : 'Invite URL pending'}</span>
+                                <span>Monthly limit ${bot.tokenLimit}</span>
+                                <span>Events ${bot.totalEventsTriggered}</span>
+                            </div>
+                            <div class="bot-actions">
+                                <button data-bot-id="${bot.id}" class="secondary-btn inspect-bot">Inspect Commands</button>
+                                <button data-bot-id="${bot.id}" class="danger-btn remove-bot">Remove Bot</button>
+                            </div>
+                            <div class="command-list" data-bot-id="${bot.id}"></div>
+                        `;
+                        list.appendChild(item);
+                    });
+                }
+                document.querySelectorAll('.inspect-bot').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        state.selectedBotId = btn.dataset.botId;
+                        document.getElementById('command-bot').value = state.selectedBotId;
+                        await loadCommandPreview();
+                        const container = document.querySelector(`.command-list[data-bot-id='${state.selectedBotId}']`);
+                        try {
+                            const commands = await jsonFetch(`/api/user/hosted-bots/${state.selectedBotId}/commands`);
+                            container.innerHTML = commands.length ? commands.map(command => `
+                                <div class="command-item">
+                                    <strong>${command.name}</strong>
+                                    <p>${command.description || 'No description provided.'} • ${command.type} • ${command.trigger}</p>
+                                    <div class="bot-actions">
+                                        <button data-name="${command.name}" data-bot-id="${state.selectedBotId}" class="secondary-btn remove-command">Delete</button>
+                                    </div>
+                                </div>
+                            `).join('') : '<div class="empty-state">No commands yet for this bot.</div>';
+                            container.querySelectorAll('.remove-command').forEach(removeBtn => {
+                                removeBtn.addEventListener('click', async () => {
+                                    await jsonFetch(`/api/user/hosted-bots/${removeBtn.dataset.botId}/commands/${encodeURIComponent(removeBtn.dataset.name)}`, { method: 'DELETE' });
+                                    notify('Command deleted from the hosted bot.');
+                                    await loadHostedBots();
+                                });
+                            });
+                        } catch (err) {
+                            container.innerHTML = `<div class="empty-state">${err.message}</div>`;
+                        }
+                    });
+                });
+                document.querySelectorAll('.remove-bot').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        try {
+                            await jsonFetch(`/api/user/hosted-bots/${btn.dataset.botId}`, { method: 'DELETE' });
+                            notify('Hosted bot removed.');
+                            await loadHostedBots();
+                        } catch (err) {
+                            notify(`Unable to remove bot: ${err.message}`, 'error');
+                        }
+                    });
+                });
+            } catch (err) {
+                notify(`Hosted bot data unavailable: ${err.message}`, 'error');
+            }
+        }
+
+        function buildCommandPreview() {
+            const commandName = document.getElementById('command-name').value.trim();
+            const commandType = document.getElementById('command-type').value;
+            const trigger = document.getElementById('command-trigger').value;
+            const description = document.getElementById('command-description').value.trim();
+            const response = document.getElementById('command-response').value.trim();
+            if (!commandName || !response) {
+                document.getElementById('command-preview').textContent = 'Provide a command name and response content to see a preview.';
+                return;
+            }
+            document.getElementById('command-preview').textContent = JSON.stringify({
+                name: commandName,
+                type: commandType,
+                trigger,
+                description,
+                response
+            }, null, 2);
+        }
+
+        async function loadCommandPreview() {
+            buildCommandPreview();
+            if (!state.selectedBotId) {
+                return;
+            }
+            try {
+                const commands = await jsonFetch(`/api/user/hosted-bots/${state.selectedBotId}/commands`);
+                const current = commands.find(command => command.name === document.getElementById('command-name').value.trim());
+                if (current) {
+                    document.getElementById('command-preview').textContent = JSON.stringify(current, null, 2);
+                }
+            } catch (err) {
+                // Ignore preview load failures; current preview already exists.
+            }
+        }
+
+        async function createHostedBot() {
+            const label = document.getElementById('hosted-label').value.trim();
+            const token = document.getElementById('hosted-token').value.trim();
+            const prefix = document.getElementById('hosted-prefix').value.trim() || '!';
+            if (!token) {
+                notify('Paste a bot token before creating a hosted bot profile.', 'error');
+                return;
+            }
+            try {
+                await jsonFetch('/api/user/hosted-bots', {
+                    method: 'POST',
+                    body: JSON.stringify({ token, prefix, label })
+                });
+                notify('Hosted bot profile created successfully.');
+                document.getElementById('hosted-token').value = '';
+                await loadHostedBots();
+            } catch (err) {
+                notify(`Hosted bot creation failed: ${err.message}`, 'error');
+            }
+        }
+
+        async function saveCommand() {
+            if (!state.selectedBotId) {
+                notify('Select a hosted bot before saving a command.', 'error');
+                return;
+            }
+            const payload = {
+                name: document.getElementById('command-name').value.trim(),
+                type: document.getElementById('command-type').value,
+                trigger: document.getElementById('command-trigger').value,
+                description: document.getElementById('command-description').value.trim(),
+                response: document.getElementById('command-response').value.trim()
+            };
+            if (!payload.name || !payload.response) {
+                notify('A command name and response content are required.', 'error');
+                return;
+            }
+            try {
+                await jsonFetch(`/api/user/hosted-bots/${state.selectedBotId}/commands`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                notify('Custom command saved to the hosted bot.');
+                await loadHostedBots();
+                await loadCommandPreview();
+            } catch (err) {
+                notify(`Unable to save command: ${err.message}`, 'error');
+            }
+        }
+
+        function loadTemplatesFromStorage() {
+            const saved = localStorage.getItem('nora_ai_templates');
+            try {
+                state.templates = saved ? JSON.parse(saved) : [];
+            } catch (err) {
+                state.templates = [];
+            }
+            renderTemplates();
+        }
+
+        async function refreshAll() {
+            await Promise.all([loadSystemHealth(), loadAiProfile(), loadGuilds(), loadHostedBots()]);
+            loadTemplatesFromStorage();
+        }
+
+        document.getElementById('save-ai-profile').addEventListener('click', saveAiProfile);
+        document.getElementById('save-hosted-bot').addEventListener('click', createHostedBot);
+        document.getElementById('refresh-studio').addEventListener('click', refreshAll);
+        document.getElementById('build-prompt-preview').addEventListener('click', renderPromptPreview);
+        document.getElementById('load-history-preview').addEventListener('click', loadHistoryPreview);
+        document.getElementById('save-draft').addEventListener('click', () => {
+            localStorage.setItem('nora_ai_draft', JSON.stringify({
+                profile: {
+                    mode: document.getElementById('ai-mode').value,
+                    voice: document.getElementById('ai-voice').value,
+                    contextDays: document.getElementById('context-days').value,
+                    responseLength: document.getElementById('response-length').value,
+                    customInstructions: document.getElementById('custom-instructions').value,
+                    webSearchEnabled: document.getElementById('web-search-enabled').checked,
+                    historySummarize: document.getElementById('history-summarize').checked,
+                    showFallbackNote: document.getElementById('show-fallback-note').checked
+                }
+            }));
+            notify('Your draft was saved locally.');
+        });
+        document.getElementById('fetch-history').addEventListener('click', loadHistoryPreview);
+        document.getElementById('copy-history').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(document.getElementById('history-preview').textContent);
+                notify('History context copied to the clipboard.');
+            } catch (err) {
+                notify('Clipboard access failed.', 'error');
+            }
+        });
+        document.getElementById('save-template').addEventListener('click', () => {
+            const name = document.getElementById('automation-name').value.trim();
+            const type = document.getElementById('automation-type').value;
+            const body = document.getElementById('automation-body').value.trim();
+            if (!name || !body) {
+                notify('Name and instructions are required to save a template.', 'error');
+                return;
+            }
+            state.templates.push({ name, type, body });
+            localStorage.setItem('nora_ai_templates', JSON.stringify(state.templates));
+            renderTemplates();
+            document.getElementById('automation-name').value = '';
+            document.getElementById('automation-body').value = '';
+            notify('Automation template saved locally.');
+        });
+        document.getElementById('load-template').addEventListener('click', () => {
+            const saved = localStorage.getItem('nora_ai_templates');
+            if (!saved) {
+                notify('No templates have been saved locally yet.', 'error');
+                return;
+            }
+            state.templates = JSON.parse(saved);
+            renderTemplates();
+            notify('Saved templates loaded.');
+        });
+        document.getElementById('create-bot-btn').addEventListener('click', createHostedBot);
+        document.getElementById('refresh-bots').addEventListener('click', loadHostedBots);
+        document.getElementById('save-command-btn').addEventListener('click', saveCommand);
+        document.getElementById('clear-command-form').addEventListener('click', () => {
+            document.getElementById('command-name').value = '';
+            document.getElementById('command-description').value = '';
+            document.getElementById('command-response').value = '';
+            document.getElementById('command-preview').textContent = 'Select a bot to build a command preview.';
+        });
+
+        ['ai-mode', 'ai-voice', 'context-days', 'response-length', 'custom-instructions', 'web-search-enabled', 'history-summarize', 'show-fallback-note'].forEach(id => {
+            document.getElementById(id).addEventListener('change', renderPromptPreview);
+        });
+
+        ['command-name', 'command-type', 'command-trigger', 'command-description', 'command-response'].forEach(id => {
+            document.getElementById(id).addEventListener('input', buildCommandPreview);
+        });
+
+        document.getElementById('history-guild').addEventListener('change', async (event) => {
+            await loadChannels(event.target.value);
+        });
+
+        if (!token) {
+            notify('You are not authenticated. Please sign in through the dashboard first.', 'error');
+        } else {
+            refreshAll();
+        }
+    </script>
+</body>
+</html>

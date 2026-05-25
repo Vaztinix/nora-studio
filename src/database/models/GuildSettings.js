@@ -1,0 +1,209 @@
+const { DataTypes } = require('sequelize');
+const sequelize = require('../db');
+
+const GuildSettings = sequelize.define('GuildSettings', {
+    guildId: {
+        type: DataTypes.STRING,
+        primaryKey: true
+    },
+    levelingEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    welcomerEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    welcomeChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    moderationEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    funEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    utilityEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    aiPreference: {
+        type: DataTypes.STRING,
+        defaultValue: 'LOCAL' // Default to our new Local Nora V10 Engine
+    },
+    levelUpNotificationsEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    levelUpChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    spamDetectionEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    spamThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 5 // messages per 5 seconds
+    },
+    countingChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    roleRewards: {
+        type: DataTypes.TEXT, // JSON-formatted string: { "level": "roleId" }
+        allowNull: true,
+        defaultValue: '{}'
+    },
+    // ---- Dynamic Logging Framework ----
+    loggingChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    logMessageEdits: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logMessageDeletes: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logMemberLeaves: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logMemberJoins: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logAutomod: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    isPremium: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    spamInterval: {
+        type: DataTypes.INTEGER,
+        defaultValue: 5000 // default 5 seconds in ms
+    },
+    antiRaidEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    antiRaidThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10 // 10 joins
+    },
+    antiRaidWindow: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10000 // 10 seconds
+    },
+    antiRaidAction: {
+        type: DataTypes.STRING,
+        defaultValue: 'notify' // notify, lockdown, kick_new
+    },
+    lockdownMode: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    voteLogChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    promoterRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    ticketCategoryId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    // ---- AutoMod Integration ----
+    automodProfanity: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodSexual: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodSlurs: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodSpam: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodMentions: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0 // 0 = disabled
+    },
+    automodScam: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodHardcore: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodImmuneRoles: {
+        type: DataTypes.TEXT, // JSON array of role IDs
+        defaultValue: '[]'
+    },
+    managedBotId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    managedBotToken: {
+        type: DataTypes.TEXT, // Using TEXT for encrypted tokens later if needed
+        allowNull: true
+    },
+    // ---- Warning System ----
+    warningThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 3
+    },
+    warningAction: {
+        type: DataTypes.STRING,
+        defaultValue: 'none' // none, kick, ban, timeout
+    },
+    antiSpamMuteDuration: {
+        type: DataTypes.INTEGER,
+        defaultValue: 60000 // 1 minute in ms
+    },
+    // ---- Advanced Security ----
+    minAccountAge: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0 // 0 = disabled (in days)
+    },
+    minAccountAgeAction: {
+        type: DataTypes.STRING,
+        defaultValue: 'kick' // kick, ban_7, ban_28, ban_90, ban_perm
+    },
+    requirePFP: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    nicknameRaidFilter: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    // ---- Verification ----
+    verifyChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    verifyRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    }
+});
+
+module.exports = GuildSettings;

@@ -1,0 +1,28 @@
+# Manager | Nora Studio
+
+[Nora Studio](https://vaztinix.github.io/Nora/index.html)
+[Back to Site](https://vaztinix.github.io/Nora/index.html)
+
+# Nora Studio Manager
+Log in with Discord to configure your servers and manage your preferences.
+
+## Select a Server
+Showing servers where you have administrative access.
+
+## Server Name
+Manage incoming member flow and automated defenses.
+Automate punishments for repeat offenders.
+Syncs directly with Discord's native AutoMod engine.
+Track server activity and send reports to a specific channel.
+Reward active users with ranks and roles.
+Require CAPTCHA before users can see the server.
+Private ticket management system.
+Create an interactive panel where users click buttons to get roles.
+Select the LLM driving Nora's behavior in this server for /ask commands.
+These actions affect core bot functionality. Owner only.
+Enable or disable specific commands for this server. Disabled commands will not appear in the Discord slash menu.
+
+## My Preferences
+Customize the look of Nora Studio Manager.
+Show smaller server cards to fit more on screen.
+Manage how your user data is stored across Nora-enabled servers.

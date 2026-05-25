@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Nora to Discord</title>
+    <meta name="description" content="Add Nora to your Discord server for advanced moderation and AI assistance.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="nora.png">
+    <script src="/translate.js"></script>
+    <script>
+        (function() {
+            const savedColor = localStorage.getItem('nora_theme_color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--primary', savedColor);
+                const r = parseInt(savedColor.slice(1, 3), 16);
+                const g = parseInt(savedColor.slice(3, 5), 16);
+                const b = parseInt(savedColor.slice(5, 7), 16);
+                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
+                document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --bg-soft: #12182b;
+            --bg-glow: rgba(174, 239, 255, 0.1);
+            --card: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.08);
+            --primary: #aeefff;
+            --text: #ffffff;
+            --muted: rgba(255, 255, 255, 0.7);
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", sans-serif;
+            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
+                        radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
+                        var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 50px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            max-width: 500px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .icon-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 25px;
+        }
+
+        img {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(174, 239, 255, 0.2);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin: 0 0 15px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        p {
+            color: var(--muted);
+            margin: 0 0 35px;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .btn {
+            padding: 16px 35px;
+            background: var(--primary);
+            color: #000;
+            text-decoration: none;
+            font-weight: 800;
+            border-radius: 999px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 20px rgba(174, 239, 255, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            background: #ffffff;
+            box-shadow: 0 12px 30px rgba(174, 239, 255, 0.3);
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 25px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon-wrapper">
+            <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+        </div>
+        <h1>Add Nora</h1>
+        <p>Enhance your community with Nora's privacy-first AI moderation and high-performance utility suite. Standard administrative permissions are required for full security integration.</p>
+        
+        <a href="#" id="invite-link" class="btn">Authorize Application</a>
+        
+        <div id="success-msg" style="display: none; margin-top: 20px; padding: 15px; background: rgba(46, 160, 67, 0.15); border: 1px solid #2ea043; border-radius: 12px; color: #2ea043; font-weight: 600;">
+            ✅ Authorization Successful! Returning to previous page...
+        </div>
+
+        <a href="/" class="back-link">← Return to Home</a>
+    </div>
+
+    <script>
+        // Dynamically build the invite link
+        const CLIENT_ID = "1375943730951098549";
+        const REDIRECT_URI = encodeURIComponent(window.location.origin + window.location.pathname);
+        const inviteURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+email+applications.commands&redirect_uri=${REDIRECT_URI}`;
+        
+        document.getElementById('invite-link').href = inviteURL;
+
+        // Check if we just returned from Discord
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('guild_id')) {
+            document.getElementById('invite-link').style.display = 'none';
+            document.getElementById('success-msg').style.display = 'block';
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
