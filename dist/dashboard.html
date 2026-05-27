@@ -756,9 +756,168 @@
             0%, 100% { transform: scale(0.8); opacity: 0.5; filter: blur(2px); }
             50% { transform: scale(1.5); opacity: 1; filter: blur(0px); }
         }
+
+        /* Solid Glass Theme */
+        body.theme-solid-glass {
+            --bg: #07090e;
+            --sidebar-bg: rgba(10, 14, 25, 0.85);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-hover: rgba(255, 255, 255, 0.09);
+            --primary: #c5a3ff;
+            --primary-glow: rgba(197, 163, 255, 0.3);
+            --border: rgba(255, 255, 255, 0.12);
+        }
+        body.theme-solid-glass .sidebar,
+        body.theme-solid-glass .panel,
+        body.theme-solid-glass .server-card,
+        body.theme-solid-glass .topbar {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border);
+        }
+
+        /* Liquid Glass (iOS-like Animated) Theme */
+        body.theme-glass {
+            --bg: #030509;
+            --sidebar-bg: rgba(255, 255, 255, 0.03);
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-hover: rgba(255, 255, 255, 0.06);
+            --primary: #c5a3ff;
+            --primary-glow: rgba(197, 163, 255, 0.3);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+        body.theme-glass .sidebar,
+        body.theme-glass .panel,
+        body.theme-glass .server-card,
+        body.theme-glass .topbar {
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+        }
+
+        /* iOS-like Liquid Blobs */
+        .liquid-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+            transition: opacity 1.5s ease;
+        }
+        body.theme-glass .liquid-blob {
+            opacity: 0.42;
+        }
+        .liquid-blob-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(174, 239, 255, 0.5) 0%, rgba(122, 162, 255, 0) 70%);
+            top: -10%;
+            left: -10%;
+            animation: drift 25s infinite alternate ease-in-out;
+        }
+        .liquid-blob-2 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(197, 163, 255, 0.45) 0%, rgba(197, 163, 255, 0) 70%);
+            bottom: -15%;
+            right: -10%;
+            animation: drift-reverse 30s infinite alternate ease-in-out;
+        }
+        .liquid-blob-3 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(255, 117, 181, 0.3) 0%, rgba(255, 117, 181, 0) 70%);
+            top: 40%;
+            left: 50%;
+            animation: drift-middle 22s infinite alternate ease-in-out;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(150px, 80px) scale(1.2) rotate(90deg); }
+            100% { transform: translate(-50px, 150px) scale(0.9) rotate(180deg); }
+        }
+        @keyframes drift-reverse {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-120px, -100px) scale(0.8) rotate(-60deg); }
+            100% { transform: translate(100px, 50px) scale(1.1) rotate(-120deg); }
+        }
+        @keyframes drift-middle {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-30%, -60%) scale(1.3); }
+            100% { transform: translate(-60%, -40%) scale(0.9); }
+        }
+
+        /* Responsive CSS Media Queries */
+        @media (max-width: 992px) {
+            .app-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 15px;
+                position: relative;
+            }
+            .sidebar-nav {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 15px;
+            }
+            .v-tab {
+                flex: 1 1 45%;
+                margin: 0 !important;
+            }
+            .user-profile {
+                margin-bottom: 15px;
+            }
+            .logout-btn {
+                margin-top: 15px !important;
+                width: 100% !important;
+            }
+            .premium-ad {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .v-tab {
+                flex: 1 1 100%;
+            }
+            .server-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .settings-row {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 12px;
+            }
+            .settings-row input, .settings-row select {
+                width: 100% !important;
+            }
+            .topbar {
+                padding: 10px 15px !important;
+            }
+            .page-title-row {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start !important;
+            }
+        }
     </style>
 </head>
 <body class="nora-theme">
+    <div class="liquid-blob liquid-blob-1"></div>
+    <div class="liquid-blob liquid-blob-2"></div>
+    <div class="liquid-blob liquid-blob-3"></div>
     <div id="loading-overlay"><div class="pulse-dot"></div></div>
     <div id="toast-container" class="toast-tr"></div>
 
@@ -979,8 +1138,8 @@
                             <option value="rose">Aura Pink (Rose/Neon Magenta)</option>
                             <option value="cyber">Cyberpunk Amber (Bright Gold)</option>
                             <option value="amethyst">Amethyst Glow (Lavender Purple)</option>
-                            <option value="mint">Neon Mint (Fresh Turquoise)</option>
-                            <option value="glass">Liquid Glass (Glassmorphic)</option>
+                            <option value="solid-glass">Solid Glass (iOS-like Static)</option>
+                            <option value="glass">Liquid Glass (iOS-like Animated)</option>
                         </select>
                     </div>
                     <div class="row">
@@ -2149,6 +2308,21 @@
     <footer>© 2026 Nora | Privacy-First AI & Moderation</footer>
 
     <script>
+        // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
+        const originalFetch = window.fetch;
+        window.fetch = function(input, init) {
+            if (typeof input === 'string' && input.startsWith('/api/')) {
+                const customApi = localStorage.getItem('nora_api_url');
+                const API_BASE = customApi 
+                    ? customApi 
+                    : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                        ? ''
+                        : 'https://api.norabot.app');
+                input = API_BASE + input;
+            }
+            return originalFetch(input, init);
+        };
+
         // 🚨 Premium Global Client-Side Error Interceptor
         window.addEventListener('error', function(event) {
             const errMsg = event.error ? event.error.message : event.message;
@@ -2315,6 +2489,7 @@
                 'cyber': '#ffd700',
                 'amethyst': '#9b5de5',
                 'mint': '#00f5d4',
+                'solid-glass': '#c5a3ff',
                 'glass': '#c5a3ff'
             };
 
@@ -3340,6 +3515,7 @@
                 'cyber': '#ffd700',
                 'amethyst': '#9b5de5',
                 'mint': '#00f5d4',
+                'solid-glass': '#c5a3ff',
                 'glass': '#c5a3ff'
             };
             const defaultColor = themeColors[mode] || '#aeefff';
@@ -3376,6 +3552,7 @@
                 'cyber': '#ffd700',
                 'amethyst': '#9b5de5',
                 'mint': '#00f5d4',
+                'solid-glass': '#c5a3ff',
                 'glass': '#c5a3ff'
             };
             const mode = document.getElementById('pref-theme-mode').value;

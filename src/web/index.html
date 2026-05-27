@@ -19,6 +19,13 @@
                 document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
                 document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
             }
+            const mode = localStorage.getItem('nora_theme_mode') || 'default';
+            if (mode !== 'default') {
+                document.documentElement.classList.add('theme-' + mode);
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.body.classList.add('theme-' + mode);
+                });
+            }
         })();
     </script>
     <style>
@@ -26,8 +33,8 @@
             --bg: #0b0f1a;
             --bg-soft: #12182b;
             --bg-glow: rgba(174, 239, 255, 0.1);
-            --card: rgba(255, 255, 255, 0.06);
-            --card-hover: rgba(255, 255, 255, 0.12);
+            --card: rgba(255, 255, 255, 0.04);
+            --card-hover: rgba(255, 255, 255, 0.08);
             --border: rgba(255, 255, 255, 0.08);
             --primary: #aeefff;
             --accent: #7aa2ff;
@@ -38,14 +45,115 @@
             --glass-border: rgba(255, 255, 255, 0.15);
         }
 
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
             font-family: "Inter", system-ui, sans-serif;
             background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
                         radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
                         var(--bg);
             color: var(--text);
             min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* iOS-like Liquid Blobs */
+        .liquid-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+            transition: opacity 1.5s ease;
+        }
+        body.theme-glass .liquid-blob {
+            opacity: 0.35;
+        }
+        .liquid-blob-1 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(174, 239, 255, 0.5) 0%, rgba(122, 162, 255, 0) 70%);
+            top: -10%;
+            left: -10%;
+            animation: drift 25s infinite alternate ease-in-out;
+        }
+        .liquid-blob-2 {
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(197, 163, 255, 0.45) 0%, rgba(197, 163, 255, 0) 70%);
+            bottom: -15%;
+            right: -10%;
+            animation: drift-reverse 30s infinite alternate ease-in-out;
+        }
+        .liquid-blob-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 117, 181, 0.3) 0%, rgba(255, 117, 181, 0) 70%);
+            top: 40%;
+            left: 50%;
+            animation: drift-middle 22s infinite alternate ease-in-out;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(150px, 80px) scale(1.2) rotate(90deg); }
+            100% { transform: translate(-50px, 150px) scale(0.9) rotate(180deg); }
+        }
+        @keyframes drift-reverse {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-120px, -100px) scale(0.8) rotate(-60deg); }
+            100% { transform: translate(100px, 50px) scale(1.1) rotate(-120deg); }
+        }
+        @keyframes drift-middle {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-30%, -60%) scale(1.3); }
+            100% { transform: translate(-60%, -40%) scale(0.9); }
+        }
+
+        /* Themes support */
+        body.theme-oled {
+            --bg: #000000;
+            --bg-soft: #0c0c0c;
+            --bg-glow: transparent;
+            --border: #222222;
+            --card: #080808;
+            --card-hover: #121212;
+        }
+        body.theme-sapphire {
+            --bg: #050a18;
+            --bg-soft: #081125;
+            --bg-glow: rgba(75, 105, 255, 0.15);
+            --border: rgba(75, 105, 255, 0.2);
+            --card: rgba(8, 17, 37, 0.6);
+            --card-hover: rgba(12, 25, 55, 0.8);
+        }
+        body.theme-solid-glass {
+            --bg: #07090e;
+            --card: rgba(10, 14, 25, 0.85);
+            --card-hover: rgba(15, 20, 35, 0.9);
+            --border: rgba(255, 255, 255, 0.12);
+        }
+        body.theme-solid-glass .card, body.theme-solid-glass .updates {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        body.theme-glass {
+            --bg: #030509;
+            --card: rgba(255, 255, 255, 0.02);
+            --card-hover: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+        body.theme-glass .card, body.theme-glass .updates {
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
         }
 
         header {
@@ -66,7 +174,7 @@
             justify-content: space-between;
         }
 
-        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; color: white; }
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; color: white; text-decoration: none; }
         .brand img { width: 40px; height: 40px; border-radius: 10px; }
 
         .nav-links { display: flex; gap: 22px; }
@@ -74,18 +182,10 @@
         .nav-links a:hover { color: var(--primary); opacity: 1; }
         .nav-links a.active { color: var(--primary); opacity: 1; }
 
-        .legal-container { max-width: 800px; margin: 4rem auto; padding: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; backdrop-filter: blur(10px);}
-        
-        h1 { font-size: 2.5rem; margin-bottom: 30px; color: white; font-weight: 800; border-bottom: 1px solid var(--border); padding-bottom: 20px;}
-        h2 { font-size: 1.4rem; color: var(--primary); margin-top: 30px; margin-bottom: 15px;}
-        h3 { font-size: 1.2rem; color: var(--primary); margin-top: 25px; margin-bottom: 10px;}
-        p { color: var(--muted); line-height: 1.7; font-size: 1.05rem; margin-bottom: 20px;}
-        .last-updated { font-size: 0.9rem; color: var(--muted); margin-bottom: 30px; display: block;}
-
-        .container { max-width: 1200px; margin: 6rem auto; padding: 0 1.5rem; }
+        .container { max-width: 1200px; margin: 6rem auto; padding: 0 1.5rem; flex-grow: 1; }
         
         .hero { text-align: center; margin-bottom: 5rem; }
-        .hero h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); margin-bottom: 20px; color: white; font-weight: 800; line-height: 1.1; }
+        .hero h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); margin-bottom: 20px; color: white; font-weight: 800; line-height: 1.1; letter-spacing: -1px; }
         .hero p { color: var(--muted); font-size: 1.25rem; max-width: 700px; margin: 0 auto 40px; line-height: 1.6; }
         
         .buttons { display: flex; gap: 15px; justify-content: center; }
@@ -98,6 +198,7 @@
             transition: .25s;
             text-decoration: none;
             font-size: 1rem;
+            display: inline-block;
         }
         .btn-primary { background: var(--primary); color: #000; box-shadow: 0 10px 30px rgba(174,239,255,.25); }
         .btn-primary:hover { transform: translateY(-4px); background: #fff; }
@@ -112,16 +213,37 @@
         .card h3 { color: white; font-size: 1.4rem; margin-bottom: 15px; margin-top: 0;}
         .card p { color: var(--muted); line-height: 1.6; font-size: 1rem; margin: 0; }
 
-        .updates { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; margin-bottom: 6rem;}
+        .updates { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; margin-bottom: 6rem;}
         .update-item { margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 30px; }
         .update-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
         .update-item h3 { color: var(--primary); font-size: 1.3rem; margin-bottom: 10px; margin-top: 0; }
         .update-item p { color: var(--muted); line-height: 1.6; margin-bottom: 15px; }
         .update-item ul { color: var(--muted); padding-left: 20px; line-height: 1.6; }
         .update-item ul li { margin-bottom: 8px; }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 32px 1.5rem;
+            text-align: center;
+            color: var(--muted);
+            margin-top: auto;
+        }
+
+        @media(max-width: 768px) {
+            .nav-links { display: none; }
+            .grid { grid-template-columns: 1fr; }
+            .container { margin: 3rem auto; }
+            .hero h1 { font-size: 2.2rem; }
+            .buttons { flex-direction: column; align-items: stretch; }
+            .btn { text-align: center; }
+        }
     </style>
 </head>
 <body>
+    <div class="liquid-blob liquid-blob-1"></div>
+    <div class="liquid-blob liquid-blob-2"></div>
+    <div class="liquid-blob liquid-blob-3"></div>
+
     <header>
         <div class="nav">
             <div class="brand">
@@ -131,6 +253,7 @@
             <nav class="nav-links">
                 <a href="/" class="active">Home</a>
                 <a href="/team">Team</a>
+                <a href="/docs">Docs</a>
                 <a href="/ai">Nora AI</a>
                 <a href="/legal">Legal</a>
                 <a href="/dashboard">Dashboard</a>
@@ -174,20 +297,19 @@
             <div class="card"><h3>/invite</h3><p>Create an invite for your server quickly and efficiently.</p></div>
             <div class="card"><h3>/leaderboard</h3><p>View public leveling statistics and ranking.</p></div>
             <div class="card"><h3>/rank</h3><p>View server rank and current XP.</p></div>
-            <div class="card"><h3>/role</h3><p>Quickly add a role to a user.</p></div>
+            <div class="card"><h3>/role</h3><p>Quickly assign server roles to active chatters.</p></div>
         </div>
 
         <h2 class="section-title">Latest Nora Updates</h2>
         <div class="updates">
             <div class="update-item">
-                <h3>High-Security Practice</h3>
-                <p>A major security-focused update introducing safer user practices, advanced protection systems, and the official release of Nora Studio Manager.</p>
+                <h3>Unified /configure Control Hub</h3>
+                <p>We consolidated settings subcommands into a single interactive `/configure` panel. Premium configurations are now accessed securely in an owner-only section using modal popups.</p>
                 <ul>
-                    <li>Security Enhancements: Strengthened privacy-first data handling, safer defaults, and expanded audit logging.</li>
-                    <li>Suspicious Behavior Detection: Improved internal checks to prevent abuse and compromised account risks.</li>
-                    <li>Nora Studio Manager: Fully released with true live database synchronization and telemetry.</li>
-                    <li>Anti-Raid Shield: New automated raid-prevention layer to block mass-join attacks.</li>
-                    <li>Discord AutoMod Integration: Native filtering and rule enforcement powered by Discord's latest moderation systems.</li>
+                    <li>Security Enhancements: Consolidated command footprint, preventing parameter exposure in Discord logs.</li>
+                    <li>iOS-like Liquid Glass Theme: Support for ambient flowing gradient backdrops and deep glassmorphic blurs.</li>
+                    <li>Parallax Team Roster: High-end 3D animated profile cards displaying live Discord status and creation dates.</li>
+                    <li>Secure Routing: Full absolute and relative routing fixes ensuring that configurations made on vaztinix.dev sync live.</li>
                 </ul>
             </div>
             <div class="update-item">
@@ -196,5 +318,8 @@
             </div>
         </div>
     </div>
+    <footer>
+        © 2026 Nora | Privacy-First AI & Moderation
+    </footer>
 </body>
 </html>

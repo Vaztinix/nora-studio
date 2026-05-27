@@ -95,6 +95,65 @@ module.exports = {
             return;
         }
 
+        // Handle Premium Modal Submission
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('modal_premium_')) {
+            const action = interaction.customId.replace('modal_premium_', ''); // premium_enable, premium_disable, premium_remove
+            const isAdd = action === 'premium_enable';
+            const isRemove = action === 'premium_remove';
+
+            const APP_OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
+            if (!APP_OWNER_IDS.includes(interaction.user.id)) {
+                return handleError(interaction, 'Unauthorized Access', 'This action is strictly restricted to the Bot Owner.');
+            }
+
+            const targetUserId = interaction.fields.getTextInputValue('user_id');
+            const targetGuildId = interaction.fields.getTextInputValue('guild_id');
+
+            if (!targetUserId && !targetGuildId) {
+                return interaction.reply({ content: '❌ You must specify either a User ID or a Guild ID.', ephemeral: true });
+            }
+
+            await interaction.deferReply({ ephemeral: true });
+
+            let userResult = '';
+            let guildResult = '';
+
+            if (targetUserId) {
+                const UserLevel = require('../database/models/UserLevel');
+                const updatedCount = await UserLevel.update(
+                    { isPremium: isAdd, isManualPremium: !isRemove },
+                    { where: { userId: targetUserId } }
+                );
+
+                if (interaction.guildId) {
+                    await UserLevel.findOrCreate({
+                        where: { userId: targetUserId, guildId: interaction.guildId },
+                        defaults: { isPremium: isAdd, isManualPremium: !isRemove }
+                    });
+                }
+                userResult = `User <@${targetUserId}> (ID: ${targetUserId}) premium status updated to **${isAdd ? 'Enabled' : isRemove ? 'Removed/Reset' : 'Disabled'}** (updated ${updatedCount} records).`;
+            }
+
+            if (targetGuildId) {
+                const GuildSettings = require('../database/models/GuildSettings');
+                const [guildSettings] = await GuildSettings.findOrCreate({
+                    where: { guildId: targetGuildId }
+                });
+                await guildSettings.update({ isPremium: isAdd, isManualPremium: !isRemove });
+                guildResult = `Guild \`${targetGuildId}\` premium status updated to **${isAdd ? 'Enabled' : isRemove ? 'Removed/Reset' : 'Disabled'}**.`;
+            }
+
+            const { EmbedBuilder } = require('discord.js');
+            const embed = new EmbedBuilder()
+                .setTitle(`Premium ${isAdd ? 'Enabled' : isRemove ? 'Removed' : 'Disabled'}`)
+                .setColor(isAdd ? 0xFFD700 : 0xFF5555)
+                .setDescription([userResult, guildResult].filter(Boolean).join('\n'))
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [embed] });
+            return;
+        }
+
         // Handle Verification Modal Submission
         if (interaction.isModalSubmit() && interaction.customId === 'verify_modal_submit') {
             const answer = interaction.fields.getTextInputValue('captcha_answer');

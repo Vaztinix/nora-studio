@@ -7,97 +7,11 @@ module.exports = {
     category: 'setup',
     data: new SlashCommandBuilder()
         .setName('configure')
-        .setDescription('Simple settings menu for managing Nora.')
+        .setDescription('Open the settings menu dashboard for managing Nora.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-        .setDMPermission(false)
-        .addSubcommand(sub =>
-            sub.setName('menu')
-                .setDescription('Open the settings menu dashboard.')
-        )
-        .addSubcommand(sub =>
-            sub.setName('add-premium')
-                .setDescription('Add premium status to a user or guild (Owner Only)')
-                .addUserOption(opt => opt.setName('user').setDescription('The user to grant premium').setRequired(false))
-                .addStringOption(opt => opt.setName('guild').setDescription('The guild ID to grant premium').setRequired(false))
-        )
-        .addSubcommand(sub =>
-            sub.setName('remove-premium')
-                .setDescription('Remove premium status from a user or guild (Owner Only)')
-                .addUserOption(opt => opt.setName('user').setDescription('The user to revoke premium').setRequired(false))
-                .addStringOption(opt => opt.setName('guild').setDescription('The guild ID to revoke premium').setRequired(false))
-        )
-        .addSubcommand(sub =>
-            sub.setName('enable-premium')
-                .setDescription('Enable premium status for a user or guild (Owner Only)')
-                .addUserOption(opt => opt.setName('user').setDescription('The user to enable premium').setRequired(false))
-                .addStringOption(opt => opt.setName('guild').setDescription('The guild ID to enable premium').setRequired(false))
-        )
-        .addSubcommand(sub =>
-            sub.setName('disable-premium')
-                .setDescription('Disable premium status for a user or guild (Owner Only)')
-                .addUserOption(opt => opt.setName('user').setDescription('The user to disable premium').setRequired(false))
-                .addStringOption(opt => opt.setName('guild').setDescription('The guild ID to disable premium').setRequired(false))
-        ),
+        .setDMPermission(false),
 
     async execute(interaction, externalSettings) {
-        const subcommand = interaction.options.getSubcommand(false);
-
-        if (subcommand && subcommand !== 'menu') {
-            const APP_OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
-            if (!APP_OWNER_IDS.includes(interaction.user.id)) {
-                return handleError(interaction, 'Unauthorized Access', 'This subcommand is strictly restricted to the Bot Owner.');
-            }
-
-            const targetUser = interaction.options.getUser('user');
-            const targetGuildId = interaction.options.getString('guild');
-
-            if (!targetUser && !targetGuildId) {
-                return handleError(interaction, 'Missing Options', 'You must specify either a `user` or a `guild` ID.');
-            }
-
-            await interaction.deferReply({ ephemeral: true });
-
-            const isAdd = subcommand === 'add-premium' || subcommand === 'enable-premium';
-
-            let userResult = '';
-            let guildResult = '';
-
-            if (targetUser) {
-                const UserLevel = require('../../database/models/UserLevel');
-                const updatedCount = await UserLevel.update(
-                    { isPremium: isAdd, isManualPremium: isAdd },
-                    { where: { userId: targetUser.id } }
-                );
-
-                if (interaction.guildId) {
-                    await UserLevel.findOrCreate({
-                        where: { userId: targetUser.id, guildId: interaction.guildId },
-                        defaults: { isPremium: isAdd, isManualPremium: isAdd }
-                    });
-                }
-
-                userResult = `User <@${targetUser.id}> premium status set to **${isAdd ? 'Enabled' : 'Disabled'}** (updated ${updatedCount} records).`;
-            }
-
-            if (targetGuildId) {
-                const GuildSettings = require('../../database/models/GuildSettings');
-                const [guildSettings] = await GuildSettings.findOrCreate({
-                    where: { guildId: targetGuildId }
-                });
-                await guildSettings.update({ isPremium: isAdd, isManualPremium: isAdd });
-
-                guildResult = `Guild \`${targetGuildId}\` premium status set to **${isAdd ? 'Enabled' : 'Disabled'}**.`;
-            }
-
-            const embed = new EmbedBuilder()
-                .setTitle('Premium Status Updated')
-                .setColor(isAdd ? 0xFFD700 : 0xFF5555)
-                .setDescription([userResult, guildResult].filter(Boolean).join('\n'))
-                .setTimestamp();
-
-            return interaction.editReply({ embeds: [embed] });
-        }
-
         let settings = externalSettings;
         if (!settings && interaction.guildId) {
             try {
@@ -151,7 +65,12 @@ module.exports = {
                     { label: 'Fun & Games', value: 'view_extras', description: 'Welcomer, Counting game, and more.' },
                     { label: 'AI Settings', value: 'view_ai', description: 'Change Nora\'s AI engine and personality.' }
                 ]);
-                if (APP_OWNER_IDS.includes(interaction.user.id)) menu.addOptions([{ label: 'Dev Settings', value: 'view_dev' }]);
+                if (APP_OWNER_IDS.includes(interaction.user.id)) {
+                    menu.addOptions([
+                        { label: 'Dev Settings', value: 'view_dev', description: 'Reboot and sync database.' },
+                        { label: 'Premium Settings', value: 'view_premium', description: 'Configure override premium status for users and guilds.' }
+                    ]);
+                }
                 return { embeds: [embed], components: [new ActionRowBuilder().addComponents(menu)] };
             }
 
@@ -276,6 +195,20 @@ module.exports = {
                 );
                 return { embeds: [embed], components: [row, backRow] };
             }
+
+            // --- PREMIUM SETTINGS ---
+            if (viewName === 'view_premium') {
+                embed.setTitle('Premium Management (Owner Only)')
+                     .setDescription('Configure manual/override premium status for users and guilds.')
+                     .setColor(getRoleColor(interaction));
+                const row = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('premium_enable_btn').setLabel('Enable Premium').setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('premium_disable_btn').setLabel('Disable Premium').setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder().setCustomId('premium_remove_btn').setLabel('Remove Premium').setStyle(ButtonStyle.Secondary)
+                );
+                return { embeds: [embed], components: [row, backRow] };
+            }
+
 
             // --- WARNINGS ---
             if (viewName === 'view_warnings') {
@@ -527,6 +460,42 @@ module.exports = {
                 if (i.customId === 'action_welcome_channel') { settings.welcomeChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_counting_channel') { settings.countingChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_votelog_channel') { settings.voteLogChannelId = i.values[0]; update = true; }
+
+                // Premium Overrides Modal Dispatch
+                if (i.customId === 'premium_enable_btn' || i.customId === 'premium_disable_btn' || i.customId === 'premium_remove_btn') {
+                    if (!APP_OWNER_IDS.includes(i.user.id)) return i.reply({ content: '❌ This action is strictly restricted to Bot Owners.', ephemeral: true });
+
+                    const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+                    
+                    const action = i.customId.replace('_btn', ''); // premium_enable, premium_disable, premium_remove
+                    const actionLabel = i.customId.includes('enable') ? 'ENABLE' : i.customId.includes('disable') ? 'DISABLE' : 'REMOVE';
+                    
+                    const modal = new ModalBuilder()
+                        .setCustomId(`modal_premium_${action}`)
+                        .setTitle(`${actionLabel} PREMIUM`);
+
+                    const userInput = new TextInputBuilder()
+                        .setCustomId('user_id')
+                        .setLabel('Target Discord User ID')
+                        .setPlaceholder('Enter User ID (Optional)')
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(false);
+
+                    const guildInput = new TextInputBuilder()
+                        .setCustomId('guild_id')
+                        .setLabel('Target Discord Guild ID')
+                        .setPlaceholder('Enter Guild ID (Optional)')
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(false);
+
+                    modal.addComponents(
+                        new ActionRowBuilder().addComponents(userInput),
+                        new ActionRowBuilder().addComponents(guildInput)
+                    );
+
+                    await i.showModal(modal);
+                    return;
+                }
 
                 // Dev Handlers
                 if (i.customId === 'dev_reboot') {

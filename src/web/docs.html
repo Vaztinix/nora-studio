@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora — Architectural Overview</title>
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="/translate.js"></script>
+    <script>
+        (function() {
+            const savedColor = localStorage.getItem('nora_theme_color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--primary', savedColor);
+                const r = parseInt(savedColor.slice(1, 3), 16);
+                const g = parseInt(savedColor.slice(3, 5), 16);
+                const b = parseInt(savedColor.slice(5, 7), 16);
+                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
+                document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
+            }
+            const mode = localStorage.getItem('nora_theme_mode') || 'default';
+            if (mode !== 'default') {
+                document.documentElement.classList.add('theme-' + mode);
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.body.classList.add('theme-' + mode);
+                });
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --bg-soft: #12182b;
+            --bg-glow: rgba(174, 239, 255, 0.1);
+            --card: rgba(255, 255, 255, 0.04);
+            --card-hover: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.08);
+            --primary: #aeefff;
+            --text: #ffffff;
+            --muted: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Inter", system-ui, sans-serif;
+            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
+                        radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
+                        var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* iOS-like Liquid Blobs */
+        .liquid-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+            transition: opacity 1.5s ease;
+        }
+        body.theme-glass .liquid-blob {
+            opacity: 0.35;
+        }
+        .liquid-blob-1 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(174, 239, 255, 0.5) 0%, rgba(122, 162, 255, 0) 70%);
+            top: -10%;
+            left: -10%;
+            animation: drift 25s infinite alternate ease-in-out;
+        }
+        .liquid-blob-2 {
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(197, 163, 255, 0.45) 0%, rgba(197, 163, 255, 0) 70%);
+            bottom: -15%;
+            right: -10%;
+            animation: drift-reverse 30s infinite alternate ease-in-out;
+        }
+        .liquid-blob-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 117, 181, 0.3) 0%, rgba(255, 117, 181, 0) 70%);
+            top: 40%;
+            left: 50%;
+            animation: drift-middle 22s infinite alternate ease-in-out;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(150px, 80px) scale(1.2) rotate(90deg); }
+            100% { transform: translate(-50px, 150px) scale(0.9) rotate(180deg); }
+        }
+        @keyframes drift-reverse {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-120px, -100px) scale(0.8) rotate(-60deg); }
+            100% { transform: translate(100px, 50px) scale(1.1) rotate(-120deg); }
+        }
+        @keyframes drift-middle {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-30%, -60%) scale(1.3); }
+            100% { transform: translate(-60%, -40%) scale(0.9); }
+        }
+
+        /* Themes support */
+        body.theme-oled {
+            --bg: #000000;
+            --bg-soft: #0c0c0c;
+            --bg-glow: transparent;
+            --border: #222222;
+            --card: #080808;
+        }
+        body.theme-sapphire {
+            --bg: #050a18;
+            --bg-soft: #081125;
+            --bg-glow: rgba(75, 105, 255, 0.15);
+            --border: rgba(75, 105, 255, 0.2);
+            --card: rgba(8, 17, 37, 0.6);
+        }
+        body.theme-solid-glass {
+            --bg: #07090e;
+            --card: rgba(10, 14, 25, 0.85);
+            --border: rgba(255, 255, 255, 0.12);
+        }
+        body.theme-solid-glass .doc-container {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        body.theme-glass {
+            --bg: #030509;
+            --card: rgba(255, 255, 255, 0.02);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+        body.theme-glass .doc-container {
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 30, 0.75);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; color: white; text-decoration: none; }
+        .brand img { width: 40px; height: 40px; border-radius: 10px; }
+
+        .nav-links { display: flex; gap: 22px; }
+        .nav-links a { font-weight: 600; color: white; text-decoration: none; transition: 0.25s; opacity: 0.8; }
+        .nav-links a:hover { color: var(--primary); opacity: 1; }
+        .nav-links a.active { color: var(--primary); opacity: 1; }
+
+        .doc-container { max-width: 900px; margin: 4rem auto; padding: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 24px; backdrop-filter: blur(15px); }
+        
+        h1 { font-size: 2.2rem; margin-bottom: 10px; color: white; font-weight: 800; text-align: left; letter-spacing: -0.5px; }
+        .subtitle { color: var(--muted); text-align: left; margin-bottom: 40px; font-size: 1.05rem; }
+
+        h2 { font-size: 1.6rem; color: var(--primary); margin-top: 40px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; font-weight: 700; }
+        h2::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        
+        h3 { font-size: 1.25rem; color: #ffffff; margin-top: 25px; margin-bottom: 12px; font-weight: 600; }
+        p { color: var(--muted); line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px; }
+        ul { color: var(--muted); line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px; padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        section { margin-bottom: 40px; }
+
+        @media(max-width:768px) {
+            .nav-links { display: none; }
+            .doc-container { margin: 2rem 15px; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="liquid-blob liquid-blob-1"></div>
+    <div class="liquid-blob liquid-blob-2"></div>
+    <div class="liquid-blob liquid-blob-3"></div>
+
+    <header>
+        <div class="nav">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                <span>Nora</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/team">Team</a>
+                <a href="/docs" class="active">Docs</a>
+                <a href="/ai">Nora AI</a>
+                <a href="/legal">Legal</a>
+                <a href="/dashboard">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="doc-container">
+        <h1>Nora: Comprehensive Documentation & Architectural Overview</h1>
+        <p class="subtitle">An inside look into Nora's privacy-first Discord ecosystem</p>
+
+        <section>
+            <p><strong>Nora</strong> is a professional-grade Discord ecosystem engineered to provide elite AI-driven moderation and community engagement while maintaining an absolute commitment to user privacy. Following the <strong>Beta 4.1 rebuild</strong>, the bot has been re-architected from the ground up to support high-scale servers, cross-origin web sync configurations (for domains like <strong>vaztinix.dev</strong>), and the <strong>Nora Studio</strong> web management dashboard.</p>
+        </section>
+
+        <section>
+            <h2>1. Multi-Engine AI Architecture</h2>
+            <p>Nora separates itself from standard moderation bots by offering a modular AI brain. This allows administrators to select the specific intelligence model that balances their server's needs for speed versus complex reasoning.</p>
+            <ul>
+                <li><strong>Dual-AI Switching:</strong> Via the centralized settings hub, servers can alternate between <strong>ChatGPT</strong> (for creative, conversational depth) and <strong>Gemini Beta</strong> (for technical precision and large-context understanding).</li>
+                <li><strong>Aura AI (Native Engine):</strong> A custom-developed, lightweight model designed for "utility-first" responses. Aura handles mathematical calculations, simple queries, and rapid-fire interactions with significantly lower latency than external models.</li>
+                <li><strong>Contextual Auto-Moderation:</strong> Unlike legacy bots that use simple keyword filters, Nora’s AI analyzes the surrounding conversation. This reduces "false positive" mutes by understanding sarcasm, slang, and community-specific nuances. ✨</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>2. The Consolidate /configure Control Hub</h2>
+            <p>To improve security and reduce command clutter, Nora utilizes a unified, single-command Bios console. The legacy setup commands and subcommands have been entirely consolidated.</p>
+            <ul>
+                <li><strong>Single /configure Slash Command:</strong> Typing `/configure` immediately opens a secure interactive Discord select dashboard menu. Administrators can quickly manage all module options without typing complex flags.</li>
+                <li><strong>Owner-Only Premium Portal:</strong> Premium overrides (enabling, disabling, or removing guild premium status manually) are handled entirely within the `/configure` menu. Clicks on the premium options dispatch secure modal forms, keeping server configurations discrete and protecting bot operations.</li>
+                <li><strong>Local Safety Settings:</strong> Change Safety & Anti-Raid sensitivity, configure Discord AutoMod rules, set spam detection windows, or specify log channels all inside a single UI message.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>3. Dynamic Engagement & Leveling Logic</h2>
+            <p>Nora utilizes a sophisticated Experience (XP) algorithm designed to encourage genuine interaction rather than "chat spamming."</p>
+            <ul>
+                <li><strong>Voice Activity XP:</strong> A major innovation. Users earn XP for time spent in voice channels. To prevent farming, this system requires at least two users to be present in the channel, ensuring that only actual community engagement is rewarded.</li>
+                <li><strong>Refined Leveling Logic:</strong> Optimized background processes allow Nora to track rankings in servers with hundreds of thousands of members without impacting bot response times or Discord’s API limits.</li>
+                <li><strong>Utility & Fun Suite:</strong> Includes a competitive <strong>Counting System</strong>, professional <strong>Giveaway</strong> management, and <strong>Purge</strong> tools that can clear up to 100 messages at a time with improved speed.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>4. Privacy-First Data Protocol: "My Card"</h2>
+            <p>Privacy is not a feature of Nora; it is the foundation. Nora is built on a "Zero-Access" architecture, meaning server data is isolated and protected.</p>
+            <ul>
+                <li><strong>User Transparency:</strong> The `/mycard` command provides a real-time window into the bot's database. Users can see their server display name, roles, current level, and accumulated XP.</li>
+                <li><strong>Permanent Deletion (The Kill Switch):</strong> Users have the sovereign right to their data. The "Erase Data" button on the user card performs an immediate, irreversible wipe of that user's leveling profile.</li>
+                <li><strong>Data Isolation:</strong> Nora is designed so that the bot developers (<strong>Vaztinix</strong>) have no "backdoor" to view private server content, logs, or user messages. Your server’s data is effectively a black box to everyone except the server administrators.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>5. Developmental Roadmap: Nora Studio</h2>
+            <p>The Beta 4.1 rebuild serves as the launchpad for <strong>Nora Studio</strong>, a web-based management platform supporting both mobile and desktop viewports. Administrators can:</p>
+            <ul>
+                <li>Visualize server statistics, logs, and growth charts responsively.</li>
+                <li>Choose between sleek <strong>Solid Glass</strong> or iOS-inspired <strong>Liquid Glass</strong> theme modes with smooth backdrop blurs and drifting gradient background animations.</li>
+                <li>Securely modify database parameters and sync settings live.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        © 2026 Nora | Privacy-First AI & Moderation
+    </footer>
+</body>
+</html>
