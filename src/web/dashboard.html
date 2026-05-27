@@ -2327,9 +2327,11 @@
                 const customApi = localStorage.getItem('nora_api_url');
                 const API_BASE = customApi 
                     ? customApi 
-                    : (window.location.hostname.endsWith('norabot.app')
-                        ? 'https://api.norabot.app'
-                        : '');
+                    : (window.location.hostname === 'vaztinix.dev'
+                        ? 'https://api.vaztinix.dev'
+                        : (window.location.hostname.endsWith('norabot.app')
+                            ? 'https://api.norabot.app'
+                            : ''));
                 input = API_BASE + input;
             }
             return originalFetch(input, init);
