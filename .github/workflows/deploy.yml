@@ -20,8 +20,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          lfs: true
+
+      - name: Pull build files from LFS
+        run: git lfs pull --include "build.js,src/web/**,dist/web/**"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
