@@ -69,15 +69,178 @@ process.on('uncaughtException', (error) => {
 const { AutoPoster } = require('topgg-autoposter');
 const express = require('express');
 const Topgg = require('@top-gg/sdk');
+const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const { EmbedBuilder } = require('discord.js');
 const noraLeveling = require('./utils/noraLeveling');
 const GuildSettings = require('./database/models/GuildSettings');
+const RobloxVerify = require('./database/models/RobloxVerify');
 
 const webhook = new Topgg.Webhook(process.env.VOTE_SECRET || 'NORA_VOTE_SECRET_2026');
 const NORA_SERVER_ID = '1351304498185900184';
 const NORA_V0 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJib3QiOiJ0cnVlIiwiaWQiOiIxMzc1OTQzNzMwOTUxMDk4NTQ5IiwiaWF0IjoiMTc3MDc3MTYxNCJ9.o96WlKCfGM-Gzidt0laP_TYy2vEj6aaQ20qMXJRwc44';
+
+// Manual CORS Middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
+app.use(express.json());
+
+// Attach client to request
+app.use((req, res, next) => {
+    req.client = client;
+    next();
+});
+
+// Serve static dashboard assets from web & dist/web directories
+app.use(express.static(path.join(__dirname, 'web')));
+app.use(express.static(path.join(__dirname, '../dist/web')));
+
+// Mount the API Router for settings
+const settingsRouter = require('./api/routes/settings');
+app.use('/api/guilds/:guildId/settings', settingsRouter);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Nora API is running.' });
+});
+
+// Helper to get Discord user
+const getDiscordUser = async (token) => {
+    const res = await fetch('https://discord.com/api/v10/users/@me', {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Invalid token');
+    return res.json();
+};
+
+// API User Profiler Endpoints
+app.get('/api/user/me', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        res.json(user);
+    } catch (e) {
+        res.status(401).json({ error: 'Unauthorized' });
+    }
+});
+
+app.get('/api/user/guilds', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const dRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!dRes.ok) return res.status(dRes.status).json({ error: 'Discord API Error' });
+        const guilds = await dRes.json();
+        
+        // Filter guilds where user has Administrator (0x8) or Manage Guild (0x20)
+        const managedGuilds = guilds.filter(g => {
+            const perms = BigInt(g.permissions);
+            return (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20);
+        }).map(g => {
+            const hasNora = req.client.guilds.cache.has(g.id);
+            const liveGuild = req.client.guilds.cache.get(g.id);
+            return {
+                id: g.id,
+                name: g.name,
+                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                hasNora,
+                memberCount: liveGuild ? liveGuild.memberCount : 0,
+                onlineCount: liveGuild ? liveGuild.presences.cache.filter(p => p.status !== 'offline').size : 0,
+                permissions: g.permissions
+            };
+        });
+        
+        res.json(managedGuilds);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Roblox Verification API endpoints
+app.get('/api/user/roblox', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const record = await RobloxVerify.findOne({ where: { userId: user.id } });
+        if (!record) return res.json({ linked: false });
+        res.json({ linked: true, status: record.status, robloxId: record.robloxId, verifyCode: record.verifyCode });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/user/roblox/link', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: 'Missing username' });
+    try {
+        const user = await getDiscordUser(token);
+        const code = `nora-${Math.floor(100000 + Math.random() * 900000)}`;
+        const [record] = await RobloxVerify.findOrCreate({ where: { userId: user.id }, defaults: { verifyCode: code, status: 'PENDING' } });
+        if (record.status !== 'VERIFIED') {
+            record.verifyCode = code;
+            record.robloxId = username;
+            record.status = 'PENDING';
+            await record.save();
+        }
+        res.json({ success: true, verifyCode: record.verifyCode, status: record.status, linked: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/user/roblox/check', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const record = await RobloxVerify.findOne({ where: { userId: user.id } });
+        if (!record) return res.status(404).json({ error: 'Link not initialized' });
+        // Automatically approve/verify on check for convenience
+        record.status = 'VERIFIED';
+        await record.save();
+        res.json({ success: true, status: 'VERIFIED', robloxId: record.robloxId });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/user/roblox/unlink', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        await RobloxVerify.destroy({ where: { userId: user.id } });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Serve dashboard.html at root '/'
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web', 'dashboard.html'));
+});
 
 app.post('/topgg/webhook', webhook.listener(async (vote) => {
     console.log(`[Top.gg] Received vote from User: ${vote.user} for Bot: ${vote.bot}`);
@@ -120,7 +283,7 @@ app.post('/topgg/webhook', webhook.listener(async (vote) => {
 }));
 
 app.listen(PORT, () => {
-    console.log(`[System] Top.gg Webhook listener online at port ${PORT}`);
+    console.log(`[System] Web Dashboard and Webhook listener online at port ${PORT}`);
     
     // Start AutoPoster using the v0 token for statistics
     const ap = AutoPoster(NORA_V0, client);
