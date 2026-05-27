@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora - Legal</title>
+    <title>Nora - Legal & Privacy</title>
     <link rel="icon" type="image/png" href="nora.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="/translate.js"></script>
@@ -18,6 +18,13 @@
                 document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
                 document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
             }
+            const mode = localStorage.getItem('nora_theme_mode') || 'default';
+            if (mode !== 'default') {
+                document.documentElement.classList.add('theme-' + mode);
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.body.classList.add('theme-' + mode);
+                });
+            }
         })();
     </script>
     <style>
@@ -25,21 +32,119 @@
             --bg: #0b0f1a;
             --bg-soft: #12182b;
             --bg-glow: rgba(174, 239, 255, 0.1);
-            --card: rgba(255, 255, 255, 0.06);
+            --card: rgba(255, 255, 255, 0.04);
+            --card-hover: rgba(255, 255, 255, 0.08);
             --border: rgba(255, 255, 255, 0.08);
             --primary: #aeefff;
             --text: #ffffff;
             --muted: rgba(255, 255, 255, 0.7);
         }
 
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
             font-family: "Inter", system-ui, sans-serif;
             background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
                         radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
                         var(--bg);
             color: var(--text);
             min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* iOS-like Liquid Blobs */
+        .liquid-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+            transition: opacity 1.5s ease;
+        }
+        body.theme-glass .liquid-blob {
+            opacity: 0.35;
+        }
+        .liquid-blob-1 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(174, 239, 255, 0.5) 0%, rgba(122, 162, 255, 0) 70%);
+            top: -10%;
+            left: -10%;
+            animation: drift 25s infinite alternate ease-in-out;
+        }
+        .liquid-blob-2 {
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(197, 163, 255, 0.45) 0%, rgba(197, 163, 255, 0) 70%);
+            bottom: -15%;
+            right: -10%;
+            animation: drift-reverse 30s infinite alternate ease-in-out;
+        }
+        .liquid-blob-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 117, 181, 0.3) 0%, rgba(255, 117, 181, 0) 70%);
+            top: 40%;
+            left: 50%;
+            animation: drift-middle 22s infinite alternate ease-in-out;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(150px, 80px) scale(1.2) rotate(90deg); }
+            100% { transform: translate(-50px, 150px) scale(0.9) rotate(180deg); }
+        }
+        @keyframes drift-reverse {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-120px, -100px) scale(0.8) rotate(-60deg); }
+            100% { transform: translate(100px, 50px) scale(1.1) rotate(-120deg); }
+        }
+        @keyframes drift-middle {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-30%, -60%) scale(1.3); }
+            100% { transform: translate(-60%, -40%) scale(0.9); }
+        }
+
+        /* Themes support */
+        body.theme-oled {
+            --bg: #000000;
+            --bg-soft: #0c0c0c;
+            --bg-glow: transparent;
+            --border: #222222;
+            --card: #080808;
+        }
+        body.theme-sapphire {
+            --bg: #050a18;
+            --bg-soft: #081125;
+            --bg-glow: rgba(75, 105, 255, 0.15);
+            --border: rgba(75, 105, 255, 0.2);
+            --card: rgba(8, 17, 37, 0.6);
+        }
+        body.theme-solid-glass {
+            --bg: #07090e;
+            --card: rgba(10, 14, 25, 0.85);
+            --border: rgba(255, 255, 255, 0.12);
+        }
+        body.theme-solid-glass .legal-container {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        body.theme-glass {
+            --bg: #030509;
+            --card: rgba(255, 255, 255, 0.02);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+        body.theme-glass .legal-container {
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
         }
 
         header {
@@ -136,9 +241,21 @@
         h3 { font-size: 1.2rem; color: var(--primary); margin-top: 30px; margin-bottom: 10px; }
         p { color: var(--muted); line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px; }
         section { margin-bottom: 40px; }
+
+        @media(max-width:768px) {
+            .nav-links { display: none; }
+            .legal-container { margin: 2rem 15px; padding: 20px; }
+            .legal-switch { width: 100%; }
+            .switch-slider { width: calc(50% - 8px); }
+            .legal-switch.active .switch-slider { left: calc(50%); }
+        }
     </style>
 </head>
 <body>
+    <div class="liquid-blob liquid-blob-1"></div>
+    <div class="liquid-blob liquid-blob-2"></div>
+    <div class="liquid-blob liquid-blob-3"></div>
+
     <header>
         <div class="nav">
             <a href="/" class="brand">
@@ -148,6 +265,7 @@
             <nav class="nav-links">
                 <a href="/">Home</a>
                 <a href="/team">Team</a>
+                <a href="/docs">Docs</a>
                 <a href="/ai">Nora AI</a>
                 <a href="/legal" class="active">Legal</a>
                 <a href="/dashboard">Dashboard</a>
@@ -157,7 +275,7 @@
 
     <main class="legal-container">
         <h1>Transparency & Trust</h1>
-        <p class="subtitle">Last Updated: March 17, 2026</p>
+        <p class="subtitle">Last Updated: May 27, 2026</p>
 
         <div class="switch-container">
             <div class="legal-switch" id="legal-switch" onclick="toggleLegal()">
@@ -173,31 +291,35 @@
                 <h2>Terms of Service</h2>
                 <section>
                     <h3>1. Agreement to Terms</h3>
-                    <p>By inviting, installing, or using Nora within a Discord server, you acknowledge that you have read and agreed to these Terms of Service. If you do not agree with these terms you must remove the bot from your server.</p>
+                    <p>By inviting, installing, or using Nora within a Discord server, you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service. If you do not agree with these terms, you must remove the bot from your server immediately.</p>
                 </section>
                 <section>
                     <h3>2. Relationship with Discord</h3>
-                    <p>Nora operates through the Discord platform and relies on the Discord API. Users must comply with Discord's Terms of Service and Community Guidelines.</p>
+                    <p>Nora is an independent application operating on the Discord platform. Our services rely entirely on the Discord API. Users must comply with Discord's official Terms of Service and Community Guidelines in all actions associated with the bot.</p>
                 </section>
                 <section>
-                    <h3>3. Description of the Service</h3>
-                    <p>Nora is a community moderation and management tool designed for Discord servers. The service provides configurable tools for automated moderation and interaction.</p>
+                    <h3>3. Description of the Service & Modifications</h3>
+                    <p>Nora is an automated community moderation and management ecosystem. We reserve the right to modify, suspend, or discontinue any features, layouts, or command syntaxes at any time without notice to maintain service stability and integrity.</p>
                 </section>
                 <section>
                     <h3>4. Moderation Responsibility</h3>
-                    <p>Nora provides automation tools but does not replace human moderation. Server administrators remain fully responsible for moderation decisions.</p>
+                    <p>Nora provides automated assistance systems (such as anti-raid gates and profanity filters). However, Nora does not replace human oversight. Server owners and designated administrators remain solely responsible for the actions of their staff and the moderation choices executed via Nora.</p>
                 </section>
                 <section>
                     <h3>5. Command and Permission Usage</h3>
-                    <p>Nora operates using the permissions granted to it by server administrators. Commands may only execute actions that the bot has been granted permission to perform.</p>
+                    <p>Nora acts strictly upon the permissions granted by server administrators. We are not liable for any misconfigurations or damage caused by granting excessive permissions (such as Admin, Manage Roles, or Manage Channels) to the bot.</p>
                 </section>
                 <section>
-                    <h3>6. AI Assistance Features</h3>
-                    <p>Some Nora features include AI-generated responses. These systems are designed to assist moderators but are not guaranteed to be accurate in all situations.</p>
+                    <h3>6. Third-Party AI Interfaces</h3>
+                    <p>Some of Nora's features utilize third-party Artificial Intelligence APIs (including OpenAI and Google Gemini Beta). AI-generated content is provided for contextual aid and amusement. We do not guarantee the absolute accuracy, completeness, or safety of any automated AI responses.</p>
                 </section>
                 <section>
-                    <h3>7. Payments and Subscriptions</h3>
-                    <p>All payments for Nora premium features are handled exclusively through Discord's official subscription system. Nora does not directly process or store payment information.</p>
+                    <h3>7. Subscriptions and Payments</h3>
+                    <p>All financial transactions, premium subscriptions, and boosts are processed securely through Discord's official monetization portal. Nora does not collect, process, or store credit cards, billing addresses, or bank details.</p>
+                </section>
+                <section>
+                    <h3>8. Limitation of Liability</h3>
+                    <p>Nora is provided "as is" and "as available". The developers (Vaztinix and the Nora team) disclaim all warranties and shall not be held liable for any direct, indirect, incidental, or consequential damages resulting from bot downtime, API bugs, or server administration errors.</p>
                 </section>
             </div>
 
@@ -205,32 +327,40 @@
             <div id="privacy-content" class="legal-section">
                 <h2>Privacy Policy</h2>
                 <section>
-                    <h3>1. Privacy-First Design</h3>
-                    <p>Nora is designed with privacy as a core principle. The system only processes the minimum data necessary for functionality.</p>
+                    <h3>1. Privacy-First Philosophy</h3>
+                    <p>Nora was founded on a strict Zero-Access architecture. We believe that your server's data is private. Developers have no backend overrides to read server chats, configuration logs, or private user details.</p>
                 </section>
                 <section>
-                    <h3>2. Operational Data</h3>
-                    <p>The system may store limited operational information required to function, such as server identifiers and configuration settings.</p>
+                    <h3>2. Data We Collect</h3>
+                    <p>To provide baseline functionality, Nora stores limited configuration data in our local SQLite database. This includes guild configurations, level XP scores, custom roles, log channels, and Roblox verification details. We do not store message history permanently.</p>
                 </section>
                 <section>
                     <h3>3. Message Processing</h3>
-                    <p>Message content may be temporarily processed for moderation filters or AI context. This processing occurs in memory and is not permanently stored.</p>
+                    <p>Message content is processed in real-time memory strictly to enforce active moderation rules (AutoMod) or to supply context to chosen AI engines. This processing occurs in memory and is instantly discarded; it is never written to disk or logged.</p>
                 </section>
                 <section>
-                    <h3>4. AI Data Handling</h3>
-                    <p>Nora does not use server data to train AI models. Any AI-related processing is performed for real-time functionality only.</p>
+                    <h3>4. AI Data Policies</h3>
+                    <p>We do not share your server's logs, member conversations, or leveling data with third parties to train machine learning models. Interactions with our AI features are sent only to designated API endpoints (OpenAI / Google Gemini) for real-time response generation.</p>
                 </section>
                 <section>
-                    <h3>5. Data Isolation</h3>
-                    <p>Each server's data is isolated. Data generated in one server is never shared with or visible to other servers.</p>
+                    <h3>5. User Sovereignty & The Kill Switch</h3>
+                    <p>We respect the right to be forgotten. Users can run the `/mycard` command inside Discord at any time to inspect their database record, and press the "Erase Data" button to instantly and permanently wipe their leveling statistics, XP, and profile records from the database.</p>
                 </section>
                 <section>
-                    <h3>6. Data Retention</h3>
-                    <p>Removing Nora from a server deletes configuration data associated with that server.</p>
+                    <h3>6. Server Data Isolation</h3>
+                    <p>Every server is treated as an isolated container. Data, logs, settings, and XP systems generated in one guild are strictly isolated and are never shared or made visible to other servers.</p>
+                </section>
+                <section>
+                    <h3>7. Data Erasure upon Bot Removal</h3>
+                    <p>If Nora is kicked or removed from a guild, all stored configuration records and log parameters associated with that server ID are scheduled for deletion to keep our databases clean and protect your privacy.</p>
                 </section>
             </div>
         </div>
     </main>
+
+    <footer>
+        © 2026 Nora | Privacy-First AI & Moderation
+    </footer>
 
     <script>
         function toggleLegal() {

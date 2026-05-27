@@ -242,6 +242,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'web', 'dashboard.html'));
 });
 
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web', 'dashboard.html'));
+});
+
+
 app.post('/topgg/webhook', webhook.listener(async (vote) => {
     console.log(`[Top.gg] Received vote from User: ${vote.user} for Bot: ${vote.bot}`);
 
@@ -280,7 +285,10 @@ app.post('/topgg/webhook', webhook.listener(async (vote) => {
     } catch (error) {
         console.error('[Top.gg] Error processing vote:', error);
     }
-}));
+// Serve 404 page for unmatched routes
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'web', '404.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`[System] Web Dashboard and Webhook listener online at port ${PORT}`);
