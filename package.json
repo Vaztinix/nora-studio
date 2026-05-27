@@ -7,6 +7,7 @@
     "start": "pm2 start src/index.js --name nora-bot || node src/index.js",
     "restart": "pm2 restart nora-bot || (taskkill /f /im node.exe && node src/index.js) || exit 0",
     "shutdown": "pm2 stop nora-bot || taskkill /f /im node.exe || exit 0",
+    "build": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -30,6 +31,7 @@
     "mathjs": "^15.2.0",
     "natural": "^8.1.1",
     "openai": "^6.33.0",
+    "picomatch": "^4.0.4",
     "rita": "^2.8.31",
     "sequelize": "^6.37.8",
     "sqlite3": "^6.0.1",
