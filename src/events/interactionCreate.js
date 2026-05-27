@@ -16,12 +16,18 @@ module.exports = {
             const { isPremium } = require('../utils/premiumManager');
             const currentUserIsPremium = isPremium(interaction);
             
-            // We update their global status in our records for badge display on cards
+            // We update their global status in our records for badge display on cards,
+            // but only if they do not have manual premium granted by the bot owner.
             const UserLevel = require('../database/models/UserLevel');
-            await UserLevel.update(
-                { isPremium: currentUserIsPremium },
-                { where: { userId: interaction.user.id } }
-            ).catch(() => {}); // Silent fail if database is busy
+            const userLevels = await UserLevel.findAll({ where: { userId: interaction.user.id } }).catch(() => []);
+            const hasManualPremium = userLevels.some(ul => ul.isManualPremium);
+            
+            if (!hasManualPremium) {
+                await UserLevel.update(
+                    { isPremium: currentUserIsPremium },
+                    { where: { userId: interaction.user.id } }
+                ).catch(() => {}); // Silent fail if database is busy
+            }
         }
 
         // Handle Ticket Buttons

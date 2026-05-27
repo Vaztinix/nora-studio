@@ -9,14 +9,14 @@ module.exports = {
     category: 'utility',
     data: new SlashCommandBuilder()
         .setName('topgg')
-        .setDescription('Top.gg integration commands.')
+        .setDescription('Top.gg integration commands. (Beta)')
         .addSubcommand(sub =>
             sub.setName('stats')
-                .setDescription('View Nora\'s official listing stats on Top.gg.')
+                .setDescription('View Nora\'s official listing stats on Top.gg. (Beta)')
         )
         .addSubcommand(sub =>
             sub.setName('info')
-                .setDescription('Get info on how to vote, voting perks, and check your voting status.')
+                .setDescription('Get info on how to vote, voting perks, and check your voting status. (Beta)')
         ),
 
     async execute(interaction) {
@@ -37,7 +37,7 @@ module.exports = {
                 const owners = data.owners ? data.owners.join(', ') : 'Unknown';
 
                 const embed = new EmbedBuilder()
-                    .setTitle('Nora • Top.gg Listing Statistics')
+                    .setTitle('Nora • Top.gg Listing Statistics (Beta)')
                     .setURL(`https://top.gg/bot/${NORA_BOT_ID}`)
                     .setDescription(data.shortdesc || 'No description available.')
                     .addFields(
@@ -70,7 +70,7 @@ module.exports = {
                 const totalUsers = interaction.client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
 
                 const fallbackEmbed = new EmbedBuilder()
-                    .setTitle('Nora • Top.gg Listing Statistics (Local Fallback)')
+                    .setTitle('Nora • Top.gg Listing Statistics (Local Fallback) (Beta)')
                     .setURL(`https://top.gg/bot/${NORA_BOT_ID}`)
                     .setDescription(is404
                         ? '**Top.gg API returned 404 Not Found.** This bot is currently running in local/private development mode. The Top.gg listing is not public or approved yet.'
@@ -99,7 +99,7 @@ module.exports = {
             }
 
             const embed = new EmbedBuilder()
-                .setTitle('Support Nora on Top.gg')
+                .setTitle('Support Nora on Top.gg (Beta)')
                 .setDescription('Help Nora grow by voting! Voting helps other servers discover Nora and unlocks awesome rewards.')
                 .addFields(
                     { name: 'Voter Perks', value: '• **Double XP Boost** (2 Hours)\n• **100 XP** added directly to your leveling profile\n• **Supporter Title** eligibility\n• Logs your vote to the server\'s vote tracking channel' },

@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "start.bat",
-    "shutdown": "taskkill /f /im node.exe || exit 0",
+    "start": "pm2 start src/index.js --name nora-bot || node src/index.js",
+    "restart": "pm2 restart nora-bot || (taskkill /f /im node.exe && node src/index.js) || exit 0",
+    "shutdown": "pm2 stop nora-bot || taskkill /f /im node.exe || exit 0",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
