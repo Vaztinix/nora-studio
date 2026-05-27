@@ -6,19 +6,19 @@ const GuildSettings = require('../../database/models/GuildSettings');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('verify-roblox')
-        .setDescription('Verify your Roblox account and gain a role.')
+        .setDescription('Verify your Roblox account and gain a role. (Beta)')
         .addSubcommand(sub =>
             sub.setName('link')
-                .setDescription('Link your Roblox account by providing your username.')
+                .setDescription('Link your Roblox account by providing your username. (Beta)')
                 .addStringOption(opt => opt.setName('username').setDescription('Your Roblox Username').setRequired(true))
         )
         .addSubcommand(sub =>
             sub.setName('check')
-                .setDescription('Check if you have added the verification code to your Roblox profile.')
+                .setDescription('Check if you have added the verification code to your Roblox profile. (Beta)')
         )
         .addSubcommand(sub =>
             sub.setName('unlink')
-                .setDescription('Unlink your Roblox account from Nora.')
+                .setDescription('Unlink your Roblox account from Nora. (Beta)')
         ),
 
     async execute(interaction) {
@@ -65,7 +65,7 @@ module.exports = {
                 });
 
                 const embed = new EmbedBuilder()
-                    .setTitle('Roblox Verification Link')
+                    .setTitle('Roblox Verification Link (Beta)')
                     .setDescription(`To verify your account **${robloxUser.displayName} (@${robloxUser.name})**, please follow these steps:`)
                     .addFields(
                         { name: '1. Copy this code', value: `\`${verifyCode}\`` },
@@ -106,7 +106,7 @@ module.exports = {
                     await record.update({ status: 'VERIFIED' });
 
                     const embed = new EmbedBuilder()
-                        .setTitle('Verification Successful!')
+                        .setTitle('Verification Successful! (Beta)')
                         .setDescription(`Your Roblox account has been successfully linked to your Discord profile.`)
                         .addFields({ name: 'Roblox ID', value: record.robloxId })
                         .setColor(0x2ea043);

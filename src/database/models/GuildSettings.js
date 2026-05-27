@@ -88,6 +88,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    isManualPremium: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     spamInterval: {
         type: DataTypes.INTEGER,
         defaultValue: 5000 // default 5 seconds in ms

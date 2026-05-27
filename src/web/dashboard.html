@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="/translate.js"></script>
     <script>
+        // LIQUID GLASS FEATURE - COMPLETED
         (function() {
             const savedColor = localStorage.getItem('nora_theme_color');
             if (savedColor) {
@@ -125,6 +126,27 @@
             --primary-glow: rgba(255, 142, 60, 0.3);
             --primary-hover: #ffa668;
             --border: rgba(255, 142, 60, 0.15);
+        }
+
+        body.theme-glass {
+            --bg: #07090e;
+            --sidebar-bg: rgba(20, 24, 38, 0.4);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-hover: rgba(255, 255, 255, 0.07);
+            --primary: #c5a3ff;
+            --primary-glow: rgba(197, 163, 255, 0.3);
+            --primary-hover: #d2baff;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body.theme-glass .sidebar,
+        body.theme-glass .panel,
+        body.theme-glass .server-card,
+        body.theme-glass .topbar {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -958,6 +980,7 @@
                             <option value="cyber">Cyberpunk Amber (Bright Gold)</option>
                             <option value="amethyst">Amethyst Glow (Lavender Purple)</option>
                             <option value="mint">Neon Mint (Fresh Turquoise)</option>
+                            <option value="glass">Liquid Glass (Glassmorphic)</option>
                         </select>
                     </div>
                     <div class="row">
@@ -2291,7 +2314,8 @@
                 'rose': '#ff6b8b',
                 'cyber': '#ffd700',
                 'amethyst': '#9b5de5',
-                'mint': '#00f5d4'
+                'mint': '#00f5d4',
+                'glass': '#c5a3ff'
             };
 
             if (fromUser) {
@@ -3315,7 +3339,8 @@
                 'rose': '#ff6b8b',
                 'cyber': '#ffd700',
                 'amethyst': '#9b5de5',
-                'mint': '#00f5d4'
+                'mint': '#00f5d4',
+                'glass': '#c5a3ff'
             };
             const defaultColor = themeColors[mode] || '#aeefff';
             const savedColor = localStorage.getItem('nora_theme_color') || defaultColor;
@@ -3350,7 +3375,8 @@
                 'rose': '#ff6b8b',
                 'cyber': '#ffd700',
                 'amethyst': '#9b5de5',
-                'mint': '#00f5d4'
+                'mint': '#00f5d4',
+                'glass': '#c5a3ff'
             };
             const mode = document.getElementById('pref-theme-mode').value;
             const defaultColor = themeColors[mode] || '#aeefff';

@@ -38,6 +38,10 @@ const UserLevel = sequelize.define('UserLevel', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    isManualPremium: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     voteCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0

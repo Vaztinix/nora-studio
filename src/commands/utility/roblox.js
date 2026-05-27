@@ -5,15 +5,15 @@ module.exports = {
     category: 'utility',
     data: new SlashCommandBuilder()
         .setName('roblox')
-        .setDescription('Roblox integration utility commands.')
+        .setDescription('Roblox integration utility commands. (Beta)')
         .addSubcommand(sub =>
             sub.setName('profile')
-                .setDescription('View a Roblox user\'s profile details and avatar.')
+                .setDescription('View a Roblox user\'s profile details and avatar. (Beta)')
                 .addStringOption(opt => opt.setName('user').setDescription('Roblox Username or User ID').setRequired(true))
         )
         .addSubcommand(sub =>
             sub.setName('group')
-                .setDescription('View details about a Roblox group.')
+                .setDescription('View details about a Roblox group. (Beta)')
                 .addStringOption(opt => opt.setName('id').setDescription('Roblox Group ID').setRequired(true))
         ),
 
@@ -63,7 +63,7 @@ module.exports = {
                 const createdDate = data.created ? new Date(data.created).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown';
 
                 const embed = new EmbedBuilder()
-                    .setTitle(`${data.displayName} (@${data.name})`)
+                    .setTitle(`${data.displayName} (@${data.name}) (Beta)`)
                     .setURL(`https://www.roblox.com/users/${data.id}/profile`)
                     .setDescription(data.description || '*No bio provided.*')
                     .addFields(
@@ -113,7 +113,7 @@ module.exports = {
                 const ownerLink = data.owner ? `https://www.roblox.com/users/${data.owner.id}/profile` : null;
 
                 const embed = new EmbedBuilder()
-                    .setTitle(data.name)
+                    .setTitle(`${data.name} (Beta)`)
                     .setURL(`https://www.roblox.com/groups/${data.id}`)
                     .setDescription(data.description || '*No description provided.*')
                     .addFields(

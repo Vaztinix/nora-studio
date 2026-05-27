@@ -18,6 +18,7 @@ module.exports = {
         const { checkAndAwardEgg } = require('../../utils/easterEggSystem');
         checkAndAwardEgg(interaction, 2);
 
+        /*
         const apiKey = process.env.OPENAI_API_KEY;
         if (!apiKey) {
             return handleError(interaction, 'AI Offline', 'The generative AI module is not configured. The owner must supply a valid `OPENAI_API_KEY`.');
@@ -31,6 +32,7 @@ module.exports = {
             const waitTime = userIsPremium ? '30 seconds' : '1 minute';
             return handleError(interaction, 'Rate Limited', `Slow down! To ensure everyone has fair access to the AI without hitting quota limits, you are restricted to 5 queries per ${waitTime}. Try again shortly.`);
         }
+        */
 
         // We want this command to be completely private, so we defer ephemerally
         await interaction.deferReply({ ephemeral: true });
@@ -38,6 +40,7 @@ module.exports = {
         const query = interaction.options.getString('prompt');
 
         try {
+            /*
             const openai = new OpenAI({ apiKey });
 
             const engineeredPrompt = `System Instructions:
@@ -67,6 +70,9 @@ Nora (Respond privately):`;
 
             // Slicing to adhere to Discord limits and keep it in an Embed
             const shortResponse = responseText.length > 3900 ? responseText.substring(0, 3900) + '...' : responseText;
+            */
+
+            const shortResponse = "Nora's AI features are currently undergoing upgrades to advanced LLM models. Stay tuned!";
 
             const embed = new EmbedBuilder()
                 .setTitle('Nora AI Analysis')
@@ -78,11 +84,6 @@ Nora (Respond privately):`;
             await interaction.editReply({ embeds: [embed] });
         } catch (error) {
             console.error('Ask Command OpenAI Error:', error);
-
-            if (error.status === 429 || error.code === 'insufficient_quota' || error.type === 'rate_limit_error') {
-                return interaction.editReply({ content: 'I am currently out of "brain tokens" (Rate Limited)! Please ask again in a moment or contact the server owner once the API quota resets.' });
-            }
-
             await interaction.editReply({ content: 'I encountered an error trying to process your prompt. Please try again later.' });
         }
     },

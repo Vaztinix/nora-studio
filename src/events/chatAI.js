@@ -70,6 +70,7 @@ module.exports = {
         };
 
         // PIPELINE
+        /*
         let response = null;
         let statusNote = '';
 
@@ -92,5 +93,8 @@ module.exports = {
         if (response) {
             return message.reply({ content: `${statusNote}${response}` });
         }
+        */
+
+        return message.reply({ content: "Nora's AI features are currently undergoing upgrades to advanced LLM models. Stay tuned!" });
     }
 };
