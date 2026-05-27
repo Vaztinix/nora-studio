@@ -285,6 +285,8 @@ app.post('/topgg/webhook', webhook.listener(async (vote) => {
     } catch (error) {
         console.error('[Top.gg] Error processing vote:', error);
     }
+}));
+
 // Serve 404 page for unmatched routes
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'web', '404.html'));

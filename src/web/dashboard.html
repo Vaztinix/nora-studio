@@ -924,8 +924,20 @@
     <div id="auth-overlay">
         <img src="nora.png" style="width: 80px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(174,239,255,0.15);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
         <h1 style="margin-bottom: 10px; font-size: 2rem; color: white;">Login Required</h1>
-        <p style="color: var(--muted); margin-bottom: 30px;">Log in with Discord to configure your servers.</p>
-        <button id="login-btn" class="save-btn" style="background: var(--primary);">Login with Discord</button>
+        <p style="color: var(--muted); margin-bottom: 20px;">Log in with Discord to configure your servers.</p>
+        <button id="login-btn" class="save-btn" style="background: var(--primary); margin-bottom: 15px;">Login with Discord</button>
+        
+        <div style="margin-top: 10px;">
+            <a href="#" style="color: var(--primary); font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" onclick="toggleApiConfig(event)">
+                <i class="fas fa-cog"></i> Configure API Server
+            </a>
+        </div>
+        
+        <div id="api-config-container" style="display: none; margin-top: 20px; width: 100%; max-width: 280px; text-align: left; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
+            <label style="color: var(--muted); font-size: 0.75rem; display: block; margin-bottom: 6px; font-weight: 600;">BOT API ENDPOINT:</label>
+            <input type="text" id="custom-api-input" style="width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.85rem; margin-bottom: 10px;" placeholder="e.g. http://localhost:3000">
+            <button class="config-btn" style="width: 100%; padding: 6px;" onclick="saveCustomApi()">Save and Reload</button>
+        </div>
     </div>
 
     <header class="topbar">
@@ -2322,6 +2334,33 @@
             }
             return originalFetch(input, init);
         };
+
+        window.toggleApiConfig = function(e) {
+            if (e) e.preventDefault();
+            const container = document.getElementById('api-config-container');
+            const input = document.getElementById('custom-api-input');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+            if (container.style.display === 'block') {
+                input.value = localStorage.getItem('nora_api_url') || '';
+            }
+        };
+
+        window.saveCustomApi = function() {
+            const input = document.getElementById('custom-api-input');
+            let val = input.value.trim();
+            if (val) {
+                if (!val.startsWith('http://') && !val.startsWith('https://')) {
+                    val = 'http://' + val;
+                }
+                localStorage.setItem('nora_api_url', val);
+                showToast('API Endpoint updated! Reloading...', 'success');
+            } else {
+                localStorage.removeItem('nora_api_url');
+                showToast('API Endpoint reset to default! Reloading...', 'success');
+            }
+            setTimeout(() => window.location.reload(), 1000);
+        };
+
 
         // 🚨 Premium Global Client-Side Error Interceptor
         window.addEventListener('error', function(event) {
