@@ -47,6 +47,10 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    language: {
+        type: DataTypes.STRING,
+        defaultValue: 'en'
+    },
 });
 
 module.exports = UserPrefs;

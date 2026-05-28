@@ -117,6 +117,13 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Nora API is running.' });
 });
 
+// Client telemetry logs endpoint
+app.post('/api/logs/client', (req, res) => {
+    const { level, message, context, stack } = req.body;
+    console.error(`[CLIENT_${level}] ${message}`, { context, stack });
+    res.json({ success: true });
+});
+
 // Helper to get Discord user
 const getDiscordUser = async (token) => {
     const res = await fetch('https://discord.com/api/v10/users/@me', {
@@ -192,7 +199,10 @@ app.post('/api/user/profile', async (req, res) => {
         if (robloxPublic !== undefined) prefs.robloxPublic = robloxPublic;
         if (profilePublic !== undefined) prefs.profilePublic = profilePublic;
         if (bio !== undefined) prefs.bio = bio;
-        if (language !== undefined) prefs.customTheme = language;
+        if (language !== undefined) {
+            prefs.language = language;
+            prefs.customTheme = language;
+        }
         if (dashboardSettings !== undefined) {
             prefs.dashboardSettings = dashboardSettings;
         }
@@ -236,12 +246,20 @@ app.get('/api/user/guilds', async (req, res) => {
         const guilds = await dRes.json();
         
         // Filter guilds where user has Administrator (0x8) or Manage Guild (0x20)
-        const managedGuilds = guilds.filter(g => {
+        const filteredGuilds = guilds.filter(g => {
             const perms = BigInt(g.permissions);
             return (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20);
-        }).map(g => {
+        });
+
+        const guildIds = filteredGuilds.map(g => g.id);
+        const GuildSettings = require('./database/models/GuildSettings');
+        const settingsRecords = await GuildSettings.findAll({ where: { guildId: guildIds } });
+        const settingsMap = new Map(settingsRecords.map(s => [s.guildId, s]));
+
+        const managedGuilds = filteredGuilds.map(g => {
             const hasNora = req.client.guilds.cache.has(g.id);
             const liveGuild = req.client.guilds.cache.get(g.id);
+            const settings = settingsMap.get(g.id);
             return {
                 id: g.id,
                 name: g.name,
@@ -249,7 +267,10 @@ app.get('/api/user/guilds', async (req, res) => {
                 hasNora,
                 memberCount: liveGuild ? liveGuild.memberCount : 0,
                 onlineCount: liveGuild ? liveGuild.presences.cache.filter(p => p.status !== 'offline').size : 0,
-                permissions: g.permissions
+                permissions: g.permissions,
+                topggVerified: settings ? !!settings.topggVerified : false,
+                topggBotId: settings ? settings.topggBotId : null,
+                topggLegacyOwnerId: settings ? settings.topggLegacyOwnerId : null
             };
         });
         
@@ -268,7 +289,21 @@ app.get('/api/user/roblox', async (req, res) => {
         const user = await getDiscordUser(token);
         const record = await RobloxVerify.findOne({ where: { userId: user.id } });
         if (!record) return res.json({ linked: false });
-        res.json({ linked: true, status: record.status, robloxId: record.robloxId, verifyCode: record.verifyCode });
+        
+        let username = record.robloxId;
+        if (/^\d+$/.test(record.robloxId)) {
+            try {
+                const profileRes = await fetch(`https://users.roblox.com/v1/users/${record.robloxId}`);
+                if (profileRes.ok) {
+                    const data = await profileRes.json();
+                    username = data.name;
+                }
+            } catch (e) {
+                console.error('Failed to fetch Roblox username by ID:', e);
+            }
+        }
+        
+        res.json({ linked: true, status: record.status, robloxId: record.robloxId, robloxUsername: username, verifyCode: record.verifyCode });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -282,16 +317,42 @@ app.post('/api/user/roblox/link', async (req, res) => {
     if (!username) return res.status(400).json({ error: 'Missing username' });
     try {
         const user = await getDiscordUser(token);
-        const code = `nora-${Math.floor(100000 + Math.random() * 900000)}`;
-        const [record] = await RobloxVerify.findOrCreate({ where: { userId: user.id }, defaults: { verifyCode: code, status: 'PENDING' } });
+        
+        // Search Roblox API for ID
+        const searchRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
+        });
+        if (!searchRes.ok) {
+            return res.status(500).json({ error: 'Failed to contact Roblox API' });
+        }
+        const searchData = await searchRes.json();
+        if (!searchData.data || searchData.data.length === 0) {
+            return res.status(404).json({ error: 'Roblox user not found. Check the username spelling.' });
+        }
+        const robloxUser = searchData.data[0];
+        const code = `Nora-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+        const [record] = await RobloxVerify.findOrCreate({ 
+            where: { userId: user.id }, 
+            defaults: { 
+                robloxId: robloxUser.id.toString(),
+                verifyCode: code, 
+                status: 'PENDING' 
+            } 
+        });
+
         if (record.status !== 'VERIFIED') {
             record.verifyCode = code;
-            record.robloxId = username;
+            record.robloxId = robloxUser.id.toString();
             record.status = 'PENDING';
             await record.save();
         }
+
         res.json({ success: true, verifyCode: record.verifyCode, status: record.status, linked: true });
     } catch (e) {
+        console.error('Roblox link error:', e);
         res.status(500).json({ error: e.message });
     }
 });
@@ -304,11 +365,40 @@ app.post('/api/user/roblox/check', async (req, res) => {
         const user = await getDiscordUser(token);
         const record = await RobloxVerify.findOne({ where: { userId: user.id } });
         if (!record) return res.status(404).json({ error: 'Link not initialized' });
-        // Automatically approve/verify on check for convenience
-        record.status = 'VERIFIED';
-        await record.save();
-        res.json({ success: true, status: 'VERIFIED', robloxId: record.robloxId });
+
+        // If robloxId is not numeric, it's a legacy username string. Let's resolve it first.
+        if (!/^\d+$/.test(record.robloxId)) {
+            const searchRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usernames: [record.robloxId], excludeBannedUsers: true })
+            });
+            if (searchRes.ok) {
+                const searchData = await searchRes.json();
+                if (searchData.data && searchData.data.length > 0) {
+                    record.robloxId = searchData.data[0].id.toString();
+                    await record.save();
+                }
+            }
+        }
+
+        // Fetch Roblox profile to verify description code
+        const profileRes = await fetch(`https://users.roblox.com/v1/users/${record.robloxId}`);
+        if (!profileRes.ok) {
+            return res.status(400).json({ error: 'Failed to fetch Roblox profile for verification. Check that the ID is valid.' });
+        }
+        const profileData = await profileRes.json();
+        const description = profileData.description || '';
+
+        if (description.includes(record.verifyCode)) {
+            record.status = 'VERIFIED';
+            await record.save();
+            res.json({ success: true, status: 'VERIFIED', robloxId: record.robloxId, robloxUsername: profileData.name });
+        } else {
+            res.status(400).json({ error: `Verification code "${record.verifyCode}" was not found in your Roblox description.` });
+        }
     } catch (e) {
+        console.error('Roblox check error:', e);
         res.status(500).json({ error: e.message });
     }
 });
@@ -322,6 +412,37 @@ app.post('/api/user/roblox/unlink', async (req, res) => {
         await RobloxVerify.destroy({ where: { userId: user.id } });
         res.json({ success: true });
     } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/api/user/topgg/bots', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const searchUrl = `https://top.gg/api/bots?search=owners:${user.id}`;
+        
+        const topggRes = await fetch(searchUrl, {
+            headers: { Authorization: NORA_V0 }
+        });
+        
+        if (!topggRes.ok) {
+            console.error(`Top.gg search API failed with status ${topggRes.status}`);
+            return res.json({ bots: [] });
+        }
+        
+        const data = await topggRes.json();
+        const bots = (data.results || []).map(b => ({
+            id: b.id,
+            username: b.username,
+            avatar: b.avatar ? `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}.png` : 'https://top.gg/images/topgg-logo.png'
+        }));
+        
+        res.json({ bots });
+    } catch (e) {
+        console.error('Error in /api/user/topgg/bots:', e);
         res.status(500).json({ error: e.message });
     }
 });

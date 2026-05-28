@@ -1125,6 +1125,32 @@
                 </div>
             </div>
 
+            <!-- Advanced Logging Modal -->
+            <div id="advanced-logging-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+                <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Custom Message Templates</h2>
+                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">Configure custom announcement logs. Use variables like <code style="color: var(--primary);">{user}</code> (mention), <code style="color: var(--primary);">{username}</code> (plain name), <code style="color: var(--primary);">{id}</code> (user ID), or <code style="color: var(--primary);">{guild}</code> (server name) to customize text.</p>
+                    
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>Join Alert Message</label>
+                        <input type="text" id="setting-logJoinMessage" placeholder="Welcome {user} to the server!" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px;">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>Leave Alert Message</label>
+                        <input type="text" id="setting-logLeaveMessage" placeholder="{username} has left the server." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px;">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 20px;">
+                        <label>Server Boost Message</label>
+                        <input type="text" id="setting-logBoostMessage" placeholder="Thank you {user} for boosting {guild}!" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px;">
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <button class="config-btn" style="flex: 1;" onclick="document.getElementById('advanced-logging-modal').style.display = 'none'">Close & Save</button>
+                    </div>
+                </div>
+            </div>
+
+
             <div id="view-prefs" style="display: none;">
                 <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">Settings</h1>
                 <p style="color: var(--muted); margin-bottom: 30px;">Personalize your Nora Studio experience.</p>
@@ -1184,7 +1210,7 @@
                         <div class="input-group"><label>Display Name</label><input type="text" id="pref-display-name" placeholder="Name inside Nora Studio"></div>
                         <div class="input-group">
                             <label>Interaction Language</label>
-                            <select id="pref-language" onchange="syncAndSaveLanguage(this.value)" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box;">
+                            <select id="pref-language" onchange="syncAndSaveLanguage(this.value, 'pref-language')" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box;">
                                 <option value="en">English (English)</option>
                                 <option value="es">Español (Spanish)</option>
                                 <option value="fr">Français (French)</option>
@@ -1249,6 +1275,21 @@
                                 No bots verified. Connect via the Top.gg server tab.
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>API Server Configuration</h3>
+                    <p>Configure the API server endpoint for your current device.</p>
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-top: 15px;">
+                        <label style="color: var(--muted); font-size: 0.75rem; display: block; margin-bottom: 6px; font-weight: 600;">API ENDPOINT URL:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="custom-api-input-prefs" style="flex: 1; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.85rem;" placeholder="e.g. http://localhost:3000">
+                            <button class="config-btn" style="width: auto; padding: 8px 20px;" onclick="saveCustomApiPrefs()">Save</button>
+                        </div>
+                        <p style="color: var(--muted); font-size: 0.7rem; margin-top: 8px; line-height: 1.4;">
+                            Leaving this blank will use the default domain (<span style="color: var(--primary);">https://api.vaztinix.dev</span>). Use <span style="color: var(--primary);">http://localhost:3000</span> if you are testing locally on your PC and experience NAT loopback connection issues.
+                        </p>
                     </div>
                 </div>
 
@@ -1549,6 +1590,32 @@
                             <div class="input-group"><label>Raid Action</label><select id="setting-antiRaidAction"><option value="notify">Notify Only</option><option value="lockdown">Lockdown</option><option value="kick_new">Kick New</option></select></div>
                         </div>
                     </div>
+
+                    <div class="panel" style="margin-top: 25px;">
+                        <h3>Warning System</h3>
+                        <p>Configure automated moderation actions when users reach a warning threshold.</p>
+                        <div class="row-inputs" style="margin-top: 15px;">
+                            <div class="input-group">
+                                <label>Warning Threshold</label>
+                                <select id="setting-warningThreshold">
+                                    <option value="1">1 Warning</option>
+                                    <option value="2">2 Warnings</option>
+                                    <option value="3">3 Warnings</option>
+                                    <option value="5">5 Warnings</option>
+                                    <option value="10">10 Warnings</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Action on Threshold</label>
+                                <select id="setting-warningAction">
+                                    <option value="none">None (Notify Only)</option>
+                                    <option value="kick">Kick User</option>
+                                    <option value="ban">Ban User</option>
+                                    <option value="timeout">Timeout User</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="tab-automod" class="tab-content">
@@ -1614,8 +1681,28 @@
                                 <label class="switch small"><input type="checkbox" id="setting-logMessageDeletes" class="log-toggle"><span class="slider"></span></label>
                             </div>
                             <div class="log-row-compact">
-                                <span>Channel Activity</span>
+                                <span>Channel Creates</span>
                                 <label class="switch small"><input type="checkbox" id="setting-logChannelCreates" class="log-toggle"><span class="slider"></span></label>
+                            </div>
+                            <div class="log-row-compact">
+                                <span>Channel Edits</span>
+                                <label class="switch small"><input type="checkbox" id="setting-logChannelEdits" class="log-toggle"><span class="slider"></span></label>
+                            </div>
+                            <div class="log-row-compact">
+                                <span>Channel Deletes</span>
+                                <label class="switch small"><input type="checkbox" id="setting-logChannelDeletes" class="log-toggle"><span class="slider"></span></label>
+                            </div>
+                            <div class="log-row-compact">
+                                <span>Voice Joins</span>
+                                <label class="switch small"><input type="checkbox" id="setting-logVoiceJoins" class="log-toggle"><span class="slider"></span></label>
+                            </div>
+                            <div class="log-row-compact">
+                                <span>Voice Leaves</span>
+                                <label class="switch small"><input type="checkbox" id="setting-logVoiceLeaves" class="log-toggle"><span class="slider"></span></label>
+                            </div>
+                            <div class="log-row-compact">
+                                <span>Voice Moves</span>
+                                <label class="switch small"><input type="checkbox" id="setting-logVoiceMoves" class="log-toggle"><span class="slider"></span></label>
                             </div>
                             <div class="log-row-compact">
                                 <span>Automod Events</span>
@@ -1763,18 +1850,51 @@
                                 <h4>Counting Channel</h4>
                                 <p>Grant XP for participating in the counting channel.</p>
                             </div>
-                            <input type="text" id="setting-countingChannelId" placeholder="Channel ID">
+                            <select id="setting-countingChannelId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;"><option value="">Select channel...</option></select>
                         </div>
                         <div class="input-group" style="margin-top: 15px;"><label>XP Per Count</label><input type="number" id="setting-countingChannelXpReward" placeholder="5"></div>
                     </div>
 
                     <div class="panel">
                         <h3>Server Modules</h3>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Verify Role ID</label><input type="text" id="setting-verifyRoleId"></div>
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <label>Verify Channel</label>
+                            <select id="setting-verifyChannelId"><option value="">Select channel...</option></select>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 20px;"><label>Verify Role</label><select id="setting-verifyRoleId"><option value="">No role selected</option></select></div>
                         <div class="input-group" style="margin-bottom: 20px;"><label>Ticket Category ID</label><input type="text" id="setting-ticketCategoryId"></div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
                              <button class="config-btn" onclick="triggerAction('spawn_verify', this)">Spawn Verify Panel</button>
                              <button class="config-btn" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
+                        </div>
+                    </div>
+
+                    <div class="panel" style="margin-top: 25px;">
+                        <h3>Welcomer Settings</h3>
+                        <p>Configure automated messages when a new user joins the server.</p>
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Enable Welcomer</h4>
+                                <p>Send welcome messages to a designated channel.</p>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="setting-welcomerEnabled"><span class="slider"></span></label>
+                        </div>
+                        <div class="input-group" style="margin-top: 15px;">
+                            <label>Welcome Channel</label>
+                            <select id="setting-welcomeChannelId"><option value="">Select channel...</option></select>
+                        </div>
+                    </div>
+
+                    <div class="panel" style="margin-top: 25px;">
+                        <h3>Server Boost Rewards</h3>
+                        <p>Reward users when they boost the server.</p>
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <label>Boost Announcement Channel</label>
+                            <select id="setting-boostChannelId"><option value="">Select channel...</option></select>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <label>Boost Reward Role ID</label>
+                            <select id="setting-boostRewardRoleId"><option value="">No role selected</option></select>
                         </div>
                     </div>
                 </div>
@@ -1797,7 +1917,7 @@
                 <div id="tab-roblox" class="tab-content">
                     <div class="panel">
                         <h3>Roblox Identity Core</h3>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Verified Role ID</label><input type="text" id="setting-robloxVerifyRoleId" placeholder="Role to give on verify"></div>
+                        <div class="input-group" style="margin-bottom: 20px;"><label>Verified Role</label><select id="setting-robloxVerifyRoleId"><option value="">No role selected</option></select></div>
                         <div class="row"><h4>Enable Verification Module</h4><label class="switch"><input type="checkbox" id="setting-robloxVerifyEnabled"><span class="slider"></span></label></div>
                         <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                              <button class="config-btn" onclick="triggerAction('spawn_verify_roblox', this)">Spawn Verify Panel</button>
@@ -2330,18 +2450,6 @@
                                 host.startsWith('10.') || 
                                 host.startsWith('172.');
 
-            if (customApi) {
-                const isCustomLocal = customApi.includes('localhost') || 
-                                      customApi.includes('127.0.0.1') || 
-                                      customApi.includes('192.168.') || 
-                                      customApi.includes('10.') || 
-                                      customApi.includes('172.');
-                if (isCustomLocal && !isLocalHost) {
-                    localStorage.removeItem('nora_api_url');
-                    customApi = null;
-                }
-            }
-
             if (customApi) return customApi;
 
             if (isLocalHost) {
@@ -2383,6 +2491,22 @@
             } else {
                 localStorage.removeItem('nora_api_url');
                 showToast('API Endpoint reset to default! Reloading...', 'success');
+            }
+            setTimeout(() => window.location.reload(), 1000);
+        };
+
+        window.saveCustomApiPrefs = function() {
+            const input = document.getElementById('custom-api-input-prefs');
+            let val = input.value.trim();
+            if (val) {
+                if (!val.startsWith('http://') && !val.startsWith('https://')) {
+                    val = 'http://' + val;
+                }
+                localStorage.setItem('nora_api_url', val);
+                showToast(`API Server updated to: ${val}. Reloading...`, 'success');
+            } else {
+                localStorage.removeItem('nora_api_url');
+                showToast('API Server reset to default. Reloading...', 'success');
             }
             setTimeout(() => window.location.reload(), 1000);
         };
@@ -2687,8 +2811,10 @@
                 if (roBox) roBox.checked = d.prefs?.robloxPublic !== false;
                 if (pubBox) pubBox.checked = d.prefs?.profilePublic !== false;
                 if (bioBox) bioBox.value = d.prefs?.bio || '';
-                const deviceLang = localStorage.getItem('nora_language') || d.prefs?.language || 'en';
+                const deviceLang = localStorage.getItem('nora_language') || d.prefs?.language || d.prefs?.customTheme || 'en';
                 if (prefLangBox) prefLangBox.value = deviceLang;
+                const prefApiBox = document.getElementById('custom-api-input-prefs');
+                if (prefApiBox) prefApiBox.value = localStorage.getItem('nora_api_url') || '';
                 if (typeof applyLanguageTranslations === 'function') {
                     applyLanguageTranslations(deviceLang);
                 }
@@ -2710,6 +2836,18 @@
                             document.getElementById('pref-display-name').value = savedName;
                             if (userNameEl) userNameEl.textContent = savedName;
                         }
+
+                        // Populate the checkbox preferences
+                        const notifVotes = localStorage.getItem('nora_notif_votes');
+                        if (notifVotes !== null) document.getElementById('pref-notif-votes').checked = notifVotes === 'true';
+                        const notifLevels = localStorage.getItem('nora_notif_levels');
+                        if (notifLevels !== null) document.getElementById('pref-notif-levels').checked = notifLevels === 'true';
+                        const notifSafety = localStorage.getItem('nora_notif_safety');
+                        if (notifSafety !== null) document.getElementById('pref-notif-safety').checked = notifSafety === 'true';
+                        const notifBroadcast = localStorage.getItem('nora_notif_broadcast');
+                        if (notifBroadcast !== null) document.getElementById('pref-notif-broadcast').checked = notifBroadcast === 'true';
+                        const accessLogs = localStorage.getItem('nora_access_logs');
+                        if (accessLogs !== null) document.getElementById('pref-access-logs').checked = accessLogs === 'true';
                     }
                 } catch (e) {
                     console.error('Failed to parse remote dashboard settings', e);
@@ -2762,50 +2900,93 @@
         }
 
         async function fetchRobloxStatus(t) {
-            const res = await fetch('/api/user/roblox', { headers: { Authorization: `Bearer ${t}` } });
-            const d = await res.json();
-            
-            document.getElementById('roblox-unlinked-view').style.display = 'none';
-            document.getElementById('roblox-pending-view').style.display = 'none';
-            document.getElementById('roblox-verified-view').style.display = 'none';
-
-            if (!d.linked) {
-                document.getElementById('roblox-unlinked-view').style.display = 'block';
-            } else if (d.status === 'PENDING') {
-                document.getElementById('roblox-pending-view').style.display = 'block';
-                document.getElementById('roblox-verify-code').textContent = d.verifyCode;
-            } else {
-                document.getElementById('roblox-verified-view').style.display = 'flex';
-                document.getElementById('roblox-linked-id').textContent = `ID: ${d.robloxId}`;
-                
-                // Unlock Roblox advanced features for verified users
-                const advancedRoblox = document.getElementById('roblox-advanced-features');
-                if (advancedRoblox) {
-                    advancedRoblox.classList.remove('locked-feature');
-                    const overlay = advancedRoblox.querySelector('.locked-overlay-text');
-                    if (overlay) overlay.style.display = 'none';
+            try {
+                const res = await fetch('/api/user/roblox', { headers: { Authorization: `Bearer ${t}` } });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || `HTTP ${res.status}`);
                 }
+                const d = await res.json();
+                
+                document.getElementById('roblox-unlinked-view').style.display = 'none';
+                document.getElementById('roblox-pending-view').style.display = 'none';
+                document.getElementById('roblox-verified-view').style.display = 'none';
+
+                if (!d.linked) {
+                    document.getElementById('roblox-unlinked-view').style.display = 'block';
+                } else if (d.status === 'PENDING') {
+                    document.getElementById('roblox-pending-view').style.display = 'block';
+                    document.getElementById('roblox-verify-code').textContent = d.verifyCode;
+                } else {
+                    document.getElementById('roblox-verified-view').style.display = 'flex';
+                    document.getElementById('roblox-linked-name').textContent = d.robloxUsername || 'Roblox Linked';
+                    document.getElementById('roblox-linked-id').textContent = `ID: ${d.robloxId}`;
+                    
+                    // Unlock Roblox advanced features for verified users
+                    const advancedRoblox = document.getElementById('roblox-advanced-features');
+                    if (advancedRoblox) {
+                        advancedRoblox.classList.remove('locked-feature');
+                        const overlay = advancedRoblox.querySelector('.locked-overlay-text');
+                        if (overlay) overlay.style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                console.error('[Roblox Status Load Error]:', e);
+                showToast(`Failed to load Roblox status: ${e.message}`, 'error');
             }
         }
 
         async function savePersonalPrefs() {
             const displayName = document.getElementById('pref-display-name').value;
-            await saveDashboardSetting('nora_display_name', displayName);
+            localStorage.setItem('nora_display_name', displayName);
+            currentDashboardSettings['nora_display_name'] = displayName;
+            
             const userNameEl = document.getElementById('user-name');
             if (userNameEl) {
                 userNameEl.textContent = displayName;
             }
-            
+
+            const notifVotes = document.getElementById('pref-notif-votes').checked;
+            const notifLevels = document.getElementById('pref-notif-levels').checked;
+            const notifSafety = document.getElementById('pref-notif-safety').checked;
+            const notifBroadcast = document.getElementById('pref-notif-broadcast').checked;
+            const accessLogs = document.getElementById('pref-access-logs').checked;
+
+            localStorage.setItem('nora_notif_votes', notifVotes.toString());
+            localStorage.setItem('nora_notif_levels', notifLevels.toString());
+            localStorage.setItem('nora_notif_safety', notifSafety.toString());
+            localStorage.setItem('nora_notif_broadcast', notifBroadcast.toString());
+            localStorage.setItem('nora_access_logs', accessLogs.toString());
+
+            currentDashboardSettings['nora_notif_votes'] = notifVotes.toString();
+            currentDashboardSettings['nora_notif_levels'] = notifLevels.toString();
+            currentDashboardSettings['nora_notif_safety'] = notifSafety.toString();
+            currentDashboardSettings['nora_notif_broadcast'] = notifBroadcast.toString();
+            currentDashboardSettings['nora_access_logs'] = accessLogs.toString();
+
             const t = sessionStorage.getItem('discord_token');
             const sessionHardened = document.getElementById('pref-secure-session').checked;
             
-            await fetch('/api/user/prefs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
-                body: JSON.stringify({ sessionHardened })
-            });
-            
-            showToast('Personal preferences updated!', 'success');
+            try {
+                await fetch('/api/user/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({
+                        dashboardSettings: JSON.stringify(currentDashboardSettings)
+                    })
+                });
+
+                await fetch('/api/user/prefs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({ sessionHardened })
+                });
+                
+                showToast('Personal preferences updated!', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Failed to save personal preferences.', 'error');
+            }
         }
 
         async function activatePremiumBoost() {
@@ -3596,6 +3777,10 @@
             
             document.getElementById('user-name').textContent = localStorage.getItem('nora_display_name') || 'Nora User';
         }
+        window.openAdvancedLogging = function() {
+            document.getElementById('advanced-logging-modal').style.display = 'flex';
+        };
+
         applyInitialSettings();
 
         function applyThemeColor(color, save = true) {
@@ -4172,7 +4357,7 @@
             document.getElementById('modal-profile-avatar').src = m.avatar;
             document.getElementById('modal-profile-name').textContent = m.displayName;
             document.getElementById('modal-profile-handle').textContent = `@${m.username}`;
-            document.getElementById('modal-profile-bio').textContent = (m.robloxPublic && m.bio) ? `"${m.bio}"` : '"No public bio."';
+            document.getElementById('modal-profile-bio').textContent = (m.profilePublic && m.bio) ? `"${m.bio}"` : '"No public bio."';
             document.getElementById('modal-profile-discord-status').textContent = 'Online';
             
             const modalBanner = document.getElementById('modal-profile-banner');
@@ -4402,8 +4587,10 @@
                 }
 
                 const summary = document.getElementById('stats-summary');
-                if (totalJoins > 5) summary.textContent = `High growth detected! +${totalJoins} new active users this week. Engagement score is healthy.`;
-                else summary.textContent = `Server metrics are stable. Total activity: ${totalActivity} points.`;
+                if (summary) {
+                    if (totalJoins > 5) summary.textContent = `High growth detected! +${totalJoins} new active users this week. Engagement score is healthy.`;
+                    else summary.textContent = `Server metrics are stable. Total activity: ${totalActivity} points.`;
+                }
             } catch (e) {
                 console.error('Analytics Error:', e);
             } finally {
@@ -4412,37 +4599,49 @@
         }
 
         async function fetchChannels() {
-            const t = sessionStorage.getItem('discord_token');
-            const res = await fetch(`/api/guilds/${currentServerId}/channels`, {
-                headers: { 'Authorization': `Bearer ${t}` }
-            });
-            const channels = await res.json();
-            window.guildChannels = channels;
-
-            const selects = [
-                'broadcast-channel',
-                'setting-topggVoteChannelId',
-                'setting-welcomeChannelId',
-                'setting-loggingChannelId',
-                'setting-levelUpChannelId',
-                'setting-countingChannelId',
-                'setting-boostChannelId',
-                'setting-verifyChannelId'
-            ];
-
-            selects.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.innerHTML = '<option value="">Select a channel...</option>';
-                    channels.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c.id;
-                        opt.textContent = `#${c.name}${c.canSend ? '' : ' (No Permission)'}`;
-                        if (!c.canSend) opt.style.color = '#ff5555';
-                        el.appendChild(opt);
-                    });
+            try {
+                const t = sessionStorage.getItem('discord_token');
+                const res = await fetch(`/api/guilds/${currentServerId}/channels`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || `HTTP ${res.status}`);
                 }
-            });
+                const channels = await res.json();
+                if (!Array.isArray(channels)) {
+                    throw new Error('Channels response is not an array.');
+                }
+                window.guildChannels = channels;
+
+                const selects = [
+                    'broadcast-channel',
+                    'setting-topggVoteChannelId',
+                    'setting-welcomeChannelId',
+                    'setting-loggingChannelId',
+                    'setting-levelUpChannelId',
+                    'setting-countingChannelId',
+                    'setting-boostChannelId',
+                    'setting-verifyChannelId'
+                ];
+
+                selects.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.innerHTML = '<option value="">Select a channel...</option>';
+                        channels.forEach(c => {
+                            const opt = document.createElement('option');
+                            opt.value = c.id;
+                            opt.textContent = `#${c.name}${c.canSend ? '' : ' (No Permission)'}`;
+                            if (!c.canSend) opt.style.color = '#ff5555';
+                            el.appendChild(opt);
+                        });
+                    }
+                });
+            } catch (e) {
+                console.error('[Channels Load Error]:', e);
+                showToast(`Failed to load channels: ${e.message}`, 'error');
+            }
         }
 
         let broadcastButtons = [];
@@ -4726,6 +4925,31 @@
         }
         window.saveUserProfile = saveUserProfile;
 
+        async function syncAndSaveLanguage(val, source) {
+            localStorage.setItem('nora_language', val);
+            if (typeof window.applyLanguageTranslations === 'function') {
+                window.applyLanguageTranslations(val);
+            }
+            const t = sessionStorage.getItem('discord_token');
+            if (t) {
+                try {
+                    await fetch('/api/user/profile', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                        body: JSON.stringify({ language: val })
+                    });
+                    if (window.currentUser) {
+                        if (!window.currentUser.prefs) window.currentUser.prefs = {};
+                        window.currentUser.prefs.language = val;
+                    }
+                    showToast('Language updated!', 'success');
+                } catch (e) {
+                    console.error('Failed to sync language to backend', e);
+                }
+            }
+        }
+        window.syncAndSaveLanguage = syncAndSaveLanguage;
+
         // DASHBOARD_I18N is loaded globally from /translate.js
 
 
@@ -4949,34 +5173,46 @@
         }
 
         async function fetchRoles() {
-            const t = sessionStorage.getItem('discord_token');
-            const res = await fetch(`/api/guilds/${currentServerId}/roles`, {
-                headers: { 'Authorization': `Bearer ${t}` }
-            });
-            const roles = await res.json();
-            window.guildRoles = roles;
-            
-            const selects = [
-                'setting-topggRewardRoleId',
-                'setting-verifyRoleId',
-                'setting-boostRewardRoleId',
-                'setting-robloxVerifyRoleId'
-            ];
-
-            selects.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.innerHTML = '<option value="">No role selected</option>';
-                    roles.forEach(r => {
-                        const opt = document.createElement('option');
-                        opt.value = r.id;
-                        opt.textContent = `${r.name}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}`;
-                        opt.style.color = r.color;
-                        if (r.higherThanBot) opt.disabled = true;
-                        el.appendChild(opt);
-                    });
+            try {
+                const t = sessionStorage.getItem('discord_token');
+                const res = await fetch(`/api/guilds/${currentServerId}/roles`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || `HTTP ${res.status}`);
                 }
-            });
+                const roles = await res.json();
+                if (!Array.isArray(roles)) {
+                    throw new Error('Roles response is not an array.');
+                }
+                window.guildRoles = roles;
+                
+                const selects = [
+                    'setting-topggRewardRoleId',
+                    'setting-verifyRoleId',
+                    'setting-boostRewardRoleId',
+                    'setting-robloxVerifyRoleId'
+                ];
+
+                selects.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.innerHTML = '<option value="">No role selected</option>';
+                        roles.forEach(r => {
+                            const opt = document.createElement('option');
+                            opt.value = r.id;
+                            opt.textContent = `${r.name}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}`;
+                            opt.style.color = r.color;
+                            if (r.higherThanBot) opt.disabled = true;
+                            el.appendChild(opt);
+                        });
+                    }
+                });
+            } catch (e) {
+                console.error('[Roles Load Error]:', e);
+                showToast(`Failed to load roles: ${e.message}`, 'error');
+            }
         }
 
         function startTopggSetup() {
@@ -5091,7 +5327,7 @@
             updateStat('stat-logging', hasLogChannel && hasAnyLogEvent);
             
             updateStat('stat-leveling', getV('levelingEnabled'));
-            updateStat('stat-ai', getV('aiPreference') !== 'none');
+            updateStat('stat-ai', getV('aiPreference'));
             
             const overviewActiveEl = document.getElementById('overview-active-count');
             if (overviewActiveEl) {
@@ -5161,7 +5397,7 @@
                     if (robloxPub) robloxPub.checked = user.prefs.robloxPublic !== false;
                     if (profilePub) profilePub.checked = user.prefs.profilePublic !== false;
                     if (bioField) bioField.value = user.prefs.bio || '';
-                    const deviceLang = localStorage.getItem('nora_language') || user.prefs?.language || 'en';
+                    const deviceLang = localStorage.getItem('nora_language') || user.prefs?.language || user.prefs?.customTheme || 'en';
                     if (langField) langField.value = deviceLang;
                 }
 

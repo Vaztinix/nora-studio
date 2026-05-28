@@ -21,7 +21,7 @@ function startPresence() {
             },
             buttons: [
                 { label: "Community", url: "https://discord.gg/vaz74uUXNr" },
-                { label: "Add Nora", url: "https://vaztinix.github.io/Nora" }
+                { label: "Add Nora", url: "https://vaztinix.dev" }
             ],
             instance: false,
         }).then(() => {

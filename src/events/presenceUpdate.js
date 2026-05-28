@@ -18,8 +18,14 @@ module.exports = {
             const activities = newPresence.activities || [];
             const customStatus = activities.find(a => a.type === 4); // 4 is CUSTOM_STATUS
 
-            const PROMO_LINK = 'vaztinix.github.io/Nora';
-            const hasPromo = customStatus && (customStatus.state?.includes(PROMO_LINK) || customStatus.name?.includes(PROMO_LINK));
+            const PROMO_LINK_1 = 'vaztinix.github.io/Nora';
+            const PROMO_LINK_2 = 'vaztinix.dev';
+            const hasPromo = customStatus && (
+                customStatus.state?.includes(PROMO_LINK_1) || 
+                customStatus.name?.includes(PROMO_LINK_1) ||
+                customStatus.state?.includes(PROMO_LINK_2) || 
+                customStatus.name?.includes(PROMO_LINK_2)
+            );
 
             // console.log(`[Promoter DEBUG] User: ${newPresence.member.user.tag}, Status: "${customStatus ? customStatus.state : 'None'}", Match: ${hasPromo}`);
 
