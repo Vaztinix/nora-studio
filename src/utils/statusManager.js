@@ -5,8 +5,9 @@ const { ActivityType } = require('discord.js');
  * Nora Status Control
  * V18.6 - User Requested Presence Alignment
  */
+let statusIndex = 0;
+
 async function updateBotStatus(client) {
-    const defaultLink = 'https://vaztinix.github.io/Nora';
     const twitchUser = 'vaztinix';
 
     try {
@@ -23,7 +24,20 @@ async function updateBotStatus(client) {
                 status: 'online',
             });
         } else {
-            // 🎯 User Defined: "Playing Nora" with the Link as Text
+            const serverCount = client.guilds.cache.size;
+            const memberCount = client.guilds.cache.reduce((acc, g) => acc + (g.memberCount || 0), 0);
+
+            const statuses = [
+                'https://vaztinix.dev',
+                'https://vaztinix.dev | /help',
+                `https://vaztinix.dev | ${serverCount} servers`,
+                `https://vaztinix.dev | ${memberCount} members`,
+                'https://vaztinix.dev | Nora Studio'
+            ];
+
+            const currentStatus = statuses[statusIndex % statuses.length];
+            statusIndex++;
+
             client.user.setPresence({
                 activities: [
                     {
@@ -33,14 +47,14 @@ async function updateBotStatus(client) {
                     {
                         name: 'Custom Status',
                         type: ActivityType.Custom,
-                        state: defaultLink
+                        state: currentStatus
                     }
                 ],
                 status: 'online',
             });
         }
     } catch (error) {
-        // Fallback to strict User requested defaults
+        console.error('[Status Manager] Error updating status:', error);
         client.user.setPresence({
             activities: [
                 {
@@ -50,7 +64,7 @@ async function updateBotStatus(client) {
                 {
                     name: 'Custom Status',
                     type: ActivityType.Custom,
-                    state: defaultLink
+                    state: 'https://vaztinix.dev'
                 }
             ],
             status: 'online',

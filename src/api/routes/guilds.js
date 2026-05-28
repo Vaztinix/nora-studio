@@ -19,10 +19,12 @@ router.get('/channels', async (req, res) => {
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
+        const me = guild.members.me || await guild.members.fetch(req.client.user.id).catch(() => null);
+        if (!me) return res.status(500).json({ error: 'Failed to fetch bot member.' });
+
         const channels = [];
         guild.channels.cache.forEach(c => {
             if (c.type === 0 || c.isTextBased()) {
-                const me = guild.members.me;
                 const canView = c.permissionsFor(me)?.has('ViewChannel') || false;
                 const canSend = c.permissionsFor(me)?.has('SendMessages') || false;
                 if (canView) {
@@ -52,7 +54,8 @@ router.get('/roles', async (req, res) => {
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
-        const botMember = guild.members.me;
+        const botMember = guild.members.me || await guild.members.fetch(req.client.user.id).catch(() => null);
+        if (!botMember) return res.status(500).json({ error: 'Failed to fetch bot member.' });
         const botHighestRole = botMember.roles.highest;
 
         const roles = guild.roles.cache.map(r => {
@@ -278,6 +281,81 @@ router.post('/members/:userId/level', async (req, res) => {
         res.json({ success: true, record });
     } catch (e) {
         console.error('Error updating member level:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/topgg/link-bot
+ * Verify bot ownership on Top.gg and link it to this guild.
+ */
+router.post('/topgg/link-bot', async (req, res) => {
+    try {
+        const fetch = require('node-fetch');
+        const { guildId } = req.params;
+        const { botId, legacyOwnerId } = req.body;
+        if (!botId) return res.status(400).json({ error: 'Missing botId' });
+
+        // Retrieve token from Authorization header to know who the user is
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        
+        // Fetch user info from Discord API
+        const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!userRes.ok) return res.status(401).json({ error: 'Invalid Discord token' });
+        const user = await userRes.json();
+
+        // 1. Fetch bot details from Top.gg API
+        const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
+        const topggRes = await fetch(`https://top.gg/api/bots/${botId}`, {
+            headers: { Authorization: NORA_V0 }
+        });
+
+        if (!topggRes.ok) {
+            return res.status(400).json({ error: 'Bot not found on Top.gg.' });
+        }
+
+        const botData = await topggRes.json();
+        const owners = botData.owners || [];
+
+        // Verify if user.id is in owners, or legacyOwnerId matches, or verification code exists in description
+        let isOwner = owners.includes(user.id);
+        
+        if (!isOwner && legacyOwnerId) {
+            isOwner = owners.includes(legacyOwnerId);
+        }
+
+        // If not in owners list directly, check short description for the verification code
+        if (!isOwner) {
+            const expectedCode = `NORA-${guildId.slice(-4)}-${(legacyOwnerId || user.id).slice(-4)}`.toUpperCase();
+            const shortDesc = botData.shortdesc || '';
+            const longDesc = botData.longdesc || '';
+            if (shortDesc.toUpperCase().includes(expectedCode) || longDesc.toUpperCase().includes(expectedCode)) {
+                isOwner = true;
+            }
+        }
+
+        if (!isOwner) {
+            return res.status(403).json({ error: 'Verification failed. You must be an owner of this bot on Top.gg or include the verification code in your bot description.' });
+        }
+
+        // 2. Update GuildSettings
+        const GuildSettings = require('../../database/models/GuildSettings');
+        const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
+        
+        settings.topggVerified = true;
+        settings.topggBotId = botId;
+        if (legacyOwnerId) {
+            settings.topggLegacyOwnerId = legacyOwnerId;
+        }
+        await settings.save();
+
+        res.json({ success: true, settings });
+    } catch (e) {
+        console.error('Error linking Top.gg bot:', e);
         res.status(500).json({ error: e.message });
     }
 });
