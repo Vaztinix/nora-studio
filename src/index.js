@@ -239,11 +239,8 @@ app.get('/api/user/guilds', async (req, res) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
     try {
-        const dRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!dRes.ok) return res.status(dRes.status).json({ error: 'Discord API Error' });
-        const guilds = await dRes.json();
+        const { getCachedUserGuilds } = require('./api/middleware/auth');
+        const guilds = await getCachedUserGuilds(token);
         
         // Filter guilds where user has Administrator (0x8) or Manage Guild (0x20)
         const filteredGuilds = guilds.filter(g => {
