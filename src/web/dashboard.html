@@ -2327,7 +2327,7 @@
                 const customApi = localStorage.getItem('nora_api_url');
                 const API_BASE = customApi 
                     ? customApi 
-                    : (window.location.hostname === 'vaztinix.dev'
+                    : ((window.location.hostname.includes('vaztinix.dev') || window.location.hostname.includes('vaztinix.github.io'))
                         ? 'https://api.vaztinix.dev'
                         : (window.location.hostname.endsWith('norabot.app')
                             ? 'https://api.norabot.app'
@@ -5169,8 +5169,13 @@
                 const topggWebUrlFinal = document.getElementById('topgg-webhook-url-final');
                 const topggAuthInput = document.getElementById('setting-topggWebhookAuth');
                 
-                if (topggWebUrl) topggWebUrl.value = `https://api.norabot.app/api/webhooks/topgg/${currentServerId}`;
-                if (topggWebUrlFinal) topggWebUrlFinal.value = `https://api.norabot.app/api/webhooks/topgg/${currentServerId}`;
+                const API_WEBHOOK_BASE = (window.location.hostname.includes('vaztinix.dev') || window.location.hostname.includes('vaztinix.github.io'))
+                    ? 'https://api.vaztinix.dev'
+                    : (window.location.hostname.endsWith('norabot.app')
+                        ? 'https://api.norabot.app'
+                        : window.location.origin);
+                if (topggWebUrl) topggWebUrl.value = `${API_WEBHOOK_BASE}/api/webhooks/topgg/${currentServerId}`;
+                if (topggWebUrlFinal) topggWebUrlFinal.value = `${API_WEBHOOK_BASE}/api/webhooks/topgg/${currentServerId}`;
                 
                 if (topggAuthInput && !topggAuthInput.value) {
                     topggAuthInput.value = 'nora_' + Math.random().toString(36).substring(2, 15);
