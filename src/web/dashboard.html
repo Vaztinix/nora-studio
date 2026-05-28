@@ -2321,18 +2321,42 @@
 
     <script>
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
+        window.getApiBaseUrl = function() {
+            let customApi = localStorage.getItem('nora_api_url');
+            const host = window.location.hostname;
+            const isLocalHost = host === 'localhost' || 
+                                host === '127.0.0.1' || 
+                                host.startsWith('192.168.') || 
+                                host.startsWith('10.') || 
+                                host.startsWith('172.');
+
+            if (customApi) {
+                const isCustomLocal = customApi.includes('localhost') || 
+                                      customApi.includes('127.0.0.1') || 
+                                      customApi.includes('192.168.') || 
+                                      customApi.includes('10.') || 
+                                      customApi.includes('172.');
+                if (isCustomLocal && !isLocalHost) {
+                    localStorage.removeItem('nora_api_url');
+                    customApi = null;
+                }
+            }
+
+            if (customApi) return customApi;
+
+            if (isLocalHost) {
+                return '';
+            } else if (host.endsWith('norabot.app')) {
+                return 'https://api.norabot.app';
+            } else {
+                return 'https://api.vaztinix.dev';
+            }
+        };
+
         const originalFetch = window.fetch;
         window.fetch = function(input, init) {
             if (typeof input === 'string' && input.startsWith('/api/')) {
-                const customApi = localStorage.getItem('nora_api_url');
-                const API_BASE = customApi 
-                    ? customApi 
-                    : ((window.location.hostname.includes('vaztinix.dev') || window.location.hostname.includes('vaztinix.github.io'))
-                        ? 'https://api.vaztinix.dev'
-                        : (window.location.hostname.endsWith('norabot.app')
-                            ? 'https://api.norabot.app'
-                            : ''));
-                input = API_BASE + input;
+                input = window.getApiBaseUrl() + input;
             }
             return originalFetch(input, init);
         };
@@ -5172,11 +5196,7 @@
                 const topggWebUrlFinal = document.getElementById('topgg-webhook-url-final');
                 const topggAuthInput = document.getElementById('setting-topggWebhookAuth');
                 
-                const API_WEBHOOK_BASE = (window.location.hostname.includes('vaztinix.dev') || window.location.hostname.includes('vaztinix.github.io'))
-                    ? 'https://api.vaztinix.dev'
-                    : (window.location.hostname.endsWith('norabot.app')
-                        ? 'https://api.norabot.app'
-                        : window.location.origin);
+                const API_WEBHOOK_BASE = window.getApiBaseUrl() || window.location.origin;
                 if (topggWebUrl) topggWebUrl.value = `${API_WEBHOOK_BASE}/api/webhooks/topgg/${currentServerId}`;
                 if (topggWebUrlFinal) topggWebUrlFinal.value = `${API_WEBHOOK_BASE}/api/webhooks/topgg/${currentServerId}`;
                 
