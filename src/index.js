@@ -13,6 +13,7 @@ require('./database/models/GlobalSettings');
 require('./database/models/OneTimeEvent');
 require('./database/models/Warning');
 require('./database/models/UserMemory');
+require('./database/models/UserPrefs');
 
 const client = new Client({
     intents: [
@@ -71,7 +72,7 @@ const express = require('express');
 const Topgg = require('@top-gg/sdk');
 const fetch = require('node-fetch');
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3000;
 const { EmbedBuilder } = require('discord.js');
 const noraLeveling = require('./utils/noraLeveling');
 const GuildSettings = require('./database/models/GuildSettings');
@@ -108,6 +109,9 @@ app.use(express.static(path.join(__dirname, '../dist/web')));
 const settingsRouter = require('./api/routes/settings');
 app.use('/api/guilds/:guildId/settings', settingsRouter);
 
+const guildsRouter = require('./api/routes/guilds');
+app.use('/api/guilds/:guildId', guildsRouter);
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Nora API is running.' });
@@ -129,8 +133,46 @@ app.get('/api/user/me', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
+        
+        // Construct full CDN avatar URL
+        if (user.avatar) {
+            const isAnimated = user.avatar.startsWith('a_');
+            user.avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`;
+        } else {
+            user.avatar = `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) % 5n) + 1n}.png`;
+        }
+
+        // Determine if user is owner of the bot
+        let isOwner = false;
+        try {
+            const app = await req.client.application.fetch();
+            if (app.owner) {
+                if (app.owner.id === user.id) {
+                    isOwner = true;
+                } else if (app.owner.members && app.owner.members.has(user.id)) {
+                    isOwner = true;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch application owner:', e);
+        }
+        // Fallback to founder ID
+        if (user.id === '1214048435632603137') {
+            isOwner = true;
+        }
+        user.isOwner = isOwner;
+
+        // Fetch user preferences/badges from DB
+        const UserPrefs = require('./database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+        user.prefs = prefs;
+
+        // Owners get premium by default
+        user.noraPremium = isOwner;
+
         res.json(user);
     } catch (e) {
+        console.error('Error in /api/user/me:', e);
         res.status(401).json({ error: 'Unauthorized' });
     }
 });
