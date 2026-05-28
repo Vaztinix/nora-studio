@@ -2891,6 +2891,7 @@
                 authOverlay.style.opacity = '0'; setTimeout(() => { authOverlay.style.display = 'none'; fetchGuilds(t); fetchRobloxStatus(t); }, 300);
             } catch (e) { 
                 console.error('Authentication Error:', e);
+                sessionStorage.removeItem('discord_token');
                 localStorage.removeItem('nora_auth'); // Clear invalid token to allow fresh login
                 authOverlay.style.opacity = '1'; 
                 showToast(`Auth Fault: ${e.message || 'Unknown'}`, 'error');
