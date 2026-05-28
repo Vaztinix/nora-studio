@@ -166,6 +166,7 @@ app.get('/api/user/me', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
         user.prefs = prefs;
+        user.sessionHardened = !!prefs.sessionHardened;
 
         // Owners get premium by default
         user.noraPremium = isOwner;
@@ -174,6 +175,52 @@ app.get('/api/user/me', async (req, res) => {
     } catch (e) {
         console.error('Error in /api/user/me:', e);
         res.status(401).json({ error: 'Unauthorized' });
+    }
+});
+
+// Update profile preferences
+app.post('/api/user/profile', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const UserPrefs = require('./database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+        
+        const { robloxPublic, profilePublic, bio, language, dashboardSettings } = req.body;
+        if (robloxPublic !== undefined) prefs.robloxPublic = robloxPublic;
+        if (profilePublic !== undefined) prefs.profilePublic = profilePublic;
+        if (bio !== undefined) prefs.bio = bio;
+        if (language !== undefined) prefs.customTheme = language;
+        if (dashboardSettings !== undefined) {
+            prefs.dashboardSettings = dashboardSettings;
+        }
+        await prefs.save();
+        res.json({ success: true, prefs });
+    } catch (e) {
+        console.error('Error in /api/user/profile:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Update personal preferences
+app.post('/api/user/prefs', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const UserPrefs = require('./database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+        
+        const { sessionHardened } = req.body;
+        if (sessionHardened !== undefined) prefs.sessionHardened = sessionHardened;
+        await prefs.save();
+        res.json({ success: true, prefs });
+    } catch (e) {
+        console.error('Error in /api/user/prefs:', e);
+        res.status(500).json({ error: e.message });
     }
 });
 
