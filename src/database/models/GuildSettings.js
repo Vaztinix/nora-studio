@@ -207,6 +207,217 @@ const GuildSettings = sequelize.define('GuildSettings', {
     verifyRoleId: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    // ---- Dynamic Logging Framework Extensions ----
+    logChannelCreates: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logChannelEdits: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logChannelDeletes: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logVoiceJoins: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logVoiceLeaves: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logVoiceMoves: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logMemberBoosts: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logJoinMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    logLeaveMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    logBoostMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    // ---- Voice XP Configuration ----
+    voiceXpRate: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10
+    },
+    voiceXpInterval: {
+        type: DataTypes.INTEGER,
+        defaultValue: 60000
+    },
+    // ---- Level Up Configuration ----
+    levelUpDmEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    xpRoleMultipliers: {
+        type: DataTypes.TEXT,
+        defaultValue: '{}'
+    },
+    guessGameXpReward: {
+        type: DataTypes.INTEGER,
+        defaultValue: 50
+    },
+    countingChannelXpReward: {
+        type: DataTypes.INTEGER,
+        defaultValue: 15
+    },
+    // ---- Roblox Integration ----
+    robloxLiveActivityEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    robloxVerifyEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    robloxVerifyRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    robloxGroupBindings: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    robloxJoinGameEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    // ---- Top.gg Integration ----
+    topggBotId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    topggLegacyOwnerId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    topggWebhookAuth: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    topggVoteChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    topggVoteMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    topggVoteContent: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    topggVoteEmbedImage: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    topggVoteEmbedColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#aeefff'
+    },
+    topggRewardRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    topggVerifyCode: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    topggVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    topggXpBoost: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1
+    },
+    topggDoubleXp: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    topggReminders: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    topggWebhookName: {
+        type: DataTypes.STRING,
+        defaultValue: 'Nora Webhook'
+    },
+    topggWebhookAvatar: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    // ---- User preferences / UI States ----
+    prefNotifVotes: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    prefNotifLevels: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    prefNotifSafety: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    prefNotifBroadcast: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    prefSecureSession: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    prefAccessLogs: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    notifPosition: {
+        type: DataTypes.STRING,
+        defaultValue: 'tr'
+    },
+    boostChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    boostRewardRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    // ---- Games Config ----
+    guessGameEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    rpsGameEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    rpsGameXpReward: {
+        type: DataTypes.INTEGER,
+        defaultValue: 25
+    },
+    // ---- Language ----
+    language: {
+        type: DataTypes.STRING,
+        defaultValue: 'en'
     }
 });
 
