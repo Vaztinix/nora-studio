@@ -413,6 +413,125 @@ app.post('/api/user/roblox/unlink', async (req, res) => {
     }
 });
 
+app.get('/api/user/roblox/presence', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const record = await RobloxVerify.findOne({ where: { userId: user.id } });
+        
+        if (!record || record.status !== 'VERIFIED') {
+            return res.json({ error: 'Not linked' });
+        }
+        
+        let robloxId = record.robloxId;
+        
+        // If robloxId is not numeric, it's a legacy username string. Let's resolve it first.
+        if (!/^\d+$/.test(robloxId)) {
+            try {
+                const searchRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usernames: [robloxId], excludeBannedUsers: true })
+                });
+                if (searchRes.ok) {
+                    const searchData = await searchRes.json();
+                    if (searchData.data && searchData.data.length > 0) {
+                        robloxId = searchData.data[0].id.toString();
+                        record.robloxId = robloxId;
+                        await record.save();
+                    } else {
+                        return res.json({ error: 'Roblox user not found' });
+                    }
+                } else {
+                    return res.json({ error: 'Failed to contact Roblox API to resolve username' });
+                }
+            } catch (e) {
+                console.error('Failed to resolve legacy Roblox username in presence:', e);
+                return res.json({ error: 'Error resolving username' });
+            }
+        }
+        
+        // 1. Fetch profile details
+        let displayName = record.robloxId;
+        let username = record.robloxId;
+        try {
+            const profileRes = await fetch(`https://users.roblox.com/v1/users/${robloxId}`);
+            if (profileRes.ok) {
+                const profileData = await profileRes.json();
+                username = profileData.name;
+                displayName = profileData.displayName;
+            }
+        } catch (e) {
+            console.error('Failed to fetch Roblox profile:', e);
+        }
+        
+        // 2. Fetch avatar headshot thumbnail
+        let avatarUrl = `https://www.roblox.com/headshot-thumbnail/image?userId=${robloxId}&width=150&height=150&format=png`;
+        try {
+            const avatarRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`);
+            if (avatarRes.ok) {
+                const avatarData = await avatarRes.json();
+                if (avatarData.data && avatarData.data.length > 0) {
+                    avatarUrl = avatarData.data[0].imageUrl;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch Roblox avatar headshot:', e);
+        }
+        
+        // 3. Fetch presence info
+        let online = false;
+        let status = 'Offline';
+        let joinable = false;
+        let placeId = null;
+        let gameId = null;
+        
+        try {
+            const presenceRes = await fetch('https://presence.roblox.com/v1/presence/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userIds: [parseInt(robloxId)] })
+            });
+            if (presenceRes.ok) {
+                const presenceData = await presenceRes.json();
+                if (presenceData.userPresences && presenceData.userPresences.length > 0) {
+                    const p = presenceData.userPresences[0];
+                    const type = p.userPresenceType; // 0: Offline, 1: Online, 2: InGame, 3: InStudio
+                    online = type > 0;
+                    if (type === 1) {
+                        status = 'Online on Website';
+                    } else if (type === 2) {
+                        status = p.lastLocation || 'Playing Roblox';
+                        joinable = true;
+                        placeId = p.rootPlaceId || p.placeId;
+                        gameId = p.gameId;
+                    } else if (type === 3) {
+                        status = 'Editing in Studio';
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch Roblox presence:', e);
+        }
+        
+        res.json({
+            username,
+            displayName,
+            avatar: avatarUrl,
+            online,
+            status,
+            joinable,
+            placeId,
+            gameId
+        });
+    } catch (e) {
+        console.error('Error in /api/user/roblox/presence:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.get('/api/user/topgg/bots', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
@@ -431,11 +550,13 @@ app.get('/api/user/topgg/bots', async (req, res) => {
         }
         
         const data = await topggRes.json();
-        const bots = (data.results || []).map(b => ({
-            id: b.id,
-            username: b.username,
-            avatar: b.avatar ? `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}.png` : 'https://top.gg/images/topgg-logo.png'
-        }));
+        const bots = (data.results || [])
+            .filter(b => Array.isArray(b.owners) && b.owners.includes(user.id))
+            .map(b => ({
+                id: b.id,
+                username: b.username,
+                avatar: b.avatar ? `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}.png` : 'https://top.gg/images/topgg-logo.png'
+            }));
         
         res.json({ bots });
     } catch (e) {

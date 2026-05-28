@@ -3983,7 +3983,17 @@
             showTab('tab-overview');
 
             applyPremiumLocking();
-            fetchSettings(); fetchChannels(); fetchAnalytics(); fetchRoles();
+            
+            toggleLoading(true);
+            try {
+                // Await channels and roles loading first so that fetchSettings() can map the select elements correctly
+                await Promise.all([fetchChannels(), fetchRoles(), fetchAnalytics()]);
+                await fetchSettings();
+            } catch (err) {
+                console.error('[Open Config Error]:', err);
+            } finally {
+                toggleLoading(false);
+            }
         }
 
         function applyPremiumLocking() {
@@ -5386,6 +5396,36 @@
                     multsList.innerHTML = '';
                     const mults = JSON.parse(s.xpRoleMultipliers || '{}');
                     Object.entries(mults).forEach(([rid, val]) => addRoleMultiplier(rid, val));
+                }
+
+                // Populate Roblox Group Bindings
+                const robloxGroupList = document.getElementById('roblox-group-list');
+                if (robloxGroupList) {
+                    robloxGroupList.innerHTML = '';
+                    let bindings = [];
+                    try {
+                        bindings = JSON.parse(s.robloxGroupBindings || '[]');
+                    } catch (e) {
+                        console.error('Failed to parse robloxGroupBindings:', e);
+                    }
+                    if (Array.isArray(bindings)) {
+                        bindings.forEach(b => addRobloxGroupBinding(b.groupId, b.rank, b.roleId));
+                    }
+                }
+
+                // Populate Role Rewards
+                const roleRewardsList = document.getElementById('role-rewards-list');
+                if (roleRewardsList) {
+                    roleRewardsList.innerHTML = '';
+                    let rewards = {};
+                    try {
+                        rewards = JSON.parse(s.roleRewards || '{}');
+                    } catch (e) {
+                        console.error('Failed to parse roleRewards:', e);
+                    }
+                    if (rewards && typeof rewards === 'object') {
+                        Object.entries(rewards).forEach(([lvl, roleId]) => addRoleReward(lvl, roleId));
+                    }
                 }
 
                 // Load User Profile Data
