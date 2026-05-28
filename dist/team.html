@@ -691,9 +691,11 @@
                     const yc = rect.height / 2;
                     const angleX = (yc - y) / 10;
                     const angleY = (x - xc) / 10;
+                    card.style.transition = 'border-color 0.25s, box-shadow 0.25s'; // No transform transition during active hover
                     card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateY(-8px)`;
                 });
                 card.addEventListener('mouseleave', () => {
+                    card.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s, box-shadow 0.25s'; // Smooth slow go-back
                     card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
                 });
             });
