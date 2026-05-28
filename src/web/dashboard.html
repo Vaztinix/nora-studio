@@ -2462,11 +2462,43 @@
         };
 
         const originalFetch = window.fetch;
-        window.fetch = function(input, init) {
+        window.fetch = async function(input, init) {
+            let resolvedUrl = input;
             if (typeof input === 'string' && input.startsWith('/api/')) {
-                input = window.getApiBaseUrl() + input;
+                resolvedUrl = window.getApiBaseUrl() + input;
             }
-            return originalFetch(input, init);
+            try {
+                const response = await originalFetch(resolvedUrl, init);
+                if (!response.ok && typeof input === 'string' && !input.includes('/api/logs/client')) {
+                    try {
+                        const clone = response.clone();
+                        const errText = await clone.text();
+                        originalFetch(window.getApiBaseUrl() + '/api/logs/client', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                message: `HTTP Error ${response.status} on ${input}`,
+                                level: 'FETCH_ERROR',
+                                context: { status: response.status, statusText: response.statusText, response: errText.substring(0, 300) }
+                            })
+                        }).catch(() => {});
+                    } catch (e) {}
+                }
+                return response;
+            } catch (err) {
+                if (typeof input === 'string' && !input.includes('/api/logs/client')) {
+                    originalFetch(window.getApiBaseUrl() + '/api/logs/client', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: `Network Error on ${input}: ${err.message}`,
+                            level: 'FETCH_ERROR',
+                            context: { stack: err.stack }
+                        })
+                    }).catch(() => {});
+                }
+                throw err;
+            }
         };
 
         window.toggleApiConfig = function(e) {
