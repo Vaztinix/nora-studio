@@ -2609,7 +2609,7 @@
                 
                 const userNameEl = document.getElementById('user-name');
                 if (userNameEl) {
-                    userNameEl.textContent = localStorage.getItem('nora_display_name') || d.global_name;
+                    userNameEl.textContent = localStorage.getItem('nora_display_name') || d.global_name || d.username;
                 }
                 
                 const badgeContainer = document.getElementById('user-badges');
@@ -2640,7 +2640,7 @@
                 // Populate Settings
                 document.getElementById('pref-username').value = d.username;
                 document.getElementById('pref-email').value = d.email;
-                document.getElementById('pref-display-name').value = localStorage.getItem('nora_display_name') || d.global_name;
+                document.getElementById('pref-display-name').value = localStorage.getItem('nora_display_name') || d.global_name || d.username;
                 document.getElementById('pref-premium-status').innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
                 if (d.noraPremium) document.getElementById('pref-premium-status').innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
 
@@ -2682,7 +2682,10 @@
                         
                         // Update display name input
                         const savedName = localStorage.getItem('nora_display_name');
-                        if (savedName) document.getElementById('pref-display-name').value = savedName;
+                        if (savedName) {
+                            document.getElementById('pref-display-name').value = savedName;
+                            if (userNameEl) userNameEl.textContent = savedName;
+                        }
                     }
                 } catch (e) {
                     console.error('Failed to parse remote dashboard settings', e);
@@ -2763,11 +2766,11 @@
 
         async function savePersonalPrefs() {
             const displayName = document.getElementById('pref-display-name').value;
-            localStorage.setItem('nora_display_name', displayName);
-                const userNameEl = document.getElementById('user-name');
-                if (userNameEl) {
-                    userNameEl.textContent = displayName;
-                }
+            await saveDashboardSetting('nora_display_name', displayName);
+            const userNameEl = document.getElementById('user-name');
+            if (userNameEl) {
+                userNameEl.textContent = displayName;
+            }
             
             const t = sessionStorage.getItem('discord_token');
             const sessionHardened = document.getElementById('pref-secure-session').checked;
@@ -3500,7 +3503,7 @@
             localStorage.setItem(key, value);
             currentDashboardSettings[key] = value;
             
-            const auth = localStorage.getItem('nora_auth');
+            const auth = sessionStorage.getItem('discord_token');
             if (auth) {
                 try {
                     await fetch('/api/user/profile', {
