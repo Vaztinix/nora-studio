@@ -1989,15 +1989,12 @@
         }
         
         localStorage.setItem('nora_language', value);
+        if (typeof window.applyLanguageTranslations === 'function') {
+            window.applyLanguageTranslations(value);
+        }
         
         if (typeof window.saveUserProfile === 'function') {
-            window.saveUserProfile().then(() => {
-                location.reload();
-            }).catch(() => {
-                location.reload();
-            });
-        } else {
-            location.reload();
+            window.saveUserProfile().catch(() => {});
         }
     };
 
@@ -2116,7 +2113,6 @@
             }
             
             window.applyLanguageTranslations(val);
-            location.reload();
         };
         
         container.appendChild(icon);
