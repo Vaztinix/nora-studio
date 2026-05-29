@@ -952,7 +952,7 @@
 
     <div class="app-layout">
         <aside class="sidebar">
-            <div class="user-profile">
+            <div class="user-profile" data-no-translate>
                 <div style="position: relative;">
                     <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="User">
                     <div id="user-status-dot" style="position: absolute; bottom: 4px; right: 4px; width: 12px; height: 12px; border-radius: 50%; background: #23a55a; border: 2px solid var(--sidebar-bg);"></div>
@@ -1047,7 +1047,7 @@
                             <div style="padding: 20px 20px 0 20px;">
                                 <h3>Live Preview</h3>
                             </div>
-                            <div id="profile-card-preview" style="background: var(--sidebar-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin: 15px;">
+                            <div id="profile-card-preview" data-no-translate style="background: var(--sidebar-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin: 15px;">
                                 <div id="profile-banner" style="height: 80px; background: linear-gradient(135deg, var(--primary) 0%, #4b69ff 100%); opacity: 0.9;"></div>
                                 <div style="padding: 15px; position: relative; margin-top: -45px;">
                                     <img id="profile-preview-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 72px; height: 72px; border-radius: 50%; border: 6px solid var(--sidebar-bg); background: var(--sidebar-bg);">
@@ -1071,7 +1071,7 @@
                         <div class="panel">
                             <h3>Nora Premium Center</h3>
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 18px;">Upgrade or review your current Nora benefits directly from Studio.</p>
-                            <div id="premium-center-status" style="padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.9rem; line-height: 1.5; color: #fff;">Loading your subscription status...</div>
+                            <div id="premium-center-status" data-no-translate style="padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.9rem; line-height: 1.5; color: #fff;">Loading your subscription status...</div>
                             <div id="premium-center-benefits" style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; color: var(--muted);">
                                 <div style="padding: 12px 14px; border-radius: 10px; background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.12);">• Faster AI throughout and higher monthly limits</div>
                                 <div style="padding: 12px 14px; border-radius: 10px; background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.12);">• Priority support and featured automation access</div>
@@ -1427,7 +1427,7 @@
                         <button class="back-link" id="back-to-servers">← Back to Servers</button>
                         <div class="config-title">
                             <img id="cfg-icon" src="nora.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-                            <div><h2 id="cfg-name">Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p></div>
+                            <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p></div>
                         </div>
                     </div>
                     <button class="save-btn" id="save-settings-btn" onclick="saveSettings()">Save Data</button>
@@ -1452,19 +1452,19 @@
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
                         <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);">
                             <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Total Members</span>
-                            <h2 id="stats-total-members" style="font-size: 1.8rem; margin-top: 5px; font-weight: 800;">...</h2>
+                            <h2 id="stats-total-members" data-no-translate style="font-size: 1.8rem; margin-top: 5px; font-weight: 800;">...</h2>
                         </div>
                         <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);">
                             <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Active Users</span>
-                            <h2 id="stats-nora-users" style="font-size: 1.8rem; margin-top: 5px; font-weight: 800;">...</h2>
+                            <h2 id="stats-nora-users" data-no-translate style="font-size: 1.8rem; margin-top: 5px; font-weight: 800;">...</h2>
                         </div>
                         <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);">
                             <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Growth Rate</span>
-                            <h2 id="stats-growth-rate" style="font-size: 1.8rem; margin-top: 5px; color: var(--success); font-weight: 800;">...</h2>
+                            <h2 id="stats-growth-rate" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--success); font-weight: 800;">...</h2>
                         </div>
                         <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; border: 1px solid var(--primary-glow); background: rgba(174, 239, 255, 0.03);">
                             <span style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Top.gg Votes</span>
-                            <h2 id="stats-total-votes" style="font-size: 1.8rem; margin-top: 5px; color: var(--primary); font-weight: 800;">0</h2>
+                            <h2 id="stats-total-votes" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--primary); font-weight: 800;">0</h2>
                         </div>
                     </div>
 
