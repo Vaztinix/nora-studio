@@ -8,3 +8,4 @@ node_modules/
 *.bak
 countingData.json
 scratch/
+.nora_neural_weights/
