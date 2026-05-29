@@ -1892,6 +1892,7 @@
             // Helper to tag single element if it is a static leaf node or contains mixed content
             function tagEl(el) {
                 if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'IFRAME') return;
+                if (el.hasAttribute && (el.hasAttribute('data-no-translate') || el.classList?.contains('no-translate') || (el.closest && el.closest('[data-no-translate], .no-translate')))) return;
                 
                 // If it has only a single text node child, tag the element itself
                 if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
