@@ -126,6 +126,7 @@ router.get('/members', async (req, res) => {
                 messageCount: Math.floor((record.totalXp || record.xp || 0) / 20),
                 joinedAt: member.joinedAt,
                 bio: prefs?.bio || '',
+                profilePublic: prefs?.profilePublic !== false,
                 banner: member.user.bannerURL({ size: 256 }) || null,
                 isPremium: record.isPremium || record.isManualPremium || false,
                 robloxLinked: roblox ? (roblox.status === 'VERIFIED') : false,
@@ -340,7 +341,6 @@ router.post('/members/:userId/level', async (req, res) => {
  */
 router.post('/topgg/link-bot', async (req, res) => {
     try {
-        const fetch = require('node-fetch');
         const { guildId } = req.params;
         const { botId, legacyOwnerId } = req.body;
         if (!botId) return res.status(400).json({ error: 'Missing botId' });
@@ -547,7 +547,6 @@ router.post('/topgg/test', async (req, res) => {
         let testUser = req.client.user;
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.split(' ')[1];
-            const fetch = require('node-fetch');
             const userRes = await fetch('https://discord.com/api/v10/users/@me', {
                 headers: { Authorization: `Bearer ${token}` }
             });

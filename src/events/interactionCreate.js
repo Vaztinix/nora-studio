@@ -413,6 +413,15 @@ module.exports = {
             let settings = null;
             if (interaction.guildId) {
                 settings = await GuildSettings.findOne({ where: { guildId: interaction.guildId } });
+                if (settings && settings.disabledCommands) {
+                    let localDisabled = [];
+                    try {
+                        localDisabled = JSON.parse(settings.disabledCommands || '[]');
+                    } catch (e) {}
+                    if (localDisabled.includes(interaction.commandName.toLowerCase())) {
+                        return handleError(interaction, 'Command Disabled', `The command \`/${interaction.commandName}\` has been disabled on this server by an administrator.`);
+                    }
+                }
             }
 
             // 🛡️ Global Permission Pre-Flight Checks: Identifies exactly *what* is missing
