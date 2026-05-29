@@ -5,7 +5,7 @@ const { syncDowntime, updateHeartbeat } = require('../utils/resync');
 const { updateBotStatus } = require('../utils/statusManager');
 
 module.exports = {
-    name: 'ready',
+    name: Events.ClientReady,
     once: true,
     async execute(client) {
         console.log(`[System] Ready! Initializing Nora Mainframe as ${client.user.tag}`);
