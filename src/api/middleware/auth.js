@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 
 // Simple in-memory cache for Discord guilds to prevent 429 Rate Limits
 const guildsCache = new Map();
+const activeRequests = new Map(); // token -> Promise
 const CACHE_TTL = 30 * 1000; // 30 seconds cache
 
 const getCachedUserGuilds = async (token) => {
@@ -11,24 +12,39 @@ const getCachedUserGuilds = async (token) => {
         return cached.guilds;
     }
 
-    const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!response.ok) {
-        if (response.status === 429 && cached) {
-            console.warn('[Auth Middleware] Discord Rate Limit hit (429). Reusing expired cache.');
-            return cached.guilds;
-        }
-        throw new Error(`Discord API returned ${response.status}`);
+    if (activeRequests.has(token)) {
+        return activeRequests.get(token);
     }
 
-    const guilds = await response.json();
-    guildsCache.set(token, {
-        guilds,
-        expires: now + CACHE_TTL
-    });
-    return guilds;
+    const fetchPromise = (async () => {
+        try {
+            const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                if (response.status === 429 && cached) {
+                    console.warn('[Auth Middleware] Discord Rate Limit hit (429). Reusing expired cache.');
+                    return cached.guilds;
+                }
+                const err = new Error(`Discord API returned ${response.status}`);
+                err.status = response.status;
+                throw err;
+            }
+
+            const guilds = await response.json();
+            guildsCache.set(token, {
+                guilds,
+                expires: Date.now() + CACHE_TTL
+            });
+            return guilds;
+        } finally {
+            activeRequests.delete(token);
+        }
+    })();
+
+    activeRequests.set(token, fetchPromise);
+    return fetchPromise;
 };
 
 // Clean up cache periodically to prevent leaks
@@ -83,7 +99,28 @@ const requireGuildPermission = async (req, res, next) => {
         }
     } catch (error) {
         console.error('Discord Auth API Error:', error);
-        return res.status(401).json({ error: 'Invalid or expired Discord token.' });
+        if (error.status === 429 || (error.message && error.message.includes('429'))) {
+            return res.status(429).json({ 
+                error: 'Discord API rate limit reached. Discord allows only a limited number of requests per minute. Please wait a few seconds and try again.',
+                code: 'DISCORD_RATE_LIMIT'
+            });
+        }
+        if (error.status === 401) {
+            return res.status(401).json({ 
+                error: 'Your Discord login token is invalid or has expired. Please re-authenticate by logging out and back in.',
+                code: 'DISCORD_UNAUTHORIZED'
+            });
+        }
+        if (error.status >= 500) {
+            return res.status(502).json({ 
+                error: `Discord servers returned a server error (HTTP ${error.status}). Discord might be experiencing outages. Please try again later.`,
+                code: 'DISCORD_SERVER_ERROR'
+            });
+        }
+        return res.status(401).json({ 
+            error: 'Invalid or expired Discord token. Please clear your session and log in again.',
+            code: 'INVALID_TOKEN'
+        });
     }
 };
 

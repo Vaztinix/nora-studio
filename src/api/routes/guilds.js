@@ -77,60 +77,62 @@ router.get('/roles', async (req, res) => {
     }
 });
 
-/**
- * GET /api/guilds/:guildId/members
- * Returns list of members with leveling and verification data.
- */
 router.get('/members', async (req, res) => {
     try {
         const { guildId } = req.params;
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
-        // Fetch leveling records
+        // Fetch all members in the guild (with caching fallback)
+        let membersMap;
+        try {
+            membersMap = await guild.members.fetch();
+        } catch (e) {
+            console.warn('[Relay Engine] Full members fetch failed. Using cached members.', e.message);
+            membersMap = guild.members.cache;
+        }
+
+        // Fetch leveling records for this guild
         const levels = await UserLevel.findAll({ where: { guildId } });
+        const levelsMap = new Map(levels.map(l => [l.userId, l]));
+
+        // Fetch roblox verifications and preferences in bulk to prevent N+1 queries
+        const robloxList = await RobloxVerify.findAll();
+        const robloxMap = new Map(robloxList.map(r => [r.userId, r]));
         
+        const prefsList = await UserPrefs.findAll();
+        const prefsMap = new Map(prefsList.map(p => [p.userId, p]));
+
         const membersList = [];
-        for (const record of levels) {
-            // Find member in discord cache or fetch if not cached
-            let member = guild.members.cache.get(record.userId);
-            if (!member) {
-                try {
-                    member = await guild.members.fetch(record.userId);
-                } catch (_) {
-                    // User has left the server
-                    continue;
-                }
-            }
+        for (const [userId, member] of membersMap.entries()) {
+            if (member.user.bot) continue; // Exclude bots
 
-            if (member) {
-                // Get roblox verified details if any
-                const roblox = await RobloxVerify.findOne({ where: { userId: record.userId } });
-                const prefs = await UserPrefs.findOne({ where: { userId: record.userId } });
+            const record = levelsMap.get(userId) || { level: 0, xp: 0, totalXp: 0, isPremium: false, isManualPremium: false };
+            const roblox = robloxMap.get(userId);
+            const prefs = prefsMap.get(userId);
 
-                const isAnimated = member.user.avatar && member.user.avatar.startsWith('a_');
-                const avatarUrl = member.user.avatar
-                    ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.${isAnimated ? 'gif' : 'png'}?size=128`
-                    : `https://cdn.discordapp.com/embed/avatars/${(BigInt(member.user.id) % 5n) + 1n}.png`;
+            const isAnimated = member.user.avatar && member.user.avatar.startsWith('a_');
+            const avatarUrl = member.user.avatar
+                ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.${isAnimated ? 'gif' : 'png'}?size=128`
+                : `https://cdn.discordapp.com/embed/avatars/${(BigInt(member.user.id) % 5n) + 1n}.png`;
 
-                membersList.push({
-                    userId: record.userId,
-                    username: member.user.username,
-                    displayName: member.displayName || member.user.globalName || member.user.username,
-                    avatar: avatarUrl,
-                    level: record.level,
-                    xp: record.xp,
-                    messageCount: Math.floor((record.totalXp || record.xp || 0) / 20) + 1,
-                    joinedAt: member.joinedAt,
-                    bio: prefs?.bio || '',
-                    banner: member.user.bannerURL({ size: 256 }) || null,
-                    isPremium: record.isPremium || record.isManualPremium || false,
-                    robloxLinked: roblox ? (roblox.status === 'VERIFIED') : false,
-                    robloxPublic: prefs?.robloxPublic !== false,
-                    isAdmin: member.permissions.has('Administrator'),
-                    isMod: member.permissions.has('ModerateMembers') || member.permissions.has('KickMembers') || member.permissions.has('BanMembers')
-                });
-            }
+            membersList.push({
+                userId,
+                username: member.user.username,
+                displayName: member.displayName || member.user.globalName || member.user.username,
+                avatar: avatarUrl,
+                level: record.level,
+                xp: record.xp,
+                messageCount: Math.floor((record.totalXp || record.xp || 0) / 20),
+                joinedAt: member.joinedAt,
+                bio: prefs?.bio || '',
+                banner: member.user.bannerURL({ size: 256 }) || null,
+                isPremium: record.isPremium || record.isManualPremium || false,
+                robloxLinked: roblox ? (roblox.status === 'VERIFIED') : false,
+                robloxPublic: prefs?.robloxPublic !== false,
+                isAdmin: member.permissions.has('Administrator'),
+                isMod: member.permissions.has('ModerateMembers') || member.permissions.has('KickMembers') || member.permissions.has('BanMembers')
+            });
         }
 
         res.json(membersList);
@@ -180,16 +182,62 @@ router.get('/analytics', async (req, res) => {
             if (member) leastActiveName = member.displayName;
         }
 
-        // Generate dynamic chart data for the last 7 days
+        // Fetch members to calculate real joins
+        let membersList = [];
+        try {
+            const fetched = await guild.members.fetch();
+            membersList = Array.from(fetched.values());
+        } catch (e) {
+            membersList = Array.from(guild.members.cache.values());
+        }
+
+        const nowTime = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+
+        // Generate actual chart data for the last 7 days
         const chartData = [];
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
+            d.setHours(0, 0, 0, 0);
+            const startOfDay = d.getTime();
+            const endOfDay = startOfDay + oneDayMs;
+
+            // Count real joins on this day
+            const joins = membersList.filter(m => {
+                if (!m.joinedAt) return false;
+                const joinedTime = new Date(m.joinedAt).getTime();
+                return joinedTime >= startOfDay && joinedTime < endOfDay;
+            }).length;
+
+            // Count real active users who sent their last message on this day
+            const activeUsers = levels.filter(r => {
+                if (!r.lastMessageTimestamp) return false;
+                const activeTime = new Date(r.lastMessageTimestamp).getTime();
+                return activeTime >= startOfDay && activeTime < endOfDay;
+            }).length;
+
             chartData.push({
                 date: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-                joins: Math.floor(Math.random() * 5),
-                activity: Math.floor(Math.random() * 100) + 50
+                joins: joins,
+                activity: activeUsers
             });
+        }
+
+        // Calculate growth trend percentage by comparing last 3 days of message volume with the 3 days prior
+        const last3DaysCount = levels.filter(r => r.lastMessageTimestamp && (nowTime - new Date(r.lastMessageTimestamp).getTime() <= 3 * oneDayMs)).length;
+        const prior3DaysCount = levels.filter(r => {
+            const diff = nowTime - new Date(r.lastMessageTimestamp).getTime();
+            return diff > 3 * oneDayMs && diff <= 6 * oneDayMs;
+        }).length;
+
+        let activityTrend = 0;
+        if (prior3DaysCount > 0) {
+            activityTrend = parseFloat((((last3DaysCount - prior3DaysCount) / prior3DaysCount) * 100).toFixed(1));
+        } else if (last3DaysCount > 0) {
+            activityTrend = 100.0;
+        } else {
+            activityTrend = 0.0;
         }
 
         const avgTextActivity = totalNoraUsers > 0 ? Math.floor(totalTextActivity / totalNoraUsers) : 0;
@@ -205,6 +253,7 @@ router.get('/analytics', async (req, res) => {
             peakActiveName,
             leastActiveName,
             chartData,
+            activityTrend,
             topggVoteStats: {
                 daily: levels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 86400000)).length,
                 weekly: levels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 604800000)).length,
@@ -356,6 +405,165 @@ router.post('/topgg/link-bot', async (req, res) => {
         res.json({ success: true, settings });
     } catch (e) {
         console.error('Error linking Top.gg bot:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/webhook-send
+ * Send a broadcast announcement using a Discord Webhook.
+ */
+router.post('/webhook-send', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { channelId, name, avatar, content, embedTitle, embedDesc, embedColor, embedImage, components } = req.body;
+
+        if (!channelId) return res.status(400).json({ error: 'Missing channelId' });
+
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
+
+        const channel = guild.channels.cache.get(channelId);
+        if (!channel) return res.status(404).json({ error: 'Channel not found in this guild.' });
+
+        if (!channel.isTextBased()) return res.status(400).json({ error: 'Selected channel is not a text-based channel.' });
+
+        const botMember = guild.members.me || await guild.members.fetch(req.client.user.id).catch(() => null);
+        if (!botMember) return res.status(500).json({ error: 'Failed to fetch bot member context.' });
+
+        // Check view channel and manage webhooks permission
+        const canView = channel.permissionsFor(botMember)?.has('ViewChannel');
+        const canManageWebhooks = channel.permissionsFor(botMember)?.has('ManageWebhooks');
+
+        if (!canView) {
+            return res.status(403).json({ error: 'Nora does not have permission to view the selected channel.' });
+        }
+        if (!canManageWebhooks) {
+            return res.status(403).json({ error: 'Nora does not have "Manage Webhooks" permission in the selected channel.' });
+        }
+
+        // Get or create webhook
+        const webhooks = await channel.fetchWebhooks();
+        let webhook = webhooks.find(wh => wh.owner.id === req.client.user.id);
+        if (!webhook) {
+            webhook = await channel.createWebhook({
+                name: name || 'Nora Broadcast',
+                avatar: avatar || null,
+                reason: 'Nora Broadcast Webhook Builder'
+            });
+        }
+
+        // Build embeds
+        const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+        const embeds = [];
+        if (embedTitle || embedDesc || embedImage) {
+            const embed = new EmbedBuilder();
+            if (embedTitle) embed.setTitle(embedTitle);
+            if (embedDesc) embed.setDescription(embedDesc);
+            if (embedColor) {
+                try {
+                    embed.setColor(embedColor);
+                } catch (_) {
+                    embed.setColor('#aeefff');
+                }
+            } else {
+                embed.setColor('#aeefff');
+            }
+            if (embedImage) embed.setImage(embedImage);
+            embeds.push(embed);
+        }
+
+        // Build components (buttons)
+        const messageComponents = [];
+        if (components && Array.isArray(components) && components.length > 0) {
+            const row = new ActionRowBuilder();
+            components.forEach((btn, index) => {
+                const button = new ButtonBuilder();
+                if (btn.label) button.setLabel(btn.label);
+
+                let style = ButtonStyle.Primary;
+                if (btn.style === 'SUCCESS') style = ButtonStyle.Success;
+                else if (btn.style === 'DANGER') style = ButtonStyle.Danger;
+                else if (btn.style === 'SECONDARY') style = ButtonStyle.Secondary;
+                else if (btn.style === 'LINK') style = ButtonStyle.Link;
+
+                const isUrl = btn.url && (btn.url.startsWith('http://') || btn.url.startsWith('https://'));
+                if (isUrl) {
+                    button.setStyle(ButtonStyle.Link);
+                    button.setURL(btn.url);
+                } else {
+                    button.setStyle(style === ButtonStyle.Link ? ButtonStyle.Primary : style);
+                    button.setCustomId(`broadcast_btn_${index}_${Date.now()}`);
+                }
+                row.addComponents(button);
+            });
+            messageComponents.push(row);
+        }
+
+        // Send via webhook
+        const sendPayload = {
+            content: content || undefined,
+            embeds,
+            components: messageComponents
+        };
+
+        if (name) sendPayload.username = name;
+        if (avatar) sendPayload.avatarURL = avatar;
+
+        await webhook.send(sendPayload);
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error sending broadcast:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/topgg/test
+ * Triggers a test vote announcement message using the current configurations.
+ */
+router.post('/topgg/test', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
+
+        const GuildSettings = require('../../database/models/GuildSettings');
+        const settings = await GuildSettings.findOne({ where: { guildId } });
+        if (!settings) return res.status(404).json({ error: 'Settings not found.' });
+
+        if (!settings.topggVoteChannelId) {
+            return res.status(400).json({ error: 'No notification channel selected. Please configure one first.' });
+        }
+
+        const channel = guild.channels.cache.get(settings.topggVoteChannelId);
+        if (!channel) {
+            return res.status(404).json({ error: 'Configured notification channel not found.' });
+        }
+
+        // Get user details from authorization token
+        const authHeader = req.headers.authorization;
+        let testUser = req.client.user;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            const fetch = require('node-fetch');
+            const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                testUser = await req.client.users.fetch(userData.id).catch(() => req.client.user);
+            }
+        }
+
+        // Send simulated vote
+        const { sendVoteNotification } = require('../../utils/topggWebhookHandler');
+        await sendVoteNotification(guild, settings, testUser.id, true);
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error sending Top.gg test vote:', e);
         res.status(500).json({ error: e.message });
     }
 });

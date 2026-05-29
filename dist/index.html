@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora | Privacy-First Discord Bot</title>
-    <meta name="description" content="Modern AI moderation for Discord with privacy and transparency.">
+    <title>Vaztinix | Developer & Founder of Nora</title>
+    <meta name="description" content="Developer portfolio and project portal of Vaztinix, creator of Nora Discord Bot.">
     <link rel="icon" type="image/png" href="nora.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="/translate.js"></script>
@@ -40,9 +40,7 @@
             --accent: #7aa2ff;
             --text: #ffffff;
             --muted: rgba(255, 255, 255, 0.7);
-            --radius: 18px;
-            --glass-bg: rgba(15, 20, 35, 0.9);
-            --glass-border: rgba(255, 255, 255, 0.15);
+            --radius: 22px;
         }
 
         * {
@@ -140,7 +138,7 @@
             --card-hover: rgba(15, 20, 35, 0.9);
             --border: rgba(255, 255, 255, 0.12);
         }
-        body.theme-solid-glass .card, body.theme-solid-glass .updates {
+        body.theme-solid-glass .card {
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
         }
@@ -150,7 +148,7 @@
             --card-hover: rgba(255, 255, 255, 0.06);
             --border: rgba(255, 255, 255, 0.08);
         }
-        body.theme-glass .card, body.theme-glass .updates {
+        body.theme-glass .card {
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
@@ -182,13 +180,65 @@
         .nav-links a:hover { color: var(--primary); opacity: 1; }
         .nav-links a.active { color: var(--primary); opacity: 1; }
 
-        .container { max-width: 1200px; margin: 6rem auto; padding: 0 1.5rem; flex-grow: 1; }
+        .container { max-width: 1200px; margin: 4rem auto; padding: 0 1.5rem; flex-grow: 1; }
         
-        .hero { text-align: center; margin-bottom: 5rem; }
-        .hero h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); margin-bottom: 20px; color: white; font-weight: 800; line-height: 1.1; letter-spacing: -1px; }
-        .hero p { color: var(--muted); font-size: 1.25rem; max-width: 700px; margin: 0 auto 40px; line-height: 1.6; }
-        
-        .buttons { display: flex; gap: 15px; justify-content: center; }
+        .profile-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 50px;
+            align-items: center;
+            margin-bottom: 5rem;
+        }
+
+        .profile-image-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 1/1;
+            border-radius: var(--radius);
+            padding: 5px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            box-shadow: 0 10px 40px rgba(174, 239, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .profile-image-wrapper:hover {
+            transform: scale(1.03) translateY(-4px);
+        }
+
+        .profile-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: calc(var(--radius) - 5px);
+            background: #161b2c;
+        }
+
+        .profile-details h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+
+        .profile-details .subtitle {
+            font-size: 1.25rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .profile-details .bio-text {
+            color: var(--muted);
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .buttons { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; }
         .btn {
             padding: 14px 28px;
             border-radius: 999px;
@@ -198,28 +248,60 @@
             transition: .25s;
             text-decoration: none;
             font-size: 1rem;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         .btn-primary { background: var(--primary); color: #000; box-shadow: 0 10px 30px rgba(174,239,255,.25); }
         .btn-primary:hover { transform: translateY(-4px); background: #fff; }
         .btn-secondary { background: var(--card); color: white; border: 1px solid var(--border); }
         .btn-secondary:hover { background: var(--card-hover); }
 
-        .section-title { font-size: 2rem; margin-bottom: 40px; color: white; font-weight: 800; text-align: center; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 6rem; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px 30px; transition: transform 0.3s ease; }
-        .card:hover { transform: translateY(-5px); background: var(--card-hover); }
-        .card h3 { color: white; font-size: 1.4rem; margin-bottom: 15px; margin-top: 0;}
-        .card p { color: var(--muted); line-height: 1.6; font-size: 1rem; margin: 0; }
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .social-links a {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            transition: 0.2s ease-in-out;
+        }
+        .social-links a:hover {
+            background: var(--primary);
+            color: #0b0f1a;
+            transform: translateY(-2px);
+        }
 
-        .updates { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; margin-bottom: 6rem;}
-        .update-item { margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 30px; }
-        .update-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-        .update-item h3 { color: var(--primary); font-size: 1.3rem; margin-bottom: 10px; margin-top: 0; }
-        .update-item p { color: var(--muted); line-height: 1.6; margin-bottom: 15px; }
-        .update-item ul { color: var(--muted); padding-left: 20px; line-height: 1.6; }
-        .update-item ul li { margin-bottom: 8px; }
+        .section-title { font-size: 2.2rem; margin-bottom: 40px; color: white; font-weight: 800; text-align: left; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-bottom: 6rem; }
+        .card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius); 
+            padding: 40px; 
+            transition: transform 0.3s ease, border-color 0.3s, box-shadow 0.3s; 
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .card:hover { 
+            transform: translateY(-8px); 
+            background: var(--card-hover); 
+            border-color: var(--primary);
+            box-shadow: 0 15px 35px rgba(174, 239, 255, 0.08);
+        }
+        .card h3 { color: white; font-size: 1.6rem; margin-bottom: 15px; margin-top: 0;}
+        .card p { color: var(--muted); line-height: 1.6; font-size: 1rem; margin-bottom: 25px; flex-grow: 1; }
 
         footer {
             border-top: 1px solid var(--border);
@@ -229,13 +311,178 @@
             margin-top: auto;
         }
 
+        .discord-badges {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 18px;
+            min-height: 24px;
+            align-items: center;
+        }
+
+        .discord-badge {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+            transition: background 0.2s;
+        }
+
+        .discord-badge:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .discord-join-date {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 22px;
+            font-weight: 500;
+            opacity: 0.85;
+        }
+
+        /* Glassmorphic Contact Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 26, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 2000;
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border-radius: var(--radius);
+            padding: 40px;
+            width: 90%;
+            max-width: 440px;
+            text-align: center;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .modal-content p {
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-btn {
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: 0.25s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .modal-btn-discord {
+            background: #5865F2;
+            color: #fff;
+            border-color: #5865F2;
+        }
+        .modal-btn-discord:hover {
+            background: #4752c4;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(88, 101, 242, 0.35);
+        }
+        .modal-btn-email {
+            background: var(--card);
+            color: #fff;
+        }
+        .modal-btn-email:hover {
+            background: var(--card-hover);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(11, 15, 26, 0.85);
+            border: 1px solid var(--primary);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+            z-index: 3000;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+            box-shadow: 0 10px 30px rgba(174, 239, 255, 0.2);
+            pointer-events: none;
+        }
+        .toast-notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
         @media(max-width: 768px) {
             .nav-links { display: none; }
+            .profile-container { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+            .profile-image-wrapper { margin: 0 auto; }
+            .buttons { justify-content: center; }
+            .social-links { justify-content: center; }
             .grid { grid-template-columns: 1fr; }
             .container { margin: 3rem auto; }
-            .hero h1 { font-size: 2.2rem; }
-            .buttons { flex-direction: column; align-items: stretch; }
-            .btn { text-align: center; }
+            .section-title { text-align: center; }
         }
     </style>
 </head>
@@ -244,82 +491,202 @@
     <div class="liquid-blob liquid-blob-2"></div>
     <div class="liquid-blob liquid-blob-3"></div>
 
-    <header>
-        <div class="nav">
-            <div class="brand">
-                <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-                <span>Nora</span>
+    <main class="container">
+        <section class="profile-container">
+            <div class="profile-image-wrapper">
+                <img src="ReVaztinix.jpeg" alt="Vaztinix Profile">
             </div>
-            <nav class="nav-links">
-                <a href="/" class="active">Home</a>
-                <a href="/team">Team</a>
-                <a href="/docs">Docs</a>
-                <a href="/ai">Nora AI</a>
-                <a href="/legal">Legal</a>
-                <a href="/dashboard">Dashboard</a>
-            </nav>
-        </div>
-    </header>
+            <div class="profile-details">
+                <h1 id="dev-name">Vaz</h1>
 
-    <div class="container">
-        <div class="hero">
-            <h1>Moderation & AI<br>Built for Trust</h1>
-            <p>Nora is a modern Discord moderation and AI assistant bot designed around one simple rule: server data belongs to the server that created it. No hidden logging. No developer access to private content. Communities stay in control.</p>
-            <div class="buttons">
-                <a href="/install" class="btn btn-primary">Install</a>
-                <a href="https://top.gg/bot/1375943730951098549/vote" class="btn btn-secondary" target="_blank">Vote on Top.gg</a>
+                <div class="discord-badges" id="dev-badges"></div>
+                <p class="bio-text">
+                    I started my journey in bot development as a passionate hobby, which quickly evolved into building full-time, robust SaaS applications and custom digital tools. Specializing in integrating third-party APIs and services, I design platforms that bridge community interaction, Roblox systems, and utility scripts. Outside of coding, I'm highly focused on fitness and staying active, spending quality time going out with friends, and exploring the wide outdoors. Balancing my developer life with real-world adventures, I'm always looking for new challenges, technologies to learn, and projects to bring to life.
+                </p>
+                <div class="discord-join-date" id="dev-join-date"></div>
+                <div class="buttons">
+                    <a href="/nora" class="btn btn-primary">Explore Nora Bot</a>
+                    <button class="btn btn-secondary" onclick="openContactModal()">Contact Developer</button>
+                </div>
+                <div class="social-links">
+                    <a href="https://github.com/Vaztinix" target="_blank">GitHub</a>
+                    <a href="https://www.youtube.com/@Vaztinix" target="_blank">YouTube</a>
+                    <a href="https://www.twitch.tv/vaztinix" target="_blank">Twitch</a>
+                    <a href="https://guns.lol/vaztinix" target="_blank">guns.lol</a>
+                    <a href="https://www.roblox.com/users/3089063186/profile" target="_blank">Roblox Profile</a>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <h2 class="section-title">Our Standards</h2>
+        <h2 class="section-title">My Projects</h2>
         <div class="grid">
             <div class="card">
-                <h3>Privacy by Default</h3>
-                <p>Nora is built so server content is never accessible to developers. All data remains isolated securely within your own environment.</p>
+                <h3>Nora Bot</h3>
+                <p>
+                    Nora is a modern Discord moderation and AI assistant bot designed around one simple rule: server data belongs to the server that created it. Integrated with custom Aura V10 AI engine, automated anti-raid shield, leveling system, and Roblox rank verification.
+                </p>
+                <a href="/nora" class="btn btn-secondary" style="width: auto;">Open Nora</a>
             </div>
-            <div class="card">
-                <h3>Transparent Systems</h3>
-                <p>Every feature is designed so administrators understand exactly what data exists and how it is used. Total transparency.</p>
-            </div>
-            <div class="card">
-                <h3>Prioritized Moderation</h3>
-                <p>Moderation tools prioritize reliability and clarity so staff can act quickly and confidently against raids and spam.</p>
+            <div class="card" style="opacity: 0.7;">
+                <h3>More Projects</h3>
+                <p>
+                    Future tools, utilities, and security applications are currently under active design and development. Stay tuned for future releases.
+                </p>
+                <button class="btn btn-secondary" style="width: auto; cursor: not-allowed;" disabled>Coming Soon</button>
             </div>
         </div>
+    </main>
 
-        <h2 class="section-title">Example Commands</h2>
-        <div class="grid">
-            <div class="card"><h3>/configure</h3><p>Full control over features, logging, and AI selection.</p></div>
-            <div class="card"><h3>/ban</h3><p>Permanently remove disruptive members from your server.</p></div>
-            <div class="card"><h3>/mute</h3><p>Apply temporary restrictions with clear time limits.</p></div>
-            <div class="card"><h3>/ask</h3><p>Ask Nora AI questions directly inside Discord.</p></div>
-            <div class="card"><h3>/info</h3><p>View or delete stored data instantly.</p></div>
-            <div class="card"><h3>/invite</h3><p>Create an invite for your server quickly and efficiently.</p></div>
-            <div class="card"><h3>/leaderboard</h3><p>View public leveling statistics and ranking.</p></div>
-            <div class="card"><h3>/rank</h3><p>View server rank and current XP.</p></div>
-            <div class="card"><h3>/role</h3><p>Quickly assign server roles to active chatters.</p></div>
-        </div>
-
-        <h2 class="section-title">Latest Nora Updates</h2>
-        <div class="updates">
-            <div class="update-item">
-                <h3>Unified /configure Control Hub</h3>
-                <p>We consolidated settings subcommands into a single interactive `/configure` panel. Premium configurations are now accessed securely in an owner-only section using modal popups.</p>
-                <ul>
-                    <li>Security Enhancements: Consolidated command footprint, preventing parameter exposure in Discord logs.</li>
-                    <li>iOS-like Liquid Glass Theme: Support for ambient flowing gradient backdrops and deep glassmorphic blurs.</li>
-                    <li>Parallax Team Roster: High-end 3D animated profile cards displaying live Discord status and creation dates.</li>
-                    <li>Secure Routing: Full absolute and relative routing fixes ensuring that configurations made on vaztinix.dev sync live.</li>
-                </ul>
-            </div>
-            <div class="update-item">
-                <h3>Aura Neural Engine</h3>
-                <p>Nora now supports dynamic switching between three intelligent engines: Gemini 1.5 Flash, GPT-4o Mini, and our Local Privacy Core (Qwen 1.8B) which runs 100% on bare metal.</p>
+    <!-- Contact Modal -->
+    <div class="modal-overlay" id="contact-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeContactModal()">&times;</button>
+            <h3>Choose Contact Method</h3>
+            <p>How would you like to connect with Vaz?</p>
+            <div class="modal-options">
+                <a href="https://discord.com/users/1214048435632603137" target="_blank" class="modal-btn modal-btn-discord" onclick="closeContactModal()">
+                    <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="currentColor">
+                        <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.88-.65,1.72-1.34,2.51-2a75.58,75.58,0,0,0,73,0c.79.71,1.63,1.4,2.51,2a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.87,48.12,123.36,25.32,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.88,46,53.88,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.12,46,96.12,53,91,65.69,84.69,65.69Z"/>
+                    </svg>
+                    Chat on Discord
+                </a>
+                <button class="modal-btn modal-btn-email" onclick="copyEmailAddress()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <path d="m22 7-8.97 5.7a1.94 1.94,0,0,1-2.06 0L2 7"></path>
+                    </svg>
+                    Copy Email Address
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-notification" id="toast">Copied to clipboard!</div>
+
     <footer>
         © 2026 Nora | Privacy-First AI & Moderation
     </footer>
+
+    <script>
+        // Snowflake ID to creation date calculator
+        function getDiscordJoinDate(id) {
+            try {
+                const snowflake = BigInt(id);
+                const timestamp = (snowflake >> 22n) + 1420070400000n;
+                const date = new Date(Number(timestamp));
+                return 'Joined Discord: ' + date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) {
+                return 'Joined Discord: Unknown';
+            }
+        }
+
+        // Lanyard public_flags bitmask decoder to badges
+        function getBadges(flags) {
+            const badges = [];
+            const STAFF = 1 << 0;
+            const PARTNER = 1 << 1;
+            const HYPESQUAD_EVENTS = 1 << 2;
+            const BUG_HUNTER_L1 = 1 << 3;
+            const HYPESQUAD_BRAVERY = 1 << 6;
+            const HYPESQUAD_BRILLIANCE = 1 << 7;
+            const HYPESQUAD_BALANCE = 1 << 8;
+            const EARLY_SUPPORTER = 1 << 9;
+            const BUG_HUNTER_L2 = 1 << 14;
+            const VERIFIED_DEVELOPER = 1 << 17;
+            const ACTIVE_DEVELOPER = 1 << 22;
+
+            if (flags & STAFF) badges.push({ name: 'Discord Staff', emoji: '🔨', class: 'staff' });
+            if (flags & PARTNER) badges.push({ name: 'Partnered Server Owner', emoji: '👑', class: 'partner' });
+            if (flags & BUG_HUNTER_L1) badges.push({ name: 'Bug Hunter Lvl 1', emoji: '🐛', class: 'bug-1' });
+            if (flags & BUG_HUNTER_L2) badges.push({ name: 'Bug Hunter Lvl 2', emoji: '🪲', class: 'bug-2' });
+            if (flags & HYPESQUAD_BRAVERY) badges.push({ name: 'HypeSquad Bravery', emoji: '🛡️', class: 'bravery' });
+            if (flags & HYPESQUAD_BRILLIANCE) badges.push({ name: 'HypeSquad Brilliance', emoji: '☀️', class: 'brilliance' });
+            if (flags & HYPESQUAD_BALANCE) badges.push({ name: 'HypeSquad Balance', emoji: '⚖️', class: 'balance' });
+            if (flags & EARLY_SUPPORTER) badges.push({ name: 'Early Supporter', emoji: '🏅', class: 'early' });
+            if (flags & VERIFIED_DEVELOPER) badges.push({ name: 'Verified Developer', emoji: '💻', class: 'developer' });
+            if (flags & ACTIVE_DEVELOPER) badges.push({ name: 'Active Developer', emoji: '⚡', class: 'active-dev' });
+            
+            return badges.map(b => `<span class="discord-badge ${b.class}" title="${b.name}">${b.emoji}</span>`).join('');
+        }
+
+        // Contact Modal Controllers
+        function openContactModal() {
+            document.getElementById('contact-modal').classList.add('active');
+        }
+        function closeContactModal() {
+            document.getElementById('contact-modal').classList.remove('active');
+        }
+        function copyEmailAddress() {
+            navigator.clipboard.writeText('vaztinixstudios@gmail.com').then(() => {
+                closeContactModal();
+                showToast('Email address copied to clipboard!');
+            }).catch(err => {
+                const el = document.createElement('textarea');
+                el.value = 'vaztinixstudios@gmail.com';
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                closeContactModal();
+                showToast('Email address copied to clipboard!');
+            });
+        }
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('contact-modal');
+            if (e.target === modal) {
+                closeContactModal();
+            }
+        });
+
+        // Initialize developer card using Lanyard Rest API
+        const devUserId = '1214048435632603137';
+        
+        // Compute snowflake join date immediately
+        const joinDateContainer = document.getElementById('dev-join-date');
+        if (joinDateContainer) {
+            joinDateContainer.textContent = getDiscordJoinDate(devUserId);
+        }
+
+        fetch(`https://api.lanyard.rest/v1/users/${devUserId}`)
+            .then(response => response.json())
+            .then(res => {
+                if (res.success) {
+                    const user = res.data.discord_user;
+                    const isAnimated = user.avatar && user.avatar.startsWith('a_');
+                    const liveUrl = user.avatar
+                        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`
+                        : 'ReVaztinix.jpeg';
+
+                    const imgEl = document.querySelector('.profile-image-wrapper img');
+                    if (imgEl) {
+                        const temp = new Image();
+                        temp.src = liveUrl;
+                        temp.onload = () => { imgEl.src = liveUrl; };
+                    }
+
+                    const nameEl = document.getElementById('dev-name');
+                    if (nameEl) {
+                        nameEl.textContent = user.global_name || user.username;
+                    }
+
+                    // Render badges from public flags
+                    const badgeContainer = document.getElementById('dev-badges');
+                    if (badgeContainer && user.public_flags !== undefined) {
+                        badgeContainer.innerHTML = getBadges(user.public_flags);
+                    }
+                }
+            })
+            .catch(err => console.error("Lanyard fetch failed for developer profile"));
+    </script>
 </body>
 </html>

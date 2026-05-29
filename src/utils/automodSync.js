@@ -1,5 +1,20 @@
 const { AutoModerationRuleEventType, AutoModerationRuleTriggerType, AutoModerationRuleKeywordPresetType, AutoModerationActionType } = require('discord.js');
 
+function parseImmuneRoles(immuneRolesString) {
+    if (!immuneRolesString) return [];
+    const trimmed = immuneRolesString.trim();
+    if (!trimmed) return [];
+    
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) return parsed.map(String);
+        } catch (e) {}
+    }
+    
+    return trimmed.split(/[,\s]+/).map(id => id.trim()).filter(id => /^\d+$/.test(id));
+}
+
 /**
  * Synchronizes Nora AutoMod rules with Discord's native system.
  * Discord limits: 1 KeywordPreset rule total.
@@ -33,13 +48,15 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
 
     if (existingRules.error) return { success: false, error: existingRules.error };
 
+
+
     if (!settings) {
         try {
             const GuildSettings = require('../database/models/GuildSettings');
             settings = await GuildSettings.findByPk(guild.id);
         } catch (err) {}
     }
-    const exemptRoles = settings ? JSON.parse(settings.automodImmuneRoles || '[]') : [];
+    const exemptRoles = settings ? parseImmuneRoles(settings.automodImmuneRoles) : [];
 
     // Group 1: Native Keyword Presets (Combined due to Discord LIMIT)
     const isPreset = ['profanity', 'sexual', 'slurs'].includes(ruleType);
@@ -64,7 +81,8 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
         const hasOverlap = existingRules.some(r => r.triggerType === AutoModerationRuleTriggerType.KeywordPreset && !r.name.includes('[NORA]'));
         if (hasOverlap) return { success: false, error: 'An external preset rule already exists. Please delete it first.' };
 
-        const actions = [{ type: AutoModerationActionType.BlockMessage, metadata: { customMessage: 'Blocked by Nora Global Safety.' } }];
+        // Discord API rejects custom messages on preset rules.
+        const actions = [{ type: AutoModerationActionType.BlockMessage }];
 
         try {
             if (existingRule) {
@@ -174,4 +192,4 @@ async function syncAllAutoModRules(guild, settings = null) {
     return { success: true };
 }
 
-module.exports = { syncAutoModRule, syncAllAutoModRules };
+module.exports = { syncAutoModRule, syncAllAutoModRules, parseImmuneRoles };
