@@ -6,8 +6,8 @@ const sequelize = new Sequelize({
     storage: path.join(__dirname, 'database.sqlite'),
     logging: false, // Disable SQL noise so real errors are visible
     dialectOptions: {
-        // WAL mode: allows multiple concurrent readers + one writer without locking
-        mode: require('fs').constants ? undefined : undefined
+        // Increase busy timeout directly in the driver (10 seconds) to prevent locking errors
+        busy_timeout: 10000
     }
 });
 

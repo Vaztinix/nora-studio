@@ -847,27 +847,14 @@
         window.getApiBaseUrl = function() {
             let customApi = localStorage.getItem('nora_api_url');
             const host = window.location.hostname;
-            const isLocalHost = host === 'localhost' || 
-                                host === '127.0.0.1' || 
-                                host.startsWith('192.168.') || 
-                                host.startsWith('10.') || 
-                                host.startsWith('172.');
-
-            if (customApi) {
-                const isCustomLocal = customApi.includes('localhost') || 
-                                      customApi.includes('127.0.0.1') || 
-                                      customApi.includes('192.168.') || 
-                                      customApi.includes('10.') || 
-                                      customApi.includes('172.');
-                if (isCustomLocal && !isLocalHost) {
-                    localStorage.removeItem('nora_api_url');
-                    customApi = null;
-                }
-            }
+            const isProductionDomain = host === 'norabot.app' || 
+                                       host.endsWith('.norabot.app') || 
+                                       host === 'vaztinix.dev' || 
+                                       host.endsWith('.vaztinix.dev');
 
             if (customApi) return customApi;
 
-            if (isLocalHost) {
+            if (!isProductionDomain) {
                 return '';
             } else if (host.endsWith('norabot.app')) {
                 return 'https://api.norabot.app';

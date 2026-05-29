@@ -60,7 +60,7 @@ module.exports = {
             await userLevel.save();
 
             // 🎭 Dynamic Role Reward Sync
-            if (settings.roleRewards) {
+            if (settings && settings.roleRewards) {
                 try {
                     const rewards = JSON.parse(settings.roleRewards || '{}');
                     const member = message.member;
@@ -83,10 +83,10 @@ module.exports = {
             // Level-Up Notification
             if (res.didLevelUp) {
                 const level = res.newLevel;
-                const notifyChannelId = settings.levelUpChannelId || message.channel.id;
+                const notifyChannelId = settings?.levelUpChannelId || message.channel.id;
                 const notifyChannel = message.guild.channels.cache.get(notifyChannelId) || message.channel;
 
-                if (settings.levelUpNotificationsEnabled !== false) {
+                if (settings?.levelUpNotificationsEnabled !== false) {
                     const embed = new EmbedBuilder()
                         .setTitle('Level Up')
                         .setDescription(`Congratulations <@${message.author.id}>! You've climbed to **Level ${level}**!`)

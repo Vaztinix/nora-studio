@@ -154,7 +154,18 @@ app.get('/api/health', (req, res) => {
 // Client telemetry logs endpoint
 app.post('/api/logs/client', (req, res) => {
     const { level, message, context, stack } = req.body;
-    console.error(`[CLIENT_${level}] ${message}`, { context, stack });
+    const cleanContext = (context && typeof context === 'object') ? JSON.stringify(context) : (context || '');
+    const cleanStack = stack ? `\nStack: ${stack}` : '';
+    const logString = `[CLIENT_${level}] ${message} ${cleanContext}${cleanStack}`;
+
+    const uppercaseLevel = String(level).toUpperCase();
+    if (uppercaseLevel === 'ERROR' || uppercaseLevel === 'FATAL' || uppercaseLevel === 'PANIC' || uppercaseLevel === 'PANIC_PROMISE') {
+        console.error(logString);
+    } else if (uppercaseLevel === 'WARN' || uppercaseLevel === 'WARNING') {
+        console.warn(logString);
+    } else {
+        console.log(logString);
+    }
     res.json({ success: true });
 });
 
