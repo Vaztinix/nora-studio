@@ -2043,37 +2043,6 @@
         if (!nav) return;
         if (document.getElementById('nora-global-lang-selector')) return;
         
-        const container = document.createElement('div');
-        container.id = 'nora-global-lang-selector';
-        container.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-family: 'Inter', sans-serif;
-            backdrop-filter: blur(8px);
-            margin-left: 20px;
-            transition: 0.3s;
-        `;
-        
-        const icon = document.createElement('span');
-        icon.textContent = '🌐';
-        icon.style.fontSize = '0.9rem';
-        
-        const select = document.createElement('select');
-        select.style.cssText = `
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            outline: none;
-        `;
-        
         const languages = [
             { code: 'en', name: 'English' },
             { code: 'es', name: 'Español' },
@@ -2089,34 +2058,233 @@
         ];
         
         const activeLang = localStorage.getItem('nora_language') || 'en';
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                      
+        const container = document.createElement('div');
+        container.id = 'nora-global-lang-selector';
         
-        languages.forEach(l => {
-            const opt = document.createElement('option');
-            opt.value = l.code;
-            opt.textContent = l.name;
-            opt.style.background = '#0b0f1a';
-            opt.style.color = '#fff';
-            if (l.code === activeLang) opt.selected = true;
-            select.appendChild(opt);
-        });
-        
-        select.onchange = (e) => {
-            const val = e.target.value;
-            localStorage.setItem('nora_language', val);
+        if (isIOS) {
+            // iOS native implementation for smooth Apple wheel pickers
+            container.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-family: 'Inter', sans-serif;
+                backdrop-filter: blur(8px);
+                margin-left: 20px;
+                transition: 0.3s;
+            `;
             
-            if (window.currentUser) {
-                window.currentUser.prefs = window.currentUser.prefs || {};
-                window.currentUser.prefs.language = val;
+            const icon = document.createElement('span');
+            icon.textContent = '🌐';
+            icon.style.fontSize = '0.9rem';
+            
+            const select = document.createElement('select');
+            select.style.cssText = `
+                background: transparent;
+                border: none;
+                color: #fff;
+                font-size: 0.85rem;
+                font-weight: 600;
+                cursor: pointer;
+                outline: none;
+            `;
+            
+            languages.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.code;
+                opt.textContent = l.name;
+                opt.style.background = '#0b0f1a';
+                opt.style.color = '#fff';
+                if (l.code === activeLang) opt.selected = true;
+                select.appendChild(opt);
+            });
+            
+            select.onchange = (e) => {
+                const val = e.target.value;
+                localStorage.setItem('nora_language', val);
                 
-                const settingsSelect = document.getElementById('pref-language');
-                if (settingsSelect) settingsSelect.value = val;
+                if (window.currentUser) {
+                    window.currentUser.prefs = window.currentUser.prefs || {};
+                    window.currentUser.prefs.language = val;
+                    
+                    const settingsSelect = document.getElementById('pref-language');
+                    if (settingsSelect) settingsSelect.value = val;
+                }
+                
+                window.applyLanguageTranslations(val);
+            };
+            
+            container.appendChild(icon);
+            container.appendChild(select);
+        } else {
+            // Modern, glassmorphic dropdown for all other platforms
+            if (!document.getElementById('nora-custom-select-styles')) {
+                const style = document.createElement('style');
+                style.id = 'nora-custom-select-styles';
+                style.textContent = `
+                    #nora-global-lang-selector {
+                        position: relative;
+                        cursor: pointer;
+                        font-family: 'Inter', sans-serif;
+                        user-select: none;
+                        margin-left: 20px;
+                        z-index: 10005;
+                    }
+                    .nora-lang-trigger {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        padding: 6px 14px;
+                        border-radius: 20px;
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        color: #fff;
+                        backdrop-filter: blur(8px);
+                        -webkit-backdrop-filter: blur(8px);
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+                    .nora-lang-trigger:hover {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-color: var(--primary, #aeefff);
+                        box-shadow: 0 0 15px rgba(174, 239, 255, 0.2);
+                    }
+                    .nora-lang-trigger .arrow {
+                        font-size: 0.6rem;
+                        transition: transform 0.3s ease;
+                        opacity: 0.7;
+                    }
+                    .nora-lang-trigger.open .arrow {
+                        transform: rotate(180deg);
+                    }
+                    .nora-lang-dropdown {
+                        position: absolute;
+                        top: calc(100% + 8px);
+                        right: 0;
+                        min-width: 140px;
+                        background: rgba(11, 15, 26, 0.95);
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        border-radius: 12px;
+                        padding: 6px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+                        backdrop-filter: blur(16px);
+                        -webkit-backdrop-filter: blur(16px);
+                        opacity: 0;
+                        transform: translateY(-10px) scale(0.95);
+                        pointer-events: none;
+                        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    }
+                    .nora-lang-dropdown.open {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                        pointer-events: auto;
+                    }
+                    .nora-lang-option {
+                        padding: 8px 14px;
+                        border-radius: 8px;
+                        font-size: 0.85rem;
+                        font-weight: 550;
+                        color: rgba(255, 255, 255, 0.8);
+                        transition: all 0.2s ease;
+                    }
+                    .nora-lang-option:hover {
+                        background: rgba(255, 255, 255, 0.08);
+                        color: var(--primary, #aeefff);
+                        transform: translateX(3px);
+                    }
+                    .nora-lang-option.active {
+                        background: rgba(174, 239, 255, 0.1);
+                        color: var(--primary, #aeefff);
+                        font-weight: 700;
+                    }
+                `;
+                document.head.appendChild(style);
             }
             
-            window.applyLanguageTranslations(val);
-        };
-        
-        container.appendChild(icon);
-        container.appendChild(select);
+            const activeLangObj = languages.find(l => l.code === activeLang) || languages[0];
+            
+            const trigger = document.createElement('div');
+            trigger.className = 'nora-lang-trigger';
+            
+            const icon = document.createElement('span');
+            icon.textContent = '🌐';
+            
+            const label = document.createElement('span');
+            label.className = 'label-text';
+            label.textContent = activeLangObj.name;
+            
+            const arrow = document.createElement('span');
+            arrow.className = 'arrow';
+            arrow.textContent = '▼';
+            
+            trigger.appendChild(icon);
+            trigger.appendChild(label);
+            trigger.appendChild(arrow);
+            
+            const dropdown = document.createElement('div');
+            dropdown.className = 'nora-lang-dropdown';
+            
+            languages.forEach(l => {
+                const opt = document.createElement('div');
+                opt.className = 'nora-lang-option';
+                if (l.code === activeLang) opt.classList.add('active');
+                opt.textContent = l.name;
+                opt.dataset.value = l.code;
+                
+                opt.onclick = (e) => {
+                    e.stopPropagation();
+                    const val = l.code;
+                    localStorage.setItem('nora_language', val);
+                    
+                    // Update labels and active states
+                    label.textContent = l.name;
+                    dropdown.querySelectorAll('.nora-lang-option').forEach(n => n.classList.remove('active'));
+                    opt.classList.add('active');
+                    
+                    trigger.classList.remove('open');
+                    dropdown.classList.remove('open');
+                    
+                    if (window.currentUser) {
+                        window.currentUser.prefs = window.currentUser.prefs || {};
+                        window.currentUser.prefs.language = val;
+                        
+                        const settingsSelect = document.getElementById('pref-language');
+                        if (settingsSelect) settingsSelect.value = val;
+                    }
+                    
+                    window.applyLanguageTranslations(val);
+                };
+                
+                dropdown.appendChild(opt);
+            });
+            
+            trigger.onclick = (e) => {
+                e.stopPropagation();
+                const isOpen = dropdown.classList.contains('open');
+                if (isOpen) {
+                    trigger.classList.remove('open');
+                    dropdown.classList.remove('open');
+                } else {
+                    trigger.classList.add('open');
+                    dropdown.classList.add('open');
+                }
+            };
+            
+            document.addEventListener('click', () => {
+                trigger.classList.remove('open');
+                dropdown.classList.remove('open');
+            });
+            
+            container.appendChild(trigger);
+            container.appendChild(dropdown);
+        }
         
         const navLinks = nav.querySelector('.nav-links');
         if (navLinks) {
