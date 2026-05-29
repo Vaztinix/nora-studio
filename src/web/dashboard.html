@@ -1203,11 +1203,11 @@
                     <h3>Personal Information</h3>
                     <p>Your identity as seen by Nora Studio.</p>
                     <div class="row-inputs">
-                        <div class="input-group"><label>Discord Username</label><input type="text" id="pref-username" readonly disabled></div>
-                        <div class="input-group"><label>Email Address</label><input type="text" id="pref-email" readonly disabled></div>
+                        <div class="input-group"><label>Discord Username</label><input type="text" id="pref-username" data-no-translate readonly disabled></div>
+                        <div class="input-group"><label>Email Address</label><input type="text" id="pref-email" data-no-translate readonly disabled></div>
                     </div>
                     <div class="row-inputs">
-                        <div class="input-group"><label>Display Name</label><input type="text" id="pref-display-name" placeholder="Name inside Nora Studio"></div>
+                        <div class="input-group"><label>Display Name</label><input type="text" id="pref-display-name" data-no-translate placeholder="Name inside Nora Studio"></div>
                         <div class="input-group">
                             <label>Interaction Language</label>
                             <select id="pref-language" onchange="syncAndSaveLanguage(this.value, 'pref-language')" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box;">
@@ -1226,7 +1226,7 @@
                         </div>
                     </div>
                     <div class="row-inputs" style="margin-top: 15px;">
-                        <div class="input-group"><label>Subscription Status</label><div id="pref-premium-status" style="padding: 12px; font-weight: 600; background: rgba(0,0,0,0.15); border-radius: 8px; border: 1px solid var(--border);">...</div></div>
+                        <div class="input-group"><label>Subscription Status</label><div id="pref-premium-status" data-no-translate style="padding: 12px; font-weight: 600; background: rgba(0,0,0,0.15); border-radius: 8px; border: 1px solid var(--border);">...</div></div>
                     </div>
                     <button class="save-btn" style="margin-top: 25px;" onclick="savePersonalPrefs()">Update Identity</button>
                 </div>
@@ -1248,7 +1248,7 @@
                             <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px;">
                                 <p style="margin-bottom: 10px; font-size: 0.9rem;">Add this code to your Roblox "About" section:</p>
                                 <div style="display: flex; gap: 10px; align-items: center;">
-                                    <code id="roblox-verify-code" style="background: #000; padding: 10px; border-radius: 6px; font-size: 1.1rem; flex: 1; text-align: center; color: var(--primary); font-weight: 700;">...</code>
+                                    <code id="roblox-verify-code" data-no-translate style="background: #000; padding: 10px; border-radius: 6px; font-size: 1.1rem; flex: 1; text-align: center; color: var(--primary); font-weight: 700;">...</code>
                                     <button class="config-btn" style="width: auto;" onclick="copyCode()">Copy</button>
                                 </div>
                             </div>
@@ -1259,8 +1259,8 @@
                                 <div style="display: flex; align-items: center; gap: 15px;">
                                     <div style="width: 35px; height: 35px; background: #2ea043; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✅</div>
                                     <div>
-                                        <h4 id="roblox-linked-name" style="margin: 0; font-size: 0.95rem;">Roblox Linked</h4>
-                                        <p id="roblox-linked-id" style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ...</p>
+                                        <h4 id="roblox-linked-name" data-no-translate style="margin: 0; font-size: 0.95rem;">Roblox Linked</h4>
+                                        <p id="roblox-linked-id" data-no-translate style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ...</p>
                                     </div>
                                 </div>
                                 <button class="config-btn" style="width: auto; padding: 6px 12px; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="unlinkRoblox()">Unlink</button>
@@ -1270,7 +1270,7 @@
 
                     <div>
                         <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Top.gg Bot Ownership</h4>
-                        <div id="topgg-integrations-list">
+                        <div id="topgg-integrations-list" data-no-translate>
                             <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
                                 No bots verified. Connect via the Top.gg server tab.
                             </div>
@@ -1369,9 +1369,9 @@
                         
                         <div id="notification-new-section" style="margin-bottom: 30px;">
                             <h3 style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                                Recent Updates <span id="new-notif-count-tag" class="badge-user" style="display: none; background: var(--primary); color: #000; font-size: 0.7rem;">0</span>
+                                Recent Updates <span id="new-notif-count-tag" data-no-translate class="badge-user" style="display: none; background: var(--primary); color: #000; font-size: 0.7rem;">0</span>
                             </h3>
-                            <div id="notification-list-new" style="display: flex; flex-direction: column; gap: 10px;">
+                            <div id="notification-list-new" data-no-translate style="display: flex; flex-direction: column; gap: 10px;">
                                 <div id="no-notifications-new" style="padding: 40px 20px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed var(--border);">
                                     <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;">✨</div>
                                     Nothing is here, all good for now.
@@ -1381,7 +1381,7 @@
 
                         <div id="notification-older-section">
                             <h3 style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 15px;">Previous History</h3>
-                            <div id="notification-list-older" style="display: flex; flex-direction: column; gap: 10px; opacity: 0.7;">
+                            <div id="notification-list-older" data-no-translate style="display: flex; flex-direction: column; gap: 10px; opacity: 0.7;">
                                 <div id="no-notifications-older" style="padding: 30px 20px; text-align: center; color: var(--muted); opacity: 0.6;">Nothing is here, all good for now.</div>
                             </div>
                         </div>
@@ -1414,7 +1414,7 @@
                         </div>
                         
                         <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px;">Active Reminders</h4>
-                        <div id="active-reminders-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div id="active-reminders-list" data-no-translate style="display: flex; flex-direction: column; gap: 10px;">
                             <div style="font-size: 0.75rem; color: var(--muted); text-align: center; padding: 15px; border: 1px dashed rgba(255,255,255,0.05); border-radius: 8px;">No active reminders.</div>
                         </div>
                     </div>
@@ -1506,11 +1506,11 @@
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                     <div style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; text-align: center;">
                                         <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;">Heartbeat</div>
-                                        <div id="system-heartbeat" style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">42ms</div>
+                                        <div id="system-heartbeat" data-no-translate style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">42ms</div>
                                     </div>
                                     <div style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; text-align: center;">
                                         <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;">DB Sync</div>
-                                        <div id="system-db-sync" style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Online</div>
+                                        <div id="system-db-sync" data-no-translate style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Online</div>
                                     </div>
                                 </div>
                             </div>
@@ -1521,27 +1521,27 @@
                             <div style="display: flex; flex-direction: column; gap: 10px;">
                                 <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
                                     <span style="font-size: 0.85rem;">Moderation Core</span>
-                                    <div id="stat-moderation" style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
+                                    <div id="stat-moderation" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
                                 </div>
                                 <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
                                     <span style="font-size: 0.85rem;">Fun & Social</span>
-                                    <div id="stat-fun" style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
+                                    <div id="stat-fun" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
                                 </div>
                                 <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
                                     <span style="font-size: 0.85rem;">Utility Tools</span>
-                                    <div id="stat-utility" style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
+                                    <div id="stat-utility" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
                                 </div>
                                 <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
                                     <span style="font-size: 0.85rem;">Safety & Raid</span>
-                                    <div id="stat-safety" style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
+                                    <div id="stat-safety" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
                                 </div>
                                 <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
                                     <span style="font-size: 0.85rem;">Leveling</span>
-                                    <div id="stat-leveling" style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
+                                    <div id="stat-leveling" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
                                 </div>
                                 <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
                                     <span style="font-size: 0.85rem;">Nora AI</span>
-                                    <div id="stat-ai" style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
+                                    <div id="stat-ai" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
                                 </div>
                             </div>
                             <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -2327,7 +2327,7 @@
                                     <h3>Top Contributors</h3>
                                     <i class="fas fa-crown" style="color: #FFD700; opacity: 0.8;"></i>
                                 </div>
-                                <div id="top-contributors-list" style="display: flex; flex-direction: column; gap: 12px;">
+                                <div id="top-contributors-list" data-no-translate style="display: flex; flex-direction: column; gap: 12px;">
                                     <div style="text-align: center; padding: 20px; color: var(--muted); font-size: 0.85rem; border: 1px dashed rgba(255,255,255,0.05); border-radius: 8px;">
                                         Calculating active profiles...
                                     </div>
@@ -2412,7 +2412,7 @@
                                 </div>
                             </div>
                             
-                            <div id="member-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; overflow-y: auto; flex: 1; padding-right: 10px;">
+                            <div id="member-list" data-no-translate style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; overflow-y: auto; flex: 1; padding-right: 10px;">
                                 <!-- Member cards injected here -->
                                 <div style="grid-column: 1/-1; padding: 100px 50px; text-align: center; color: var(--muted);">
                                     <div class="pulse-dot" style="margin: 0 auto 20px; width: 12px; height: 12px;"></div>
@@ -3398,6 +3398,7 @@
 
         function createNotifEl(n) {
             const item = document.createElement('div');
+            item.setAttribute('data-no-translate', 'true');
             item.className = 'notif-card slide-in ' + n.type + (n.read ? ' read' : '');
             item.style.position = 'relative';
             item.style.cursor = 'pointer';
@@ -3642,6 +3643,7 @@
                 const timeStr = `${min}:${sec.toString().padStart(2, '0')}`;
 
                 const item = document.createElement('div');
+                item.setAttribute('data-no-translate', 'true');
                 item.style.cssText = `
                     display: flex;
                     justify-content: space-between;
@@ -3944,11 +3946,13 @@
 
 
         let lastLogTimestamp = 0;
+        let terminalFeedInterval = null;
         function startTerminalFeed() {
             const feed = document.getElementById('terminal-feed');
             if (!feed) return;
+            if (terminalFeedInterval) return; // Prevent duplicate timers
             
-            setInterval(async () => {
+            terminalFeedInterval = setInterval(async () => {
                 try {
                     const res = await fetch('/api/logs');
                     const logs = await res.json();
@@ -3974,12 +3978,13 @@
                     }).join('');
                     
                     // 2. Sync Significant Events to Notification Center
-                    const currentTs = logs.length > 0 ? new Date(logs[0].timestamp).getTime() : 0;
+                    // systemLogs are stored oldest-to-newest, so the last element is the newest log.
+                    const currentTs = logs.length > 0 ? new Date(logs[logs.length - 1].timestamp).getTime() : 0;
                     if (lastLogTimestamp === 0) {
                         lastLogTimestamp = currentTs; // Initialize on first load
                     } else if (currentTs > lastLogTimestamp) {
                         const newEntries = logs.filter(l => new Date(l.timestamp).getTime() > lastLogTimestamp);
-                        newEntries.reverse().forEach(l => {
+                        newEntries.forEach(l => {
                             const msg = l.message.toLowerCase();
                             if (l.type === 'ERROR' || msg.includes('success') || msg.includes('fault') || msg.includes('command')) {
                                 let type = 'info';
@@ -4733,6 +4738,7 @@
                         el.innerHTML = '<option value="">Select a channel...</option>';
                         channels.forEach(c => {
                             const opt = document.createElement('option');
+                            opt.setAttribute('data-no-translate', 'true');
                             opt.value = c.id;
                             opt.textContent = `#${c.name}${c.canSend ? '' : ' (No Permission)'}`;
                             if (!c.canSend) opt.style.color = '#ff5555';
@@ -4912,7 +4918,7 @@
             row.style.marginBottom = '5px';
             row.innerHTML = `
                 <input type="number" value="${lvl}" placeholder="Level" style="flex: 0.3;" oninput="updateRoleRewardsJson()">
-                <select onchange="updateRoleRewardsJson()" style="flex: 1;">
+                <select data-no-translate onchange="updateRoleRewardsJson()" style="flex: 1;">
                     <option value="">Select Role...</option>
                     ${(window.guildRoles || []).map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''} ${r.higherThanBot ? 'disabled' : ''}>${r.name}${r.higherThanBot ? ' (Bot role too low)' : ''}</option>`).join('')}
                 </select>
@@ -4940,7 +4946,7 @@
             row.innerHTML = `
                 <input type="text" value="${groupId}" placeholder="Group ID" style="flex: 0.8;" oninput="updateRobloxGroupsJson()">
                 <input type="number" value="${rank}" placeholder="Rank (0-255)" style="flex: 0.4;" oninput="updateRobloxGroupsJson()">
-                <select onchange="updateRobloxGroupsJson()" style="flex: 1;">
+                <select data-no-translate onchange="updateRobloxGroupsJson()" style="flex: 1;">
                     <option value="">Select Role...</option>
                     ${window.guildRoles ? window.guildRoles.map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''}>${r.name}</option>`).join('') : ''}
                 </select>
@@ -4969,7 +4975,7 @@
             row.style.gap = '10px';
             row.style.marginBottom = '5px';
             row.innerHTML = `
-                <select onchange="updateRoleMultipliersJson()" style="flex: 1;">
+                <select data-no-translate onchange="updateRoleMultipliersJson()" style="flex: 1;">
                     <option value="">Select Role...</option>
                     ${(window.guildRoles || []).map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''}>${r.name}</option>`).join('')}
                 </select>
@@ -5297,6 +5303,7 @@
                         el.innerHTML = '<option value="">No role selected</option>';
                         roles.forEach(r => {
                             const opt = document.createElement('option');
+                            opt.setAttribute('data-no-translate', 'true');
                             opt.value = r.id;
                             opt.textContent = `${r.name}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}`;
                             opt.style.color = r.color;
