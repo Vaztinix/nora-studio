@@ -2278,9 +2278,11 @@
                 }
             };
             
-            document.addEventListener('click', () => {
-                trigger.classList.remove('open');
-                dropdown.classList.remove('open');
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    trigger.classList.remove('open');
+                    dropdown.classList.remove('open');
+                }
             });
             
             container.appendChild(trigger);
