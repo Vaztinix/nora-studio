@@ -18,7 +18,8 @@ module.exports = {
         if (action.type === 2) return;
 
         // AutoMod Immunity Bypass
-        const immuneRoles = JSON.parse(settings.automodImmuneRoles || '[]');
+        const { parseImmuneRoles } = require('../utils/automodSync');
+        const immuneRoles = parseImmuneRoles(settings.automodImmuneRoles);
         const member = await guild.members.fetch(userId).catch(() => null);
         
         if (member && immuneRoles.some(roleId => member.roles.cache.has(roleId))) {

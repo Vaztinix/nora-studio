@@ -513,8 +513,16 @@ module.exports = {
                 if (update) {
                     await settings.save();
                     if (sync) {
-                        if (sync === 'all') await syncAllAutoModRules(i.guild, settings);
-                        else await syncAutoModRule(i.guild, sync, true, settings.automodMentions, settings);
+                        if (sync === 'all') {
+                            await syncAllAutoModRules(i.guild, settings);
+                        } else {
+                            let isRuleEnabled = true;
+                            if (sync === 'profanity') isRuleEnabled = settings.automodProfanity;
+                            if (sync === 'scam') isRuleEnabled = settings.automodScam;
+                            if (sync === 'hardcore') isRuleEnabled = settings.automodHardcore;
+                            if (sync === 'mentions') isRuleEnabled = settings.automodMentions > 0;
+                            await syncAutoModRule(i.guild, sync, isRuleEnabled, settings.automodMentions, settings);
+                        }
                     }
                     return i.update(buildDashboard(state.currentView));
                 }

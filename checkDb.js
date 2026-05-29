@@ -12,6 +12,14 @@ const UserLevel = require('./src/database/models/UserLevel');
             console.log("Deleted null guildIds");
         }
 
+        const GuildSettings = require('./src/database/models/GuildSettings');
+        const nullSettings = await GuildSettings.findAll({ where: { guildId: null } });
+        console.log("Null GuildSettings guildIds:", nullSettings.length);
+        if (nullSettings.length > 0) {
+            await GuildSettings.destroy({ where: { guildId: null } });
+            console.log("Deleted null GuildSettings records");
+        }
+
         const duplicateCheck = await sequelize.query(`
             SELECT userId, guildId, COUNT(*) 
             FROM UserLevels 

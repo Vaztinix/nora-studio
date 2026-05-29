@@ -1,4 +1,38 @@
 require('dotenv').config();
+
+const systemLogs = [];
+const MAX_SYSTEM_LOGS = 100;
+
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+const bufferLog = (message, type = 'INFO') => {
+    systemLogs.push({
+        timestamp: new Date().toISOString(),
+        type,
+        message: typeof message === 'object' ? JSON.stringify(message) : String(message)
+    });
+    if (systemLogs.length > MAX_SYSTEM_LOGS) {
+        systemLogs.shift();
+    }
+};
+
+console.log = (...args) => {
+    originalConsoleLog(...args);
+    bufferLog(args.join(' '), 'INFO');
+};
+
+console.error = (...args) => {
+    originalConsoleError(...args);
+    bufferLog(args.join(' '), 'ERROR');
+};
+
+console.warn = (...args) => {
+    originalConsoleWarn(...args);
+    bufferLog(args.join(' '), 'WARN');
+};
+
 const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
@@ -101,9 +135,9 @@ app.use((req, res, next) => {
     next();
 });
 
-// Serve static dashboard assets from web & dist/web directories
+// Serve static dashboard assets from dist/ directory (if exists) or src/web directory
+app.use(express.static(path.join(__dirname, '../dist')));
 app.use(express.static(path.join(__dirname, 'web')));
-app.use(express.static(path.join(__dirname, '../dist/web')));
 
 // Mount the API Router for settings
 const settingsRouter = require('./api/routes/settings');
@@ -239,13 +273,14 @@ app.get('/api/user/guilds', async (req, res) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
     try {
+        const user = await getDiscordUser(token);
         const { getCachedUserGuilds } = require('./api/middleware/auth');
         const guilds = await getCachedUserGuilds(token);
         
-        // Filter guilds where user has Administrator (0x8) or Manage Guild (0x20)
+        // Filter guilds where user has Administrator (0x8) or Manage Guild (0x20) or is owner
         const filteredGuilds = guilds.filter(g => {
             const perms = BigInt(g.permissions);
-            return (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20);
+            return (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
         });
 
         const guildIds = filteredGuilds.map(g => g.id);
@@ -253,10 +288,39 @@ app.get('/api/user/guilds', async (req, res) => {
         const settingsRecords = await GuildSettings.findAll({ where: { guildId: guildIds } });
         const settingsMap = new Map(settingsRecords.map(s => [s.guildId, s]));
 
+        // Determine if user is bot owner/founder
+        let isUserBotOwner = false;
+        try {
+            const appInfo = await req.client.application.fetch();
+            if (appInfo.owner) {
+                if (appInfo.owner.id === user.id || (appInfo.owner.members && appInfo.owner.members.has(user.id))) {
+                    isUserBotOwner = true;
+                }
+            }
+        } catch (e) {}
+        if (user.id === '1214048435632603137') {
+            isUserBotOwner = true;
+        }
+
         const managedGuilds = filteredGuilds.map(g => {
             const hasNora = req.client.guilds.cache.has(g.id);
             const liveGuild = req.client.guilds.cache.get(g.id);
             const settings = settingsMap.get(g.id);
+
+            const isPremiumSettings = settings ? (!!settings.isPremium || !!settings.isManualPremium) : false;
+            
+            let isOwnerPremium = false;
+            if (liveGuild) {
+                if (liveGuild.ownerId === '1214048435632603137') {
+                    isOwnerPremium = true;
+                }
+            }
+            if (g.owner && isUserBotOwner) {
+                isOwnerPremium = true;
+            }
+
+            const isPremium = isPremiumSettings || isOwnerPremium;
+
             return {
                 id: g.id,
                 name: g.name,
@@ -267,7 +331,8 @@ app.get('/api/user/guilds', async (req, res) => {
                 permissions: g.permissions,
                 topggVerified: settings ? !!settings.topggVerified : false,
                 topggBotId: settings ? settings.topggBotId : null,
-                topggLegacyOwnerId: settings ? settings.topggLegacyOwnerId : null
+                topggLegacyOwnerId: settings ? settings.topggLegacyOwnerId : null,
+                isPremium
             };
         });
         
@@ -565,13 +630,57 @@ app.get('/api/user/topgg/bots', async (req, res) => {
     }
 });
 
-// Serve dashboard.html at root '/'
+const getWebFilePath = (filename) => {
+    const distPath = path.join(__dirname, '../dist', filename);
+    if (fs.existsSync(distPath)) {
+        return distPath;
+    }
+    return path.join(__dirname, 'web', filename);
+};
+
+// Serve index.html (Vaztinix Bio landing page) at root '/'
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'web', 'dashboard.html'));
+    res.sendFile(getWebFilePath('index.html'));
 });
 
+// Serve nora.html at '/nora'
+app.get('/nora', (req, res) => {
+    res.sendFile(getWebFilePath('nora.html'));
+});
+
+// Serve dashboard.html at '/dashboard'
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'web', 'dashboard.html'));
+    res.sendFile(getWebFilePath('dashboard.html'));
+});
+
+// Clean URLs for other subpages
+app.get('/team', (req, res) => {
+    res.sendFile(getWebFilePath('team.html'));
+});
+
+app.get('/docs', (req, res) => {
+    res.sendFile(getWebFilePath('docs.html'));
+});
+
+app.get('/ai', (req, res) => {
+    res.sendFile(getWebFilePath('AI.html'));
+});
+
+app.get('/ai-studio', (req, res) => {
+    res.sendFile(getWebFilePath('ai-studio.html'));
+});
+
+app.get('/install', (req, res) => {
+    res.sendFile(getWebFilePath('install.html'));
+});
+
+app.get('/legal', (req, res) => {
+    res.sendFile(getWebFilePath('legal.html'));
+});
+
+// GET /api/logs returns the buffered console output
+app.get('/api/logs', (req, res) => {
+    res.json(systemLogs);
 });
 
 
@@ -614,6 +723,91 @@ app.post('/topgg/webhook', webhook.listener(async (vote) => {
         console.error('[Top.gg] Error processing vote:', error);
     }
 }));
+
+
+/**
+ * POST /api/webhooks/topgg/:guildId
+ * Receives incoming votes for custom bots configured on Top.gg
+ */
+app.post('/api/webhooks/topgg/:guildId', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const vote = req.body; // Top.gg sends { bot, user, type, isWeekend, query }
+
+        // Find settings for the guild
+        const GuildSettings = require('./database/models/GuildSettings');
+        const settings = await GuildSettings.findOne({ where: { guildId } });
+        if (!settings) {
+            return res.status(404).json({ error: 'Guild settings not found.' });
+        }
+
+        // Verify authorization header matches the guild's webhook secret
+        const authHeader = req.headers.authorization;
+        if (!authHeader || authHeader !== settings.topggWebhookAuth) {
+            console.warn(`[Top.gg Webhook] Unauthorized vote attempt for guild ${guildId}`);
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        console.log(`[Top.gg Webhook] Received vote for Guild: ${guildId}, User: ${vote.user}, Bot: ${vote.bot}`);
+
+        // Only process real upvotes or tests
+        if (vote.type === 'upvote' || vote.type === 'test') {
+            const userId = vote.user;
+            
+            // 1. Award XP in the specific guild
+            const noraLeveling = require('./utils/noraLeveling');
+            const userRecord = await noraLeveling.getOrInitializeUser(userId, guildId);
+            if (userRecord) {
+                const xpBoost = settings.topggXpBoost || 1;
+                // Double XP on weekends
+                const count = (settings.topggDoubleXp && (vote.isWeekend || [6, 0].includes(new Date().getDay()))) ? 2 : 1;
+                const baseXP = 50 * xpBoost * count;
+                
+                await noraLeveling.addExperience(userRecord, baseXP);
+                userRecord.voteCount = (userRecord.voteCount || 0) + 1;
+                userRecord.lastVoteTimestamp = new Date();
+                await userRecord.save();
+            }
+
+            // 2. Assign Reward Role if configured
+            if (settings.topggRewardRoleId) {
+                try {
+                    const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+                    if (guild) {
+                        const member = await guild.members.fetch(userId).catch(() => null);
+                        if (member && !member.roles.cache.has(settings.topggRewardRoleId)) {
+                            const roleObj = guild.roles.cache.get(settings.topggRewardRoleId);
+                            if (roleObj && guild.members.me.roles.highest.position > roleObj.position) {
+                                await member.roles.add(settings.topggRewardRoleId).catch(e => {
+                                    console.error(`[Top.gg Webhook] Failed to add reward role to user ${userId} in ${guildId}:`, e.message);
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('[Top.gg Webhook] Error assigning reward role:', e.message);
+                }
+            }
+
+            // 3. Send Notification alert
+            if (settings.topggVoteChannelId) {
+                const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+                if (guild) {
+                    const { sendVoteNotification } = require('./utils/topggWebhookHandler');
+                    await sendVoteNotification(guild, settings, userId, false).catch(err => {
+                        console.error('[Top.gg Webhook] Notification sending failed:', err.message);
+                    });
+                }
+            }
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Top.gg Webhook] Error processing incoming vote:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 // Serve 404 page for unmatched routes
 app.use((req, res) => {

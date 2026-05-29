@@ -42,14 +42,27 @@ router.post('/', async (req, res) => {
             delete payload.guildId;
         }
 
+        // Clean payload: convert empty strings to null for nullable database fields
+        for (const key of Object.keys(payload)) {
+            if (payload[key] === '') {
+                payload[key] = null;
+            }
+        }
+
         // Find or create settings
         let [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
 
         // Update the settings model with the payload provided by the dashboard
         await settings.update(payload);
 
-        // NOTE: If you need to trigger live Discord integrations (like syncing AutoMod rules)
-        // when these settings change, you would import and call those sync functions here.
+        // Trigger live Discord integration: sync AutoMod rules live on settings change
+        const { syncAllAutoModRules } = require('../../utils/automodSync');
+        const guild = req.client.guilds.cache.get(guildId);
+        if (guild) {
+            await syncAllAutoModRules(guild, settings).catch(err => {
+                console.error(`AutoMod Sync failed for guild ${guildId} on settings update:`, err);
+            });
+        }
 
         res.json({ success: true, settings });
     } catch (error) {

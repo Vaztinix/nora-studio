@@ -1073,7 +1073,7 @@
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 18px;">Upgrade or review your current Nora benefits directly from Studio.</p>
                             <div id="premium-center-status" style="padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.9rem; line-height: 1.5; color: #fff;">Loading your subscription status...</div>
                             <div id="premium-center-benefits" style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; color: var(--muted);">
-                                <div style="padding: 12px 14px; border-radius: 10px; background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.12);">• Faster AI throughput and higher monthly limits</div>
+                                <div style="padding: 12px 14px; border-radius: 10px; background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.12);">• Faster AI throughout and higher monthly limits</div>
                                 <div style="padding: 12px 14px; border-radius: 10px; background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.12);">• Priority support and featured automation access</div>
                                 <div style="padding: 12px 14px; border-radius: 10px; background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.12);">• Premium boosts for server growth and advanced experience tuning</div>
                             </div>
@@ -1584,10 +1584,10 @@
                         <div class="row"><h4>Require Profile Picture</h4><label class="switch"><input type="checkbox" id="setting-requirePFP"><span class="slider"></span></label></div>
                         <div class="row"><h4>Nickname Filter</h4><label class="switch"><input type="checkbox" id="setting-nicknameRaidFilter"><span class="slider"></span></label></div>
                         <div class="row-inputs">
-                            <div class="input-group"><label>Sensitivity</label><select id="setting-antiRaidThreshold"><option value="5">High (5/sec)</option><option value="10">Normal (10/sec)</option><option value="20">Low (20/sec)</option></select></div>
-                            <div class="input-group"><label>Min Account Age</label><select id="setting-minAccountAge"><option value="0">Disabled</option><option value="1">1 Day</option><option value="7">7 Days</option></select></div>
-                            <div class="input-group"><label>Age Action</label><select id="setting-minAccountAgeAction"><option value="kick">Kick</option><option value="ban_perm">Permanent Ban</option></select></div>
-                            <div class="input-group"><label>Raid Action</label><select id="setting-antiRaidAction"><option value="notify">Notify Only</option><option value="lockdown">Lockdown</option><option value="kick_new">Kick New</option></select></div>
+                            <div class="input-group"><label>Sensitivity</label><select id="setting-antiRaidThreshold"><option value="">Select Option</option><option value="5">High (5/sec)</option><option value="10">Normal (10/sec)</option><option value="20">Low (20/sec)</option></select></div>
+                            <div class="input-group"><label>Min Account Age</label><select id="setting-minAccountAge"><option value="">Select Option</option><option value="0">Disabled</option><option value="1">1 Day</option><option value="7">7 Days</option></select></div>
+                            <div class="input-group"><label>Age Action</label><select id="setting-minAccountAgeAction"><option value="">Select Option</option><option value="kick">Kick</option><option value="ban_perm">Permanent Ban</option></select></div>
+                            <div class="input-group"><label>Raid Action</label><select id="setting-antiRaidAction"><option value="">Select Option</option><option value="notify">Notify Only</option><option value="lockdown">Lockdown</option><option value="kick_new">Kick New</option></select></div>
                         </div>
                     </div>
 
@@ -1598,6 +1598,7 @@
                             <div class="input-group">
                                 <label>Warning Threshold</label>
                                 <select id="setting-warningThreshold">
+                                    <option value="">Select Option</option>
                                     <option value="1">1 Warning</option>
                                     <option value="2">2 Warnings</option>
                                     <option value="3">3 Warnings</option>
@@ -1608,6 +1609,7 @@
                             <div class="input-group">
                                 <label>Action on Threshold</label>
                                 <select id="setting-warningAction">
+                                    <option value="">Select Option</option>
                                     <option value="none">None (Notify Only)</option>
                                     <option value="kick">Kick User</option>
                                     <option value="ban">Ban User</option>
@@ -2255,14 +2257,13 @@
                             <div class="panel" style="background: linear-gradient(135deg, rgba(174, 239, 255, 0.05) 0%, transparent 100%); border-color: rgba(174, 239, 255, 0.1);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                                     <h3>Activity Insight</h3>
-                                    <span class="badge-user" style="background: var(--primary); color: #000; margin: 0; font-size: 0.65rem; padding: 2px 8px;">PREMIUM</span>
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 15px;">
                                     <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
                                         <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Message Frequency</span>
                                         <div style="display: flex; align-items: flex-end; gap: 10px; margin-top: 10px;">
                                             <h2 id="analytics-text-count" style="font-size: 1.6rem; font-weight: 800;">...</h2>
-                                            <span style="font-size: 0.75rem; color: var(--success); margin-bottom: 5px; font-weight: 700;">+12.4%</span>
+                                            <span id="analytics-text-trend" style="font-size: 0.75rem; color: var(--success); margin-bottom: 5px; font-weight: 700;">--%</span>
                                         </div>
                                     </div>
                                     <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
@@ -2469,6 +2470,26 @@
             }
             try {
                 const response = await originalFetch(resolvedUrl, init);
+                if (response.status === 401 || response.status === 429) {
+                    let errMessage = 'Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.';
+                    let errTitle = response.status === 429 ? 'Rate Limited' : 'Session Expired';
+                    try {
+                        const clone = response.clone();
+                        const errJson = await clone.json().catch(() => null);
+                        if (errJson && errJson.error) {
+                            errMessage = errJson.error;
+                        }
+                    } catch (e) {}
+
+                    const expiredOverlay = document.getElementById('session-expired-overlay');
+                    const titleEl = document.getElementById('session-expired-title');
+                    const descEl = document.getElementById('session-expired-desc');
+                    if (titleEl) titleEl.textContent = errTitle;
+                    if (descEl) descEl.textContent = errMessage;
+                    if (expiredOverlay) {
+                        expiredOverlay.style.display = 'flex';
+                    }
+                }
                 if (!response.ok && typeof input === 'string' && !input.includes('/api/logs/client')) {
                     try {
                         const clone = response.clone();
@@ -2728,11 +2749,15 @@
         }
 
         async function logToTerminal(message, level = 'INFO', context = null) {
+            console.log(`[${level}] ${message}`);
+            const t = sessionStorage.getItem('discord_token');
             try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (t) headers['Authorization'] = `Bearer ${t}`;
                 await fetch('/api/logs/client', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message, level, context })
+                    headers: headers,
+                    body: JSON.stringify({ message, level: level.toUpperCase(), context })
                 });
             } catch (e) {}
         }
@@ -3889,15 +3914,7 @@
             }
         }
 
-        function logToTerminal(message, level = 'INFO') {
-            console.log(`[${level}] ${message}`);
-            const t = sessionStorage.getItem('discord_token');
-            fetch('/api/logs/client', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` },
-                body: JSON.stringify({ message, level: level.toUpperCase() })
-            }).catch(() => {});
-        }
+
 
         let lastLogTimestamp = 0;
         function startTerminalFeed() {
@@ -4154,6 +4171,15 @@
             const list = document.getElementById('member-list');
             list.innerHTML = '';
             
+            const getXPForLevel = (lvl) => 15 * Math.pow(lvl, 2) + 100 * lvl + 100;
+            const getTotalXPForLevel = (lvl) => {
+                let total = 0;
+                for (let i = 0; i < lvl; i++) {
+                    total += getXPForLevel(i);
+                }
+                return total;
+            };
+            
             // Dynamic Statistics Updates
             const totalCountEl = document.getElementById('member-total-count');
             if (totalCountEl) {
@@ -4266,7 +4292,7 @@
                                 <span style="color: var(--primary);">${m.xp} XP</span>
                             </div>
                             <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
-                                <div style="width: ${(m.xp % 1000) / 10}%; height: 100%; background: var(--primary); border-radius: 3px;"></div>
+                                <div style="width: ${Math.max(0, Math.min(100, ((m.xp - getTotalXPForLevel(m.level)) / getXPForLevel(m.level)) * 100))}%; height: 100%; background: var(--primary); border-radius: 3px;"></div>
                             </div>
                         </div>
 
@@ -4506,9 +4532,15 @@
                 const txtCountEl = document.getElementById('analytics-text-count');
                 const voiceCountEl = document.getElementById('analytics-voice-count');
                 const voteCountEl = document.getElementById('analytics-vote-count');
+                const trendEl = document.getElementById('analytics-text-trend');
                 if (txtCountEl) txtCountEl.textContent = (data.totalTextActivity || 0).toLocaleString();
                 if (voiceCountEl) voiceCountEl.textContent = Math.floor((data.totalVoiceActivity || 0) / 10) + 'm';
                 if (voteCountEl) voteCountEl.textContent = (data.totalVotes || 0).toLocaleString();
+                if (trendEl) {
+                    const trend = data.activityTrend || 0;
+                    trendEl.textContent = (trend >= 0 ? '+' : '') + trend + '%';
+                    trendEl.style.color = trend >= 0 ? 'var(--success)' : '#ff5555';
+                }
 
                 const txtAvgEl = document.getElementById('analytics-text-avg');
                 const voiceAvgEl = document.getElementById('analytics-voice-avg');
@@ -5416,8 +5448,15 @@
                 KEYS.forEach(k => {
                     const el = document.getElementById('setting-' + k);
                     if (!el) return;
-                    if (el.type === 'checkbox') el.checked = !!s[k];
-                    else el.value = (s[k] !== null && s[k] !== undefined) ? s[k] : '';
+                    if (el.type === 'checkbox') {
+                        el.checked = !!s[k];
+                    } else if (el.tagName === 'SELECT') {
+                        const val = (s[k] !== null && s[k] !== undefined) ? String(s[k]) : '';
+                        const hasOption = Array.from(el.options).some(opt => opt.value === val);
+                        el.value = hasOption ? val : '';
+                    } else {
+                        el.value = (s[k] !== null && s[k] !== undefined) ? s[k] : '';
+                    }
                 });
 
                 refreshTopggAvatarPreview();
@@ -5568,5 +5607,15 @@
         }
         loadNotifications();
     </script>
+    <div id="session-expired-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
+            <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">⚠️</div>
+            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Session Expired</h2>
+            <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
+                Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.
+            </p>
+            <button class="save-btn" style="background: var(--primary); padding: 12px 30px; font-weight: 800; width: 100%; border: none; border-radius: 8px; cursor: pointer; color: #000;" onclick="window.location.href = discordLoginURL">Re-authenticate with Discord</button>
+        </div>
+    </div>
 </body>
 </html>

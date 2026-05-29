@@ -1884,60 +1884,87 @@
 
     const currentLang = getDeviceLanguage();
 
+    function tagStaticElements(root) {
+        if (!root) return;
+        const wasTranslating = window.isTranslating;
+        window.isTranslating = true;
+        try {
+            // Helper to tag single element if it is a static leaf node or contains mixed content
+            function tagEl(el) {
+                if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'IFRAME') return;
+                
+                // If it has only a single text node child, tag the element itself
+                if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+                    const txt = el.childNodes[0].nodeValue.trim();
+                    if (txt && txt.length > 0 && !el.hasAttribute('data-i18n')) {
+                        el.setAttribute('data-i18n', txt);
+                    }
+                } else if (el.childNodes.length > 1) {
+                    // Check for mixed content: mix of text nodes and element nodes (e.g. icon + text)
+                    const children = Array.from(el.childNodes);
+                    let hasElement = false;
+                    let hasText = false;
+                    for (const node of children) {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            hasElement = true;
+                        } else if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
+                            hasText = true;
+                        }
+                    }
+                    if (hasElement && hasText) {
+                        for (const node of children) {
+                            if (node.nodeType === Node.TEXT_NODE) {
+                                const txt = node.nodeValue.trim();
+                                if (txt && txt.length > 0) {
+                                    const span = document.createElement('span');
+                                    span.setAttribute('data-i18n', txt);
+                                    span.textContent = node.nodeValue; // Preserve whitespace
+                                    el.replaceChild(span, node);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (root.nodeType === Node.ELEMENT_NODE) {
+                tagEl(root);
+                const elements = root.getElementsByTagName('*');
+                for (let i = 0; i < elements.length; i++) {
+                    tagEl(elements[i]);
+                }
+            }
+        } finally {
+            window.isTranslating = wasTranslating;
+        }
+    }
+
     window.translateDOM = function(element, lang) {
         if (!lang || lang === 'en') {
             lang = 'en';
         }
-        
-        const walker = document.createTreeWalker(
-            element,
-            NodeFilter.SHOW_TEXT,
-            null,
-            false
-        );
-        
-        let node;
-        while (node = walker.nextNode()) {
-            if (!node.nodeValue || node.nodeValue.trim() === '') continue;
-            if (!node.parentNode || node.parentNode.tagName === 'SCRIPT' || node.parentNode.tagName === 'STYLE') continue;
-            
-            if (!node._originalText) {
-                node._originalText = node.nodeValue;
-            }
-            const original = node._originalText.trim();
-            
-            if (lang !== 'en' && DASHBOARD_I18N[lang] && DASHBOARD_I18N[lang][original]) {
-                node.nodeValue = node._originalText.replace(original, DASHBOARD_I18N[lang][original]);
-            } else {
-                node.nodeValue = node._originalText;
-            }
-        }
 
-        // Also translate placeholders
-        element.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(input => {
-            if (!input._originalPlaceholder) {
-                input._originalPlaceholder = input.getAttribute('placeholder') || '';
+        const target = element || document.body;
+
+        // Translate tagged text elements
+        target.querySelectorAll('[data-i18n]').forEach(el => {
+            const original = el.getAttribute('data-i18n').trim();
+            if (!original) return;
+            if (lang !== 'en' && DASHBOARD_I18N[lang] && DASHBOARD_I18N[lang][original]) {
+                el.textContent = DASHBOARD_I18N[lang][original];
+            } else {
+                el.textContent = original;
             }
-            const original = input._originalPlaceholder.trim();
+        });
+
+        // Translate placeholders
+        target.querySelectorAll('[data-i18n-placeholder]').forEach(input => {
+            const original = input.getAttribute('data-i18n-placeholder').trim();
             if (!original) return;
             if (lang !== 'en' && DASHBOARD_I18N[lang] && DASHBOARD_I18N[lang][original]) {
                 input.setAttribute('placeholder', DASHBOARD_I18N[lang][original]);
             } else {
-                input.setAttribute('placeholder', input._originalPlaceholder);
-            }
-        });
-        
-        // Also translate option elements
-        element.querySelectorAll('option').forEach(opt => {
-            if (!opt._originalText) {
-                opt._originalText = opt.textContent || '';
-            }
-            const original = opt._originalText.trim();
-            if (!original) return;
-            if (lang !== 'en' && DASHBOARD_I18N[lang] && DASHBOARD_I18N[lang][original]) {
-                opt.textContent = opt._originalText.replace(original, DASHBOARD_I18N[lang][original]);
-            } else {
-                opt.textContent = opt._originalText;
+                input.setAttribute('placeholder', original);
             }
         });
     };
@@ -1980,11 +2007,36 @@
         
         const lang = localStorage.getItem('nora_language') || 'en';
         if (lang === 'en') return;
+
+        // Tag newly added elements so they can be translated
+        let hasNewStatic = false;
+        mutations.forEach(m => {
+            m.addedNodes.forEach(node => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    tagStaticElements(node);
+                    if (node.tagName === 'INPUT' || node.tagName === 'TEXTAREA') {
+                        const placeholder = node.getAttribute('placeholder');
+                        if (placeholder && !node.hasAttribute('data-i18n-placeholder')) {
+                            node.setAttribute('data-i18n-placeholder', placeholder);
+                        }
+                    }
+                    node.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(input => {
+                        const placeholder = input.getAttribute('placeholder');
+                        if (placeholder && !input.hasAttribute('data-i18n-placeholder')) {
+                            input.setAttribute('data-i18n-placeholder', placeholder);
+                        }
+                    });
+                    hasNewStatic = true;
+                }
+            });
+        });
         
-        clearTimeout(translationTimeout);
-        translationTimeout = setTimeout(() => {
-            window.applyLanguageTranslations(lang);
-        }, 100);
+        if (hasNewStatic) {
+            clearTimeout(translationTimeout);
+            translationTimeout = setTimeout(() => {
+                window.applyLanguageTranslations(lang);
+            }, 100);
+        }
     });
 
     // Programmatically inject the language selector dropdown inside navigation
@@ -2079,13 +2131,23 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Tag initial placeholders
+        document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(input => {
+            const placeholder = input.getAttribute('placeholder');
+            if (placeholder && !input.hasAttribute('data-i18n-placeholder')) {
+                input.setAttribute('data-i18n-placeholder', placeholder);
+            }
+        });
+
+        // Tag initial elements
+        tagStaticElements(document.body);
+
         injectLanguageSelector();
         
         // Observe changes
         translationObserver.observe(document.body, {
             childList: true,
-            subtree: true,
-            characterData: true
+            subtree: true
         });
         
         // Initial translation run
