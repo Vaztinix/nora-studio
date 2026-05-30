@@ -1249,9 +1249,12 @@
         <p style="color: var(--muted); margin-bottom: 20px;">Log in with Discord to configure your servers.</p>
         <button id="login-btn" class="save-btn" style="background: var(--primary); margin-bottom: 15px;">Login with Discord</button>
         
-        <div style="margin-top: 10px;">
+        <div style="margin-top: 10px; display: flex; gap: 15px; justify-content: center;">
             <a href="#" style="color: var(--primary); font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" onclick="toggleApiConfig(event)">
                 <i class="fas fa-cog"></i> Configure API Server
+            </a>
+            <a href="#" style="color: var(--primary); font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" onclick="togglePairingInput(event)">
+                <i class="fas fa-mobile-alt"></i> Pair Device
             </a>
         </div>
         
@@ -1259,6 +1262,12 @@
             <label style="color: var(--muted); font-size: 0.75rem; display: block; margin-bottom: 6px; font-weight: 600;">BOT API ENDPOINT:</label>
             <input type="text" id="custom-api-input" style="width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.85rem; margin-bottom: 10px;" placeholder="e.g. http://localhost:3000">
             <button class="config-btn" style="width: 100%; padding: 6px;" onclick="saveCustomApi()">Save and Reload</button>
+        </div>
+
+        <div id="pairing-input-container" style="display: none; margin-top: 20px; width: 100%; max-width: 280px; text-align: left; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
+            <label style="color: var(--muted); font-size: 0.75rem; display: block; margin-bottom: 6px; font-weight: 600;">ENTER 6-DIGIT PAIRING CODE:</label>
+            <input type="text" id="pairing-code-input" maxlength="6" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 4px; margin-bottom: 10px;" placeholder="e.g. 123456">
+            <button class="save-btn" style="width: 100%; padding: 10px; background: var(--primary); color: #000;" onclick="submitPairingCode()">Link Device</button>
         </div>
     </div>
 
@@ -1666,6 +1675,24 @@
                         <p style="color: var(--muted); font-size: 0.7rem; margin-top: 8px; line-height: 1.4;">
                             Leaving this blank will use the default domain (<span style="color: var(--primary);">https://api.vaztinix.dev</span>). Use <span style="color: var(--primary);"> https://localhost:3000 </span> if you are testing locally on your PC and experience NAT loopback connection issues.
                         </p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>Secondary Device Pairing</h3>
+                    <p>Pair a mobile phone or another device on your local network to access this dashboard without Discord redirection issues.</p>
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 15px; text-align: center;">
+                        <button class="save-btn" id="generate-pair-btn" style="width: auto; padding: 10px 25px;" onclick="generatePairingCode()">Generate Pairing Code</button>
+                        
+                        <div id="pairing-code-display" style="display: none; margin-top: 20px; text-align: center;">
+                            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 15px;">Enter this 6-digit code on your other device:</p>
+                            <div id="pairing-code-num" style="font-size: 2.2rem; font-weight: 800; letter-spacing: 8px; color: var(--primary); font-family: monospace; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; display: inline-block; margin-bottom: 20px; border: 1px dashed var(--border);">000 000</div>
+                            <p style="color: var(--muted); font-size: 0.8rem; margin-bottom: 10px;">Or scan the QR code to connect instantly:</p>
+                            <div id="pairing-qr-container" style="background: white; padding: 10px; border-radius: 8px; display: inline-block; margin-bottom: 15px;">
+                                <img id="pairing-qr-img" src="" alt="Pairing QR Code" style="width: 150px; height: 150px; display: block;">
+                            </div>
+                            <p style="color: var(--danger); font-size: 0.75rem; margin-top: 10px;">This code will expire in 5 minutes and is single-use.</p>
+                        </div>
                     </div>
                 </div>
 
@@ -3050,6 +3077,101 @@
         };
 
 
+        window.generatePairingCode = async function() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) {
+                showToast('You must be logged in to generate a pairing code.', 'error');
+                return;
+            }
+            const btn = document.getElementById('generate-pair-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            try {
+                const res = await safeFetch('/api/auth/pairing-code', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error(res.data?.error || `HTTP ${res.status}`);
+                
+                const data = res.data;
+                if (data && data.code) {
+                    const codeStr = data.code.toString();
+                    const spacedCode = codeStr.substring(0, 3) + ' ' + codeStr.substring(3);
+                    document.getElementById('pairing-code-num').textContent = spacedCode;
+                    
+                    // Construct local server pairing link
+                    const currentPort = window.location.port ? ':' + window.location.port : '';
+                    const pairUrl = `${window.location.protocol}//${window.location.hostname}${currentPort}${window.location.pathname}#pair=${data.code}`;
+                    
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pairUrl)}`;
+                    document.getElementById('pairing-qr-img').src = qrUrl;
+                    
+                    document.getElementById('pairing-code-display').style.display = 'block';
+                    showToast('Pairing code generated!', 'success');
+                } else {
+                    throw new Error('No pairing code returned from server');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast(`Failed to generate pairing code: ${e.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Pairing Code';
+            }
+        };
+
+        window.togglePairingInput = function(e) {
+            if (e) e.preventDefault();
+            const container = document.getElementById('pairing-input-container');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        };
+
+        window.submitPairingCode = async function() {
+            const input = document.getElementById('pairing-code-input');
+            const code = input.value.trim();
+            if (code.length !== 6 || isNaN(code)) {
+                showToast('Please enter a valid 6-digit number.', 'error');
+                return;
+            }
+            
+            toggleLoading(true);
+            try {
+                const url = window.getApiBaseUrl() + '/api/auth/pair';
+                const res = await originalFetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                
+                const text = await res.text();
+                let data = {};
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {}
+                
+                if (!res.ok) {
+                    throw new Error(data.error || `HTTP ${res.status}`);
+                }
+                
+                if (data.token) {
+                    sessionStorage.setItem('discord_token', data.token);
+                    showToast('Device linked successfully! Authenticating...', 'success');
+                    window.location.hash = ''; // Clear hash
+                    
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    throw new Error('No token returned from pairing API');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast(`Pairing Failed: ${e.message}`, 'error');
+            } finally {
+                toggleLoading(false);
+            }
+        };
+
+
+
         // 🚨 Premium Global Client-Side Error Interceptor
         window.addEventListener('error', function(event) {
             const errMsg = event.error ? event.error.message : event.message;
@@ -3158,14 +3280,25 @@
 
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
+            const pairCode = fragment.get('pair');
             if (accessToken) { 
                 sessionStorage.setItem('discord_token', accessToken); 
                 window.history.replaceState(null, null, window.location.pathname); 
                 authenticateWithToken(accessToken); 
+            } else if (pairCode) {
+                window.history.replaceState(null, null, window.location.pathname);
+                authOverlay.style.display = 'flex';
+                authOverlay.style.opacity = '1';
+                document.getElementById('pairing-input-container').style.display = 'block';
+                document.getElementById('pairing-code-input').value = pairCode;
+                submitPairingCode();
             } else { 
                 const tok = sessionStorage.getItem('discord_token'); 
                 if (tok) authenticateWithToken(tok); 
-                else authOverlay.style.opacity = '1'; 
+                else {
+                    authOverlay.style.display = 'flex';
+                    authOverlay.style.opacity = '1';
+                }
             }
         });
 

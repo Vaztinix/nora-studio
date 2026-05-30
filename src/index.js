@@ -133,6 +133,18 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// 📱 Mobile/Secondary Device Pairing memory store
+const pairingCodes = new Map();
+setInterval(() => {
+    const now = Date.now();
+    for (const [code, data] of pairingCodes.entries()) {
+        if (now > data.expiresAt) {
+            pairingCodes.delete(code);
+        }
+    }
+}, 60000);
+
+
 // Attach client to request
 app.use((req, res, next) => {
     req.client = client;
@@ -356,6 +368,56 @@ app.post('/api/user/prefs', async (req, res) => {
         res.json({ success: true, prefs });
     } catch (e) {
         handleRouteError(res, e, '/api/user/prefs');
+    }
+});
+
+// Generate dynamic pairing code for mobile authentication
+app.post('/api/auth/pairing-code', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        
+        // Generate a unique 6-digit code
+        let code;
+        do {
+            code = Math.floor(100000 + Math.random() * 900000).toString();
+        } while (pairingCodes.has(code));
+        
+        pairingCodes.set(code, {
+            token,
+            userId: user.id,
+            expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes validity
+        });
+        
+        res.json({ success: true, code });
+    } catch (e) {
+        handleRouteError(res, e, '/api/auth/pairing-code');
+    }
+});
+
+// Exchange pairing code for an active Discord token
+app.post('/api/auth/pair', async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code) return res.status(400).json({ error: 'Code is required' });
+        
+        const cleanCode = code.toString().trim();
+        const data = pairingCodes.get(cleanCode);
+        
+        if (!data || Date.now() > data.expiresAt) {
+            if (data) pairingCodes.delete(cleanCode);
+            return res.status(400).json({ error: 'Invalid or expired pairing code' });
+        }
+        
+        // Single-use token logic
+        pairingCodes.delete(cleanCode);
+        
+        res.json({ success: true, token: data.token });
+    } catch (e) {
+        console.error('Error in /api/auth/pair:', e);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
