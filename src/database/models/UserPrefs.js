@@ -51,6 +51,34 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.STRING,
         defaultValue: 'en'
     },
+    isPremium: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    isManualPremium: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    aiProfile: {
+        type: DataTypes.TEXT,
+        defaultValue: '{}'
+    },
+    // ---- Premium & Expanded Time Duration Gates ----
+    paidExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null
+    },
+    expandedTimeMs: {
+        type: DataTypes.BIGINT,
+        defaultValue: 0
+    },
+    premiumExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null
+    }
 });
 
 module.exports = UserPrefs;
+

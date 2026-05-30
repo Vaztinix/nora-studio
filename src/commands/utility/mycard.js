@@ -1,7 +1,10 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const UserLevel = require('../../database/models/UserLevel');
 const GuildSettings = require('../../database/models/GuildSettings');
+const UserPrefs = require('../../database/models/UserPrefs');
+const RobloxVerify = require('../../database/models/RobloxVerify');
 const { handleError } = require('../../utils/embeds');
+const axios = require('axios');
 
 module.exports = {
     category: 'utility',
@@ -27,6 +30,31 @@ module.exports = {
         const isDM = !interaction.guild;
         const member = isDM ? null : await interaction.guild.members.fetch(target.id).catch(() => null);
 
+        // Fetch UserPrefs
+        const targetPrefs = await UserPrefs.findOne({ where: { userId: target.id } });
+        
+        // Hand complete privacy control back to the user regarding what info is hidden or shared
+        if (targetPrefs && !targetPrefs.profilePublic && target.id !== interaction.user.id) {
+            return interaction.editReply({
+                content: '🔒 **Private Profile:** This profile has been set to private by the user.',
+                ephemeral: true
+            });
+        }
+
+        // Determine if target is premium
+        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
+        const isOwner = APP_OWNER_IDS.includes(target.id);
+        
+        const checkPremium = (prefs) => {
+            if (isOwner) return true;
+            if (!prefs) return false;
+            if (prefs.isManualPremium || prefs.isPremium) return true;
+            const paidTime = prefs.paidExpiresAt ? new Date(prefs.paidExpiresAt).getTime() : 0;
+            const expandedMs = prefs.expandedTimeMs ? Number(prefs.expandedTimeMs) : 0;
+            return (paidTime + expandedMs) > Date.now();
+        };
+        const isPremium = checkPremium(targetPrefs);
+
         // Fetch UserLevel from DB (Only possible if in a guild)
         let level = 0;
         let xp = 0;
@@ -46,13 +74,10 @@ module.exports = {
 
         // Analyze Member Roles
         let rolesDisplay = 'N/A (Global Card)';
-        let isHigherThanBot = false;
         let joinedAt = 'N/A';
         let permissionText = 'Independent Identity';
 
         if (!isDM && member) {
-            const botRolePosition = interaction.guild.members.me.roles.highest.position;
-            isHigherThanBot = member.roles.highest.position > botRolePosition;
             const rolesList = member.roles.cache
                 .filter(r => r.id !== interaction.guild.id)
                 .sort((a, b) => b.position - a.position)
@@ -93,28 +118,102 @@ module.exports = {
         
         const eventsDisplay = completedEvents.length > 0 ? completedEvents.join('\n') : '*No events completed.*';
 
-        // 🚀 Promoter Awareness
+        // Promoter Awareness
         const settings = isDM ? null : await GuildSettings.findOne({ where: { guildId: interaction.guild.id } });
         const isPromoting = settings?.promoterRoleId && member ? member.roles.cache.has(settings.promoterRoleId) : false;
 
-        // Build the Embed
+        // Badge Syncing Pipeline: Fetch official Discord badges
+        const badgesList = [];
+        if (target.flags) {
+            const flags = target.flags.toArray();
+            const badgeMap = {
+                Staff: '🛡️ Staff',
+                Partner: '🤝 Partner',
+                Hypesquad: '🦁 Events Coordinator',
+                BugHunterLevel1: '🐛 Bug Hunter I',
+                BugHunterLevel2: '🪲 Bug Hunter II',
+                HypeSquadOnlineHouse1: '🔮 House of Bravery',
+                HypeSquadOnlineHouse2: '🧪 House of Brilliance',
+                HypeSquadOnlineHouse3: '🛡️ House of Balance',
+                PremiumEarlySupporter: '🏎️ Early Supporter',
+                VerifiedDeveloper: '👨‍💻 Developer',
+                ActiveDeveloper: '💻 Active Developer'
+            };
+            flags.forEach(f => {
+                if (badgeMap[f]) badgesList.push(badgeMap[f]);
+            });
+        }
+        
+        // Add Premium entitlement badge if active
+        if (isPremium) {
+            badgesList.push('💎 Nora Premium Subscriber');
+        }
+
+        const badgesDisplay = badgesList.length > 0 ? badgesList.map(b => `\`${b}\``).join(' ') : '*No server badges.*';
+
+        // Roblox Integration displaying
+        let robloxDisplay = '*No account verified.*';
+        const robloxRecord = await RobloxVerify.findOne({ where: { userId: target.id, status: 'VERIFIED' } });
+        if (robloxRecord && (targetPrefs?.robloxPublic !== false || target.id === interaction.user.id)) {
+            let username = `ID: ${robloxRecord.robloxId}`;
+            let status = 'Offline';
+            let joinUrl = null;
+
+            try {
+                const robloxUserRes = await axios.get(`https://users.roblox.com/v1/users/${robloxRecord.robloxId}`);
+                if (robloxUserRes.data) {
+                    username = `${robloxUserRes.data.displayName} (@${robloxUserRes.data.name})`;
+                }
+            } catch (e) {}
+
+            try {
+                const presenceRes = await axios.post('https://presence.roblox.com/v1/presence/users', {
+                    userIds: [parseInt(robloxRecord.robloxId)]
+                });
+                if (presenceRes.data && presenceRes.data.userPresences && presenceRes.data.userPresences.length > 0) {
+                    const p = presenceRes.data.userPresences[0];
+                    const type = p.userPresenceType; // 0: Offline, 1: Online, 2: InGame, 3: InStudio
+                    if (type === 1) status = '🟢 Online on website';
+                    else if (type === 2) {
+                        status = `🎮 Playing **${p.lastLocation || 'Roblox'}**`;
+                        if (targetPrefs?.joinMeEnabled && targetPrefs?.joinLink) {
+                            joinUrl = targetPrefs.joinLink;
+                        }
+                    } else if (type === 3) {
+                        status = '🛠️ Editing in Studio';
+                    }
+                }
+            } catch (e) {}
+
+            robloxDisplay = `**Account:** [${username}](https://www.roblox.com/users/${robloxRecord.robloxId}/profile)\n**Status:** ${status}`;
+            if (joinUrl) {
+                robloxDisplay += `\n👉 [**Join Experience**](${joinUrl})`;
+            }
+        }
+
+        // Global Bio with Markdown support
+        const bioDisplay = targetPrefs?.bio ? targetPrefs.bio : '*No bio set.*';
+
+        // Build the Embed with Premium Star Badge and Gold Styling
+        const authorName = `${target.username}${isPremium ? ' ⭐' : ''}'s Personal Card`;
         const embed = new EmbedBuilder()
-            .setAuthor({ name: `${target.username}'s Personal Card`, iconURL: target.displayAvatarURL() })
-            .setColor(isPromoting ? 0xFF007A : 0x57acf2)
+            .setAuthor({ name: authorName, iconURL: target.displayAvatarURL() })
+            .setColor(isPremium ? 0xFFD700 : (isPromoting ? 0xFF007A : 0x57acf2))
             .setThumbnail(target.displayAvatarURL({ dynamic: true, size: 512 }))
-            .setDescription(`${isPromoting ? '**Nora Affiliate**\n\n' : ''}Here is the complete profile for <@${target.id}>.`)
+            .setDescription(`${isPromoting ? '**Nora Affiliate**\n\n' : ''}${bioDisplay}`)
             .addFields(
                 { name: 'User Info', value: `**Account Created:** ${createdAt}\n**Joined Server:** ${joinedAt}`, inline: true },
                 { name: 'Permissions', value: permissionText, inline: true },
                 { name: 'Leveling', value: `**Level:** ${isDM ? 'N/A' : level}\n**XP:** ${isDM ? 'N/A' : `${xp.toLocaleString()} / ${nextLevelXp.toLocaleString()}`}`, inline: true },
+                { name: 'Nora Badges', value: badgesDisplay, inline: false },
+                { name: 'Roblox Integration', value: robloxDisplay, inline: false },
                 { name: 'Top Roles', value: rolesDisplay, inline: false },
                 { name: 'Events', value: eventsDisplay, inline: false }
             )
             .setFooter({ text: `ID: ${target.id}`, iconURL: isDM ? null : interaction.guild.iconURL() })
             .setTimestamp();
 
-        // 🗑️ Data Deletion Option (Only for the caller)
-        const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+        // Data Deletion Option (Only for the caller)
         const row = new ActionRowBuilder();
         if (target.id === interaction.user.id) {
             row.addComponents(

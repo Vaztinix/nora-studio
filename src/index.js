@@ -48,6 +48,10 @@ require('./database/models/OneTimeEvent');
 require('./database/models/Warning');
 require('./database/models/UserMemory');
 require('./database/models/UserPrefs');
+require('./database/models/HostedBot');
+require('./database/models/CustomCommand');
+require('./database/models/Session');
+
 
 const client = new Client({
     intents: [
@@ -146,6 +150,15 @@ app.use('/api/guilds/:guildId/settings', settingsRouter);
 const guildsRouter = require('./api/routes/guilds');
 app.use('/api/guilds/:guildId', guildsRouter);
 
+// Studio workspace router (Hosted bots, AI persona & history context)
+const studioRouter = require('./api/routes/studio');
+app.use('/api/user', studioRouter);
+app.use('/api/system', studioRouter);
+
+// Developer / Owner-Only admin router
+const adminRouter = require('./api/routes/admin');
+app.use('/api/admin', adminRouter);
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Nora API is running.' });
@@ -178,13 +191,78 @@ const getDiscordUser = async (token) => {
     return res.json();
 };
 
+// Helper to handle route errors (returning 401 if invalid token)
+const handleRouteError = (res, e, routeName) => {
+    console.error(`Error in ${routeName}:`, e);
+    const status = e.message === 'Invalid token' ? 401 : 500;
+    return res.status(status).json({ error: status === 401 ? 'Unauthorized' : e.message });
+};
+
 // API User Profiler Endpoints
 app.get('/api/user/me', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
+    
+    const crypto = require('crypto');
+    const axios = require('axios');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    
     try {
-        const user = await getDiscordUser(token);
+        const Session = require('./database/models/Session');
+        const UserPrefs = require('./database/models/UserPrefs');
+        
+        let session = await Session.findByPk(tokenHash);
+        if (session && new Date() > new Date(session.expiresAt)) {
+            await session.destroy();
+            session = null;
+        }
+        
+        let user = null;
+        if (session) {
+            // Check session hardening
+            const prefs = await UserPrefs.findOne({ where: { userId: session.userId } });
+            if (prefs && prefs.sessionHardened && session.ipAddress !== clientIp) {
+                await session.destroy();
+                return res.status(403).json({ error: 'Session Hardening: IP mismatch. Session terminated.' });
+            }
+            
+            // Check if Discord token is still valid
+            const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
+                headers: { Authorization: `Bearer ${token}` }
+            }).catch(() => null);
+            if (!userRes) {
+                await session.destroy();
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
+            user = userRes.data;
+        } else {
+            // Fetch user info from Discord using axios
+            const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
+                headers: { Authorization: `Bearer ${token}` }
+            }).catch(() => null);
+            if (!userRes) return res.status(401).json({ error: 'Unauthorized' });
+            user = userRes.data;
+            
+            // GeoIP lookup
+            let location = 'Unknown Location';
+            try {
+                const geo = await axios.get(`http://ip-api.com/json/${clientIp}`, { timeout: 3000 });
+                if (geo.data && geo.data.status === 'success') {
+                    location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
+                }
+            } catch (e) {}
+            
+            session = await Session.create({
+                id: tokenHash,
+                userId: user.id,
+                ipAddress: clientIp,
+                userAgent: req.headers['user-agent'] || 'Unknown',
+                location: location,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            });
+        }
         
         // Construct full CDN avatar URL
         if (user.avatar) {
@@ -196,32 +274,36 @@ app.get('/api/user/me', async (req, res) => {
 
         // Determine if user is owner of the bot
         let isOwner = false;
-        try {
-            const app = await req.client.application.fetch();
-            if (app.owner) {
-                if (app.owner.id === user.id) {
-                    isOwner = true;
-                } else if (app.owner.members && app.owner.members.has(user.id)) {
-                    isOwner = true;
-                }
-            }
-        } catch (e) {
-            console.error('Failed to fetch application owner:', e);
-        }
-        // Fallback to founder ID
-        if (user.id === '1214048435632603137') {
+        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
+        if (APP_OWNER_IDS.includes(user.id)) {
             isOwner = true;
+        } else {
+            try {
+                const app = await req.client.application.fetch();
+                if (app.owner) {
+                    if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
+                        isOwner = true;
+                    }
+                }
+            } catch (e) {}
         }
         user.isOwner = isOwner;
 
         // Fetch user preferences/badges from DB
-        const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
         user.prefs = prefs;
         user.sessionHardened = !!prefs.sessionHardened;
 
-        // Owners get premium by default
-        user.noraPremium = isOwner;
+        // Dynamic Premium Verification Check
+        const checkPremium = (p) => {
+            if (isOwner) return true;
+            if (!p) return false;
+            if (p.isManualPremium || p.isPremium) return true;
+            const paidTime = p.paidExpiresAt ? new Date(p.paidExpiresAt).getTime() : 0;
+            const expandedMs = p.expandedTimeMs ? Number(p.expandedTimeMs) : 0;
+            return (paidTime + expandedMs) > Date.now();
+        };
+        user.noraPremium = checkPremium(prefs);
 
         res.json(user);
     } catch (e) {
@@ -254,8 +336,7 @@ app.post('/api/user/profile', async (req, res) => {
         await prefs.save();
         res.json({ success: true, prefs });
     } catch (e) {
-        console.error('Error in /api/user/profile:', e);
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/profile');
     }
 });
 
@@ -274,8 +355,7 @@ app.post('/api/user/prefs', async (req, res) => {
         await prefs.save();
         res.json({ success: true, prefs });
     } catch (e) {
-        console.error('Error in /api/user/prefs:', e);
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/prefs');
     }
 });
 
@@ -349,7 +429,7 @@ app.get('/api/user/guilds', async (req, res) => {
         
         res.json(managedGuilds);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/guilds');
     }
 });
 
@@ -378,7 +458,7 @@ app.get('/api/user/roblox', async (req, res) => {
         
         res.json({ linked: true, status: record.status, robloxId: record.robloxId, robloxUsername: username, verifyCode: record.verifyCode });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/roblox');
     }
 });
 
@@ -425,8 +505,7 @@ app.post('/api/user/roblox/link', async (req, res) => {
 
         res.json({ success: true, verifyCode: record.verifyCode, status: record.status, linked: true });
     } catch (e) {
-        console.error('Roblox link error:', e);
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/roblox/link');
     }
 });
 
@@ -471,8 +550,7 @@ app.post('/api/user/roblox/check', async (req, res) => {
             res.status(400).json({ error: `Verification code "${record.verifyCode}" was not found in your Roblox description.` });
         }
     } catch (e) {
-        console.error('Roblox check error:', e);
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/roblox/check');
     }
 });
 
@@ -485,7 +563,7 @@ app.post('/api/user/roblox/unlink', async (req, res) => {
         await RobloxVerify.destroy({ where: { userId: user.id } });
         res.json({ success: true });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/roblox/unlink');
     }
 });
 
@@ -603,8 +681,7 @@ app.get('/api/user/roblox/presence', async (req, res) => {
             gameId
         });
     } catch (e) {
-        console.error('Error in /api/user/roblox/presence:', e);
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/roblox/presence');
     }
 });
 
@@ -636,8 +713,7 @@ app.get('/api/user/topgg/bots', async (req, res) => {
         
         res.json({ bots });
     } catch (e) {
-        console.error('Error in /api/user/topgg/bots:', e);
-        res.status(500).json({ error: e.message });
+        handleRouteError(res, e, '/api/user/topgg/bots');
     }
 });
 

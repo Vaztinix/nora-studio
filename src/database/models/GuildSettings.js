@@ -418,7 +418,27 @@ const GuildSettings = sequelize.define('GuildSettings', {
     language: {
         type: DataTypes.STRING,
         defaultValue: 'en'
+    },
+    // ---- Premium & Expanded Time Duration Gates ----
+    paidExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null
+    },
+    expandedTimeMs: {
+        type: DataTypes.BIGINT,
+        defaultValue: 0
+    },
+    premiumExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null
+    },
+    customModResponses: {
+        type: DataTypes.TEXT,
+        defaultValue: '{}'
     }
 });
 
 module.exports = GuildSettings;
+

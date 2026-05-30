@@ -23,6 +23,32 @@
         })();
     </script>
     <style>
+        @property --primary {
+            syntax: '<color>';
+            inherits: true;
+            initial-value: #aeefff;
+        }
+        @property --primary-glow {
+            syntax: '<color>';
+            inherits: true;
+            initial-value: rgba(174, 239, 255, 0.3);
+        }
+        @property --bg {
+            syntax: '<color>';
+            inherits: true;
+            initial-value: #0f111a;
+        }
+        @property --sidebar-bg {
+            syntax: '<color>';
+            inherits: true;
+            initial-value: #151828;
+        }
+        @property --border {
+            syntax: '<color>';
+            inherits: true;
+            initial-value: rgba(255, 255, 255, 0.08);
+        }
+
         :root {
             --bg: #0f111a;
             --sidebar-bg: #151828;
@@ -38,6 +64,53 @@
             --radius-lg: 20px;
             --danger: #ff5555;
             --success: #2ea043;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --row-bg: rgba(0, 0, 0, 0.15);
+            --glow-1: #21193d;
+            --glow-2: #161c36;
+        }
+
+        /* Smooth Transition when Switching Themes */
+        body, .sidebar, .panel, .modal, .card, .config-btn, select, input, textarea, .multiselect-trigger, .multiselect-dropdown {
+            transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        /* Mouse Follow Glow Effect */
+        .mouse-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+            z-index: 99999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            will-change: transform;
+        }
+        body.device-mobile .mouse-glow,
+        body.device-tablet .mouse-glow {
+            display: none !important;
+        }
+
+        body.theme-light {
+            --bg: #f5f7fb;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --card-hover: #f1f3f7;
+            --primary: #5865f2; /* Blurple */
+            --primary-glow: rgba(88, 101, 242, 0.15);
+            --primary-hover: #4752c4;
+            --text: #11131c;
+            --muted: #6b7280;
+            --border: rgba(0, 0, 0, 0.08);
+            --input-bg: rgba(0, 0, 0, 0.03);
+            --row-bg: rgba(0, 0, 0, 0.02);
+            --glow-1: rgba(88, 101, 242, 0.05);
+            --glow-2: rgba(88, 101, 242, 0.03);
+            --color-scheme: light;
         }
 
         body.theme-oled {
@@ -149,11 +222,16 @@
             border: 1px solid var(--border);
         }
 
+        html {
+            color-scheme: var(--color-scheme, dark);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
         body {
-            background: radial-gradient(circle at 80% 0%, #21193d, transparent 40%),
-                        radial-gradient(circle at 20% 100%, #161c36, transparent 40%),
+            color-scheme: var(--color-scheme, dark);
+            background: radial-gradient(circle at 80% 0%, var(--glow-1), transparent 40%),
+                        radial-gradient(circle at 20% 100%, var(--glow-2), transparent 40%),
                         var(--bg);
             color: var(--text);
             min-height: 100vh;
@@ -446,16 +524,20 @@
         .panel {
             background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg);
             padding: 30px; margin-bottom: 25px;
+            position: relative;
+        }
+        .panel.has-open-dropdown {
+            z-index: 99 !important;
         }
         .panel > h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
         .panel > p { color: var(--muted); font-size: 0.9rem; margin-bottom: 25px; }
 
         .row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 20px; background: rgba(0,0,0,0.15); border: 1px solid var(--border);
+            padding: 20px; background: var(--row-bg); border: 1px solid var(--border);
             border-radius: var(--radius-md); margin-bottom: 12px; transition: 0.2s;
         }
-        .row:hover { border-color: rgba(255,255,255,0.15); }
+        .row:hover { border-color: var(--primary-glow); }
         .row-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
         .row-info p { color: var(--muted); font-size: 0.85rem; line-height: 1.5; max-width: 500px;}
         
@@ -464,9 +546,9 @@
         .input-group label { font-size: 0.85rem; color: var(--muted); }
 
         select, input[type="text"], input[type="number"], textarea {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--input-bg);
             border: 1px solid var(--border);
-            color: #ffffff;
+            color: var(--text);
             padding: 10px 16px;
             border-radius: 10px;
             font-size: 0.9rem;
@@ -475,12 +557,12 @@
             transition: all 0.25s ease;
             appearance: none;
             -webkit-appearance: none;
-            color-scheme: dark;
+            color-scheme: var(--color-scheme, dark);
         }
 
         option {
-            background-color: #1a1c2c;
-            color: white;
+            background-color: var(--card-bg);
+            color: var(--text);
         }
 
         select {
@@ -852,46 +934,144 @@
             100% { transform: translate(-60%, -40%) scale(0.9); }
         }
 
-        /* Responsive CSS Media Queries */
+        /* Responsive CSS Media Queries & Mobile Sidebar Drawer */
+        .mobile-burger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px;
+            outline: none;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        .mobile-burger-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 15, 26, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         @media (max-width: 992px) {
+            .topbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 9999;
+                background: rgba(11, 15, 26, 0.85) !important;
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border-bottom: 1px solid var(--border);
+                padding: 12px 20px !important;
+            }
+            .mobile-burger-btn {
+                display: block;
+            }
             .app-layout {
                 flex-direction: column;
             }
             .sidebar {
-                width: 100% !important;
-                height: auto !important;
-                min-height: auto !important;
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-                padding: 15px;
-                position: relative;
+                position: fixed !important;
+                top: 0;
+                left: -320px;
+                width: 280px !important;
+                height: 100vh !important;
+                min-height: 100vh !important;
+                z-index: 10000;
+                background: rgba(15, 19, 32, 0.96) !important;
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                border-right: 1px solid var(--border);
+                border-bottom: none;
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+                padding: 25px 20px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .sidebar.open {
+                left: 0;
             }
             .sidebar-nav {
                 display: flex;
-                flex-wrap: wrap;
+                flex-direction: column;
                 gap: 8px;
-                margin-top: 15px;
+                margin-top: 20px;
             }
             .v-tab {
-                flex: 1 1 45%;
+                width: 100%;
                 margin: 0 !important;
             }
             .user-profile {
-                margin-bottom: 15px;
+                margin-bottom: 20px;
             }
             .logout-btn {
-                margin-top: 15px !important;
+                margin-top: 20px !important;
                 width: 100% !important;
             }
             .premium-ad {
                 display: none !important;
             }
+
+            /* Collapse inline-styled layouts */
+            div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+            /* Stats counters keep a nice 2x2 grid */
+            div[style*="repeat(4, 1fr)"] {
+                grid-template-columns: 1fr 1fr !important;
+            }
+            /* Leveling / overview details layout */
+            div[style*="repeat(3, 1fr)"] {
+                grid-template-columns: 1fr !important;
+            }
+            div[style*="1fr 350px"], div[style*="1fr 340px"], div[style*="2fr 1fr"], div[style*="1.2fr 1fr"], div[style*="1.2fr 2fr"], div[style*="1.2fr 0.8fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            .main-content {
+                padding: 20px !important;
+                max-width: 100vw;
+                box-sizing: border-box;
+            }
+            
+            /* Responsive tables and dynamic cards */
+            .row-inputs {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            .row {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 8px;
+            }
+            
+            /* Adjust preview containers */
+            #profile-card-preview {
+                margin: 15px 0 !important;
+                width: 100% !important;
+                box-sizing: border-box;
+            }
         }
 
         @media (max-width: 600px) {
-            .v-tab {
-                flex: 1 1 100%;
-            }
             .server-grid {
                 grid-template-columns: 1fr !important;
             }
@@ -903,18 +1083,160 @@
             .settings-row input, .settings-row select {
                 width: 100% !important;
             }
-            .topbar {
-                padding: 10px 15px !important;
-            }
             .page-title-row {
                 flex-direction: column;
                 gap: 15px;
                 align-items: flex-start !important;
             }
         }
+
+        /* Device-specific layout overrides */
+        body.device-mobile {
+            font-size: 14px;
+        }
+        body.device-mobile .main-content {
+            padding: 15px !important;
+        }
+        body.device-mobile .panel {
+            padding: 15px !important;
+            border-radius: 12px !important;
+        }
+        body.device-mobile .row {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 10px;
+        }
+        body.device-mobile .row-inputs {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+        }
+        body.device-mobile input, 
+        body.device-mobile select, 
+        body.device-mobile textarea, 
+        body.device-mobile button {
+            min-height: 42px;
+            font-size: 16px !important; /* Prevents auto-zoom on iOS */
+        }
+        body.device-mobile .sidebar {
+            width: 80% !important;
+            max-width: 300px;
+        }
+        body.device-mobile .toast-tr, 
+        body.device-mobile .toast-tl, 
+        body.device-mobile .toast-br, 
+        body.device-mobile .toast-bl {
+            left: 50% !important;
+            right: auto !important;
+            transform: translateX(-50%) !important;
+            width: calc(100% - 30px) !important;
+            max-width: 400px;
+            top: 20px !important;
+            bottom: auto !important;
+        }
+        body.device-mobile div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+        }
+        body.device-tablet .sidebar {
+            width: 250px !important;
+        }
+
+        /* Custom Multiselect Component Styles */
+        .multiselect-container {
+            position: relative;
+            width: 100%;
+        }
+        .multiselect-container.open {
+            z-index: 9999 !important;
+        }
+        .multiselect-trigger {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding-right: 40px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aeefff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: all 0.25s ease;
+        }
+        .multiselect-trigger:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(174, 239, 255, 0.3);
+        }
+        .multiselect-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
+        }
+        .multiselect-search {
+            background: rgba(0, 0, 0, 0.2) !important;
+            margin-bottom: 5px;
+        }
+        .multiselect-options {
+            display: flex;
+            flex-direction: column;
+            max-height: 180px;
+            overflow-y: auto;
+            gap: 2px;
+        }
+        .multiselect-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.85rem;
+            user-select: none;
+        }
+        .multiselect-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .multiselect-option input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            margin: 0;
+        }
+        .multiselect-tag {
+            background: rgba(174, 239, 255, 0.15);
+            border: 1px solid rgba(174, 239, 255, 0.3);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
     </style>
 </head>
 <body class="nora-theme">
+    <div class="mouse-glow" id="mouse-glow"></div>
     <div class="liquid-blob liquid-blob-1"></div>
     <div class="liquid-blob liquid-blob-2"></div>
     <div class="liquid-blob liquid-blob-3"></div>
@@ -941,6 +1263,7 @@
     </div>
 
     <header class="topbar">
+        <button id="mobile-burger-btn" class="mobile-burger-btn"><i class="fas fa-bars"></i></button>
         <div class="brand">
             <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
             Nora Studio
@@ -949,6 +1272,7 @@
             <a href="/" class="btn-outline">Back to Site</a>
         </div>
     </header>
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
     <div class="app-layout">
         <aside class="sidebar">
@@ -1031,14 +1355,6 @@
                                 <textarea id="user-pref-bio" placeholder="Tell the community about yourself..." style="width: 100%; min-height: 120px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px;"></textarea>
                             </div>
                             <button class="save-btn" style="margin-top: 20px; width: 100%;" onclick="saveUserProfile()">Save Profile Changes</button>
-                        </div>
-                        <div class="panel">
-                            <h3>Import & Sync</h3>
-                            <p style="font-size: 0.85rem; color: var(--muted);">Sync your global identity to specific servers.</p>
-                            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                <button class="config-btn" onclick="importIntegrations('roblox')"><i class="fas fa-gamepad"></i> Sync Roblox</button>
-                                <button class="config-btn" onclick="importIntegrations('prefs')"><i class="fas fa-sync"></i> Sync Prefs</button>
-                            </div>
                         </div>
                     </div>
 
@@ -1150,6 +1466,64 @@
                 </div>
             </div>
 
+            <!-- Role Rewards Modal -->
+            <div id="role-rewards-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+                <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Level Role Rewards</h2>
+                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">Automatically assign roles to members when they reach specific levels.</p>
+                    
+                    <div id="role-rewards-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 250px; overflow-y: auto;">
+                        <!-- Dynamically populated rows -->
+                    </div>
+                    
+                    <button class="config-btn" style="width: 100%; margin-bottom: 15px;" onclick="addRoleReward()"><i class="fas fa-plus"></i> Add Level Reward</button>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <button class="config-btn" style="flex: 1;" onclick="document.getElementById('role-rewards-modal').style.display = 'none'">Close & Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Confirmation Modal -->
+            <div id="save-confirmation-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+                <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Confirm Changes</h2>
+                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">Please review the following modifications before saving:</p>
+                    
+                    <div id="save-changes-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 250px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; color: #eee; font-family: monospace;">
+                        <!-- Dynamically populated list of changes -->
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <input type="checkbox" id="skip-save-confirm-checkbox" style="cursor: pointer; width: 16px; height: 16px;">
+                        <label for="skip-save-confirm-checkbox" style="color: var(--muted); font-size: 0.8rem; cursor: pointer; user-select: none;">Do not show this message again</label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <button class="config-btn" style="flex: 1;" onclick="cancelSaveSettings()">Cancel</button>
+                        <button class="save-btn" style="flex: 1; background: var(--success);" onclick="confirmSaveSettings()">Confirm & Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- XP Multipliers Modal -->
+            <div id="role-multipliers-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+                <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Role XP Multipliers</h2>
+                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">Give specific roles an XP multiplier (e.g., 1.5x for VIPs or Boosters).</p>
+                    
+                    <div id="role-multipliers-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 250px; overflow-y: auto;">
+                        <!-- Dynamically populated rows -->
+                    </div>
+                    
+                    <button class="config-btn" style="width: 100%; margin-bottom: 15px;" onclick="addRoleMultiplier()"><i class="fas fa-plus"></i> Add Role Multiplier</button>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <button class="config-btn" style="flex: 1;" onclick="document.getElementById('role-multipliers-modal').style.display = 'none'">Close & Save</button>
+                    </div>
+                </div>
+            </div>
+
 
             <div id="view-prefs" style="display: none;">
                 <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">Settings</h1>
@@ -1176,6 +1550,8 @@
                             <option value="rose">Aura Pink (Rose/Neon Magenta)</option>
                             <option value="cyber">Cyberpunk Amber (Bright Gold)</option>
                             <option value="amethyst">Amethyst Glow (Lavender Purple)</option>
+                            <option value="mint">Mint Breeze (Teal)</option>
+                            <option value="light">Nora Light (White)</option>
                             <option value="solid-glass">Solid Glass (iOS-like Static)</option>
                             <option value="glass">Liquid Glass (iOS-like Animated)</option>
                         </select>
@@ -1288,7 +1664,7 @@
                             <button class="config-btn" style="width: auto; padding: 8px 20px;" onclick="saveCustomApiPrefs()">Save</button>
                         </div>
                         <p style="color: var(--muted); font-size: 0.7rem; margin-top: 8px; line-height: 1.4;">
-                            Leaving this blank will use the default domain (<span style="color: var(--primary);">https://api.vaztinix.dev</span>). Use <span style="color: var(--primary);">http://localhost:3000</span> if you are testing locally on your PC and experience NAT loopback connection issues.
+                            Leaving this blank will use the default domain (<span style="color: var(--primary);">https://api.vaztinix.dev</span>). Use <span style="color: var(--primary);"> https://localhost:3000 </span> if you are testing locally on your PC and experience NAT loopback connection issues.
                         </p>
                     </div>
                 </div>
@@ -1320,6 +1696,16 @@
                         </div>
                         <label class="switch"><input type="checkbox" id="pref-access-logs" checked><span class="slider"></span></label>
                     </div>
+                    <div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 5px; color: #fff;">Active Session Manager</h4>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 15px;">Manage and revoke your active Nora Studio sessions.</p>
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                            <button class="config-btn" id="expire-all-sessions-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem; color: var(--danger); border-color: rgba(255,85,85,0.3);" onclick="expireAllSessions()">Expire All Sessions</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;" id="active-sessions-list">
+                            <div style="font-size: 0.8rem; color: var(--muted); text-align: center; padding: 15px;">Loading active sessions...</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="panel">
@@ -1329,6 +1715,47 @@
                 </div>
 
                 <div id="owner-panel" style="display: none;">
+                    <div class="panel" style="border-color: #ffd700; margin-bottom: 25px;">
+                        <h3 style="color: #ffd700; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-crown"></i> Premium Access Management Panel
+                        </h3>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px;">
+                            View, grant, or revoke premium access for users and servers.
+                        </p>
+
+                        <!-- Grant Premium Section -->
+                        <div style="background: rgba(255, 255, 255, 0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 10px; font-size: 0.9rem;">Grant Premium Access</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <select id="premium-grant-type" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 8px;">
+                                    <option value="user">User ID</option>
+                                    <option value="server">Server (Guild) ID</option>
+                                </select>
+                                <input type="text" id="premium-grant-id" placeholder="Enter ID (e.g. 1214048435632603137)" style="flex: 1; min-width: 200px; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.85rem;">
+                                <button class="save-btn" style="width: auto; padding: 8px 20px; background: #ffd700; color: #000;" onclick="grantPremiumAccess()">Grant Premium</button>
+                            </div>
+                        </div>
+
+                        <!-- Premium Access Lists -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                            <div>
+                                <h4 style="margin-bottom: 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-user-shield"></i> Premium Users
+                                </h4>
+                                <div id="premium-users-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                                    <div style="font-size: 0.8rem; color: var(--muted); text-align: center; padding: 15px;">Loading users...</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-server"></i> Premium Servers
+                                </h4>
+                                <div id="premium-servers-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                                    <div style="font-size: 0.8rem; color: var(--muted); text-align: center; padding: 15px;">Loading servers...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="panel" style="border-color: var(--primary);">
                         <h3 style="color: var(--primary);">Owner Actions</h3>
                         <p>Special developer tools for system management.</p>
@@ -1430,7 +1857,11 @@
                             <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p></div>
                         </div>
                     </div>
-                    <button class="save-btn" id="save-settings-btn" onclick="saveSettings()">Save Data</button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="config-btn" id="undo-btn" onclick="undoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-undo"></i> Undo</button>
+                        <button class="config-btn" id="redo-btn" onclick="redoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-redo"></i> Redo</button>
+                        <button class="save-btn" id="save-settings-btn" onclick="saveSettings()">Save Data</button>
+                    </div>
                 </div>
 
                 <div class="h-nav" style="margin-top: 20px;">
@@ -1632,7 +2063,7 @@
                         <div class="row"><h4>Hardcore Filters</h4><label class="switch"><input type="checkbox" id="setting-automodHardcore"><span class="slider"></span></label></div>
                         <div class="row-inputs">
                             <div class="input-group"><label>Mention Limit</label><select id="setting-automodMentions"><option value="0">Off</option><option value="3">3</option><option value="5">5</option><option value="10">10</option></select></div>
-                            <div class="input-group"><label>Immune Roles (IDs)</label><input type="text" id="setting-automodImmuneRoles" placeholder="123, 456"></div>
+                            <div class="input-group"><label>Immune Roles</label><input type="hidden" id="setting-automodImmuneRoles"></div>
                         </div>
                     </div>
                     <div class="panel">
@@ -1720,6 +2151,8 @@
                 </div>
 
                 <div id="tab-leveling" class="tab-content">
+                    <input type="hidden" id="setting-roleRewards">
+                    <input type="hidden" id="setting-xpRoleMultipliers">
                     <div class="panel">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h3>Leveling Engine</h3>
@@ -1742,12 +2175,12 @@
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-levelUpNotificationsEnabled"><span class="slider"></span></label>
                                 </div>
-                                <div class="log-row-compact">
+                                <div class="log-row-compact" style="opacity: 0.6;">
                                     <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <strong>DM Notifications</strong>
-                                        <p style="font-size: 0.7rem; color: var(--muted);">Send level up to DMs</p>
+                                        <strong>DM Notifications (🔒 Locked)</strong>
+                                        <p style="font-size: 0.7rem; color: var(--muted);">Send level up to DMs (Disabled until opt-out mechanism is ready)</p>
                                     </div>
-                                    <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled"><span class="slider"></span></label>
+                                    <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled" disabled><span class="slider"></span></label>
                                 </div>
                             </div>
                             
@@ -1755,6 +2188,10 @@
                                 <div class="input-group">
                                     <label>Announce Channel</label>
                                     <select id="setting-levelUpChannelId"><option value="">Select channel...</option></select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Status Promoter Role</label>
+                                    <select id="setting-promoterRoleId"><option value="">No role selected</option></select>
                                 </div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                     <div class="input-group">
@@ -1775,8 +2212,12 @@
                         </div>
                     </div>
                     <script>
-                        function openRoleRewards() { showToast('Role Rewards configuration is coming soon!', 'info'); }
-                        function openXpMultipliers() { showToast('XP Multipliers configuration is coming soon!', 'info'); }
+                        function openRoleRewards() {
+                            document.getElementById('role-rewards-modal').style.display = 'flex';
+                        }
+                        function openXpMultipliers() {
+                            document.getElementById('role-multipliers-modal').style.display = 'flex';
+                        }
                     </script>
                     <button class="save-btn" style="width: 100%; margin-top: 5px;" onclick="saveSettings()">Save Leveling Settings</button>
                 </div>
@@ -1863,7 +2304,7 @@
                             <label>Verify Channel</label>
                             <select id="setting-verifyChannelId"><option value="">Select channel...</option></select>
                         </div>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Verify Role</label><select id="setting-verifyRoleId"><option value="">No role selected</option></select></div>
+                        <div class="input-group" style="margin-bottom: 20px;"><label>Verify Roles</label><input type="hidden" id="setting-verifyRoleId"></div>
                         <div class="input-group" style="margin-bottom: 20px;"><label>Ticket Category ID</label><input type="text" id="setting-ticketCategoryId"></div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
                              <button class="config-btn" onclick="triggerAction('spawn_verify', this)">Spawn Verify Panel</button>
@@ -2334,21 +2775,7 @@
                                 </div>
                             </div>
                             
-                            <div class="panel">
-                                <h3>Staff Directory</h3>
-                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-                                    <div style="display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px;">
-                                        <div style="width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></div>
-                                        <span style="font-size: 0.8rem; font-weight: 600;">Administrators</span>
-                                        <span id="staff-admin-count" style="margin-left: auto; font-size: 0.75rem; color: var(--muted);">...</span>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px;">
-                                        <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
-                                        <span style="font-size: 0.8rem; font-weight: 600;">Moderators</span>
-                                        <span id="staff-mod-count" style="margin-left: auto; font-size: 0.75rem; color: var(--muted);">...</span>
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
 
                         <!-- Directory Column -->
@@ -2472,21 +2899,31 @@
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
         window.getApiBaseUrl = function() {
             let customApi = localStorage.getItem('nora_api_url');
-            const host = window.location.hostname;
-            const isProductionDomain = host === 'norabot.app' || 
-                                       host.endsWith('.norabot.app') || 
-                                       host === 'vaztinix.dev' || 
-                                       host.endsWith('.vaztinix.dev');
-
             if (customApi) return customApi;
 
-            if (!isProductionDomain) {
+            const host = window.location.hostname;
+            const port = window.location.port;
+
+            // If we are on a custom port, we are accessing the Express server directly
+            if (port && port !== '80' && port !== '443') {
                 return '';
-            } else if (host.endsWith('norabot.app')) {
+            }
+
+            // Local development hosts and private IP subnets
+            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || host.endsWith('.local')) {
+                return '';
+            }
+
+            // Official production configurations
+            if (host === 'norabot.app' || host.endsWith('.norabot.app')) {
                 return 'https://api.norabot.app';
-            } else {
+            }
+            if (host === 'vaztinix.github.io' || host === 'vaztinix.dev' || host.endsWith('.vaztinix.dev')) {
                 return 'https://api.vaztinix.dev';
             }
+
+            // Fallback for custom self-hosted domains (relative requests)
+            return '';
         };
 
         const originalFetch = window.fetch;
@@ -2497,24 +2934,37 @@
             }
             try {
                 const response = await originalFetch(resolvedUrl, init);
-                if (response.status === 401 || response.status === 429) {
-                    let errMessage = 'Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.';
-                    let errTitle = response.status === 429 ? 'Rate Limited' : 'Session Expired';
-                    try {
-                        const clone = response.clone();
-                        const errJson = await clone.json().catch(() => null);
-                        if (errJson && errJson.error) {
-                            errMessage = errJson.error;
-                        }
-                    } catch (e) {}
+                // Handle 401 Session Expiration and 429 Rate Limits separately
+                const isTelemetryOrLogs = typeof input === 'string' && (input.includes('/api/logs/client') || input.endsWith('/api/logs'));
+                if (!isTelemetryOrLogs) {
+                    if (response.status === 429) {
+                        let errMessage = 'You are making requests too quickly. Please wait a few seconds before trying again.';
+                        try {
+                            const clone = response.clone();
+                            const errJson = await clone.json().catch(() => null);
+                            if (errJson && errJson.error) {
+                                errMessage = errJson.error;
+                            }
+                        } catch (e) {}
+                        showToast(`Rate Limited: ${errMessage}`, 'warning');
+                    } else if (response.status === 401) {
+                        let errMessage = 'Your Discord authorization session has expired. Please re-authenticate to continue configuring your server.';
+                        try {
+                            const clone = response.clone();
+                            const errJson = await clone.json().catch(() => null);
+                            if (errJson && errJson.error) {
+                                errMessage = errJson.error;
+                            }
+                        } catch (e) {}
 
-                    const expiredOverlay = document.getElementById('session-expired-overlay');
-                    const titleEl = document.getElementById('session-expired-title');
-                    const descEl = document.getElementById('session-expired-desc');
-                    if (titleEl) titleEl.textContent = errTitle;
-                    if (descEl) descEl.textContent = errMessage;
-                    if (expiredOverlay) {
-                        expiredOverlay.style.display = 'flex';
+                        const expiredOverlay = document.getElementById('session-expired-overlay');
+                        const titleEl = document.getElementById('session-expired-title');
+                        const descEl = document.getElementById('session-expired-desc');
+                        if (titleEl) titleEl.textContent = 'Session Expired';
+                        if (descEl) descEl.textContent = errMessage;
+                        if (expiredOverlay) {
+                            expiredOverlay.style.display = 'flex';
+                        }
                     }
                 }
                 if (!response.ok && typeof input === 'string' && !input.includes('/api/logs/client')) {
@@ -2624,9 +3074,58 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId'];
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Device detection and layout adjustments
+            function detectDevice() {
+                const ua = navigator.userAgent;
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || window.innerWidth <= 768;
+                const isTablet = /iPad|PlayBook|Silk/i.test(ua) || (window.innerWidth > 768 && window.innerWidth <= 1024);
+                
+                document.body.classList.remove('device-mobile', 'device-tablet', 'device-desktop');
+                if (isMobile) {
+                    document.body.classList.add('device-mobile');
+                } else if (isTablet) {
+                    document.body.classList.add('device-tablet');
+                } else {
+                    document.body.classList.add('device-desktop');
+                }
+            }
+            detectDevice();
+            window.addEventListener('resize', detectDevice);
+
+            // Mouse Follow Glow Tracker (Desktop Only)
+            const glow = document.getElementById('mouse-glow');
+            if (glow) {
+                window.addEventListener('mousemove', (e) => {
+                    if (document.body.classList.contains('device-mobile') || document.body.classList.contains('device-tablet')) {
+                        glow.style.opacity = '0';
+                        return;
+                    }
+                    glow.style.transform = `translate3d(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%), 0)`;
+                    glow.style.opacity = '1';
+                });
+                window.addEventListener('mouseleave', () => {
+                    glow.style.opacity = '0';
+                });
+            }
+
+            // Mobile sidebar hamburger toggle listeners
+            const burgerBtn = document.getElementById('mobile-burger-btn');
+            const sidebarEl = document.querySelector('.sidebar');
+            const backdropEl = document.getElementById('sidebar-backdrop');
+            
+            if (burgerBtn && sidebarEl && backdropEl) {
+                burgerBtn.addEventListener('click', () => {
+                    sidebarEl.classList.toggle('open');
+                    backdropEl.classList.toggle('open');
+                });
+                backdropEl.addEventListener('click', () => {
+                    sidebarEl.classList.remove('open');
+                    backdropEl.classList.remove('open');
+                });
+            }
 
         const style = document.createElement('style');
         style.textContent = `
@@ -2758,6 +3257,7 @@
                 'cyber': '#ffd700',
                 'amethyst': '#9b5de5',
                 'mint': '#00f5d4',
+                'light': '#5865f2',
                 'solid-glass': '#c5a3ff',
                 'glass': '#c5a3ff'
             };
@@ -2771,8 +3271,25 @@
                 localStorage.setItem('nora_theme_mode', mode);
             }
             
-            document.body.className = mode === 'default' ? '' : 'theme-' + mode;
-            if (document.getElementById('pref-compact').checked) document.body.classList.add('compact-mode');
+            // Remove any existing theme classes
+            Array.from(document.body.classList).forEach(c => {
+                if (c.startsWith('theme-')) document.body.classList.remove(c);
+            });
+            
+            if (mode !== 'default') {
+                document.body.classList.add('theme-' + mode);
+            }
+            
+            if (document.getElementById('pref-compact').checked) {
+                document.body.classList.add('compact-mode');
+            } else {
+                document.body.classList.remove('compact-mode');
+            }
+            
+            // Ensure device classes are preserved
+            if (typeof detectDevice === 'function') {
+                detectDevice();
+            }
         }
 
         async function logToTerminal(message, level = 'INFO', context = null) {
@@ -2801,6 +3318,26 @@
         async function safeFetch(url, options = {}) {
             const res = await fetch(url, options);
             const text = await res.text();
+            
+            if (!res.ok) {
+                let errorMsg = `HTTP Error ${res.status}: ${res.statusText}`;
+                try {
+                    const errData = JSON.parse(text);
+                    if (errData && errData.error) errorMsg = errData.error;
+                } catch (e) {
+                    if (res.status === 429) {
+                        errorMsg = 'You are being rate limited by the API. Please wait a few seconds and try again.';
+                    } else if (res.status === 502 || res.status === 503 || res.status === 504) {
+                        errorMsg = 'The server gateway is temporarily offline or undergoing maintenance. Please try again later.';
+                    } else if (res.status === 500) {
+                        errorMsg = 'Internal server error occurred on the bot backend.';
+                    }
+                }
+                const err = new Error(errorMsg);
+                err.status = res.status;
+                throw err;
+            }
+
             let data;
             try {
                 data = JSON.parse(text);
@@ -2970,15 +3507,23 @@
                 if (d.isOwner) {
                     document.getElementById('owner-panel').style.display = 'block';
                     startTerminalFeed();
+                    fetchPremiumAccess();
                 }
 
+                const expiredOverlay = document.getElementById('session-expired-overlay');
+                if (expiredOverlay) expiredOverlay.style.display = 'none';
                 authOverlay.style.opacity = '0'; setTimeout(() => { authOverlay.style.display = 'none'; fetchGuilds(t); fetchRobloxStatus(t); }, 300);
             } catch (e) { 
                 console.error('Authentication Error:', e);
-                sessionStorage.removeItem('discord_token');
-                localStorage.removeItem('nora_auth'); // Clear invalid token to allow fresh login
-                authOverlay.style.opacity = '1'; 
                 showToast(`Auth Fault: ${e.message || 'Unknown'}`, 'error');
+                
+                const shouldInvalidateSession = !e.status || e.status === 401 || e.status === 403;
+                if (shouldInvalidateSession) {
+                    sessionStorage.removeItem('discord_token');
+                    localStorage.removeItem('nora_auth'); // Clear invalid token to allow fresh login
+                    authOverlay.style.opacity = '1'; 
+                    authOverlay.style.display = 'flex';
+                }
             } finally {
                 toggleLoading(false);
             }
@@ -3231,6 +3776,8 @@
             }
         }
 
+        let pendingSavePayload = null;
+
         async function saveSettings() {
             const payload = {};
             KEYS.forEach(k => {
@@ -3243,6 +3790,69 @@
             allCmds.forEach(c => { const cmdCheck = document.getElementById('cmd-'+c); if(cmdCheck && !cmdCheck.checked) d.push(c); });
             payload.disabledCommands = JSON.stringify(d);
 
+            const skipConfirm = localStorage.getItem('skip_save_confirm') === 'true';
+            if (skipConfirm) {
+                executeSaveSettings(payload);
+            } else {
+                const changesList = document.getElementById('save-changes-list');
+                changesList.innerHTML = '';
+                const oldState = window.previousSettings || {};
+                const diffLines = [];
+
+                Object.keys(payload).forEach(k => {
+                    if (k === 'disabledCommands') {
+                        const oldDisabled = oldState.disabledCommands ? JSON.parse(oldState.disabledCommands) : [];
+                        const newDisabled = d;
+                        allCmds.forEach(c => {
+                            const wasDisabled = oldDisabled.includes(c);
+                            const isDisabled = newDisabled.includes(c);
+                            if (wasDisabled !== isDisabled) {
+                                diffLines.push(`Command /${c}: ${wasDisabled ? 'Disabled' : 'Enabled'} -> ${isDisabled ? 'Disabled' : 'Enabled'}`);
+                            }
+                        });
+                        return;
+                    }
+                    const oldVal = oldState[k];
+                    const newVal = payload[k];
+                    if (oldVal !== undefined && String(oldVal) !== String(newVal)) {
+                        diffLines.push(`${k}: "${oldVal}" -> "${newVal}"`);
+                    }
+                });
+
+                if (diffLines.length === 0) {
+                    showToast('No modifications detected.', 'info');
+                    return;
+                }
+
+                diffLines.forEach(line => {
+                    const el = document.createElement('div');
+                    el.style = 'margin-bottom: 4px; border-left: 2px solid var(--primary); padding-left: 6px;';
+                    el.textContent = line;
+                    changesList.appendChild(el);
+                });
+
+                pendingSavePayload = payload;
+                document.getElementById('save-confirmation-modal').style.display = 'flex';
+            }
+        }
+
+        window.cancelSaveSettings = function() {
+            document.getElementById('save-confirmation-modal').style.display = 'none';
+            pendingSavePayload = null;
+        };
+
+        window.confirmSaveSettings = function() {
+            const checkbox = document.getElementById('skip-save-confirm-checkbox');
+            if (checkbox && checkbox.checked) {
+                localStorage.setItem('skip_save_confirm', 'true');
+            }
+            document.getElementById('save-confirmation-modal').style.display = 'none';
+            if (pendingSavePayload) {
+                executeSaveSettings(pendingSavePayload);
+            }
+        };
+
+        async function executeSaveSettings(payload) {
             const saveBtn = document.getElementById('save-settings-btn');
             const originalText = saveBtn.textContent;
             saveBtn.textContent = 'Saving...';
@@ -3740,6 +4350,13 @@
             try {
                 logToTerminal(`Switching to tab: ${tabId}`, 'TAB_CHANGE');
                 
+                const sidebarEl = document.querySelector('.sidebar');
+                const backdropEl = document.getElementById('sidebar-backdrop');
+                if (sidebarEl && sidebarEl.classList.contains('open')) {
+                    sidebarEl.classList.remove('open');
+                    if (backdropEl) backdropEl.classList.remove('open');
+                }
+                
                 if (tabId.startsWith('tab-')) {
                     document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
                     document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
@@ -3764,6 +4381,9 @@
                     }
                     if (tabId === 'notifications') {
                         loadNotifications();
+                    }
+                    if (tabId === 'prefs') {
+                        fetchSessions();
                     }
                 }
                 
@@ -3869,6 +4489,13 @@
         };
 
         applyInitialSettings();
+
+        // Rebuild standard color inputs to modern custom swatch select menus
+        makeModernColorPicker('theme-color-picker', ['#aeefff', '#ffffff', '#4b69ff', '#2ecc71', '#ff8e3c', '#ff6b8b', '#ffd700', '#9b5de5', '#00f5d4']);
+        makeModernColorPicker('broadcast-embed-color', ['#aeefff', '#ffffff', '#4b69ff', '#2ecc71', '#ff8e3c', '#ff6b8b', '#ffd700', '#9b5de5', '#00f5d4']);
+
+        // Initialize form change undo/redo tracking
+        initHistoryTracking();
 
         function applyThemeColor(color, save = true) {
             document.documentElement.style.setProperty('--primary', color);
@@ -5057,19 +5684,317 @@
 
         // additionalTranslations are loaded globally from /translate.js
 
-        async function importIntegrations(type) {
-            if (!currentServerId) return alert('Select a server first!');
-            const t = sessionStorage.getItem('discord_token');
-            showToast(`Importing ${type}...`, 'info');
-            
-            try {
-                setTimeout(() => {
-                    showToast(`${type} imported successfully into ${currentServerName}`, 'success');
-                }, 1000);
-            } catch (e) {
-                showToast('Import failed.', 'error');
+        // Rebuild standard color inputs to modern swatch select menus
+        function makeModernColorPicker(originalInputId, presetColors) {
+            const originalInput = document.getElementById(originalInputId);
+            if (!originalInput) return;
+
+            originalInput.style.display = 'none';
+
+            const container = document.createElement('div');
+            container.className = 'custom-color-picker-container';
+            container.style = 'display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 5px;';
+
+            const swatchesContainer = document.createElement('div');
+            swatchesContainer.style = 'display: flex; flex-wrap: wrap; gap: 8px; align-items: center;';
+
+            const customWrapper = document.createElement('div');
+            customWrapper.style = 'display: flex; align-items: center; gap: 8px;';
+
+            const previewBox = document.createElement('div');
+            previewBox.style = `width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border); background: ${originalInput.value}; flex-shrink: 0; cursor: pointer;`;
+            previewBox.onclick = () => originalInput.click();
+
+            const hexInput = document.createElement('input');
+            hexInput.type = 'text';
+            hexInput.value = originalInput.value;
+            hexInput.maxLength = 7;
+            hexInput.style = 'width: 90px; padding: 6px 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.8rem; font-family: monospace; text-transform: uppercase;';
+
+            originalInput.addEventListener('input', () => {
+                previewBox.style.background = originalInput.value;
+                hexInput.value = originalInput.value.toUpperCase();
+                updateSwatchesActiveState();
+            });
+
+            function updateColor(hex) {
+                if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                    originalInput.value = hex;
+                    previewBox.style.background = hex;
+                    hexInput.value = hex.toUpperCase();
+                    originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    updateSwatchesActiveState();
+                }
+            }
+
+            hexInput.oninput = (e) => {
+                let val = e.target.value;
+                if (!val.startsWith('#')) val = '#' + val;
+                updateColor(val);
+            };
+
+            const swatchElements = [];
+            presetColors.forEach(color => {
+                const swatch = document.createElement('button');
+                swatch.type = 'button';
+                swatch.style = `width: 24px; height: 24px; border-radius: 50%; background: ${color}; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s, border-color 0.2s; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);`;
+                swatch.title = color;
+                
+                swatch.onmouseover = () => { swatch.style.transform = 'scale(1.2)'; };
+                swatch.onmouseout = () => { swatch.style.transform = 'scale(1)'; };
+                swatch.onclick = (e) => { e.preventDefault(); updateColor(color); };
+
+                swatchesContainer.appendChild(swatch);
+                swatchElements.push({ element: swatch, color: color.toLowerCase() });
+            });
+
+            function updateSwatchesActiveState() {
+                const currentVal = originalInput.value.toLowerCase();
+                swatchElements.forEach(s => {
+                    if (s.color === currentVal) {
+                        s.element.style.borderColor = 'var(--primary)';
+                        s.element.style.boxShadow = '0 0 10px var(--primary-glow)';
+                    } else {
+                        s.element.style.borderColor = 'transparent';
+                        s.element.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                    }
+                });
+            }
+
+            const pickerBtn = document.createElement('button');
+            pickerBtn.type = 'button';
+            pickerBtn.className = 'config-btn';
+            pickerBtn.style = 'width: auto; padding: 4px 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 4px; margin: 0;';
+            pickerBtn.innerHTML = '<i class="fas fa-eye-dropper"></i> Custom';
+            pickerBtn.onclick = (e) => { e.preventDefault(); originalInput.click(); };
+
+            customWrapper.appendChild(previewBox);
+            customWrapper.appendChild(hexInput);
+            customWrapper.appendChild(pickerBtn);
+
+            container.appendChild(swatchesContainer);
+            container.appendChild(customWrapper);
+
+            originalInput.parentNode.insertBefore(container, originalInput.nextSibling);
+            updateSwatchesActiveState();
+        }
+
+        // Form change tracking history logic
+        let undoStack = [];
+        let redoStack = [];
+        let isApplyingHistoryState = false;
+
+        function getFormState() {
+            const state = {};
+            KEYS.forEach(k => {
+                const el = document.getElementById('setting-' + k);
+                if (el) {
+                    state[k] = el.type === 'checkbox' ? el.checked : el.value;
+                }
+            });
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'warnings', 'clear-warns', 'delete-warns', 'edit-warns', 'role', 'setlevel', 'configure', 'verify-roblox', 'nora-admin', 'rps'];
+            allCmds.forEach(c => {
+                const cmdCheck = document.getElementById('cmd-'+c);
+                if (cmdCheck) {
+                    state['cmd-' + c] = cmdCheck.checked;
+                }
+            });
+            return state;
+        }
+
+        function applyFormState(state) {
+            if (!state) return;
+            isApplyingHistoryState = true;
+            Object.keys(state).forEach(key => {
+                if (key.startsWith('cmd-')) {
+                    const el = document.getElementById(key);
+                    if (el) el.checked = state[key];
+                } else {
+                    const el = document.getElementById('setting-' + key);
+                    if (el) {
+                        if (el.type === 'checkbox') el.checked = state[key];
+                        else el.value = state[key] || '';
+                    }
+                }
+            });
+            syncMultiselectUI('setting-verifyRoleId');
+            syncMultiselectUI('setting-automodImmuneRoles');
+            if (typeof updatePreview === 'function') updatePreview();
+            isApplyingHistoryState = false;
+            updateUndoRedoButtons();
+        }
+
+        function saveHistoryState() {
+            if (isApplyingHistoryState) return;
+            const currentState = getFormState();
+            if (undoStack.length > 0) {
+                const lastState = undoStack[undoStack.length - 1];
+                let isIdentical = true;
+                for (const key of Object.keys(currentState)) {
+                    if (String(currentState[key]) !== String(lastState[key])) {
+                        isIdentical = false;
+                        break;
+                    }
+                }
+                if (isIdentical) return;
+            }
+            redoStack = [];
+            undoStack.push(currentState);
+            if (undoStack.length > 50) undoStack.shift();
+            updateUndoRedoButtons();
+        }
+
+        window.undoChange = function() {
+            if (undoStack.length <= 1) return;
+            const popped = undoStack.pop();
+            redoStack.push(popped);
+            const previousState = undoStack[undoStack.length - 1];
+            applyFormState(previousState);
+        };
+
+        window.redoChange = function() {
+            if (redoStack.length === 0) return;
+            const popped = redoStack.pop();
+            undoStack.push(popped);
+            applyFormState(popped);
+        };
+
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById('undo-btn');
+            const redoBtn = document.getElementById('redo-btn');
+            if (undoBtn) {
+                undoBtn.disabled = (undoStack.length <= 1);
+                undoBtn.style.opacity = undoBtn.disabled ? '0.4' : '1';
+                undoBtn.style.cursor = undoBtn.disabled ? 'not-allowed' : 'pointer';
+            }
+            if (redoBtn) {
+                redoBtn.disabled = (redoStack.length === 0);
+                redoBtn.style.opacity = redoBtn.disabled ? '0.4' : '1';
+                redoBtn.style.cursor = redoBtn.disabled ? 'not-allowed' : 'pointer';
             }
         }
+
+        function initHistoryTracking() {
+            const configView = document.getElementById('view-config');
+            if (configView) {
+                configView.addEventListener('change', () => saveHistoryState());
+                configView.addEventListener('input', (e) => {
+                    if ((e.target.tagName === 'INPUT' && (e.target.type === 'text' || e.target.type === 'number')) || e.target.tagName === 'TEXTAREA') {
+                        clearTimeout(window.historyDebounceTimer);
+                        window.historyDebounceTimer = setTimeout(saveHistoryState, 500);
+                    }
+                });
+            }
+        }
+
+        // Active session list display and control actions
+        async function fetchSessions() {
+            const list = document.getElementById('active-sessions-list');
+            if (!list) return;
+
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch('/api/user/sessions', {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) throw new Error('Failed to fetch sessions');
+                const sessions = await res.json();
+
+                list.innerHTML = '';
+                if (sessions.length === 0) {
+                    list.innerHTML = '<div style="font-size: 0.8rem; color: var(--muted); text-align: center; padding: 15px;">No active sessions found.</div>';
+                    return;
+                }
+
+                sessions.forEach(s => {
+                    const row = document.createElement('div');
+                    row.style = 'display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); font-size: 0.8rem; gap: 15px;';
+
+                    const details = document.createElement('div');
+                    details.style = 'display: flex; flex-direction: column; gap: 4px; min-width: 0;';
+
+                    const topRow = document.createElement('div');
+                    topRow.style = 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
+                    topRow.innerHTML = `<strong>IP: ${s.ipAddress}</strong> <span style="color: var(--muted); font-size: 0.75rem;">(${s.location})</span>`;
+                    if (s.isCurrent) {
+                        topRow.innerHTML += `<span style="font-size: 0.65rem; background: var(--success); color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: 700;">CURRENT</span>`;
+                    }
+
+                    const timeRow = document.createElement('div');
+                    timeRow.style = 'font-size: 0.7rem; color: var(--muted);';
+                    timeRow.innerHTML = `Created: ${new Date(s.createdAt).toLocaleString()} • Expires: ${new Date(s.expiresAt).toLocaleString()}`;
+
+                    const uaRow = document.createElement('div');
+                    uaRow.style = 'font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.8;';
+                    uaRow.textContent = `Browser: ${s.userAgent}`;
+
+                    details.appendChild(topRow);
+                    details.appendChild(uaRow);
+                    details.appendChild(timeRow);
+
+                    const actions = document.createElement('div');
+                    actions.style = 'display: flex; align-items: center; gap: 8px; flex-shrink: 0;';
+
+                    if (!s.isCurrent) {
+                        const expireBtn = document.createElement('button');
+                        expireBtn.className = 'config-btn';
+                        expireBtn.style = 'width: auto; padding: 4px 8px; font-size: 0.75rem; color: var(--danger); border-color: rgba(255,85,85,0.3);';
+                        expireBtn.textContent = 'Expire Now';
+                        expireBtn.onclick = async () => {
+                            if (confirm('Are you sure you want to terminate this session?')) {
+                                await expireSession(s.id);
+                            }
+                        };
+                        actions.appendChild(expireBtn);
+                    }
+
+                    row.appendChild(details);
+                    row.appendChild(actions);
+                    list.appendChild(row);
+                });
+            } catch (e) {
+                list.innerHTML = `<div style="font-size: 0.8rem; color: var(--danger); text-align: center; padding: 15px;">Failed to load sessions: ${e.message}</div>`;
+            }
+        }
+
+        async function expireSession(sessionId) {
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/user/sessions/${sessionId}/expire`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Session terminated successfully.', 'success');
+                    fetchSessions();
+                } else {
+                    throw new Error('Failed to expire session');
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        window.expireAllSessions = async function() {
+            if (!confirm('Are you sure you want to terminate all other sessions? This will sign you out on all other devices.')) {
+                return;
+            }
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch('/api/user/sessions/expire-all', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('All other sessions terminated.', 'success');
+                    fetchSessions();
+                } else {
+                    throw new Error('Failed to expire all sessions');
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        };
 
         function updateAiSummary() {
             const val = document.getElementById('setting-aiPreference').value;
@@ -5292,9 +6217,9 @@
                 
                 const selects = [
                     'setting-topggRewardRoleId',
-                    'setting-verifyRoleId',
                     'setting-boostRewardRoleId',
-                    'setting-robloxVerifyRoleId'
+                    'setting-robloxVerifyRoleId',
+                    'setting-promoterRoleId'
                 ];
 
                 selects.forEach(id => {
@@ -5312,10 +6237,233 @@
                         });
                     }
                 });
+
+                // Initialize custom multiselect dropdowns for verify roles and immune roles
+                initMultiselect('setting-verifyRoleId', roles);
+                initMultiselect('setting-automodImmuneRoles', roles);
             } catch (e) {
                 console.error('[Roles Load Error]:', e);
                 showToast(`Failed to load roles: ${e.message}`, 'error');
             }
+        }
+
+        /* Custom Multiselect Logic */
+        function initMultiselect(hiddenInputId, roles) {
+            const input = document.getElementById(hiddenInputId);
+            if (!input) return;
+
+            // Clean up any existing multiselect container for this element to prevent duplication
+            const existingContainer = document.getElementById('multiselect-container-' + hiddenInputId);
+            if (existingContainer) {
+                existingContainer.remove();
+            }
+
+            const container = document.createElement('div');
+            container.className = 'multiselect-container';
+            container.id = 'multiselect-container-' + hiddenInputId;
+
+            const trigger = document.createElement('div');
+            trigger.className = 'multiselect-trigger';
+            trigger.id = 'multiselect-trigger-' + hiddenInputId;
+            trigger.textContent = 'Select roles...';
+
+            const dropdown = document.createElement('div');
+            dropdown.className = 'multiselect-dropdown';
+            dropdown.id = 'multiselect-dropdown-' + hiddenInputId;
+
+            const search = document.createElement('input');
+            search.type = 'text';
+            search.placeholder = 'Search roles...';
+            search.className = 'multiselect-search';
+            search.style.marginBottom = '8px';
+
+            const optionsList = document.createElement('div');
+            optionsList.className = 'multiselect-options';
+
+            dropdown.appendChild(search);
+            dropdown.appendChild(optionsList);
+            container.appendChild(trigger);
+            container.appendChild(dropdown);
+
+            input.parentNode.insertBefore(container, input.nextSibling);
+
+            // Toggle dropdown
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close other multiselect dropdowns first
+                document.querySelectorAll('.multiselect-container').forEach(c => {
+                    if (c !== container) {
+                        c.classList.remove('open');
+                        const d = c.querySelector('.multiselect-dropdown');
+                        if (d) d.style.display = 'none';
+                    }
+                });
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('has-open-dropdown'));
+
+                const isOpen = dropdown.style.display === 'flex';
+                if (isOpen) {
+                    dropdown.style.display = 'none';
+                    container.classList.remove('open');
+                } else {
+                    dropdown.style.display = 'flex';
+                    container.classList.add('open');
+                    const parentPanel = container.closest('.panel');
+                    if (parentPanel) parentPanel.classList.add('has-open-dropdown');
+                }
+            });
+
+            // Search filter
+            search.addEventListener('input', () => {
+                const query = search.value.toLowerCase();
+                optionsList.querySelectorAll('.multiselect-option').forEach(opt => {
+                    const text = opt.textContent.toLowerCase();
+                    opt.style.display = text.includes(query) ? 'flex' : 'none';
+                });
+            });
+
+            // Click outside to close
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                    container.classList.remove('open');
+                    const parentPanel = container.closest('.panel');
+                    if (parentPanel) parentPanel.classList.remove('has-open-dropdown');
+                }
+            });
+
+            // Parse current values
+            let selectedValues = [];
+            const rawVal = input.value || '';
+            if (rawVal.trim().startsWith('[') && rawVal.trim().endsWith(']')) {
+                try {
+                    selectedValues = JSON.parse(rawVal);
+                } catch (e) {
+                    selectedValues = rawVal.split(',').map(s => s.trim()).filter(Boolean);
+                }
+            } else {
+                selectedValues = rawVal.split(',').map(s => s.trim()).filter(Boolean);
+            }
+
+            roles.forEach(r => {
+                const option = document.createElement('div');
+                option.className = 'multiselect-option';
+                option.setAttribute('data-value', r.id);
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = selectedValues.includes(r.id);
+                if (r.higherThanBot) checkbox.disabled = true;
+
+                const label = document.createElement('span');
+                label.textContent = `${r.name}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}`;
+                label.style.color = r.color;
+                if (r.higherThanBot) label.style.opacity = '0.5';
+
+                option.appendChild(checkbox);
+                option.appendChild(label);
+                optionsList.appendChild(option);
+
+                // Click option toggle
+                option.addEventListener('click', (e) => {
+                    if (r.higherThanBot) return;
+                    if (e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                    }
+                    updateValue();
+                });
+            });
+
+            function updateValue() {
+                const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
+                const vals = Array.from(checkedBoxes).map(cb => cb.parentNode.getAttribute('data-value'));
+                
+                if (hiddenInputId === 'setting-automodImmuneRoles') {
+                    input.value = JSON.stringify(vals);
+                } else {
+                    input.value = vals.join(',');
+                }
+                
+                updateTrigger();
+            }
+
+            function updateTrigger() {
+                const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
+                const trigger = container.querySelector('.multiselect-trigger');
+                if (checkedBoxes.length === 0) {
+                    trigger.textContent = 'No roles selected';
+                    return;
+                }
+
+                trigger.innerHTML = '';
+                checkedBoxes.forEach(cb => {
+                    const labelText = cb.nextSibling.textContent.replace(' (Requires Bot Role Higher)', '');
+                    const color = cb.nextSibling.style.color;
+                    const tag = document.createElement('span');
+                    tag.className = 'multiselect-tag';
+                    tag.textContent = labelText;
+                    if (color) {
+                        tag.style.color = color;
+                        tag.style.borderColor = color + '4d';
+                        tag.style.background = color + '1a';
+                    }
+                    trigger.appendChild(tag);
+                });
+            }
+
+            updateTrigger();
+        }
+
+        function syncMultiselectUI(hiddenInputId) {
+            const input = document.getElementById(hiddenInputId);
+            if (!input) return;
+            const container = document.getElementById('multiselect-container-' + hiddenInputId);
+            if (!container) return;
+
+            let selectedValues = [];
+            const rawVal = input.value || '';
+            if (rawVal.trim().startsWith('[') && rawVal.trim().endsWith(']')) {
+                try {
+                    selectedValues = JSON.parse(rawVal);
+                } catch (e) {
+                    selectedValues = rawVal.split(',').map(s => s.trim()).filter(Boolean);
+                }
+            } else {
+                selectedValues = rawVal.split(',').map(s => s.trim()).filter(Boolean);
+            }
+
+            const optionsList = container.querySelector('.multiselect-options');
+            if (!optionsList) return;
+
+            optionsList.querySelectorAll('.multiselect-option').forEach(opt => {
+                const val = opt.getAttribute('data-value');
+                const checkbox = opt.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = selectedValues.includes(val);
+                }
+            });
+
+            // Update trigger
+            const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
+            const trigger = container.querySelector('.multiselect-trigger');
+            if (checkedBoxes.length === 0) {
+                trigger.textContent = 'No roles selected';
+                return;
+            }
+
+            trigger.innerHTML = '';
+            checkedBoxes.forEach(cb => {
+                const labelText = cb.nextSibling.textContent.replace(' (Requires Bot Role Higher)', '');
+                const color = cb.nextSibling.style.color;
+                const tag = document.createElement('span');
+                tag.className = 'multiselect-tag';
+                tag.textContent = labelText;
+                if (color) {
+                    tag.style.color = color;
+                    tag.style.borderColor = color + '4d';
+                    tag.style.background = color + '1a';
+                }
+                trigger.appendChild(tag);
+            });
         }
 
         function startTopggSetup() {
@@ -5473,11 +6621,30 @@
                     if(dbEl) dbEl.textContent = s.dbSync + 'ms';
                 }
                 
+                const defaultTrueKeys = [
+                    'levelingEnabled', 
+                    'welcomerEnabled', 
+                    'moderationEnabled', 
+                    'funEnabled', 
+                    'utilityEnabled', 
+                    'levelUpNotificationsEnabled',
+                    'guessGameEnabled',
+                    'rpsGameEnabled',
+                    'prefNotifVotes',
+                    'prefNotifLevels',
+                    'prefNotifSafety',
+                    'prefNotifBroadcast'
+                ];
+
                 KEYS.forEach(k => {
                     const el = document.getElementById('setting-' + k);
                     if (!el) return;
                     if (el.type === 'checkbox') {
-                        el.checked = !!s[k];
+                        let val = s[k];
+                        if (val === null || val === undefined) {
+                            val = defaultTrueKeys.includes(k);
+                        }
+                        el.checked = !!val;
                     } else if (el.tagName === 'SELECT') {
                         const val = (s[k] !== null && s[k] !== undefined) ? String(s[k]) : '';
                         const hasOption = Array.from(el.options).some(opt => opt.value === val);
@@ -5486,6 +6653,10 @@
                         el.value = (s[k] !== null && s[k] !== undefined) ? s[k] : '';
                     }
                 });
+
+                // Sync custom multiselect dropdowns with loaded values
+                syncMultiselectUI('setting-verifyRoleId');
+                syncMultiselectUI('setting-automodImmuneRoles');
 
                 refreshTopggAvatarPreview();
 
@@ -5615,6 +6786,11 @@
                 if (typeof window.applyLanguageTranslations === 'function') {
                     window.applyLanguageTranslations(deviceLang);
                 }
+
+                // Initialize Undo/Redo stack with current settings state
+                undoStack = [getFormState()];
+                redoStack = [];
+                updateUndoRedoButtons();
             }
         }
 
@@ -5633,6 +6809,139 @@
             btn.textContent = res.ok ? "Success!" : (data.error || "Failed");
             setTimeout(() => btn.textContent = old, 3000);
         }
+        async function fetchPremiumAccess() {
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch('/api/admin/premium', {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+
+                // Render Premium Users
+                const usersList = document.getElementById('premium-users-list');
+                if (usersList) {
+                    usersList.innerHTML = '';
+                    if (!data.users || data.users.length === 0) {
+                        usersList.innerHTML = '<div style="font-size: 0.8rem; color: var(--muted); text-align: center; padding: 15px;">No premium users found.</div>';
+                    } else {
+                        data.users.forEach(u => {
+                            const row = document.createElement('div');
+                            row.style = 'display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border);';
+                            row.innerHTML = `
+                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                    <img src="${u.avatar}" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                    <div style="min-width: 0;">
+                                        <div style="font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${u.username}</div>
+                                        <div style="font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${u.userId}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                    <span style="font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: ${u.isManualPremium ? '#ffd700' : '#4b69ff'}; color: #000; font-weight: 700;">${u.isManualPremium ? 'MANUAL' : 'AUTO'}</span>
+                                    <button class="config-btn" style="width: auto; padding: 4px 8px; color: #ff5555; border-color: rgba(255,85,85,0.3); font-size: 0.75rem;" onclick="revokePremiumAccess('user', '${u.userId}')">Revoke</button>
+                                </div>
+                            `;
+                            usersList.appendChild(row);
+                        });
+                    }
+                }
+
+                // Render Premium Servers
+                const serversList = document.getElementById('premium-servers-list');
+                if (serversList) {
+                    serversList.innerHTML = '';
+                    if (!data.servers || data.servers.length === 0) {
+                        serversList.innerHTML = '<div style="font-size: 0.8rem; color: var(--muted); text-align: center; padding: 15px;">No premium servers found.</div>';
+                    } else {
+                        data.servers.forEach(s => {
+                            const row = document.createElement('div');
+                            row.style = 'display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border);';
+                            row.innerHTML = `
+                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                    <img src="${s.icon}" style="width: 28px; height: 28px; border-radius: 50%;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                    <div style="min-width: 0;">
+                                        <div style="font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${s.name}</div>
+                                        <div style="font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${s.guildId}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                    <span style="font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: ${s.isManualPremium ? '#ffd700' : '#4b69ff'}; color: #000; font-weight: 700;">${s.isManualPremium ? 'MANUAL' : 'AUTO'}</span>
+                                    <button class="config-btn" style="width: auto; padding: 4px 8px; color: #ff5555; border-color: rgba(255,85,85,0.3); font-size: 0.75rem;" onclick="revokePremiumAccess('server', '${s.guildId}')">Revoke</button>
+                                </div>
+                            `;
+                            serversList.appendChild(row);
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load premium lists:', e);
+                showToast(`Failed to load premium lists: ${e.message}`, 'error');
+            }
+        }
+
+        async function grantPremiumAccess() {
+            const type = document.getElementById('premium-grant-type').value;
+            const id = document.getElementById('premium-grant-id').value.trim();
+            if (!id) {
+                return showToast('Please enter a valid User ID or Server ID.', 'warning');
+            }
+
+            const t = sessionStorage.getItem('discord_token');
+            toggleLoading(true);
+            try {
+                const res = await fetch('/api/admin/premium/grant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify({ type, id })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Premium access granted successfully.', 'success');
+                    document.getElementById('premium-grant-id').value = '';
+                    fetchPremiumAccess();
+                } else {
+                    throw new Error(data.error || 'Failed to grant premium access.');
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        async function revokePremiumAccess(type, id) {
+            if (!confirm(`Are you sure you want to revoke premium access for this ${type}?`)) {
+                return;
+            }
+
+            const t = sessionStorage.getItem('discord_token');
+            toggleLoading(true);
+            try {
+                const res = await fetch('/api/admin/premium/revoke', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify({ type, id })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Premium access revoked successfully.', 'success');
+                    fetchPremiumAccess();
+                } else {
+                    throw new Error(data.error || 'Failed to revoke premium access.');
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
         loadNotifications();
     </script>
     <div id="session-expired-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">

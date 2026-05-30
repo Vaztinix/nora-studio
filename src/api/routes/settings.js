@@ -52,12 +52,52 @@ router.post('/', async (req, res) => {
         // Find or create settings
         let [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
 
+        // Calculate Premium status
+        let isPremium = !!settings.isPremium || !!settings.isManualPremium;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (guild && (guild.ownerId === '1214048435632603137' || guild.ownerId === '1366229304257544213')) {
+            isPremium = true;
+        }
+        const paidTime = settings.paidExpiresAt ? new Date(settings.paidExpiresAt).getTime() : 0;
+        const expandedMs = settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0;
+        if (paidTime + expandedMs > Date.now()) {
+            isPremium = true;
+        }
+
+        // Validate payload constraints
+        if (payload.roleRewards) {
+            try {
+                const rewards = JSON.parse(payload.roleRewards);
+                const count = Object.keys(rewards).length;
+                const cap = isPremium ? 15 : 10;
+                if (count > cap) {
+                    return res.status(400).json({ error: `Premium Limit: Free servers are capped at 10 role rewards, while Premium servers get up to 15. Your count: ${count}` });
+                }
+            } catch (err) {
+                return res.status(400).json({ error: 'Invalid JSON format for roleRewards.' });
+            }
+        }
+
+        if (payload.spamInterval !== undefined && parseInt(payload.spamInterval, 10) !== 5000) {
+            if (!isPremium) {
+                return res.status(400).json({ error: 'Premium Limit: Custom anti-spam time windows require Nora Premium.' });
+            }
+        }
+
+        if (payload.customModResponses && payload.customModResponses !== '{}') {
+            if (!isPremium) {
+                return res.status(400).json({ error: 'Premium Limit: Custom moderation command responses require Nora Premium.' });
+            }
+        }
+
+        // Force levelUpDmEnabled to false/disabled until a robust opt-out mechanism is implemented
+        payload.levelUpDmEnabled = false;
+
         // Update the settings model with the payload provided by the dashboard
         await settings.update(payload);
 
         // Trigger live Discord integration: sync AutoMod rules live on settings change
         const { syncAllAutoModRules } = require('../../utils/automodSync');
-        const guild = req.client.guilds.cache.get(guildId);
         if (guild) {
             await syncAllAutoModRules(guild, settings).catch(err => {
                 console.error(`AutoMod Sync failed for guild ${guildId} on settings update:`, err);
