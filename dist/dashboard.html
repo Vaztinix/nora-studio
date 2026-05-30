@@ -75,24 +75,89 @@
             transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
         }
 
-        /* Mouse Follow Glow Effect */
-        .mouse-glow {
+        /* Premium Custom Cursor */
+        .custom-cursor {
             position: fixed;
             top: 0;
             left: 0;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(0,0,0,0) 70%);
+            width: 0;
+            height: 0;
             pointer-events: none;
-            z-index: 99999;
+            z-index: 999999;
             opacity: 0;
-            transition: opacity 0.3s ease;
-            will-change: transform;
+            transition: opacity 0.25s ease;
         }
-        body.device-mobile .mouse-glow,
-        body.device-tablet .mouse-glow {
-            display: none !important;
+
+        .cursor-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            transform: translate3d(-50%, -50%, 0);
+            transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease, border-radius 0.2s ease;
+            will-change: transform, width, height;
+        }
+
+        .cursor-ring {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--primary);
+            opacity: 0.4;
+            border-radius: 50%;
+            transform: translate3d(-50%, -50%, 0);
+            transition: width 0.25s cubic-bezier(0.1, 0.8, 0.3, 1), 
+                        height 0.25s cubic-bezier(0.1, 0.8, 0.3, 1), 
+                        opacity 0.25s ease,
+                        background-color 0.25s ease,
+                        border-color 0.25s ease,
+                        border-width 0.25s ease;
+            will-change: transform, width, height;
+        }
+
+        /* Desktop cursor hiding */
+        @media (min-width: 1025px) {
+            body.device-desktop,
+            body.device-desktop * {
+                cursor: none !important;
+            }
+            body.device-desktop .custom-cursor {
+                opacity: 1;
+            }
+        }
+
+        /* Custom Cursor States */
+        .custom-cursor.cursor-hidden {
+            opacity: 0 !important;
+        }
+
+        /* Hoverable State */
+        .custom-cursor.cursor-hover .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background-color: #fff;
+        }
+        .custom-cursor.cursor-hover .cursor-ring {
+            width: 38px;
+            height: 38px;
+            opacity: 1;
+            border-width: 1px;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Text Focus State */
+        .custom-cursor.cursor-text .cursor-dot {
+            width: 2px;
+            height: 16px;
+            background-color: var(--text);
+            border-radius: 1px;
+        }
+        .custom-cursor.cursor-text .cursor-ring {
+            width: 0;
+            height: 0;
+            border-width: 0;
+            opacity: 0;
         }
 
         body.theme-light {
@@ -1236,7 +1301,10 @@
     </style>
 </head>
 <body class="nora-theme">
-    <div class="mouse-glow" id="mouse-glow"></div>
+    <div class="custom-cursor cursor-hidden" id="custom-cursor">
+        <div class="cursor-dot"></div>
+        <div class="cursor-ring"></div>
+    </div>
     <div class="liquid-blob liquid-blob-1"></div>
     <div class="liquid-blob liquid-blob-2"></div>
     <div class="liquid-blob liquid-blob-3"></div>
@@ -1900,7 +1968,7 @@
                     <button class="h-tab" data-tab="tab-modules">Modules & Games</button>
                     <button class="h-tab" data-tab="tab-ai" style="opacity: 0.85;">Nora AI <span style="font-size: 0.65rem; background: rgba(255, 68, 68, 0.15); color: #ff5555; padding: 2px 6px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.2);">Disabled</span></button>
                     <button class="h-tab" data-tab="tab-roblox">Roblox</button>
-                    <button class="h-tab" data-tab="tab-topgg">Top.gg</button>
+                    <button class="h-tab" data-tab="tab-topgg" style="opacity: 0.85;">Top.gg <span style="font-size: 0.65rem; background: rgba(255, 68, 68, 0.15); color: #ff5555; padding: 2px 6px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.2);">Disabled</span></button>
                     <button class="h-tab" data-tab="tab-broadcast">Broadcast</button>
                     <button class="h-tab" data-tab="tab-members">Members</button>
                     <button class="h-tab" data-tab="tab-commands">Commands</button>
@@ -2463,191 +2531,25 @@
                     </div>
                 </div>
                 <div id="tab-topgg" class="tab-content">
-                    <div id="topgg-unverified-view">
-                        <div class="panel">
+                    <div class="panel" style="border-color: rgba(255, 85, 85, 0.15); background: linear-gradient(135deg, rgba(255, 85, 85, 0.03) 0%, transparent 100%);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3>Top.gg Bot Verification</h3>
-                            <p>Connect your bot to Nora for vote tracking, role rewards, and engagement analytics.</p>
-                            
-                            <div style="background: rgba(174, 239, 255, 0.05); padding: 25px; border-radius: 12px; border: 1px dashed var(--border); text-align: center; margin-bottom: 20px;">
-                                <h4 style="margin-bottom: 10px;">Auto-Detection</h4>
-                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">We'll check Top.gg for any bots owned by your Discord account.</p>
-                                <button class="config-btn" id="topgg-search-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 12px 30px;" onclick="fetchTopggBots()">Search My Bots</button>
-                                
-                                <div id="topgg-bot-results" style="margin-top: 25px; display: none;">
-                                    <h5 style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Bots on Top.gg</h5>
-                                    <div id="topgg-bot-list" style="display: flex; flex-direction: column; gap: 10px;">
-                                        <!-- Bot results will appear here -->
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="text-align: center;">
-                                <p style="font-size: 0.8rem; color: var(--muted);">Don't see your bot? <a href="javascript:void(0)" onclick="document.getElementById('topgg-manual-setup').style.display='block'" style="color: var(--primary);">Use Manual Bot ID</a></p>
-                            </div>
-
-                            <div id="topgg-manual-setup" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
-                                <div style="background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem;">
-                                    <strong style="color: var(--primary); display: block; margin-bottom: 5px;">💡 Legacy Account Tip</strong>
-                                    If you joined Top.gg several years ago, your profile might use a legacy ID. If linking fails, simply open your Top.gg profile, copy the ID from the URL, and ensure your current Discord ID is added as a <b>Manager</b> on your bot's Top.gg "Edit" page.
-                                </div>
-                                <div class="input-group">
-                                    <label>Bot / Server ID</label>
-                                    <input type="text" id="setting-topggBotId" placeholder="123456789012345678">
-                                </div>
-                                <div class="input-group" style="margin-top: 15px;">
-                                    <label>Legacy Top.gg User ID (Optional)</label>
-                                    <input type="text" id="setting-topggLegacyOwnerId" placeholder="If joined Top.gg before 2020" oninput="updateLegacyVerification()">
-                                </div>
-                                <div id="legacy-verification-info" style="display: none; margin-top: 15px; background: rgba(174, 239, 255, 0.03); border: 1px solid rgba(174, 239, 255, 0.1); padding: 15px; border-radius: 8px;">
-                                    <p style="font-size: 0.8rem; margin-bottom: 10px; color: var(--muted);">To verify you own this legacy account, please add this code to your <b>Top.gg Bio</b>:</p>
-                                    <code id="topgg-verify-code-display" style="background: #000; color: var(--primary); padding: 8px 12px; border-radius: 6px; font-weight: 800; display: block; text-align: center; font-size: 1.1rem; border: 1px solid var(--border); letter-spacing: 2px;">LOADING...</code>
-                                    <p style="font-size: 0.75rem; margin-top: 10px; color: var(--muted);">Nora will check your bio during the linking process.</p>
-                                </div>
-                                <button class="btn-outline" style="margin-top: 15px;" onclick="linkTopggBot(document.getElementById('setting-topggBotId').value)">Link via ID</button>
-                            </div>
+                            <span class="badge-user" style="background: rgba(255, 85, 85, 0.15); color: #ff5555; border: 1px solid rgba(255, 85, 85, 0.2); font-size: 0.7rem; padding: 3px 8px;">DISABLED</span>
                         </div>
-                    </div>
-
-                    <div id="topgg-verified-view" style="display: none;">
-                        <div class="panel">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <p>Connect your bot to Nora for vote tracking, role rewards, and engagement analytics.</p>
+                        
+                        <div style="background: rgba(255, 85, 85, 0.08); border: 1px solid rgba(255, 85, 85, 0.15); padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; color: #ff5555; font-size: 0.85rem; margin-top: 15px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 1.25rem;">⚠️</span>
                                 <div>
-                                    <h3>Vote Tracker Configuration</h3>
-                                    <button class="btn-outline" style="margin-top: 10px; font-size: 0.8rem;" onclick="document.getElementById('topgg-unverified-view').style.display='block'; this.style.display='none';">+ Link Another Bot</button>
-                                </div>
-                                <span class="badge-user" style="background: var(--success); color: #000; margin: 0;">VERIFIED</span>
-                            </div>
-                            
-                            <div id="topgg-advanced-features">
-                                <div class="row">
-                                    <div class="row-info">
-                                        <h4>Experience Boost Reward</h4>
-                                        <p>Give users extra Experience for voting.</p>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <input type="number" id="setting-topggXpBoost" placeholder="50" style="width: 80px;" min="0">
-                                        <span style="font-size: 0.8rem; color: var(--muted);">Experience</span>
-                                    </div>
-                                </div>
-
-                                <div class="input-group" style="margin-top: 15px; margin-bottom: 25px;">
-                                    <label>Reward Role</label>
-                                    <select id="setting-topggRewardRoleId">
-                                        <option value="">No reward role</option>
-                                    </select>
-                                </div>
-
-                                <div class="input-group" style="margin-bottom: 25px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                        <label style="margin: 0;">Vote Notification Channel</label>
-                                        <button class="config-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 2px 10px; font-size: 0.7rem; height: 24px;" onclick="testTopggWebhook()">Test Setup</button>
-                                    </div>
-                                    <select id="setting-topggVoteChannelId">
-                                        <option value="">Select a text channel...</option>
-                                    </select>
-                                    <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">Once selected, votes will automatically be detected and announced here.</p>
-                                </div>
-
-                                <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 25px; margin-bottom: 25px;">
-                                    <h4 style="margin-bottom: 15px; color: var(--primary);">Webhook Appearance</h4>
-                                    <div class="row">
-                                        <div class="row-info">
-                                            <h4>Webhook Name</h4>
-                                            <p>The name users see when a vote is announced.</p>
-                                        </div>
-                                        <input type="text" id="setting-topggWebhookName" placeholder="Nora Vote Tracker" style="width: 200px;">
-                                    </div>
-                                    <div class="row" style="margin-top: 15px;">
-                                        <div class="row-info">
-                                            <h4>Webhook Avatar</h4>
-                                            <p>The profile picture of the notification.</p>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 15px;">
-                                            <img id="topgg-avatar-preview" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);">
-                                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                                <input type="text" id="setting-topggWebhookAvatar" placeholder="Image URL" style="width: 200px; font-size: 0.8rem;" oninput="document.getElementById('topgg-avatar-preview').src = this.value || 'https://cdn.discordapp.com/embed/avatars/0.png'">
-                                                <button class="btn-outline" style="font-size: 0.7rem; padding: 2px 8px;" onclick="document.getElementById('topgg-avatar-upload').click()">Upload Image</button>
-                                                <input type="file" id="topgg-avatar-upload" style="display: none;" accept="image/*" onchange="handleTopggAvatarUpload(this)">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row" style="margin-top: 15px;">
-                                        <div class="row-info">
-                                            <h4>Embed Accent Color</h4>
-                                            <p>The color of the stripe on the side of the embed.</p>
-                                        </div>
-                                        <input type="color" id="setting-topggVoteEmbedColor" value="#FFA500" style="width: 50px; height: 30px; border: none; padding: 0; background: none; cursor: pointer;">
-                                    </div>
-                                </div>
-
-                                <div class="panel" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); margin-bottom: 25px;">
-                                    <h4 style="margin-bottom: 15px; font-size: 0.9rem; color: var(--primary);">Message Placeholder Key (Supports Markdown)</h4>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75rem;">
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.mention}</code> - Mention voter</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.tag}</code> - User Tag (User#0)</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.username}</code> - Voter name</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.displayname}</code> - Voter display</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.id}</code> - Voter ID</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.name}</code> - Server Name</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.count}</code> - Member Count</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.active}</code> - Online Count</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{bot.name}</code> - Bot Name</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{bot.link}</code> - Bot Top.gg Link</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{count}</code> - Vote Value (1 or 2)</div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="row-info">
-                                        <h4>Message Content</h4>
-                                        <p>Optional text sent outside the embed (supports placeholders).</p>
-                                    </div>
-                                    <input type="text" id="setting-topggVoteContent" placeholder="New vote alert!" style="width: 100%; margin-top: 10px;">
-                                </div>
-
-                                <div class="row" style="margin-top: 15px;">
-                                    <div class="row-info">
-                                        <h4>Embed Description</h4>
-                                        <p>The main message inside the notification embed.</p>
-                                    </div>
-                                    <textarea id="setting-topggVoteMessage" placeholder="{user.mention} just voted! Thanks!" style="width: 100%; min-height: 80px; margin-top: 10px;"></textarea>
-                                </div>
-
-                                <div class="row" style="margin-top: 15px;">
-                                    <div class="row-info">
-                                        <h4>Embed Image URL</h4>
-                                        <p>An optional large image displayed at the bottom of the embed.</p>
-                                    </div>
-                                    <input type="text" id="setting-topggVoteEmbedImage" placeholder="https://..." style="width: 100%; margin-top: 10px;">
-                                </div>
-
-                                <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 25px;">
-                                    <h4 style="margin-bottom: 15px;">Engagement Settings</h4>
-                                    <div class="row">
-                                        <div class="row-info">
-                                            <h4>Double Experience Weekends</h4>
-                                            <p>Automatically double the vote rewards during weekends.</p>
-                                        </div>
-                                        <label class="switch"><input type="checkbox" id="setting-topggDoubleXp"><span class="slider"></span></label>
-                                    </div>
-                                    <div class="row">
-                                        <div class="row-info">
-                                            <h4>Vote Reminders (BETA)</h4>
-                                            <p>Nora will DM users when they are eligible to vote again.</p>
-                                        </div>
-                                        <label class="switch"><input type="checkbox" id="setting-topggReminders"><span class="slider"></span></label>
-                                    </div>
+                                    <strong>Top.gg Integration Suspended</strong>
+                                    <p style="margin-top: 4px; color: var(--muted); line-height: 1.4; font-size: 0.8rem;">Top.gg bot verification features are currently offline for maintenance and security upgrades. Linking new bots is temporarily disabled.</p>
                                 </div>
                             </div>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                                    <button class="btn-outline" style="font-size: 0.7rem; border: none; color: var(--muted);" onclick="copyConnectionDetails()">Show Webhook Setup Info</button>
-                                    <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.2); width: auto; padding: 5px 15px;" onclick="unlinkTopggBot()">Unlink Bot Ownership</button>
-                                </div>
-                                <input type="hidden" id="setting-topggWebhookAuth">
-                                <input type="hidden" id="topgg-webhook-url-final">
                         </div>
                     </div>
+                </div>
+
 
                 <div id="tab-broadcast" class="tab-content">
                     <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; align-items: start;">
@@ -3221,19 +3123,86 @@
             detectDevice();
             window.addEventListener('resize', detectDevice);
 
-            // Mouse Follow Glow Tracker (Desktop Only)
-            const glow = document.getElementById('mouse-glow');
-            if (glow) {
+            // Premium Custom Cursor Logic (Desktop Only)
+            const customCursor = document.getElementById('custom-cursor');
+            const cursorDot = customCursor ? customCursor.querySelector('.cursor-dot') : null;
+            const cursorRing = customCursor ? customCursor.querySelector('.cursor-ring') : null;
+
+            if (customCursor && cursorDot && cursorRing) {
+                let mouseX = 0, mouseY = 0;
+                let ringX = 0, ringY = 0;
+                let firstMove = true;
+                let rafId = null;
+
+                const updateRing = () => {
+                    // Smooth tracking LERP delay for outer ring
+                    const delay = 0.15;
+                    ringX += (mouseX - ringX) * delay;
+                    ringY += (mouseY - ringY) * delay;
+
+                    cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
+                    rafId = requestAnimationFrame(updateRing);
+                };
+
                 window.addEventListener('mousemove', (e) => {
                     if (document.body.classList.contains('device-mobile') || document.body.classList.contains('device-tablet')) {
-                        glow.style.opacity = '0';
+                        customCursor.classList.add('cursor-hidden');
                         return;
                     }
-                    glow.style.transform = `translate3d(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%), 0)`;
-                    glow.style.opacity = '1';
+
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+
+                    if (firstMove) {
+                        ringX = mouseX;
+                        ringY = mouseY;
+                        firstMove = false;
+                        customCursor.classList.remove('cursor-hidden');
+                        rafId = requestAnimationFrame(updateRing);
+                    }
+
+                    // Move dot instantly
+                    cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
                 });
+
                 window.addEventListener('mouseleave', () => {
-                    glow.style.opacity = '0';
+                    customCursor.classList.add('cursor-hidden');
+                });
+
+                window.addEventListener('mouseenter', () => {
+                    if (!document.body.classList.contains('device-mobile') && !document.body.classList.contains('device-tablet')) {
+                        customCursor.classList.remove('cursor-hidden');
+                    }
+                });
+
+                // Event delegation for cursor hover and text selection states
+                window.addEventListener('mouseover', (e) => {
+                    if (document.body.classList.contains('device-mobile') || document.body.classList.contains('device-tablet')) return;
+
+                    const target = e.target;
+                    if (!target) return;
+
+                    // 1. Text input states
+                    const isTextInput = target.tagName === 'TEXTAREA' || 
+                                        (target.tagName === 'INPUT' && 
+                                         ['text', 'password', 'search', 'email', 'number', 'tel', 'url'].includes(target.type || 'text'));
+
+                    if (isTextInput) {
+                        customCursor.className = 'custom-cursor cursor-text';
+                        return;
+                    }
+
+                    // 2. Clickable/hoverable elements
+                    const isClickable = target.closest('a, button, select, label, .h-tab, .sidebar-link, .config-btn, .switch, .multiselect-trigger') ||
+                                        (target.tagName === 'INPUT' && ['submit', 'button', 'checkbox', 'radio', 'range', 'color'].includes(target.type)) ||
+                                        target.classList.contains('clickable') ||
+                                        window.getComputedStyle(target).cursor === 'pointer';
+
+                    if (isClickable) {
+                        customCursor.className = 'custom-cursor cursor-hover';
+                    } else {
+                        customCursor.className = 'custom-cursor';
+                    }
                 });
             }
 
