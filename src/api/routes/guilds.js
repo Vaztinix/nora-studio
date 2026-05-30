@@ -321,10 +321,10 @@ router.post('/members/:userId/level', async (req, res) => {
         const record = await UserLevel.findOne({ where: { userId, guildId } });
         if (!record) return res.status(404).json({ error: 'UserLevel record not found.' });
 
-        if (level !== undefined) record.level = level;
+        if (level !== undefined) record.level = parseInt(level, 10);
         if (xp !== undefined) {
-            record.xp = xp;
-            record.totalXp = xp;
+            record.xp = parseInt(xp, 10);
+            record.totalXp = parseInt(xp, 10);
         }
 
         await record.save();
@@ -342,44 +342,45 @@ router.post('/members/:userId/level', async (req, res) => {
 router.post('/topgg/link-bot', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { botId, legacyOwnerId } = req.body;
-        if (!botId) return res.status(400).json({ error: 'Missing botId' });
+        const trimmedBotId = botId.trim();
+        const trimmedLegacyOwnerId = legacyOwnerId ? legacyOwnerId.trim() : '';
 
         // Retrieve token from Authorization header to know who the user is
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
         const token = authHeader.split(' ')[1];
         
-        // Fetch user info from Discord API
-        const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+        // Fetch user info from Discord API using axios
+        const axios = require('axios');
+        const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
             headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!userRes.ok) return res.status(401).json({ error: 'Invalid Discord token' });
-        const user = await userRes.json();
+        }).catch(() => null);
+        if (!userRes) return res.status(401).json({ error: 'Invalid Discord token' });
+        const user = userRes.data;
 
-        // 1. Fetch bot details from Top.gg API
+        // 1. Fetch bot details from Top.gg API using axios
         const NORA_V0 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJib3QiOiJ0cnVlIiwiaWQiOiIxMzc1OTQzNzMwOTUxMDk4NTQ5IiwiaWF0IjoiMTc3MDc3MTYxNCJ9.o96WlKCfGM-Gzidt0laP_TYy2vEj6aaQ20qMXJRwc44';
-        const topggRes = await fetch(`https://top.gg/api/bots/${botId}`, {
+        const topggRes = await axios.get(`https://top.gg/api/bots/${trimmedBotId}`, {
             headers: { Authorization: NORA_V0 }
-        });
+        }).catch(() => null);
 
-        if (!topggRes.ok) {
+        if (!topggRes) {
             return res.status(400).json({ error: 'Bot not found on Top.gg.' });
         }
 
-        const botData = await topggRes.json();
+        const botData = topggRes.data;
         const owners = botData.owners || [];
 
         // Verify if user.id is in owners, or legacyOwnerId matches, or verification code exists in description
         let isOwner = owners.includes(user.id);
         
-        if (!isOwner && legacyOwnerId) {
-            isOwner = owners.includes(legacyOwnerId);
+        if (!isOwner && trimmedLegacyOwnerId) {
+            isOwner = owners.includes(trimmedLegacyOwnerId);
         }
 
         // If not in owners list directly, check short description for the verification code
         if (!isOwner) {
-            const expectedCode = `NORA-${guildId.slice(-4)}-${(legacyOwnerId || user.id).slice(-4)}`.toUpperCase();
+            const expectedCode = `NORA-${guildId.slice(-4)}-${(trimmedLegacyOwnerId || user.id).slice(-4)}`.toUpperCase();
             const shortDesc = botData.shortdesc || '';
             const longDesc = botData.longdesc || '';
             if (shortDesc.toUpperCase().includes(expectedCode) || longDesc.toUpperCase().includes(expectedCode)) {
@@ -396,9 +397,9 @@ router.post('/topgg/link-bot', async (req, res) => {
         const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
         
         settings.topggVerified = true;
-        settings.topggBotId = botId;
-        if (legacyOwnerId) {
-            settings.topggLegacyOwnerId = legacyOwnerId;
+        settings.topggBotId = trimmedBotId;
+        if (trimmedLegacyOwnerId) {
+            settings.topggLegacyOwnerId = trimmedLegacyOwnerId;
         }
         await settings.save();
 
@@ -547,11 +548,12 @@ router.post('/topgg/test', async (req, res) => {
         let testUser = req.client.user;
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.split(' ')[1];
-            const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+            const axios = require('axios');
+            const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
                 headers: { Authorization: `Bearer ${token}` }
-            });
-            if (userRes.ok) {
-                const userData = await userRes.json();
+            }).catch(() => null);
+            if (userRes && userRes.data) {
+                const userData = userRes.data;
                 testUser = await req.client.users.fetch(userData.id).catch(() => req.client.user);
             }
         }

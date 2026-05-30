@@ -137,21 +137,45 @@ module.exports = {
                 const rowD = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_antispam_mute').setPlaceholder('Mute duration...').addOptions([{label:'1 Minute',value:'60000'},{label:'5 Minutes',value:'300000'},{label:'1 Hour',value:'3600000'}]));
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
-
             // --- MEMBER LOGS ---
             if (viewName === 'view_logging') {
                 embed.setTitle('Member Logs')
                      .setDescription(`Logs are sent to: ${settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : 'None'}`)
                      .addFields(
-                         { name: 'Joins/Leaves', value: settings.logMemberJoins ? 'On' : 'Off', inline: true },
-                         { name: 'Message Edits', value: settings.logMessageEdits ? 'On' : 'Off', inline: true },
-                         { name: 'AutoMod', value: settings.logAutomod ? 'On' : 'Off', inline: true }
+                          { name: 'Member Joins', value: settings.logMemberJoins ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Member Leaves', value: settings.logMemberLeaves ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Message Edits', value: settings.logMessageEdits ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Message Deletes', value: settings.logMessageDeletes ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'AutoMod Blocked', value: settings.logAutomod ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Channel Creates', value: settings.logChannelCreates ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Channel Edits', value: settings.logChannelEdits ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Channel Deletes', value: settings.logChannelDeletes ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Voice Joins', value: settings.logVoiceJoins ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Voice Leaves', value: settings.logVoiceLeaves ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Voice Moves', value: settings.logVoiceMoves ? '🟢 On' : '🔴 Off', inline: true },
+                          { name: 'Server Boosts', value: settings.logMemberBoosts ? '🟢 On' : '🔴 Off', inline: true }
                      );
-                const rowA = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_log_toggle').setPlaceholder('What should I log?').addOptions([
-                    {label:'Join/Leave',value:'log_joins'},
-                    {label:'Edits/Deletes',value:'log_messages'},
-                    {label:'Safety Actions',value:'log_automod'}
-                ]));
+                const rowA = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('action_log_toggle')
+                        .setPlaceholder('Configure Logging Events (Select Multiple)...')
+                        .setMinValues(0)
+                        .setMaxValues(12)
+                        .addOptions([
+                            { label: 'Member Joins', value: 'logMemberJoins', description: 'Log when a user joins the server.', default: !!settings.logMemberJoins },
+                            { label: 'Member Leaves', value: 'logMemberLeaves', description: 'Log when a user leaves the server.', default: !!settings.logMemberLeaves },
+                            { label: 'Message Edits', value: 'logMessageEdits', description: 'Log message modifications.', default: !!settings.logMessageEdits },
+                            { label: 'Message Deletes', value: 'logMessageDeletes', description: 'Log message deletions.', default: !!settings.logMessageDeletes },
+                            { label: 'AutoMod Actions', value: 'logAutomod', description: 'Log messages blocked by AutoMod.', default: !!settings.logAutomod },
+                            { label: 'Channel Creates', value: 'logChannelCreates', description: 'Log when a channel is created.', default: !!settings.logChannelCreates },
+                            { label: 'Channel Edits', value: 'logChannelEdits', description: 'Log when a channel is updated.', default: !!settings.logChannelEdits },
+                            { label: 'Channel Deletes', value: 'logChannelDeletes', description: 'Log when a channel is deleted.', default: !!settings.logChannelDeletes },
+                            { label: 'Voice Joins', value: 'logVoiceJoins', description: 'Log when a user joins voice.', default: !!settings.logVoiceJoins },
+                            { label: 'Voice Leaves', value: 'logVoiceLeaves', description: 'Log when a user leaves voice.', default: !!settings.logVoiceLeaves },
+                            { label: 'Voice Moves', value: 'logVoiceMoves', description: 'Log when a user moves voice channels.', default: !!settings.logVoiceMoves },
+                            { label: 'Server Boosts', value: 'logMemberBoosts', description: 'Log when the server is boosted.', default: !!settings.logMemberBoosts }
+                        ])
+                );
                 const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_log_channel').setPlaceholder('Select Log Channel...').setChannelTypes(ChannelType.GuildText));
                 return { embeds: [embed], components: [rowA, rowB, backRow] };
             }
@@ -175,11 +199,11 @@ module.exports = {
             // --- AI SETTINGS ---
             if (viewName === 'view_ai') {
                 embed.setTitle('AI Engine')
-                     .setDescription(`Active Engine: **${settings.aiPreference}**`);
-                const row = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_ai_pref').setPlaceholder('Choose Nora\'s Brain...').addOptions([
-                    {label:'Built-in Logic (Free)',value:'LOCAL'},
-                    {label:'Gemini (Google)',value:'BUILT_IN'},
-                    {label:'ChatGPT (OpenAI)',value:'OPENAI'}
+                     .setDescription(`Active Engine: **${settings.aiPreference}**\n\n⚠️ **Notice:** The AI Engines feature is temporarily disabled.`);
+                const row = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_ai_pref').setPlaceholder('Choose Nora\'s Brain...').setDisabled(true).addOptions([
+                    {label:'Built-in Logic (Free) [Disabled]',value:'LOCAL'},
+                    {label:'Gemini (Google) [Disabled]',value:'BUILT_IN'},
+                    {label:'ChatGPT (OpenAI) [Disabled]',value:'OPENAI'}
                 ]));
                 return { embeds: [embed], components: [row, backRow] };
             }
@@ -350,10 +374,15 @@ module.exports = {
                 // Logging
                 if (i.customId === 'action_log_channel') { settings.loggingChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_log_toggle') {
-                    const sel = i.values[0];
-                    if (sel === 'log_joins') { settings.logMemberJoins = !settings.logMemberJoins; settings.logMemberLeaves = settings.logMemberJoins; }
-                    if (sel === 'log_messages') { settings.logMessageEdits = !settings.logMessageEdits; settings.logMessageDeletes = settings.logMessageEdits; }
-                    if (sel === 'log_automod') settings.logAutomod = !settings.logAutomod;
+                    const values = i.values;
+                    const logFields = [
+                        'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes',
+                        'logAutomod', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes',
+                        'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logMemberBoosts'
+                    ];
+                    for (const field of logFields) {
+                        settings[field] = values.includes(field);
+                    }
                     update = true;
                 }
 
