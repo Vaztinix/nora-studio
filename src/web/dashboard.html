@@ -3336,17 +3336,19 @@
         }
 
         function updateLegacyVerification() {
-            const legacyId = document.getElementById('setting-topggLegacyOwnerId').value;
+            const el = document.getElementById('setting-topggLegacyOwnerId');
+            if (!el) return;
+            const legacyId = el.value;
             const info = document.getElementById('legacy-verification-info');
             const display = document.getElementById('topgg-verify-code-display');
             
             if (legacyId && legacyId.length > 10) {
-                info.style.display = 'block';
+                if (info) info.style.display = 'block';
                 // Generate a deterministic code based on guildId or a simple random one
                 const code = `NORA-${currentServerId ? currentServerId.slice(-4) : 'AUTH'}-${legacyId.slice(-4)}`;
-                display.textContent = code.toUpperCase();
+                if (display) display.textContent = code.toUpperCase();
             } else {
-                info.style.display = 'none';
+                if (info) info.style.display = 'none';
             }
         }
 
@@ -6292,8 +6294,10 @@
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('setting-topggWebhookAvatar').value = e.target.result;
-                    document.getElementById('topgg-avatar-preview').src = e.target.result;
+                    const el = document.getElementById('setting-topggWebhookAvatar');
+                    if (el) el.value = e.target.result;
+                    const preview = document.getElementById('topgg-avatar-preview');
+                    if (preview) preview.src = e.target.result;
                     showToast('Avatar uploaded! Save settings to apply.', 'info');
                 };
                 reader.readAsDataURL(input.files[0]);
@@ -6301,7 +6305,8 @@
         }
 
         function refreshTopggAvatarPreview() {
-            const val = document.getElementById('setting-topggWebhookAvatar').value;
+            const el = document.getElementById('setting-topggWebhookAvatar');
+            const val = el ? el.value : '';
             const preview = document.getElementById('topgg-avatar-preview');
             if (preview) preview.src = val || 'https://cdn.discordapp.com/embed/avatars/0.png';
         }
