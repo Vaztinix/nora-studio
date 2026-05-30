@@ -51,7 +51,7 @@ GitHub
 https://github.com/Vaztinix
 
 Website  
-https://vaztinix.github.io/Nora
+https://vaztinix.dev/nora
 
 Discord  
 https://discord.com/users/1214048435632603137
