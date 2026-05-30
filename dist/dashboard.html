@@ -3140,7 +3140,7 @@
                     ringX += (mouseX - ringX) * delay;
                     ringY += (mouseY - ringY) * delay;
 
-                    cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
+                    cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate3d(-50%, -50%, 0)`;
                     rafId = requestAnimationFrame(updateRing);
                 };
 
@@ -3162,7 +3162,7 @@
                     }
 
                     // Move dot instantly
-                    cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+                    cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate3d(-50%, -50%, 0)`;
                 });
 
                 window.addEventListener('mouseleave', () => {
@@ -3623,7 +3623,8 @@
                 console.error('Authentication Error:', e);
                 showToast(`Auth Fault: ${e.message || 'Unknown'}`, 'error');
                 
-                const shouldInvalidateSession = !e.status || e.status === 401 || e.status === 403;
+                // Only invalidate session on explicit 401/403 errors, not on network connection dropouts
+                const shouldInvalidateSession = e.status === 401 || e.status === 403;
                 if (shouldInvalidateSession) {
                     sessionStorage.removeItem('discord_token');
                     localStorage.removeItem('nora_auth'); // Clear invalid token to allow fresh login
