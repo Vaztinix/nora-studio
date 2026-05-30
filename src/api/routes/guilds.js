@@ -342,8 +342,13 @@ router.post('/members/:userId/level', async (req, res) => {
 router.post('/topgg/link-bot', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const trimmedBotId = botId.trim();
-        const trimmedLegacyOwnerId = legacyOwnerId ? legacyOwnerId.trim() : '';
+        const { botId, legacyOwnerId } = req.body;
+        
+        if (!botId) {
+            return res.status(400).json({ error: 'botId is required' });
+        }
+        const trimmedBotId = botId.toString().trim();
+        const trimmedLegacyOwnerId = legacyOwnerId ? legacyOwnerId.toString().trim() : '';
 
         // Retrieve token from Authorization header to know who the user is
         const authHeader = req.headers.authorization;
