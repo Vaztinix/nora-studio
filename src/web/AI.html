@@ -96,9 +96,108 @@
         .card p { color: var(--muted); margin-bottom: 20px; line-height: 1.5; font-size: 0.95rem; }
         .card ul { padding-left: 20px; color: var(--text); font-size: 0.95rem; line-height: 1.7;}
         .card ul li { margin-bottom: 10px; }
+
+        /* Mobile Navigation Toggle Button */
+        .mobile-nav-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 24px;
+            height: 18px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 10000;
+        }
+
+        .mobile-nav-toggle span {
+            width: 100%;
+            height: 2px;
+            background-color: var(--text, #fff);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* Mobile Navigation Overlay */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 11, 16, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-nav-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mobile-nav-close {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 2.5rem;
+            color: var(--text, #fff);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            text-align: center;
+        }
+
+        .mobile-nav-links a {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text, #fff);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s ease, color 0.2s ease;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active {
+            opacity: 1;
+            color: var(--primary, #5865f2);
+        }
+
+        @media(max-width:768px) {
+            .nav-links { display: none !important; }
+            .mobile-nav-toggle { display: flex !important; }
+        }
     </style>
 </head>
 <body>
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+        <button class="mobile-nav-close" id="mobile-nav-close">&times;</button>
+        <nav class="mobile-nav-links">
+            <a href="/">Home</a>
+            <a href="/nora">Nora</a>
+            <a href="/team">Team</a>
+            <a href="/docs">Docs</a>
+            <a href="/ai" class="active">Nora AI</a>
+            <a href="/legal">Legal</a>
+            <a href="/dashboard">Dashboard</a>
+        </nav>
+    </div>
+
     <header>
         <div class="nav">
             <div class="brand">
@@ -113,6 +212,11 @@
                 <a href="/legal">Legal</a>
                 <a href="/dashboard">Dashboard</a>
             </nav>
+            <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle Navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
 
@@ -157,5 +261,24 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('mobile-nav-toggle');
+            const closeBtn = document.getElementById('mobile-nav-close');
+            const overlay = document.getElementById('mobile-nav-overlay');
+
+            if (toggleBtn && overlay) {
+                toggleBtn.addEventListener('click', () => overlay.classList.add('open'));
+            }
+            if (closeBtn && overlay) {
+                closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+            }
+            if (overlay) {
+                overlay.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => overlay.classList.remove('open'));
+                });
+            }
+        });
+    </script>
 </body>
 </html>
