@@ -914,28 +914,24 @@
 
     <script>
         window.getApiBaseUrl = function() {
-            let customApi = localStorage.getItem('nora_api_url');
-            if (customApi) {
-                const isLocalhostApi = customApi.includes('localhost') || customApi.includes('127.0.0.1');
-                const isCurrentHostLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                if (isLocalhostApi && !isCurrentHostLocalhost) {
-                    // Ignore local custom api to allow remote device to fall back to relative pathing
-                } else {
-                    return customApi;
-                }
-            }
-
             const host = window.location.hostname;
             const port = window.location.port;
 
-            // If we are on a custom port, we are accessing the Express server directly
-            if (port && port !== '80' && port !== '443') {
+            // If we are accessing the Express server directly (custom port) or on a local network IP,
+            // we should ALWAYS fall back to relative pathing to prevent connection failures.
+            if ((port && port !== '80' && port !== '443') || 
+                host === 'localhost' || 
+                host === '127.0.0.1' || 
+                host.startsWith('192.168.') || 
+                host.startsWith('10.') || 
+                host.startsWith('172.') || 
+                host.endsWith('.local')) {
                 return '';
             }
 
-            // Local development hosts and private IP subnets
-            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || host.endsWith('.local')) {
-                return '';
+            let customApi = localStorage.getItem('nora_api_url');
+            if (customApi) {
+                return customApi;
             }
 
             // Official production configurations
