@@ -60,7 +60,7 @@ function analyzeMessage(content) {
             if (toxic.length < 4) continue;
 
             // Compute similarity
-            const sim = stringSimilarity.compareStrings(word, toxic);
+            const sim = stringSimilarity.compareTwoStrings(word, toxic);
             const dist = levenshtein(word, toxic);
 
             // High threshold constraints:
