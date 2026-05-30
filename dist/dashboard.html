@@ -2847,12 +2847,15 @@
                 return customApi;
             }
 
-            // GitHub Pages needs to point to the remote Express server running on the main domain
-            if (host === 'vaztinix.github.io') {
-                return 'https://vaztinix.dev';
+            // Official production configurations
+            if (host === 'norabot.app' || host.endsWith('.norabot.app')) {
+                return 'https://api.norabot.app';
+            }
+            if (host === 'vaztinix.github.io' || host === 'vaztinix.dev' || host.endsWith('.vaztinix.dev')) {
+                return 'https://api.vaztinix.dev';
             }
 
-            // Official production configurations (when accessed directly) and custom self-hosted domains
+            // Fallback for custom self-hosted domains (relative requests)
             return '';
         };
 
