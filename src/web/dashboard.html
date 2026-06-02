@@ -1855,6 +1855,19 @@
                             <p style="color: var(--danger); font-size: 0.75rem; margin-top: 10px;">This code will expire in 5 minutes and is single-use.</p>
                         </div>
                     </div>
+
+                    <!-- Connected Devices Widget -->
+                    <div id="paired-devices-section" style="margin-top: 20px; display: none;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <h4 style="margin: 0; font-size: 0.95rem; color: var(--text);">&#128279; Connected Devices</h4>
+                            <button onclick="disconnectPairedDevices()" style="background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.3); color: #ff6b6b; padding: 5px 14px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">Disconnect All</button>
+                        </div>
+                        <p id="pairing-paired-at" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 14px;"></p>
+                        <div id="paired-devices-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    </div>
+                    <div id="paired-devices-empty" style="margin-top: 16px; display: none; text-align: center; color: var(--muted); font-size: 0.82rem;">
+                        No devices currently paired.
+                    </div>
                 </div>
 
                 <div class="panel">
@@ -3154,6 +3167,97 @@
         };
 
 
+        // ─── Device icon helper ──────────────────────────────────────────────
+        function getDeviceIcon(name) {
+            if (!name) return '&#128187;';
+            const n = name.toLowerCase();
+            if (n.includes('iphone')) return '&#128241;';
+            if (n.includes('ipad')) return '&#128250;';
+            if (n.includes('android')) return '&#129504;';
+            if (n.includes('mac')) return '&#128187;';
+            if (n.includes('windows')) return '&#128187;';
+            if (n.includes('linux')) return '&#128187;';
+            return '&#128187;';
+        }
+
+        // ─── Load + render paired devices ───────────────────────────────────
+        let _pairedDevicesPollInterval = null;
+
+        async function loadPairedDevices() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+            try {
+                const res = await safeFetch('/api/auth/paired-devices', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) return;
+                const data = res.data;
+                const section = document.getElementById('paired-devices-section');
+                const empty = document.getElementById('paired-devices-empty');
+                const list = document.getElementById('paired-devices-list');
+                const pairedAt = document.getElementById('pairing-paired-at');
+
+                if (!data.paired || !data.devices || data.devices.length === 0) {
+                    section.style.display = 'none';
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                section.style.display = 'block';
+                empty.style.display = 'none';
+                if (data.pairedAt) {
+                    pairedAt.textContent = 'Paired ' + new Date(data.pairedAt).toLocaleString();
+                }
+
+                list.innerHTML = data.devices.map(device => {
+                    const icon = getDeviceIcon(device.name);
+                    const roleLabel = device.role === 'primary' ? 'Primary' : 'Secondary';
+                    const roleColor = device.role === 'primary' ? 'var(--primary)' : '#a78bfa';
+                    const currentBadge = device.isCurrent
+                        ? `<span style="background: rgba(52,211,153,0.18); color: #34d399; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(52,211,153,0.3); margin-left: 8px;">This Device</span>`
+                        : '';
+                    return `
+                    <div style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;">
+                        <div style="font-size: 1.8rem; line-height: 1;">${icon}</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                                <span style="font-weight: 700; color: var(--text); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${device.name}</span>
+                                ${currentBadge}
+                            </div>
+                            <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <span style="background: rgba(255,255,255,0.06); color: ${roleColor}; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid ${roleColor}33;">${roleLabel}</span>
+                                <span style="color: var(--muted); font-size: 0.75rem;">${device.ip ? device.ip.replace('::ffff:', '') : ''}</span>
+                            </div>
+                        </div>
+                        <div style="width: 9px; height: 9px; border-radius: 50%; background: #34d399; flex-shrink: 0; box-shadow: 0 0 6px #34d399;"></div>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                // Silent fail — devices section just won't update
+            }
+        }
+
+        function startPairedDevicesPolling() {
+            loadPairedDevices();
+            if (_pairedDevicesPollInterval) clearInterval(_pairedDevicesPollInterval);
+            _pairedDevicesPollInterval = setInterval(loadPairedDevices, 8000);
+        }
+
+        window.disconnectPairedDevices = async function() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+            try {
+                await safeFetch('/api/auth/paired-devices/disconnect', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                showToast('All paired devices disconnected.', 'success');
+                await loadPairedDevices();
+            } catch (e) {
+                showToast('Failed to disconnect devices.', 'error');
+            }
+        };
+
         window.generatePairingCode = async function() {
             const token = sessionStorage.getItem('discord_token');
             if (!token) {
@@ -3184,7 +3288,9 @@
                     document.getElementById('pairing-qr-img').src = qrUrl;
                     
                     document.getElementById('pairing-code-display').style.display = 'block';
-                    showToast('Pairing code generated!', 'success');
+                    showToast('Pairing code generated! Waiting for secondary device...', 'success');
+                    // Start polling for the secondary device to connect
+                    startPairedDevicesPolling();
                 } else {
                     throw new Error('No pairing code returned from server');
                 }
@@ -3232,10 +3338,10 @@
                 
                 if (data.token) {
                     sessionStorage.setItem('discord_token', data.token);
-                    showToast('Device linked successfully! Authenticating...', 'success');
+                    const connectedTo = data.deviceName ? `Connected to: ${data.deviceName}` : 'Connected to primary device';
+                    showToast(`Device linked! ${connectedTo}. Authenticating...`, 'success');
                     window.location.hash = ''; // Clear hash
-                    
-                    setTimeout(() => window.location.reload(), 1000);
+                    setTimeout(() => window.location.reload(), 1200);
                 } else {
                     throw new Error('No token returned from pairing API');
                 }
@@ -4760,6 +4866,7 @@
                     }
                     if (tabId === 'prefs') {
                         fetchSessions();
+                        startPairedDevicesPolling();
                     }
                 }
                 

@@ -368,6 +368,52 @@ setInterval(() => {
     }
 }, 60000);
 
+// 🖥️ Device Pairings registry: userId -> { primary, secondary, pairedAt }
+const devicePairings = new Map();
+
+/**
+ * Parse a User-Agent string into a friendly device/browser name.
+ * @param {string} ua - raw User-Agent header
+ * @returns {string} friendly name
+ */
+function parseDeviceName(ua) {
+    if (!ua) return 'Unknown Device';
+    // OS detection
+    let os = 'Unknown OS';
+    if (/iPhone/i.test(ua)) os = 'iPhone';
+    else if (/iPad/i.test(ua)) os = 'iPad';
+    else if (/Android/i.test(ua)) {
+        const m = ua.match(/Android ([\d.]+)/);
+        os = m ? `Android ${m[1]}` : 'Android';
+    }
+    else if (/Windows NT 10/i.test(ua)) os = 'Windows 11/10';
+    else if (/Windows NT 6\.3/i.test(ua)) os = 'Windows 8.1';
+    else if (/Windows/i.test(ua)) os = 'Windows';
+    else if (/Mac OS X/i.test(ua)) {
+        const m = ua.match(/Mac OS X ([\d_]+)/);
+        os = m ? `macOS ${m[1].replace(/_/g, '.')}` : 'macOS';
+    }
+    else if (/Linux/i.test(ua)) os = 'Linux';
+    // Browser detection
+    let browser = '';
+    if (/Edg\//i.test(ua)) {
+        const m = ua.match(/Edg\/([\d.]+)/);
+        browser = m ? `Edge ${m[1].split('.')[0]}` : 'Edge';
+    } else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) {
+        browser = 'Opera';
+    } else if (/Chrome\/([\d.]+)/i.test(ua)) {
+        const m = ua.match(/Chrome\/([\d.]+)/);
+        browser = m ? `Chrome ${m[1].split('.')[0]}` : 'Chrome';
+    } else if (/Firefox\/([\d.]+)/i.test(ua)) {
+        const m = ua.match(/Firefox\/([\d.]+)/);
+        browser = m ? `Firefox ${m[1].split('.')[0]}` : 'Firefox';
+    } else if (/Safari\/([\d.]+)/i.test(ua)) {
+        browser = 'Safari';
+    }
+    if (browser) return `${browser} on ${os}`;
+    return os;
+}
+
 
 // Attach client to request
 app.use((req, res, next) => {
@@ -646,10 +692,16 @@ app.post('/api/auth/pairing-code', async (req, res) => {
             code = Math.floor(100000 + Math.random() * 900000).toString();
         } while (pairingCodes.has(code));
         
+        const ua = req.headers['user-agent'] || '';
         pairingCodes.set(code, {
             token,
             userId: user.id,
-            expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes validity
+            expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes validity
+            primaryDevice: {
+                name: parseDeviceName(ua),
+                userAgent: ua,
+                ip: req.ip
+            }
         });
         
         res.json({ success: true, code });
@@ -675,12 +727,79 @@ app.post('/api/auth/pair', async (req, res) => {
         // Single-use token logic
         pairingCodes.delete(cleanCode);
         
-        res.json({ success: true, token: data.token });
+        // Record the secondary device info alongside the primary
+        const ua = req.headers['user-agent'] || '';
+        const secondaryDevice = {
+            name: parseDeviceName(ua),
+            userAgent: ua,
+            ip: req.ip
+        };
+        
+        devicePairings.set(data.userId, {
+            primary: data.primaryDevice,
+            secondary: secondaryDevice,
+            pairedAt: new Date().toISOString()
+        });
+        
+        res.json({ success: true, token: data.token, deviceName: secondaryDevice.name });
     } catch (e) {
         console.error('Error in /api/auth/pair:', e);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+// Get paired devices info for the current user
+app.get('/api/auth/paired-devices', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const pairing = devicePairings.get(user.id);
+        if (!pairing) {
+            return res.json({ paired: false, devices: [] });
+        }
+        const currentUA = req.headers['user-agent'] || '';
+        const isCurrent = (device) => device && device.userAgent === currentUA;
+        res.json({
+            paired: true,
+            pairedAt: pairing.pairedAt,
+            devices: [
+                {
+                    role: 'primary',
+                    name: pairing.primary ? pairing.primary.name : 'Unknown',
+                    userAgent: pairing.primary ? pairing.primary.userAgent : '',
+                    ip: pairing.primary ? pairing.primary.ip : '',
+                    isCurrent: isCurrent(pairing.primary)
+                },
+                {
+                    role: 'secondary',
+                    name: pairing.secondary ? pairing.secondary.name : 'Unknown',
+                    userAgent: pairing.secondary ? pairing.secondary.userAgent : '',
+                    ip: pairing.secondary ? pairing.secondary.ip : '',
+                    isCurrent: isCurrent(pairing.secondary)
+                }
+            ]
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/auth/paired-devices');
+    }
+});
+
+// Disconnect (clear) paired devices for the current user
+app.post('/api/auth/paired-devices/disconnect', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        devicePairings.delete(user.id);
+        res.json({ success: true });
+    } catch (e) {
+        handleRouteError(res, e, '/api/auth/paired-devices/disconnect');
+    }
+});
+
 
 app.get('/api/user/guilds', async (req, res) => {
     const authHeader = req.headers.authorization;
