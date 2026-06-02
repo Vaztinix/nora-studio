@@ -5147,6 +5147,25 @@
                     openaiOpt.textContent = currentServerIsPremium ? 'GPT-4o Mini (Analytical)' : 'GPT-4o Mini (Nora+ Required)';
                 }
             }
+
+            // Handle Anti-Spam Time Window
+            const spamIntervalSelect = document.getElementById('setting-spamInterval');
+            if (spamIntervalSelect) {
+                const option10s = spamIntervalSelect.querySelector('option[value="10000"]');
+                if (option10s) {
+                    if (!currentServerIsPremium) {
+                        option10s.disabled = true;
+                        option10s.textContent = '10s (Nora+ Required)';
+                        // Force back to 5s if currently set to 10s
+                        if (spamIntervalSelect.value === '10000') {
+                            spamIntervalSelect.value = '5000';
+                        }
+                    } else {
+                        option10s.disabled = false;
+                        option10s.textContent = '10s';
+                    }
+                }
+            }
         }
 
         let isFetchingMembers = false;
@@ -5951,6 +5970,13 @@
         }
 
         function addRoleReward(lvl = '', roleId = '') {
+            const currentRewards = document.querySelectorAll('#role-rewards-list .row-inputs').length;
+            const cap = currentServerIsPremium ? 15 : 10;
+            if (currentRewards >= cap) {
+                showToast(`Premium Limit: Free servers are capped at 10 role rewards, while Premium servers get up to 15.`, 'warning');
+                return;
+            }
+
             const container = document.getElementById('role-rewards-list');
             const row = document.createElement('div');
             row.className = 'row-inputs';
