@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
+const { encrypt, decrypt } = require('../../utils/security');
 
 const HostedBot = sequelize.define('HostedBot', {
     id: {
@@ -21,7 +22,14 @@ const HostedBot = sequelize.define('HostedBot', {
     token: {
         type: DataTypes.TEXT,
         allowNull: false,
-        comment: 'Encrypted bot token (should be encrypted in production)'
+        comment: 'AES-256-GCM encrypted bot token (auto-encrypted on write, auto-decrypted on read)',
+        get() {
+            const raw = this.getDataValue('token');
+            return raw ? decrypt(raw) : raw;
+        },
+        set(value) {
+            this.setDataValue('token', value ? encrypt(value) : value);
+        }
     },
     inviteUrl: {
         type: DataTypes.STRING,

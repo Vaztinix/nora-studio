@@ -38,6 +38,9 @@ const fs = require('fs');
 const path = require('path');
 const sequelize = require('./database/db');
 
+// Initialize encryption key before models load (auto-generates if missing)
+require('./utils/security');
+
 // Require models to sync them
 require('./database/models/GuildSettings');
 require('./database/models/UserLevel');
@@ -126,25 +129,66 @@ app.set('trust proxy', true);
 // Conceal technology stack
 app.disable('x-powered-by');
 
-// Malicious Request Scanner Block Firewall Middleware
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔒 HOST HEADER WHITELIST — Block requests targeting wrong/raw-IP hosts
+// ─────────────────────────────────────────────────────────────────────────────
+const ALLOWED_HOSTS = [
+    /^(.*\.)?vaztinix\.dev(:\d+)?$/i,
+    /^(.*\.)?norabot\.app(:\d+)?$/i,
+    /^localhost(:\d+)?$/i,
+    /^127\.0\.0\.1(:\d+)?$/i,
+    /^192\.168\.\d+\.\d+(:\d+)?$/,
+    /^10\.\d+\.\d+\.\d+(:\d+)?$/,
+    /^172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/
+];
+
+app.use((req, res, next) => {
+    const host = req.headers.host || '';
+    const isAllowedHost = ALLOWED_HOSTS.some(pattern => pattern.test(host));
+    if (!isAllowedHost) {
+        console.warn(`[HOST_BLOCK] Blocked request with unauthorized Host header: "${host}" from IP ${req.ip}`);
+        req.socket.destroy();
+        return;
+    }
+    next();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚫 SCANNER USER-AGENT BLOCK — Drop known vulnerability scanner bots
+// ─────────────────────────────────────────────────────────────────────────────
+const BLOCKED_USER_AGENTS = [
+    /nikto/i, /sqlmap/i, /nmap/i, /masscan/i, /zgrab/i,
+    /gobuster/i, /dirbuster/i, /dirb/i, /feroxbuster/i,
+    /shodan/i, /censys/i, /binaryedge/i, /internetdb/i,
+    /nuclei/i, /wfuzz/i, /hydra/i, /burpsuite/i,
+    /acunetix/i, /nessus/i, /openvas/i
+];
+
+app.use((req, res, next) => {
+    const ua = req.headers['user-agent'] || '';
+    const isScannerUA = BLOCKED_USER_AGENTS.some(pattern => pattern.test(ua));
+    if (isScannerUA) {
+        console.warn(`[UA_BLOCK] Blocked scanner user-agent from IP ${req.ip}: ${ua.slice(0, 80)}`);
+        req.socket.destroy();
+        return;
+    }
+    next();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔥 MALICIOUS PATH SCANNER BLOCK FIREWALL
+// ─────────────────────────────────────────────────────────────────────────────
 const BLOCKED_SCANNER_PATTERNS = [
-    /\.php$/i,
-    /\.aspx?$/i,
-    /\.jsp$/i,
-    /wp-admin/i,
-    /wp-login/i,
-    /xmlrpc/i,
-    /\.env/i,
-    /\.git\//i,
-    /\.git$/i,
-    /phpmyadmin/i,
-    /pma/i,
-    /setup\.cgi/i,
-    /web\.config/i,
-    /appsettings\.json/i,
-    /db\.sqlite/i,
-    /sqlite3/i,
-    /config\.(json|js|yml|ini)/i
+    /\.php$/i, /\.aspx?$/i, /\.jsp$/i,
+    /wp-admin/i, /wp-login/i, /xmlrpc/i,
+    /\.env/i, /\.git\//i, /\.git$/i,
+    /phpmyadmin/i, /\/pma\//i, /setup\.cgi/i,
+    /web\.config/i, /appsettings\.json/i,
+    /db\.sqlite/i, /sqlite3/i,
+    /config\.(json|js|yml|ini)/i,
+    /\/cgi-bin\//i, /\.bak$/i, /\.old$/i,
+    /\/etc\/passwd/i, /\/proc\//i,
+    /\/admin\/config/i, /\/shell/i
 ];
 
 app.use((req, res, next) => {
@@ -158,16 +202,85 @@ app.use((req, res, next) => {
     next();
 });
 
-// Secure HTTP Headers Middleware
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚨 FAIL2BAN — Dynamic 404 IP banning for aggressive scanners
+// ─────────────────────────────────────────────────────────────────────────────
+const fail2banMap = new Map(); // ip -> { count, firstSeen, bannedUntil }
+const FAIL2BAN_MAX_404S = 5;         // 5 consecutive 404s...
+const FAIL2BAN_WINDOW_MS = 60000;    // ...within 60 seconds...
+const FAIL2BAN_BAN_DURATION_MS = 15 * 60 * 1000; // ...triggers a 15 minute ban
+
+// Clean up expired Fail2ban records every 5 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, data] of fail2banMap.entries()) {
+        if (data.bannedUntil && now > data.bannedUntil) {
+            fail2banMap.delete(ip);
+        } else if (!data.bannedUntil && now - data.firstSeen > FAIL2BAN_WINDOW_MS * 2) {
+            fail2banMap.delete(ip);
+        }
+    }
+}, 5 * 60 * 1000);
+
+// Middleware: block banned IPs instantly
+app.use((req, res, next) => {
+    const ip = req.ip;
+    const entry = fail2banMap.get(ip);
+    if (entry && entry.bannedUntil && Date.now() < entry.bannedUntil) {
+        req.socket.destroy();
+        return;
+    }
+    next();
+});
+
+// Helper to record a 404 hit for Fail2ban (called inside the 404 handler)
+const recordFail2ban404 = (ip) => {
+    const now = Date.now();
+    const entry = fail2banMap.get(ip) || { count: 0, firstSeen: now, bannedUntil: null };
+    
+    // Reset window if expired
+    if (now - entry.firstSeen > FAIL2BAN_WINDOW_MS) {
+        entry.count = 0;
+        entry.firstSeen = now;
+        entry.bannedUntil = null;
+    }
+    
+    entry.count++;
+    if (entry.count >= FAIL2BAN_MAX_404S) {
+        entry.bannedUntil = now + FAIL2BAN_BAN_DURATION_MS;
+        console.warn(`[FAIL2BAN] IP ${ip} banned for 15 minutes after ${entry.count} consecutive 404 hits.`);
+    }
+    fail2banMap.set(ip, entry);
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🛡️ SECURE HTTP HEADERS + CSP
+// ─────────────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    // Content Security Policy — applied to HTML page responses
+    if (!req.path.startsWith('/api/')) {
+        res.setHeader('Content-Security-Policy',
+            "default-src 'self' https://discord.com https://cdn.discordapp.com; " +
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+            "font-src 'self' https://fonts.gstatic.com; " +
+            "img-src 'self' data: blob: https://cdn.discordapp.com https://*.roblox.com https://thumbnails.roblox.com https://images.unsplash.com https://top.gg; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
+            "connect-src 'self' https://discord.com https://api.vaztinix.dev https://api.norabot.app http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com; " +
+            "frame-src 'none'; " +
+            "object-src 'none';"
+        );
+    }
     next();
 });
 
-// Dynamic CORS Origin Validator Middleware
+// ─────────────────────────────────────────────────────────────────────────────
+// 🌐 DYNAMIC CORS ORIGIN VALIDATOR
+// ─────────────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
     /^http:\/\/localhost(:\d+)?$/,
     /^http:\/\/127\.0\.0\.1(:\d+)?$/,
@@ -1132,8 +1245,9 @@ app.post('/api/webhooks/topgg/:guildId', async (req, res) => {
 });
 
 
-// Serve 404 page for unmatched routes
+// Serve 404 page for unmatched routes (also feeds Fail2ban tracker)
 app.use((req, res) => {
+    recordFail2ban404(req.ip);
     res.status(404).sendFile(path.join(__dirname, 'web', '404.html'));
 });
 

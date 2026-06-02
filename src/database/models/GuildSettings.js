@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
+const { encrypt, decrypt } = require('../../utils/security');
 
 const GuildSettings = sequelize.define('GuildSettings', {
     guildId: {
@@ -166,8 +167,15 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true
     },
     managedBotToken: {
-        type: DataTypes.TEXT, // Using TEXT for encrypted tokens later if needed
-        allowNull: true
+        type: DataTypes.TEXT, // AES-256-GCM encrypted
+        allowNull: true,
+        get() {
+            const raw = this.getDataValue('managedBotToken');
+            return raw ? decrypt(raw) : raw;
+        },
+        set(value) {
+            this.setDataValue('managedBotToken', value ? encrypt(value) : value);
+        }
     },
     // ---- Warning System ----
     warningThreshold: {
