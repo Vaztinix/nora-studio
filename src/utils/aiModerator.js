@@ -1,4 +1,4 @@
-const levenshtein = require('levenshtein-edit-distance');
+const { levenshteinEditDistance: levenshtein } = require('levenshtein-edit-distance');
 const stringSimilarity = require('string-similarity');
 
 // Hardcoded list of toxic slang and profanities for typo detection
