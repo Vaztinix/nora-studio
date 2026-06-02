@@ -384,6 +384,42 @@ module.exports = {
         const command = client.commands.get(interaction.commandName);
         if (!command) return;
 
+        // 💎 Early Access Command Check
+        if (command.earlyAccess) {
+            const { isPremium } = require('../utils/premiumManager');
+            const userIsPremium = isPremium(interaction);
+            
+            let userHasPremium = userIsPremium;
+            const UserPrefs = require('../database/models/UserPrefs');
+            const userPrefs = await UserPrefs.findOne({ where: { userId: interaction.user.id } }).catch(() => null);
+            if (userPrefs) {
+                userHasPremium = userHasPremium || !!userPrefs.isPremium || !!userPrefs.isManualPremium;
+                const paidTime = userPrefs.paidExpiresAt ? new Date(userPrefs.paidExpiresAt).getTime() : 0;
+                const expandedMs = userPrefs.expandedTimeMs ? Number(userPrefs.expandedTimeMs) : 0;
+                if (paidTime + expandedMs > Date.now()) {
+                    userHasPremium = true;
+                }
+            }
+
+            let guildIsPremium = false;
+            if (interaction.guildId) {
+                const guildSettings = await GuildSettings.findOne({ where: { guildId: interaction.guildId } }).catch(() => null);
+                if (guildSettings) {
+                    guildIsPremium = !!guildSettings.isPremium || !!guildSettings.isManualPremium;
+                    const paidTime = guildSettings.paidExpiresAt ? new Date(guildSettings.paidExpiresAt).getTime() : 0;
+                    const expandedMs = guildSettings.expandedTimeMs ? Number(guildSettings.expandedTimeMs) : 0;
+                    if (paidTime + expandedMs > Date.now()) {
+                        guildIsPremium = true;
+                    }
+                }
+            }
+
+            if (!userHasPremium && !guildIsPremium) {
+                return handleError(interaction, 'Early Access Feature', 'This command is currently in **Early Access** and requires a **Nora Premium** subscription.\n\nSupport Nora\'s development and gain access to premium perks by upgrading today!');
+            }
+        }
+
+
         // 🐰 Easter Egg Unstoppable Interceptor (Awards eggs even if blocked globally/locally)
         const { checkAndAwardEgg } = require('../utils/easterEggSystem');
         const eggMap = {

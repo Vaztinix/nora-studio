@@ -243,6 +243,9 @@ router.get('/analytics', async (req, res) => {
 
         const avgTextActivity = totalNoraUsers > 0 ? Math.floor(totalTextActivity / totalNoraUsers) : 0;
         
+        // Count active human members currently in voice channels
+        const activeVoiceUsers = guild.voiceStates.cache.filter(vs => vs.channelId && vs.member && !vs.member.user.bot).size;
+
         res.json({
             totalMembers: guild.memberCount,
             totalNoraUsers,
@@ -251,6 +254,7 @@ router.get('/analytics', async (req, res) => {
             totalVoiceActivity: Math.floor(totalTextActivity * 0.35),
             avgTextActivity,
             avgVoiceActivity: Math.floor(avgTextActivity * 0.35),
+            activeVoiceUsers,
             peakActiveName,
             leastActiveName,
             chartData,

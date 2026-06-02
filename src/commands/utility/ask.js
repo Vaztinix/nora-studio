@@ -5,6 +5,7 @@ const { checkRateLimit } = require('../../utils/aiRateLimiter');
 
 module.exports = {
     category: 'utility',
+    earlyAccess: true,
     data: new SlashCommandBuilder()
         .setName('ask')
         .setDescription('Ask the Nora AI a question privately.')
@@ -18,21 +19,26 @@ module.exports = {
         const { checkAndAwardEgg } = require('../../utils/easterEggSystem');
         checkAndAwardEgg(interaction, 2);
 
-        /*
-        const apiKey = process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-            return handleError(interaction, 'AI Offline', 'The generative AI module is not configured. The owner must supply a valid `OPENAI_API_KEY`.');
-        }
-
         const { isPremium } = require('../../utils/premiumManager');
-        const userIsPremium = isPremium(interaction);
+        let userIsPremium = isPremium(interaction);
+
+        const UserPrefs = require('../../database/models/UserPrefs');
+        const userPrefs = await UserPrefs.findOne({ where: { userId: interaction.user.id } }).catch(() => null);
+        if (userPrefs) {
+            userIsPremium = userIsPremium || !!userPrefs.isPremium || !!userPrefs.isManualPremium;
+            const paidTime = userPrefs.paidExpiresAt ? new Date(userPrefs.paidExpiresAt).getTime() : 0;
+            const expandedMs = userPrefs.expandedTimeMs ? Number(userPrefs.expandedTimeMs) : 0;
+            if (paidTime + expandedMs > Date.now()) {
+                userIsPremium = true;
+            }
+        }
 
         // Apply rate limit protection to shield global API quota
         if (!checkRateLimit(interaction.user.id, userIsPremium)) {
             const waitTime = userIsPremium ? '30 seconds' : '1 minute';
-            return handleError(interaction, 'Rate Limited', `Slow down! To ensure everyone has fair access to the AI without hitting quota limits, you are restricted to 5 queries per ${waitTime}. Try again shortly.`);
+            return handleError(interaction, 'Rate Limited', `Slow down! To ensure everyone has fair access to the AI, you are restricted to 5 queries per ${waitTime}. Try again shortly.`);
         }
-        */
+
 
         // We want this command to be completely private, so we defer ephemerally
         await interaction.deferReply({ ephemeral: true });

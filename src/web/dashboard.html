@@ -479,18 +479,118 @@
         }
         .status-indicator.online { background: #2ea043; }
 
-        /* Notification & Toast Animations */
-        .toast {
-            position: fixed; top: 20px; left: 20px;
-            background: var(--card-bg); border: 1px solid var(--accent);
-            padding: 12px 20px; border-radius: 10px; z-index: 10000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            font-size: 0.9rem; font-weight: 600;
-            display: flex; align-items: center; gap: 10px;
-            animation: slideInLeft 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            transition: all 0.4s;
+        /* Custom Color Picker Component */
+        .color-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+            margin: 8px 0;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+            box-sizing: border-box;
         }
-        .toast.hiding { transform: translateX(-120%); opacity: 0; }
+        .color-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #1c2033;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+        .color-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        .color-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #1c2033;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+        .color-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Notification & Toast Animations */
+        /* Stacked Toast Notifications */
+        #toast-container {
+            position: fixed;
+            z-index: 10000;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            width: 350px;
+        }
+        #toast-container.toast-tr { top: 30px; right: 30px; --dir: 1; --dir-x: 1; }
+        #toast-container.toast-tl { top: 30px; left: 30px; --dir: 1; --dir-x: -1; }
+        #toast-container.toast-br { bottom: 30px; right: 30px; --dir: -1; --dir-x: 1; }
+        #toast-container.toast-bl { bottom: 30px; left: 30px; --dir: -1; --dir-x: -1; }
+
+        #toast-container.toast-tr .toast, #toast-container.toast-br .toast { right: 0; }
+        #toast-container.toast-tl .toast, #toast-container.toast-bl .toast { left: 0; }
+        #toast-container.toast-tr .toast, #toast-container.toast-tl .toast { top: 0; }
+        #toast-container.toast-br .toast, #toast-container.toast-bl .toast { bottom: 0; }
+
+        .toast {
+            position: absolute;
+            background: #1c2033;
+            border-left: 4px solid var(--primary);
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-size: 0.9rem;
+            font-weight: 600;
+            pointer-events: auto;
+            max-width: 350px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-sizing: border-box;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--primary);
+            
+            --current-offset: var(--collapsed-offset, 0px);
+            transform: translateY(calc(var(--current-offset) * var(--dir, 1))) scale(var(--scale, 1));
+            z-index: calc(100 - var(--index, 0));
+            opacity: calc(1 - var(--index, 0) * 0.15);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, z-index 0.3s ease;
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+
+        .toast[style*="--index: 3"],
+        .toast[style*="--index: 4"],
+        .toast[style*="--index: 5"] {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #toast-container:has(.toast:hover) .toast,
+        #toast-container.expanded .toast {
+            --current-offset: var(--hover-offset, 0px);
+            transform: translateY(calc(var(--current-offset) * var(--dir, 1))) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toast.hiding {
+            opacity: 0 !important;
+            transform: translate(calc(var(--dir-x, 1) * 120%), calc(var(--current-offset) * var(--dir, 1))) scale(0.9) !important;
+            pointer-events: none !important;
+        }
 
         @keyframes slideInLeft {
             from { transform: translateX(-120%); opacity: 0; }
@@ -499,6 +599,20 @@
         @keyframes slideInRight {
             from { transform: translateX(120%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes offlinePulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 74, 74, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 74, 74, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 74, 74, 0); }
+        }
+        @keyframes modalEnter {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         .notif-card {
@@ -781,19 +895,7 @@
         .profile-status-pill i { font-size: 1rem; opacity: 0.8; }
 
         /* Toast Notifications */
-        #toast-container {
-            position: fixed;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
-        .toast-tr { top: 30px; right: 30px; align-items: flex-end; }
-        .toast-tl { top: 30px; left: 30px; align-items: flex-start; }
-        .toast-br { bottom: 30px; right: 30px; align-items: flex-end; flex-direction: column-reverse; }
-        .toast-bl { bottom: 30px; left: 30px; align-items: flex-start; flex-direction: column-reverse; }
+        /* Stacking containers defined above */
 
         .locked-feature {
             filter: grayscale(0.8) opacity(0.4);
@@ -832,25 +934,7 @@
             border-radius: inherit;
         }
         
-        .toast {
-            background: #1c2033;
-            border-left: 4px solid var(--primary);
-            padding: 15px 25px;
-            border-radius: 8px;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-size: 0.9rem;
-            pointer-events: auto;
-            animation: toastSlide 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            max-width: 350px;
-        }
-        .toast.success { border-left-color: var(--success); }
-        .toast.error { border-left-color: var(--danger); }
-        
-        @keyframes toastSlide {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        /* Combined themed toast styles defined above */
 
         /* Compact Mode & New Layouts */
         .log-row-compact {
@@ -1197,6 +1281,15 @@
             max-width: 400px;
             top: 20px !important;
             bottom: auto !important;
+            --dir: 1 !important;
+        }
+        body.device-mobile .toast {
+            left: 0 !important;
+            right: 0 !important;
+            top: 0 !important;
+            bottom: auto !important;
+            width: 100% !important;
+            max-width: none !important;
         }
         body.device-mobile div[style*="grid-template-columns"] {
             grid-template-columns: 1fr !important;
@@ -1953,8 +2046,8 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <button class="config-btn" id="undo-btn" onclick="undoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-undo"></i> Undo</button>
-                        <button class="config-btn" id="redo-btn" onclick="redoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-redo"></i> Redo</button>
+                        <button class="config-btn" id="undo-btn" onclick="undoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-undo" style="margin-right: 6px;"></i> Undo</button>
+                        <button class="config-btn" id="redo-btn" onclick="redoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-redo" style="margin-right: 6px;"></i> Redo</button>
                         <button class="save-btn" id="save-settings-btn" onclick="saveSettings()">Save Data</button>
                     </div>
                 </div>
@@ -2668,7 +2761,7 @@
                                         <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Voice Retention</span>
                                         <div style="display: flex; align-items: flex-end; gap: 10px; margin-top: 10px;">
                                             <h2 id="analytics-voice-count" style="font-size: 1.6rem; font-weight: 800;">...</h2>
-                                            <span style="font-size: 0.75rem; color: var(--primary); margin-bottom: 5px; font-weight: 700;">Healthy</span>
+                                            <span id="analytics-voice-status" style="font-size: 0.75rem; color: var(--primary); margin-bottom: 5px; font-weight: 700;">-- active</span>
                                         </div>
                                     </div>
                                      <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
@@ -2867,7 +2960,9 @@
                 // Handle 401 Session Expiration and 429 Rate Limits separately
                 const isTelemetryOrLogs = typeof input === 'string' && (input.includes('/api/logs/client') || input.endsWith('/api/logs'));
                 if (!isTelemetryOrLogs) {
-                    if (response.status === 429) {
+                    if (response.status === 502 || response.status === 503 || response.status === 504) {
+                        triggerApiOffline();
+                    } else if (response.status === 429) {
                         let errMessage = 'You are making requests too quickly. Please wait a few seconds before trying again.';
                         try {
                             const clone = response.clone();
@@ -2914,7 +3009,9 @@
                 }
                 return response;
             } catch (err) {
-                if (typeof input === 'string' && !input.includes('/api/logs/client')) {
+                const isTelemetryOrHealth = typeof input === 'string' && (input.includes('/api/logs/client') || input.includes('/api/health'));
+                if (!isTelemetryOrHealth) {
+                    triggerApiOffline();
                     originalFetch(window.getApiBaseUrl() + '/api/logs/client', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -2928,6 +3025,91 @@
                 throw err;
             }
         };
+
+        window.isApiOffline = false;
+        let isOfflinePolling = false;
+        let countdownInterval = null;
+
+        window.triggerApiOffline = function() {
+            if (window.isApiOffline) return;
+            window.isApiOffline = true;
+
+            const overlay = document.getElementById('api-offline-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                const countdownEl = document.getElementById('offline-countdown');
+                if (countdownEl) countdownEl.textContent = '5';
+            }
+
+            if (!isOfflinePolling) {
+                startOfflinePolling();
+            }
+        };
+
+        window.triggerApiOnline = function() {
+            if (!window.isApiOffline) return;
+            window.isApiOffline = false;
+
+            const overlay = document.getElementById('api-offline-overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+
+            stopOfflinePolling();
+            showToast('Connection restored! Session automatically recovered.', 'success');
+
+            const tok = sessionStorage.getItem('discord_token');
+            if (tok) {
+                authenticateWithToken(tok);
+            } else {
+                const authOverlay = document.getElementById('auth-overlay');
+                if (authOverlay) {
+                    authOverlay.style.display = 'flex';
+                    authOverlay.style.opacity = '1';
+                }
+            }
+        };
+
+        function startOfflinePolling() {
+            isOfflinePolling = true;
+            let secondsLeft = 5;
+
+            countdownInterval = setInterval(async () => {
+                secondsLeft--;
+                const cdEl = document.getElementById('offline-countdown');
+
+                if (secondsLeft <= 0) {
+                    if (cdEl) cdEl.textContent = 'Checking...';
+
+                    try {
+                        const baseUrl = window.getApiBaseUrl();
+                        const res = await originalFetch(baseUrl + '/api/health', { cache: 'no-store' });
+                        if (res.ok) {
+                            const data = await res.json().catch(() => ({}));
+                            if (data.status === 'ok') {
+                                triggerApiOnline();
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.log('Health check failed.');
+                    }
+
+                    secondsLeft = 5;
+                    if (cdEl) cdEl.textContent = '5';
+                } else {
+                    if (cdEl) cdEl.textContent = secondsLeft;
+                }
+            }, 1000);
+        }
+
+        function stopOfflinePolling() {
+            isOfflinePolling = false;
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
 
         window.toggleApiConfig = function(e) {
             if (e) e.preventDefault();
@@ -3102,6 +3284,17 @@
         const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId'];
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Early notifications loading if we have a last known user ID to prevent showing 0 count badge
+            const lastUserId = localStorage.getItem('nora_last_user_id');
+            if (lastUserId) {
+                window.currentUser = { id: lastUserId };
+                try {
+                    if (typeof loadNotifications === 'function') loadNotifications();
+                } catch (e) {
+                    console.error('Failed to load initial cached notifications:', e);
+                }
+            }
+
             // Device detection and layout adjustments
             function detectDevice() {
                 const ua = navigator.userAgent;
@@ -3265,7 +3458,7 @@
         });
 
         document.getElementById('login-btn').onclick = () => window.location.href = discordLoginURL;
-        document.getElementById('logout-btn').onclick = () => { sessionStorage.clear(); window.location.reload(); };
+        document.getElementById('logout-btn').onclick = () => { sessionStorage.clear(); localStorage.removeItem('nora_last_user_id'); window.location.reload(); };
         document.getElementById('back-to-servers').onclick = () => showTab('servers');
 
         function inviteBot() {
@@ -3310,23 +3503,96 @@
             } catch (e) { console.error('Logging failed:', e); }
         }
 
+        function updateToastStack() {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toasts = Array.from(container.querySelectorAll('.toast:not(.hiding)'));
+            if (toasts.length > 5) {
+                for (let i = 5; i < toasts.length; i++) {
+                    const t = toasts[i];
+                    t.classList.add('hiding');
+                    if (t._removeTimeout) clearTimeout(t._removeTimeout);
+                    setTimeout(() => t.remove(), 300);
+                }
+            }
+            const activeToasts = toasts.slice(0, 5);
+            let cumulativeHeight = 0;
+            activeToasts.forEach((toast, idx) => {
+                toast.style.setProperty('--index', idx);
+                toast.style.setProperty('--collapsed-offset', `${idx * 10}px`);
+                toast.style.setProperty('--scale', 1 - idx * 0.05);
+                toast.style.setProperty('--hover-offset', `${cumulativeHeight}px`);
+                cumulativeHeight += toast.offsetHeight + 10;
+            });
+        }
+
+        function dismissToast(toast) {
+            if (!toast || toast.classList.contains('hiding')) return;
+            toast.classList.add('hiding');
+            if (toast._removeTimeout) clearTimeout(toast._removeTimeout);
+            setTimeout(() => {
+                toast.remove();
+                updateToastStack();
+            }, 300);
+            updateToastStack();
+        }
+
         function showToast(msg, type = 'info') {
             const container = document.getElementById('toast-container');
+            if (!container) return;
+
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : (type === 'success' ? 'fa-check-circle' : 'fa-info-circle')}"></i>
-                    <span>${msg}</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : (type === 'success' ? 'fa-check-circle' : 'fa-info-circle')}"></i>
+                        <span>${msg}</span>
+                    </div>
+                    <button class="toast-close-btn" style="background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 2px 5px; font-size: 0.8rem; transition: color 0.2s;" onclick="event.stopPropagation(); dismissToast(this.closest('.toast'))">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             `;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(-10px)';
-                setTimeout(() => toast.remove(), 300);
-            }, 5000);
+
+            toast.style.opacity = '0';
+            toast.style.transform = 'translate3d(0, 30px, 0) scale(0.9)';
+
+            container.insertBefore(toast, container.firstChild);
+
+            // Force layout pass
+            toast.offsetHeight;
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    toast.style.opacity = '';
+                    toast.style.transform = '';
+                    updateToastStack();
+                });
+            });
+
+            const timeout = setTimeout(() => {
+                dismissToast(toast);
+            }, 6000);
+
+            toast._removeTimeout = timeout;
         }
+
+        // Setup Toast Container Click and Expand Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('toast-container');
+            if (container) {
+                container.addEventListener('click', (e) => {
+                    if (e.target.closest('.toast-close-btn')) return;
+                    container.classList.toggle('expanded');
+                });
+                document.addEventListener('click', (e) => {
+                    if (!container.contains(e.target)) {
+                        container.classList.remove('expanded');
+                    }
+                });
+            }
+        });
 
         function toggleLoading(show) {
             document.getElementById('loading-overlay').style.display = show ? 'grid' : 'none';
@@ -3474,6 +3740,7 @@
                 
                 if (d.error) throw new Error(d.error);
                 window.currentUser = d;
+                localStorage.setItem('nora_last_user_id', d.id);
                 loadNotifications();
 
                 document.getElementById('pref-secure-session').checked = d.sessionHardened;
@@ -3626,7 +3893,10 @@
                 const shouldInvalidateSession = e.status === 401 || e.status === 403;
                 if (shouldInvalidateSession) {
                     sessionStorage.removeItem('discord_token');
+                    localStorage.removeItem('nora_last_user_id');
                     localStorage.removeItem('nora_auth'); // Clear invalid token to allow fresh login
+                    window.currentUser = null;
+                    loadNotifications();
                     authOverlay.style.opacity = '1'; 
                     authOverlay.style.display = 'flex';
                 }
@@ -4687,7 +4957,9 @@
             
             terminalFeedInterval = setInterval(async () => {
                 try {
-                    const res = await fetch('/api/logs');
+                    const res = await fetch('/api/logs', {
+                        headers: { Authorization: `Bearer ${sessionStorage.getItem('discord_token')}` }
+                    });
                     const logs = await res.json();
                     if (!Array.isArray(logs)) return;
 
@@ -4711,25 +4983,54 @@
                     }).join('');
                     
                     // 2. Sync Significant Events to Notification Center
-                    // systemLogs are stored oldest-to-newest, so the last element is the newest log.
                     const currentTs = logs.length > 0 ? new Date(logs[logs.length - 1].timestamp).getTime() : 0;
                     if (lastLogTimestamp === 0) {
                         lastLogTimestamp = currentTs; // Initialize on first load
                     } else if (currentTs > lastLogTimestamp) {
-                        const newEntries = logs.filter(l => new Date(l.timestamp).getTime() > lastLogTimestamp);
+                        const newEntries = logs.filter(l => {
+                            if (new Date(l.timestamp).getTime() <= lastLogTimestamp) return false;
+                            
+                            const msg = l.message.toLowerCase();
+                            const type = l.type.toUpperCase();
+                            
+                            // Ignore all client-side UI/telemetry logs
+                            if (msg.includes('[client_') || msg.includes('[ui_') || msg.includes('[auth_') || msg.includes('[guild_') || msg.includes('[change tracking') || msg.includes('switching to') || msg.includes('auth request') || msg.includes('starting authentication') || msg.includes('logging failed')) {
+                                return false;
+                            }
+                            
+                            // Ignore deprecation warnings and general warnings from packages
+                            if (msg.includes('deprecation') || msg.includes('node:') || msg.includes('warning:')) {
+                                return false;
+                            }
+                            
+                            // Only accept critical errors
+                            if (type === 'ERROR') {
+                                return true;
+                            }
+                            
+                            // Accept specific significant server events
+                            if (msg.includes('ready!') || msg.includes('database backup') || msg.includes('database synchronized') || msg.includes('mainframe synchronized') || msg.includes('bot restart')) {
+                                return true;
+                            }
+                            
+                            return false;
+                        });
+
                         newEntries.forEach(l => {
                             const msg = l.message.toLowerCase();
-                            if (l.type === 'ERROR' || msg.includes('success') || msg.includes('fault') || msg.includes('command')) {
-                                let type = 'info';
-                                if (l.type === 'ERROR' || msg.includes('fault')) type = 'error';
-                                else if (msg.includes('success')) type = 'success';
-                                else if (msg.includes('command')) type = 'info';
-                                
-                                let title = 'System Event';
-                                if (l.message.includes(']')) title = l.message.split(']')[0].replace('[', '');
-                                
-                                addNotification(title, l.message, type);
+                            let type = 'info';
+                            if (l.type === 'ERROR' || msg.includes('fault') || msg.includes('error')) type = 'error';
+                            else if (msg.includes('success') || msg.includes('synchronized') || msg.includes('ready!')) type = 'success';
+                            else if (msg.includes('warn')) type = 'warning';
+                            
+                            let title = 'System Event';
+                            if (l.message.includes(']')) {
+                                title = l.message.split(']')[0].replace('[', '');
+                            } else if (l.type === 'ERROR') {
+                                title = 'System Error';
                             }
+                            
+                            addNotification(title, l.message, type);
                         });
                         lastLogTimestamp = currentTs;
                     }
@@ -5306,6 +5607,12 @@
                     trendEl.textContent = (trend >= 0 ? '+' : '') + trend + '%';
                     trendEl.style.color = trend >= 0 ? 'var(--success)' : '#ff5555';
                 }
+                const voiceStatusEl = document.getElementById('analytics-voice-status');
+                if (voiceStatusEl) {
+                    const activeCount = data.activeVoiceUsers || 0;
+                    voiceStatusEl.textContent = activeCount + (activeCount === 1 ? ' active user' : ' active users');
+                    voiceStatusEl.style.color = activeCount > 0 ? 'var(--primary)' : 'var(--muted)';
+                }
 
                 const txtAvgEl = document.getElementById('analytics-text-avg');
                 const voiceAvgEl = document.getElementById('analytics-voice-avg');
@@ -5488,7 +5795,7 @@
         let broadcastButtons = [];
         function addBroadcastButton() {
             if (broadcastButtons.length >= 5) return alert('Max 5 buttons allowed.');
-            broadcastButtons.push({ label: 'New Button', url: '', style: 'PRIMARY' });
+            broadcastButtons.push({ label: 'New Button', url: '', style: 'LINK' });
             renderBroadcastButtons();
         }
 
@@ -5504,10 +5811,10 @@
                     <input type="text" value="${b.label}" oninput="broadcastButtons[${i}].label = this.value; updatePreview()" placeholder="Label">
                     <input type="text" value="${b.url}" oninput="broadcastButtons[${i}].url = this.value; updatePreview()" placeholder="URL/Action">
                     <select onchange="broadcastButtons[${i}].style = this.value; updatePreview()">
-                        <option value="PRIMARY" ${b.style === 'PRIMARY' ? 'selected' : ''}>Primary (Blurple)</option>
-                        <option value="SUCCESS" ${b.style === 'SUCCESS' ? 'selected' : ''}>Success (Green)</option>
-                        <option value="DANGER" ${b.style === 'DANGER' ? 'selected' : ''}>Danger (Red)</option>
-                        <option value="SECONDARY" ${b.style === 'SECONDARY' ? 'selected' : ''}>Secondary (Grey)</option>
+                        <option value="PRIMARY" disabled>Primary (Blurple) [Disabled]</option>
+                        <option value="SUCCESS" disabled>Success (Green) [Disabled]</option>
+                        <option value="DANGER" disabled>Danger (Red) [Disabled]</option>
+                        <option value="SECONDARY" disabled>Secondary (Grey) [Disabled]</option>
                         <option value="LINK" ${b.style === 'LINK' ? 'selected' : ''}>Link (URL)</option>
                     </select>
                     <button class="config-btn" style="width: auto; padding: 5px 10px; color: var(--danger);" onclick="broadcastButtons.splice(${i}, 1); renderBroadcastButtons(); updatePreview();">X</button>
@@ -5790,7 +6097,7 @@
 
         // additionalTranslations are loaded globally from /translate.js
 
-        // Rebuild standard color inputs to modern swatch select menus
+        // Rebuild standard color inputs to modern custom HSL slider-based select menus
         function makeModernColorPicker(originalInputId, presetColors) {
             const originalInput = document.getElementById(originalInputId);
             if (!originalInput) return;
@@ -5799,7 +6106,7 @@
 
             const container = document.createElement('div');
             container.className = 'custom-color-picker-container';
-            container.style = 'display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 5px;';
+            container.style = 'display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 5px; position: relative;';
 
             const swatchesContainer = document.createElement('div');
             swatchesContainer.style = 'display: flex; flex-wrap: wrap; gap: 8px; align-items: center;';
@@ -5809,7 +6116,6 @@
 
             const previewBox = document.createElement('div');
             previewBox.style = `width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border); background: ${originalInput.value}; flex-shrink: 0; cursor: pointer;`;
-            previewBox.onclick = () => originalInput.click();
 
             const hexInput = document.createElement('input');
             hexInput.type = 'text';
@@ -5817,26 +6123,169 @@
             hexInput.maxLength = 7;
             hexInput.style = 'width: 90px; padding: 6px 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.8rem; font-family: monospace; text-transform: uppercase;';
 
-            originalInput.addEventListener('input', () => {
+            // Create HSL Popover Color Picker
+            const popover = document.createElement('div');
+            popover.className = 'nora-color-picker-popover';
+            popover.style = 'display: none; position: absolute; top: calc(100% + 5px); left: 0; background: rgba(20, 24, 40, 0.98); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 1000; width: 220px; box-sizing: border-box; flex-direction: column; gap: 10px; transition: opacity 0.2s, transform 0.2s; opacity: 0; transform: translateY(-5px);';
+
+            // Helper conversion functions
+            function hexToHsl(hex) {
+                hex = hex.replace(/^#/, '');
+                if (hex.length === 3) {
+                    hex = hex.split('').map(x => x + x).join('');
+                }
+                let r = parseInt(hex.substring(0, 2), 16) / 255;
+                let g = parseInt(hex.substring(2, 4), 16) / 255;
+                let b = parseInt(hex.substring(4, 6), 16) / 255;
+                
+                let max = Math.max(r, g, b), min = Math.min(r, g, b);
+                let h, s, l = (max + min) / 2;
+                
+                if (max === min) {
+                    h = s = 0;
+                } else {
+                    let d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch (max) {
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                }
+                
+                return {
+                    h: Math.round(h * 360),
+                    s: Math.round(s * 100),
+                    l: Math.round(l * 100)
+                };
+            }
+
+            function hslToHex(h, s, l) {
+                s /= 100;
+                l /= 100;
+                
+                let c = (1 - Math.abs(2 * l - 1)) * s;
+                let x = c * (1 - Math.abs((h / 60) % 2 - 1));
+                let m = l - c / 2;
+                let r = 0, g = 0, b = 0;
+                
+                if (0 <= h && h < 60) {
+                    r = c; g = x; b = 0;
+                } else if (60 <= h && h < 120) {
+                    r = x; g = c; b = 0;
+                } else if (120 <= h && h < 180) {
+                    r = 0; g = c; b = x;
+                } else if (180 <= h && h < 240) {
+                    r = 0; g = x; b = c;
+                } else if (240 <= h && h < 300) {
+                    r = x; g = 0; b = c;
+                } else if (300 <= h && h <= 360) {
+                    r = c; g = 0; b = x;
+                }
+                
+                let red = Math.round((r + m) * 255).toString(16).padStart(2, '0');
+                let green = Math.round((g + m) * 255).toString(16).padStart(2, '0');
+                let blue = Math.round((b + m) * 255).toString(16).padStart(2, '0');
+                
+                return `#${red}${green}${blue}`.toUpperCase();
+            }
+
+            // Sliders Setup
+            const hueContainer = document.createElement('div');
+            hueContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Hue</span><span class="hue-val">0°</span></div>';
+            const hueSlider = document.createElement('input');
+            hueSlider.type = 'range';
+            hueSlider.min = '0';
+            hueSlider.max = '360';
+            hueSlider.className = 'color-slider';
+            hueSlider.style.background = 'linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)';
+            hueContainer.appendChild(hueSlider);
+
+            const satContainer = document.createElement('div');
+            satContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Saturation</span><span class="sat-val">100%</span></div>';
+            const satSlider = document.createElement('input');
+            satSlider.type = 'range';
+            satSlider.min = '0';
+            satSlider.max = '100';
+            satSlider.className = 'color-slider';
+            satContainer.appendChild(satSlider);
+
+            const lightContainer = document.createElement('div');
+            lightContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Lightness</span><span class="light-val">50%</span></div>';
+            const lightSlider = document.createElement('input');
+            lightSlider.type = 'range';
+            lightSlider.min = '0';
+            lightSlider.max = '100';
+            lightSlider.className = 'color-slider';
+            lightContainer.appendChild(lightSlider);
+
+            popover.appendChild(hueContainer);
+            popover.appendChild(satContainer);
+            popover.appendChild(lightContainer);
+
+            originalInput.addEventListener('input', (e) => {
                 previewBox.style.background = originalInput.value;
                 hexInput.value = originalInput.value.toUpperCase();
                 updateSwatchesActiveState();
+                
+                if (popover.style.display === 'flex' && e.detail?.source !== 'sliders') {
+                    syncSlidersFromColor(originalInput.value);
+                }
             });
 
-            function updateColor(hex) {
+            function updateColor(hex, source = '') {
                 if (/^#[0-9A-F]{6}$/i.test(hex)) {
                     originalInput.value = hex;
                     previewBox.style.background = hex;
                     hexInput.value = hex.toUpperCase();
-                    originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    originalInput.dispatchEvent(new CustomEvent('input', { 
+                        bubbles: true, 
+                        detail: { source: source } 
+                    }));
                     updateSwatchesActiveState();
+                    
+                    if (popover.style.display === 'flex' && source !== 'sliders') {
+                        syncSlidersFromColor(hex);
+                    }
                 }
             }
+
+            function syncSlidersFromColor(hex) {
+                try {
+                    const hsl = hexToHsl(hex);
+                    hueSlider.value = hsl.h;
+                    satSlider.value = hsl.s;
+                    lightSlider.value = hsl.l;
+                    updateSliderLabelsAndBackgrounds(hsl.h, hsl.s, hsl.l);
+                } catch(e) {}
+            }
+
+            function updateSliderLabelsAndBackgrounds(h, s, l) {
+                hueContainer.querySelector('.hue-val').textContent = h + '°';
+                satContainer.querySelector('.sat-val').textContent = s + '%';
+                lightContainer.querySelector('.light-val').textContent = l + '%';
+                satSlider.style.background = `linear-gradient(to right, hsl(${h}, 0%, ${l}%), hsl(${h}, 100%, ${l}%))`;
+                lightSlider.style.background = `linear-gradient(to right, #000000, hsl(${h}, ${s}%, 50%), #ffffff)`;
+            }
+
+            function onSliderChange() {
+                const h = parseInt(hueSlider.value);
+                const s = parseInt(satSlider.value);
+                const l = parseInt(lightSlider.value);
+                updateSliderLabelsAndBackgrounds(h, s, l);
+                const hex = hslToHex(h, s, l);
+                updateColor(hex, 'sliders');
+            }
+
+            hueSlider.oninput = onSliderChange;
+            satSlider.oninput = onSliderChange;
+            lightSlider.oninput = onSliderChange;
 
             hexInput.oninput = (e) => {
                 let val = e.target.value;
                 if (!val.startsWith('#')) val = '#' + val;
-                updateColor(val);
+                updateColor(val, 'hex');
             };
 
             const swatchElements = [];
@@ -5848,7 +6297,7 @@
                 
                 swatch.onmouseover = () => { swatch.style.transform = 'scale(1.2)'; };
                 swatch.onmouseout = () => { swatch.style.transform = 'scale(1)'; };
-                swatch.onclick = (e) => { e.preventDefault(); updateColor(color); };
+                swatch.onclick = (e) => { e.preventDefault(); updateColor(color, 'swatch'); };
 
                 swatchesContainer.appendChild(swatch);
                 swatchElements.push({ element: swatch, color: color.toLowerCase() });
@@ -5871,8 +6320,47 @@
             pickerBtn.type = 'button';
             pickerBtn.className = 'config-btn';
             pickerBtn.style = 'width: auto; padding: 4px 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 4px; margin: 0;';
-            pickerBtn.innerHTML = '<i class="fas fa-eye-dropper"></i> Custom';
-            pickerBtn.onclick = (e) => { e.preventDefault(); originalInput.click(); };
+            pickerBtn.innerHTML = '<i class="fas fa-palette"></i> Custom';
+
+            function showPopover() {
+                document.querySelectorAll('.nora-color-picker-popover').forEach(p => {
+                    if (p !== popover) {
+                        p.style.display = 'none';
+                        p.style.opacity = '0';
+                    }
+                });
+                syncSlidersFromColor(originalInput.value);
+                popover.style.display = 'flex';
+                setTimeout(() => {
+                    popover.style.opacity = '1';
+                    popover.style.transform = 'translateY(0)';
+                }, 10);
+            }
+
+            function hidePopover() {
+                popover.style.opacity = '0';
+                popover.style.transform = 'translateY(-5px)';
+                setTimeout(() => {
+                    popover.style.display = 'none';
+                }, 200);
+            }
+
+            function togglePopover() {
+                if (popover.style.display === 'flex') {
+                    hidePopover();
+                } else {
+                    showPopover();
+                }
+            }
+
+            previewBox.onclick = (e) => { e.stopPropagation(); togglePopover(); };
+            pickerBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); togglePopover(); };
+
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    hidePopover();
+                }
+            });
 
             customWrapper.appendChild(previewBox);
             customWrapper.appendChild(hexInput);
@@ -5880,6 +6368,7 @@
 
             container.appendChild(swatchesContainer);
             container.appendChild(customWrapper);
+            container.appendChild(popover);
 
             originalInput.parentNode.insertBefore(container, originalInput.nextSibling);
             updateSwatchesActiveState();
@@ -7061,6 +7550,21 @@
                 Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.
             </p>
             <button class="save-btn" style="background: var(--primary); padding: 12px 30px; font-weight: 800; width: 100%; border: none; border-radius: 8px; cursor: pointer; color: #000;" onclick="window.location.href = discordLoginURL">Re-authenticate with Discord</button>
+        </div>
+    </div>
+
+    <!-- API Connection Offline Overlay -->
+    <div id="api-offline-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 21000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div class="pulse-offline-dot" style="width: 24px; height: 24px; background: var(--danger, #ff4a4a); border-radius: 50%; margin: 0 auto 20px; box-shadow: 0 0 20px var(--danger, #ff4a4a); animation: offlinePulse 1.5s infinite;"></div>
+            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Connection Offline</h2>
+            <p style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
+                Nora API is currently offline or unreachable. The system is attempting to restore connection automatically.
+            </p>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                <div style="border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary, #00d2ff); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;"></div>
+                <span style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">5</span>s</span>
+            </div>
         </div>
     </div>
 </body>

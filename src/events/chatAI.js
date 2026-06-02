@@ -36,9 +36,33 @@ module.exports = {
         try { settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } }); } catch (e) {}
         if (!settings) return;
 
-        const aiPref = settings.aiPreference || 'BUILT_IN';
+                const aiPref = settings.aiPreference || 'BUILT_IN';
         const plainContent = message.content.replace(new RegExp(`<@!?${client.user.id}>`, 'g'), '').trim();
         const imageAttachments = message.attachments.filter(a => a.contentType?.startsWith('image/'));
+
+        // Resolve Premium Status for user and guild
+        const UserPrefs = require('../database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: message.author.id } }).catch(() => [null]);
+        
+        let userIsPremium = prefs ? (!!prefs.isPremium || !!prefs.isManualPremium) : false;
+        if (prefs) {
+            const paidTime = prefs.paidExpiresAt ? new Date(prefs.paidExpiresAt).getTime() : 0;
+            const expandedMs = prefs.expandedTimeMs ? Number(prefs.expandedTimeMs) : 0;
+            if (paidTime + expandedMs > Date.now()) {
+                userIsPremium = true;
+            }
+        }
+
+        let guildIsPremium = settings ? (!!settings.isPremium || !!settings.isManualPremium) : false;
+        if (settings) {
+            const gPaidTime = settings.paidExpiresAt ? new Date(settings.paidExpiresAt).getTime() : 0;
+            const gExpandedMs = settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0;
+            if (gPaidTime + gExpandedMs > Date.now()) {
+                guildIsPremium = true;
+            }
+        }
+
+        const isPremium = userIsPremium || guildIsPremium;
 
         // Smart History Recall Activation
         let deepKnowledgeStr = '';
@@ -55,16 +79,17 @@ module.exports = {
                 messages: [
                     { role: 'system', content: `You are Aura (Nora V18). You are a high-performance, witty assistant. 
                     NEVER use fragments or stupid generic phrases.
+                    ${isPremium ? 'Explain in detail and provide comprehensive, complete, elaborate answers.' : 'Be extremely concise and keep answers brief.'}
                     Context:\n${deepKnowledgeStr}` },
                     { role: 'user', content: plainContent }
                 ],
-                max_tokens: 450
+                max_tokens: isPremium ? 900 : 450
             });
             return completion.choices[0].message.content;
         };
 
         const runGemini = async () => {
-            const res = await getBuiltInResponse(plainContent, deepKnowledgeStr, imageAttachments);
+            const res = await getBuiltInResponse(plainContent, deepKnowledgeStr, imageAttachments, isPremium);
             if (res.includes('credit exhausted') || res.includes('quota')) throw new Error('Quota');
             return res;
         };
@@ -77,7 +102,7 @@ module.exports = {
         try {
             if (aiPref === 'OPENAI') response = await runOpenAI();
             else if (aiPref === 'BUILT_IN') response = await runGemini();
-            else response = await getPrivacyResponse(plainContent, deepKnowledgeStr, message.author.id);
+            else response = await getPrivacyResponse(plainContent, deepKnowledgeStr, message.author.id, isPremium);
         } catch (err) {
             // Fallback Chain
             try {
@@ -85,7 +110,7 @@ module.exports = {
                 else response = await runOpenAI();
                 statusNote = `⚠️ *Primary engine failed (${err.message}). Aura Neuro-Local active.*\n\n`;
             } catch (err2) {
-                response = await getPrivacyResponse(plainContent, deepKnowledgeStr, message.author.id);
+                response = await getPrivacyResponse(plainContent, deepKnowledgeStr, message.author.id, isPremium);
                 statusNote = `⚠️ *Cloud Brain unreachable. Running on Local Aura Engine.*\n\n`;
             }
         }

@@ -120,9 +120,79 @@ const webhook = new Topgg.Webhook(process.env.VOTE_SECRET || 'NORA_VOTE_SECRET_2
 const NORA_SERVER_ID = '1351304498185900184';
 const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
 
-// Manual CORS Middleware
+// Enable trust proxy for correct IP identification behind Cloudflare
+app.set('trust proxy', true);
+
+// Conceal technology stack
+app.disable('x-powered-by');
+
+// Malicious Request Scanner Block Firewall Middleware
+const BLOCKED_SCANNER_PATTERNS = [
+    /\.php$/i,
+    /\.aspx?$/i,
+    /\.jsp$/i,
+    /wp-admin/i,
+    /wp-login/i,
+    /xmlrpc/i,
+    /\.env/i,
+    /\.git\//i,
+    /\.git$/i,
+    /phpmyadmin/i,
+    /pma/i,
+    /setup\.cgi/i,
+    /web\.config/i,
+    /appsettings\.json/i,
+    /db\.sqlite/i,
+    /sqlite3/i,
+    /config\.(json|js|yml|ini)/i
+];
+
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    const url = req.path;
+    const isMalicious = BLOCKED_SCANNER_PATTERNS.some(pattern => pattern.test(url));
+    if (isMalicious) {
+        console.warn(`[FIREWALL_BLOCK] Blocked malicious scanner request from IP ${req.ip} to: ${url}`);
+        req.socket.destroy();
+        return;
+    }
+    next();
+});
+
+// Secure HTTP Headers Middleware
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
+
+// Dynamic CORS Origin Validator Middleware
+const ALLOWED_ORIGINS = [
+    /^http:\/\/localhost(:\d+)?$/,
+    /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+    /^https:\/\/vaztinix\.github\.io$/,
+    /^https:\/\/vaztinix\.dev$/,
+    /^https:\/\/.*\.vaztinix\.dev$/,
+    /^https:\/\/norabot\.app$/,
+    /^https:\/\/.*\.norabot\.app$/,
+    /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
+    /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
+    /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
+    /^https?:\/\/.*\.local(:\d+)?$/
+];
+
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+        const isAllowed = ALLOWED_ORIGINS.some(regex => regex.test(origin));
+        if (isAllowed) {
+            res.header('Access-Control-Allow-Origin', origin);
+        } else {
+            console.warn(`[CORS_BLOCK] CORS policy blocked origin: ${origin} on path: ${req.path}`);
+            return res.status(403).json({ error: 'CORS policy violation: Origin not allowed.' });
+        }
+    }
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') {
@@ -131,7 +201,48 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.json());
+// Payload size limit to prevent memory exhaustion/large body attacks
+app.use(express.json({ limit: '15kb' }));
+
+// In-Memory IP Rate Limiter
+const ipRequests = new Map();
+const RATE_LIMIT_WINDOW_MS = 10000; // 10 seconds
+const MAX_REQUESTS_PER_WINDOW = 120; // 120 requests per 10 seconds
+
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, timestamps] of ipRequests.entries()) {
+        const activeTimestamps = timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+        if (activeTimestamps.length === 0) {
+            ipRequests.delete(ip);
+        } else {
+            ipRequests.set(ip, activeTimestamps);
+        }
+    }
+}, 60000);
+
+const ipRateLimiter = (req, res, next) => {
+    const ip = req.ip;
+    const now = Date.now();
+    
+    if (!ipRequests.has(ip)) {
+        ipRequests.set(ip, []);
+    }
+    
+    const timestamps = ipRequests.get(ip);
+    const activeTimestamps = timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+    
+    if (activeTimestamps.length >= MAX_REQUESTS_PER_WINDOW) {
+        console.warn(`[API_RATE_LIMIT] IP ${ip} exceeded rate limit. Active requests: ${activeTimestamps.length}`);
+        return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+    }
+    
+    activeTimestamps.push(now);
+    ipRequests.set(ip, activeTimestamps);
+    next();
+};
+
+app.use('/api', ipRateLimiter);
 
 // 📱 Mobile/Secondary Device Pairing memory store
 const pairingCodes = new Map();
@@ -176,8 +287,45 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Nora API is running.' });
 });
 
+// Rate Limiter for Client Log Submissions to prevent spam
+const clientLogRequests = new Map();
+const CLIENT_LOG_WINDOW_MS = 30000; // 30 seconds
+const MAX_CLIENT_LOGS_PER_WINDOW = 5; // 5 logs per 30 seconds
+
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, timestamps] of clientLogRequests.entries()) {
+        const activeTimestamps = timestamps.filter(ts => now - ts < CLIENT_LOG_WINDOW_MS);
+        if (activeTimestamps.length === 0) {
+            clientLogRequests.delete(ip);
+        } else {
+            clientLogRequests.set(ip, activeTimestamps);
+        }
+    }
+}, 60000);
+
+const clientLogRateLimiter = (req, res, next) => {
+    const ip = req.ip;
+    const now = Date.now();
+    
+    if (!clientLogRequests.has(ip)) {
+        clientLogRequests.set(ip, []);
+    }
+    
+    const timestamps = clientLogRequests.get(ip);
+    const activeTimestamps = timestamps.filter(ts => now - ts < CLIENT_LOG_WINDOW_MS);
+    
+    if (activeTimestamps.length >= MAX_CLIENT_LOGS_PER_WINDOW) {
+        return res.status(429).json({ error: 'Too many log submissions. Slow down.' });
+    }
+    
+    activeTimestamps.push(now);
+    clientLogRequests.set(ip, activeTimestamps);
+    next();
+};
+
 // Client telemetry logs endpoint
-app.post('/api/logs/client', (req, res) => {
+app.post('/api/logs/client', clientLogRateLimiter, (req, res) => {
     const { level, message, context, stack } = req.body;
     const cleanContext = (context && typeof context === 'object') ? JSON.stringify(context) : (context || '');
     const cleanStack = stack ? `\nStack: ${stack}` : '';
@@ -827,9 +975,35 @@ app.get('/legal', (req, res) => {
     res.sendFile(getWebFilePath('legal.html'));
 });
 
-// GET /api/logs returns the buffered console output
-app.get('/api/logs', (req, res) => {
-    res.json(systemLogs);
+// GET /api/logs returns the buffered console output (Owner Only)
+app.get('/api/logs', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        let isOwner = false;
+        try {
+            const appInfo = await req.client.application.fetch();
+            if (appInfo.owner) {
+                if (appInfo.owner.id === user.id || (appInfo.owner.members && appInfo.owner.members.has(user.id))) {
+                    isOwner = true;
+                }
+            }
+        } catch (e) {}
+        if (user.id === '1214048435632603137') {
+            isOwner = true;
+        }
+
+        if (!isOwner) {
+            return res.status(403).json({ error: 'Forbidden: Owner-only access.' });
+        }
+        res.json(systemLogs);
+    } catch (e) {
+        return handleRouteError(res, e, 'GET /api/logs');
+    }
 });
 
 

@@ -21,7 +21,21 @@ router.get('/', async (req, res) => {
             [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
         }
 
-        res.json(settings);
+        // Measure database query roundtrip time (latency to SQLite)
+        const dbStart = Date.now();
+        await GuildSettings.sequelize.authenticate();
+        const dbSync = Date.now() - dbStart;
+
+        // Retrieve the Discord WebSocket client heartbeat (ping)
+        const heartbeat = (req.client && typeof req.client.ws.ping === 'number') 
+            ? Math.max(0, Math.round(req.client.ws.ping)) 
+            : 15; // default fallback if ws is offline/not connected yet
+
+        res.json({
+            ...settings.toJSON(),
+            heartbeat,
+            dbSync
+        });
     } catch (error) {
         console.error(`Error fetching settings for guild ${req.params.guildId}:`, error);
         res.status(500).json({ error: 'Internal server error while fetching settings.' });
