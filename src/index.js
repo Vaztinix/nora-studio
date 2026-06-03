@@ -134,7 +134,6 @@ app.disable('x-powered-by');
 // ─────────────────────────────────────────────────────────────────────────────
 const ALLOWED_HOSTS = [
     /^(.*\.)?vaztinix\.dev(:\d+)?$/i,
-    /^(.*\.)?norabot\.app(:\d+)?$/i,
     /^localhost(:\d+)?$/i,
     /^127\.0\.0\.1(:\d+)?$/i,
     /^192\.168\.\d+\.\d+(:\d+)?$/,
@@ -142,13 +141,23 @@ const ALLOWED_HOSTS = [
     /^172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/
 ];
 
+// ── EARLY DIAGNOSTIC LOGGER (before all security middleware) ──────────────────
+// Logs every single request that reaches the server so we can debug mobile issues
+app.use((req, res, next) => {
+    const cfIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.ip || 'unknown';
+    const host = req.headers.host || 'no-host';
+    const origin = req.headers.origin || '-';
+    console.log(`[INCOMING] ${req.method} ${req.path} | host=${host} | cf-ip=${cfIp} | origin=${origin} | ua=${(req.headers['user-agent'] || '').slice(0, 80)}`);
+    next();
+});
+
 app.use((req, res, next) => {
     const host = req.headers.host || '';
     const isAllowedHost = ALLOWED_HOSTS.some(pattern => pattern.test(host));
     if (!isAllowedHost) {
         console.warn(`[HOST_BLOCK] Blocked request with unauthorized Host header: "${host}" from IP ${req.ip}`);
-        req.socket.destroy();
-        return;
+        return res.status(400).end();
+
     }
     next();
 });
@@ -169,8 +178,7 @@ app.use((req, res, next) => {
     const isScannerUA = BLOCKED_USER_AGENTS.some(pattern => pattern.test(ua));
     if (isScannerUA) {
         console.warn(`[UA_BLOCK] Blocked scanner user-agent from IP ${req.ip}: ${ua.slice(0, 80)}`);
-        req.socket.destroy();
-        return;
+        return res.status(403).end();
     }
     next();
 });
@@ -196,19 +204,29 @@ app.use((req, res, next) => {
     const isMalicious = BLOCKED_SCANNER_PATTERNS.some(pattern => pattern.test(url));
     if (isMalicious) {
         console.warn(`[FIREWALL_BLOCK] Blocked malicious scanner request from IP ${req.ip} to: ${url}`);
-        req.socket.destroy();
-        return;
+        return res.status(404).end();
     }
     next();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 🚨 FAIL2BAN — Dynamic 404 IP banning for aggressive scanners
+// Uses CF-Connecting-IP when behind Cloudflare so we ban the real visitor IP,
+// not a shared Cloudflare edge node (which would block ALL users on that edge).
 // ─────────────────────────────────────────────────────────────────────────────
 const fail2banMap = new Map(); // ip -> { count, firstSeen, bannedUntil }
-const FAIL2BAN_MAX_404S = 5;         // 5 consecutive 404s...
+const FAIL2BAN_MAX_404S = 8;         // 8 consecutive 404s...
 const FAIL2BAN_WINDOW_MS = 60000;    // ...within 60 seconds...
 const FAIL2BAN_BAN_DURATION_MS = 15 * 60 * 1000; // ...triggers a 15 minute ban
+
+// Resolve the real visitor IP — prefer CF-Connecting-IP over req.ip
+const getRealIP = (req) => {
+    return req.headers['cf-connecting-ip'] ||
+           req.headers['x-real-ip'] ||
+           (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+           req.ip ||
+           'unknown';
+};
 
 // Clean up expired Fail2ban records every 5 minutes
 setInterval(() => {
@@ -222,13 +240,12 @@ setInterval(() => {
     }
 }, 5 * 60 * 1000);
 
-// Middleware: block banned IPs instantly
+// Middleware: block banned IPs instantly — respond with 429 so Cloudflare can relay it
 app.use((req, res, next) => {
-    const ip = req.ip;
+    const ip = getRealIP(req);
     const entry = fail2banMap.get(ip);
     if (entry && entry.bannedUntil && Date.now() < entry.bannedUntil) {
-        req.socket.destroy();
-        return;
+        return res.status(429).end();
     }
     next();
 });
@@ -270,7 +287,7 @@ app.use((req, res, next) => {
             "font-src 'self' https://fonts.gstatic.com; " +
             "img-src 'self' data: blob: https://cdn.discordapp.com https://*.roblox.com https://thumbnails.roblox.com https://images.unsplash.com https://top.gg; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
-            "connect-src 'self' https://discord.com https://api.vaztinix.dev https://api.norabot.app http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com; " +
+            "connect-src 'self' https://discord.com https://api.vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com; " +
             "frame-src 'none'; " +
             "object-src 'none';"
         );
@@ -287,8 +304,6 @@ const ALLOWED_ORIGINS = [
     /^https:\/\/vaztinix\.github\.io$/,
     /^https:\/\/vaztinix\.dev$/,
     /^https:\/\/.*\.vaztinix\.dev$/,
-    /^https:\/\/norabot\.app$/,
-    /^https:\/\/.*\.norabot\.app$/,
     /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
     /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
     /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
@@ -335,7 +350,7 @@ setInterval(() => {
 }, 60000);
 
 const ipRateLimiter = (req, res, next) => {
-    const ip = req.ip;
+    const ip = getRealIP(req); // Use real visitor IP, not Cloudflare edge node IP
     const now = Date.now();
     
     if (!ipRequests.has(ip)) {
@@ -355,7 +370,10 @@ const ipRateLimiter = (req, res, next) => {
     next();
 };
 
-app.use('/api', ipRateLimiter);
+app.use('/api', (req, res, next) => {
+    if (req.path === '/health') return next();
+    ipRateLimiter(req, res, next);
+});
 
 // 📱 Mobile/Secondary Device Pairing memory store
 const pairingCodes = new Map();
@@ -421,9 +439,48 @@ app.use((req, res, next) => {
     next();
 });
 
-// Serve static dashboard assets from dist/ directory (if exists) or src/web directory
+// Request logger — helps diagnose mobile/remote connection issues
+app.use((req, res, next) => {
+    const realIp = getRealIP(req);
+    const host = req.headers.host || '';
+    console.log(`[REQUEST] ${req.method} ${req.path} | Host: ${host} | IP: ${realIp} | UA: ${(req.headers['user-agent'] || '').slice(0, 60)}`);
+    next();
+});
+
+// Serve dashboard.html dynamically — inject the correct API base URL from config
+// This is the ONLY reliable way to ensure every device on any network gets the right URL.
+// No hostname guessing, no localStorage dependency — the server tells the client.
+const DASHBOARD_API_BASE = (process.env.API_BASE_URL || 'https://api.vaztinix.dev').replace(/\/$/, '');
+console.log(`[Config] Dashboard API base URL: ${DASHBOARD_API_BASE}`);
+
+function serveDashboard(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    const distPath = path.join(__dirname, '../dist/dashboard.html');
+    const webPath  = path.join(__dirname, 'web/dashboard.html');
+    const filePath = fs.existsSync(distPath) ? distPath : webPath;
+
+    try {
+        let html = fs.readFileSync(filePath, 'utf8');
+        // Inject the canonical API URL as the very first script — before any other JS runs
+        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}';</script>\n`;
+        html = html.replace('</head>', injection + '</head>');
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+    } catch (err) {
+        console.error('[Dashboard] Failed to serve dashboard.html:', err.message);
+        res.status(500).send('Dashboard unavailable.');
+    }
+}
+
+app.get(['/dashboard', '/dashboard.html', '/'], serveDashboard);
+
+// Serve static assets (JS, CSS, images) — dashboard.html itself is handled above
 app.use(express.static(path.join(__dirname, '../dist')));
 app.use(express.static(path.join(__dirname, 'web')));
+
 
 // Mount the API Router for settings
 const settingsRouter = require('./api/routes/settings');
@@ -464,7 +521,7 @@ setInterval(() => {
 }, 60000);
 
 const clientLogRateLimiter = (req, res, next) => {
-    const ip = req.ip;
+    const ip = getRealIP(req); // Use real visitor IP, not Cloudflare edge node IP
     const now = Date.now();
     
     if (!clientLogRequests.has(ip)) {
@@ -483,8 +540,9 @@ const clientLogRateLimiter = (req, res, next) => {
     next();
 };
 
+
 // Client telemetry logs endpoint
-app.post('/api/logs/client', clientLogRateLimiter, (req, res) => {
+const clientLogHandler = (req, res) => {
     const { level, message, context, stack } = req.body;
     const cleanContext = (context && typeof context === 'object') ? JSON.stringify(context) : (context || '');
     const cleanStack = stack ? `\nStack: ${stack}` : '';
@@ -499,22 +557,78 @@ app.post('/api/logs/client', clientLogRateLimiter, (req, res) => {
         console.log(logString);
     }
     res.json({ success: true });
-});
+};
+app.post('/api/logs/client', clientLogRateLimiter, clientLogHandler);
+// Alias: some clients POST to /api/logs directly — accept both to avoid 404→fail2ban
+app.post('/api/logs', clientLogRateLimiter, clientLogHandler);
 
-// Helper to get Discord user
+
+// Simple in-memory cache for Discord user info to prevent rate limits
+const discordUserCache = new Map();
+const activeUserRequests = new Map();
+const USER_CACHE_TTL = 60 * 1000; // 60 seconds cache
+
 const getDiscordUser = async (token) => {
-    const res = await fetch('https://discord.com/api/v10/users/@me', {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('Invalid token');
-    return res.json();
+    const now = Date.now();
+    const cached = discordUserCache.get(token);
+    if (cached && cached.expires > now) {
+        return cached.user;
+    }
+
+    if (activeUserRequests.has(token)) {
+        return activeUserRequests.get(token);
+    }
+
+    const fetchPromise = (async () => {
+        try {
+            const res = await fetch('https://discord.com/api/v10/users/@me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) {
+                if (res.status === 429 && cached) {
+                    console.warn('[Auth Helper] Discord Rate Limit hit (429) for user. Reusing expired cache.');
+                    return cached.user;
+                }
+                const err = new Error('Invalid token');
+                err.status = res.status;
+                throw err;
+            }
+            const user = await res.json();
+            discordUserCache.set(token, {
+                user,
+                expires: Date.now() + USER_CACHE_TTL
+            });
+            return user;
+        } finally {
+            activeUserRequests.delete(token);
+        }
+    })();
+
+    activeUserRequests.set(token, fetchPromise);
+    return fetchPromise;
 };
 
-// Helper to handle route errors (returning 401 if invalid token)
+// Periodically clean user cache to avoid leaks
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, data] of discordUserCache.entries()) {
+        if (data.expires < now) {
+            discordUserCache.delete(token);
+        }
+    }
+}, 5 * 60 * 1000);
+
+
+// Helper to handle route errors (returning 401 if invalid token, 429 on rate limit)
 const handleRouteError = (res, e, routeName) => {
     console.error(`Error in ${routeName}:`, e);
-    const status = e.message === 'Invalid token' ? 401 : 500;
-    return res.status(status).json({ error: status === 401 ? 'Unauthorized' : e.message });
+    const isRateLimit = e.status === 429 || (e.message && e.message.includes('429'));
+    const status = e.message === 'Invalid token' ? 401 : (isRateLimit ? 429 : 500);
+    return res.status(status).json({ 
+        error: isRateLimit 
+            ? 'Discord API rate limit reached. Discord allows only a limited number of requests per minute. Please wait a few seconds and try again.' 
+            : (status === 401 ? 'Unauthorized' : e.message) 
+    });
 };
 
 // API User Profiler Endpoints
@@ -693,12 +807,13 @@ app.post('/api/auth/pairing-code', async (req, res) => {
         } while (pairingCodes.has(code));
         
         const ua = req.headers['user-agent'] || '';
+        const { deviceName } = req.body || {};
         pairingCodes.set(code, {
             token,
             userId: user.id,
             expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes validity
             primaryDevice: {
-                name: parseDeviceName(ua),
+                name: deviceName && deviceName.trim() ? deviceName.trim() : parseDeviceName(ua),
                 userAgent: ua,
                 ip: req.ip
             }
@@ -729,8 +844,9 @@ app.post('/api/auth/pair', async (req, res) => {
         
         // Record the secondary device info alongside the primary
         const ua = req.headers['user-agent'] || '';
+        const { deviceName } = req.body || {};
         const secondaryDevice = {
-            name: parseDeviceName(ua),
+            name: deviceName && deviceName.trim() ? deviceName.trim() : parseDeviceName(ua),
             userAgent: ua,
             ip: req.ip
         };
@@ -1208,6 +1324,7 @@ app.get('/legal', (req, res) => {
 });
 
 // GET /api/logs returns the buffered console output (Owner Only)
+// Uses session lookup instead of a live Discord API call to avoid connection hangs on every terminal poll
 app.get('/api/logs', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1215,24 +1332,33 @@ app.get('/api/logs', async (req, res) => {
     }
     const token = authHeader.split(' ')[1];
     try {
-        const user = await getDiscordUser(token);
-        let isOwner = false;
-        try {
-            const appInfo = await req.client.application.fetch();
-            if (appInfo.owner) {
-                if (appInfo.owner.id === user.id || (appInfo.owner.members && appInfo.owner.members.has(user.id))) {
-                    isOwner = true;
-                }
-            }
-        } catch (e) {}
-        if (user.id === '1214048435632603137') {
-            isOwner = true;
+        // Fast path: look up session by token hash — avoids a slow Discord API call on every poll
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const Session = require('./database/models/Session');
+        const session = await Session.findByPk(tokenHash);
+
+        let userId = null;
+        if (session && session.userId) {
+            userId = session.userId;
+        } else {
+            // Fallback: validate token live (only if no session found)
+            const user = await getDiscordUser(token);
+            userId = user.id;
         }
 
-        if (!isOwner) {
+        // Only the owner can view logs
+        const OWNER_ID = '1214048435632603137';
+        if (userId !== OWNER_ID) {
             return res.status(403).json({ error: 'Forbidden: Owner-only access.' });
         }
-        res.json(systemLogs);
+
+        // Return logs safely — guard against any serialization issues
+        try {
+            res.json(systemLogs);
+        } catch (jsonErr) {
+            res.json([{ timestamp: new Date().toISOString(), type: 'ERROR', message: 'Log serialization error: ' + jsonErr.message }]);
+        }
     } catch (e) {
         return handleRouteError(res, e, 'GET /api/logs');
     }
@@ -1366,7 +1492,7 @@ app.post('/api/webhooks/topgg/:guildId', async (req, res) => {
 
 // Serve 404 page for unmatched routes (also feeds Fail2ban tracker)
 app.use((req, res) => {
-    recordFail2ban404(req.ip);
+    recordFail2ban404(getRealIP(req));
     res.status(404).sendFile(path.join(__dirname, 'web', '404.html'));
 });
 

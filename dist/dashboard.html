@@ -1123,14 +1123,28 @@
                 position: sticky;
                 top: 0;
                 z-index: 9999;
-                background: rgba(11, 15, 26, 0.85) !important;
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
-                border-bottom: 1px solid var(--border);
-                padding: 12px 20px !important;
+                background: rgba(15, 17, 26, 0.7) !important;
+                backdrop-filter: blur(20px) saturate(180%);
+                -webkit-backdrop-filter: blur(20px) saturate(180%);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+                padding: 14px 24px !important;
             }
             .mobile-burger-btn {
                 display: block;
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                color: #fff;
+                font-size: 1.25rem;
+                cursor: pointer;
+                padding: 10px;
+                outline: none;
+                border-radius: 10px;
+                transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .mobile-burger-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: var(--primary);
+                transform: scale(1.05);
             }
             .app-layout {
                 flex-direction: column;
@@ -1139,18 +1153,18 @@
                 position: fixed !important;
                 top: 0;
                 left: -320px;
-                width: 280px !important;
+                width: 290px !important;
                 height: 100vh !important;
                 min-height: 100vh !important;
                 z-index: 10000;
-                background: rgba(15, 19, 32, 0.96) !important;
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                border-right: 1px solid var(--border);
+                background: rgba(21, 24, 40, 0.75) !important;
+                backdrop-filter: blur(25px) saturate(180%);
+                -webkit-backdrop-filter: blur(25px) saturate(180%);
+                transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                border-right: 1px solid rgba(255, 255, 255, 0.08);
                 border-bottom: none;
-                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
-                padding: 25px 20px;
+                box-shadow: 15px 0 50px rgba(0, 0, 0, 0.6);
+                padding: 30px 24px;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
@@ -1182,7 +1196,7 @@
             /* Collapse inline-styled layouts */
             div[style*="grid-template-columns"] {
                 grid-template-columns: 1fr !important;
-                gap: 15px !important;
+                gap: 16px !important;
             }
             /* Stats counters keep a nice 2x2 grid */
             div[style*="repeat(4, 1fr)"] {
@@ -1204,12 +1218,12 @@
             /* Responsive tables and dynamic cards */
             .row-inputs {
                 grid-template-columns: 1fr !important;
-                gap: 12px !important;
+                gap: 14px !important;
             }
             .row {
                 flex-direction: column;
                 align-items: flex-start !important;
-                gap: 8px;
+                gap: 10px;
             }
             
             /* Adjust preview containers */
@@ -1217,6 +1231,25 @@
                 margin: 15px 0 !important;
                 width: 100% !important;
                 box-sizing: border-box;
+            }
+
+            /* Stack toast notifications top-center on tablets/mobiles */
+            #toast-container {
+                top: 20px !important;
+                bottom: auto !important;
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) !important;
+                width: calc(100% - 32px) !important;
+                max-width: 420px !important;
+                --dir: 1 !important;
+            }
+            #toast-container .toast {
+                left: 0 !important;
+                right: 0 !important;
+                top: 0 !important;
+                max-width: none !important;
+                transform: translateY(calc(var(--current-offset) * var(--dir, 1))) scale(var(--scale, 1));
             }
         }
 
@@ -1244,58 +1277,35 @@
             font-size: 14px;
         }
         body.device-mobile .main-content {
-            padding: 15px !important;
+            padding: 16px !important;
         }
         body.device-mobile .panel {
-            padding: 15px !important;
-            border-radius: 12px !important;
+            padding: 18px !important;
+            border-radius: 14px !important;
         }
         body.device-mobile .row {
             flex-direction: column;
             align-items: stretch !important;
-            gap: 10px;
+            gap: 12px;
         }
         body.device-mobile .row-inputs {
             grid-template-columns: 1fr !important;
-            gap: 10px !important;
+            gap: 12px !important;
         }
         body.device-mobile input, 
         body.device-mobile select, 
         body.device-mobile textarea, 
         body.device-mobile button {
-            min-height: 42px;
+            min-height: 48px !important; /* Premium touch target size */
             font-size: 16px !important; /* Prevents auto-zoom on iOS */
+            border-radius: 10px !important;
         }
         body.device-mobile .sidebar {
-            width: 80% !important;
-            max-width: 300px;
-        }
-        body.device-mobile .toast-tr, 
-        body.device-mobile .toast-tl, 
-        body.device-mobile .toast-br, 
-        body.device-mobile .toast-bl {
-            left: 50% !important;
-            right: auto !important;
-            transform: translateX(-50%) !important;
-            width: calc(100% - 30px) !important;
-            max-width: 400px;
-            top: 20px !important;
-            bottom: auto !important;
-            --dir: 1 !important;
-        }
-        body.device-mobile .toast {
-            left: 0 !important;
-            right: 0 !important;
-            top: 0 !important;
-            bottom: auto !important;
-            width: 100% !important;
-            max-width: none !important;
-        }
-        body.device-mobile div[style*="grid-template-columns"] {
-            grid-template-columns: 1fr !important;
+            width: 82% !important;
+            max-width: 320px;
         }
         body.device-tablet .sidebar {
-            width: 250px !important;
+            width: 260px !important;
         }
 
         /* Custom Multiselect Component Styles */
@@ -1426,10 +1436,13 @@
         </div>
 
         <div id="pairing-input-container" style="display: none; margin-top: 20px; width: 100%; max-width: 280px; text-align: left; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
-            <label style="color: var(--muted); font-size: 0.75rem; display: block; margin-bottom: 6px; font-weight: 600;">ENTER 6-DIGIT PAIRING CODE:</label>
-            <input type="text" id="pairing-code-input" maxlength="6" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 4px; margin-bottom: 10px;" placeholder="e.g. 123456">
-            <button class="save-btn" style="width: 100%; padding: 10px; background: var(--primary); color: #000;" onclick="submitPairingCode()">Link Device</button>
+            <label style="color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 6px;">Your device name (optional)</label>
+            <input type="text" id="secondary-device-name" maxlength="40" placeholder="e.g. My iPhone, Samsung Tablet..." style="width: 100%; padding: 9px 13px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.88rem; margin-bottom: 10px; box-sizing: border-box;">
+            <label style="color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 6px;">6-digit pairing code</label>
+            <input type="text" id="pairing-code-input" maxlength="6" placeholder="123456" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1rem; text-align: center; letter-spacing: 4px; margin-bottom: 10px; box-sizing: border-box;">
+            <button class="save-btn" style="width: 100%;" onclick="submitPairingCode()">Link Device</button>
         </div>
+    </div>
     </div>
 
     <header class="topbar">
@@ -1843,6 +1856,11 @@
                     <h3>Secondary Device Pairing</h3>
                     <p>Pair a mobile phone or another device on your local network to access this dashboard without Discord redirection issues.</p>
                     <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 15px; text-align: center;">
+                        <!-- Device name for the PRIMARY device -->
+                        <div style="text-align: left; margin-bottom: 16px;">
+                            <label style="color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 6px;">This device's name (optional)</label>
+                            <input type="text" id="primary-device-name" maxlength="40" placeholder="e.g. Living Room PC, Work Laptop..." style="width: 100%; padding: 9px 13px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.88rem; box-sizing: border-box;">
+                        </div>
                         <button class="save-btn" id="generate-pair-btn" style="width: auto; padding: 10px 25px;" onclick="generatePairingCode()">Generate Pairing Code</button>
                         
                         <div id="pairing-code-display" style="display: none; margin-top: 20px; text-align: center;">
@@ -1860,7 +1878,7 @@
                     <div id="paired-devices-section" style="margin-top: 20px; display: none;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                             <h4 style="margin: 0; font-size: 0.95rem; color: var(--text);">&#128279; Connected Devices</h4>
-                            <button onclick="disconnectPairedDevices()" style="background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.3); color: #ff6b6b; padding: 5px 14px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">Disconnect All</button>
+                            <button id="disconnect-btn" onclick="disconnectPairedDevices()" style="background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.3); color: #ff6b6b; padding: 5px 14px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">Disconnect All</button>
                         </div>
                         <p id="pairing-paired-at" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 14px;"></p>
                         <div id="paired-devices-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
@@ -2932,49 +2950,62 @@
 
     <script>
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
+        // getApiBaseUrl — reads the canonical API URL injected by the server at serve time.
+        // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
+        // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
-            const host = window.location.hostname;
-            const port = window.location.port;
-
-            // If we are accessing the Express server directly (custom port) or on a local network IP,
-            // we should ALWAYS fall back to relative pathing to prevent connection failures.
-            if ((port && port !== '80' && port !== '443') || 
-                host === 'localhost' || 
-                host === '127.0.0.1' || 
-                host.startsWith('192.168.') || 
-                host.startsWith('10.') || 
-                host.startsWith('172.') || 
-                host.endsWith('.local')) {
-                return '';
+            // Local development overrides — always target local machine if loaded locally
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000') {
+                return window.location.origin;
             }
-
-            let customApi = localStorage.getItem('nora_api_url');
-            if (customApi) {
-                return customApi;
+            // Server-injected value (set in .env as API_BASE_URL)
+            if (window.__NORA_API_BASE_URL__) {
+                return window.__NORA_API_BASE_URL__;
             }
-
-            // Official production configurations
-            if (host === 'vaztinix.github.io' || host === 'vaztinix.dev' || host.endsWith('.vaztinix.dev')) {
-                return 'https://api.vaztinix.dev';
-            }
-
-            // Fallback for custom self-hosted domains (relative requests)
-            return '';
+            // Hard fallback — should never be needed if server injection is working
+            return 'https://api.vaztinix.dev';
         };
 
+
         const originalFetch = window.fetch;
+        let consecutiveNetworkErrors = 0;
+        let lastErrorTime = 0;
+        // Need 6 consecutive failures before declaring offline
+        // (dashboard makes 10+ concurrent calls on load; 2 was far too low)
+        const OFFLINE_FAILURE_THRESHOLD = 6;
+        const ERROR_DECAY_MS = 10000; // Reset counter if no error for 10s
+        const FETCH_TIMEOUT_MS = 15000; // 15s timeout for non-telemetry fetches
+
         window.fetch = async function(input, init) {
             let resolvedUrl = input;
             if (typeof input === 'string' && input.startsWith('/api/')) {
                 resolvedUrl = window.getApiBaseUrl() + input;
             }
+
+            // Add abort timeout to every fetch so slow connections don't hang forever
+            const isTelemetryUrl = typeof input === 'string' && (input.includes('/api/logs') || input.includes('/api/health'));
+            let controller = null;
+            let timeoutId = null;
+            if (!isTelemetryUrl) {
+                controller = new AbortController();
+                timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+                init = { ...(init || {}), signal: controller.signal };
+            }
+
             try {
                 const response = await originalFetch(resolvedUrl, init);
+                if (timeoutId) clearTimeout(timeoutId);
+                // Reset consecutive error counter on any successful response
+                consecutiveNetworkErrors = 0;
+
                 // Handle 401 Session Expiration and 429 Rate Limits separately
                 const isTelemetryOrLogs = typeof input === 'string' && (input.includes('/api/logs/client') || input.endsWith('/api/logs'));
                 if (!isTelemetryOrLogs) {
                     if (response.status === 502 || response.status === 503 || response.status === 504) {
-                        triggerApiOffline();
+                        consecutiveNetworkErrors++;
+                        if (consecutiveNetworkErrors >= OFFLINE_FAILURE_THRESHOLD) {
+                            triggerApiOffline();
+                        }
                     } else if (response.status === 429) {
                         let errMessage = 'You are making requests too quickly. Please wait a few seconds before trying again.';
                         try {
@@ -2985,6 +3016,13 @@
                             }
                         } catch (e) {}
                         showToast(`Rate Limited: ${errMessage}`, 'warning');
+
+                        const rateLimitOverlay = document.getElementById('api-ratelimit-overlay');
+                        const msgEl = document.getElementById('ratelimit-message');
+                        if (msgEl) msgEl.textContent = errMessage;
+                        if (rateLimitOverlay) {
+                            rateLimitOverlay.style.display = 'flex';
+                        }
                     } else if (response.status === 401) {
                         let errMessage = 'Your Discord authorization session has expired. Please re-authenticate to continue configuring your server.';
                         try {
@@ -2998,8 +3036,13 @@
                         const expiredOverlay = document.getElementById('session-expired-overlay');
                         const titleEl = document.getElementById('session-expired-title');
                         const descEl = document.getElementById('session-expired-desc');
+                        const btnEl = document.getElementById('session-expired-btn');
                         if (titleEl) titleEl.textContent = 'Session Expired';
                         if (descEl) descEl.textContent = errMessage;
+                        if (btnEl) {
+                            btnEl.textContent = 'Re-authenticate with Discord';
+                            btnEl.onclick = () => { window.location.href = discordLoginURL; };
+                        }
                         if (expiredOverlay) {
                             expiredOverlay.style.display = 'flex';
                         }
@@ -3022,9 +3065,26 @@
                 }
                 return response;
             } catch (err) {
+                if (timeoutId) clearTimeout(timeoutId);
                 const isTelemetryOrHealth = typeof input === 'string' && (input.includes('/api/logs/client') || input.includes('/api/health'));
                 if (!isTelemetryOrHealth) {
-                    triggerApiOffline();
+                    // Don't count our OWN abort timeouts as network errors
+                    const isOurAbort = err.name === 'AbortError' && controller && controller.signal.aborted;
+
+                    // Time-based decay: if no error for ERROR_DECAY_MS, reset the counter
+                    const now = Date.now();
+                    if (lastErrorTime > 0 && (now - lastErrorTime) > ERROR_DECAY_MS) {
+                        consecutiveNetworkErrors = 0;
+                    }
+
+                    if (!isOurAbort) {
+                        consecutiveNetworkErrors++;
+                        lastErrorTime = now;
+                        if (consecutiveNetworkErrors >= OFFLINE_FAILURE_THRESHOLD) {
+                            triggerApiOffline();
+                        }
+                    }
+
                     originalFetch(window.getApiBaseUrl() + '/api/logs/client', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -3046,12 +3106,19 @@
         window.triggerApiOffline = function() {
             if (window.isApiOffline) return;
             window.isApiOffline = true;
+            consecutiveNetworkErrors = 0; // Reset so recovery isn't fighting old count
+
+            // Stop terminal feed while offline to avoid flooding the error counter
+            if (typeof terminalFeedInterval !== 'undefined' && terminalFeedInterval) {
+                clearInterval(terminalFeedInterval);
+                terminalFeedInterval = null;
+            }
 
             const overlay = document.getElementById('api-offline-overlay');
             if (overlay) {
                 overlay.style.display = 'flex';
                 const countdownEl = document.getElementById('offline-countdown');
-                if (countdownEl) countdownEl.textContent = '5';
+                if (countdownEl) countdownEl.textContent = '3';
             }
 
             if (!isOfflinePolling) {
@@ -3085,7 +3152,24 @@
 
         function startOfflinePolling() {
             isOfflinePolling = true;
-            let secondsLeft = 5;
+            let secondsLeft = 3;
+            const CANONICAL_API = 'https://api.vaztinix.dev';
+
+            async function tryHealth(url) {
+                const hc = new AbortController();
+                const hcTimeout = setTimeout(() => hc.abort(), 8000);
+                try {
+                    const res = await originalFetch(url + '/api/health', { cache: 'no-store', signal: hc.signal });
+                    clearTimeout(hcTimeout);
+                    if (res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        return data.status === 'ok';
+                    }
+                } catch (e) {
+                    clearTimeout(hcTimeout);
+                }
+                return false;
+            }
 
             countdownInterval = setInterval(async () => {
                 secondsLeft--;
@@ -3094,22 +3178,32 @@
                 if (secondsLeft <= 0) {
                     if (cdEl) cdEl.textContent = 'Checking...';
 
-                    try {
-                        const baseUrl = window.getApiBaseUrl();
-                        const res = await originalFetch(baseUrl + '/api/health', { cache: 'no-store' });
-                        if (res.ok) {
-                            const data = await res.json().catch(() => ({}));
-                            if (data.status === 'ok') {
-                                triggerApiOnline();
-                                return;
-                            }
+                    const currentBase = window.getApiBaseUrl();
+
+                    // First: try the current API base URL
+                    let recovered = await tryHealth(currentBase);
+
+                    // Fallback: if current base failed and it's NOT already the canonical URL,
+                    // try the canonical API endpoint (fixes phones with cached local-IP sessions)
+                    if (!recovered && currentBase !== CANONICAL_API) {
+                        console.log('[Offline] Primary API unreachable, trying canonical fallback...');
+                        recovered = await tryHealth(CANONICAL_API);
+                        if (recovered) {
+                            // Save canonical URL so future loads use it directly
+                            localStorage.setItem('nora_api_url', CANONICAL_API);
+                            console.log('[Offline] Canonical fallback succeeded — saved as API URL');
                         }
-                    } catch (e) {
-                        console.log('Health check failed.');
                     }
 
-                    secondsLeft = 5;
-                    if (cdEl) cdEl.textContent = '5';
+                    if (recovered) {
+                        consecutiveNetworkErrors = 0;
+                        triggerApiOnline();
+                        return;
+                    }
+
+                    console.log('[Offline] Health check failed, retrying...');
+                    secondsLeft = 3;
+                    if (cdEl) cdEl.textContent = '3';
                 } else {
                     if (cdEl) cdEl.textContent = secondsLeft;
                 }
@@ -3168,16 +3262,24 @@
 
 
         // ─── Device icon helper ──────────────────────────────────────────────
-        function getDeviceIcon(name) {
-            if (!name) return '&#128187;';
-            const n = name.toLowerCase();
-            if (n.includes('iphone')) return '&#128241;';
-            if (n.includes('ipad')) return '&#128250;';
-            if (n.includes('android')) return '&#129504;';
-            if (n.includes('mac')) return '&#128187;';
-            if (n.includes('windows')) return '&#128187;';
-            if (n.includes('linux')) return '&#128187;';
-            return '&#128187;';
+        function getDeviceIcon(name, ua) {
+            const n = (name || '').toLowerCase();
+            const u = (ua || '').toLowerCase();
+            // Check name first (user-provided)
+            if (n.includes('phone') || n.includes('mobile')) return '📱';
+            if (n.includes('tablet') || n.includes('ipad')) return '📟';
+            if (n.includes('laptop')) return '💻';
+            if (n.includes('tv') || n.includes('television')) return '📺';
+            if (n.includes('watch')) return '⌚';
+            if (n.includes('desktop') || n.includes('pc') || n.includes('computer')) return '🖥️';
+            // Fallback to UA
+            if (u.includes('iphone')) return '📱';
+            if (u.includes('ipad')) return '📟';
+            if (u.includes('android')) {
+                if (u.includes('tablet') || u.includes('tab')) return '📟';
+                return '📱';
+            }
+            return '🖥️'; // Default: desktop
         }
 
         // ─── Load + render paired devices ───────────────────────────────────
@@ -3210,23 +3312,24 @@
                 }
 
                 list.innerHTML = data.devices.map(device => {
-                    const icon = getDeviceIcon(device.name);
+                    const icon = getDeviceIcon(device.name, device.userAgent);
                     const roleLabel = device.role === 'primary' ? 'Primary' : 'Secondary';
                     const roleColor = device.role === 'primary' ? 'var(--primary)' : '#a78bfa';
                     const currentBadge = device.isCurrent
                         ? `<span style="background: rgba(52,211,153,0.18); color: #34d399; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(52,211,153,0.3); margin-left: 8px;">This Device</span>`
                         : '';
+                    const cleanIp = device.ip ? device.ip.replace('::ffff:', '') : '';
                     return `
                     <div style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;">
                         <div style="font-size: 1.8rem; line-height: 1;">${icon}</div>
                         <div style="flex: 1; min-width: 0;">
                             <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
-                                <span style="font-weight: 700; color: var(--text); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${device.name}</span>
+                                <span style="font-weight: 700; color: var(--text); font-size: 0.95rem;">${device.name}</span>
                                 ${currentBadge}
                             </div>
                             <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                 <span style="background: rgba(255,255,255,0.06); color: ${roleColor}; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid ${roleColor}33;">${roleLabel}</span>
-                                <span style="color: var(--muted); font-size: 0.75rem;">${device.ip ? device.ip.replace('::ffff:', '') : ''}</span>
+                                ${cleanIp ? `<span style="color: var(--muted); font-size: 0.75rem;">${cleanIp}</span>` : ''}
                             </div>
                         </div>
                         <div style="width: 9px; height: 9px; border-radius: 50%; background: #34d399; flex-shrink: 0; box-shadow: 0 0 6px #34d399;"></div>
@@ -3246,15 +3349,33 @@
         window.disconnectPairedDevices = async function() {
             const token = sessionStorage.getItem('discord_token');
             if (!token) return;
+            const btn = document.getElementById('disconnect-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Disconnecting...'; }
             try {
-                await safeFetch('/api/auth/paired-devices/disconnect', {
+                const apiBase = window.getApiBaseUrl();
+                const res = await originalFetch(`${apiBase}/api/auth/paired-devices/disconnect`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
                 });
-                showToast('All paired devices disconnected.', 'success');
-                await loadPairedDevices();
+                if (res.ok) {
+                    showToast('All paired devices disconnected.', 'success');
+                    // Immediately clear the UI
+                    document.getElementById('paired-devices-section').style.display = 'none';
+                    document.getElementById('paired-devices-empty').style.display = 'block';
+                    document.getElementById('paired-devices-list').innerHTML = '';
+                    document.getElementById('pairing-paired-at').textContent = '';
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    showToast(`Disconnect failed: ${d.error || res.status}`, 'error');
+                }
             } catch (e) {
-                showToast('Failed to disconnect devices.', 'error');
+                showToast(`Disconnect error: ${e.message}`, 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Disconnect All'; }
             }
         };
 
@@ -3268,13 +3389,20 @@
             btn.disabled = true;
             btn.textContent = 'Generating...';
             try {
-                const res = await safeFetch('/api/auth/pairing-code', {
+                const deviceName = (document.getElementById('primary-device-name')?.value || '').trim();
+                const apiBase = window.getApiBaseUrl();
+                const res = await originalFetch(`${apiBase}/api/auth/pairing-code`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ deviceName: deviceName || undefined })
                 });
-                if (!res.ok) throw new Error(res.data?.error || `HTTP ${res.status}`);
-                
-                const data = res.data;
+                const text = await res.text();
+                let data = {};
+                try { data = JSON.parse(text); } catch (e) {}
+                if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
                 if (data && data.code) {
                     const codeStr = data.code.toString();
                     const spacedCode = codeStr.substring(0, 3) + ' ' + codeStr.substring(3);
@@ -3316,6 +3444,7 @@
                 showToast('Please enter a valid 6-digit number.', 'error');
                 return;
             }
+            const deviceName = (document.getElementById('secondary-device-name')?.value || '').trim();
             
             toggleLoading(true);
             try {
@@ -3323,7 +3452,7 @@
                 const res = await originalFetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code })
+                    body: JSON.stringify({ code, deviceName: deviceName || undefined })
                 });
                 
                 const text = await res.text();
@@ -7678,27 +7807,56 @@
     <div id="session-expired-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
             <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">⚠️</div>
-            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Session Expired</h2>
-            <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
+            <h2 id="session-expired-title" style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Session Expired</h2>
+            <p id="session-expired-desc" style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
                 Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.
             </p>
-            <button class="save-btn" style="background: var(--primary); padding: 12px 30px; font-weight: 800; width: 100%; border: none; border-radius: 8px; cursor: pointer; color: #000;" onclick="window.location.href = discordLoginURL">Re-authenticate with Discord</button>
+            <button id="session-expired-btn" class="save-btn" style="background: var(--primary); padding: 12px 30px; font-weight: 800; width: 100%; border: none; border-radius: 8px; cursor: pointer; color: #000;" onclick="window.location.href = discordLoginURL">Re-authenticate with Discord</button>
         </div>
     </div>
 
     <!-- API Connection Offline Overlay -->
     <div id="api-offline-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 21000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
             <div class="pulse-offline-dot" style="width: 24px; height: 24px; background: var(--danger, #ff4a4a); border-radius: 50%; margin: 0 auto 20px; box-shadow: 0 0 20px var(--danger, #ff4a4a); animation: offlinePulse 1.5s infinite;"></div>
-            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Connection Offline</h2>
-            <p style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
-                Nora API is currently offline or unreachable. The system is attempting to restore connection automatically.
+            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Connection Unstable</h2>
+            <p style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px;">
+                Unable to reach the Nora API. This can happen on <strong style="color:#fff;">mobile hotspots, weak Wi-Fi, or slow connections</strong>. The dashboard will reconnect automatically once your connection stabilises.
             </p>
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+            <p style="color: rgba(138,159,196,0.6); font-size: 0.8rem; margin-bottom: 24px;">If you're on mobile data, try moving to a better signal area or switching to Wi-Fi.</p>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                 <div style="border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary, #00d2ff); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;"></div>
-                <span style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">5</span>s</span>
+                <span style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s</span>
+            </div>
+            <div style="margin-top: 4px;">
+                <button onclick="localStorage.setItem('nora_api_url','https://api.vaztinix.dev'); window.location.reload();"
+                    style="background: linear-gradient(135deg, #00d2ff, #7b2ff7); border: none; border-radius: 10px; color: #fff; font-size: 0.85rem; font-weight: 700; padding: 10px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em;">
+                    ☁️ Switch to Cloud Connection
+                </button>
+                <p style="color: rgba(138,159,196,0.4); font-size: 0.72rem; margin-top: 8px; margin-bottom: 0;">
+                    Use this if you switched networks or are away from home
+                </p>
             </div>
         </div>
     </div>
+
+
+    <!-- API Rate Limit Overlay -->
+    <div id="api-ratelimit-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 22000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div style="font-size: 3rem; margin-bottom: 20px; color: #ffcc00; filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.3));">⏳</div>
+            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Rate Limit Hit</h2>
+            <p id="ratelimit-message" style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+                You are making requests too quickly. Please wait a few seconds before trying again.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                <button onclick="document.getElementById('api-ratelimit-overlay').style.display = 'none';"
+                    style="background: linear-gradient(135deg, #00d2ff, #7b2ff7); border: none; border-radius: 10px; color: #fff; font-size: 0.85rem; font-weight: 700; padding: 12px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em;">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

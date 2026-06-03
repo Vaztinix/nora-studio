@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 // Simple in-memory cache for Discord guilds to prevent 429 Rate Limits
 const guildsCache = new Map();
 const activeRequests = new Map(); // token -> Promise
-const CACHE_TTL = 30 * 1000; // 30 seconds cache
+const CACHE_TTL = 60 * 1000; // 60 seconds cache
 
 const getCachedUserGuilds = async (token) => {
     const now = Date.now();
