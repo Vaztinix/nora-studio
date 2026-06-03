@@ -2950,7 +2950,6 @@
 
     <script>
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
-        // getApiBaseUrl — reads the canonical API URL injected by the server at serve time.
         // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
         // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
@@ -2958,14 +2957,18 @@
             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000') {
                 return window.location.origin;
             }
+            // User-configured or offline-recovered override
+            const localOverride = localStorage.getItem('nora_api_url');
+            if (localOverride) {
+                return localOverride;
+            }
             // Server-injected value (set in .env as API_BASE_URL)
             if (window.__NORA_API_BASE_URL__) {
                 return window.__NORA_API_BASE_URL__;
             }
-            // Hard fallback — should never be needed if server injection is working
+            // Hard fallback
             return 'https://api.vaztinix.dev';
         };
-
 
         const originalFetch = window.fetch;
         let consecutiveNetworkErrors = 0;
