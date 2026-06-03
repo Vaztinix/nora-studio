@@ -3532,8 +3532,12 @@
         });
 
         const CLIENT_ID = "1375943730951098549";
-        // Dynamically detect the correct redirect URI based on current environment
-        const REDIRECT_URI = encodeURIComponent(window.location.origin + window.location.pathname);
+        // Fixed redirect URI for production to prevent Discord OAuth mismatch errors
+        const REDIRECT_URI = encodeURIComponent(
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
+            ? window.location.origin + '/dashboard'
+            : 'https://vaztinix.dev/dashboard'
+        );
         const discordLoginURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify+email+guilds`;
         
         const authOverlay = document.getElementById('auth-overlay');
