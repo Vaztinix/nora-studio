@@ -2981,8 +2981,15 @@
 
         window.fetch = async function(input, init) {
             let resolvedUrl = input;
+            let usingOverride = false;
             if (typeof input === 'string' && input.startsWith('/api/')) {
-                resolvedUrl = window.getApiBaseUrl() + input;
+                const overrideUrl = localStorage.getItem('nora_api_url');
+                if (overrideUrl) {
+                    resolvedUrl = overrideUrl + input;
+                    usingOverride = true;
+                } else {
+                    resolvedUrl = window.getApiBaseUrl() + input;
+                }
             }
 
             // Add abort timeout to every fetch so slow connections don't hang forever
@@ -3069,6 +3076,22 @@
                 return response;
             } catch (err) {
                 if (timeoutId) clearTimeout(timeoutId);
+
+                // Self-healing fallback: If fetch failed and we were using a localStorage override, 
+                // clear it and retry with the canonical server-injected URL immediately.
+                if (typeof input === 'string' && input.startsWith('/api/') && usingOverride) {
+                    console.warn('[Fetch] Custom API override failed. Clearing override and retrying with canonical URL...');
+                    localStorage.removeItem('nora_api_url');
+                    const canonicalBase = (window.__NORA_API_BASE_URL__ || 'https://api.vaztinix.dev').replace(/\/$/, '');
+                    const canonicalUrl = canonicalBase + input;
+                    try {
+                        const retryResponse = await originalFetch(canonicalUrl, init);
+                        return retryResponse;
+                    } catch (retryErr) {
+                        // Continue to standard error logging if retry also fails
+                    }
+                }
+
                 const isTelemetryOrHealth = typeof input === 'string' && (input.includes('/api/logs/client') || input.includes('/api/health'));
                 if (!isTelemetryOrHealth) {
                     // Don't count our OWN abort timeouts as network errors

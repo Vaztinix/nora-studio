@@ -640,7 +640,7 @@ app.get('/api/user/me', async (req, res) => {
     const crypto = require('crypto');
     const axios = require('axios');
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const clientIp = getRealIP(req);
     
     try {
         const Session = require('./database/models/Session');
@@ -1293,10 +1293,7 @@ app.get('/nora', (req, res) => {
     res.sendFile(getWebFilePath('nora.html'));
 });
 
-// Serve dashboard.html at '/dashboard'
-app.get('/dashboard', (req, res) => {
-    res.sendFile(getWebFilePath('dashboard.html'));
-});
+
 
 // Clean URLs for other subpages
 app.get('/team', (req, res) => {
