@@ -7830,7 +7830,9 @@
             </div>
             <div style="margin-top: 4px;">
                 <button onclick="localStorage.setItem('nora_api_url','https://api.vaztinix.dev'); window.location.reload();"
-                    style="background: linear-gradient(135deg, #00d2ff, #7b2ff7); border: none; border-radius: 10px; color: #fff; font-size: 0.85rem; font-weight: 700; padding: 10px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em;">
+                    style="background: var(--primary); border: none; border-radius: 10px; color: #0f111a; font-size: 0.85rem; font-weight: 700; padding: 10px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em; box-shadow: 0 0 15px var(--primary-glow); transition: all 0.2s ease;"
+                    onmouseover="this.style.background='var(--primary-hover)'; this.style.transform='scale(1.02)';"
+                    onmouseout="this.style.background='var(--primary)'; this.style.transform='none';">
                     ☁️ Switch to Cloud Connection
                 </button>
                 <p style="color: rgba(138,159,196,0.4); font-size: 0.72rem; margin-top: 8px; margin-bottom: 0;">
@@ -7851,7 +7853,9 @@
             </p>
             <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
                 <button onclick="document.getElementById('api-ratelimit-overlay').style.display = 'none';"
-                    style="background: linear-gradient(135deg, #00d2ff, #7b2ff7); border: none; border-radius: 10px; color: #fff; font-size: 0.85rem; font-weight: 700; padding: 12px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em;">
+                    style="background: var(--primary); border: none; border-radius: 10px; color: #0f111a; font-size: 0.85rem; font-weight: 700; padding: 12px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em; box-shadow: 0 0 15px var(--primary-glow); transition: all 0.2s ease;"
+                    onmouseover="this.style.background='var(--primary-hover)'; this.style.transform='scale(1.02)';"
+                    onmouseout="this.style.background='var(--primary)'; this.style.transform='none';">
                     Dismiss
                 </button>
             </div>
