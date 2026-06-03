@@ -367,33 +367,87 @@ router.post('/topgg/link-bot', async (req, res) => {
         if (!userRes) return res.status(401).json({ error: 'Invalid Discord token' });
         const user = userRes.data;
 
-        // 1. Fetch bot details from Top.gg API using axios
-        const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
-        const topggRes = await axios.get(`https://top.gg/api/bots/${trimmedBotId}`, {
-            headers: { Authorization: NORA_V0 }
-        }).catch(() => null);
-
-        if (!topggRes) {
-            return res.status(400).json({ error: 'Bot not found on Top.gg.' });
+        // 1. First, check if the bot is visible on the user's public Top.gg profile (Xavinlol's recommended approach)
+        let isOwner = false;
+        let matchedBot = null;
+        try {
+            const profileUrl = `https://top.gg/user/${user.id}`;
+            const profileRes = await fetch(profileUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+            });
+            if (profileRes.ok) {
+                const html = await profileRes.text();
+                let index = 0;
+                while (true) {
+                    index = html.indexOf('"__typename\\":\\"DiscordBot\\"', index);
+                    if (index === -1) break;
+                    
+                    const startOfObj = html.lastIndexOf('{', index);
+                    if (startOfObj !== -1) {
+                        let braceCount = 0;
+                        let endOfObj = -1;
+                        for (let i = startOfObj; i < html.length; i++) {
+                            if (html[i] === '{') braceCount++;
+                            else if (html[i] === '}') {
+                                braceCount--;
+                                if (braceCount === 0) {
+                                    endOfObj = i;
+                                    break;
+                                }
+                            }
+                        }
+                        if (endOfObj !== -1) {
+                            const rawSlice = html.substring(startOfObj, endOfObj + 1);
+                            try {
+                                const unescaped = rawSlice
+                                    .replace(/\\"/g, '"')
+                                    .replace(/\\\\/g, '\\')
+                                    .replace(/\\u0026/g, '&');
+                                const obj = JSON.parse(unescaped);
+                                if (obj.id === trimmedBotId) {
+                                    isOwner = true;
+                                    matchedBot = obj;
+                                    break;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                    index += 30;
+                }
+            }
+        } catch (err) {
+            console.error('Error during Top.gg profile parse check:', err.message);
         }
 
-        const botData = topggRes.data;
-        const owners = botData.owners || [];
-
-        // Verify if user.id is in owners, or legacyOwnerId matches, or verification code exists in description
-        let isOwner = owners.includes(user.id);
-        
-        if (!isOwner && trimmedLegacyOwnerId) {
-            isOwner = owners.includes(trimmedLegacyOwnerId);
-        }
-
-        // If not in owners list directly, check short description for the verification code
+        // 2. Fallback: If profile check fails, fetch bot details from REST API using NORA_V0 token
         if (!isOwner) {
-            const expectedCode = `NORA-${guildId.slice(-4)}-${(trimmedLegacyOwnerId || user.id).slice(-4)}`.toUpperCase();
-            const shortDesc = botData.shortdesc || '';
-            const longDesc = botData.longdesc || '';
-            if (shortDesc.toUpperCase().includes(expectedCode) || longDesc.toUpperCase().includes(expectedCode)) {
-                isOwner = true;
+            const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
+            const topggRes = await axios.get(`https://top.gg/api/bots/${trimmedBotId}`, {
+                headers: { Authorization: NORA_V0 }
+            }).catch(() => null);
+
+            if (!topggRes) {
+                return res.status(400).json({ error: 'Bot not found on Top.gg.' });
+            }
+
+            const botData = topggRes.data;
+            const owners = botData.owners || [];
+
+            isOwner = owners.includes(user.id);
+            if (!isOwner && trimmedLegacyOwnerId) {
+                isOwner = owners.includes(trimmedLegacyOwnerId);
+            }
+
+            // Description code fallback check
+            if (!isOwner) {
+                const expectedCode = `NORA-${guildId.slice(-4)}-${(trimmedLegacyOwnerId || user.id).slice(-4)}`.toUpperCase();
+                const shortDesc = botData.shortdesc || '';
+                const longDesc = botData.longdesc || '';
+                if (shortDesc.toUpperCase().includes(expectedCode) || longDesc.toUpperCase().includes(expectedCode)) {
+                    isOwner = true;
+                }
             }
         }
 
@@ -401,7 +455,7 @@ router.post('/topgg/link-bot', async (req, res) => {
             return res.status(403).json({ error: 'Verification failed. You must be an owner of this bot on Top.gg or include the verification code in your bot description.' });
         }
 
-        // 2. Update GuildSettings
+        // 3. Update GuildSettings
         const GuildSettings = require('../../database/models/GuildSettings');
         const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
         
@@ -409,6 +463,8 @@ router.post('/topgg/link-bot', async (req, res) => {
         settings.topggBotId = trimmedBotId;
         if (trimmedLegacyOwnerId) {
             settings.topggLegacyOwnerId = trimmedLegacyOwnerId;
+        } else if (matchedBot && matchedBot.internalId) {
+            settings.topggLegacyOwnerId = matchedBot.internalId;
         }
         await settings.save();
 

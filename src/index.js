@@ -1249,25 +1249,64 @@ app.get('/api/user/topgg/bots', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        const searchUrl = `https://top.gg/api/bots?search=owners:${user.id}`;
-        
-        const topggRes = await fetch(searchUrl, {
-            headers: { Authorization: NORA_V0 }
+        const url = `https://top.gg/user/${user.id}`;
+        const topggRes = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
         });
         
         if (!topggRes.ok) {
-            console.error(`Top.gg search API failed with status ${topggRes.status}`);
+            console.error(`Top.gg user profile fetch failed with status ${topggRes.status}`);
             return res.json({ bots: [] });
         }
         
-        const data = await topggRes.json();
-        const bots = (data.results || [])
-            .filter(b => Array.isArray(b.owners) && b.owners.includes(user.id))
-            .map(b => ({
-                id: b.id,
-                username: b.username,
-                avatar: b.avatar ? `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}.png` : 'https://top.gg/images/topgg-logo.png'
-            }));
+        const html = await topggRes.text();
+        const bots = [];
+        const seenIds = new Set();
+        let index = 0;
+        
+        while (true) {
+            index = html.indexOf('"__typename\\":\\"DiscordBot\\"', index);
+            if (index === -1) break;
+            
+            const startOfObj = html.lastIndexOf('{', index);
+            if (startOfObj !== -1) {
+                let braceCount = 0;
+                let endOfObj = -1;
+                for (let i = startOfObj; i < html.length; i++) {
+                    if (html[i] === '{') braceCount++;
+                    else if (html[i] === '}') {
+                        braceCount--;
+                        if (braceCount === 0) {
+                            endOfObj = i;
+                            break;
+                        }
+                    }
+                }
+                if (endOfObj !== -1) {
+                    const rawSlice = html.substring(startOfObj, endOfObj + 1);
+                    try {
+                        const unescaped = rawSlice
+                            .replace(/\\"/g, '"')
+                            .replace(/\\\\/g, '\\')
+                            .replace(/\\u0026/g, '&');
+                        
+                        const obj = JSON.parse(unescaped);
+                        if (obj.id && obj.name && !seenIds.has(obj.id)) {
+                            seenIds.add(obj.id);
+                            bots.push({
+                                id: obj.id,
+                                internalId: obj.internalId || obj.id,
+                                username: obj.name,
+                                avatar: obj.iconUrl || 'https://top.gg/images/topgg-logo.png'
+                            });
+                        }
+                    } catch (e) {}
+                }
+            }
+            index += 30;
+        }
         
         res.json({ bots });
     } catch (e) {
