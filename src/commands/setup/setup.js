@@ -1,27 +1,66 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ChannelSelectMenuBuilder, RoleSelectMenuBuilder, ButtonBuilder, ButtonStyle, ComponentType, ChannelType } = require('discord.js');
 const GuildSettings = require('../../database/models/GuildSettings');
-const { handleError } = require('../../utils/embeds');
+const { handleError, handleSuccess } = require('../../utils/embeds');
 const { syncAutoModRule, syncAllAutoModRules } = require('../../utils/automodSync');
+const settingsCache = require('../../utils/settingsCache');
 
 module.exports = {
     category: 'setup',
     data: new SlashCommandBuilder()
-        .setName('configure')
-        .setDescription('Open the settings menu dashboard for managing Nora.')
+        .setName('setup')
+        .setDescription('Server setup and configuration system.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-        .setDMPermission(false),
+        .setDMPermission(false)
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('dashboard')
+                .setDescription('Open the interactive settings menu dashboard for managing Nora.'))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('roblox')
+                .setDescription('Configure Roblox verification settings for this server.')
+                .addBooleanOption(option =>
+                    option.setName('enabled')
+                        .setDescription('Enable or disable Roblox verification')
+                        .setRequired(true))
+                .addRoleOption(option =>
+                    option.setName('role')
+                        .setDescription('The role to grant verified members')
+                        .setRequired(true))),
 
-    async execute(interaction, externalSettings) {
-        let settings = externalSettings;
-        if (!settings && interaction.guildId) {
-            try {
-                const [result] = await GuildSettings.findOrCreate({ where: { guildId: interaction.guildId } });
-                settings = result;
-            } catch (e) {
-                settings = await GuildSettings.findOne({ where: { guildId: interaction.guildId } });
+    async execute(interaction) {
+        const subcommand = interaction.options.getSubcommand();
+        const settings = await settingsCache.get(interaction.guild.id);
+
+        try {
+            if (subcommand === 'dashboard') {
+                return await this.runDashboard(interaction, settings);
+            } else if (subcommand === 'roblox') {
+                return await this.runRobloxSetup(interaction, settings);
             }
+        } catch (err) {
+            console.error(`Error executing /setup ${subcommand}:`, err);
+            return await handleError(interaction, 'Execution Error', 'An error occurred while executing the setup command.');
         }
+    },
 
+    async runRobloxSetup(interaction, settings) {
+        const enabled = interaction.options.getBoolean('enabled');
+        const role = interaction.options.getRole('role');
+
+        settings.robloxVerifyEnabled = enabled;
+        settings.robloxVerifyRoleId = role.id;
+        await settings.save();
+        settingsCache.invalidate(interaction.guild.id);
+
+        return await handleSuccess(
+            interaction, 
+            'Roblox Setup Updated', 
+            `Roblox Verification is now **${enabled ? 'ENABLED' : 'DISABLED'}**.\nVerified members will receive the role <@&${role.id}>.`
+        );
+    },
+
+    async runDashboard(interaction, settings) {
         const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
 
         let state = {
@@ -137,6 +176,7 @@ module.exports = {
                 const rowD = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_antispam_mute').setPlaceholder('Mute duration...').addOptions([{label:'1 Minute',value:'60000'},{label:'5 Minutes',value:'300000'},{label:'1 Hour',value:'3600000'}]));
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
+
             // --- MEMBER LOGS ---
             if (viewName === 'view_logging') {
                 embed.setTitle('Member Logs')
@@ -233,7 +273,6 @@ module.exports = {
                 return { embeds: [embed], components: [row, backRow] };
             }
 
-
             // --- WARNINGS ---
             if (viewName === 'view_warnings') {
                 embed.setTitle('Strikes & Bans')
@@ -276,9 +315,9 @@ module.exports = {
                 embed.setTitle('Join Verification')
                      .setDescription('Require new members to verify themselves before accessing the server.')
                      .addFields(
-                         { name: 'Verify Channel', value: settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : 'Current Channel', inline: true },
-                         { name: 'Verified Roles', value: rolesDisplay, inline: false }
-                     );
+                          { name: 'Verify Channel', value: settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : 'Current Channel', inline: true },
+                          { name: 'Verified Roles', value: rolesDisplay, inline: false }
+                      );
                 const rowA = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_verify_channel').setPlaceholder('Select Custom Verify Channel...').setChannelTypes(ChannelType.GuildText));
                 const rowB = new ActionRowBuilder().addComponents(new RoleSelectMenuBuilder().setCustomId('action_verify_role').setPlaceholder('Select Verified Role(s)...').setMinValues(1).setMaxValues(5));
                 const rowC = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_verify_spawn').setLabel('Spawn Verify Panel').setStyle(ButtonStyle.Success));
@@ -455,7 +494,7 @@ module.exports = {
                         const roleStrs = submitted.fields.getTextInputValue('sr_roles').split(',').map(r => r.trim()).filter(r => r.length > 5);
 
                         if (roleStrs.length > 5 || roleStrs.length === 0) {
-                            return submitted.reply({ content: '⚠️ You must provide between 1 and 5 valid Role IDs.', ephemeral: true });
+                            return submitted.reply({ content: '⚠️ You must provide between 1 and 5 Role IDs.', ephemeral: true });
                         }
 
                         const panelEmbed = new EmbedBuilder()
@@ -541,6 +580,8 @@ module.exports = {
 
                 if (update) {
                     await settings.save();
+                    settingsCache.invalidate(interaction.guild.id); // STAGE 3: Force settings cache reload
+
                     if (sync) {
                         if (sync === 'all') {
                             await syncAllAutoModRules(i.guild, settings);

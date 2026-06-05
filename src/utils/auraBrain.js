@@ -14,7 +14,7 @@ const KNOWLEDGE_BASE = [
     { q: "How does the AI work?", a: "I use a hybrid engine (Aura) that rotates between cloud-tier models like GPT-4, Gemini, and my own local brain." },
     { q: "Is my data safe?", a: "Yes. I use privacy-first local processing and only store metrics needed for leveling and safety." },
     { q: "What is the promoter role?", a: "It's a reward role for users who support Nora by putting her link in their status!" },
-    { q: "How do I configure settings?", a: "If you have Manage Server permissions, use the `/configure` command." },
+    { q: "How do I configure settings?", a: "If you have Manage Server permissions, use the `/setup` command." },
     { q: "Tell me a joke", a: "Why did the web developer walk out of the restaurant? Because of the table layout!" },
     { q: "What version are you?", a: "I am currently running on Nora V18.5 Ultra Core." },
     // ... Imagine hundreds more entries here. I will provide the matching engine.

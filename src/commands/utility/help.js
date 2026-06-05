@@ -26,11 +26,10 @@ module.exports = {
                 embed.setTitle('🛡️ Safety & Moderation Commands')
                      .setDescription('Automated filters and moderation tools to secure your chat and enforce rules.')
                      .addFields(
-                         { name: '`/warn` & `/warnings`', value: 'Issue server warnings or look up warnings issued to a user.' },
+                         { name: '`/warn`', value: 'Centralized warning management (add, list, clear, edit, delete).' },
                          { name: '`/ban` & `/kick`', value: 'Ban or kick members who break the rules.' },
                          { name: '`/mute` & `/unmute`', value: 'Mute/unmute active members in channels.' },
                          { name: '`/purge`', value: 'Clean up large quantities of chat spam quickly.' },
-                         { name: '`/clear-warns` / `/delete-warns` / `/edit-warns`', value: 'Administrative warning management tools.' },
                          { name: '`/role`', value: 'Assign or remove roles from a user.' }
                      );
             } else if (category === 'profile') {
@@ -46,10 +45,10 @@ module.exports = {
                 embed.setTitle('⚙️ Setup & Configuration Commands')
                      .setDescription('Bot system adjustments and connection linkages.')
                      .addFields(
-                         { name: '`/configure`', value: 'Open the fully interactive settings menu panel (Manage Server only).' },
+                         { name: '`/setup`', value: 'Centralized server configuration dashboard and module setup (Manage Server only).' },
                          { name: '`/info` & `/invite`', value: 'Review bot uptime, status telemetry, and invite links.' },
                          { name: '`/language`', value: 'Change local command languages.' },
-                         { name: '`/verify-roblox`', value: 'Verify and bind Roblox groups for automated permissions.' },
+                         { name: '`/verify`', value: 'Verify and link Roblox account to gain server roles.' },
                          { name: '`/roblox`', value: 'Search profile and group structures on Roblox.' },
                          { name: '`/topgg` / `/vote`', value: 'Setup custom bots on Top.gg and check user voting status.' }
                      );

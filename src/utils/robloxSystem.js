@@ -1,6 +1,6 @@
 const axios = require('axios');
 const RobloxVerify = require('../database/models/RobloxVerify');
-const GuildSettings = require('../database/models/GuildSettings');
+const settingsCache = require('./settingsCache');
 
 /**
  * Roblox System Service
@@ -21,7 +21,7 @@ module.exports = {
         const guild = client.guilds.cache.get(guildId);
         if (!guild) return;
 
-        const settings = await GuildSettings.findOne({ where: { guildId } });
+        const settings = await settingsCache.get(guildId);
         if (!settings || !settings.robloxVerifyEnabled) return;
 
         const verifiedUsers = await RobloxVerify.findAll({ where: { status: 'VERIFIED' } });

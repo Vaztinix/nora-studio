@@ -303,14 +303,14 @@ module.exports = {
                 settings.aiPreference = 'BUILT_IN';
                 await settings.save();
                 settingsCache.invalidate(interaction.guildId);
-                return interaction.reply({ content: "Preference updated! I've switched to the **Nora Built-In (Gemini)** engine for future messages in this guild. You can always change this back in `/configure`.", ephemeral: true });
+                return interaction.reply({ content: "Preference updated! I've switched to the **Nora Built-In (Gemini)** engine for future messages in this guild. You can always change this back in `/setup dashboard`.", ephemeral: true });
             }
 
             if (interaction.customId === 'use_ai_local') {
                 settings.aiPreference = 'LOCAL';
                 await settings.save();
                 settingsCache.invalidate(interaction.guildId);
-                return interaction.reply({ content: "Preference updated! I've switched to the **Privacy-First Local** engine for future messages in this guild. This is my most secure mode! You can always change this back in `/configure`.", ephemeral: true });
+                return interaction.reply({ content: "Preference updated! I've switched to the **Privacy-First Local** engine for future messages in this guild. This is my most secure mode! You can always change this back in `/setup dashboard`.", ephemeral: true });
             }
             return; // Exit safely
         }
@@ -489,7 +489,7 @@ module.exports = {
                     if (cmdName === 'purge') requiredBotPerms.push(PermissionFlagsBits.ManageMessages);
                     if (cmdName === 'role') requiredBotPerms.push(PermissionFlagsBits.ManageRoles);
                 }
-                if (cmdName === 'configure') {
+                if (cmdName === 'setup') {
                     requiredBotPerms.push(PermissionFlagsBits.ManageGuild, PermissionFlagsBits.ManageRoles, PermissionFlagsBits.ManageChannels);
                 }
                 
@@ -567,16 +567,16 @@ module.exports = {
 
             if (settings) {
                 if (category === 'moderation' && !settings.moderationEnabled) {
-                    return handleError(interaction, 'Feature Disabled', 'Moderation features are currently disabled on this server. An administrator can enable them using `/configure`.');
+                    return handleError(interaction, 'Feature Disabled', 'Moderation features are currently disabled on this server. An administrator can enable them using `/setup dashboard`.');
                 }
                 if (category === 'leveling' && !settings.levelingEnabled) {
-                    return handleError(interaction, 'Feature Disabled', 'Leveling features are currently disabled on this server. An administrator can enable them using `/configure`.');
+                    return handleError(interaction, 'Feature Disabled', 'Leveling features are currently disabled on this server. An administrator can enable them using `/setup dashboard`.');
                 }
                 if (category === 'fun' && !settings.funEnabled) {
-                    return handleError(interaction, 'Feature Disabled', 'Fun and minigame features are currently disabled on this server. An administrator can enable them using `/configure`.');
+                    return handleError(interaction, 'Feature Disabled', 'Fun and minigame features are currently disabled on this server. An administrator can enable them using `/setup dashboard`.');
                 }
                 if (category === 'utility' && !settings.utilityEnabled) {
-                    return handleError(interaction, 'Feature Disabled', 'Utility features are currently disabled on this server. An administrator can enable them using `/configure`.');
+                    return handleError(interaction, 'Feature Disabled', 'Utility features are currently disabled on this server. An administrator can enable them using `/setup dashboard`.');
                 }
             }
 
