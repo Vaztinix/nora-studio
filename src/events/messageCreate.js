@@ -2,6 +2,7 @@ const { Events, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const GlobalSettings = require('../database/models/GlobalSettings');
 const NoraLeveling = require('../utils/noraLeveling');
+const { formatMessage } = require('../utils/messageFormatter');
 
 module.exports = {
     name: Events.MessageCreate,
@@ -87,9 +88,12 @@ module.exports = {
                 const notifyChannel = message.guild.channels.cache.get(notifyChannelId) || message.channel;
 
                 if (settings?.levelUpNotificationsEnabled !== false) {
+                    const template = settings?.levelUpMessage;
+                    const desc = template ? formatMessage(template, message.member || message.author, level) : `Congratulations <@${message.author.id}>! You've climbed to **Level ${level}**!`;
+
                     const embed = new EmbedBuilder()
                         .setTitle('Level Up')
-                        .setDescription(`Congratulations <@${message.author.id}>! You've climbed to **Level ${level}**!`)
+                        .setDescription(desc)
                         .setColor(require('../utils/embeds').getRoleColor(message))
                         .setTimestamp();
                     await notifyChannel.send({ embeds: [embed] }).catch(() => { });

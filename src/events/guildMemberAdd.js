@@ -1,5 +1,6 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
+const { formatMessage } = require('../utils/messageFormatter');
 
 // In-memory Join Tracker for Anti-Raid
 const joinLog = new Map();
@@ -176,9 +177,12 @@ module.exports = {
                 if (!welcomeChannel) welcomeChannel = await member.guild.channels.fetch(settings.welcomeChannelId).catch(() => null);
 
                 if (welcomeChannel) {
+                    const template = settings.logJoinMessage;
+                    const desc = template ? formatMessage(template, member) : `Welcome, <@${member.id}>! We're glad you're here!`;
+
                     const embed = new EmbedBuilder()
                         .setTitle(`Welcome to ${member.guild.name}!`)
-                        .setDescription(`Welcome, <@${member.id}>! We're glad you're here!`)
+                        .setDescription(desc)
                         .setColor(0x57acf2)
                         .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                         .setFooter({ text: `Member #${member.guild.memberCount}` })

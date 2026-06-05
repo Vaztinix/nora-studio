@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const GuildSettings = require('../../database/models/GuildSettings');
 const { requireGuildPermission, getDiscordUser } = require('../middleware/auth');
+const settingsCache = require('../../utils/settingsCache');
 
 // Apply permission checking middleware to all routes in this router
 router.use(requireGuildPermission);
@@ -142,6 +143,7 @@ router.post('/', async (req, res) => {
 
         // Update the settings model with the payload provided by the dashboard
         await settings.update(payload);
+        settingsCache.invalidate(guildId);
 
         // Trigger live Discord integration: sync AutoMod rules live on settings change
         const { syncAllAutoModRules } = require('../../utils/automodSync');

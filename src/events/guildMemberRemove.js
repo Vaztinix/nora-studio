@@ -1,5 +1,6 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
+const { formatMessage } = require('../utils/messageFormatter');
 
 module.exports = {
     name: Events.GuildMemberRemove,
@@ -15,9 +16,12 @@ module.exports = {
                 if (!welcomeChannel) welcomeChannel = await member.guild.channels.fetch(settings.welcomeChannelId).catch(() => null);
                 
                 if (welcomeChannel) {
+                    const template = settings.logLeaveMessage;
+                    const desc = template ? formatMessage(template, member) : `<@${member.id}> has left the server. See you later!`;
+
                     const embed = new EmbedBuilder()
                         .setTitle(`Goodbye from ${member.guild.name}`)
-                        .setDescription(`<@${member.id}> has left the server. See you later!`)
+                        .setDescription(desc)
                         .setColor(0x57acf2)
                         .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                         .setFooter({ text: `Member Count: ${member.guild.memberCount}` });

@@ -442,6 +442,11 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true,
         defaultValue: null
     },
+    levelUpMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
     customModResponses: {
         type: DataTypes.TEXT,
         defaultValue: '{}'

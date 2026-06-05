@@ -38,6 +38,18 @@ async function syncDB() {
             }
         }
 
+        // Safely attempt to add the levelUpMessage column to GuildSettings
+        try {
+            await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelUpMessage` TEXT DEFAULT NULL;");
+            console.log('Successfully added levelUpMessage to GuildSettings');
+        } catch (err) {
+            if (err.message.includes('duplicate column name') || err.message.includes('already exists')) {
+                console.log('Column levelUpMessage already exists in GuildSettings');
+            } else {
+                console.warn('Warning adding levelUpMessage to GuildSettings:', err.message);
+            }
+        }
+
         console.log('Syncing database tables...');
         // Sync without alter: true to avoid SQLite backup recreation table mismatch bug
         await sequelize.sync();
