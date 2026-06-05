@@ -271,9 +271,9 @@
             --sidebar-bg: rgba(20, 24, 38, 0.4);
             --card-bg: rgba(255, 255, 255, 0.03);
             --card-hover: rgba(255, 255, 255, 0.07);
-            --primary: #c5a3ff;
-            --primary-glow: rgba(197, 163, 255, 0.3);
-            --primary-hover: #d2baff;
+            --primary: #ff8e3c;
+            --primary-glow: rgba(255, 142, 60, 0.3);
+            --primary-hover: #ffa668;
             --border: rgba(255, 255, 255, 0.1);
         }
 
@@ -995,8 +995,9 @@
             --sidebar-bg: rgba(10, 14, 25, 0.85);
             --card-bg: rgba(255, 255, 255, 0.05);
             --card-hover: rgba(255, 255, 255, 0.09);
-            --primary: #c5a3ff;
-            --primary-glow: rgba(197, 163, 255, 0.3);
+            --primary: #ff8e3c;
+            --primary-glow: rgba(255, 142, 60, 0.3);
+            --primary-hover: #ffa668;
             --border: rgba(255, 255, 255, 0.12);
         }
         body.theme-solid-glass .sidebar,
@@ -1015,8 +1016,9 @@
             --sidebar-bg: rgba(255, 255, 255, 0.03);
             --card-bg: rgba(255, 255, 255, 0.02);
             --card-hover: rgba(255, 255, 255, 0.06);
-            --primary: #c5a3ff;
-            --primary-glow: rgba(197, 163, 255, 0.3);
+            --primary: #ff8e3c;
+            --primary-glow: rgba(255, 142, 60, 0.3);
+            --primary-hover: #ffa668;
             --border: rgba(255, 255, 255, 0.08);
         }
         body.theme-glass .sidebar,
@@ -1028,6 +1030,14 @@
             background: var(--sidebar-bg);
             border: 1px solid var(--border);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+        }
+
+        body.has-backdrop {
+            background-image: linear-gradient(rgba(10, 12, 22, 0.78), rgba(10, 12, 22, 0.78)), var(--body-backdrop-url) !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            background-attachment: fixed !important;
         }
 
         /* iOS-like Liquid Blobs */
@@ -1046,7 +1056,7 @@
         .liquid-blob-1 {
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(174, 239, 255, 0.5) 0%, rgba(122, 162, 255, 0) 70%);
+            background: radial-gradient(circle, rgba(255, 142, 60, 0.35) 0%, rgba(255, 142, 60, 0) 70%);
             top: -10%;
             left: -10%;
             animation: drift 25s infinite alternate ease-in-out;
@@ -1054,7 +1064,7 @@
         .liquid-blob-2 {
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(197, 163, 255, 0.45) 0%, rgba(197, 163, 255, 0) 70%);
+            background: radial-gradient(circle, rgba(155, 93, 229, 0.3) 0%, rgba(155, 93, 229, 0) 70%);
             bottom: -15%;
             right: -10%;
             animation: drift-reverse 30s infinite alternate ease-in-out;
@@ -1062,7 +1072,7 @@
         .liquid-blob-3 {
             width: 450px;
             height: 450px;
-            background: radial-gradient(circle, rgba(255, 117, 181, 0.3) 0%, rgba(255, 117, 181, 0) 70%);
+            background: radial-gradient(circle, rgba(255, 186, 8, 0.25) 0%, rgba(255, 186, 8, 0) 70%);
             top: 40%;
             left: 50%;
             animation: drift-middle 22s infinite alternate ease-in-out;
@@ -1739,6 +1749,21 @@
                             <option value="solid-glass">Solid Glass (iOS-like Static)</option>
                             <option value="glass">Liquid Glass (iOS-like Animated)</option>
                         </select>
+                    </div>
+                    <div class="row">
+                        <h4>Backdrop Style</h4>
+                        <select id="pref-backdrop-preset" onchange="updateBackdropPreset(true)" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 8px;">
+                            <option value="none">No Backdrop (Default)</option>
+                            <option value="warm-ambient">Warm Ambient (Cozy Interior)</option>
+                            <option value="frosted-office">Frosted Office (Professional Space)</option>
+                            <option value="neon-cyberpunk">Neon Cyberpunk (City Lights)</option>
+                            <option value="abstract-aurora">Abstract Aurora (Fluid Waves)</option>
+                            <option value="custom">Custom Backdrop (Enter URL)</option>
+                        </select>
+                    </div>
+                    <div class="row" id="custom-backdrop-row" style="display: none;">
+                        <h4>Custom Backdrop URL</h4>
+                        <input type="text" id="pref-backdrop-url" placeholder="https://example.com/image.jpg" oninput="updateBackdropUrl(true)" style="width: 250px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 8px;">
                     </div>
                     <div class="row">
                         <h4>Compact View</h4>
@@ -4085,8 +4110,8 @@
                 'amethyst': '#9b5de5',
                 'mint': '#00f5d4',
                 'light': '#5865f2',
-                'solid-glass': '#c5a3ff',
-                'glass': '#c5a3ff'
+                'solid-glass': '#ff8e3c',
+                'glass': '#ff8e3c'
             };
 
             if (fromUser) {
@@ -5281,16 +5306,90 @@
             const themeMode = document.getElementById('pref-theme-mode').value;
             const compactEnabled = document.getElementById('pref-compact').checked;
             const toastPos = document.getElementById('pref-toast-pos').value;
+            const backdropPreset = document.getElementById('pref-backdrop-preset').value;
+            const backdropUrl = document.getElementById('pref-backdrop-url').value;
 
             await Promise.all([
                 saveDashboardSetting('nora_theme_mode', themeMode),
                 saveDashboardSetting('nora_compact', compactEnabled.toString()),
-                saveDashboardSetting('nora_toast_pos', toastPos)
+                saveDashboardSetting('nora_toast_pos', toastPos),
+                saveDashboardSetting('nora_backdrop_preset', backdropPreset),
+                saveDashboardSetting('nora_backdrop_url', backdropUrl)
             ]);
 
             updateThemeMode(true);
             updateToastPos();
+            applyBackdropSettings();
             showToast('Dashboard settings saved.', 'success');
+        }
+
+        const BACKDROP_PRESETS = {
+            'none': '',
+            'warm-ambient': 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?q=80&w=1600',
+            'frosted-office': 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600',
+            'neon-cyberpunk': 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1600',
+            'abstract-aurora': 'https://images.unsplash.com/photo-1531315630201-bb15abeb1653?q=80&w=1600'
+        };
+
+        function updateBackdropPreset(fromUser = false) {
+            const preset = document.getElementById('pref-backdrop-preset').value;
+            const customRow = document.getElementById('custom-backdrop-row');
+            
+            if (preset === 'custom') {
+                customRow.style.display = 'flex';
+            } else {
+                customRow.style.display = 'none';
+            }
+            
+            if (fromUser) {
+                localStorage.setItem('nora_backdrop_preset', preset);
+            }
+            
+            applyBackdropSettings();
+        }
+
+        function updateBackdropUrl(fromUser = false) {
+            const url = document.getElementById('pref-backdrop-url').value;
+            if (fromUser) {
+                localStorage.setItem('nora_backdrop_url', url);
+            }
+            applyBackdropSettings();
+        }
+
+        function applyBackdropSettings() {
+            const preset = localStorage.getItem('nora_backdrop_preset') || 'none';
+            const customUrl = localStorage.getItem('nora_backdrop_url') || '';
+            
+            const presetEl = document.getElementById('pref-backdrop-preset');
+            const urlEl = document.getElementById('pref-backdrop-url');
+            if (presetEl) presetEl.value = preset;
+            if (urlEl) urlEl.value = customUrl;
+            
+            const customRow = document.getElementById('custom-backdrop-row');
+            if (customRow) {
+                if (preset === 'custom') {
+                    customRow.style.display = 'flex';
+                } else {
+                    customRow.style.display = 'none';
+                }
+            }
+
+            let backdropUrl = '';
+            if (preset !== 'none') {
+                if (preset === 'custom') {
+                    backdropUrl = customUrl;
+                } else {
+                    backdropUrl = BACKDROP_PRESETS[preset];
+                }
+            }
+
+            if (backdropUrl) {
+                document.body.style.setProperty('--body-backdrop-url', `url('${backdropUrl}')`);
+                document.body.classList.add('has-backdrop');
+            } else {
+                document.body.style.removeProperty('--body-backdrop-url');
+                document.body.classList.remove('has-backdrop');
+            }
         }
 
         const colorPicker = document.getElementById('theme-color-picker');
@@ -5314,8 +5413,8 @@
                 'cyber': '#ffd700',
                 'amethyst': '#9b5de5',
                 'mint': '#00f5d4',
-                'solid-glass': '#c5a3ff',
-                'glass': '#c5a3ff'
+                'solid-glass': '#ff8e3c',
+                'glass': '#ff8e3c'
             };
             const defaultColor = themeColors[mode] || '#aeefff';
             const savedColor = localStorage.getItem('nora_theme_color') || defaultColor;
@@ -5326,6 +5425,7 @@
             if (compactCheck.checked) document.body.classList.add('compact-mode');
             
             document.getElementById('user-name').textContent = localStorage.getItem('nora_display_name') || 'Nora User';
+            applyBackdropSettings();
         }
         window.openAdvancedLogging = function() {
             document.getElementById('advanced-logging-modal').style.display = 'flex';
