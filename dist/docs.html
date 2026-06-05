@@ -335,11 +335,11 @@
         </section>
 
         <section>
-            <h2>2. The Consolidate /configure Control Hub</h2>
+            <h2>2. The Consolidated /setup Control Hub</h2>
             <p>To improve security and reduce command clutter, Nora utilizes a unified, single-command Bios console. The legacy setup commands and subcommands have been entirely consolidated.</p>
             <ul>
-                <li><strong>Single /configure Slash Command:</strong> Typing `/configure` immediately opens a secure interactive Discord select dashboard menu. Administrators can quickly manage all module options without typing complex flags.</li>
-                <li><strong>Owner-Only Premium Portal:</strong> Premium overrides (enabling, disabling, or removing guild premium status manually) are handled entirely within the `/configure` menu. Clicks on the premium options dispatch secure modal forms, keeping server configurations discrete and protecting bot operations.</li>
+                <li><strong>Single /setup Slash Command:</strong> Typing `/setup dashboard` immediately opens a secure interactive Discord select dashboard menu. Administrators can quickly manage all module options without typing complex flags.</li>
+                <li><strong>Owner-Only Premium Portal:</strong> Premium overrides (enabling, disabling, or removing guild premium status manually) are handled entirely within the `/setup` menu. Clicks on the premium options dispatch secure modal forms, keeping server configurations discrete and protecting bot operations.</li>
                 <li><strong>Local Safety Settings:</strong> Change Safety & Anti-Raid sensitivity, configure Discord AutoMod rules, set spam detection windows, or specify log channels all inside a single UI message.</li>
             </ul>
         </section>
@@ -365,7 +365,25 @@
         </section>
 
         <section>
-            <h2>5. Developmental Roadmap: Nora Studio</h2>
+            <h2>5. Consolidated Moderation & Roblox Verification</h2>
+            <p>To reduce Discord command bloat and simplify server administration, Nora features consolidated warning and verification workflows.</p>
+            <ul>
+                <li><strong>Unified Warning Management (/warn):</strong> Server moderators can manage warning actions through a single `/warn` command using intuitive subcommands:
+                    <ul>
+                        <li><code>/warn add</code>: Issue a new warning to a user with a specified reason.</li>
+                        <li><code>/warn list</code>: View all warnings issued to a user.</li>
+                        <li><code>/warn edit</code>: Modify the reason of an existing warning.</li>
+                        <li><code>/warn delete</code>: Delete a specific warning by ID.</li>
+                        <li><code>/warn clear</code>: Clear all warnings from a user's record.</li>
+                    </ul>
+                </li>
+                <li><strong>One-Step Roblox Link (/verify):</strong> The legacy multi-command verification flow is replaced by the singular <code>/verify</code> command. Users link their Roblox accounts, verify their identities, and receive server-assigned roles in a single fluid interaction.</li>
+                <li><strong>Instant Settings Sync:</strong> Changes to settings made on the Nora Studio web dashboard or in-game using <code>/setup dashboard</code> are pushed with O(1) performance using active cache invalidation, ensuring no stale settings affect moderation loops.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>6. Developmental Roadmap: Nora Studio</h2>
             <p>The Beta 4.1 rebuild serves as the launchpad for <strong>Nora Studio</strong>, a web-based management platform supporting both mobile and desktop viewports. Administrators can:</p>
             <ul>
                 <li>Visualize server statistics, logs, and growth charts responsively.</li>

@@ -3298,14 +3298,10 @@
                             <div class="row"><h4>/unmute</h4><label class="switch"><input type="checkbox" id="cmd-unmute" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/purge</h4><label class="switch"><input type="checkbox" id="cmd-purge" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/warn</h4><label class="switch"><input type="checkbox" id="cmd-warn" checked><span class="slider"></span></label></div>
-                            <div class="row"><h4>/warnings</h4><label class="switch"><input type="checkbox" id="cmd-warnings" checked><span class="slider"></span></label></div>
-                            <div class="row"><h4>/clear-warns</h4><label class="switch"><input type="checkbox" id="cmd-clear-warns" checked><span class="slider"></span></label></div>
-                            <div class="row"><h4>/delete-warns</h4><label class="switch"><input type="checkbox" id="cmd-delete-warns" checked><span class="slider"></span></label></div>
-                            <div class="row"><h4>/edit-warns</h4><label class="switch"><input type="checkbox" id="cmd-edit-warns" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/role</h4><label class="switch"><input type="checkbox" id="cmd-role" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/setlevel</h4><label class="switch"><input type="checkbox" id="cmd-setlevel" checked><span class="slider"></span></label></div>
-                            <div class="row"><h4>/configure</h4><label class="switch"><input type="checkbox" id="cmd-configure" checked><span class="slider"></span></label></div>
-                            <div class="row"><h4>/verify-roblox</h4><label class="switch"><input type="checkbox" id="cmd-verify-roblox" checked><span class="slider"></span></label></div>
+                            <div class="row"><h4>/setup</h4><label class="switch"><input type="checkbox" id="cmd-setup" checked><span class="slider"></span></label></div>
+                            <div class="row"><h4>/verify</h4><label class="switch"><input type="checkbox" id="cmd-verify" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/nora-admin</h4><label class="switch"><input type="checkbox" id="cmd-nora-admin" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/rps</h4><label class="switch"><input type="checkbox" id="cmd-rps" checked><span class="slider"></span></label></div>
                         </div>
@@ -4838,7 +4834,7 @@
                 payload[k] = el.type === 'checkbox' ? el.checked : el.value;
             });
             const d = [];
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'warnings', 'clear-warns', 'delete-warns', 'edit-warns', 'role', 'setlevel', 'configure', 'verify-roblox', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'role', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
             allCmds.forEach(c => { const cmdCheck = document.getElementById('cmd-'+c); if(cmdCheck && !cmdCheck.checked) d.push(c); });
             payload.disabledCommands = JSON.stringify(d);
 
@@ -5912,7 +5908,7 @@
 
         function toggleAllCommands(state) {
             logToTerminal(`Setting all commands state: ${state}`, 'UI_PREF');
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'warnings', 'clear-warns', 'delete-warns', 'edit-warns', 'role', 'setlevel', 'configure', 'verify-roblox', 'nora-admin'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'role', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
             allCmds.forEach(c => {
                 const el = document.getElementById('cmd-' + c);
                 if (el) el.checked = state;
@@ -7282,7 +7278,7 @@
                     state[k] = el.type === 'checkbox' ? el.checked : el.value;
                 }
             });
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'warnings', 'clear-warns', 'delete-warns', 'edit-warns', 'role', 'setlevel', 'configure', 'verify-roblox', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'role', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
             allCmds.forEach(c => {
                 const cmdCheck = document.getElementById('cmd-'+c);
                 if (cmdCheck) {
@@ -8089,7 +8085,7 @@
                 if (el.type === 'checkbox') el.checked = false;
                 else el.value = '';
             });
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'warnings', 'clear-warns', 'delete-warns', 'edit-warns', 'role', 'setlevel', 'configure', 'verify-roblox', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'role', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
             allCmds.forEach(c => {
                 const el = document.getElementById('cmd-' + c);
                 if (el) el.checked = false;
