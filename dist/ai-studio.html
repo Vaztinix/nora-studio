@@ -917,15 +917,6 @@
             const host = window.location.hostname;
             const port = window.location.port;
 
-            // If loaded from vaztinix.dev, always route to same origin (unless localhost/private-ip is explicitly overridden)
-            if (host === 'vaztinix.dev' || host.endsWith('.vaztinix.dev')) {
-                const localOverride = localStorage.getItem('nora_api_url');
-                if (localOverride && (localOverride.includes('localhost') || localOverride.includes('127.0.0.1') || localOverride.includes('192.168.') || localOverride.includes('10.') || localOverride.includes('172.'))) {
-                    return localOverride;
-                }
-                return window.location.origin;
-            }
-
             // If we are accessing the Express server directly (custom port) or on a local network IP,
             // we should ALWAYS fall back to relative pathing to prevent connection failures.
             if ((port && port !== '80' && port !== '443') || 
@@ -940,16 +931,16 @@
 
             let customApi = localStorage.getItem('nora_api_url');
             if (customApi) {
-                return customApi;
+                // Ignore any invalid same-origin production site overrides (GitHub Pages doesn't have an API backend)
+                if (customApi.includes('vaztinix.dev') && !customApi.includes('api.vaztinix.dev')) {
+                    // fall through
+                } else {
+                    return customApi;
+                }
             }
 
-            // Official production configurations (fall back to the working apex domain instead of the broken api subdomain!)
-            if (host === 'vaztinix.github.io') {
-                return 'https://vaztinix.dev';
-            }
-
-            // Fallback
-            return 'https://vaztinix.dev';
+            // Official production configurations (subdomain runs the API, apex domain is static pages)
+            return 'https://api.vaztinix.dev';
         };
 
         const originalFetch = window.fetch;

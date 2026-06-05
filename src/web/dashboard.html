@@ -3124,15 +3124,6 @@
             const host = window.location.hostname;
             const port = window.location.port;
 
-            // If loaded from vaztinix.dev, always route to same origin (unless localhost/private-ip is explicitly overridden)
-            if (host === 'vaztinix.dev' || host.endsWith('.vaztinix.dev')) {
-                const localOverride = localStorage.getItem('nora_api_url');
-                if (localOverride && (localOverride.includes('localhost') || localOverride.includes('127.0.0.1') || localOverride.includes('192.168.') || localOverride.includes('10.') || localOverride.includes('172.'))) {
-                    return localOverride;
-                }
-                return window.location.origin;
-            }
-
             // Local development overrides — always target local machine if loaded locally
             if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
                 return window.location.origin;
@@ -3141,7 +3132,12 @@
             // User-configured or offline-recovered override
             const localOverride = localStorage.getItem('nora_api_url');
             if (localOverride) {
-                return localOverride;
+                // Ignore any invalid same-origin production site overrides (GitHub Pages doesn't have an API backend)
+                if (localOverride.includes('vaztinix.dev') && !localOverride.includes('api.vaztinix.dev')) {
+                    // fall through to canonical
+                } else {
+                    return localOverride;
+                }
             }
 
             // Server-injected value (set in .env as API_BASE_URL)
@@ -3149,8 +3145,8 @@
                 return window.__NORA_API_BASE_URL__;
             }
 
-            // Hard fallback
-            return 'https://vaztinix.dev';
+            // Hard fallback to working production subdomain
+            return 'https://api.vaztinix.dev';
         };
 
         const originalFetch = window.fetch;
@@ -3404,20 +3400,9 @@
                         }
                     }
 
-                    // Fallback 2: Try the working apex domain vaztinix.dev if current base is not vaztinix.dev
-                    const APEX_API = 'https://vaztinix.dev';
-                    if (!recovered && currentBase !== APEX_API && recoveredUrl !== 'http://localhost:3000') {
-                        console.log('[Offline] Trying apex domain fallback...');
-                        recovered = await tryHealth(APEX_API);
-                        if (recovered) {
-                            recoveredUrl = APEX_API;
-                            localStorage.setItem('nora_api_url', APEX_API);
-                            console.log('[Offline] Apex domain fallback succeeded — saved as API URL');
-                        }
-                    }
-
-                    // Fallback 3: Try the canonical subdomain as last resort
-                    if (!recovered && currentBase !== CANONICAL_API && recoveredUrl !== 'http://localhost:3000' && recoveredUrl !== APEX_API) {
+                    // Fallback 2: if current base and localhost failed and it's NOT already the canonical URL,
+                    // try the canonical API endpoint (fixes phones with cached local-IP sessions)
+                    if (!recovered && currentBase !== CANONICAL_API && recoveredUrl !== 'http://localhost:3000') {
                         console.log('[Offline] Primary API unreachable, trying canonical fallback...');
                         recovered = await tryHealth(CANONICAL_API);
                         if (recovered) {
