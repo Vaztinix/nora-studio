@@ -992,22 +992,25 @@
         /* Solid Glass Theme */
         body.theme-solid-glass {
             --bg: #07090e;
-            --sidebar-bg: rgba(10, 14, 25, 0.85);
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-hover: rgba(255, 255, 255, 0.09);
+            --glow-1: rgba(255, 142, 60, 0.06);
+            --glow-2: rgba(122, 79, 240, 0.08);
+            --sidebar-bg: rgba(10, 12, 22, 0.45);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-hover: rgba(255, 255, 255, 0.07);
             --primary: #ff8e3c;
             --primary-glow: rgba(255, 142, 60, 0.3);
             --primary-hover: #ffa668;
-            --border: rgba(255, 255, 255, 0.12);
+            --border: rgba(255, 255, 255, 0.09);
         }
         body.theme-solid-glass .sidebar,
         body.theme-solid-glass .panel,
         body.theme-solid-glass .server-card,
         body.theme-solid-glass .topbar {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(30px) saturate(140%);
+            -webkit-backdrop-filter: blur(30px) saturate(140%);
             background: var(--sidebar-bg);
             border: 1px solid var(--border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
         /* Liquid Glass (iOS-like Animated) Theme */
