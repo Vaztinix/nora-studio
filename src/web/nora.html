@@ -390,10 +390,13 @@
 
         <h2 class="section-title">Example Commands</h2>
         <div class="grid">
-            <div class="card"><h3>/configure</h3><p>Full control over features, logging, and AI selection.</p></div>
+            <div class="card"><h3>/setup</h3><p>Full control over features, logging, and AI selection.</p></div>
             <div class="card"><h3>/ban</h3><p>Permanently remove disruptive members from your server.</p></div>
+            <div class="card"><h3>/warn</h3><p>Consolidated warn manager to add, list, edit, clear, or delete user warnings.</p></div>
             <div class="card"><h3>/mute</h3><p>Apply temporary restrictions with clear time limits.</p></div>
+            <div class="card"><h3>/verify</h3><p>Consolidated Roblox account link and server-wide verification system.</p></div>
             <div class="card"><h3>/ask</h3><p>Ask Nora AI questions directly inside Discord.</p></div>
+            <div class="card"><h3>/mycard</h3><p>View your personalized card with level, XP, and active roles.</p></div>
             <div class="card"><h3>/info</h3><p>View or delete stored data instantly.</p></div>
             <div class="card"><h3>/invite</h3><p>Create an invite for your server quickly and efficiently.</p></div>
             <div class="card"><h3>/leaderboard</h3><p>View public leveling statistics and ranking.</p></div>
@@ -404,13 +407,22 @@
         <h2 class="section-title">Latest Nora Updates</h2>
         <div class="updates">
             <div class="update-item">
-                <h3>Unified /configure Control Hub</h3>
-                <p>We consolidated settings subcommands into a single interactive `/configure` panel. Premium configurations are now accessed securely in an owner-only section using modal popups.</p>
+                <h3>Unified /setup Control Hub</h3>
+                <p>We consolidated settings subcommands into a single interactive `/setup` panel. Premium configurations are now accessed securely in an owner-only section using modal popups.</p>
                 <ul>
                     <li>Security Enhancements: Consolidated command footprint, preventing parameter exposure in Discord logs.</li>
                     <li>iOS-like Liquid Glass Theme: Support for ambient flowing gradient backdrops and deep glassmorphic blurs.</li>
                     <li>Parallax Team Roster: High-end 3D animated profile cards displaying live Discord status and creation dates.</li>
                     <li>Secure Routing: Full absolute and relative routing fixes ensuring that configurations made on vaztinix.dev sync live.</li>
+                </ul>
+            </div>
+            <div class="update-item">
+                <h3>Consolidated Mod & Verification</h3>
+                <p>We simplified moderation workflows and Roblox setups by consolidating legacy commands into clean, subcommand-driven structures.</p>
+                <ul>
+                    <li><strong>Unified Warnings (/warn):</strong> Replaced multiple standalone commands with a single command supporting <code>add</code>, <code>list</code>, <code>edit</code>, <code>delete</code>, and <code>clear</code> subcommands.</li>
+                    <li><strong>One-Click Verification (/verify):</strong> Merged Roblox verification steps into a single user-facing slash command for instant account linking.</li>
+                    <li><strong>Real-time Cache Invalidation:</strong> Implemented active settings cache invalidation, forcing the bot to load new configurations instantly from the database when changes are made via the Nora Studio dashboard or Discord.</li>
                 </ul>
             </div>
             <div class="update-item">
