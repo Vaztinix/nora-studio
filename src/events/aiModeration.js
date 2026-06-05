@@ -1,5 +1,5 @@
 const { Events, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
-const GuildSettings = require('../database/models/GuildSettings');
+const settingsCache = require('../utils/settingsCache');
 const Warning = require('../database/models/Warning');
 const { analyzeMessage } = require('../utils/aiModerator');
 
@@ -15,7 +15,7 @@ module.exports = {
         if (message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) return;
 
         try {
-            const settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } });
+            const settings = await settingsCache.get(message.guild.id);
             if (!settings || !settings.moderationEnabled) return;
 
             // Run the adaptive natural-language text analysis

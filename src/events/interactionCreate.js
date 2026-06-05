@@ -1,5 +1,6 @@
 const { Events, ChannelType, PermissionFlagsBits } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
+const settingsCache = require('../utils/settingsCache');
 const { handleError } = require('../utils/embeds');
 
 module.exports = {
@@ -39,7 +40,7 @@ module.exports = {
                 // Determine a safe name (Discord text channels MUST be lowercase and no spaces!)
                 const safeName = `ticket-${interaction.user.username}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
-                const settings = await GuildSettings.findOne({ where: { guildId: interaction.guildId } });
+                const settings = await settingsCache.get(interaction.guildId);
 
                 const ticketChannel = await interaction.guild.channels.create({
                     name: safeName,
@@ -140,6 +141,7 @@ module.exports = {
                     where: { guildId: targetGuildId }
                 });
                 await guildSettings.update({ isPremium: isAdd, isManualPremium: !isRemove });
+                settingsCache.invalidate(targetGuildId);
                 guildResult = `Guild \`${targetGuildId}\` premium status updated to **${isAdd ? 'Enabled' : isRemove ? 'Removed/Reset' : 'Disabled'}**.`;
             }
 
@@ -165,7 +167,7 @@ module.exports = {
             const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
             if (!member) return interaction.reply({ content: 'Could not resolve your member profile.', ephemeral: true });
 
-            const settings = await GuildSettings.findOne({ where: { guildId: interaction.guildId } });
+            const settings = await settingsCache.get(interaction.guildId);
             if (!settings || !settings.verifyRoleId) {
                 return interaction.reply({ content: 'Verification is not fully set up on this server. Please contact an admin.', ephemeral: true });
             }
@@ -293,19 +295,21 @@ module.exports = {
                 const [result] = await GuildSettings.findOrCreate({ where: { guildId: interaction.guildId } });
                 settings = result;
             } catch (e) {
-                settings = await GuildSettings.findOne({ where: { guildId: interaction.guildId } });
+                settings = await settingsCache.get(interaction.guildId);
             }
             if (!settings) return interaction.reply({ content: 'Could not access server configuration.', ephemeral: true });
             
             if (interaction.customId === 'switch_ai_builtin') {
                 settings.aiPreference = 'BUILT_IN';
                 await settings.save();
+                settingsCache.invalidate(interaction.guildId);
                 return interaction.reply({ content: "Preference updated! I've switched to the **Nora Built-In (Gemini)** engine for future messages in this guild. You can always change this back in `/configure`.", ephemeral: true });
             }
 
             if (interaction.customId === 'use_ai_local') {
                 settings.aiPreference = 'LOCAL';
                 await settings.save();
+                settingsCache.invalidate(interaction.guildId);
                 return interaction.reply({ content: "Preference updated! I've switched to the **Privacy-First Local** engine for future messages in this guild. This is my most secure mode! You can always change this back in `/configure`.", ephemeral: true });
             }
             return; // Exit safely
@@ -403,7 +407,7 @@ module.exports = {
 
             let guildIsPremium = false;
             if (interaction.guildId) {
-                const guildSettings = await GuildSettings.findOne({ where: { guildId: interaction.guildId } }).catch(() => null);
+                const guildSettings = await settingsCache.get(interaction.guildId).catch(() => null);
                 if (guildSettings) {
                     guildIsPremium = !!guildSettings.isPremium || !!guildSettings.isManualPremium;
                     const paidTime = guildSettings.paidExpiresAt ? new Date(guildSettings.paidExpiresAt).getTime() : 0;
@@ -448,7 +452,7 @@ module.exports = {
 
             let settings = null;
             if (interaction.guildId) {
-                settings = await GuildSettings.findOne({ where: { guildId: interaction.guildId } });
+                settings = await settingsCache.get(interaction.guildId);
                 if (settings && settings.disabledCommands) {
                     let localDisabled = [];
                     try {
@@ -587,12 +591,30 @@ module.exports = {
             }
             console.log(`[System Command] ${interaction.user.tag} used /${interaction.commandName} ${argsStr ? `[${argsStr}]` : ''} in ${interaction.guild ? interaction.guild.name : 'Direct Messages'}`);
 
+            // Monkey-patch reply methods to handle deferred/replied states gracefully
+            const originalReply = interaction.reply.bind(interaction);
+            const originalDeferReply = interaction.deferReply.bind(interaction);
+
+            interaction.reply = async (options) => {
+                if (interaction.deferred || interaction.replied) {
+                    return await interaction.editReply(options);
+                }
+                return await originalReply(options);
+            };
+
+            interaction.deferReply = async (options) => {
+                if (interaction.deferred || interaction.replied) {
+                    return;
+                }
+                return await originalDeferReply(options);
+            };
+
             // ⏳ [Global Redirect & Wait] - System Command Monitoring
             const timeoutId = setTimeout(async () => {
                 if (!interaction.deferred && !interaction.replied) {
                     try {
                         await interaction.deferReply({ ephemeral: true }).catch(() => {});
-                        await interaction.followUp({ content: '☕ **Hang tight!** Nora is just gathering her thoughts. She will be with you in a second...', ephemeral: true }).catch(() => {});
+                        await interaction.editReply({ content: '☕ **Hang tight!** Nora is just gathering her thoughts. She will be with you in a second...', ephemeral: true }).catch(() => {});
                     } catch (e) {}
                 }
             }, 2000);
@@ -618,6 +640,8 @@ module.exports = {
                 }
 
                 if (!interaction.deferred && !interaction.replied) {
+                    await handleError(interaction, 'Nora hit a snag', `Something went slightly wrong in her brain. I've sent a quick note to the team to take a look!\n\n**Error details:** \`${error.message || error}\``);
+                } else if (interaction.deferred && !interaction.replied) {
                     await handleError(interaction, 'Nora hit a snag', `Something went slightly wrong in her brain. I've sent a quick note to the team to take a look!\n\n**Error details:** \`${error.message || error}\``);
                 } else {
                     await interaction.followUp({ content: '❌ **Nora tripped up**: Something went wrong, but the team has been notified!', ephemeral: true }).catch(() => {});

@@ -1,5 +1,5 @@
 const { Events, PermissionFlagsBits } = require('discord.js');
-const GuildSettings = require('../database/models/GuildSettings');
+const settingsCache = require('../utils/settingsCache');
 
 // In-memory spam tracker (resets on bot restart, which is fine for basic anti-spam)
 const userMessageLog = new Map();
@@ -25,10 +25,7 @@ module.exports = {
         if (message.author.id === client.user.id) return; // Ignore self
 
         // Get guild settings
-        let settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } });
-        if (!settings) {
-            settings = await GuildSettings.create({ guildId: message.guild.id });
-        }
+        const settings = await settingsCache.get(message.guild.id);
         
         if (!settings.spamDetectionEnabled) return;
 

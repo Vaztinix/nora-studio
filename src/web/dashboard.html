@@ -3141,35 +3141,43 @@
                     <div style="display: grid; grid-template-columns: 1.2fr 2fr; gap: 25px;">
                         <!-- Analytics Column -->
                         <div style="display: flex; flex-direction: column; gap: 25px;">
-                            <div class="panel" style="background: linear-gradient(135deg, rgba(174, 239, 255, 0.05) 0%, transparent 100%); border-color: rgba(174, 239, 255, 0.1);">
+                            <div class="panel" style="background: linear-gradient(135deg, rgba(255, 142, 60, 0.05) 0%, transparent 100%); border-color: rgba(255, 142, 60, 0.1);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                                     <h3>Activity Insight</h3>
+                                    <i class="fas fa-chart-line" style="color: var(--primary); opacity: 0.8;"></i>
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 15px;">
                                     <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                        <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Message Frequency</span>
-                                        <div style="display: flex; align-items: flex-end; gap: 10px; margin-top: 10px;">
-                                            <h2 id="analytics-text-count" style="font-size: 1.6rem; font-weight: 800;">...</h2>
-                                            <span id="analytics-text-trend" style="font-size: 0.75rem; color: var(--success); margin-bottom: 5px; font-weight: 700;">--%</span>
+                                        <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Messages Sent (Last 7d)</span>
+                                        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 10px;">
+                                            <h2 id="analytics-text-count" style="font-size: 1.8rem; font-weight: 800;">...</h2>
+                                            <span id="analytics-text-trend" style="font-size: 0.75rem; color: var(--success); font-weight: 700; background: rgba(46, 204, 113, 0.15); padding: 4px 8px; border-radius: 6px;">--%</span>
                                         </div>
                                     </div>
                                     <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                        <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Voice Retention</span>
-                                        <div style="display: flex; align-items: flex-end; gap: 10px; margin-top: 10px;">
-                                            <h2 id="analytics-voice-count" style="font-size: 1.6rem; font-weight: 800;">...</h2>
-                                            <span id="analytics-voice-status" style="font-size: 0.75rem; color: var(--primary); margin-bottom: 5px; font-weight: 700;">-- active</span>
+                                        <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Voice Activity (Last 7d)</span>
+                                        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 10px;">
+                                            <h2 id="analytics-voice-count" style="font-size: 1.8rem; font-weight: 800;">...</h2>
+                                            <span id="analytics-voice-status" style="font-size: 0.75rem; color: var(--primary); font-weight: 700; background: rgba(255, 142, 60, 0.15); padding: 4px 8px; border-radius: 6px;">-- active</span>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Active Communicators (7d)</span>
+                                        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 10px;">
+                                            <h2 id="analytics-active-communicators" style="font-size: 1.8rem; font-weight: 800;">...</h2>
+                                            <span style="font-size: 0.75rem; color: var(--muted); font-weight: 500;">unique users</span>
                                         </div>
                                     </div>
                                      <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
                                          <div>
-                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Avg Messages</span>
-                                             <div id="analytics-text-avg" style="font-size: 1.1rem; font-weight: 700; margin-top: 2px;">...</div>
+                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Activity Hour</span>
+                                             <div id="analytics-peak-hour" style="font-size: 1.1rem; font-weight: 700; margin-top: 2px; color: #fff;">...</div>
                                          </div>
                                          <div>
-                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Avg Voice</span>
-                                             <div id="analytics-voice-avg" style="font-size: 1.1rem; font-weight: 700; margin-top: 2px;">...</div>
+                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Top Active Channel</span>
+                                             <div id="analytics-top-channel" style="font-size: 1.1rem; font-weight: 700; margin-top: 2px; color: var(--primary);">...</div>
                                          </div>
-                                         <div style="grid-column: 1 / -1;">
+                                         <div style="grid-column: 1 / -1; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 8px; margin-top: 4px;">
                                              <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Active User</span>
                                              <div id="analytics-peak-active" style="font-size: 0.95rem; font-weight: 700; margin-top: 2px; color: var(--success); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">...</div>
                                          </div>
@@ -4287,12 +4295,15 @@
             };
 
             if (fromUser) {
-                const picker = document.getElementById('theme-color-picker');
-                if (themeColors[mode]) {
-                    picker.value = themeColors[mode];
-                    applyThemeColor(themeColors[mode]);
-                }
                 localStorage.setItem('nora_theme_mode', mode);
+                const savedColor = localStorage.getItem('nora_theme_color');
+                if (savedColor) {
+                    applyThemeColor(savedColor, true);
+                } else if (themeColors[mode]) {
+                    const picker = document.getElementById('theme-color-picker');
+                    if (picker) picker.value = themeColors[mode];
+                    applyThemeColor(themeColors[mode], false);
+                }
             }
             
             // Remove any existing theme classes
@@ -5707,6 +5718,10 @@
         function applyThemeColor(color, save = true) {
             document.documentElement.style.setProperty('--primary', color);
             document.documentElement.style.setProperty('--primary-glow', color + '66');
+            if (document.body) {
+                document.body.style.setProperty('--primary', color);
+                document.body.style.setProperty('--primary-glow', color + '66');
+            }
             if (save) saveDashboardSetting('nora_theme_color', color);
         }
 
@@ -6224,11 +6239,23 @@
                         
                         ${bioSection}
                         
-                        <!-- Admin Operations -->
-                        <div style="display: flex; gap: 6px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                            <button class="config-btn" style="padding: 6px; font-size: 0.7rem; flex: 1; border-radius: 8px; justify-content: center; height: auto;" onclick="event.stopPropagation(); memberAction('${m.userId}', 'warn')">Warn</button>
-                            <button class="config-btn" style="padding: 6px; font-size: 0.7rem; flex: 1; border-radius: 8px; justify-content: center; height: auto;" onclick="event.stopPropagation(); editMemberLevel('${m.userId}', ${m.level}, ${m.xp})">Level</button>
-                            <button class="config-btn" style="padding: 6px; font-size: 0.7rem; flex: 1; border-radius: 8px; justify-content: center; height: auto; color: var(--danger); border-color: rgba(255,85,85,0.15);" onclick="event.stopPropagation(); memberAction('${m.userId}', 'kick')">Kick</button>
+                        <!-- Redesigned Quick Actions Dock -->
+                        <div class="member-actions-dock" style="display: flex; gap: 8px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.65rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Moderate</span>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="action-btn-pill" title="Warn Member" onclick="event.stopPropagation(); memberAction('${m.userId}', 'warn')" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,142,60,0.15); background: rgba(255,142,60,0.06); color: var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='#000'; this.style.transform='scale(1.15)';" onmouseout="this.style.background='rgba(255,142,60,0.06)'; this.style.color='var(--primary)'; this.style.transform='scale(1)';">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </button>
+                                <button class="action-btn-pill" title="Adjust Level/XP" onclick="event.stopPropagation(); editMemberLevel('${m.userId}', ${m.level}, ${m.xp})" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(174,239,255,0.15); background: rgba(174,239,255,0.06); color: #aeefff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='#aeefff'; this.style.color='#000'; this.style.transform='scale(1.15)';" onmouseout="this.style.background='rgba(174,239,255,0.06)'; this.style.color='#aeefff'; this.style.transform='scale(1)';">
+                                    <i class="fas fa-arrow-alt-circle-up"></i>
+                                </button>
+                                <button class="action-btn-pill" title="Kick Member" onclick="event.stopPropagation(); memberAction('${m.userId}', 'kick')" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,85,85,0.15); background: rgba(255,85,85,0.06); color: #ff5555; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='#ff5555'; this.style.color='#fff'; this.style.transform='scale(1.15)';" onmouseout="this.style.background='rgba(255,85,85,0.06)'; this.style.color='#ff5555'; this.style.transform='scale(1)';">
+                                    <i class="fas fa-user-minus"></i>
+                                </button>
+                                <button class="action-btn-pill" title="Ban Member" onclick="event.stopPropagation(); memberAction('${m.userId}', 'ban')" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,0,0,0.25); background: rgba(255,0,0,0.08); color: #ff3b30; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='#ff3b30'; this.style.color='#fff'; this.style.transform='scale(1.15)';" onmouseout="this.style.background='rgba(255,0,0,0.08)'; this.style.color='#ff3b30'; this.style.transform='scale(1)';">
+                                    <i class="fas fa-gavel"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -6447,30 +6474,41 @@
                 // Populate Members tab analytics
                 const txtCountEl = document.getElementById('analytics-text-count');
                 const voiceCountEl = document.getElementById('analytics-voice-count');
-                const voteCountEl = document.getElementById('analytics-vote-count');
                 const trendEl = document.getElementById('analytics-text-trend');
                 if (txtCountEl) txtCountEl.textContent = (data.totalTextActivity || 0).toLocaleString();
-                if (voiceCountEl) voiceCountEl.textContent = Math.floor((data.totalVoiceActivity || 0) / 10) + 'm';
-                if (voteCountEl) voteCountEl.textContent = (data.totalVotes || 0).toLocaleString();
+                
+                if (voiceCountEl) {
+                    const voiceMins = data.totalVoiceActivity || 0;
+                    const h = Math.floor(voiceMins / 60);
+                    const m = voiceMins % 60;
+                    voiceCountEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
+                }
+                
                 if (trendEl) {
                     const trend = data.activityTrend || 0;
                     trendEl.textContent = (trend >= 0 ? '+' : '') + trend + '%';
                     trendEl.style.color = trend >= 0 ? 'var(--success)' : '#ff5555';
                 }
+                
                 const voiceStatusEl = document.getElementById('analytics-voice-status');
                 if (voiceStatusEl) {
                     const activeCount = data.activeVoiceUsers || 0;
-                    voiceStatusEl.textContent = activeCount + (activeCount === 1 ? ' active user' : ' active users');
+                    voiceStatusEl.textContent = activeCount + (activeCount === 1 ? ' active member' : ' active members');
                     voiceStatusEl.style.color = activeCount > 0 ? 'var(--primary)' : 'var(--muted)';
                 }
 
-                const txtAvgEl = document.getElementById('analytics-text-avg');
-                const voiceAvgEl = document.getElementById('analytics-voice-avg');
+                const activeCommEl = document.getElementById('analytics-active-communicators');
+                if (activeCommEl) activeCommEl.textContent = (data.activeCommunicators || 0).toLocaleString();
+
+                const peakHourEl = document.getElementById('analytics-peak-hour');
+                if (peakHourEl) peakHourEl.textContent = data.peakTimeStr || 'Not calculated';
+
+                const topChannelEl = document.getElementById('analytics-top-channel');
+                if (topChannelEl) topChannelEl.textContent = data.topChannelName || 'Not calculated';
+
                 const peakActiveEl = document.getElementById('analytics-peak-active');
                 const leastActiveEl = document.getElementById('analytics-least-active');
 
-                if (txtAvgEl) txtAvgEl.textContent = (data.avgTextActivity || 0).toLocaleString();
-                if (voiceAvgEl) voiceAvgEl.textContent = (data.avgVoiceActivity || 0) + 'm';
                 if (peakActiveEl) peakActiveEl.textContent = data.peakActiveName || 'None';
                 if (leastActiveEl) leastActiveEl.textContent = data.leastActiveName || 'None';
 

@@ -54,14 +54,15 @@ class AuraDeterministicBrain {
         if (this.isLoadingModel) return;
         this.isLoadingModel = true;
         try {
-            console.log('[Aura V11] Neural Core (Qwen1.5-1.8B-Chat) is downloading/mapping. This is a very dense model, please allow several minutes...');
-            this.generator = await pipeline('text-generation', 'Xenova/Qwen1.5-1.8B-Chat', {
-                quantized: true, // Use int8 for safe memory limits
-            });
+            console.warn('[Aura V11] Neural Core (Qwen1.5-1.8B-Chat) is disabled. Local model downloader will not download or load weights.');
+            this.generator = async (prompt, options) => {
+                console.warn('[Aura V11] Local LLM generator called, returning dummy fallback response.');
+                return [{ generated_text: "Local LLM features are currently offline for maintenance." }];
+            };
+            this.generator.dispose = () => {};
             this.modelReady = true;
-            console.log('[Aura V11] Qwen 1.8B Neural Core online.');
         } catch (e) {
-            console.error('[Aura V11] Failed to import neural weights:', e.message);
+            console.error('[Aura V11] Failed to initialize dummy neural engine:', e.message);
         }
         this.isLoadingModel = false;
     }
