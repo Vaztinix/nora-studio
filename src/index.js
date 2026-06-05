@@ -329,8 +329,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// Payload size limit to prevent memory exhaustion/large body attacks
-app.use(express.json({ limit: '15kb' }));
+// Payload size limit to prevent memory exhaustion/large body attacks (increased to 10mb for base64 image uploads)
+app.use(express.json({ limit: '10mb' }));
 
 // In-Memory IP Rate Limiter
 const ipRequests = new Map();
@@ -947,7 +947,8 @@ app.get('/api/user/guilds', async (req, res) => {
                 }
             }
         } catch (e) {}
-        if (user.id === '1214048435632603137') {
+        const APP_OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
+        if (APP_OWNER_IDS.includes(user.id)) {
             isUserBotOwner = true;
         }
 
@@ -960,7 +961,7 @@ app.get('/api/user/guilds', async (req, res) => {
             
             let isOwnerPremium = false;
             if (liveGuild) {
-                if (liveGuild.ownerId === '1214048435632603137') {
+                if (liveGuild.ownerId === '1214048435632603137' || liveGuild.ownerId === '1366229304257544213') {
                     isOwnerPremium = true;
                 }
             }
@@ -1249,6 +1250,24 @@ app.get('/api/user/topgg/bots', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
+
+        // Verify that the user is the bot owner
+        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
+        let isOwner = APP_OWNER_IDS.includes(user.id);
+        if (!isOwner) {
+            try {
+                const app = await req.client.application.fetch();
+                if (app.owner) {
+                    if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
+                        isOwner = true;
+                    }
+                }
+            } catch (e) {}
+        }
+        if (!isOwner) {
+            return res.status(403).json({ error: 'Forbidden: Only the bot owner can configure Top.gg settings.' });
+        }
+
         const url = `https://top.gg/user/${user.id}`;
         const topggRes = await fetch(url, {
             headers: {
@@ -1384,8 +1403,8 @@ app.get('/api/logs', async (req, res) => {
         }
 
         // Only the owner can view logs
-        const OWNER_ID = '1214048435632603137';
-        if (userId !== OWNER_ID) {
+        const OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
+        if (!OWNER_IDS.includes(userId)) {
             return res.status(403).json({ error: 'Forbidden: Owner-only access.' });
         }
 

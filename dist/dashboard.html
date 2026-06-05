@@ -2093,7 +2093,7 @@
                     <button class="h-tab" data-tab="tab-modules">Modules & Games</button>
                     <button class="h-tab" data-tab="tab-ai" style="opacity: 0.85;">Nora AI <span style="font-size: 0.65rem; background: rgba(255, 68, 68, 0.15); color: #ff5555; padding: 2px 6px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.2);">Disabled</span></button>
                     <button class="h-tab" data-tab="tab-roblox">Roblox</button>
-                    <button class="h-tab" data-tab="tab-topgg" style="opacity: 0.85;">Top.gg <span style="font-size: 0.65rem; background: rgba(255, 68, 68, 0.15); color: #ff5555; padding: 2px 6px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.2);">Disabled</span></button>
+                    <button class="h-tab" data-tab="tab-topgg" style="display: none; opacity: 0.85;">Top.gg <span style="font-size: 0.65rem; background: rgba(255, 68, 68, 0.15); color: #ff5555; padding: 2px 6px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.2);">Disabled</span></button>
                     <button class="h-tab" data-tab="tab-broadcast">Broadcast</button>
                     <button class="h-tab" data-tab="tab-members">Members</button>
                     <button class="h-tab" data-tab="tab-commands">Commands</button>
@@ -2656,21 +2656,188 @@
                     </div>
                 </div>
                 <div id="tab-topgg" class="tab-content">
-                    <div class="panel" style="border-color: rgba(255, 85, 85, 0.15); background: linear-gradient(135deg, rgba(255, 85, 85, 0.03) 0%, transparent 100%);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div id="topgg-unverified-view">
+                        <div class="panel">
                             <h3>Top.gg Bot Verification</h3>
-                            <span class="badge-user" style="background: rgba(255, 85, 85, 0.15); color: #ff5555; border: 1px solid rgba(255, 85, 85, 0.2); font-size: 0.7rem; padding: 3px 8px;">DISABLED</span>
-                        </div>
-                        <p>Connect your bot to Nora for vote tracking, role rewards, and engagement analytics.</p>
-                        
-                        <div style="background: rgba(255, 85, 85, 0.08); border: 1px solid rgba(255, 85, 85, 0.15); padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; color: #ff5555; font-size: 0.85rem; margin-top: 15px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 1.25rem;">⚠️</span>
-                                <div>
-                                    <strong>Top.gg Integration Suspended</strong>
-                                    <p style="margin-top: 4px; color: var(--muted); line-height: 1.4; font-size: 0.8rem;">Top.gg bot verification features are currently offline for maintenance and security upgrades. Linking new bots is temporarily disabled.</p>
+                            <p>Connect your bot to Nora for vote tracking, role rewards, and engagement analytics.</p>
+                            
+                            <div style="background: rgba(174, 239, 255, 0.05); padding: 25px; border-radius: 12px; border: 1px dashed var(--border); text-align: center; margin-bottom: 20px;">
+                                <h4 style="margin-bottom: 10px;">Auto-Detection</h4>
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">We'll check Top.gg for any bots owned by your Discord account.</p>
+                                <button class="config-btn" id="topgg-search-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 12px 30px;" onclick="fetchTopggBots()">Search My Bots</button>
+                                
+                                <div id="topgg-bot-results" style="margin-top: 25px; display: none;">
+                                    <h5 style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Bots on Top.gg</h5>
+                                    <div id="topgg-bot-list" style="display: flex; flex-direction: column; gap: 10px;">
+                                        <!-- Bot results will appear here -->
+                                    </div>
                                 </div>
                             </div>
+
+                            <div style="text-align: center;">
+                                <p style="font-size: 0.8rem; color: var(--muted);">Don't see your bot? <a href="javascript:void(0)" onclick="document.getElementById('topgg-manual-setup').style.display='block'" style="color: var(--primary);">Use Manual Bot ID</a></p>
+                            </div>
+
+                            <div id="topgg-manual-setup" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                                <div style="background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem;">
+                                    <strong style="color: var(--primary); display: block; margin-bottom: 5px;">💡 Legacy Account Tip</strong>
+                                    If you joined Top.gg several years ago, your profile might use a legacy ID. If linking fails, simply open your Top.gg profile, copy the ID from the URL, and ensure your current Discord ID is added as a <b>Manager</b> on your bot's Top.gg "Edit" page.
+                                </div>
+                                <div class="input-group">
+                                    <label>Bot / Server ID</label>
+                                    <input type="text" id="setting-topggBotId" placeholder="123456789012345678">
+                                </div>
+                                <div class="input-group" style="margin-top: 15px;">
+                                    <label>Legacy Top.gg User ID (Optional)</label>
+                                    <input type="text" id="setting-topggLegacyOwnerId" placeholder="If joined Top.gg before 2020" oninput="updateLegacyVerification()">
+                                </div>
+                                <div id="legacy-verification-info" style="display: none; margin-top: 15px; background: rgba(174, 239, 255, 0.03); border: 1px solid rgba(174, 239, 255, 0.1); padding: 15px; border-radius: 8px;">
+                                    <p style="font-size: 0.8rem; margin-bottom: 10px; color: var(--muted);">To verify you own this legacy account, please add this code to your <b>Top.gg Bio</b>:</p>
+                                    <code id="topgg-verify-code-display" style="background: #000; color: var(--primary); padding: 8px 12px; border-radius: 6px; font-weight: 800; display: block; text-align: center; font-size: 1.1rem; border: 1px solid var(--border); letter-spacing: 2px;">LOADING...</code>
+                                    <p style="font-size: 0.75rem; margin-top: 10px; color: var(--muted);">Nora will check your bio during the linking process.</p>
+                                </div>
+                                <button class="btn-outline" style="margin-top: 15px;" onclick="linkTopggBot(document.getElementById('setting-topggBotId').value)">Link via ID</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="topgg-verified-view" style="display: none;">
+                        <div class="panel">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <div>
+                                    <h3>Vote Tracker Configuration</h3>
+                                    <button class="btn-outline" style="margin-top: 10px; font-size: 0.8rem;" onclick="document.getElementById('topgg-unverified-view').style.display='block'; this.style.display='none';">+ Link Another Bot</button>
+                                </div>
+                                <span class="badge-user" style="background: var(--success); color: #000; margin: 0;">VERIFIED</span>
+                            </div>
+                            
+                            <div id="topgg-advanced-features">
+                                <div class="row">
+                                    <div class="row-info">
+                                        <h4>Experience Boost Reward</h4>
+                                        <p>Give users extra Experience for voting.</p>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="number" id="setting-topggXpBoost" placeholder="50" style="width: 80px;" min="0">
+                                        <span style="font-size: 0.8rem; color: var(--muted);">Experience</span>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="margin-top: 15px; margin-bottom: 25px;">
+                                    <label>Reward Role</label>
+                                    <select id="setting-topggRewardRoleId">
+                                        <option value="">No reward role</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 25px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                        <label style="margin: 0;">Vote Notification Channel</label>
+                                        <button class="config-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 2px 10px; font-size: 0.7rem; height: 24px;" onclick="testTopggWebhook()">Test Setup</button>
+                                    </div>
+                                    <select id="setting-topggVoteChannelId">
+                                        <option value="">Select a text channel...</option>
+                                    </select>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">Once selected, votes will automatically be detected and announced here.</p>
+                                </div>
+
+                                <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 25px; margin-bottom: 25px;">
+                                    <h4 style="margin-bottom: 15px; color: var(--primary);">Webhook Appearance</h4>
+                                    <div class="row">
+                                        <div class="row-info">
+                                            <h4>Webhook Name</h4>
+                                            <p>The name users see when a vote is announced.</p>
+                                        </div>
+                                        <input type="text" id="setting-topggWebhookName" placeholder="Nora Vote Tracker" style="width: 200px;">
+                                    </div>
+                                    <div class="row" style="margin-top: 15px;">
+                                        <div class="row-info">
+                                            <h4>Webhook Avatar</h4>
+                                            <p>The profile picture of the notification.</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 15px;">
+                                            <img id="topgg-avatar-preview" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);">
+                                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                                <input type="text" id="setting-topggWebhookAvatar" placeholder="Image URL" style="width: 200px; font-size: 0.8rem;" oninput="document.getElementById('topgg-avatar-preview').src = this.value || 'https://cdn.discordapp.com/embed/avatars/0.png'">
+                                                <button class="btn-outline" style="font-size: 0.7rem; padding: 2px 8px;" onclick="document.getElementById('topgg-avatar-upload').click()">Upload Image</button>
+                                                <input type="file" id="topgg-avatar-upload" style="display: none;" accept="image/*" onchange="handleTopggAvatarUpload(this)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 15px;">
+                                        <div class="row-info">
+                                            <h4>Embed Accent Color</h4>
+                                            <p>The color of the stripe on the side of the embed.</p>
+                                        </div>
+                                        <input type="color" id="setting-topggVoteEmbedColor" value="#FFA500" style="width: 50px; height: 30px; border: none; padding: 0; background: none; cursor: pointer;">
+                                    </div>
+                                </div>
+
+                                <div class="panel" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); margin-bottom: 25px;">
+                                    <h4 style="margin-bottom: 15px; font-size: 0.9rem; color: var(--primary);">Message Placeholder Key (Supports Markdown)</h4>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75rem;">
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.mention}</code> - Mention voter</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.tag}</code> - User Tag (User#0)</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.username}</code> - Voter name</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.displayname}</code> - Voter display</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.id}</code> - Voter ID</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.name}</code> - Server Name</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.count}</code> - Member Count</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.active}</code> - Online Count</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{bot.name}</code> - Bot Name</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{bot.link}</code> - Bot Top.gg Link</div>
+                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{count}</code> - Vote Value (1 or 2)</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="row-info">
+                                        <h4>Message Content</h4>
+                                        <p>Optional text sent outside the embed (supports placeholders).</p>
+                                    </div>
+                                    <input type="text" id="setting-topggVoteContent" placeholder="New vote alert!" style="width: 100%; margin-top: 10px;">
+                                </div>
+
+                                <div class="row" style="margin-top: 15px;">
+                                    <div class="row-info">
+                                        <h4>Embed Description</h4>
+                                        <p>The main message inside the notification embed.</p>
+                                    </div>
+                                    <textarea id="setting-topggVoteMessage" placeholder="{user.mention} just voted! Thanks!" style="width: 100%; min-height: 80px; margin-top: 10px;"></textarea>
+                                </div>
+
+                                <div class="row" style="margin-top: 15px;">
+                                    <div class="row-info">
+                                        <h4>Embed Image URL</h4>
+                                        <p>An optional large image displayed at the bottom of the embed.</p>
+                                    </div>
+                                    <input type="text" id="setting-topggVoteEmbedImage" placeholder="https://..." style="width: 100%; margin-top: 10px;">
+                                </div>
+
+                                <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 25px;">
+                                    <h4 style="margin-bottom: 15px;">Engagement Settings</h4>
+                                    <div class="row">
+                                        <div class="row-info">
+                                            <h4>Double Experience Weekends</h4>
+                                            <p>Automatically double the vote rewards during weekends.</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-topggDoubleXp"><span class="slider"></span></label>
+                                    </div>
+                                    <div class="row">
+                                        <div class="row-info">
+                                            <h4>Vote Reminders (BETA)</h4>
+                                            <p>Nora will DM users when they are eligible to vote again.</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-topggReminders"><span class="slider"></span></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                                <button class="btn-outline" style="font-size: 0.7rem; border: none; color: var(--muted);" onclick="copyConnectionDetails()">Show Webhook Setup Info</button>
+                                <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.2); width: auto; padding: 5px 15px;" onclick="unlinkTopggBot()">Unlink Bot Ownership</button>
+                            </div>
+                            <input type="hidden" id="setting-topggWebhookAuth">
+                            <input type="hidden" id="topgg-webhook-url-final">
                         </div>
                     </div>
                 </div>
@@ -2954,21 +3121,36 @@
         // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
         // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
-            // Local development overrides — always target local machine if loaded locally
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000') {
+            const host = window.location.hostname;
+            const port = window.location.port;
+
+            // If loaded from vaztinix.dev, always route to same origin (unless localhost/private-ip is explicitly overridden)
+            if (host === 'vaztinix.dev' || host.endsWith('.vaztinix.dev')) {
+                const localOverride = localStorage.getItem('nora_api_url');
+                if (localOverride && (localOverride.includes('localhost') || localOverride.includes('127.0.0.1') || localOverride.includes('192.168.') || localOverride.includes('10.') || localOverride.includes('172.'))) {
+                    return localOverride;
+                }
                 return window.location.origin;
             }
+
+            // Local development overrides — always target local machine if loaded locally
+            if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
+                return window.location.origin;
+            }
+
             // User-configured or offline-recovered override
             const localOverride = localStorage.getItem('nora_api_url');
             if (localOverride) {
                 return localOverride;
             }
+
             // Server-injected value (set in .env as API_BASE_URL)
             if (window.__NORA_API_BASE_URL__) {
                 return window.__NORA_API_BASE_URL__;
             }
+
             // Hard fallback
-            return 'https://api.vaztinix.dev';
+            return 'https://vaztinix.dev';
         };
 
         const originalFetch = window.fetch;
@@ -2984,12 +3166,12 @@
             let resolvedUrl = input;
             let usingOverride = false;
             if (typeof input === 'string' && input.startsWith('/api/')) {
+                const apiBase = window.getApiBaseUrl();
+                resolvedUrl = apiBase + input;
+                
                 const overrideUrl = localStorage.getItem('nora_api_url');
-                if (overrideUrl) {
-                    resolvedUrl = overrideUrl + input;
+                if (overrideUrl && apiBase === overrideUrl) {
                     usingOverride = true;
-                } else {
-                    resolvedUrl = window.getApiBaseUrl() + input;
                 }
             }
 
@@ -3209,14 +3391,37 @@
 
                     // First: try the current API base URL
                     let recovered = await tryHealth(currentBase);
+                    let recoveredUrl = currentBase;
 
-                    // Fallback: if current base failed and it's NOT already the canonical URL,
-                    // try the canonical API endpoint (fixes phones with cached local-IP sessions)
-                    if (!recovered && currentBase !== CANONICAL_API) {
+                    // Fallback 1: Try localhost if current base failed and is not localhost
+                    if (!recovered && currentBase !== 'http://localhost:3000') {
+                        console.log('[Offline] Trying localhost fallback...');
+                        recovered = await tryHealth('http://localhost:3000');
+                        if (recovered) {
+                            recoveredUrl = 'http://localhost:3000';
+                            localStorage.setItem('nora_api_url', 'http://localhost:3000');
+                            console.log('[Offline] Localhost fallback succeeded — saved as API URL');
+                        }
+                    }
+
+                    // Fallback 2: Try the working apex domain vaztinix.dev if current base is not vaztinix.dev
+                    const APEX_API = 'https://vaztinix.dev';
+                    if (!recovered && currentBase !== APEX_API && recoveredUrl !== 'http://localhost:3000') {
+                        console.log('[Offline] Trying apex domain fallback...');
+                        recovered = await tryHealth(APEX_API);
+                        if (recovered) {
+                            recoveredUrl = APEX_API;
+                            localStorage.setItem('nora_api_url', APEX_API);
+                            console.log('[Offline] Apex domain fallback succeeded — saved as API URL');
+                        }
+                    }
+
+                    // Fallback 3: Try the canonical subdomain as last resort
+                    if (!recovered && currentBase !== CANONICAL_API && recoveredUrl !== 'http://localhost:3000' && recoveredUrl !== APEX_API) {
                         console.log('[Offline] Primary API unreachable, trying canonical fallback...');
                         recovered = await tryHealth(CANONICAL_API);
                         if (recovered) {
-                            // Save canonical URL so future loads use it directly
+                            recoveredUrl = CANONICAL_API;
                             localStorage.setItem('nora_api_url', CANONICAL_API);
                             console.log('[Offline] Canonical fallback succeeded — saved as API URL');
                         }
@@ -4144,8 +4349,13 @@
                 // Check for owner
                 if (d.isOwner) {
                     document.getElementById('owner-panel').style.display = 'block';
+                    const topggTab = document.querySelector('[data-tab="tab-topgg"]');
+                    if (topggTab) topggTab.style.display = 'inline-block';
                     startTerminalFeed();
                     fetchPremiumAccess();
+                } else {
+                    const topggTab = document.querySelector('[data-tab="tab-topgg"]');
+                    if (topggTab) topggTab.style.display = 'none';
                 }
 
                 const expiredOverlay = document.getElementById('session-expired-overlay');
@@ -4154,6 +4364,11 @@
             } catch (e) { 
                 console.error('Authentication Error:', e);
                 showToast(`Auth Fault: ${e.message || 'Unknown'}`, 'error');
+                
+                // If it is a connection error (Failed to fetch), trigger the offline overlay to poll/switch API base URL
+                if (e.message && (e.message.includes('Failed to fetch') || e.message.includes('NetworkError') || e.status === 502 || e.status === 503 || e.status === 504)) {
+                    triggerApiOffline();
+                }
                 
                 // Only invalidate session on explicit 401/403 errors, not on network connection dropouts
                 const shouldInvalidateSession = e.status === 401 || e.status === 403;
@@ -7859,15 +8074,21 @@
                 <div style="border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary, #00d2ff); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;"></div>
                 <span style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s</span>
             </div>
-            <div style="margin-top: 4px;">
-                <button onclick="localStorage.setItem('nora_api_url','https://api.vaztinix.dev'); window.location.reload();"
+            <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                <button onclick="localStorage.setItem('nora_api_url','http://localhost:3000'); window.location.reload();"
                     style="background: var(--primary); border: none; border-radius: 10px; color: #0f111a; font-size: 0.85rem; font-weight: 700; padding: 10px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em; box-shadow: 0 0 15px var(--primary-glow); transition: all 0.2s ease;"
                     onmouseover="this.style.background='var(--primary-hover)'; this.style.transform='scale(1.02)';"
                     onmouseout="this.style.background='var(--primary)'; this.style.transform='none';">
+                    🔌 Switch to Localhost Connection
+                </button>
+                <button onclick="localStorage.setItem('nora_api_url','https://api.vaztinix.dev'); window.location.reload();"
+                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 0.85rem; font-weight: 700; padding: 10px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.02)';"
+                    onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='none';">
                     ☁️ Switch to Cloud Connection
                 </button>
-                <p style="color: rgba(138,159,196,0.4); font-size: 0.72rem; margin-top: 8px; margin-bottom: 0;">
-                    Use this if you switched networks or are away from home
+                <p style="color: rgba(138,159,196,0.4); font-size: 0.72rem; margin-top: 4px; margin-bottom: 0;">
+                    Use Localhost if you are running the bot locally without a tunnel.
                 </p>
             </div>
         </div>

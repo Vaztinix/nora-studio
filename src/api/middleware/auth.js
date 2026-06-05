@@ -124,4 +124,61 @@ const requireGuildPermission = async (req, res, next) => {
     }
 };
 
-module.exports = { requireGuildPermission, getCachedUserGuilds };
+// Simple in-memory cache for Discord user info to prevent rate limits
+const userCache = new Map();
+const activeUserRequests = new Map();
+const USER_CACHE_TTL = 60 * 1000; // 60 seconds cache
+
+const getDiscordUser = async (token) => {
+    const now = Date.now();
+    const cached = userCache.get(token);
+    if (cached && cached.expires > now) {
+        return cached.user;
+    }
+
+    if (activeUserRequests.has(token)) {
+        return activeUserRequests.get(token);
+    }
+
+    const fetchPromise = (async () => {
+        try {
+            const response = await fetch('https://discord.com/api/v10/users/@me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                if (response.status === 429 && cached) {
+                    console.warn('[Auth Middleware] Discord Rate Limit hit (429) for user. Reusing expired cache.');
+                    return cached.user;
+                }
+                const err = new Error(`Discord User API returned ${response.status}`);
+                err.status = response.status;
+                throw err;
+            }
+
+            const user = await response.json();
+            userCache.set(token, {
+                user,
+                expires: Date.now() + USER_CACHE_TTL
+            });
+            return user;
+        } finally {
+            activeUserRequests.delete(token);
+        }
+    })();
+
+    activeUserRequests.set(token, fetchPromise);
+    return fetchPromise;
+};
+
+// Clean up user cache periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, data] of userCache.entries()) {
+        if (data.expires < now) {
+            userCache.delete(token);
+        }
+    }
+}, 5 * 60 * 1000);
+
+module.exports = { requireGuildPermission, getCachedUserGuilds, getDiscordUser };

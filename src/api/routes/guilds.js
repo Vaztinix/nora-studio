@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { requireGuildPermission } = require('../middleware/auth');
+const { requireGuildPermission, getDiscordUser } = require('../middleware/auth');
 const UserLevel = require('../../database/models/UserLevel');
 const RobloxVerify = require('../../database/models/RobloxVerify');
 const UserPrefs = require('../../database/models/UserPrefs');
@@ -359,13 +359,25 @@ router.post('/topgg/link-bot', async (req, res) => {
         if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
         const token = authHeader.split(' ')[1];
         
-        // Fetch user info from Discord API using axios
-        const axios = require('axios');
-        const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-            headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => null);
-        if (!userRes) return res.status(401).json({ error: 'Invalid Discord token' });
-        const user = userRes.data;
+        const user = await getDiscordUser(token).catch(() => null);
+        if (!user) return res.status(401).json({ error: 'Invalid Discord token' });
+
+        // Verify that the user is the bot owner
+        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
+        let isOwnerUser = APP_OWNER_IDS.includes(user.id);
+        if (!isOwnerUser) {
+            try {
+                const app = await req.client.application.fetch();
+                if (app.owner) {
+                    if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
+                        isOwnerUser = true;
+                    }
+                }
+            } catch (e) {}
+        }
+        if (!isOwnerUser) {
+            return res.status(403).json({ error: 'Forbidden: Only the bot owner can configure Top.gg settings.' });
+        }
 
         // 1. First, check if the bot is visible on the user's public Top.gg profile (Xavinlol's recommended approach)
         let isOwner = false;
@@ -608,20 +620,31 @@ router.post('/topgg/test', async (req, res) => {
             return res.status(404).json({ error: 'Configured notification channel not found.' });
         }
 
-        // Get user details from authorization token
+        // Get user details from authorization token and verify owner
         const authHeader = req.headers.authorization;
-        let testUser = req.client.user;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const token = authHeader.split(' ')[1];
-            const axios = require('axios');
-            const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${token}` }
-            }).catch(() => null);
-            if (userRes && userRes.data) {
-                const userData = userRes.data;
-                testUser = await req.client.users.fetch(userData.id).catch(() => req.client.user);
-            }
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token).catch(() => null);
+        if (!user) return res.status(401).json({ error: 'Invalid Discord token' });
+
+        // Verify that the user is the bot owner
+        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
+        let isOwnerUser = APP_OWNER_IDS.includes(user.id);
+        if (!isOwnerUser) {
+            try {
+                const app = await req.client.application.fetch();
+                if (app.owner) {
+                    if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
+                        isOwnerUser = true;
+                    }
+                }
+            } catch (e) {}
         }
+        if (!isOwnerUser) {
+            return res.status(403).json({ error: 'Forbidden: Only the bot owner can configure Top.gg settings.' });
+        }
+
+        let testUser = await req.client.users.fetch(user.id).catch(() => req.client.user);
 
         // Send simulated vote
         const { sendVoteNotification } = require('../../utils/topggWebhookHandler');

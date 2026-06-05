@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 const GuildSettings = require('../../database/models/GuildSettings');
-const { requireGuildPermission } = require('../middleware/auth');
+const { requireGuildPermission, getDiscordUser } = require('../middleware/auth');
 
 // Apply permission checking middleware to all routes in this router
 router.use(requireGuildPermission);
@@ -50,6 +50,39 @@ router.post('/', async (req, res) => {
     try {
         const { guildId } = req.params;
         const payload = req.body;
+
+        // Verify Top.gg keys ownership
+        const topggFields = [
+            'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 
+            'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 
+            'topggRewardRoleId', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 
+            'topggReminders', 'topggWebhookName', 'topggWebhookAvatar'
+        ];
+        const containsTopggFields = Object.keys(payload).some(key => topggFields.includes(key));
+        if (containsTopggFields) {
+            const authHeader = req.headers.authorization;
+            if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+            const token = authHeader.split(' ')[1];
+            
+            const user = await getDiscordUser(token).catch(() => null);
+            if (!user) return res.status(401).json({ error: 'Invalid Discord token' });
+            
+            const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
+            let isOwner = APP_OWNER_IDS.includes(user.id);
+            if (!isOwner) {
+                try {
+                    const app = await req.client.application.fetch();
+                    if (app.owner) {
+                        if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
+                            isOwner = true;
+                        }
+                    }
+                } catch (e) {}
+            }
+            if (!isOwner) {
+                return res.status(403).json({ error: 'Forbidden: Only the bot owner can configure Top.gg settings.' });
+            }
+        }
 
         // Prevent updating the guildId itself
         if (payload.guildId) {

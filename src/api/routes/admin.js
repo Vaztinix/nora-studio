@@ -29,7 +29,8 @@ const requireOwner = async (req, res, next) => {
                 }
             }
         } catch (e) {}
-        if (user.id === '1214048435632603137') {
+        const APP_OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
+        if (APP_OWNER_IDS.includes(user.id)) {
             isOwner = true;
         }
 
