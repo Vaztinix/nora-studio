@@ -9,3 +9,27 @@ node_modules/
 countingData.json
 scratch/
 .nora_neural_weights/
+
+# Logs and backups
+*.log
+bot_log*.txt
+dev_chatlog_deleted.txt
+Nora Backups/
+
+# Temp cache data
+member_cache.json
+commands_summary.json
+learningData.json
+
+# Scratch / test scripts
+test*.js
+adjustLevels.js
+checkDb.js
+checkToggles.js
+extract_commands.js
+fixDb.js
+migrate_immune.js
+migrate_raid.js
+scanDb.js
+scratch_sync.js
+syncDb.js
