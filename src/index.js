@@ -1425,34 +1425,75 @@ app.post('/topgg/webhook', webhook.listener(async (vote) => {
 
     try {
         const userId = vote.user;
+        const GuildSettings = require('./database/models/GuildSettings');
         
-        // Award XP in Nora Mainframe (HQ)
-        const userRecord = await noraLeveling.getOrInitializeUser(userId, NORA_SERVER_ID);
+        let settings = null;
+        let targetGuildId = NORA_SERVER_ID;
+
+        // Try to identify guild via vote.query params
+        if (vote.query) {
+            const params = new URLSearchParams(vote.query.startsWith('?') ? vote.query : '?' + vote.query);
+            const queryGuildId = params.get('guildId') || params.get('guild');
+            if (queryGuildId) {
+                settings = await GuildSettings.findOne({ where: { guildId: queryGuildId } });
+                if (settings) targetGuildId = queryGuildId;
+            }
+        }
+
+        // If not found, try to identify guild via bot ID matching topggBotId
+        if (!settings && vote.bot) {
+            settings = await GuildSettings.findOne({ where: { topggBotId: vote.bot } });
+            if (settings) targetGuildId = settings.guildId;
+        }
+
+        // Fallback to HQ (Nora Mainframe)
+        if (!settings) {
+            settings = await GuildSettings.findOne({ where: { guildId: NORA_SERVER_ID } });
+        }
+
+        // Process vote reward logic for identified guild/settings
+        const noraLeveling = require('./utils/noraLeveling');
+        const userRecord = await noraLeveling.getOrInitializeUser(userId, targetGuildId);
         if (userRecord) {
-            await noraLeveling.addExperience(userRecord, 50);
+            const xpBoost = settings ? (settings.topggXpBoost || 1) : 1;
+            const count = (settings && settings.topggDoubleXp && (vote.isWeekend || [6, 0].includes(new Date().getDay()))) ? 2 : 1;
+            const baseXP = 50 * xpBoost * count;
+            
+            await noraLeveling.addExperience(userRecord, baseXP);
             userRecord.voteCount = (userRecord.voteCount || 0) + 1;
             userRecord.lastVoteTimestamp = new Date();
             await userRecord.save();
         }
 
-        // Log to HQ
-        const hqSettings = await GuildSettings.findOne({ where: { guildId: NORA_SERVER_ID } });
-        if (hqSettings && hqSettings.voteLogChannelId) {
-            const hqGuild = client.guilds.cache.get(NORA_SERVER_ID);
-            if (hqGuild) {
-                const logChannel = hqGuild.channels.cache.get(hqSettings.voteLogChannelId);
-                if (logChannel) {
-                    const embed = new EmbedBuilder()
-                        .setTitle('New Top.gg Vote! 🗳️')
-                        .setDescription(`User <@${userId}> just voted for Nora!`)
-                        .addFields(
-                            { name: 'Reward', value: '50 XP Added', inline: true },
-                            { name: 'Total Votes', value: `${userRecord ? userRecord.voteCount : 1}`, inline: true }
-                        )
-                        .setColor(0xFFA500)
-                        .setTimestamp();
-                    await logChannel.send({ embeds: [embed] }).catch(() => {});
+        // Assign Reward Role if configured
+        if (settings && settings.topggRewardRoleId) {
+            try {
+                const guild = client.guilds.cache.get(targetGuildId) || await client.guilds.fetch(targetGuildId).catch(() => null);
+                if (guild) {
+                    const member = await guild.members.fetch(userId).catch(() => null);
+                    if (member && !member.roles.cache.has(settings.topggRewardRoleId)) {
+                        const roleObj = guild.roles.cache.get(settings.topggRewardRoleId);
+                        if (roleObj && guild.members.me.roles.highest.position > roleObj.position) {
+                            await member.roles.add(settings.topggRewardRoleId).catch(e => {
+                                console.error(`[Top.gg Webhook] Failed to add reward role to user ${userId} in ${targetGuildId}:`, e.message);
+                            });
+                        }
+                    }
                 }
+            } catch (e) {
+                console.error('[Top.gg Webhook] Error assigning reward role:', e.message);
+            }
+        }
+
+        // Send Notification alert
+        const voteChannelId = settings ? (settings.topggVoteChannelId || settings.voteLogChannelId) : null;
+        if (voteChannelId) {
+            const guild = client.guilds.cache.get(targetGuildId) || await client.guilds.fetch(targetGuildId).catch(() => null);
+            if (guild) {
+                const { sendVoteNotification } = require('./utils/topggWebhookHandler');
+                await sendVoteNotification(guild, settings, userId, false).catch(err => {
+                    console.error('[Top.gg Webhook] Notification sending failed:', err.message);
+                });
             }
         }
     } catch (error) {
@@ -1477,9 +1518,12 @@ app.post('/api/webhooks/topgg/:guildId', async (req, res) => {
             return res.status(404).json({ error: 'Guild settings not found.' });
         }
 
-        // Verify authorization header matches the guild's webhook secret
+        // Verify authorization header matches the guild's webhook secret (sanitized)
         const authHeader = req.headers.authorization;
-        if (!authHeader || authHeader !== settings.topggWebhookAuth) {
+        const cleanAuth = authHeader ? authHeader.replace(/^Bearer\s+/i, '').trim() : '';
+        const cleanSettingsAuth = settings.topggWebhookAuth ? settings.topggWebhookAuth.trim() : '';
+
+        if (!cleanSettingsAuth || cleanAuth !== cleanSettingsAuth) {
             console.warn(`[Top.gg Webhook] Unauthorized vote attempt for guild ${guildId}`);
             return res.status(401).json({ error: 'Unauthorized' });
         }

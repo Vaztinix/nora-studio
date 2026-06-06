@@ -422,6 +422,8 @@
             font-weight: 700; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px var(--primary-glow);
         }
         .save-btn:hover { transform: translateY(-2px); background: var(--primary-hover); box-shadow: 0 6px 20px var(--primary-glow); }
+        #broadcast-send-btn { box-shadow: none !important; }
+        #broadcast-send-btn:hover { box-shadow: none !important; }
 
         .h-nav {
             display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto; padding: 5px 0;
@@ -1491,6 +1493,67 @@
             align-items: center;
             gap: 4px;
         }
+
+        /* Collapsible Dropdown Custom Message Builders */
+        .log-row-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        .log-row-dropdown {
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            padding: 15px 20px;
+            margin-top: -1px;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .custom-msg-input {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .custom-msg-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(255, 142, 60, 0.2);
+        }
+        .placeholder-help-icon {
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.95rem;
+            opacity: 0.8;
+            transition: 0.2s;
+        }
+        .placeholder-help-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .placeholder-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 125%;
+            right: 0;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            width: 240px;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-size: 0.75rem;
+            font-weight: normal;
+            line-height: 1.4;
+            color: #fff;
+        }
     </style>
 </head>
 <body class="nora-theme">
@@ -1714,34 +1777,7 @@
                 </div>
             </div>
 
-            <!-- Advanced Logging Modal -->
-            <div id="advanced-logging-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
-                <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
-                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Custom Message Templates</h2>
-                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">Configure custom announcement logs. Use variables like <code style="color: var(--primary);">{user}</code> (mention), <code style="color: var(--primary);">{username}</code> (plain name), <code style="color: var(--primary);">{id}</code> (user ID), or <code style="color: var(--primary);">{guild}</code> (server name) to customize text.</p>
-                    
-                    <div class="input-group" style="margin-bottom: 15px;">
-                        <label>Join Alert Message</label>
-                        <input type="text" id="setting-logJoinMessage" placeholder="Welcome {user} to the server!" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px;">
-                    </div>
-                    <div class="input-group" style="margin-bottom: 15px;">
-                        <label>Leave Alert Message</label>
-                        <input type="text" id="setting-logLeaveMessage" placeholder="{username} has left the server." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px;">
-                    </div>
-                    <div class="input-group" style="margin-bottom: 20px;">
-                        <label>Server Boost Message</label>
-                        <input type="text" id="setting-logBoostMessage" placeholder="Thank you {user} for boosting {guild}!" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px;">
-                    </div>
-                    <div class="input-group" style="margin-bottom: 20px;">
-                        <label>Level Up Alert Message</label>
-                        <input type="text" id="setting-levelUpMessage" placeholder="Congratulations {user}! You've climbed to Level {level}!" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px;">
-                    </div>
-                    
-                    <div style="display: flex; gap: 15px;">
-                        <button class="config-btn" style="flex: 1;" onclick="document.getElementById('advanced-logging-modal').style.display = 'none'">Close & Save</button>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Role Rewards Modal -->
             <div id="role-rewards-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
@@ -2505,19 +2541,113 @@
                             <select id="setting-loggingChannelId"><option value="">Select channel...</option></select>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div class="log-row-compact" style="background: rgba(46, 160, 67, 0.03);">
-                                <span>Member Joins</span>
-                                <label class="switch small"><input type="checkbox" id="setting-logMemberJoins" class="log-toggle"><span class="slider"></span></label>
+                        <!-- Customizable Announcements (Full-width rows with dropdowns) -->
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                            <div class="log-row-container" style="display: flex; flex-direction: column;">
+                                <div class="log-row-compact" onclick="toggleRowDropdown(this)" style="cursor: pointer; background: rgba(46, 160, 67, 0.03); border-radius: 12px; transition: border-radius 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-user-plus" style="color: #2ea043; width: 16px;"></i>
+                                        <span>Member Joins</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted);"></i>
+                                        <label class="switch small" onclick="event.stopPropagation()"><input type="checkbox" id="setting-logMemberJoins" class="log-toggle"><span class="slider"></span></label>
+                                    </div>
+                                </div>
+                                <div class="log-row-dropdown" style="display: none; padding: 15px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; margin-top: -1px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">Custom Join Announcement Message</span>
+                                        <div style="position: relative; display: inline-block;">
+                                            <i class="far fa-question-circle placeholder-help-icon" style="color: var(--primary); cursor: pointer; font-size: 0.9rem;" onclick="togglePlaceholderHelp(event)"></i>
+                                            <div class="placeholder-tooltip">
+                                                <strong>Available Placeholders:</strong><br>
+                                                <code style="color: var(--primary);">{user}</code> - Mentions the member<br>
+                                                <code style="color: var(--primary);">{username}</code> - Plain name<br>
+                                                <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
+                                                <code style="color: var(--primary);">{guild}</code> - Server name<br>
+                                                <code style="color: var(--primary);">{membercount}</code> - Member count<br>
+                                                <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Markdown.</em>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="text" id="setting-logJoinMessage" class="custom-msg-input" placeholder="Welcome {user} to the server!">
+                                    <div style="font-size: 0.7rem; color: var(--muted); line-height: 1.3; margin-top: 8px;">
+                                        <strong>Default fallback:</strong> Welcome, {user}! We're glad you're here!
+                                    </div>
+                                </div>
                             </div>
-                            <div class="log-row-compact" style="background: rgba(248, 81, 73, 0.03);">
-                                <span>Member Leaves</span>
-                                <label class="switch small"><input type="checkbox" id="setting-logMemberLeaves" class="log-toggle"><span class="slider"></span></label>
+
+                            <div class="log-row-container" style="display: flex; flex-direction: column;">
+                                <div class="log-row-compact" onclick="toggleRowDropdown(this)" style="cursor: pointer; background: rgba(248, 81, 73, 0.03); border-radius: 12px; transition: border-radius 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-user-minus" style="color: #f85149; width: 16px;"></i>
+                                        <span>Member Leaves</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted);"></i>
+                                        <label class="switch small" onclick="event.stopPropagation()"><input type="checkbox" id="setting-logMemberLeaves" class="log-toggle"><span class="slider"></span></label>
+                                    </div>
+                                </div>
+                                <div class="log-row-dropdown" style="display: none; padding: 15px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; margin-top: -1px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">Custom Leave Announcement Message</span>
+                                        <div style="position: relative; display: inline-block;">
+                                            <i class="far fa-question-circle placeholder-help-icon" style="color: var(--primary); cursor: pointer; font-size: 0.9rem;" onclick="togglePlaceholderHelp(event)"></i>
+                                            <div class="placeholder-tooltip">
+                                                <strong>Available Placeholders:</strong><br>
+                                                <code style="color: var(--primary);">{user}</code> - Mentions the member<br>
+                                                <code style="color: var(--primary);">{username}</code> - Plain name<br>
+                                                <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
+                                                <code style="color: var(--primary);">{guild}</code> - Server name<br>
+                                                <code style="color: var(--primary);">{membercount}</code> - Member count<br>
+                                                <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Markdown.</em>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="text" id="setting-logLeaveMessage" class="custom-msg-input" placeholder="{username} has left the server.">
+                                    <div style="font-size: 0.7rem; color: var(--muted); line-height: 1.3; margin-top: 8px;">
+                                        <strong>Default fallback:</strong> {user} has left the server. See you later!
+                                    </div>
+                                </div>
                             </div>
-                            <div class="log-row-compact" style="background: rgba(255, 115, 250, 0.03);">
-                                <span>Server Boosts</span>
-                                <label class="switch small"><input type="checkbox" id="setting-logMemberBoosts" class="log-toggle"><span class="slider"></span></label>
+
+                            <div class="log-row-container" style="display: flex; flex-direction: column;">
+                                <div class="log-row-compact" onclick="toggleRowDropdown(this)" style="cursor: pointer; background: rgba(255, 115, 250, 0.03); border-radius: 12px; transition: border-radius 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-rocket" style="color: #ff73fa; width: 16px;"></i>
+                                        <span>Server Boosts</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted);"></i>
+                                        <label class="switch small" onclick="event.stopPropagation()"><input type="checkbox" id="setting-logMemberBoosts" class="log-toggle"><span class="slider"></span></label>
+                                    </div>
+                                </div>
+                                <div class="log-row-dropdown" style="display: none; padding: 15px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; margin-top: -1px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">Custom Server Boost Message</span>
+                                        <div style="position: relative; display: inline-block;">
+                                            <i class="far fa-question-circle placeholder-help-icon" style="color: var(--primary); cursor: pointer; font-size: 0.9rem;" onclick="togglePlaceholderHelp(event)"></i>
+                                            <div class="placeholder-tooltip">
+                                                <strong>Available Placeholders:</strong><br>
+                                                <code style="color: var(--primary);">{user}</code> - Mentions the booster<br>
+                                                <code style="color: var(--primary);">{username}</code> - Plain name<br>
+                                                <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
+                                                <code style="color: var(--primary);">{guild}</code> - Server name<br>
+                                                <code style="color: var(--primary);">{membercount}</code> - Member count<br>
+                                                <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Markdown.</em>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="text" id="setting-logBoostMessage" class="custom-msg-input" placeholder="Thank you {user} for boosting {guild}!">
+                                    <div style="font-size: 0.7rem; color: var(--muted); line-height: 1.3; margin-top: 8px;">
+                                        <strong>Default fallback:</strong> Thank you {user} for boosting {guild}! 🚀
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+
+                        <!-- Standard Audit Logs Grid (2-column layout) -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                             <div class="log-row-compact">
                                 <span>Message Edits</span>
                                 <label class="switch small"><input type="checkbox" id="setting-logMessageEdits" class="log-toggle"><span class="slider"></span></label>
@@ -2550,14 +2680,10 @@
                                 <span>Voice Moves</span>
                                 <label class="switch small"><input type="checkbox" id="setting-logVoiceMoves" class="log-toggle"><span class="slider"></span></label>
                             </div>
-                            <div class="log-row-compact">
+                            <div class="log-row-compact" style="grid-column: span 2;">
                                 <span>Automod Events</span>
                                 <label class="switch small"><input type="checkbox" id="setting-logAutomod" class="log-toggle"><span class="slider"></span></label>
                             </div>
-                        </div>
-                        
-                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
-                            <button class="config-btn" style="width: 100%;" onclick="openAdvancedLogging()"><i class="fas fa-external-link-alt"></i> Configure Message Templates</button>
                         </div>
                     </div>
                     <button class="save-btn" style="width: 100%; margin-top: 5px;" onclick="saveSettings()">Save Logging Config</button>
@@ -2581,49 +2707,75 @@
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-levelingEnabled"><span class="slider"></span></label>
                                 </div>
-                                <div class="log-row-compact">
+                            <div class="log-row-container" style="display: flex; flex-direction: column;">
+                                <div class="log-row-compact" onclick="toggleRowDropdown(this)" style="cursor: pointer; border-radius: 12px; transition: border-radius 0.2s;">
                                     <div style="display: flex; flex-direction: column; gap: 2px;">
                                         <strong>Level Up Alerts</strong>
                                         <p style="font-size: 0.7rem; color: var(--muted);">Send message to channel</p>
                                     </div>
-                                    <label class="switch small"><input type="checkbox" id="setting-levelUpNotificationsEnabled"><span class="slider"></span></label>
-                                </div>
-                                <div class="log-row-compact" style="opacity: 0.6;">
-                                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <strong>DM Notifications (🔒 Locked)</strong>
-                                        <p style="font-size: 0.7rem; color: var(--muted);">Send level up to DMs (Disabled until opt-out mechanism is ready)</p>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted);"></i>
+                                        <label class="switch small" onclick="event.stopPropagation()"><input type="checkbox" id="setting-levelUpNotificationsEnabled"><span class="slider"></span></label>
                                     </div>
-                                    <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled" disabled><span class="slider"></span></label>
+                                </div>
+                                <div class="log-row-dropdown" style="display: none; padding: 15px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; margin-top: -1px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">Custom Level Up Alert Message</span>
+                                        <div style="position: relative; display: inline-block;">
+                                            <i class="far fa-question-circle placeholder-help-icon" style="color: var(--primary); cursor: pointer; font-size: 0.9rem;" onclick="togglePlaceholderHelp(event)"></i>
+                                            <div class="placeholder-tooltip">
+                                                <strong>Available Placeholders:</strong><br>
+                                                <code style="color: var(--primary);">{user}</code> - Mentions the user<br>
+                                                <code style="color: var(--primary);">{username}</code> - Plain name<br>
+                                                <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
+                                                <code style="color: var(--primary);">{guild}</code> - Server name<br>
+                                                <code style="color: var(--primary);">{membercount}</code> - Member count<br>
+                                                <code style="color: var(--primary);">{level}</code> - User new level<br>
+                                                <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Markdown.</em>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="text" id="setting-levelUpMessage" class="custom-msg-input" placeholder="Congratulations {user}! You've climbed to Level {level}!">
+                                    <div style="font-size: 0.7rem; color: var(--muted); line-height: 1.3; margin-top: 8px;">
+                                        <strong>Default fallback:</strong> Congratulations {user}! You've climbed to Level {level}!
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div class="log-row-compact" style="opacity: 0.6;">
+                                <div style="display: flex; flex-direction: column; gap: 2px;">
+                                    <strong>DM Notifications (🔒 Locked)</strong>
+                                    <p style="font-size: 0.7rem; color: var(--muted);">Send level up to DMs (Disabled until opt-out mechanism is ready)</p>
+                                </div>
+                                <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled" disabled><span class="slider"></span></label>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div class="input-group">
+                                <label>Announce Channel</label>
+                                <select id="setting-levelUpChannelId"><option value="">Select channel...</option></select>
+                            </div>
+                            <div class="input-group">
+                                <label>Status Promoter Role</label>
+                                <select id="setting-promoterRoleId"><option value="">No role selected</option></select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                 <div class="input-group">
-                                    <label>Announce Channel</label>
-                                    <select id="setting-levelUpChannelId"><option value="">Select channel...</option></select>
+                                    <label>Voice XP</label>
+                                    <input type="number" id="setting-voiceXpRate" placeholder="10">
                                 </div>
                                 <div class="input-group">
-                                    <label>Status Promoter Role</label>
-                                    <select id="setting-promoterRoleId"><option value="">No role selected</option></select>
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                    <div class="input-group">
-                                        <label>Voice XP</label>
-                                        <input type="number" id="setting-voiceXpRate" placeholder="10">
-                                    </div>
-                                    <div class="input-group">
-                                        <label>Interval (s)</label>
-                                        <input type="number" id="setting-voiceXpInterval" placeholder="60">
-                                    </div>
+                                    <label>Interval (s)</label>
+                                    <input type="number" id="setting-voiceXpInterval" placeholder="60">
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                            <button class="config-btn" onclick="openRoleRewards()"><i class="fas fa-trophy"></i> Role Rewards</button>
-                            <button class="config-btn" onclick="openXpMultipliers()"><i class="fas fa-chart-line"></i> XP Multipliers</button>
-                            <button class="config-btn" onclick="openAdvancedLogging()"><i class="fas fa-comment-alt"></i> Message Templates</button>
-                        </div>
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <button class="config-btn" onclick="openRoleRewards()"><i class="fas fa-trophy"></i> Role Rewards</button>
+                        <button class="config-btn" onclick="openXpMultipliers()"><i class="fas fa-chart-line"></i> XP Multipliers</button>
+                    </div>
                     </div>
                     <script>
                         function openRoleRewards() {
@@ -3026,12 +3178,33 @@
                                     </div>
                                 </div>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                                <button class="btn-outline" style="font-size: 0.7rem; border: none; color: var(--muted);" onclick="copyConnectionDetails()">Show Webhook Setup Info</button>
+                            <!-- Premium Webhook Integration Details Panel -->
+                            <div class="panel" style="background: rgba(174, 239, 255, 0.02); border: 1px solid var(--border); margin-top: 25px; padding: 20px; border-radius: 12px;">
+                                <h4 style="margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-link"></i> Top.gg Webhook Integration Setup
+                                </h4>
+                                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px; line-height: 1.4;">
+                                    To receive live voting events, configure these values in your bot's <b>Webhooks</b> tab on the Top.gg Edit page.
+                                </p>
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Webhook URL</label>
+                                    <div style="display: flex; gap: 10px;">
+                                        <input type="text" id="topgg-webhook-url-final" readonly style="flex: 1; background: rgba(0, 0, 0, 0.3); border-color: var(--border); color: var(--muted); font-size: 0.8rem;" placeholder="Select bot to generate URL...">
+                                        <button class="btn-outline" onclick="copyWebhookDetails('topgg-webhook-url-final')" style="padding: 8px 12px; font-size: 0.75rem; white-space: nowrap;"><i class="far fa-copy"></i> Copy URL</button>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label>Authorization Header Token</label>
+                                    <div style="display: flex; gap: 10px;">
+                                        <input type="text" id="setting-topggWebhookAuth" readonly style="flex: 1; background: rgba(0, 0, 0, 0.3); border-color: var(--border); color: var(--muted); font-size: 0.8rem;" placeholder="Click Search Bots / Manual Setup to generate...">
+                                        <button class="btn-outline" onclick="copyWebhookDetails('setting-topggWebhookAuth')" style="padding: 8px 12px; font-size: 0.75rem; white-space: nowrap;"><i class="far fa-copy"></i> Copy Token</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 15px;">
                                 <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.2); width: auto; padding: 5px 15px;" onclick="unlinkTopggBot()">Unlink Bot Ownership</button>
                             </div>
-                            <input type="hidden" id="setting-topggWebhookAuth">
-                            <input type="hidden" id="topgg-webhook-url-final">
                         </div>
                     </div>
                 </div>
@@ -3148,7 +3321,10 @@
                         <div style="display: flex; flex-direction: column; gap: 25px;">
                             <div class="panel" style="background: linear-gradient(135deg, rgba(255, 142, 60, 0.05) 0%, transparent 100%); border-color: rgba(255, 142, 60, 0.1);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                    <h3>Activity Insight</h3>
+                                    <div>
+                                        <h3 style="margin: 0;">Activity Insight</h3>
+                                        <p style="font-size: 0.75rem; color: var(--muted); margin-top: 4px;" id="analytics-server-desc">Analytics and insights for this server.</p>
+                                    </div>
                                     <i class="fas fa-chart-line" style="color: var(--primary); opacity: 0.8;"></i>
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 15px;">
@@ -5703,8 +5879,52 @@
             document.getElementById('user-name').textContent = localStorage.getItem('nora_display_name') || 'Nora User';
             applyBackdropSettings();
         }
-        window.openAdvancedLogging = function() {
-            document.getElementById('advanced-logging-modal').style.display = 'flex';
+        window.toggleRowDropdown = function(headerEl) {
+            const container = headerEl.parentElement;
+            const dropdown = container.querySelector('.log-row-dropdown');
+            const isExpanded = dropdown.style.display !== 'none';
+            
+            if (isExpanded) {
+                dropdown.style.display = 'none';
+                headerEl.style.borderRadius = '12px';
+                const chevron = headerEl.querySelector('.fa-chevron-down, .fa-chevron-up');
+                if (chevron) {
+                    chevron.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                }
+            } else {
+                dropdown.style.display = 'block';
+                headerEl.style.borderRadius = '12px 12px 0 0';
+                const chevron = headerEl.querySelector('.fa-chevron-down, .fa-chevron-up');
+                if (chevron) {
+                    chevron.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                }
+            }
+        };
+
+        window.togglePlaceholderHelp = function(event) {
+            event.stopPropagation();
+            const icon = event.currentTarget;
+            const tooltip = icon.nextElementSibling;
+            const isVisible = tooltip.style.display === 'block';
+            
+            // Hide all open tooltips first
+            document.querySelectorAll('.placeholder-tooltip').forEach(el => el.style.display = 'none');
+            
+            if (!isVisible) {
+                tooltip.style.display = 'block';
+            }
+        };
+
+        // Close tooltips on clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.placeholder-tooltip').forEach(el => el.style.display = 'none');
+        });
+
+        window.copyWebhookDetails = function(id) {
+            const input = document.getElementById(id);
+            if (!input || !input.value) return;
+            navigator.clipboard.writeText(input.value);
+            showToast('Copied to clipboard!', 'success');
         };
 
         applyInitialSettings();
@@ -6473,6 +6693,9 @@
                 document.getElementById('stats-total-votes').textContent = (data.totalVotes || 0).toLocaleString();
 
                 // Populate Members tab analytics
+                const descEl = document.getElementById('analytics-server-desc');
+                if (descEl) descEl.textContent = `Analytics and insights for ${currentServerName || 'this server'}.`;
+                
                 const txtCountEl = document.getElementById('analytics-text-count');
                 const voiceCountEl = document.getElementById('analytics-voice-count');
                 const trendEl = document.getElementById('analytics-text-trend');
