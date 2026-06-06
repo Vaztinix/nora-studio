@@ -1317,7 +1317,7 @@
             .config-header {
                 flex-direction: column !important;
                 align-items: stretch !important;
-                gap: 20px !important;
+                gap: 15px !important;
                 margin-bottom: 25px !important;
             }
             .config-header > div:first-child {
@@ -1325,16 +1325,24 @@
             }
             .config-header > div:last-child {
                 width: 100% !important;
-                display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
                 gap: 8px !important;
             }
             .config-header > div:last-child button {
-                width: 100% !important;
                 margin: 0 !important;
-                padding: 10px 8px !important;
-                font-size: 0.8rem !important;
+                padding: 12px 16px !important;
+                font-size: 0.9rem !important;
                 justify-content: center !important;
+            }
+            .config-header #save-settings-btn {
+                width: 100% !important;
+                order: -1 !important;
+            }
+            .config-header #undo-btn,
+            .config-header #redo-btn {
+                flex: 1 !important;
+                width: calc(50% - 4px) !important;
             }
             
             /* Responsive tables and dynamic cards */
@@ -1343,6 +1351,12 @@
                 gap: 14px !important;
             }
             .row {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 12px !important;
+                padding: 16px !important;
+            }
+            .row:has(.switch) {
                 flex-direction: row !important;
                 align-items: center !important;
                 justify-content: space-between !important;
@@ -1408,6 +1422,12 @@
             border-radius: 14px !important;
         }
         body.device-mobile .row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+            padding: 16px !important;
+        }
+        body.device-mobile .row:has(.switch) {
             flex-direction: row !important;
             align-items: center !important;
             justify-content: space-between !important;
@@ -1418,11 +1438,13 @@
             grid-template-columns: 1fr !important;
             gap: 12px !important;
         }
-        body.device-mobile input, 
+        body.device-mobile input[type="text"], 
+        body.device-mobile input[type="number"], 
+        body.device-mobile input[type="email"], 
+        body.device-mobile input[type="password"], 
         body.device-mobile select, 
-        body.device-mobile textarea, 
-        body.device-mobile button {
-            min-height: 48px !important; /* Premium touch target size */
+        body.device-mobile textarea {
+            min-height: 44px !important;
             font-size: 16px !important; /* Prevents auto-zoom on iOS */
             border-radius: 10px !important;
         }
