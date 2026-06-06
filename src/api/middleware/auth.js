@@ -5,21 +5,43 @@ const guildsCache = new Map();
 const activeRequests = new Map(); // token -> Promise
 const CACHE_TTL = 60 * 1000; // 60 seconds cache
 
+const resolveDiscordToken = async (token) => {
+    if (token && token.startsWith('nora_sess_')) {
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const SessionModel = require('../../database/models/Session');
+        const session = await SessionModel.findByPk(tokenHash);
+        if (!session || (session.expiresAt && new Date() > new Date(session.expiresAt))) {
+            const err = new Error('Invalid or expired custom session');
+            err.status = 401;
+            throw err;
+        }
+        return session.discordToken;
+    }
+    return token;
+};
+
 const getCachedUserGuilds = async (token) => {
+    let resolvedToken;
+    try {
+        resolvedToken = await resolveDiscordToken(token);
+    } catch (e) {
+        resolvedToken = token;
+    }
     const now = Date.now();
-    const cached = guildsCache.get(token);
+    const cached = guildsCache.get(resolvedToken);
     if (cached && cached.expires > now) {
         return cached.guilds;
     }
 
-    if (activeRequests.has(token)) {
-        return activeRequests.get(token);
+    if (activeRequests.has(resolvedToken)) {
+        return activeRequests.get(resolvedToken);
     }
 
     const fetchPromise = (async () => {
         try {
             const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${resolvedToken}` }
             });
 
             if (!response.ok) {
@@ -33,17 +55,17 @@ const getCachedUserGuilds = async (token) => {
             }
 
             const guilds = await response.json();
-            guildsCache.set(token, {
+            guildsCache.set(resolvedToken, {
                 guilds,
                 expires: Date.now() + CACHE_TTL
             });
             return guilds;
         } finally {
-            activeRequests.delete(token);
+            activeRequests.delete(resolvedToken);
         }
     })();
 
-    activeRequests.set(token, fetchPromise);
+    activeRequests.set(resolvedToken, fetchPromise);
     return fetchPromise;
 };
 
@@ -130,20 +152,26 @@ const activeUserRequests = new Map();
 const USER_CACHE_TTL = 60 * 1000; // 60 seconds cache
 
 const getDiscordUser = async (token) => {
+    let resolvedToken;
+    try {
+        resolvedToken = await resolveDiscordToken(token);
+    } catch (e) {
+        resolvedToken = token;
+    }
     const now = Date.now();
-    const cached = userCache.get(token);
+    const cached = userCache.get(resolvedToken);
     if (cached && cached.expires > now) {
         return cached.user;
     }
 
-    if (activeUserRequests.has(token)) {
-        return activeUserRequests.get(token);
+    if (activeUserRequests.has(resolvedToken)) {
+        return activeUserRequests.get(resolvedToken);
     }
 
     const fetchPromise = (async () => {
         try {
             const response = await fetch('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${resolvedToken}` }
             });
 
             if (!response.ok) {
@@ -157,17 +185,17 @@ const getDiscordUser = async (token) => {
             }
 
             const user = await response.json();
-            userCache.set(token, {
+            userCache.set(resolvedToken, {
                 user,
                 expires: Date.now() + USER_CACHE_TTL
             });
             return user;
         } finally {
-            activeUserRequests.delete(token);
+            activeUserRequests.delete(resolvedToken);
         }
     })();
 
-    activeUserRequests.set(token, fetchPromise);
+    activeUserRequests.set(resolvedToken, fetchPromise);
     return fetchPromise;
 };
 

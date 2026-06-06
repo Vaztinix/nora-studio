@@ -1874,6 +1874,25 @@
                 </div>
             </div>
 
+            <!-- Pairing Confirmation Modal -->
+            <div id="pairing-confirmation-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+                <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Pairing Request</h2>
+                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">A secondary device is attempting to pair with your account. Do you want to authorize it?</p>
+                    
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: left;">
+                        <div style="font-size: 0.9rem; color: #fff; margin-bottom: 8px;"><b>Device Name:</b> <span id="pairing-request-device-name" style="color: var(--primary);">Loading...</span></div>
+                        <div style="font-size: 0.8rem; color: var(--muted); margin-bottom: 8px;"><b>IP Address:</b> <span id="pairing-request-ip">Loading...</span></div>
+                        <div style="font-size: 0.8rem; color: var(--muted); word-break: break-all;"><b>User Agent:</b> <span id="pairing-request-ua">Loading...</span></div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <button class="config-btn" style="flex: 1; color: #ff5555; border-color: rgba(255,85,85,0.3); min-height: 44px; display: inline-flex; align-items: center; justify-content: center;" onclick="respondToPairingRequest(false)">Deny</button>
+                        <button class="save-btn" style="flex: 1; background: var(--success); min-height: 44px; display: inline-flex; align-items: center; justify-content: center;" onclick="respondToPairingRequest(true)">Confirm</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- XP Multipliers Modal -->
             <div id="role-multipliers-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
                 <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
@@ -2107,16 +2126,25 @@
                                         <p id="roblox-linked-id" data-no-translate style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ...</p>
                                     </div>
                                 </div>
-                                <button class="config-btn" style="width: auto; padding: 6px 12px; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="unlinkRoblox()">Unlink</button>
+                                <button class="config-btn" style="width: auto; padding: 10px 16px; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="unlinkRoblox()">Unlink</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-bottom: 1px solid var(--border); padding-bottom: 25px; margin-bottom: 25px;">
+                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Top.gg Bot Ownership</h4>
+                        <div id="topgg-integrations-list" data-no-translate>
+                            <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
+                                No bots verified. Connect via the Top.gg server tab.
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Top.gg Bot Ownership</h4>
-                        <div id="topgg-integrations-list" data-no-translate>
+                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">TOP.GG SERVER OWNERSHIP</h4>
+                        <div id="topgg-servers-list" data-no-translate>
                             <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
-                                No bots verified. Connect via the Top.gg server tab.
+                                No servers verified. Connect via the Top.gg server tab.
                             </div>
                         </div>
                     </div>
@@ -2146,7 +2174,25 @@
                             <label style="color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 6px;">This device's name (optional)</label>
                             <input type="text" id="primary-device-name" maxlength="40" placeholder="e.g. Living Room PC, Work Laptop..." style="width: 100%; padding: 9px 13px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.88rem; box-sizing: border-box;">
                         </div>
-                        <button class="save-btn" id="generate-pair-btn" style="width: auto; padding: 10px 25px;" onclick="generatePairingCode()">Generate Pairing Code</button>
+                        <button class="save-btn" id="generate-pair-btn" style="width: auto; padding: 10px 25px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;" onclick="generatePairingCode()">Generate Pairing Code</button>
+                        
+                        <!-- Help Guide for Pairing -->
+                        <details class="help-guide" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; margin-top: 20px; text-align: left; overflow: hidden; transition: all 0.3s ease;">
+                            <summary style="padding: 12px 18px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; color: var(--primary); font-size: 0.85rem;">
+                                <span><i class="fas fa-question-circle" style="margin-right: 8px;"></i> How do I pair a secondary device?</span>
+                                <i class="fas fa-chevron-down summary-chevron" style="transition: transform 0.2s; font-size: 0.8rem;"></i>
+                            </summary>
+                            <div style="padding: 15px 18px; border-top: 1px solid var(--border); font-size: 0.8rem; line-height: 1.6; color: var(--muted);">
+                                <ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                                    <li>Ensure both this device and your secondary device (e.g. phone) are connected to the internet.</li>
+                                    <li>Click the <b>Generate Pairing Code</b> button above. A 6-digit code and a QR code will be displayed.</li>
+                                    <li>Open the pairing page on your secondary device by scanning the QR code, or navigating to the pairing URL.</li>
+                                    <li>Enter the 6-digit code on the secondary device and click submit.</li>
+                                    <li>A confirmation popup will immediately appear on this screen (primary device). Review the device name and click <b>Confirm</b> to authorize it.</li>
+                                    <li>Once confirmed, the secondary device will be securely logged in without needing Discord redirection. You can revoke it at any time in the <b>Paired Devices</b> section below.</li>
+                                </ol>
+                            </div>
+                        </details>
                         
                         <div id="pairing-code-display" style="display: none; margin-top: 20px; text-align: center;">
                             <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 15px;">Enter this 6-digit code on your other device:</p>
@@ -3953,6 +3999,25 @@
                 const list = document.getElementById('paired-devices-list');
                 const pairedAt = document.getElementById('pairing-paired-at');
 
+                // Toggle pending request confirmation modal
+                if (data.pending) {
+                    const modal = document.getElementById('pairing-confirmation-modal');
+                    const nameSpan = document.getElementById('pairing-request-device-name');
+                    const ipSpan = document.getElementById('pairing-request-ip');
+                    const uaSpan = document.getElementById('pairing-request-ua');
+                    if (modal && nameSpan && ipSpan && uaSpan) {
+                        nameSpan.textContent = data.pending.deviceName || 'Unknown Device';
+                        ipSpan.textContent = (data.pending.ip || '').replace('::ffff:', '');
+                        uaSpan.textContent = data.pending.userAgent || 'Unknown User Agent';
+                        modal.style.display = 'flex';
+                    }
+                } else {
+                    const modal = document.getElementById('pairing-confirmation-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                }
+
                 if (!data.paired || !data.devices || data.devices.length === 0) {
                     section.style.display = 'none';
                     empty.style.display = 'block';
@@ -3973,26 +4038,89 @@
                         ? `<span style="background: rgba(52,211,153,0.18); color: #34d399; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(52,211,153,0.3); margin-left: 8px;">This Device</span>`
                         : '';
                     const cleanIp = device.ip ? device.ip.replace('::ffff:', '') : '';
+                    
+                    const disconnectButton = !device.isCurrent
+                        ? `<button class="config-btn" style="width: auto; padding: 6px 12px; min-height: 44px; min-width: 44px; font-size: 0.75rem; color: #ff5555; border-color: rgba(255,85,85,0.3); display: inline-flex; align-items: center; justify-content: center;" onclick="window.disconnectSingleDevice('${device.sessionId}')">Disconnect</button>`
+                        : '';
+
                     return `
-                    <div style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;">
-                        <div style="font-size: 1.8rem; line-height: 1;">${icon}</div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
-                                <span style="font-weight: 700; color: var(--text); font-size: 0.95rem;">${device.name}</span>
-                                ${currentBadge}
-                            </div>
-                            <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <span style="background: rgba(255,255,255,0.06); color: ${roleColor}; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid ${roleColor}33;">${roleLabel}</span>
-                                ${cleanIp ? `<span style="color: var(--muted); font-size: 0.75rem;">${cleanIp}</span>` : ''}
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div style="font-size: 1.8rem; line-height: 1;">${icon}</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                                    <span style="font-weight: 700; color: var(--text); font-size: 0.95rem;">${device.name}</span>
+                                    ${currentBadge}
+                                </div>
+                                <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span style="background: rgba(255,255,255,0.06); color: ${roleColor}; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid ${roleColor}33;">${roleLabel}</span>
+                                    ${cleanIp ? `<span style="color: var(--muted); font-size: 0.75rem;">${cleanIp}</span>` : ''}
+                                </div>
                             </div>
                         </div>
-                        <div style="width: 9px; height: 9px; border-radius: 50%; background: #34d399; flex-shrink: 0; box-shadow: 0 0 6px #34d399;"></div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            ${disconnectButton}
+                            <div style="width: 9px; height: 9px; border-radius: 50%; background: #34d399; flex-shrink: 0; box-shadow: 0 0 6px #34d399;"></div>
+                        </div>
                     </div>`;
                 }).join('');
             } catch (e) {
                 // Silent fail — devices section just won't update
             }
         }
+
+        window.disconnectSingleDevice = async function(sessionId) {
+            if (!confirm('Are you sure you want to disconnect this device?')) return;
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const res = await originalFetch(`${apiBase}/api/auth/paired-devices/disconnect`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ sessionId })
+                });
+                if (res.ok) {
+                    showToast('Device disconnected successfully.', 'success');
+                    loadPairedDevices();
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    showToast(`Disconnect failed: ${d.error || res.status}`, 'error');
+                }
+            } catch (e) {
+                showToast(`Disconnect error: ${e.message}`, 'error');
+            }
+        };
+
+        window.respondToPairingRequest = async function(confirmRequest) {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const res = await originalFetch(`${apiBase}/api/auth/pair/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ confirm: confirmRequest })
+                });
+                if (res.ok) {
+                    showToast(confirmRequest ? 'Pairing approved!' : 'Pairing denied.', 'success');
+                    const modal = document.getElementById('pairing-confirmation-modal');
+                    if (modal) modal.style.display = 'none';
+                    loadPairedDevices();
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    showToast(`Response failed: ${d.error || res.status}`, 'error');
+                }
+            } catch (e) {
+                showToast(`Pairing confirmation error: ${e.message}`, 'error');
+            }
+        };
 
         function startPairedDevicesPolling() {
             loadPairedDevices();
@@ -4994,60 +5122,116 @@
 
                 logToTerminal(`Fetched ${guilds.length} guilds.`, 'GUILD_SUCCESS');
                 const container = document.getElementById('guilds-container');
-                container.innerHTML = guilds.length ? '' : '<p>No servers.</p>';
-                guilds.forEach(g => {
-                    const card = document.createElement('div'); card.className = 'server-card';
-                    const btn = g.hasNora ? '<button class="config-btn">Configure</button>' : `<button class="config-btn invite" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+email+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')">Invite</button>`;
-                    
-                    let memberInfo = '';
-                    if (g.hasNora) {
-                        const onlineStr = g.onlineCount ? `<span style="color: #23a55a; display: flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; background: #23a55a; border-radius: 50%;"></span> ${g.onlineCount} Online</span>` : '';
-                        memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px; display: flex; justify-content: center; gap: 12px;"><span>${g.memberCount} Members</span>${onlineStr}</div>`;
-                    } else {
-                        memberInfo = `<p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">Invite required</p>`;
-                    }
+                if (container) {
+                    container.innerHTML = guilds.length ? '' : '<p>No servers.</p>';
+                    guilds.forEach(g => {
+                        const card = document.createElement('div'); card.className = 'server-card';
+                        const btn = g.hasNora ? '<button class="config-btn">Configure</button>' : `<button class="config-btn invite" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+email+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')">Invite</button>`;
+                        
+                        let memberInfo = '';
+                        if (g.hasNora) {
+                            const onlineStr = g.onlineCount ? `<span style="color: #23a55a; display: flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; background: #23a55a; border-radius: 50%;"></span> ${g.onlineCount} Online</span>` : '';
+                            memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px; display: flex; justify-content: center; gap: 12px;"><span>${g.memberCount} Members</span>${onlineStr}</div>`;
+                        } else {
+                            memberInfo = `<p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">Invite required</p>`;
+                        }
 
-                    const slashBadge = g.hasNora ? '<div class="badge-slash"><span>/</span> Active</div>' : '';
-                    card.innerHTML = `<img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">${slashBadge}<h3>${g.name}</h3>${memberInfo}${btn}`;
-                    if (g.hasNora) card.onclick = () => openConfig(g);
-                    container.appendChild(card);
+                        const slashBadge = g.hasNora ? '<div class="badge-slash"><span>/</span> Active</div>' : '';
+                        card.innerHTML = `<img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">${slashBadge}<h3>${g.name}</h3>${memberInfo}${btn}`;
+                        if (g.hasNora) card.onclick = () => openConfig(g);
+                        container.appendChild(card);
+                    });
+                }
+
+                // Fetch connections
+                const connRes = await fetch('/api/user/topgg/connections', {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                let connections = [];
+                if (connRes.ok) {
+                    const connData = await connRes.json();
+                    connections = connData.connections || [];
+                }
+
+                // Fetch scraped user servers (to match names/icons)
+                const scrapedRes = await fetch('/api/user/topgg/servers', {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                let scrapedServers = [];
+                if (scrapedRes.ok) {
+                    const scrapedData = await scrapedRes.json();
+                    scrapedServers = scrapedData.servers || [];
+                }
+
+                // Map target IDs/guild IDs to name and icon
+                const detailsMap = new Map();
+                scrapedServers.forEach(s => {
+                    detailsMap.set(s.id, { name: s.name, icon: s.icon });
+                });
+                guilds.forEach(g => {
+                    detailsMap.set(g.id, { name: g.name, icon: g.icon });
                 });
 
-                // Update the global prefs Top.gg list
+                // Populate bots list
                 const topggIntegrationsList = document.getElementById('topgg-integrations-list');
                 if (topggIntegrationsList) {
-                    let allVerifiedBots = new Set();
-                    guilds.forEach(g => {
-                        if (g.topggVerified) {
-                            const botIds = g.topggBotId ? g.topggBotId.split(',') : [g.topggLegacyOwnerId || 'Verified'];
-                            botIds.forEach(id => {
-                                if (id.trim()) allVerifiedBots.add(id.trim());
-                            });
-                        }
-                    });
-
-                    if (allVerifiedBots.size > 0) {
-                        let html = '';
-                        Array.from(allVerifiedBots).forEach(id => {
-                            html += `
-                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px;">
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <div style="width: 35px; height: 35px; background: #2ea043; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✅</div>
-                                        <div>
-                                            <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">Top.gg Verified</h4>
-                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ${id}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        topggIntegrationsList.innerHTML = html;
-                    } else {
+                    const botConns = connections.filter(c => c.type === 'bot');
+                    if (botConns.length === 0) {
                         topggIntegrationsList.innerHTML = `
                             <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
                                 No bots verified. Connect via the Top.gg server tab.
                             </div>
                         `;
+                    } else {
+                        let html = '';
+                        botConns.forEach(c => {
+                            const details = detailsMap.get(c.targetId) || { name: c.targetName || 'Top.gg Bot', icon: c.targetIcon || 'https://top.gg/images/topgg-logo.png' };
+                            html += `
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <div style="width: 35px; height: 35px; background: #2ea043; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✅</div>
+                                        <div>
+                                            <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${details.name}</h4>
+                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ${c.targetId}</p>
+                                        </div>
+                                    </div>
+                                    <button class="config-btn" style="width: auto; padding: 10px 16px; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="window.unlinkBot('${c.targetId}')">Unlink</button>
+                                </div>
+                            `;
+                        });
+                        topggIntegrationsList.innerHTML = html;
+                    }
+                }
+
+                // Populate servers list
+                const topggServersList = document.getElementById('topgg-servers-list');
+                if (topggServersList) {
+                    const serverConns = connections.filter(c => c.type === 'server');
+                    if (serverConns.length === 0) {
+                        topggServersList.innerHTML = `
+                            <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
+                                No servers verified. Connect via the Top.gg server tab.
+                            </div>
+                        `;
+                    } else {
+                        let html = '';
+                        serverConns.forEach(c => {
+                            const details = detailsMap.get(c.targetId) || { name: 'Discord Server', icon: 'https://top.gg/images/topgg-logo.png' };
+                            const iconUrl = details.icon || 'https://top.gg/images/topgg-logo.png';
+                            html += `
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <img src="${iconUrl}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                                        <div>
+                                            <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${details.name}</h4>
+                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ${c.targetId}</p>
+                                        </div>
+                                    </div>
+                                    <button class="config-btn" style="width: auto; padding: 10px 16px; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="window.unlinkServer('${c.targetId}')">Unlink</button>
+                                </div>
+                            `;
+                        });
+                        topggServersList.innerHTML = html;
                     }
                 }
             } catch (e) {
@@ -5057,6 +5241,46 @@
                 if (container) container.innerHTML = `<p style="color: #ff5555; font-weight: 600;">Failed to load servers: ${e.message || 'Unknown error'}. Please try refreshing or logging in again.</p>`;
             } finally {
                 toggleLoading(false);
+            }
+        }
+
+        window.unlinkBot = async function(botId) {
+            if (!confirm('Are you sure you want to unlink this bot? This will delete all webhook tracking connections.')) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/user/topgg/bots/${botId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Bot connection deleted successfully.', 'success');
+                    fetchGuilds(t);
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Failed to delete connection.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error deleting connection.', 'error');
+            }
+        }
+
+        window.unlinkServer = async function(serverId) {
+            if (!confirm('Are you sure you want to unlink this server? This will delete all webhook tracking connections.')) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/user/topgg/servers/${serverId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Server connection deleted successfully.', 'success');
+                    fetchGuilds(t);
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Failed to delete connection.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error deleting connection.', 'error');
             }
         }
 
@@ -6907,6 +7131,7 @@
                 }
             } catch (e) {
                 console.error('Analytics Error:', e);
+                logErrorToTerminal(`Analytics Error: ${e.message}`, 'ERROR', { stack: e.stack });
             } finally {
                 toggleLoading(false);
             }
@@ -8775,6 +9000,31 @@
                     onmouseover="this.style.background='var(--primary-hover)'; this.style.transform='scale(1.02)';"
                     onmouseout="this.style.background='var(--primary)'; this.style.transform='none';">
                     Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Pairing Approval Modal -->
+    <div id="pairing-confirmation-modal" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 25000; align-items: center; justify-content: center; flex-direction: column; padding: 20px;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); text-align: left;">
+            <div style="font-size: 3rem; margin-bottom: 20px; text-align: center; color: var(--primary);">📱</div>
+            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800; text-align: center;">Pairing Request</h2>
+            <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; text-align: center;">
+                A secondary device is attempting to pair with your account.
+            </p>
+            
+            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 24px;">
+                <div style="font-size: 0.85rem; margin-bottom: 8px; color: #fff;"><strong style="color: var(--muted);">Device Name:</strong> <span id="pairing-request-device-name">...</span></div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px; color: #fff;"><strong style="color: var(--muted);">IP Address:</strong> <span id="pairing-request-ip">...</span></div>
+                <div style="font-size: 0.85rem; color: #fff;"><strong style="color: var(--muted);">User Agent:</strong> <span id="pairing-request-ua" style="font-size: 0.75rem; word-break: break-all;">...</span></div>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button onclick="window.respondToPairingRequest(false)" style="flex: 1; background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.2); border-radius: 10px; color: #ff6b6b; font-size: 0.85rem; font-weight: 700; padding: 12px; cursor: pointer; min-height: 44px; text-align: center; border: 1px solid rgba(255,80,80,0.2);">
+                    Deny
+                </button>
+                <button onclick="window.respondToPairingRequest(true)" style="flex: 1; background: var(--primary); border: none; border-radius: 10px; color: #0f111a; font-size: 0.85rem; font-weight: 700; padding: 12px; cursor: pointer; min-height: 44px; text-align: center; box-shadow: 0 0 15px var(--primary-glow);">
+                    Confirm
                 </button>
             </div>
         </div>

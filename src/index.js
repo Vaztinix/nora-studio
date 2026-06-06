@@ -54,6 +54,7 @@ require('./database/models/UserPrefs');
 require('./database/models/HostedBot');
 require('./database/models/CustomCommand');
 require('./database/models/Session');
+require('./database/models/TopggConnection');
 
 
 const client = new Client({
@@ -568,21 +569,43 @@ const discordUserCache = new Map();
 const activeUserRequests = new Map();
 const USER_CACHE_TTL = 60 * 1000; // 60 seconds cache
 
+const resolveDiscordToken = async (token) => {
+    if (token && token.startsWith('nora_sess_')) {
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const Session = require('./database/models/Session');
+        const session = await Session.findByPk(tokenHash);
+        if (!session || (session.expiresAt && new Date() > new Date(session.expiresAt))) {
+            const err = new Error('Invalid or expired custom session');
+            err.status = 401;
+            throw err;
+        }
+        return session.discordToken;
+    }
+    return token;
+};
+
 const getDiscordUser = async (token) => {
+    let resolvedToken;
+    try {
+        resolvedToken = await resolveDiscordToken(token);
+    } catch (e) {
+        resolvedToken = token;
+    }
     const now = Date.now();
-    const cached = discordUserCache.get(token);
+    const cached = discordUserCache.get(resolvedToken);
     if (cached && cached.expires > now) {
         return cached.user;
     }
 
-    if (activeUserRequests.has(token)) {
-        return activeUserRequests.get(token);
+    if (activeUserRequests.has(resolvedToken)) {
+        return activeUserRequests.get(resolvedToken);
     }
 
     const fetchPromise = (async () => {
         try {
             const res = await fetch('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${resolvedToken}` }
             });
             if (!res.ok) {
                 if (res.status === 429 && cached) {
@@ -594,17 +617,17 @@ const getDiscordUser = async (token) => {
                 throw err;
             }
             const user = await res.json();
-            discordUserCache.set(token, {
+            discordUserCache.set(resolvedToken, {
                 user,
                 expires: Date.now() + USER_CACHE_TTL
             });
             return user;
         } finally {
-            activeUserRequests.delete(token);
+            activeUserRequests.delete(resolvedToken);
         }
     })();
 
-    activeUserRequests.set(token, fetchPromise);
+    activeUserRequests.set(resolvedToken, fetchPromise);
     return fetchPromise;
 };
 
@@ -662,8 +685,9 @@ app.get('/api/user/me', async (req, res) => {
             }
             
             // Check if Discord token is still valid
+            const discordToken = session.discordToken || token;
             const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${discordToken}` }
             }).catch(() => null);
             if (!userRes) {
                 await session.destroy();
@@ -671,6 +695,10 @@ app.get('/api/user/me', async (req, res) => {
             }
             user = userRes.data;
         } else {
+            // If the token is a custom session format but not found/expired, reject immediately
+            if (token.startsWith('nora_sess_')) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
             // Fetch user info from Discord using axios
             const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
                 headers: { Authorization: `Bearer ${token}` }
@@ -825,6 +853,22 @@ app.post('/api/auth/pairing-code', async (req, res) => {
     }
 });
 
+// Pending pairings memory store (held requests)
+const pendingPairings = new Map();
+
+// Periodic cleanup of pending pairings
+setInterval(() => {
+    const now = Date.now();
+    for (const [userId, pending] of pendingPairings.entries()) {
+        if (now > pending.expiresAt) {
+            try {
+                pending.res.status(408).json({ error: 'Pairing request timed out. Primary device did not confirm.' });
+            } catch (e) {}
+            pendingPairings.delete(userId);
+        }
+    }
+}, 10000);
+
 // Exchange pairing code for an active Discord token
 app.post('/api/auth/pair', async (req, res) => {
     try {
@@ -839,10 +883,7 @@ app.post('/api/auth/pair', async (req, res) => {
             return res.status(400).json({ error: 'Invalid or expired pairing code' });
         }
         
-        // Single-use token logic
-        pairingCodes.delete(cleanCode);
-        
-        // Record the secondary device info alongside the primary
+        // Record the secondary device info
         const ua = req.headers['user-agent'] || '';
         const { deviceName } = req.body || {};
         const secondaryDevice = {
@@ -851,65 +892,166 @@ app.post('/api/auth/pair', async (req, res) => {
             ip: req.ip
         };
         
-        devicePairings.set(data.userId, {
-            primary: data.primaryDevice,
-            secondary: secondaryDevice,
-            pairedAt: new Date().toISOString()
-        });
-        
-        res.json({ success: true, token: data.token, deviceName: secondaryDevice.name });
+        // Intercept and hold in pending state (Operational rule: thread safety/ordering)
+        const pendingData = {
+            res,
+            code: cleanCode,
+            discordToken: data.token,
+            userId: data.userId,
+            secondaryDevice,
+            expiresAt: Date.now() + 30000 // 30 seconds to confirm
+        };
+
+        const existingPending = pendingPairings.get(data.userId);
+        if (existingPending) {
+            try {
+                existingPending.res.status(408).json({ error: 'New pairing request initiated' });
+            } catch (e) {}
+            pendingPairings.delete(data.userId);
+        }
+
+        pendingPairings.set(data.userId, pendingData);
+
+        // We do NOT call res.json() yet. We wait for /api/auth/pair/confirm!
     } catch (e) {
         console.error('Error in /api/auth/pair:', e);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Get paired devices info for the current user
+// Confirm or deny a pending pairing request (Primary device action)
+app.post('/api/auth/pair/confirm', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const { confirm } = req.body; // true or false
+        
+        const pending = pendingPairings.get(user.id);
+        if (!pending) {
+            return res.status(404).json({ error: 'No pending pairing request found' });
+        }
+        
+        // Clean up code and pending list
+        pairingCodes.delete(pending.code);
+        pendingPairings.delete(user.id);
+        
+        if (confirm) {
+            const crypto = require('crypto');
+            const secondaryToken = 'nora_sess_' + crypto.randomBytes(32).toString('hex');
+            const secondaryTokenHash = crypto.createHash('sha256').update(secondaryToken).digest('hex');
+            
+            const Session = require('./database/models/Session');
+            let location = 'Unknown Location';
+            try {
+                const axios = require('axios');
+                const geo = await axios.get(`http://ip-api.com/json/${pending.secondaryDevice.ip}`, { timeout: 3000 });
+                if (geo.data && geo.data.status === 'success') {
+                    location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
+                }
+            } catch (e) {}
+            
+            await Session.create({
+                id: secondaryTokenHash,
+                userId: user.id,
+                discordToken: pending.discordToken, // Save primary device's Discord token (encrypted)
+                ipAddress: pending.secondaryDevice.ip,
+                userAgent: pending.secondaryDevice.userAgent,
+                location: location,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+            });
+            
+            pending.res.json({
+                success: true,
+                token: secondaryToken,
+                deviceName: pending.secondaryDevice.name
+            });
+            
+            res.json({ success: true, message: 'Pairing request confirmed' });
+        } else {
+            pending.res.status(403).json({ error: 'Pairing request denied by owner' });
+            res.json({ success: true, message: 'Pairing request denied' });
+        }
+    } catch (e) {
+        console.error('Error confirming pairing request:', e);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Get paired devices info for the current user (polls from active sessions)
 app.get('/api/auth/paired-devices', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        const pairing = devicePairings.get(user.id);
-        if (!pairing) {
-            return res.json({ paired: false, devices: [] });
-        }
+        const Session = require('./database/models/Session');
+        const sessions = await Session.findAll({ where: { userId: user.id } });
+        
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        
         const currentUA = req.headers['user-agent'] || '';
-        const isCurrent = (device) => device && device.userAgent === currentUA;
+        const isCurrent = (s) => s.id === tokenHash;
+        
+        const devices = sessions.map(s => {
+            const role = s.id === tokenHash ? 'primary' : 'secondary';
+            return {
+                role,
+                sessionId: s.id,
+                name: s.userAgent ? parseDeviceName(s.userAgent) : 'Unknown Device',
+                userAgent: s.userAgent || '',
+                ip: s.ipAddress || '',
+                isCurrent: isCurrent(s),
+                pairedAt: s.createdAt
+            };
+        });
+
+        // Check for any pending pairing requests
+        const pending = pendingPairings.get(user.id);
+        const pendingInfo = pending ? {
+            deviceName: pending.secondaryDevice.name,
+            ip: pending.secondaryDevice.ip,
+            userAgent: pending.secondaryDevice.userAgent
+        } : null;
+
         res.json({
-            paired: true,
-            pairedAt: pairing.pairedAt,
-            devices: [
-                {
-                    role: 'primary',
-                    name: pairing.primary ? pairing.primary.name : 'Unknown',
-                    userAgent: pairing.primary ? pairing.primary.userAgent : '',
-                    ip: pairing.primary ? pairing.primary.ip : '',
-                    isCurrent: isCurrent(pairing.primary)
-                },
-                {
-                    role: 'secondary',
-                    name: pairing.secondary ? pairing.secondary.name : 'Unknown',
-                    userAgent: pairing.secondary ? pairing.secondary.userAgent : '',
-                    ip: pairing.secondary ? pairing.secondary.ip : '',
-                    isCurrent: isCurrent(pairing.secondary)
-                }
-            ]
+            paired: devices.length > 1,
+            devices,
+            pending: pendingInfo
         });
     } catch (e) {
         handleRouteError(res, e, '/api/auth/paired-devices');
     }
 });
 
-// Disconnect (clear) paired devices for the current user
+// Disconnect a specific secondary device or all other devices
 app.post('/api/auth/paired-devices/disconnect', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        devicePairings.delete(user.id);
+        const { sessionId } = req.body || {};
+        
+        const Session = require('./database/models/Session');
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        if (sessionId) {
+            // Revoke target session
+            await Session.destroy({ where: { id: sessionId, userId: user.id } });
+        } else {
+            // Revoke all secondary sessions
+            const { Op } = require('sequelize');
+            await Session.destroy({
+                where: {
+                    userId: user.id,
+                    id: { [Op.ne]: tokenHash }
+                }
+            });
+        }
         res.json({ success: true });
     } catch (e) {
         handleRouteError(res, e, '/api/auth/paired-devices/disconnect');
@@ -1365,10 +1507,98 @@ app.get('/docs', (req, res) => {
 app.get('/ai', (req, res) => {
     res.sendFile(getWebFilePath('AI.html'));
 });
-
 app.get('/ai-studio', (req, res) => {
     res.sendFile(getWebFilePath('ai-studio.html'));
 });
+
+const handleTopggWebhook = async (req, res) => {
+    try {
+        const payload = req.body;
+        console.log('[Top.gg Webhook] Received payload:', JSON.stringify(payload));
+
+        const targetId = payload.bot || payload.guild;
+        if (!targetId) {
+            return res.status(400).json({ error: 'Missing bot or guild ID in payload' });
+        }
+
+        const trackingCategory = payload.bot ? 'bot' : 'server';
+
+        // 1. Authorization checks
+        const authHeader = req.headers.authorization || '';
+        const cleanAuth = authHeader.replace(/^Bearer\s+/i, '').trim();
+
+        // Check legacy main bot webhook token first
+        const globalSecret = (process.env.VOTE_SECRET || 'NORA_VOTE_SECRET_2026').trim();
+        const isGlobalMatch = cleanAuth === globalSecret;
+
+        // Find connections matching targetId
+        const TopggConnection = require('./database/models/TopggConnection');
+        const connections = await TopggConnection.findAll({
+            where: { targetId, verified: true }
+        });
+
+        // Let's also look at req.params.guildId if it was sent to the old guild-specific route
+        const guildIdParam = req.params.guildId;
+        
+        let isValid = false;
+        let ownerId = null;
+
+        if (isGlobalMatch) {
+            isValid = true;
+        } else {
+            // Check connections list
+            const matchedConnection = connections.find(conn => {
+                const connToken = conn.token ? conn.token.replace(/^Bearer\s+/i, '').trim() : '';
+                return connToken && cleanAuth === connToken;
+            });
+
+            if (matchedConnection) {
+                isValid = true;
+                ownerId = matchedConnection.ownerId;
+            } else if (guildIdParam) {
+                // Check if the old route matches the guild's settings auth
+                const GuildSettings = require('./database/models/GuildSettings');
+                const settings = await GuildSettings.findOne({ where: { guildId: guildIdParam } });
+                const cleanSettingsAuth = settings && settings.topggWebhookAuth ? settings.topggWebhookAuth.trim() : '';
+                if (cleanSettingsAuth && cleanAuth === cleanSettingsAuth) {
+                    isValid = true;
+                }
+            }
+        }
+
+        if (!isValid) {
+            console.warn(`[Top.gg Webhook] Unauthorized request received for target: ${targetId}`);
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // Return 200 OK immediately to satisfy high-throughput/asynchronous processing constraints
+        res.status(200).json({ success: true });
+
+        // Enqueue the vote payload for async processing
+        const voteQueue = require('./utils/voteQueue');
+        voteQueue.enqueue({
+            bot: payload.bot,
+            guild: payload.guild,
+            user: payload.user,
+            type: payload.type || 'upvote',
+            isWeekend: !!payload.isWeekend,
+            nora_metadata: {
+                tracking_category: trackingCategory,
+                verified_owner: ownerId || 'legacy'
+            }
+        });
+    } catch (e) {
+        console.error('[Top.gg Webhook] Error handling webhook:', e);
+        try {
+            if (!res.headersSent) res.status(500).json({ error: e.message });
+        } catch (err) {}
+    }
+};
+
+app.post('/v1/webhooks/topgg', handleTopggWebhook);
+app.post('/api/v1/webhooks/topgg', handleTopggWebhook);
+app.post('/topgg/webhook', handleTopggWebhook);
+app.post('/api/webhooks/topgg/:guildId', handleTopggWebhook);
 
 app.get('/install', (req, res) => {
     res.sendFile(getWebFilePath('install.html'));
@@ -1420,173 +1650,6 @@ app.get('/api/logs', async (req, res) => {
 });
 
 
-app.post('/topgg/webhook', webhook.listener(async (vote) => {
-    console.log(`[Top.gg] Received vote from User: ${vote.user} for Bot: ${vote.bot}`);
-
-    try {
-        const userId = vote.user;
-        const GuildSettings = require('./database/models/GuildSettings');
-        
-        let settings = null;
-        let targetGuildId = NORA_SERVER_ID;
-
-        // Try to identify guild via vote.query params
-        if (vote.query) {
-            const params = new URLSearchParams(vote.query.startsWith('?') ? vote.query : '?' + vote.query);
-            const queryGuildId = params.get('guildId') || params.get('guild');
-            if (queryGuildId) {
-                settings = await GuildSettings.findOne({ where: { guildId: queryGuildId } });
-                if (settings) targetGuildId = queryGuildId;
-            }
-        }
-
-        // If not found, try to identify guild via bot ID matching topggBotId
-        if (!settings && vote.bot) {
-            settings = await GuildSettings.findOne({ where: { topggBotId: vote.bot } });
-            if (settings) targetGuildId = settings.guildId;
-        }
-
-        // Fallback to HQ (Nora Mainframe)
-        if (!settings) {
-            settings = await GuildSettings.findOne({ where: { guildId: NORA_SERVER_ID } });
-        }
-
-        // Process vote reward logic for identified guild/settings
-        const noraLeveling = require('./utils/noraLeveling');
-        const userRecord = await noraLeveling.getOrInitializeUser(userId, targetGuildId);
-        if (userRecord) {
-            const xpBoost = settings ? (settings.topggXpBoost || 1) : 1;
-            const count = (settings && settings.topggDoubleXp && (vote.isWeekend || [6, 0].includes(new Date().getDay()))) ? 2 : 1;
-            const baseXP = 50 * xpBoost * count;
-            
-            await noraLeveling.addExperience(userRecord, baseXP);
-            userRecord.voteCount = (userRecord.voteCount || 0) + 1;
-            userRecord.lastVoteTimestamp = new Date();
-            await userRecord.save();
-        }
-
-        // Assign Reward Role if configured
-        if (settings && settings.topggRewardRoleId) {
-            try {
-                const guild = client.guilds.cache.get(targetGuildId) || await client.guilds.fetch(targetGuildId).catch(() => null);
-                if (guild) {
-                    const member = await guild.members.fetch(userId).catch(() => null);
-                    if (member && !member.roles.cache.has(settings.topggRewardRoleId)) {
-                        const roleObj = guild.roles.cache.get(settings.topggRewardRoleId);
-                        if (roleObj && guild.members.me.roles.highest.position > roleObj.position) {
-                            await member.roles.add(settings.topggRewardRoleId).catch(e => {
-                                console.error(`[Top.gg Webhook] Failed to add reward role to user ${userId} in ${targetGuildId}:`, e.message);
-                            });
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error('[Top.gg Webhook] Error assigning reward role:', e.message);
-            }
-        }
-
-        // Send Notification alert
-        const voteChannelId = settings ? (settings.topggVoteChannelId || settings.voteLogChannelId) : null;
-        if (voteChannelId) {
-            const guild = client.guilds.cache.get(targetGuildId) || await client.guilds.fetch(targetGuildId).catch(() => null);
-            if (guild) {
-                const { sendVoteNotification } = require('./utils/topggWebhookHandler');
-                await sendVoteNotification(guild, settings, userId, false).catch(err => {
-                    console.error('[Top.gg Webhook] Notification sending failed:', err.message);
-                });
-            }
-        }
-    } catch (error) {
-        console.error('[Top.gg] Error processing vote:', error);
-    }
-}));
-
-
-/**
- * POST /api/webhooks/topgg/:guildId
- * Receives incoming votes for custom bots configured on Top.gg
- */
-app.post('/api/webhooks/topgg/:guildId', async (req, res) => {
-    try {
-        const { guildId } = req.params;
-        const vote = req.body; // Top.gg sends { bot, user, type, isWeekend, query }
-
-        // Find settings for the guild
-        const GuildSettings = require('./database/models/GuildSettings');
-        const settings = await GuildSettings.findOne({ where: { guildId } });
-        if (!settings) {
-            return res.status(404).json({ error: 'Guild settings not found.' });
-        }
-
-        // Verify authorization header matches the guild's webhook secret (sanitized)
-        const authHeader = req.headers.authorization;
-        const cleanAuth = authHeader ? authHeader.replace(/^Bearer\s+/i, '').trim() : '';
-        const cleanSettingsAuth = settings.topggWebhookAuth ? settings.topggWebhookAuth.trim() : '';
-
-        if (!cleanSettingsAuth || cleanAuth !== cleanSettingsAuth) {
-            console.warn(`[Top.gg Webhook] Unauthorized vote attempt for guild ${guildId}`);
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
-        console.log(`[Top.gg Webhook] Received vote for Guild: ${guildId}, User: ${vote.user}, Bot: ${vote.bot}`);
-
-        // Only process real upvotes or tests
-        if (vote.type === 'upvote' || vote.type === 'test') {
-            const userId = vote.user;
-            
-            // 1. Award XP in the specific guild
-            const noraLeveling = require('./utils/noraLeveling');
-            const userRecord = await noraLeveling.getOrInitializeUser(userId, guildId);
-            if (userRecord) {
-                const xpBoost = settings.topggXpBoost || 1;
-                // Double XP on weekends
-                const count = (settings.topggDoubleXp && (vote.isWeekend || [6, 0].includes(new Date().getDay()))) ? 2 : 1;
-                const baseXP = 50 * xpBoost * count;
-                
-                await noraLeveling.addExperience(userRecord, baseXP);
-                userRecord.voteCount = (userRecord.voteCount || 0) + 1;
-                userRecord.lastVoteTimestamp = new Date();
-                await userRecord.save();
-            }
-
-            // 2. Assign Reward Role if configured
-            if (settings.topggRewardRoleId) {
-                try {
-                    const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
-                    if (guild) {
-                        const member = await guild.members.fetch(userId).catch(() => null);
-                        if (member && !member.roles.cache.has(settings.topggRewardRoleId)) {
-                            const roleObj = guild.roles.cache.get(settings.topggRewardRoleId);
-                            if (roleObj && guild.members.me.roles.highest.position > roleObj.position) {
-                                await member.roles.add(settings.topggRewardRoleId).catch(e => {
-                                    console.error(`[Top.gg Webhook] Failed to add reward role to user ${userId} in ${guildId}:`, e.message);
-                                });
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.error('[Top.gg Webhook] Error assigning reward role:', e.message);
-                }
-            }
-
-            // 3. Send Notification alert
-            if (settings.topggVoteChannelId) {
-                const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
-                if (guild) {
-                    const { sendVoteNotification } = require('./utils/topggWebhookHandler');
-                    await sendVoteNotification(guild, settings, userId, false).catch(err => {
-                        console.error('[Top.gg Webhook] Notification sending failed:', err.message);
-                    });
-                }
-            }
-        }
-
-        res.json({ success: true });
-    } catch (e) {
-        console.error('[Top.gg Webhook] Error processing incoming vote:', e);
-        res.status(500).json({ error: e.message });
-    }
-});
 
 
 // Serve 404 page for unmatched routes (also feeds Fail2ban tracker)
@@ -1604,6 +1667,9 @@ app.listen(PORT, () => {
         console.log('[Top.gg] Statistics automatically posted.');
     });
 });
+
+
+module.exports = { client };
 
 
 

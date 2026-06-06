@@ -37,7 +37,7 @@ const requireAuth = async (req, res, next) => {
             }
             
             const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${session.discordToken || token}` }
             }).catch(() => null);
             if (!userRes) {
                 await session.destroy();
@@ -65,6 +65,7 @@ const requireAuth = async (req, res, next) => {
             session = await Session.create({
                 id: tokenHash,
                 userId: user.id,
+                discordToken: token,
                 ipAddress: clientIp,
                 userAgent: req.headers['user-agent'] || 'Unknown',
                 location: location,
@@ -405,6 +406,201 @@ router.post('/sessions/expire-all', requireAuth, async (req, res) => {
         });
         res.json({ success: true, count });
     } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// GET /api/user/topgg/servers
+// Scrapes the user's profile on Top.gg to fetch owned/verified servers
+router.get('/topgg/servers', requireAuth, async (req, res) => {
+    try {
+        const url = `https://top.gg/user/${req.user.id}`;
+        const topggRes = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        });
+        
+        if (!topggRes.ok) {
+            console.error(`Top.gg user profile fetch failed for servers with status ${topggRes.status}`);
+            return res.json({ servers: [] });
+        }
+        
+        const html = await topggRes.text();
+        const servers = [];
+        const seenIds = new Set();
+        let index = 0;
+        
+        while (true) {
+            let nextIndex = html.indexOf('"__typename\\":\\"DiscordServer\\"', index);
+            if (nextIndex === -1) {
+                nextIndex = html.indexOf('"__typename\\":\\"Server\\"', index);
+                if (nextIndex === -1) {
+                    nextIndex = html.indexOf('"__typename\\":\\"Guild\\"', index);
+                }
+            }
+            if (nextIndex === -1) break;
+            
+            index = nextIndex;
+            const startOfObj = html.lastIndexOf('{', index);
+            if (startOfObj !== -1) {
+                let braceCount = 0;
+                let endOfObj = -1;
+                for (let i = startOfObj; i < html.length; i++) {
+                    if (html[i] === '{') braceCount++;
+                    else if (html[i] === '}') {
+                        braceCount--;
+                        if (braceCount === 0) {
+                            endOfObj = i;
+                            break;
+                        }
+                    }
+                }
+                if (endOfObj !== -1) {
+                    const rawSlice = html.substring(startOfObj, endOfObj + 1);
+                    try {
+                        const unescaped = rawSlice
+                            .replace(/\\"/g, '"')
+                            .replace(/\\\\/g, '\\')
+                            .replace(/\\u0026/g, '&');
+                        
+                        const obj = JSON.parse(unescaped);
+                        if (obj.id && obj.name && !seenIds.has(obj.id)) {
+                            seenIds.add(obj.id);
+                            servers.push({
+                                id: obj.id,
+                                name: obj.name,
+                                icon: obj.iconUrl || 'https://top.gg/images/topgg-logo.png'
+                            });
+                        }
+                    } catch (e) {}
+                }
+            }
+            index += 30;
+        }
+        
+        res.json({ servers });
+    } catch (e) {
+        console.error('Error fetching Top.gg servers:', e);
+        res.json({ servers: [] });
+    }
+});
+
+// DELETE /api/user/topgg/bots/:botId
+// Revokes authorization and deletes the bot from ALL guilds where this user has connected it
+router.delete('/topgg/bots/:botId', requireAuth, async (req, res) => {
+    try {
+        const { botId } = req.params;
+        const TopggConnection = require('../../database/models/TopggConnection');
+        const GuildSettings = require('../../database/models/GuildSettings');
+
+        // Find all connections for this bot owned by the user
+        const connections = await TopggConnection.findAll({
+            where: { targetId: botId, ownerId: req.user.id, type: 'bot' }
+        });
+
+        const guildIds = connections.map(c => c.guildId);
+
+        // Delete connection records
+        await TopggConnection.destroy({
+            where: { targetId: botId, ownerId: req.user.id, type: 'bot' }
+        });
+
+        // Update legacy GuildSettings fields
+        for (const guildId of guildIds) {
+            const settings = await GuildSettings.findOne({ where: { guildId } });
+            if (settings) {
+                const connCount = await TopggConnection.count({ where: { guildId } });
+                if (connCount === 0) {
+                    settings.topggVerified = false;
+                    settings.topggBotId = null;
+                } else if (settings.topggBotId === botId) {
+                    const remainingBot = await TopggConnection.findOne({ where: { guildId, type: 'bot' } });
+                    settings.topggBotId = remainingBot ? remainingBot.targetId : null;
+                }
+                await settings.save();
+            }
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error revoking bot ownership:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// DELETE /api/user/topgg/servers/:serverId
+// Revokes authorization and deletes the server from ALL guilds where this user has connected it
+router.delete('/topgg/servers/:serverId', requireAuth, async (req, res) => {
+    try {
+        const { serverId } = req.params;
+        const TopggConnection = require('../../database/models/TopggConnection');
+        const GuildSettings = require('../../database/models/GuildSettings');
+
+        // Find all connections for this server owned by the user
+        const connections = await TopggConnection.findAll({
+            where: { targetId: serverId, ownerId: req.user.id, type: 'server' }
+        });
+
+        const guildIds = connections.map(c => c.guildId);
+
+        // Delete connection records
+        await TopggConnection.destroy({
+            where: { targetId: serverId, ownerId: req.user.id, type: 'server' }
+        });
+
+        // Update legacy GuildSettings fields
+        for (const guildId of guildIds) {
+            const settings = await GuildSettings.findOne({ where: { guildId } });
+            if (settings) {
+                const connCount = await TopggConnection.count({ where: { guildId } });
+                if (connCount === 0) {
+                    settings.topggVerified = false;
+                }
+                await settings.save();
+            }
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error revoking server ownership:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// GET /api/user/topgg/connections
+// Returns all active Top.gg connections associated with the authenticated user or their administered guilds
+router.get('/topgg/connections', requireAuth, async (req, res) => {
+    try {
+        const TopggConnection = require('../../database/models/TopggConnection');
+        const { getCachedUserGuilds } = require('../middleware/auth');
+        
+        let guildIds = [];
+        try {
+            const authHeader = req.headers.authorization;
+            const token = authHeader.split(' ')[1];
+            const guilds = await getCachedUserGuilds(token);
+            const filtered = guilds.filter(g => {
+                const perms = BigInt(g.permissions);
+                return (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
+            });
+            guildIds = filtered.map(g => g.id);
+        } catch (err) {
+            console.error('Error fetching user guilds for connections:', err);
+        }
+
+        const { Op } = require('sequelize');
+        const connections = await TopggConnection.findAll({
+            where: {
+                [Op.or]: [
+                    { ownerId: req.user.id },
+                    { guildId: { [Op.in]: guildIds } }
+                ]
+            }
+        });
+        res.json({ connections });
+    } catch (e) {
+        console.error('Error fetching Top.gg connections:', e);
         res.status(500).json({ error: e.message });
     }
 });

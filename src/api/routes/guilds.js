@@ -356,149 +356,205 @@ router.post('/members/:userId/level', async (req, res) => {
 });
 
 /**
- * POST /api/guilds/:guildId/topgg/link-bot
- * Verify bot ownership on Top.gg and link it to this guild.
+ * POST /api/guilds/:guildId/topgg/link
+ * Link a Top.gg bot or server connection to this guild.
  */
-router.post('/topgg/link-bot', async (req, res) => {
+router.post('/topgg/link', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { botId, legacyOwnerId } = req.body;
-        
-        if (!botId) {
-            return res.status(400).json({ error: 'botId is required' });
+        const { targetId, type, token, legacyOwnerId } = req.body;
+
+        if (!targetId || !type) {
+            return res.status(400).json({ error: 'targetId and type are required' });
         }
-        const trimmedBotId = botId.toString().trim();
+        if (!['bot', 'server'].includes(type)) {
+            return res.status(400).json({ error: 'type must be either "bot" or "server"' });
+        }
+
+        const trimmedTargetId = targetId.toString().trim();
+        const trimmedToken = token ? token.toString().trim() : '';
         const trimmedLegacyOwnerId = legacyOwnerId ? legacyOwnerId.toString().trim() : '';
 
         // Retrieve token from Authorization header to know who the user is
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-        const token = authHeader.split(' ')[1];
+        const userToken = authHeader.split(' ')[1];
         
-        const user = await getDiscordUser(token).catch(() => null);
+        const user = await getDiscordUser(userToken).catch(() => null);
         if (!user) return res.status(401).json({ error: 'Invalid Discord token' });
 
-        // Verify that the user is the bot owner
-        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
-        let isOwnerUser = APP_OWNER_IDS.includes(user.id);
-        if (!isOwnerUser) {
+        // If tracking type is bot, perform bot ownership check on Top.gg
+        if (type === 'bot') {
+            let isOwner = false;
+            let matchedBot = null;
+            
+            // 1. Try public profile scraper check
             try {
-                const app = await req.client.application.fetch();
-                if (app.owner) {
-                    if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
-                        isOwnerUser = true;
+                const profileUrl = `https://top.gg/user/${user.id}`;
+                const profileRes = await fetch(profileUrl, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                     }
-                }
-            } catch (e) {}
-        }
-        if (!isOwnerUser) {
-            return res.status(403).json({ error: 'Forbidden: Only the bot owner can configure Top.gg settings.' });
-        }
-
-        // 1. First, check if the bot is visible on the user's public Top.gg profile (Xavinlol's recommended approach)
-        let isOwner = false;
-        let matchedBot = null;
-        try {
-            const profileUrl = `https://top.gg/user/${user.id}`;
-            const profileRes = await fetch(profileUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                }
-            });
-            if (profileRes.ok) {
-                const html = await profileRes.text();
-                let index = 0;
-                while (true) {
-                    index = html.indexOf('"__typename\\":\\"DiscordBot\\"', index);
-                    if (index === -1) break;
-                    
-                    const startOfObj = html.lastIndexOf('{', index);
-                    if (startOfObj !== -1) {
-                        let braceCount = 0;
-                        let endOfObj = -1;
-                        for (let i = startOfObj; i < html.length; i++) {
-                            if (html[i] === '{') braceCount++;
-                            else if (html[i] === '}') {
-                                braceCount--;
-                                if (braceCount === 0) {
-                                    endOfObj = i;
-                                    break;
+                });
+                if (profileRes.ok) {
+                    const html = await profileRes.text();
+                    let index = 0;
+                    while (true) {
+                        index = html.indexOf('"__typename\\":\\"DiscordBot\\"', index);
+                        if (index === -1) break;
+                        
+                        const startOfObj = html.lastIndexOf('{', index);
+                        if (startOfObj !== -1) {
+                            let braceCount = 0;
+                            let endOfObj = -1;
+                            for (let i = startOfObj; i < html.length; i++) {
+                                if (html[i] === '{') braceCount++;
+                                else if (html[i] === '}') {
+                                    braceCount--;
+                                    if (braceCount === 0) {
+                                        endOfObj = i;
+                                        break;
+                                    }
                                 }
                             }
+                            if (endOfObj !== -1) {
+                                const rawSlice = html.substring(startOfObj, endOfObj + 1);
+                                try {
+                                    const unescaped = rawSlice
+                                        .replace(/\\"/g, '"')
+                                        .replace(/\\\\/g, '\\')
+                                        .replace(/\\u0026/g, '&');
+                                    const obj = JSON.parse(unescaped);
+                                    if (obj.id === trimmedTargetId) {
+                                        isOwner = true;
+                                        matchedBot = obj;
+                                        break;
+                                    }
+                                } catch (e) {}
+                            }
                         }
-                        if (endOfObj !== -1) {
-                            const rawSlice = html.substring(startOfObj, endOfObj + 1);
-                            try {
-                                const unescaped = rawSlice
-                                    .replace(/\\"/g, '"')
-                                    .replace(/\\\\/g, '\\')
-                                    .replace(/\\u0026/g, '&');
-                                const obj = JSON.parse(unescaped);
-                                if (obj.id === trimmedBotId) {
-                                    isOwner = true;
-                                    matchedBot = obj;
-                                    break;
-                                }
-                            } catch (e) {}
-                        }
+                        index += 30;
                     }
-                    index += 30;
                 }
-            }
-        } catch (err) {
-            console.error('Error during Top.gg profile parse check:', err.message);
-        }
-
-        // 2. Fallback: If profile check fails, fetch bot details from REST API using NORA_V0 token
-        if (!isOwner) {
-            const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
-            const topggRes = await axios.get(`https://top.gg/api/bots/${trimmedBotId}`, {
-                headers: { Authorization: NORA_V0 }
-            }).catch(() => null);
-
-            if (!topggRes) {
-                return res.status(400).json({ error: 'Bot not found on Top.gg.' });
+            } catch (err) {
+                console.error('Error parsing Top.gg profile for server link:', err.message);
             }
 
-            const botData = topggRes.data;
-            const owners = botData.owners || [];
-
-            isOwner = owners.includes(user.id);
-            if (!isOwner && trimmedLegacyOwnerId) {
-                isOwner = owners.includes(trimmedLegacyOwnerId);
-            }
-
-            // Description code fallback check
+            // 2. Fallback: REST API check
             if (!isOwner) {
-                const expectedCode = `NORA-${guildId.slice(-4)}-${(trimmedLegacyOwnerId || user.id).slice(-4)}`.toUpperCase();
-                const shortDesc = botData.shortdesc || '';
-                const longDesc = botData.longdesc || '';
-                if (shortDesc.toUpperCase().includes(expectedCode) || longDesc.toUpperCase().includes(expectedCode)) {
-                    isOwner = true;
+                const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
+                const axios = require('axios');
+                const topggRes = await axios.get(`https://top.gg/api/bots/${trimmedTargetId}`, {
+                    headers: { Authorization: NORA_V0 }
+                }).catch(() => null);
+
+                if (!topggRes) {
+                    return res.status(400).json({ error: 'Bot not found on Top.gg.' });
                 }
+
+                const botData = topggRes.data;
+                const owners = botData.owners || [];
+                isOwner = owners.includes(user.id) || (trimmedLegacyOwnerId && owners.includes(trimmedLegacyOwnerId));
+
+                // Verification code description check fallback
+                if (!isOwner) {
+                    const expectedCode = `NORA-${guildId.slice(-4)}-${(trimmedLegacyOwnerId || user.id).slice(-4)}`.toUpperCase();
+                    const shortDesc = botData.shortdesc || '';
+                    const longDesc = botData.longdesc || '';
+                    if (shortDesc.toUpperCase().includes(expectedCode) || longDesc.toUpperCase().includes(expectedCode)) {
+                        isOwner = true;
+                    }
+                }
+            }
+
+            if (!isOwner) {
+                return res.status(403).json({ error: 'Verification failed. You must own this bot on Top.gg or include the verification code in your bot description.' });
+            }
+        } else if (type === 'server') {
+            // Check that targetId matches guildId
+            if (trimmedTargetId !== guildId) {
+                return res.status(400).json({ error: 'Forbidden: Server vote tracking can only be linked to the corresponding server.' });
             }
         }
 
-        if (!isOwner) {
-            return res.status(403).json({ error: 'Verification failed. You must be an owner of this bot on Top.gg or include the verification code in your bot description.' });
+        // Create or update connection
+        const TopggConnection = require('../../database/models/TopggConnection');
+        const connId = `${guildId}-${trimmedTargetId}-${type}`;
+        const [conn, created] = await TopggConnection.findOrCreate({
+            where: { id: connId },
+            defaults: {
+                id: connId,
+                guildId,
+                targetId: trimmedTargetId,
+                type,
+                token: trimmedToken,
+                verified: true,
+                ownerId: user.id
+            }
+        });
+
+        if (!created) {
+            await conn.update({
+                token: trimmedToken || conn.token,
+                ownerId: user.id,
+                verified: true
+            });
         }
 
-        // 3. Update GuildSettings
+        // Update legacy GuildSettings fields for backwards compatibility
         const GuildSettings = require('../../database/models/GuildSettings');
         const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
-        
         settings.topggVerified = true;
-        settings.topggBotId = trimmedBotId;
-        if (trimmedLegacyOwnerId) {
-            settings.topggLegacyOwnerId = trimmedLegacyOwnerId;
-        } else if (matchedBot && matchedBot.internalId) {
-            settings.topggLegacyOwnerId = matchedBot.internalId;
+        if (type === 'bot') {
+            settings.topggBotId = trimmedTargetId;
+        }
+        if (trimmedToken) {
+            settings.topggWebhookAuth = trimmedToken;
         }
         await settings.save();
 
-        res.json({ success: true, settings });
+        res.json({ success: true, connection: conn });
     } catch (e) {
-        console.error('Error linking Top.gg bot:', e);
+        console.error('Error linking Top.gg integration:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/topgg/unlink
+ * Unlink a Top.gg bot or server connection from this guild.
+ */
+router.post('/topgg/unlink', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { targetId, type } = req.body;
+
+        if (!targetId || !type) {
+            return res.status(400).json({ error: 'targetId and type are required' });
+        }
+
+        const TopggConnection = require('../../database/models/TopggConnection');
+        const connId = `${guildId}-${targetId}-${type}`;
+        await TopggConnection.destroy({ where: { id: connId } });
+
+        // Update legacy GuildSettings
+        const GuildSettings = require('../../database/models/GuildSettings');
+        const settings = await GuildSettings.findOne({ where: { guildId } });
+        if (settings) {
+            const connectionsCount = await TopggConnection.count({ where: { guildId } });
+            if (connectionsCount === 0) {
+                settings.topggVerified = false;
+                settings.topggBotId = null;
+            } else if (settings.topggBotId === targetId) {
+                const anotherBot = await TopggConnection.findOne({ where: { guildId, type: 'bot' } });
+                settings.topggBotId = anotherBot ? anotherBot.targetId : null;
+            }
+            await settings.save();
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error unlinking Top.gg connection:', e);
         res.status(500).json({ error: e.message });
     }
 });
