@@ -810,7 +810,9 @@
         .log-row-container {
             border: 1px solid var(--border);
             border-radius: 12px;
-            overflow: hidden;
+            overflow: visible;
+            position: relative;
+            z-index: 5;
             transition: all 0.3s ease;
             background: rgba(255,255,255,0.02);
         }
@@ -1547,7 +1549,7 @@
             border-radius: 8px;
             padding: 12px;
             width: 240px;
-            z-index: 1000;
+            z-index: 10000;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             font-size: 0.75rem;
             font-weight: normal;
