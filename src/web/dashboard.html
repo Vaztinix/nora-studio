@@ -1309,15 +1309,45 @@
                 box-sizing: border-box;
             }
             
+            .app-layout {
+                flex-direction: column !important;
+                padding: 15px 10px !important;
+                gap: 15px !important;
+            }
+            .config-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 20px !important;
+                margin-bottom: 25px !important;
+            }
+            .config-header > div:first-child {
+                align-items: stretch !important;
+            }
+            .config-header > div:last-child {
+                width: 100% !important;
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px !important;
+            }
+            .config-header > div:last-child button {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 10px 8px !important;
+                font-size: 0.8rem !important;
+                justify-content: center !important;
+            }
+            
             /* Responsive tables and dynamic cards */
             .row-inputs {
                 grid-template-columns: 1fr !important;
                 gap: 14px !important;
             }
             .row {
-                flex-direction: column;
-                align-items: flex-start !important;
-                gap: 10px;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 15px !important;
+                padding: 14px 16px !important;
             }
             
             /* Adjust preview containers */
@@ -1378,9 +1408,11 @@
             border-radius: 14px !important;
         }
         body.device-mobile .row {
-            flex-direction: column;
-            align-items: stretch !important;
-            gap: 12px;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 15px !important;
+            padding: 14px 16px !important;
         }
         body.device-mobile .row-inputs {
             grid-template-columns: 1fr !important;
