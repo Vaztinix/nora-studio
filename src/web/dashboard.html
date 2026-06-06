@@ -3805,8 +3805,10 @@
             const overlay = document.getElementById('api-offline-overlay');
             if (overlay) {
                 overlay.style.display = 'flex';
-                const countdownEl = document.getElementById('offline-countdown');
-                if (countdownEl) countdownEl.textContent = '3';
+                const statusEl = document.getElementById('offline-retry-status');
+                if (statusEl) {
+                    statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s';
+                }
             }
 
             if (!isOfflinePolling) {
@@ -3862,9 +3864,12 @@
             countdownInterval = setInterval(async () => {
                 secondsLeft--;
                 const cdEl = document.getElementById('offline-countdown');
+                const statusEl = document.getElementById('offline-retry-status');
 
                 if (secondsLeft <= 0) {
-                    if (cdEl) cdEl.textContent = 'Checking...';
+                    if (statusEl) {
+                        statusEl.innerHTML = 'Checking connection...';
+                    }
 
                     const currentBase = window.getApiBaseUrl();
 
@@ -3903,7 +3908,9 @@
 
                     console.log('[Offline] Health check failed, retrying...');
                     secondsLeft = 3;
-                    if (cdEl) cdEl.textContent = '3';
+                    if (statusEl) {
+                        statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s';
+                    }
                 } else {
                     if (cdEl) cdEl.textContent = secondsLeft;
                 }
