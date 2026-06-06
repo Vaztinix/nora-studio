@@ -3105,24 +3105,29 @@
                 <div id="tab-topgg" class="tab-content">
                     <div id="topgg-unverified-view">
                         <div class="panel">
-                            <h3>Top.gg Bot Verification</h3>
-                            <p>Connect your bot to Nora for vote tracking, role rewards, and engagement analytics.</p>
+                            <h3>Top.gg Bot & Server Verification</h3>
+                            <p>Connect your bot or server to Nora for vote tracking, role rewards, and engagement analytics.</p>
                             
                             <div style="background: rgba(174, 239, 255, 0.05); padding: 25px; border-radius: 12px; border: 1px dashed var(--border); text-align: center; margin-bottom: 20px;">
                                 <h4 style="margin-bottom: 10px;">Auto-Detection</h4>
-                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">We'll check Top.gg for any bots owned by your Discord account.</p>
-                                <button class="config-btn" id="topgg-search-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 12px 30px;" onclick="fetchTopggBots()">Search My Bots</button>
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">We'll check Top.gg for any bots or servers owned by your Discord account.</p>
+                                <button class="config-btn" id="topgg-search-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 12px 30px;" onclick="fetchTopggBots()">Search My Bots & Servers</button>
                                 
                                 <div id="topgg-bot-results" style="margin-top: 25px; display: none;">
-                                    <h5 style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Bots on Top.gg</h5>
-                                    <div id="topgg-bot-list" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <h5 id="topgg-bots-header" style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Bots on Top.gg</h5>
+                                    <div id="topgg-bot-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
                                         <!-- Bot results will appear here -->
+                                    </div>
+                                    
+                                    <h5 id="topgg-servers-header" style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Servers on Top.gg</h5>
+                                    <div id="topgg-server-list" style="display: flex; flex-direction: column; gap: 10px;">
+                                        <!-- Server results will appear here -->
                                     </div>
                                 </div>
                             </div>
 
                             <div style="text-align: center;">
-                                <p style="font-size: 0.8rem; color: var(--muted);">Don't see your bot? <a href="javascript:void(0)" onclick="document.getElementById('topgg-manual-setup').style.display='block'" style="color: var(--primary);">Use Manual Bot ID</a></p>
+                                <p style="font-size: 0.8rem; color: var(--muted);">Don't see your bot or server? <a href="javascript:void(0)" onclick="document.getElementById('topgg-manual-setup').style.display='block'" style="color: var(--primary);">Use Manual ID Setup</a></p>
                             </div>
 
                             <div id="topgg-manual-setup" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
@@ -3131,10 +3136,17 @@
                                     If you joined Top.gg several years ago, your profile might use a legacy ID. If linking fails, simply open your Top.gg profile, copy the ID from the URL, and ensure your current Discord ID is added as a <b>Manager</b> on your bot's Top.gg "Edit" page.
                                 </div>
                                 <div class="input-group">
-                                    <label>Bot / Server ID</label>
-                                    <input type="text" id="setting-topggBotId" placeholder="123456789012345678">
+                                    <label>Tracking Type</label>
+                                    <select id="setting-topggType" onchange="toggleManualTypeLayout()">
+                                        <option value="bot">Discord Bot</option>
+                                        <option value="server">Discord Server</option>
+                                    </select>
                                 </div>
                                 <div class="input-group" style="margin-top: 15px;">
+                                    <label id="manual-id-label">Bot ID</label>
+                                    <input type="text" id="setting-topggBotId" placeholder="123456789012345678">
+                                </div>
+                                <div class="input-group" id="legacy-owner-group" style="margin-top: 15px;">
                                     <label>Legacy Top.gg User ID (Optional)</label>
                                     <input type="text" id="setting-topggLegacyOwnerId" placeholder="If joined Top.gg before 2020" oninput="updateLegacyVerification()">
                                 </div>
@@ -3143,7 +3155,7 @@
                                     <code id="topgg-verify-code-display" style="background: #000; color: var(--primary); padding: 8px 12px; border-radius: 6px; font-weight: 800; display: block; text-align: center; font-size: 1.1rem; border: 1px solid var(--border); letter-spacing: 2px;">LOADING...</code>
                                     <p style="font-size: 0.75rem; margin-top: 10px; color: var(--muted);">Nora will check your bio during the linking process.</p>
                                 </div>
-                                <button class="btn-outline" style="margin-top: 15px;" onclick="linkTopggBot(document.getElementById('setting-topggBotId').value)">Link via ID</button>
+                                <button class="btn-outline" style="margin-top: 15px;" onclick="handleManualLink()">Link via ID</button>
                             </div>
                         </div>
                     </div>
@@ -8051,6 +8063,7 @@
 
             const t = sessionStorage.getItem('discord_token');
             try {
+                // Fetch bots
                 const res = await fetch(`/api/user/topgg/bots?guildId=${currentServerId}`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -8066,12 +8079,28 @@
                 if (!res.ok) {
                     throw new Error(d.error || 'Failed to fetch bots');
                 }
+
+                // Fetch servers
+                const serversRes = await fetch(`/api/user/topgg/servers`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                let serversData = { servers: [] };
+                if (serversRes.ok) {
+                    serversData = await serversRes.json().catch(() => ({ servers: [] }));
+                }
                 
                 const list = document.getElementById('topgg-bot-list');
+                const serverList = document.getElementById('topgg-server-list');
+                const botsHeader = document.getElementById('topgg-bots-header');
+                const serversHeader = document.getElementById('topgg-servers-header');
                 const resultsDiv = document.getElementById('topgg-bot-results');
-                list.innerHTML = '';
                 
+                list.innerHTML = '';
+                serverList.innerHTML = '';
+                
+                // Show/hide bots section
                 if (d.bots && d.bots.length > 0) {
+                    if (botsHeader) botsHeader.style.display = 'block';
                     d.bots.forEach(bot => {
                         const row = document.createElement('div');
                         row.className = 'row';
@@ -8090,54 +8119,153 @@
                         `;
                         list.appendChild(row);
                     });
-                    resultsDiv.style.display = 'block';
                 } else {
-                    list.innerHTML = '<p style="font-size: 0.8rem; color: var(--muted); padding: 10px;">No bots found associated with your account on Top.gg.</p>';
-                    resultsDiv.style.display = 'block';
+                    if (botsHeader) botsHeader.style.display = 'none';
+                    list.innerHTML = '';
                 }
+
+                // Show/hide servers section
+                if (serversData.servers && serversData.servers.length > 0) {
+                    if (serversHeader) serversHeader.style.display = 'block';
+                    serversData.servers.forEach(srv => {
+                        const row = document.createElement('div');
+                        row.className = 'row';
+                        row.style.background = 'rgba(255,255,255,0.05)';
+                        row.style.padding = '12px 15px';
+                        row.style.borderRadius = '10px';
+                        
+                        // Disable the Link Server button if this server is not the one we are currently configuring
+                        const isCurrentServer = srv.id === currentServerId;
+                        const buttonHtml = isCurrentServer
+                            ? `<button class="config-btn" style="width: auto; padding: 5px 15px; background: var(--success); color: #000;" onclick="linkTopggServer('${srv.id}')">Link Server</button>`
+                            : `<button class="config-btn" style="width: auto; padding: 5px 15px; opacity: 0.5;" disabled title="To link this server, switch to it in the server list first.">Link Server</button>`;
+
+                        row.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="${srv.icon || 'https://top.gg/images/topgg-logo.png'}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.9rem;">${srv.name}</div>
+                                    <div style="font-size: 0.7rem; color: var(--muted);">${srv.id} ${!isCurrentServer ? '(Switch server to link)' : ''}</div>
+                                </div>
+                            </div>
+                            ${buttonHtml}
+                        `;
+                        serverList.appendChild(row);
+                    });
+                } else {
+                    if (serversHeader) serversHeader.style.display = 'none';
+                    serverList.innerHTML = '';
+                }
+
+                // If neither found
+                if ((!d.bots || d.bots.length === 0) && (!serversData.servers || serversData.servers.length === 0)) {
+                    list.innerHTML = '<p style="font-size: 0.8rem; color: var(--muted); padding: 10px;">No bots or servers found associated with your account on Top.gg.</p>';
+                    if (botsHeader) botsHeader.style.display = 'block';
+                    if (serversHeader) serversHeader.style.display = 'none';
+                }
+                
+                resultsDiv.style.display = 'block';
             } catch (e) {
                 console.error('[Top.gg Search Error]:', e);
-                showToast(e.message || 'Failed to fetch bots from Top.gg.', 'error');
+                showToast(e.message || 'Failed to fetch bots/servers from Top.gg.', 'error');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
         }
 
-        async function linkTopggBot(botId) {
+        async function linkTopgg(targetId, type) {
             if (!currentServerId) return showToast('Please select a server first.', 'error');
-            if (!botId) return showToast('Please enter a Bot ID.', 'error');
+            if (!targetId) return showToast(`Please enter a ${type === 'bot' ? 'Bot' : 'Server'} ID.`, 'error');
             
-            showToast('Linking bot...', 'info');
+            showToast(`Linking ${type}...`, 'info');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const legacyOwnerId = document.getElementById('setting-topggLegacyOwnerId').value;
-                const res = await fetch(`/api/guilds/${currentServerId}/topgg/link-bot`, {
+                const legacyOwnerId = document.getElementById('setting-topggLegacyOwnerId')?.value || '';
+                const token = document.getElementById('setting-topggWebhookAuth')?.value || '';
+                const res = await fetch(`/api/guilds/${currentServerId}/topgg/link`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${t}`
                     },
-                    body: JSON.stringify({ botId, legacyOwnerId })
+                    body: JSON.stringify({ targetId, type, token, legacyOwnerId })
                 });
                 const d = await res.json();
                 
                 if (res.ok) {
-                    showToast('Bot linked and verified successfully!', 'success');
-                    addNotification('Top.gg Linked', `Top.gg integration successfully established for Bot ID: ${botId}.`, 'success');
+                    showToast(`${type === 'bot' ? 'Bot' : 'Server'} linked and verified successfully!`, 'success');
+                    addNotification('Top.gg Linked', `Top.gg integration successfully established for ${type === 'bot' ? 'Bot' : 'Server'} ID: ${targetId}.`, 'success');
                     fetchSettings(); // Refresh UI to show verified view
                 } else {
-                    showToast(d.error || 'Failed to link bot.', 'error');
+                    showToast(d.error || `Failed to link ${type}.`, 'error');
                 }
             } catch (e) {
-                console.error('[Link Bot Error]:', e);
+                console.error(`[Link ${type} Error]:`, e);
                 showToast('Network error: ' + e.message, 'error');
             }
         }
 
+        async function linkTopggBot(botId) {
+            await linkTopgg(botId, 'bot');
+        }
+
+        async function linkTopggServer(serverId) {
+            await linkTopgg(serverId, 'server');
+        }
+
+        window.toggleManualTypeLayout = function() {
+            const type = document.getElementById('setting-topggType').value;
+            const label = document.getElementById('manual-id-label');
+            const input = document.getElementById('setting-topggBotId');
+            const legacyGroup = document.getElementById('legacy-owner-group');
+            const legacyInfo = document.getElementById('legacy-verification-info');
+            
+            if (type === 'server') {
+                if (label) label.textContent = 'Server ID';
+                if (input) input.placeholder = currentServerId || '123456789012345678';
+                if (legacyGroup) legacyGroup.style.display = 'none';
+                if (legacyInfo) legacyInfo.style.display = 'none';
+            } else {
+                if (label) label.textContent = 'Bot ID';
+                if (input) input.placeholder = '123456789012345678';
+                if (legacyGroup) legacyGroup.style.display = 'block';
+                updateLegacyVerification();
+            }
+        };
+
+        window.handleManualLink = function() {
+            const type = document.getElementById('setting-topggType').value;
+            const targetId = document.getElementById('setting-topggBotId').value;
+            if (type === 'server') {
+                linkTopggServer(targetId);
+            } else {
+                linkTopggBot(targetId);
+            }
+        };
+
         async function unlinkTopggBot() {
-            if (!confirm('Are you sure you want to unlink this bot? This will disable all vote tracking for this server.')) return;
+            if (!confirm('Are you sure you want to unlink? This will disable all vote tracking for this server.')) return;
             const t = sessionStorage.getItem('discord_token');
+            
+            // Clean up connection relationally
+            try {
+                const botId = document.getElementById('setting-topggBotId')?.value;
+                const type = document.getElementById('setting-topggType')?.value || 'bot';
+                if (botId) {
+                    await fetch(`/api/guilds/${currentServerId}/topgg/unlink`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${t}`
+                        },
+                        body: JSON.stringify({ targetId: botId, type })
+                    });
+                }
+            } catch (e) {
+                console.error('Relational unlink failed:', e);
+            }
+
             const p = { topggVerified: false, topggBotId: null, topggWebhookAuth: null };
             const res = await fetch(`/api/guilds/${currentServerId}/settings`, { 
                 method: 'POST', 
@@ -8148,7 +8276,7 @@
                 body: JSON.stringify(p) 
             });
             if (res.ok) {
-                showToast('Bot unlinked successfully.', 'success');
+                showToast('Top.gg integration unlinked successfully.', 'success');
                 fetchSettings();
             }
         }
