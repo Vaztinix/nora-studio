@@ -442,7 +442,7 @@ router.post('/topgg/link', async (req, res) => {
 
             // 2. Fallback: REST API check
             if (!isOwner) {
-                const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
+                const NORA_V0 = process.env.TOPGG_TOKEN || process.env.NORA_V0 || '';
                 const axios = require('axios');
                 const topggRes = await axios.get(`https://top.gg/api/bots/${trimmedTargetId}`, {
                     headers: { Authorization: NORA_V0 }

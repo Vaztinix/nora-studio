@@ -3,7 +3,7 @@ const axios = require('axios');
 const { hasVoted } = require('../../utils/topgg');
 
 const NORA_BOT_ID = '1375943730951098549';
-const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
+const NORA_V0 = process.env.TOPGG_TOKEN || process.env.NORA_V0 || '';
 
 module.exports = {
     category: 'utility',

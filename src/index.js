@@ -122,7 +122,7 @@ const RobloxVerify = require('./database/models/RobloxVerify');
 
 const webhook = new Topgg.Webhook(process.env.VOTE_SECRET || 'NORA_VOTE_SECRET_2026');
 const NORA_SERVER_ID = '1351304498185900184';
-const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
+const NORA_V0 = process.env.TOPGG_TOKEN || process.env.NORA_V0 || '';
 
 // Enable trust proxy for correct IP identification behind Cloudflare
 app.set('trust proxy', true);

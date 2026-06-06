@@ -2,8 +2,12 @@ const Topgg = require('@top-gg/sdk');
 const axios = require('axios');
 
 const NORA_BOT_ID = '1375943730951098549';
-const NORA_V1 = 'process.env.TOPGG_V1_TOKEN || process.env.NORA_V1 || ''';
-const NORA_V0 = 'process.env.TOPGG_TOKEN || process.env.NORA_V0 || ''';
+let tokenV1 = process.env.TOPGG_V1_TOKEN || process.env.NORA_V1 || '';
+if (tokenV1 && !tokenV1.toLowerCase().startsWith('bearer ')) {
+    tokenV1 = 'Bearer ' + tokenV1;
+}
+const NORA_V1 = tokenV1;
+const NORA_V0 = process.env.TOPGG_TOKEN || process.env.NORA_V0 || '';
 
 module.exports = {
     updateStats: async (client) => {
