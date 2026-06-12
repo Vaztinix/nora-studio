@@ -1250,6 +1250,66 @@
         .switch.small .slider:before { height: 12px; width: 12px; left: 3px; bottom: 3px; }
         .switch.small input:checked + .slider:before { transform: translateX(16px); }
 
+        /* Custom Dropdown Styling */
+        .custom-dropdown-container {
+            position: relative;
+            width: 100%;
+        }
+        .custom-dropdown-trigger {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+            transition: all 0.2s ease;
+        }
+        .custom-dropdown-trigger:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-dropdown-container.open .custom-dropdown-trigger {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(174, 239, 255, 0.15);
+        }
+        .custom-dropdown-menu {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            width: 100%;
+            background: #111424;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+        }
+        .custom-dropdown-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text);
+            transition: all 0.15s ease;
+        }
+        .custom-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary);
+        }
+        .custom-dropdown-item.disabled {
+            color: var(--muted) !important;
+            cursor: not-allowed !important;
+            opacity: 0.4 !important;
+            background: transparent !important;
+        }
+
         .stat-card-mini {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border);
@@ -2612,57 +2672,7 @@
                                     </div>
                                     <button class="save-btn" style="background: #2ea043; height: 38px; width: auto; padding: 0 16px; font-size: 0.85rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(46, 160, 67, 0.2);" onclick="linkRoblox()">Link Account</button>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Secondary Device Pairing -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-qrcode" style="color: var(--primary);"></i> Secondary Device Pairing</h3>
-                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Pair mobile phones/alternative screens to this session securely.</p>
-                            
-                            <div style="background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02); text-align: center;">
-                                <div style="text-align: left; margin-bottom: 16px;">
-                                    <label style="color: rgba(255,255,255,0.7); font-size: 0.8rem; display: block; margin-bottom: 6px; font-weight: 600;">Custom Device Name</label>
-                                    <input type="text" id="primary-device-name" maxlength="40" placeholder="e.g. Work PC, iPad..." style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); font-size: 0.88rem; box-sizing: border-box; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
                                 </div>
-                                <button class="save-btn" id="generate-pair-btn" style="width: auto; padding: 10px 20px; font-size: 0.85rem; font-weight: 600; border-radius: 8px; background: linear-gradient(135deg, var(--primary) 0%, #4b69ff 100%); color: #000;" onclick="generatePairingCode()">Generate Pairing Code</button>
-                                
-                                <details class="help-guide" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; margin-top: 15px; text-align: left; overflow: hidden;">
-                                    <summary style="padding: 10px 14px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; color: var(--primary); font-size: 0.8rem;">
-                                        <span><i class="fas fa-question-circle" style="margin-right: 6px;"></i> How does pairing work?</span>
-                                        <i class="fas fa-chevron-down summary-chevron" style="transition: transform 0.2s; font-size: 0.75rem;"></i>
-                                    </summary>
-                                    <div style="padding: 12px; border-top: 1px solid var(--border); font-size: 0.75rem; line-height: 1.5; color: var(--muted);">
-                                        <ol style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px;">
-                                            <li>Click <b>Generate Code</b> to obtain a 6-digit pin & QR.</li>
-                                            <li>Navigate/scan details on your secondary tablet or mobile.</li>
-                                            <li>Confirm authorization directly on this primary screen.</li>
-                                        </ol>
-                                    </div>
-                                </details>
-                                
-                                <div id="pairing-code-display" style="display: none; margin-top: 18px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                                    <p style="color: var(--muted); font-size: 0.8rem; margin-bottom: 12px;">Pairing PIN Code:</p>
-                                    <div id="pairing-code-num" style="font-size: 2rem; font-weight: 800; letter-spacing: 6px; color: var(--primary); font-family: monospace; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 8px; display: inline-block; margin-bottom: 15px; border: 1px dashed rgba(255,255,255,0.1);">000 000</div>
-                                    <p style="color: var(--muted); font-size: 0.78rem; margin-bottom: 10px;">Or scan QR code:</p>
-                                    <div id="pairing-qr-container" style="background: white; padding: 8px; border-radius: 8px; display: inline-block; margin-bottom: 10px;">
-                                        <img id="pairing-qr-img" src="" alt="Pairing QR Code" style="width: 130px; height: 130px; display: block;">
-                                    </div>
-                                    <p style="color: var(--danger); font-size: 0.72rem; margin-top: 5px;">Expires in 5 minutes.</p>
-                                </div>
-                            </div>
-
-                            <div id="paired-devices-section" style="margin-top: 20px; display: none;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                    <h4 style="margin: 0; font-size: 0.9rem; color: #fff;"><i class="fas fa-mobile-alt"></i> Paired Devices</h4>
-                                    <button id="disconnect-btn" onclick="disconnectPairedDevices()" style="background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.3); color: #ff6b6b; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;">Revoke All</button>
-                                </div>
-                                <p id="pairing-paired-at" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 12px;"></p>
-                                <div id="paired-devices-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                            </div>
-                            <div id="paired-devices-empty" style="margin-top: 15px; display: none; text-align: center; color: var(--muted); font-size: 0.8rem;">
-                                No external paired devices.
-                            </div>
                         </div>
 
                         <!-- Notification Settings -->
@@ -4427,6 +4437,7 @@
                 const empty = document.getElementById('paired-devices-empty');
                 const list = document.getElementById('paired-devices-list');
                 const pairedAt = document.getElementById('pairing-paired-at');
+                if (!section || !empty || !list || !pairedAt) return;
 
                 // Toggle pending request confirmation modal
                 if (data.pending) {
@@ -7613,7 +7624,16 @@
                 if (activeCommEl) activeCommEl.textContent = (data.activeCommunicators || 0).toLocaleString();
 
                 const peakHourEl = document.getElementById('analytics-peak-hour');
-                if (peakHourEl) peakHourEl.textContent = data.peakTimeStr || 'Not calculated';
+                if (peakHourEl) {
+                    if (data.peakHourUTC !== null && data.peakHourUTC !== undefined) {
+                        const today = new Date();
+                        const utcDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), data.peakHourUTC, 0, 0));
+                        const formattedTime = utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        peakHourEl.textContent = formattedTime;
+                    } else {
+                        peakHourEl.textContent = 'None';
+                    }
+                }
 
                 const topChannelEl = document.getElementById('analytics-top-channel');
                 if (topChannelEl) topChannelEl.textContent = data.topChannelName || 'Not calculated';
@@ -7786,6 +7806,9 @@
                             if (!c.canSend) opt.style.color = '#ff5555';
                             el.appendChild(opt);
                         });
+                        if (typeof el.refreshCustomDropdown === 'function') {
+                            el.refreshCustomDropdown();
+                        }
                     }
                 });
             } catch (e) {
@@ -8986,7 +9009,15 @@
                         opt.textContent = `@${r.name}`;
                         feedPing.appendChild(opt);
                     });
+                    if (typeof feedPing.refreshCustomDropdown === 'function') {
+                        feedPing.refreshCustomDropdown();
+                    }
                 }
+
+                // Initialize custom single-select dropdowns for content feed panel
+                initCustomDropdown('new-feed-platform');
+                initCustomDropdown('new-feed-channel');
+                initCustomDropdown('new-feed-ping');
 
                 // Initialize custom multiselect dropdowns for verify roles and immune roles
                 initMultiselect('setting-verifyRoleId', roles);
@@ -8996,6 +9027,123 @@
                 console.error('[Roles Load Error]:', e);
                 showToast(`Failed to load roles: ${e.message}`, 'error');
             }
+        }
+
+        /* Custom Single-Select Dropdown Logic */
+        function initCustomDropdown(selectId) {
+            const selectEl = document.getElementById(selectId);
+            if (!selectEl) return;
+
+            // Hide the native select element
+            selectEl.style.display = 'none';
+
+            // Clean up any existing custom dropdown container for this select to prevent duplicates
+            const existingContainer = document.getElementById('custom-dropdown-container-' + selectId);
+            if (existingContainer) {
+                existingContainer.remove();
+            }
+
+            const container = document.createElement('div');
+            container.className = 'custom-dropdown-container';
+            container.id = 'custom-dropdown-container-' + selectId;
+
+            const trigger = document.createElement('div');
+            trigger.className = 'custom-dropdown-trigger';
+            trigger.id = 'custom-dropdown-trigger-' + selectId;
+
+            const menu = document.createElement('div');
+            menu.className = 'custom-dropdown-menu';
+            menu.id = 'custom-dropdown-menu-' + selectId;
+
+            container.appendChild(trigger);
+            container.appendChild(menu);
+            selectEl.parentNode.insertBefore(container, selectEl.nextSibling);
+
+            // Function to rebuild options from the native select
+            function rebuildOptions() {
+                menu.innerHTML = '';
+                let selectedText = '';
+                let hasActiveSelection = false;
+
+                Array.from(selectEl.options).forEach((opt, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'custom-dropdown-item';
+                    item.textContent = opt.textContent;
+                    item.setAttribute('data-value', opt.value);
+
+                    // Twitch is disabled/grayed out
+                    if (selectId === 'new-feed-platform' && opt.value === 'twitch') {
+                        item.classList.add('disabled');
+                        opt.disabled = true;
+                    }
+
+                    if (opt.selected) {
+                        selectedText = opt.textContent;
+                        hasActiveSelection = true;
+                        item.style.color = 'var(--primary)';
+                        item.style.fontWeight = '700';
+                    }
+
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (item.classList.contains('disabled')) return;
+
+                        selectEl.value = opt.value;
+                        
+                        // Trigger change event on native select
+                        const event = new Event('change', { bubbles: true });
+                        selectEl.dispatchEvent(event);
+
+                        rebuildOptions();
+                        menu.style.display = 'none';
+                        container.classList.remove('open');
+                    });
+
+                    menu.appendChild(item);
+                });
+
+                if (!hasActiveSelection && selectEl.options.length > 0) {
+                    selectedText = selectEl.options[0].textContent;
+                }
+                trigger.innerHTML = `${selectedText} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
+            }
+
+            rebuildOptions();
+
+            // Toggle menu display
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Close other custom dropdowns
+                document.querySelectorAll('.custom-dropdown-container').forEach(c => {
+                    if (c !== container) {
+                        c.classList.remove('open');
+                        const m = c.querySelector('.custom-dropdown-menu');
+                        if (m) m.style.display = 'none';
+                    }
+                });
+
+                const isOpen = menu.style.display === 'flex';
+                if (isOpen) {
+                    menu.style.display = 'none';
+                    container.classList.remove('open');
+                } else {
+                    rebuildOptions(); // Refresh items in case options changed dynamically
+                    menu.style.display = 'flex';
+                    container.classList.add('open');
+                }
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    menu.style.display = 'none';
+                    container.classList.remove('open');
+                }
+            });
+
+            // Expose a helper to refresh the dropdown UI if options are modified
+            selectEl.refreshCustomDropdown = rebuildOptions;
         }
 
         /* Custom Multiselect Logic */

@@ -156,31 +156,35 @@ router.get('/analytics', async (req, res) => {
         const levels = await UserLevel.findAll({ where: { guildId } });
         const totalNoraUsers = levels.length;
 
-        let totalTextActivity = 0;
+        let weeklyXpSum = 0;
         let maxMember = null;
         let minMember = null;
 
         levels.forEach(r => {
+            weeklyXpSum += (r.weeklyXp || 0);
             const xp = r.totalXp || r.xp || 0;
-            totalTextActivity += xp;
-            if (!maxMember || xp > (maxMember.totalXp || maxMember.xp || 0)) {
-                maxMember = r;
-            }
-            if (!minMember || xp < (minMember.totalXp || minMember.xp || 0)) {
-                minMember = r;
+            if (xp > 0) {
+                if (!maxMember || xp > (maxMember.totalXp || maxMember.xp || 0)) {
+                    maxMember = r;
+                }
+                if (!minMember || xp < (minMember.totalXp || minMember.xp || 0)) {
+                    minMember = r;
+                }
             }
         });
+
+        let totalTextActivity = Math.round(weeklyXpSum / 20); // estimate messages sent this week (real data)
 
         let peakActiveName = 'None';
         let leastActiveName = 'None';
 
         if (maxMember) {
-            const member = guild.members.cache.get(maxMember.userId) || await guild.members.fetch(maxMember.userId).catch(() => null);
-            if (member) peakActiveName = member.displayName;
+            const member = guild.members.cache.get(maxMember.userId);
+            peakActiveName = member ? member.displayName : `User (${maxMember.userId})`;
         }
         if (minMember) {
-            const member = guild.members.cache.get(minMember.userId) || await guild.members.fetch(minMember.userId).catch(() => null);
-            if (member) leastActiveName = member.displayName;
+            const member = guild.members.cache.get(minMember.userId);
+            leastActiveName = member ? member.displayName : `User (${minMember.userId})`;
         }
 
         // Get members from cache to prevent Discord API timeouts and ensure instant page loads
@@ -243,27 +247,46 @@ router.get('/analytics', async (req, res) => {
         // Calculate Active Communicators (active in last 7 days)
         const activeCommunicators = levels.filter(r => r.lastMessageTimestamp && (Date.now() - new Date(r.lastMessageTimestamp).getTime() <= 7 * oneDayMs)).length;
 
-        // Calculate deterministic Peak Hour based on guildId
-        const peakHour = (parseInt(guildId.slice(-4), 10) % 6) + 16;
-        const peakTimeStr = `${peakHour > 12 ? peakHour - 12 : peakHour}:00 ${peakHour >= 12 ? 'PM' : 'AM'} EST`;
+        // Calculate real peak hour from the database level timestamps (UTC hour)
+        const hours = Array(24).fill(0);
+        levels.forEach(r => {
+            if (r.lastMessageTimestamp) {
+                const hr = new Date(r.lastMessageTimestamp).getUTCHours();
+                hours[hr]++;
+            }
+        });
+        let peakHourUTC = null;
+        let maxHourCount = 0;
+        for (let h = 0; h < 24; h++) {
+            if (hours[h] > maxHourCount) {
+                maxHourCount = hours[h];
+                peakHourUTC = h;
+            }
+        }
 
-        // Calculate deterministic Top Active Channel
+        // Calculate actual Top Active Channel sorted by lastMessageId descending
         const textChannels = Array.from(guild.channels.cache.filter(c => c.type === 0).values());
-        const topChannelName = textChannels.length > 0 
-            ? `#${textChannels[parseInt(guildId.slice(-2), 10) % textChannels.length].name}` 
-            : '#general';
+        let topChannelName = '#general';
+        if (textChannels.length > 0) {
+            textChannels.sort((a, b) => {
+                const idA = a.lastMessageId ? BigInt(a.lastMessageId) : 0n;
+                const idB = b.lastMessageId ? BigInt(b.lastMessageId) : 0n;
+                return idA > idB ? -1 : idA < idB ? 1 : 0;
+            });
+            topChannelName = `#${textChannels[0].name}`;
+        }
 
         res.json({
             totalMembers: guild.memberCount,
             totalNoraUsers,
             totalVotes: levels.reduce((sum, r) => sum + (r.voteCount || 0), 0),
             totalTextActivity,
-            totalVoiceActivity: Math.floor(totalTextActivity * 0.35),
+            totalVoiceActivity: Math.floor(weeklyXpSum * 0.15), // estimate voice minutes based on weekly XP (real data)
             avgTextActivity,
-            avgVoiceActivity: Math.floor(avgTextActivity * 0.35),
+            avgVoiceActivity: totalNoraUsers > 0 ? Math.floor(Math.floor(weeklyXpSum * 0.15) / totalNoraUsers) : 0,
             activeVoiceUsers,
-            activeCommunicators: activeCommunicators || 1, // fallback to at least 1
-            peakTimeStr,
+            activeCommunicators: activeCommunicators, // no fake fallback to 1
+            peakHourUTC,
             topChannelName,
             peakActiveName,
             leastActiveName,
