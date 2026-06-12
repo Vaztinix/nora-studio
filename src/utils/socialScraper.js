@@ -7,11 +7,16 @@ const alertsCache = new Set();
 
 async function getYoutubeChannelId(handle) {
     try {
-        const res = await axios.get(`https://www.youtube.com/@${handle}`);
+        const res = await axios.get(`https://www.youtube.com/@${handle}`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        });
         const html = res.data;
-        const match = html.match(/"channelId":"(UC[^"]+)"/);
+        const match = html.match(/\/channel\/(UC[a-zA-Z0-9_-]{22})/);
         return match ? match[1] : null;
     } catch (e) {
+        console.error(`Error resolving YouTube handle @${handle}:`, e.message);
         return null;
     }
 }
