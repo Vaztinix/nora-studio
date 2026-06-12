@@ -410,7 +410,7 @@
             .app-layout {
                 display: flex;
                 flex: 1;
-                max-width: 1400px;
+                max-width: 1600px;
                 margin: 0 auto;
                 width: 100%;
                 padding: 40px 20px;
@@ -457,7 +457,7 @@
             .app-layout {
                 display: flex;
                 flex: 1;
-                max-width: 1400px;
+                max-width: 1600px;
                 margin: 0 auto;
                 width: 100%;
                 padding: 40px 40px 40px calc(240px + 60px);
@@ -6456,7 +6456,10 @@
                         void content.offsetWidth; // Trigger reflow for animation
                         content.classList.add('view-transition');
                     }
-                    if (tabId === 'tab-members') fetchMembers();
+                    if (tabId === 'tab-members') {
+                        fetchMembers();
+                        fetchAnalytics();
+                    }
                 } else if (tabId === 'servers') {
                     [viewConfig, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
                     viewServers.style.display = 'block';
@@ -7027,7 +7030,7 @@
             showTab(targetId);
 
             // Trigger specific fetches based on tab
-            if (targetId === 'tab-overview') fetchAnalytics();
+            if (targetId === 'tab-overview' || targetId === 'tab-members') fetchAnalytics();
         });
 
         async function openConfig(g) {

@@ -183,14 +183,8 @@ router.get('/analytics', async (req, res) => {
             if (member) leastActiveName = member.displayName;
         }
 
-        // Fetch members to calculate real joins
-        let membersList = [];
-        try {
-            const fetched = await guild.members.fetch();
-            membersList = Array.from(fetched.values());
-        } catch (e) {
-            membersList = Array.from(guild.members.cache.values());
-        }
+        // Get members from cache to prevent Discord API timeouts and ensure instant page loads
+        const membersList = Array.from(guild.members.cache.values());
 
         const nowTime = Date.now();
         const oneDayMs = 24 * 60 * 60 * 1000;
