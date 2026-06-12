@@ -2646,6 +2646,41 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="panel" style="margin-top: 25px;">
+                        <h3>Context-Aware Moderation (V2.0)</h3>
+                        <p>Differentiates between targeted harassment and casual statements to keep chat flowing smoothly.</p>
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Enable Context AutoMod</h4>
+                                <p>Scan chat with advanced contextual thread assessment.</p>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="setting-autoModActive"><span class="slider"></span></label>
+                        </div>
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="row-info">
+                                <h4>Use Default Safety Rules</h4>
+                                <p>Ignore casual context or conversational statements. If disabled, casual expressions will prompt notifications.</p>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="setting-useDefaultSafetyRules"><span class="slider"></span></label>
+                        </div>
+                        <div class="input-group" style="margin-top: 20px;">
+                            <label>Custom Blocked Keywords (Comma-separated)</label>
+                            <input type="text" id="setting-customBlockedContexts" placeholder="e.g. word1, word2" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="row-inputs">
+                            <div class="input-group">
+                                <label>Max Warnings Before Action</label>
+                                <input type="number" id="setting-maxWarningsBeforeAction" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
+                                <span class="error-msg" id="error-maxWarningsBeforeAction" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 50</span>
+                            </div>
+                            <div class="input-group">
+                                <label>Mute Duration (Minutes)</label>
+                                <input type="number" id="setting-muteDurationMinutes" min="1" max="1440" class="numerical-input" placeholder="e.g. 60" style="width: 100%; box-sizing: border-box;">
+                                <span class="error-msg" id="error-muteDurationMinutes" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 1440</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="tab-logging" class="tab-content">
@@ -2984,6 +3019,14 @@
                             <select id="setting-countingChannelId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;"><option value="">Select channel...</option></select>
                         </div>
                         <div class="input-group" style="margin-top: 15px;"><label>XP Per Count</label><input type="number" id="setting-countingChannelXpReward" placeholder="5"></div>
+                        <div class="input-group" style="margin-top: 15px;">
+                            <label>Counting Whitelisted Roles</label>
+                            <input type="hidden" id="setting-countingWhitelistedRoles">
+                        </div>
+                        <div class="input-group" style="margin-top: 15px;">
+                            <label>Counting Blacklisted Users (Comma-separated Discord IDs)</label>
+                            <input type="text" id="setting-countingBlacklistedUsers" placeholder="e.g. 123456789012345678, 987654321098765432" style="width: 100%; box-sizing: border-box;">
+                        </div>
                     </div>
 
                     <div class="panel">
@@ -5497,6 +5540,12 @@
                         if (k === 'antiSpamMuteDuration') val = val * 60000;
                     } else {
                         val = null;
+                    }
+                }
+                if (k === 'customBlockedContexts' || k === 'countingBlacklistedUsers') {
+                    if (typeof val === 'string') {
+                        const arr = val.split(',').map(s => s.trim()).filter(Boolean);
+                        val = JSON.stringify(arr);
                     }
                 }
                 payload[k] = val;
@@ -8021,6 +8070,7 @@
             });
             syncMultiselectUI('setting-verifyRoleId');
             syncMultiselectUI('setting-automodImmuneRoles');
+            syncMultiselectUI('setting-countingWhitelistedRoles');
             if (typeof updatePreview === 'function') updatePreview();
             isApplyingHistoryState = false;
             updateUndoRedoButtons();
@@ -8607,6 +8657,7 @@
                 // Initialize custom multiselect dropdowns for verify roles and immune roles
                 initMultiselect('setting-verifyRoleId', roles);
                 initMultiselect('setting-automodImmuneRoles', roles);
+                initMultiselect('setting-countingWhitelistedRoles', roles);
             } catch (e) {
                 console.error('[Roles Load Error]:', e);
                 showToast(`Failed to load roles: ${e.message}`, 'error');
@@ -8743,7 +8794,7 @@
                 const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
                 const vals = Array.from(checkedBoxes).map(cb => cb.parentNode.getAttribute('data-value'));
                 
-                if (hiddenInputId === 'setting-automodImmuneRoles') {
+                if (hiddenInputId === 'setting-automodImmuneRoles' || hiddenInputId === 'setting-countingWhitelistedRoles') {
                     input.value = JSON.stringify(vals);
                 } else {
                     input.value = vals.join(',');
@@ -8895,7 +8946,9 @@
                 { id: 'setting-warningThreshold', min: 1, max: 50, errorId: 'error-warningThreshold', name: 'Warning Threshold' },
                 { id: 'setting-spamThreshold', min: 1, max: 20, errorId: 'error-spamThreshold', name: 'Sensitivity' },
                 { id: 'setting-spamInterval', min: 1, max: 60, errorId: 'error-spamInterval', name: 'Time Window' },
-                { id: 'setting-antiSpamMuteDuration', min: 1, max: 1440, errorId: 'error-antiSpamMuteDuration', name: 'Mute Time' }
+                { id: 'setting-antiSpamMuteDuration', min: 1, max: 1440, errorId: 'error-antiSpamMuteDuration', name: 'Mute Time' },
+                { id: 'setting-maxWarningsBeforeAction', min: 1, max: 50, errorId: 'error-maxWarningsBeforeAction', name: 'Max Warnings' },
+                { id: 'setting-muteDurationMinutes', min: 1, max: 1440, errorId: 'error-muteDurationMinutes', name: 'Mute Duration' }
             ];
 
             const saveBtn = document.getElementById('save-settings-btn');
@@ -9130,6 +9183,18 @@
                         el.value = val;
                         const textEl = document.getElementById('setting-' + k + '-text');
                         if (textEl) textEl.value = val;
+                    } else if (k === 'customBlockedContexts' || k === 'countingBlacklistedUsers') {
+                        let parsed = [];
+                        try {
+                            parsed = JSON.parse(s[k] || '[]');
+                        } catch (e) {
+                            parsed = [];
+                        }
+                        if (Array.isArray(parsed)) {
+                            el.value = parsed.join(', ');
+                        } else {
+                            el.value = '';
+                        }
                     } else {
                         el.value = (s[k] !== null && s[k] !== undefined) ? s[k] : '';
                     }
@@ -9138,6 +9203,7 @@
                 // Sync custom multiselect dropdowns with loaded values
                 syncMultiselectUI('setting-verifyRoleId');
                 syncMultiselectUI('setting-automodImmuneRoles');
+                syncMultiselectUI('setting-countingWhitelistedRoles');
 
                 refreshTopggAvatarPreview();
                 applyThemeVariables();
