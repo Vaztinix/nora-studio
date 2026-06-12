@@ -297,15 +297,36 @@
 
         body {
             color-scheme: var(--color-scheme, dark);
-            background: var(--bg);
-            background-image:
-                radial-gradient(ellipse 80% 60% at 70% -10%, var(--glow-1), transparent),
-                radial-gradient(ellipse 60% 50% at 20% 110%, var(--glow-2), transparent);
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, var(--glow-1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, var(--glow-2) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(197, 163, 255, 0.05) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(255, 117, 181, 0.03) 0px, transparent 50%);
+            background-size: 100% 100%;
+            background-attachment: fixed;
             color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+        }
+
+        /* Ambient Animated Mesh Overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, var(--primary-glow), transparent 70%);
+            opacity: 0.5;
+            z-index: -1;
+            pointer-events: none;
+            animation: pulse-glow 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0.7; transform: scale(1.05); }
         }
 
         .topbar {
@@ -1769,6 +1790,9 @@
                     <span style="font-size: 0.7rem; color: var(--primary);">Developer</span>
                 </div>
             </div>
+            <button class="btn-outline" style="border-color: rgba(255,85,85,0.3); color: #ff6b6b;" onclick="sessionStorage.removeItem('discord_token'); localStorage.removeItem('nora_last_user_id'); window.location.reload();">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
             <a href="/" class="btn-outline">Back to Site</a>
         </div>
     </header>
@@ -5206,97 +5230,6 @@
                     });
                 }
 
-                // Fetch connections
-                const connRes = await fetch('/api/user/topgg/connections', {
-                    headers: { 'Authorization': `Bearer ${t}` }
-                });
-                let connections = [];
-                if (connRes.ok) {
-                    const connData = await connRes.json();
-                    connections = connData.connections || [];
-                }
-
-                // Fetch scraped user servers (to match names/icons)
-                const scrapedRes = await fetch('/api/user/topgg/servers', {
-                    headers: { 'Authorization': `Bearer ${t}` }
-                });
-                let scrapedServers = [];
-                if (scrapedRes.ok) {
-                    const scrapedData = await scrapedRes.json();
-                    scrapedServers = scrapedData.servers || [];
-                }
-
-                // Map target IDs/guild IDs to name and icon
-                const detailsMap = new Map();
-                scrapedServers.forEach(s => {
-                    detailsMap.set(s.id, { name: s.name, icon: s.icon });
-                });
-                guilds.forEach(g => {
-                    detailsMap.set(g.id, { name: g.name, icon: g.icon });
-                });
-
-                // Populate bots list
-                const topggIntegrationsList = document.getElementById('topgg-integrations-list');
-                if (topggIntegrationsList) {
-                    const botConns = connections.filter(c => c.type === 'bot');
-                    if (botConns.length === 0) {
-                        topggIntegrationsList.innerHTML = `
-                            <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
-                                No bots verified. Connect via the Top.gg server tab.
-                            </div>
-                        `;
-                    } else {
-                        let html = '';
-                        botConns.forEach(c => {
-                            const details = detailsMap.get(c.targetId) || { name: c.targetName || 'Top.gg Bot', icon: c.targetIcon || 'https://top.gg/images/topgg-logo.png' };
-                            html += `
-                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px;">
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <div style="width: 35px; height: 35px; background: #2ea043; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✅</div>
-                                        <div>
-                                            <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${details.name}</h4>
-                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ${c.targetId}</p>
-                                        </div>
-                                    </div>
-                                    <button class="config-btn" style="width: auto; padding: 10px 16px; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="window.unlinkBot('${c.targetId}')">Unlink</button>
-                                </div>
-                            `;
-                        });
-                        topggIntegrationsList.innerHTML = html;
-                    }
-                }
-
-                // Populate servers list
-                const topggServersList = document.getElementById('topgg-servers-list');
-                if (topggServersList) {
-                    const serverConns = connections.filter(c => c.type === 'server');
-                    if (serverConns.length === 0) {
-                        topggServersList.innerHTML = `
-                            <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
-                                No servers verified. Connect via the Top.gg server tab.
-                            </div>
-                        `;
-                    } else {
-                        let html = '';
-                        serverConns.forEach(c => {
-                            const details = detailsMap.get(c.targetId) || { name: 'Discord Server', icon: 'https://top.gg/images/topgg-logo.png' };
-                            const iconUrl = details.icon || 'https://top.gg/images/topgg-logo.png';
-                            html += `
-                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px;">
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <img src="${iconUrl}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
-                                        <div>
-                                            <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${details.name}</h4>
-                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ${c.targetId}</p>
-                                        </div>
-                                    </div>
-                                    <button class="config-btn" style="width: auto; padding: 10px 16px; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="window.unlinkServer('${c.targetId}')">Unlink</button>
-                                </div>
-                            `;
-                        });
-                        topggServersList.innerHTML = html;
-                    }
-                }
             } catch (e) {
                 console.error(e);
                 showToast(`Failed to load servers: ${e.message || 'Unknown error'}`, 'error');
