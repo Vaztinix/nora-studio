@@ -57,6 +57,9 @@ module.exports = {
             return handleSuccess(interaction, 'Level Synchronized', `Successfully adjusted **${target.tag}** to **Level ${newLevel}**.`);
         } catch (error) {
             console.error('[System Commands Error]: Level Override Failure:', error.message);
+            if (error.code === 50013) {
+                return handleError(interaction, 'Missing Permissions (50013)', 'Nora lacks permissions to perform this action or modify this user.');
+            }
             return handleError(interaction, 'Database Error', 'An internal error occurred while trying to push the new level to the database.');
         }
     }

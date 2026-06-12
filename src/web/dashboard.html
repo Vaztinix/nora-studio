@@ -50,24 +50,26 @@
         }
 
         :root {
-            --bg: #0f111a;
-            --sidebar-bg: #151828;
-            --card-bg: #1c2033;
-            --card-hover: #232841;
-            --primary: #aeefff;
-            --primary-glow: rgba(174, 239, 255, 0.3);
-            --primary-hover: #c4f3ff;
-            --text: #ffffff;
-            --muted: #8b90a5;
-            --border: rgba(255, 255, 255, 0.08);
-            --radius-md: 12px;
+            --bg: #080b16;
+            --sidebar-bg: #0d1020;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-hover: rgba(255, 255, 255, 0.06);
+            --primary: #00d4ff;
+            --primary-glow: rgba(0, 212, 255, 0.25);
+            --primary-hover: #33dfff;
+            --text: #f0f2f5;
+            --muted: #6b7a99;
+            --border: rgba(255, 255, 255, 0.06);
+            --radius-md: 14px;
             --radius-lg: 20px;
-            --danger: #ff5555;
-            --success: #2ea043;
-            --input-bg: rgba(255, 255, 255, 0.05);
-            --row-bg: rgba(0, 0, 0, 0.15);
-            --glow-1: #21193d;
-            --glow-2: #161c36;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --warning: #ffa502;
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --row-bg: rgba(0, 0, 0, 0.12);
+            --glow-1: rgba(0, 212, 255, 0.06);
+            --glow-2: rgba(108, 92, 231, 0.06);
+            --rail-width: 72px;
         }
 
         /* Smooth Transition when Switching Themes */
@@ -295,9 +297,10 @@
 
         body {
             color-scheme: var(--color-scheme, dark);
-            background: radial-gradient(circle at 80% 0%, var(--glow-1), transparent 40%),
-                        radial-gradient(circle at 20% 100%, var(--glow-2), transparent 40%),
-                        var(--bg);
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse 80% 60% at 70% -10%, var(--glow-1), transparent),
+                radial-gradient(ellipse 60% 50% at 20% 110%, var(--glow-2), transparent);
             color: var(--text);
             min-height: 100vh;
             display: flex;
@@ -306,24 +309,31 @@
         }
 
         .topbar {
-            height: 70px;
+            height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 40px;
-            background: rgba(15, 17, 26, 0.8);
-            backdrop-filter: blur(10px);
+            padding: 0 32px 0 calc(var(--rail-width) + 32px);
+            background: rgba(8, 11, 22, 0.4);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
             border-bottom: 1px solid var(--border);
             z-index: 100;
+            position: sticky;
+            top: 0;
+            transition: all 0.3s ease;
         }
-        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; }
-        .brand img { width: 32px; height: 32px; border-radius: 8px; }
+        .brand { display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 1.25rem; letter-spacing: -0.5px; }
+        .brand img { width: 36px; height: 36px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,212,255,0.2); }
+        .topbar-actions { display: flex; align-items: center; gap: 16px; }
+        
         .btn-outline {
-            padding: 8px 16px; border: 1px solid var(--border); border-radius: 999px;
-            color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 600;
-            transition: 0.2s; background: rgba(255,255,255,0.02);
+            padding: 10px 20px; border: 1px solid var(--border); border-radius: 999px;
+            color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); background: rgba(255,255,255,0.02);
+            display: inline-flex; align-items: center; justify-content: center;
         }
-        .btn-outline:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+        .btn-outline:hover { color: #fff; background: rgba(255,255,255,0.08); transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
 
         .app-layout {
             display: flex;
@@ -331,34 +341,43 @@
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
-            padding: 40px 20px;
-            gap: 40px;
+            padding: 40px 40px 40px calc(var(--rail-width) + 40px);
+            gap: 0;
         }
 
+        /* Navigation Rail (Floating Glass) */
         .sidebar {
-            width: 260px;
-            flex-shrink: 0;
-            background: var(--sidebar-bg);
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            width: var(--rail-width);
+            height: calc(100vh - 100px);
+            background: rgba(8, 11, 22, 0.6);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
             border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 20px;
+            border-radius: 24px;
+            padding: 24px 0;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            height: fit-content;
+            align-items: center;
+            gap: 12px;
+            z-index: 200;
+            overflow: visible;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
         }
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding-bottom: 20px;
+            justify-content: center;
+            padding: 8px 0 16px 0;
             border-bottom: 1px solid var(--border);
+            width: 100%;
         }
-        .user-profile img { width: 44px; height: 44px; border-radius: 50%; }
-        .user-profile-info h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
-        .user-profile-info p { font-size: 0.75rem; color: var(--muted); }
+        .user-profile img { width: 36px; height: 36px; border-radius: 50%; }
+        .user-profile-info { display: none; }
         
-        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 4px; width: 100%; align-items: center; padding: 8px 0; }
         .sidebar-btn {
             background: transparent; border: none; color: var(--muted); font-size: 0.95rem; font-weight: 600;
             padding: 12px 16px; border-radius: var(--radius-md); text-align: left; cursor: pointer; transition: 0.2s;
@@ -368,10 +387,53 @@
         
         .logout-btn {
             background: transparent; border: 1px solid var(--border); color: var(--text);
-            padding: 12px; border-radius: 999px; font-weight: 600; cursor: pointer; transition: 0.2s;
-            margin-top: auto; font-size: 0.9rem;
+            width: 40px; height: 40px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            margin-top: auto; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
+            padding: 0;
         }
-        .logout-btn:hover { background: rgba(255,255,255,0.05); }
+        .logout-btn:hover { background: rgba(255, 71, 87, 0.1); border-color: rgba(255, 71, 87, 0.3); color: var(--danger); }
+
+        /* Navigation Rail Item Styles */
+        .v-tab {
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none;
+            color: var(--muted); border-radius: 14px;
+            cursor: pointer; transition: all 0.2s ease;
+            position: relative; font-size: 0; padding: 0;
+        }
+        .v-tab i { font-size: 1.15rem; }
+        .v-tab:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+        .v-tab.active {
+            background: rgba(0, 212, 255, 0.12);
+            color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+        /* Tooltip on hover */
+        .v-tab::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: calc(100% + 12px);
+            top: 50%; transform: translateY(-50%);
+            background: rgba(15, 18, 30, 0.95);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            transform: translateY(-50%) translateX(-4px);
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+        }
+        .v-tab:hover::after {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
 
         .main-content {
             flex: 1;
@@ -731,15 +793,24 @@
         .tab-content.active { display: block; }
 
         .panel {
-            background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg);
-            padding: 30px; margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-bottom: 20px;
             position: relative;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .panel:hover {
+            border-color: rgba(255, 255, 255, 0.1);
         }
         .panel.has-open-dropdown {
             z-index: 99 !important;
         }
-        .panel > h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
-        .panel > p { color: var(--muted); font-size: 0.9rem; margin-bottom: 25px; }
+        .panel > h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+        .panel > p { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; line-height: 1.5; }
 
         .row {
             display: flex; justify-content: space-between; align-items: center;
@@ -1244,11 +1315,11 @@
                 position: sticky;
                 top: 0;
                 z-index: 9999;
-                background: rgba(15, 17, 26, 0.7) !important;
+                background: rgba(8, 11, 22, 0.85) !important;
                 backdrop-filter: blur(20px) saturate(180%);
                 -webkit-backdrop-filter: blur(20px) saturate(180%);
                 border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-                padding: 14px 24px !important;
+                padding: 12px 20px !important;
             }
             .mobile-burger-btn {
                 display: block;
@@ -1269,26 +1340,27 @@
             }
             .app-layout {
                 flex-direction: column;
+                padding-left: 16px !important;
             }
             .sidebar {
                 position: fixed !important;
                 top: 0;
                 left: -320px;
-                width: 290px !important;
+                width: 280px !important;
                 height: 100vh !important;
                 min-height: 100vh !important;
                 z-index: 10000;
-                background: rgba(21, 24, 40, 0.75) !important;
-                backdrop-filter: blur(25px) saturate(180%);
-                -webkit-backdrop-filter: blur(25px) saturate(180%);
+                background: rgba(8, 11, 22, 0.92) !important;
+                backdrop-filter: blur(30px) saturate(180%);
+                -webkit-backdrop-filter: blur(30px) saturate(180%);
                 transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
                 border-right: 1px solid rgba(255, 255, 255, 0.08);
                 border-bottom: none;
                 box-shadow: 15px 0 50px rgba(0, 0, 0, 0.6);
-                padding: 30px 24px;
+                padding: 30px 20px;
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
+                align-items: stretch;
             }
             .sidebar.open {
                 left: 0;
@@ -1296,19 +1368,31 @@
             .sidebar-nav {
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
-                margin-top: 20px;
+                gap: 6px;
+                margin-top: 16px;
+                align-items: stretch;
             }
             .v-tab {
-                width: 100%;
-                margin: 0 !important;
-            }
-            .user-profile {
-                margin-bottom: 20px;
-            }
-            .logout-btn {
-                margin-top: 20px !important;
                 width: 100% !important;
+                height: auto !important;
+                padding: 14px 18px !important;
+                font-size: 0.92rem !important;
+                justify-content: flex-start !important;
+                gap: 12px;
+                border-radius: 12px !important;
+            }
+            .v-tab::after { display: none !important; }
+            .user-profile {
+                justify-content: flex-start !important;
+                padding: 8px 0 16px 0 !important;
+            }
+            .user-profile-info { display: block !important; }
+            .logout-btn {
+                width: 100% !important;
+                height: auto !important;
+                padding: 12px !important;
+                border-radius: 12px !important;
+                margin-top: 20px !important;
             }
             .premium-ad {
                 display: none !important;
@@ -1565,6 +1649,16 @@
             accent-color: var(--primary);
             margin: 0;
         }
+
+        @keyframes viewFadeIn {
+            0% { opacity: 0; transform: translateY(10px) scale(0.99); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .view-transition {
+            animation: viewFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         .multiselect-tag {
             background: rgba(174, 239, 255, 0.15);
             border: 1px solid rgba(174, 239, 255, 0.3);
@@ -1650,35 +1744,11 @@
     <div id="loading-overlay"><div class="pulse-dot"></div></div>
     <div id="toast-container" class="toast-tr"></div>
 
-    <div id="auth-overlay">
+        <div id="auth-overlay">
         <img src="nora.png" style="width: 80px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(174,239,255,0.15);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
         <h1 style="margin-bottom: 10px; font-size: 2rem; color: white;">Login Required</h1>
         <p style="color: var(--muted); margin-bottom: 20px;">Log in with Discord to configure your servers.</p>
         <button id="login-btn" class="save-btn" style="background: var(--primary); margin-bottom: 15px;">Login with Discord</button>
-        
-        <div style="margin-top: 10px; display: flex; gap: 15px; justify-content: center;">
-            <a href="#" style="color: var(--primary); font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" onclick="toggleApiConfig(event)">
-                <i class="fas fa-cog"></i> Configure API Server
-            </a>
-            <a href="#" style="color: var(--primary); font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" onclick="togglePairingInput(event)">
-                <i class="fas fa-mobile-alt"></i> Pair Device
-            </a>
-        </div>
-        
-        <div id="api-config-container" style="display: none; margin-top: 20px; width: 100%; max-width: 280px; text-align: left; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
-            <label style="color: var(--muted); font-size: 0.75rem; display: block; margin-bottom: 6px; font-weight: 600;">BOT API ENDPOINT:</label>
-            <input type="text" id="custom-api-input" style="width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.85rem; margin-bottom: 10px;" placeholder="e.g. http://localhost:3000">
-            <button class="config-btn" style="width: 100%; padding: 6px;" onclick="saveCustomApi()">Save and Reload</button>
-        </div>
-
-        <div id="pairing-input-container" style="display: none; margin-top: 20px; width: 100%; max-width: 280px; text-align: left; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
-            <label style="color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 6px;">Your device name (optional)</label>
-            <input type="text" id="secondary-device-name" maxlength="40" placeholder="e.g. My iPhone, Samsung Tablet..." style="width: 100%; padding: 9px 13px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.88rem; margin-bottom: 10px; box-sizing: border-box;">
-            <label style="color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 6px;">6-digit pairing code</label>
-            <input type="text" id="pairing-code-input" maxlength="6" placeholder="123456" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1rem; text-align: center; letter-spacing: 4px; margin-bottom: 10px; box-sizing: border-box;">
-            <button class="save-btn" style="width: 100%;" onclick="submitPairingCode()">Link Device</button>
-        </div>
-    </div>
     </div>
 
     <header class="topbar">
@@ -1687,7 +1757,18 @@
             <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
             Nora Studio
         </div>
-        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; color:var(--muted); font-size:0.8rem;">
+        <div class="topbar-actions">
+            <!-- User Profile in Topbar -->
+            <div class="user-profile-topbar" style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 6px 16px 6px 6px; border-radius: 999px; border: 1px solid var(--border);">
+                <div style="position: relative;">
+                    <img id="user-avatar-top" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="User" style="width: 32px; height: 32px; border-radius: 50%;">
+                    <div id="user-status-dot-top" style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background: #2ed573; border: 2px solid var(--sidebar-bg);"></div>
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    <span id="user-name-top" style="font-size: 0.85rem; font-weight: 700; color: #fff;">...</span>
+                    <span style="font-size: 0.7rem; color: var(--primary);">Developer</span>
+                </div>
+            </div>
             <a href="/" class="btn-outline">Back to Site</a>
         </div>
     </header>
@@ -1695,66 +1776,67 @@
 
     <div class="app-layout">
         <aside class="sidebar">
-            <div class="user-profile" data-no-translate>
-                <div style="position: relative;">
-                    <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="User">
-                    <div id="user-status-dot" style="position: absolute; bottom: 4px; right: 4px; width: 12px; height: 12px; border-radius: 50%; background: #23a55a; border: 2px solid var(--sidebar-bg);"></div>
-                </div>
-                <div class="user-profile-info">
-                    <h4 id="user-name">...</h4>
-                    <div id="user-badges" style="display: flex; gap: 4px; margin-top: 4px;"></div>
-                    <p id="user-handle" style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Loading</p>
-                </div>
+            <div class="user-profile" style="display: none;">
+                <!-- Replaced by topbar user profile -->
             </div>
             <div class="sidebar-nav">
-                    <button class="v-tab" onclick="showTab('servers')"><i class="fas fa-server"></i> Servers</button>
-                    <button class="v-tab" onclick="showTab('profile')"><i class="fas fa-user-circle"></i> My Profile</button>
-                    <button class="v-tab" onclick="showTab('notifications')">
-                        <i class="fas fa-bell"></i> Notifications
-                        <span id="notif-badge" class="notif-badge">0</span>
+                    <button class="v-tab" data-tooltip="Servers" onclick="showTab('servers')"><i class="fas fa-server"></i></button>
+                    <button class="v-tab" data-tooltip="My Profile" onclick="showTab('profile')"><i class="fas fa-user-circle"></i></button>
+                    <button class="v-tab" data-tooltip="Notifications" onclick="showTab('notifications')">
+                        <i class="fas fa-bell"></i>
+                        <span id="notif-badge" class="notif-badge" style="position:absolute;top:4px;right:4px;"></span>
                     </button>
-                    <button class="v-tab" onclick="showTab('prefs')"><i class="fas fa-cog"></i> Settings</button>
+                    <button class="v-tab" data-tooltip="Settings" onclick="showTab('prefs')"><i class="fas fa-cog"></i></button>
             </div>
 
-            <div id="sidebar-premium-ad" class="premium-ad" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">
-                <h4>NORA PREMIUM</h4>
-                <p>Unlock Leveling Boosts, Advanced Verification & More</p>
-                <div style="margin-top: 10px; background: rgba(0,0,0,0.1); padding: 5px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;">UPGRADE NOW</div>
+            <div id="sidebar-premium-ad" class="premium-ad" style="display:none;width:44px;height:44px;padding:0;border-radius:14px;margin:0;" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">
+                <i class="fas fa-gem" style="font-size:1.1rem;"></i>
             </div>
 
-            <button class="logout-btn" id="logout-btn">Logout</button>
+            <button class="logout-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
         </aside>
 
         <main class="main-content">
-            <div id="view-servers">
-                <div style="background: linear-gradient(135deg, var(--primary) 0%, #4b69ff 100%); border-radius: 15px; padding: 30px; margin-bottom: 30px; position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="position: relative; z-index: 2;">
-                        <h1 style="font-size: 2.2rem; font-weight: 800; color: #000; margin-bottom: 5px;">Welcome to Nora Studio</h1>
-                        <p style="color: rgba(0,0,0,0.7); font-size: 1rem; max-width: 600px; font-weight: 500;">Manage your servers, configure advanced automation, and monitor your communities from one centralized hub.</p>
+            <div id="view-servers" class="tab-content active">
+                <div class="hero-banner" style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(108, 92, 231, 0.15) 100%); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 48px; margin-bottom: 40px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);">
+                    <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: var(--primary); filter: blur(100px); opacity: 0.15; border-radius: 50%;"></div>
+                    <div style="position: relative; z-index: 2; max-width: 600px;">
+                        <div style="display: inline-block; padding: 6px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; margin-bottom: 16px; font-size: 0.85rem; font-weight: 600; color: var(--primary); letter-spacing: 0.05em; text-transform: uppercase;">Nora Studio V2</div>
+                        <h1 style="font-size: 2.8rem; font-weight: 800; color: #fff; margin-bottom: 16px; letter-spacing: -0.03em; line-height: 1.1;">Command Center</h1>
+                        <p style="color: rgba(255,255,255,0.7); font-size: 1.05rem; font-weight: 400; line-height: 1.6;">Manage your servers, configure advanced automation, and monitor your communities from one centralized hub.</p>
                     </div>
-                    <i class="fas fa-server" style="font-size: 10rem; position: absolute; right: 10px; top: -20px; opacity: 0.15; color: #000; transform: rotate(-15deg);"></i>
+                    <i class="fas fa-planet-ringed" style="font-size: 8rem; position: absolute; right: 40px; top: 50%; transform: translateY(-50%) rotate(-15deg); opacity: 0.08; color: #fff; filter: drop-shadow(0 0 20px rgba(255,255,255,0.5));"></i>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
                     <div>
-                        <h2 style="font-size: 1.5rem;">Your Servers</h2>
-                        <p style="color: var(--muted); font-size: 0.9rem;">Showing servers where you have administrative access.</p>
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; margin-bottom: 4px;">Active Deployments</h2>
+                        <p style="color: var(--muted); font-size: 0.9rem;">Showing servers where you hold administrative privileges.</p>
                     </div>
-                    <button class="save-btn" style="background: var(--sidebar-bg); border: 1px solid var(--border); color: #fff;" onclick="inviteBot()">+ Invite Nora</button>
+                    <button class="save-btn" style="background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--primary); padding: 10px 20px; font-size: 0.9rem;" onclick="inviteBot()">
+                        <i class="fas fa-plus" style="margin-right: 8px;"></i> Add to Server
+                    </button>
                 </div>
                 
-                <div class="server-grid" id="guilds-container"></div>
+                <div class="server-grid" id="guilds-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px;">
+                    <!-- Dynamically populated server cards go here -->
+                </div>
             </div>
 
-            <div id="view-profile" style="display: none;">
-                <div class="header">
-                    <h1>My Profile</h1>
-                    <p>Manage your cross-server identity and integrations.</p>
+
+            <div id="view-profile" class="tab-content" style="display: none;">
+                <div class="hero-banner" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.15) 0%, rgba(235, 69, 158, 0.1) 100%); border: 1px solid rgba(88, 101, 242, 0.15); border-radius: 24px; padding: 40px; margin-bottom: 40px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);">
+                    <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: #5865F2; filter: blur(90px); opacity: 0.1; border-radius: 50%;"></div>
+                    <div style="position: relative; z-index: 2; max-width: 600px;">
+                        <h1 style="font-size: 2.4rem; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.02em;">My Profile</h1>
+                        <p style="color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 400; line-height: 1.5;">Manage your cross-server identity, privacy settings, and global integrations.</p>
+                    </div>
+                    <i class="fas fa-id-card" style="font-size: 6rem; position: absolute; right: 40px; top: 50%; transform: translateY(-50%) rotate(10deg); opacity: 0.1; color: #fff;"></i>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 350px; gap: 20px;">
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
-                        <div class="panel">
-                            <h3>Identity Configuration</h3>
+                <div style="display: grid; grid-template-columns: 1fr 350px; gap: 24px;">
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 20px;">Identity Configuration</h3>
                             <div class="row">
                                 <div class="row-info">
                                     <h4>Public Roblox Status</h4>
@@ -1940,9 +2022,15 @@
             </div>
 
 
-            <div id="view-prefs" style="display: none;">
-                <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">Settings</h1>
-                <p style="color: var(--muted); margin-bottom: 30px;">Personalize your Nora Studio experience.</p>
+            <div id="view-prefs" class="tab-content" style="display: none;">
+                <div class="hero-banner" style="background: linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, rgba(0, 212, 255, 0.1) 100%); border: 1px solid rgba(46, 204, 113, 0.15); border-radius: 24px; padding: 40px; margin-bottom: 40px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);">
+                    <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: #2ecc71; filter: blur(90px); opacity: 0.1; border-radius: 50%;"></div>
+                    <div style="position: relative; z-index: 2; max-width: 600px;">
+                        <h1 style="font-size: 2.4rem; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.02em;">Studio Settings</h1>
+                        <p style="color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 400; line-height: 1.5;">Personalize your Nora Studio experience, customize aesthetics, and manage active device sessions.</p>
+                    </div>
+                    <i class="fas fa-cog" style="font-size: 6rem; position: absolute; right: 40px; top: 50%; transform: translateY(-50%) rotate(15deg); opacity: 0.1; color: #fff;"></i>
+                </div>
                 
                 <div class="panel">
                     <h3>Dashboard Aesthetics</h3>
@@ -2095,10 +2183,9 @@
                     <p>Your identity as seen by Nora Studio.</p>
                     <div class="row-inputs">
                         <div class="input-group"><label>Discord Username</label><input type="text" id="pref-username" data-no-translate readonly disabled></div>
-                        <div class="input-group"><label>Email Address</label><input type="text" id="pref-email" data-no-translate readonly disabled></div>
+                        <div class="input-group"><label>Display Name</label><input type="text" id="pref-display-name" data-no-translate placeholder="Name inside Nora Studio"></div>
                     </div>
                     <div class="row-inputs">
-                        <div class="input-group"><label>Display Name</label><input type="text" id="pref-display-name" data-no-translate placeholder="Name inside Nora Studio"></div>
                         <div class="input-group">
                             <label>Interaction Language</label>
                             <select id="pref-language" onchange="syncAndSaveLanguage(this.value, 'pref-language')" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box;">
@@ -2142,24 +2229,6 @@
                                     <input type="text" id="roblox-link-username" placeholder="Enter username" style="width: 100%; box-sizing: border-box; height: 38px;">
                                 </div>
                                 <button class="save-btn" style="background: #2ea043; height: 38px; width: auto; padding: 0 20px; font-size: 0.85rem; line-height: 38px; display: flex; align-items: center;" onclick="linkRoblox()">Link Account</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="border-bottom: 1px solid var(--border); padding-bottom: 25px; margin-bottom: 25px;">
-                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Top.gg Bot Ownership</h4>
-                        <div id="topgg-integrations-list" data-no-translate>
-                            <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
-                                No bots verified. Connect via the Top.gg server tab.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">TOP.GG SERVER OWNERSHIP</h4>
-                        <div id="topgg-servers-list" data-no-translate>
-                            <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
-                                No servers verified. Connect via the Top.gg server tab.
                             </div>
                         </div>
                     </div>
@@ -2237,7 +2306,7 @@
                 <div class="panel">
                     <h3>Notification Preferences</h3>
                     <p>Choose which alerts appear in your Notification Center.</p>
-                    <div class="row"><h4>Vote Notifications</h4><label class="switch"><input type="checkbox" id="pref-notif-votes" checked><span class="slider"></span></label></div>
+                    <div class="row"><h4>Counting Alerts</h4><label class="switch"><input type="checkbox" id="pref-notif-votes" checked><span class="slider"></span></label></div>
                     <div class="row"><h4>Level Up Alerts</h4><label class="switch"><input type="checkbox" id="pref-notif-levels" checked><span class="slider"></span></label></div>
                     <div class="row"><h4>Security Warnings</h4><label class="switch"><input type="checkbox" id="pref-notif-safety" checked><span class="slider"></span></label></div>
                     <div class="row"><h4>Broadcast Updates</h4><label class="switch"><input type="checkbox" id="pref-notif-broadcast" checked><span class="slider"></span></label></div>
@@ -2245,15 +2314,7 @@
 
                 <div class="panel">
                     <h3>Security & Privacy</h3>
-                    <p>Enhanced protection for your Nora Studio session.</p>
-                    <div class="row">
-                        <div class="row-info">
-                            <h4>Session Hardening</h4>
-                            <p>Lock your dashboard session to your current IP address.</p>
-                            <p style="font-size: 0.75rem; color: var(--danger); margin-top: 5px; opacity: 0.8;"><strong>NOTICE:</strong> If enabled, Nora will track and save your current IP address to verify your session integrity.</p>
-                        </div>
-                        <label class="switch"><input type="checkbox" id="pref-secure-session"><span class="slider"></span></label>
-                    </div>
+                    <p>Enhanced protection and data management for your Nora Studio account.</p>
                     <div class="row">
                         <div class="row-info">
                             <h4>Access Logs</h4>
@@ -2271,12 +2332,11 @@
                             <div style="font-size: 0.8rem; color: var(--muted); text-align: center; padding: 15px;">Loading active sessions...</div>
                         </div>
                     </div>
-                </div>
-
-                <div class="panel">
-                    <h3>Security</h3>
-                    <p>Manage your data across all servers where Nora is active.</p>
-                    <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="clearGlobalData()">Purge My Global Data</button>
+                    <div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 5px; color: #fff;">Data Sovereignty</h4>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 15px;">Manage your data across all servers where Nora is active.</p>
+                        <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="clearGlobalData()">Purge My Global Data</button>
+                    </div>
                 </div>
 
                 <div id="owner-panel" style="display: none;">
@@ -2459,8 +2519,8 @@
                             <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Growth Rate</span>
                             <h2 id="stats-growth-rate" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--success); font-weight: 800;">...</h2>
                         </div>
-                        <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; border: 1px solid var(--primary-glow); background: rgba(174, 239, 255, 0.03);">
-                            <span style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Top.gg Votes</span>
+                        <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; border: 1px solid var(--primary-glow); background: rgba(0, 212, 255, 0.03);">
+                            <span style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Counting Sessions</span>
                             <h2 id="stats-total-votes" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--primary); font-weight: 800;">0</h2>
                         </div>
                     </div>
@@ -3011,25 +3071,37 @@
                         </div>
                         <div class="input-group" style="margin-top: 15px;"><label>Win XP Reward</label><input type="number" id="setting-rpsGameXpReward" placeholder="50"></div>
                         
-                        <div class="row" style="margin-top: 25px;">
+                    </div>
+
+                    <div class="panel">
+                        <h3>Counting Engine</h3>
+                        <p>Configure the mathematical counting engine for your server.</p>
+                        <div class="row">
                             <div class="row-info">
                                 <h4>Counting Channel</h4>
-                                <p>Grant XP for participating in the counting channel.</p>
+                                <p>Select the channel where the counting game happens.</p>
                             </div>
                             <select id="setting-countingChannelId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;"><option value="">Select channel...</option></select>
                         </div>
-                        <div class="input-group" style="margin-top: 15px;"><label>XP Per Count</label><input type="number" id="setting-countingChannelXpReward" placeholder="5"></div>
+                        <div class="input-group" style="margin-top: 15px;"><label>XP Reward Per Count</label><input type="number" id="setting-countingChannelXpReward" placeholder="5"></div>
                         <div class="input-group" style="margin-top: 15px;">
                             <label>Counting Whitelisted Roles</label>
                             <input type="hidden" id="setting-countingWhitelistedRoles">
                         </div>
                         <div class="input-group" style="margin-top: 15px;">
-                            <label>Counting Blacklisted Users (Comma-separated Discord IDs)</label>
-                            <input type="text" id="setting-countingBlacklistedUsers" placeholder="e.g. 123456789012345678, 987654321098765432" style="width: 100%; box-sizing: border-box;">
+                            <label>Counting Blacklisted Users (Comma-separated IDs)</label>
+                            <input type="text" id="setting-countingBlacklistedUsers" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
                         </div>
                     </div>
 
                     <div class="panel">
+                        <h3>Social Media Feeds</h3>
+                        <p>Configure automatic notifications for YouTube and Twitch.</p>
+                        <div id="social-feeds-container">
+                            <div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 20px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">No feeds configured yet.</div>
+                        </div>
+                        <button class="config-btn" onclick="openAddFeedModal()" style="margin-top: 15px;"><i class="fas fa-plus"></i> Add New Feed</button>
+                    </div>                    <div class="panel">
                         <h3>Server Modules</h3>
                         <div class="input-group" style="margin-bottom: 20px;">
                             <label>Verify Channel</label>
@@ -3156,234 +3228,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="tab-topgg" class="tab-content">
-                    <div id="topgg-unverified-view">
-                        <div class="panel">
-                            <h3>Top.gg Bot & Server Verification</h3>
-                            <p>Connect your bot or server to Nora for vote tracking, role rewards, and engagement analytics.</p>
-                            
-                            <div style="background: rgba(174, 239, 255, 0.05); padding: 25px; border-radius: 12px; border: 1px dashed var(--border); text-align: center; margin-bottom: 20px;">
-                                <h4 style="margin-bottom: 10px;">Auto-Detection</h4>
-                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">We'll check Top.gg for any bots or servers owned by your Discord account.</p>
-                                <button class="config-btn" id="topgg-search-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 12px 30px;" onclick="fetchTopggBots()">Search My Bots & Servers</button>
-                                
-                                <div id="topgg-bot-results" style="margin-top: 25px; display: none;">
-                                    <h5 id="topgg-bots-header" style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Bots on Top.gg</h5>
-                                    <div id="topgg-bot-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                                        <!-- Bot results will appear here -->
-                                    </div>
-                                    
-                                    <h5 id="topgg-servers-header" style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Servers on Top.gg</h5>
-                                    <div id="topgg-server-list" style="display: flex; flex-direction: column; gap: 10px;">
-                                        <!-- Server results will appear here -->
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div style="text-align: center;">
-                                <p style="font-size: 0.8rem; color: var(--muted);">Don't see your bot or server? <a href="javascript:void(0)" onclick="document.getElementById('topgg-manual-setup').style.display='block'" style="color: var(--primary);">Use Manual ID Setup</a></p>
-                            </div>
-
-                            <div id="topgg-manual-setup" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
-                                <div style="background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem;">
-                                    <strong style="color: var(--primary); display: block; margin-bottom: 5px;">💡 Legacy Account Tip</strong>
-                                    If you joined Top.gg several years ago, your profile might use a legacy ID. If linking fails, simply open your Top.gg profile, copy the ID from the URL, and ensure your current Discord ID is added as a <b>Manager</b> on your bot's Top.gg "Edit" page.
-                                </div>
-                                <div class="input-group">
-                                    <label>Tracking Type</label>
-                                    <select id="setting-topggType" onchange="toggleManualTypeLayout()">
-                                        <option value="bot">Discord Bot</option>
-                                        <option value="server">Discord Server</option>
-                                    </select>
-                                </div>
-                                <div class="input-group" style="margin-top: 15px;">
-                                    <label id="manual-id-label">Bot ID</label>
-                                    <input type="text" id="setting-topggBotId" placeholder="123456789012345678">
-                                </div>
-                                <div class="input-group" id="legacy-owner-group" style="margin-top: 15px;">
-                                    <label>Legacy Top.gg User ID (Optional)</label>
-                                    <input type="text" id="setting-topggLegacyOwnerId" placeholder="If joined Top.gg before 2020" oninput="updateLegacyVerification()">
-                                </div>
-                                <div id="legacy-verification-info" style="display: none; margin-top: 15px; background: rgba(174, 239, 255, 0.03); border: 1px solid rgba(174, 239, 255, 0.1); padding: 15px; border-radius: 8px;">
-                                    <p style="font-size: 0.8rem; margin-bottom: 10px; color: var(--muted);">To verify you own this legacy account, please add this code to your <b>Top.gg Bio</b>:</p>
-                                    <code id="topgg-verify-code-display" style="background: #000; color: var(--primary); padding: 8px 12px; border-radius: 6px; font-weight: 800; display: block; text-align: center; font-size: 1.1rem; border: 1px solid var(--border); letter-spacing: 2px;">LOADING...</code>
-                                    <p style="font-size: 0.75rem; margin-top: 10px; color: var(--muted);">Nora will check your bio during the linking process.</p>
-                                </div>
-                                <button class="btn-outline" style="margin-top: 15px;" onclick="handleManualLink()">Link via ID</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="topgg-verified-view" style="display: none;">
-                        <div class="panel">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <div>
-                                    <h3>Vote Tracker Configuration</h3>
-                                    <button class="btn-outline" style="margin-top: 10px; font-size: 0.8rem;" onclick="document.getElementById('topgg-unverified-view').style.display='block'; this.style.display='none';">+ Link Another Bot</button>
-                                </div>
-                                <span class="badge-user" style="background: var(--success); color: #000; margin: 0;">VERIFIED</span>
-                            </div>
-                            
-                            <div class="input-group" id="topgg-asset-selector-group" style="margin-bottom: 25px; display: none;">
-                                <label>Active Top.gg Asset</label>
-                                <select id="topgg-asset-select" onchange="window.switchTopggAsset(this.value)">
-                                    <!-- Dynamic options -->
-                                </select>
-                                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">Switch between your linked bots/servers to view/configure their webhook token.</p>
-                            </div>
-                            
-                            <div id="topgg-advanced-features">
-                                <div class="row">
-                                    <div class="row-info">
-                                        <h4>Experience Boost Reward</h4>
-                                        <p>Give users extra Experience for voting.</p>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <input type="number" id="setting-topggXpBoost" placeholder="50" style="width: 80px;" min="0">
-                                        <span style="font-size: 0.8rem; color: var(--muted);">Experience</span>
-                                    </div>
-                                </div>
-
-                                <div class="input-group" style="margin-top: 15px; margin-bottom: 25px;">
-                                    <label>Reward Role</label>
-                                    <select id="setting-topggRewardRoleId">
-                                        <option value="">No reward role</option>
-                                    </select>
-                                </div>
-
-                                <div class="input-group" style="margin-bottom: 25px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                        <label style="margin: 0;">Vote Notification Channel</label>
-                                        <button class="config-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 2px 10px; font-size: 0.7rem; height: 24px;" onclick="testTopggWebhook()">Test Setup</button>
-                                    </div>
-                                    <select id="setting-topggVoteChannelId">
-                                        <option value="">Select a text channel...</option>
-                                    </select>
-                                    <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">Once selected, votes will automatically be detected and announced here.</p>
-                                </div>
-
-                                <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 25px; margin-bottom: 25px;">
-                                    <h4 style="margin-bottom: 15px; color: var(--primary);">Webhook Appearance</h4>
-                                    <div class="row">
-                                        <div class="row-info">
-                                            <h4>Webhook Name</h4>
-                                            <p>The name users see when a vote is announced.</p>
-                                        </div>
-                                        <input type="text" id="setting-topggWebhookName" placeholder="Nora Vote Tracker" style="width: 200px;">
-                                    </div>
-                                    <div class="row" style="margin-top: 15px;">
-                                        <div class="row-info">
-                                            <h4>Webhook Avatar</h4>
-                                            <p>The profile picture of the notification.</p>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 15px;">
-                                            <img id="topgg-avatar-preview" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);">
-                                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                                <input type="text" id="setting-topggWebhookAvatar" placeholder="Image URL" style="width: 200px; font-size: 0.8rem;" oninput="document.getElementById('topgg-avatar-preview').src = this.value || 'https://cdn.discordapp.com/embed/avatars/0.png'">
-                                                <button class="btn-outline" style="font-size: 0.7rem; padding: 2px 8px;" onclick="document.getElementById('topgg-avatar-upload').click()">Upload Image</button>
-                                                <input type="file" id="topgg-avatar-upload" style="display: none;" accept="image/*" onchange="handleTopggAvatarUpload(this)">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row" style="margin-top: 15px;">
-                                        <div class="row-info">
-                                            <h4>Embed Accent Color</h4>
-                                            <p>The color of the stripe on the side of the embed.</p>
-                                        </div>
-                                        <input type="color" id="setting-topggVoteEmbedColor" value="#FFA500" style="width: 50px; height: 30px; border: none; padding: 0; background: none; cursor: pointer;">
-                                    </div>
-                                </div>
-
-                                <div class="panel" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); margin-bottom: 25px;">
-                                    <h4 style="margin-bottom: 15px; font-size: 0.9rem; color: var(--primary);">Message Placeholder Key (Supports Markdown)</h4>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75rem;">
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.mention}</code> - Mention voter</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.tag}</code> - User Tag (User#0)</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.username}</code> - Voter name</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.displayname}</code> - Voter display</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{user.id}</code> - Voter ID</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.name}</code> - Server Name</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.count}</code> - Member Count</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{guild.active}</code> - Online Count</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{bot.name}</code> - Bot Name</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{bot.link}</code> - Bot Top.gg Link</div>
-                                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;"><code>{count}</code> - Vote Value (1 or 2)</div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="row-info">
-                                        <h4>Message Content</h4>
-                                        <p>Optional text sent outside the embed (supports placeholders).</p>
-                                    </div>
-                                    <input type="text" id="setting-topggVoteContent" placeholder="New vote alert!" style="width: 100%; margin-top: 10px;">
-                                </div>
-
-                                <div class="row" style="margin-top: 15px;">
-                                    <div class="row-info">
-                                        <h4>Embed Description</h4>
-                                        <p>The main message inside the notification embed.</p>
-                                    </div>
-                                    <textarea id="setting-topggVoteMessage" placeholder="{user.mention} just voted! Thanks!" style="width: 100%; min-height: 80px; margin-top: 10px;"></textarea>
-                                </div>
-
-                                <div class="row" style="margin-top: 15px;">
-                                    <div class="row-info">
-                                        <h4>Embed Image URL</h4>
-                                        <p>An optional large image displayed at the bottom of the embed.</p>
-                                    </div>
-                                    <input type="text" id="setting-topggVoteEmbedImage" placeholder="https://..." style="width: 100%; margin-top: 10px;">
-                                </div>
-
-                                <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 25px;">
-                                    <h4 style="margin-bottom: 15px;">Engagement Settings</h4>
-                                    <div class="row">
-                                        <div class="row-info">
-                                            <h4>Double Experience Weekends</h4>
-                                            <p>Automatically double the vote rewards during weekends.</p>
-                                        </div>
-                                        <label class="switch"><input type="checkbox" id="setting-topggDoubleXp"><span class="slider"></span></label>
-                                    </div>
-                                    <div class="row">
-                                        <div class="row-info">
-                                            <h4>Vote Reminders (BETA)</h4>
-                                            <p>Nora will DM users when they are eligible to vote again.</p>
-                                        </div>
-                                        <label class="switch"><input type="checkbox" id="setting-topggReminders"><span class="slider"></span></label>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Premium Webhook Integration Details Panel -->
-                            <div class="panel" style="background: rgba(174, 239, 255, 0.02); border: 1px solid var(--border); margin-top: 25px; padding: 20px; border-radius: 12px;">
-                                <h4 style="margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-link"></i> Top.gg Webhook Integration Setup
-                                </h4>
-                                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px; line-height: 1.4;">
-                                    To receive live voting events, configure these values in your bot's <b>Webhooks</b> tab on the Top.gg Edit page.
-                                </p>
-                                <div class="input-group" style="margin-bottom: 15px;">
-                                    <label>Webhook URL</label>
-                                    <div style="display: flex; gap: 10px;">
-                                        <input type="text" id="topgg-webhook-url-final" readonly style="flex: 1; background: rgba(0, 0, 0, 0.3); border-color: var(--border); color: var(--muted); font-size: 0.8rem;" placeholder="Select bot to generate URL...">
-                                        <button class="btn-outline" onclick="copyWebhookDetails('topgg-webhook-url-final')" style="padding: 8px 12px; font-size: 0.75rem; white-space: nowrap;"><i class="far fa-copy"></i> Copy URL</button>
-                                    </div>
-                                </div>
-                                <div class="input-group">
-                                    <label>Authorization Header Token</label>
-                                    <div style="display: flex; gap: 10px;">
-                                        <input type="text" id="setting-topggWebhookAuth" style="flex: 1; font-size: 0.8rem;" placeholder="Enter or generate webhook authorization token...">
-                                        <button class="btn-outline" onclick="window.generateTopggAuth()" style="padding: 8px 12px; font-size: 0.75rem; white-space: nowrap;"><i class="fas fa-magic"></i> Generate</button>
-                                        <button class="btn-outline" onclick="copyWebhookDetails('setting-topggWebhookAuth')" style="padding: 8px 12px; font-size: 0.75rem; white-space: nowrap;"><i class="far fa-copy"></i> Copy Token</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 15px;">
-                                <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.2); width: auto; padding: 5px 15px;" onclick="unlinkTopggBot()">Unlink Bot Ownership</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
 
                 <div id="tab-broadcast" class="tab-content">
@@ -4896,42 +4741,19 @@
 
                 document.getElementById('pref-secure-session').checked = d.sessionHardened;
                 
-                document.getElementById('user-avatar').src = d.avatar;
-                if (d.avatar.startsWith('a_')) document.getElementById('user-avatar').src += '.gif';
+                const avatarEl = document.getElementById('user-avatar-top');
+                if (avatarEl) {
+                    avatarEl.src = d.avatar;
+                    if (d.avatar.startsWith('a_')) avatarEl.src += '.gif';
+                }
                 
-                const userNameEl = document.getElementById('user-name');
+                const userNameEl = document.getElementById('user-name-top');
                 if (userNameEl) {
                     userNameEl.textContent = localStorage.getItem('nora_display_name') || d.global_name || d.username;
                 }
                 
-                const badgeContainer = document.getElementById('user-badges');
-                badgeContainer.innerHTML = '';
-                const flags = d.flags || 0;
-                const BADGES = {
-                    STAFF: 1 << 0, PARTNER: 1 << 1, HYPESQUAD: 1 << 2, 
-                    BUG_HUNTER_L1: 1 << 3, BUG_HUNTER_L2: 1 << 14,
-                    HOUSE_BRAVERY: 1 << 6, HOUSE_BRILLIANCE: 1 << 7, HOUSE_BALANCE: 1 << 8,
-                    EARLY_SUPPORTER: 1 << 9, VERIFIED_DEVELOPER: 1 << 17, ACTIVE_DEVELOPER: 1 << 22
-                };
-                Object.entries(BADGES).forEach(([name, flag]) => {
-                    if (flags & flag) {
-                        const b = document.createElement('div'); b.className = 'badge-user'; b.textContent = name.split('_').pop();
-                        badgeContainer.appendChild(b);
-                    }
-                });
-                if (d.noraPremium) {
-                    badgeContainer.innerHTML += '<div class="badge-user nora">Nora+</div>';
-                    document.getElementById('sidebar-premium-ad').style.display = 'none';
-                } else {
-                    document.getElementById('sidebar-premium-ad').style.display = 'block';
-                }
-
-                const handleEl = document.getElementById('user-handle');
-                handleEl.innerHTML = `@${d.username}`;
-                
                 // Populate Settings
                 document.getElementById('pref-username').value = d.username;
-                document.getElementById('pref-email').value = d.email;
                 document.getElementById('pref-display-name').value = localStorage.getItem('nora_display_name') || d.global_name || d.username;
                 document.getElementById('pref-premium-status').innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
                 if (d.noraPremium) document.getElementById('pref-premium-status').innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
@@ -6125,23 +5947,40 @@
                 }
                 
                 if (tabId.startsWith('tab-')) {
-                    document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+                    document.querySelectorAll('.tab-content').forEach(tc => {
+                        tc.style.display = 'none';
+                        tc.classList.remove('view-transition');
+                    });
                     document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
                     const btn = document.querySelector(`.h-tab[data-tab="${tabId}"]`) || document.querySelector(`.h-tab[onclick*="${tabId}"]`);
                     if (btn) btn.classList.add('active');
                     const content = document.getElementById(tabId);
-                    if (content) content.style.display = 'block';
+                    if (content) {
+                        content.style.display = 'block';
+                        void content.offsetWidth; // Trigger reflow for animation
+                        content.classList.add('view-transition');
+                    }
                     if (tabId === 'tab-members') fetchMembers();
                 } else {
                     const views = [viewServers, viewConfig, viewPrefs, viewNotifications, viewProfile];
-                    views.forEach(v => { if(v) v.style.display = 'none'; });
+                    views.forEach(v => {
+                        if (v) {
+                            v.style.display = 'none';
+                            v.classList.remove('view-transition');
+                        }
+                    });
                     document.querySelectorAll('.v-tab').forEach(t => t.classList.remove('active'));
                     
                     const btn = Array.from(document.querySelectorAll('.v-tab')).find(b => b.getAttribute('onclick')?.includes(tabId));
                     if (btn) btn.classList.add('active');
                     
                     const content = document.getElementById(tabId === 'members' ? 'view-config' : 'view-' + tabId);
-                    if (content) content.style.display = 'block';
+                    if (content) {
+                        content.style.display = 'block';
+                        void content.offsetWidth; // Trigger reflow
+                        content.classList.add('view-transition');
+                    }
+
 
                     if (tabId === 'members') {
                         showTab('tab-members');
@@ -6707,6 +6546,7 @@
                 // Await channels and roles loading first so that fetchSettings() can map the select elements correctly
                 await Promise.all([fetchChannels(), fetchRoles(), fetchAnalytics()]);
                 await fetchSettings();
+                await fetchContentFeeds();
             } catch (err) {
                 console.error('[Open Config Error]:', err);
             } finally {
@@ -7601,9 +7441,9 @@
 
         function addRoleReward(lvl = '', roleId = '') {
             const currentRewards = document.querySelectorAll('#role-rewards-list .row-inputs').length;
-            const cap = currentServerIsPremium ? 15 : 10;
+            const cap = currentServerIsPremium ? 25 : 5;
             if (currentRewards >= cap) {
-                showToast(`Premium Limit: Free servers are capped at 10 role rewards, while Premium servers get up to 15.`, 'warning');
+                showToast(`Premium Limit: Free servers are capped at 5 role rewards, while Premium servers get up to 25.`, 'warning');
                 return;
             }
 
@@ -8168,6 +8008,9 @@
                     const topRow = document.createElement('div');
                     topRow.style = 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
                     topRow.innerHTML = `<strong>IP: ${s.ipAddress}</strong> <span style="color: var(--muted); font-size: 0.75rem;">(${s.location})</span>`;
+                    if (s.deviceType) {
+                        topRow.innerHTML += `<span style="font-size: 0.65rem; background: rgba(174, 239, 255, 0.15); color: var(--primary); padding: 1px 5px; border-radius: 4px; font-weight: 600;">${s.deviceType.toUpperCase()}</span>`;
+                    }
                     if (s.isCurrent) {
                         topRow.innerHTML += `<span style="font-size: 0.65rem; background: var(--success); color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: 700;">CURRENT</span>`;
                     }
@@ -8483,137 +8326,6 @@
             }
         };
 
-        window.generateTopggAuth = function() {
-            const newVal = 'nora_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-            const authInput = document.getElementById('setting-topggWebhookAuth');
-            if (authInput) {
-                authInput.value = newVal;
-                showToast('Generated new auth token. Don\'t forget to save changes!', 'info');
-            }
-        };
-
-        window.switchTopggAsset = function(targetId) {
-            const select = document.getElementById('topgg-asset-select');
-            if (!select) return;
-            const opt = select.querySelector(`option[value="${targetId}"]`);
-            if (!opt) return;
-            
-            const token = opt.dataset.token || '';
-            const type = opt.dataset.type || 'bot';
-            
-            const authInput = document.getElementById('setting-topggWebhookAuth');
-            if (authInput) {
-                authInput.value = token;
-            }
-            
-            const botIdInput = document.getElementById('setting-topggBotId');
-            if (botIdInput) {
-                botIdInput.value = (type === 'bot') ? targetId : '';
-            }
-            
-            const topggWebUrlFinal = document.getElementById('topgg-webhook-url-final');
-            if (topggWebUrlFinal) {
-                const API_WEBHOOK_BASE = window.getApiBaseUrl() || window.location.origin;
-                topggWebUrlFinal.value = `${API_WEBHOOK_BASE}/api/webhooks/topgg/${currentServerId}`;
-            }
-        };
-
-        window.unlinkTopggBot = async function() {
-            let targetId = document.getElementById('setting-topggBotId')?.value;
-            let type = 'bot';
-            const select = document.getElementById('topgg-asset-select');
-            if (select && select.value) {
-                targetId = select.value;
-                const opt = select.querySelector(`option[value="${targetId}"]`);
-                if (opt) type = opt.dataset.type || 'bot';
-            }
-            if (!targetId) {
-                targetId = currentServerId;
-                type = 'server';
-            }
-            
-            if (!confirm(`Are you sure you want to unlink this Top.gg ${type}? This will disable vote tracking for it.`)) return;
-            const t = sessionStorage.getItem('discord_token');
-            
-            try {
-                if (targetId) {
-                    await fetch(`/api/guilds/${currentServerId}/topgg/unlink`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${t}`
-                        },
-                        body: JSON.stringify({ targetId, type })
-                    });
-                }
-            } catch (e) {
-                console.error('Relational unlink failed:', e);
-            }
-
-            const p = { topggVerified: false, topggBotId: null, topggWebhookAuth: null };
-            const res = await fetch(`/api/guilds/${currentServerId}/settings`, { 
-                method: 'POST', 
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${t}`
-                }, 
-                body: JSON.stringify(p) 
-            });
-            if (res.ok) {
-                showToast('Top.gg integration unlinked successfully.', 'success');
-                fetchSettings();
-            }
-        };
-
-        function copyConnectionDetails() {
-            const url = document.getElementById('topgg-webhook-url-final').value;
-            const auth = document.getElementById('setting-topggWebhookAuth').value;
-            const text = `Webhook URL: ${url}\nAuthorization: ${auth}`;
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('Setup details copied to clipboard!', 'success');
-            });
-        }
-
-        async function testTopggWebhook() {
-            if (!currentServerId) return showToast('Please select a server first.', 'error');
-            const channelId = document.getElementById('setting-topggVoteChannelId').value;
-            if (!channelId) return showToast('Please select a notification channel first!', 'error');
-
-            showToast('Sending test notification...', 'info');
-            const t = sessionStorage.getItem('discord_token');
-            try {
-                const res = await fetch(`/api/guilds/${currentServerId}/topgg/test`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${t}` }
-                });
-                const d = await res.json();
-                if (res.ok) showToast('Test notification sent! Check your Discord channel.', 'success');
-                else showToast(d.error || 'Test failed.', 'error');
-            } catch (e) {
-                showToast('Network error during test.', 'error');
-            }
-        }
-
-        function handleTopggAvatarUpload(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const el = document.getElementById('setting-topggWebhookAvatar');
-                    if (el) el.value = e.target.result;
-                    const preview = document.getElementById('topgg-avatar-preview');
-                    if (preview) preview.src = e.target.result;
-                    showToast('Avatar uploaded! Save settings to apply.', 'info');
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function refreshTopggAvatarPreview() {
-            const el = document.getElementById('setting-topggWebhookAvatar');
-            const val = el ? el.value : '';
-            const preview = document.getElementById('topgg-avatar-preview');
-            if (preview) preview.src = val || 'https://cdn.discordapp.com/embed/avatars/0.png';
-        }
 
         async function fetchRoles() {
             try {
@@ -9535,6 +9247,108 @@
             }
         }
 
+        function openAddFeedModal() {
+            const modal = document.getElementById('add-feed-modal');
+            const channelSelect = document.getElementById('new-feed-channel');
+            if (channelSelect) {
+                channelSelect.innerHTML = '<option value="">Select a text channel...</option>';
+                const channels = window.guildChannels || [];
+                channels.forEach(ch => {
+                    const opt = document.createElement('option');
+                    opt.value = ch.id;
+                    opt.textContent = `#${ch.name}`;
+                    channelSelect.appendChild(opt);
+                });
+            }
+            modal.style.display = 'flex';
+        }
+
+        async function fetchContentFeeds() {
+            if (!currentServerId) return;
+            const container = document.getElementById('social-feeds-container');
+            if (!container) return;
+            
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/feeds`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) throw new Error('Failed to load feeds');
+                const feeds = await res.json();
+                
+                container.innerHTML = '';
+                if (feeds.length === 0) {
+                    container.innerHTML = '<div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 20px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">No feeds configured yet.</div>';
+                    return;
+                }
+                
+                feeds.forEach(f => {
+                    const el = document.createElement('div');
+                    el.style = 'display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px;';
+                    el.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="font-size: 1.5rem; color: ${f.platform === 'youtube' ? '#ff0000' : '#9146ff'};"><i class="fab fa-${f.platform}"></i></div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem;">${f.channelName || f.platformId}</div>
+                                <div style="font-size: 0.75rem; color: var(--muted);">Posting to channel ID: ${f.discordChannelId}</div>
+                            </div>
+                        </div>
+                        <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.2); width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="deleteContentFeed('${f.id}')">Delete</button>
+                    `;
+                    container.appendChild(el);
+                });
+            } catch (e) {
+                container.innerHTML = `<div style="color: #ff5555; font-size: 0.85rem; padding: 10px;">${e.message}</div>`;
+            }
+        }
+
+        async function submitNewFeed() {
+            const platform = document.getElementById('new-feed-platform').value;
+            const url = document.getElementById('new-feed-url').value;
+            const channelId = document.getElementById('new-feed-channel').value;
+            const message = document.getElementById('new-feed-message').value;
+            
+            if (!url || !channelId) return showToast('Please provide a URL and select a channel.', 'error');
+            
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/feeds`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}` 
+                    },
+                    body: JSON.stringify({ platform, url, discordChannelId: channelId, customMessage: message })
+                });
+                const d = await res.json();
+                if (!res.ok) throw new Error(d.error || 'Failed to add feed');
+                
+                showToast('Feed added successfully!', 'success');
+                document.getElementById('add-feed-modal').style.display = 'none';
+                document.getElementById('new-feed-url').value = '';
+                document.getElementById('new-feed-message').value = '';
+                fetchContentFeeds();
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        async function deleteContentFeed(id) {
+            if (!confirm('Are you sure you want to delete this feed?')) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/feeds/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) throw new Error('Failed to delete feed');
+                showToast('Feed deleted', 'success');
+                fetchContentFeeds();
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
         loadNotifications();
     </script>
     <div id="session-expired-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
@@ -9552,7 +9366,7 @@
     <div id="api-offline-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 21000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
             <div class="pulse-offline-dot" style="width: 24px; height: 24px; background: var(--danger, #ff4a4a); border-radius: 50%; margin: 0 auto 20px; box-shadow: 0 0 20px var(--danger, #ff4a4a); animation: offlinePulse 1.5s infinite;"></div>
-            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Connection Unstable</h2>
+            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Connection Failed</h2>
             <p style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px;">
                 Unable to reach the Nora API. This can happen on <strong style="color:#fff;">mobile hotspots, weak Wi-Fi, or slow connections</strong>. The dashboard will reconnect automatically once your connection stabilises.
             </p>
@@ -9560,23 +9374,6 @@
             <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                 <div style="border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary, #00d2ff); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;"></div>
                 <span style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s</span>
-            </div>
-            <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                <button onclick="localStorage.setItem('nora_api_url','http://localhost:3000'); window.location.reload();"
-                    style="background: var(--primary); border: none; border-radius: 10px; color: #0f111a; font-size: 0.85rem; font-weight: 700; padding: 10px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em; box-shadow: 0 0 15px var(--primary-glow); transition: all 0.2s ease;"
-                    onmouseover="this.style.background='var(--primary-hover)'; this.style.transform='scale(1.02)';"
-                    onmouseout="this.style.background='var(--primary)'; this.style.transform='none';">
-                    🔌 Switch to Localhost Connection
-                </button>
-                <button onclick="localStorage.setItem('nora_api_url','https://api.vaztinix.dev'); window.location.reload();"
-                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 0.85rem; font-weight: 700; padding: 10px 20px; cursor: pointer; width: 100%; letter-spacing: 0.03em; transition: all 0.2s ease;"
-                    onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.02)';"
-                    onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='none';">
-                    ☁️ Switch to Cloud Connection
-                </button>
-                <p style="color: rgba(138,159,196,0.4); font-size: 0.72rem; margin-top: 4px; margin-bottom: 0;">
-                    Use Localhost if you are running the bot locally without a tunnel.
-                </p>
             </div>
         </div>
     </div>
@@ -9621,6 +9418,47 @@
                 </button>
                 <button onclick="window.respondToPairingRequest(true)" style="flex: 1; background: var(--primary); border: none; border-radius: 10px; color: #0f111a; font-size: 0.85rem; font-weight: 700; padding: 12px; cursor: pointer; min-height: 44px; text-align: center; box-shadow: 0 0 15px var(--primary-glow);">
                     Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Social Feed Modal -->
+    <div id="add-feed-modal" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 25000; align-items: center; justify-content: center; flex-direction: column; padding: 20px;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 1.5rem; color: #fff; font-weight: 800; margin: 0;">Add Social Feed</h2>
+                <button onclick="document.getElementById('add-feed-modal').style.display='none'" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2rem;">&times;</button>
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label>Platform</label>
+                <select id="new-feed-platform" style="width: 100%;">
+                    <option value="youtube">YouTube</option>
+                    <option value="twitch">Twitch</option>
+                </select>
+            </div>
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label>Channel URL or ID</label>
+                <input type="text" id="new-feed-url" placeholder="e.g. https://youtube.com/@Channel" style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label>Notification Channel</label>
+                <select id="new-feed-channel" style="width: 100%;">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+            <div class="input-group" style="margin-bottom: 24px;">
+                <label>Custom Message (Optional)</label>
+                <input type="text" id="new-feed-message" placeholder="New video from {channel}!" style="width: 100%; box-sizing: border-box;">
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button onclick="document.getElementById('add-feed-modal').style.display='none'" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 0.85rem; font-weight: 700; padding: 12px; cursor: pointer;">
+                    Cancel
+                </button>
+                <button onclick="submitNewFeed()" style="flex: 1; background: var(--primary); border: none; border-radius: 10px; color: #0f111a; font-size: 0.85rem; font-weight: 700; padding: 12px; cursor: pointer; box-shadow: 0 0 15px var(--primary-glow);">
+                    Add Feed
                 </button>
             </div>
         </div>

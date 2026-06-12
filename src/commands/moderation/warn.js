@@ -135,8 +135,14 @@ module.exports = {
                         thresholdActionTaken = `\n\n**Threshold Action:** User has been timed out for ${duration / 60000} minute(s).`;
                     }
                 } catch (err) {
-                    thresholdActionTaken = `\n\n**Threshold Action Failed:** ${err.message}`;
+                    if (err.code === 50013) {
+                        thresholdActionTaken = '\n\n**Threshold Action Failed:** Nora lacks permissions or the target has a higher role (DiscordAPIError Code 50013).';
+                    } else {
+                        thresholdActionTaken = `\n\n**Threshold Action Failed:** ${err.message}`;
+                    }
                 }
+            } else if (member) {
+                thresholdActionTaken = '\n\n**Threshold Action Skipped:** Target user is not moderatable by Nora (e.g. has a higher or equal role).';
             }
         }
 

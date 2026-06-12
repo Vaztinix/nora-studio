@@ -1,6 +1,5 @@
 const { Events, ActivityType, REST, Routes } = require('discord.js');
 const voiceTracker = require('../utils/voiceTracker');
-const { updateStats, publishCommands } = require('../utils/topgg');
 const { syncDowntime, updateHeartbeat } = require('../utils/resync');
 const { updateBotStatus } = require('../utils/statusManager');
 
@@ -10,11 +9,7 @@ module.exports = {
     async execute(client) {
         console.log(`[System] Ready! Initializing Nora Mainframe as ${client.user.tag}`);
 
-        // System Optimization: Sync Global Metrics
         try {
-            await updateStats(client);
-            await publishCommands(client);
-
             // 🔮 Optics Maintenance: Physically Set Banner on Startup - V18.0
             const axios = require('axios');
             const fs = require('fs');

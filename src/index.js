@@ -56,6 +56,7 @@ require('./database/models/CustomCommand');
 require('./database/models/Session');
 require('./database/models/TopggConnection');
 require('./database/models/ActiveTicket');
+require('./database/models/ContentFeed');
 
 
 const client = new Client({
@@ -94,6 +95,7 @@ sequelize.sync().then(() => {
     require('./utils/presence').startPresence();
     require('./utils/voiceTracker').start(client);
     require('./utils/giveawayManager').startGiveawayManager(client);
+    require('./utils/socialScraper').init(client);
     
     // Final check for token stability
     client.login(process.env.TOKEN);
@@ -109,10 +111,7 @@ process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
 });
 
-// 🗳️ System Vote HQ Tracker (Webhook Server) & AutoPoster
-const { AutoPoster } = require('topgg-autoposter');
 const express = require('express');
-const Topgg = require('@top-gg/sdk');
 const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -121,9 +120,7 @@ const noraLeveling = require('./utils/noraLeveling');
 const GuildSettings = require('./database/models/GuildSettings');
 const RobloxVerify = require('./database/models/RobloxVerify');
 
-const webhook = new Topgg.Webhook(process.env.VOTE_SECRET || 'NORA_VOTE_SECRET_2026');
 const NORA_SERVER_ID = '1351304498185900184';
-const NORA_V0 = process.env.TOPGG_TOKEN || process.env.NORA_V0 || '';
 
 // Enable trust proxy for correct IP identification behind Cloudflare
 app.set('trust proxy', true);
@@ -490,6 +487,54 @@ app.use('/api/guilds/:guildId/settings', settingsRouter);
 
 const guildsRouter = require('./api/routes/guilds');
 app.use('/api/guilds/:guildId', guildsRouter);
+
+// Mount the API path for global token invalidation
+app.post('/api/auth/invalidate', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
+    }
+    const token = authHeader.split(' ')[1];
+    
+    try {
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const Session = require('./database/models/Session');
+        const UserPrefs = require('./database/models/UserPrefs');
+        
+        // Find current session
+        const session = await Session.findByPk(tokenHash);
+        let userId = null;
+        if (session) {
+            userId = session.userId;
+        } else {
+            // Fallback validate token live
+            const { getDiscordUser } = require('./api/middleware/auth');
+            const discordUser = await getDiscordUser(token).catch(() => null);
+            if (!discordUser) return res.status(401).json({ error: 'Invalid token' });
+            userId = discordUser.id;
+        }
+        
+        // Generate new marker UUID
+        const newGenerationMarker = require('uuid').v4();
+        
+        // Update user prefs
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId } });
+        await prefs.update({ sessionGenerationMarker: newGenerationMarker });
+        
+        // Destroy all sessions for this user
+        await Session.destroy({ where: { userId } });
+        
+        res.json({
+            success: true,
+            message: 'Global tokens invalidated. Redirecting secondary instances securely.',
+            sessionGenerationMarker: newGenerationMarker
+        });
+    } catch (e) {
+        console.error('Session Invalidation Failure:', e);
+        res.status(500).json({ error: 'Internal server error resetting active credentials.' });
+    }
+});
 
 // Studio workspace router (Hosted bots, AI persona & history context)
 const studioRouter = require('./api/routes/studio');
@@ -1160,9 +1205,9 @@ app.get('/api/user/guilds', async (req, res) => {
                 memberCount: liveGuild ? liveGuild.memberCount : 0,
                 onlineCount: liveGuild ? liveGuild.presences.cache.filter(p => p.status !== 'offline').size : 0,
                 permissions: g.permissions,
-                topggVerified: settings ? !!settings.topggVerified : false,
-                topggBotId: settings ? settings.topggBotId : null,
-                topggLegacyOwnerId: settings ? settings.topggLegacyOwnerId : null,
+                topggVerified: false,
+                topggBotId: null,
+                topggLegacyOwnerId: null,
                 isPremium
             };
         });
@@ -1602,94 +1647,7 @@ app.get('/api/user/roblox/presence', async (req, res) => {
     }
 });
 
-app.get('/api/user/topgg/bots', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-    const token = authHeader.split(' ')[1];
-    try {
-        const user = await getDiscordUser(token);
 
-        // Verify that the user is the bot owner
-        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
-        let isOwner = APP_OWNER_IDS.includes(user.id);
-        if (!isOwner) {
-            try {
-                const app = await req.client.application.fetch();
-                if (app.owner) {
-                    if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
-                        isOwner = true;
-                    }
-                }
-            } catch (e) {}
-        }
-        if (!isOwner) {
-            return res.status(403).json({ error: 'Forbidden: Only the bot owner can configure Top.gg settings.' });
-        }
-
-        const url = `https://top.gg/user/${user.id}`;
-        const topggRes = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            }
-        });
-        
-        if (!topggRes.ok) {
-            console.error(`Top.gg user profile fetch failed with status ${topggRes.status}`);
-            return res.json({ bots: [] });
-        }
-        
-        const html = await topggRes.text();
-        const bots = [];
-        const seenIds = new Set();
-        let index = 0;
-        
-        while (true) {
-            index = html.indexOf('"__typename\\":\\"DiscordBot\\"', index);
-            if (index === -1) break;
-            
-            const startOfObj = html.lastIndexOf('{', index);
-            if (startOfObj !== -1) {
-                let braceCount = 0;
-                let endOfObj = -1;
-                for (let i = startOfObj; i < html.length; i++) {
-                    if (html[i] === '{') braceCount++;
-                    else if (html[i] === '}') {
-                        braceCount--;
-                        if (braceCount === 0) {
-                            endOfObj = i;
-                            break;
-                        }
-                    }
-                }
-                if (endOfObj !== -1) {
-                    const rawSlice = html.substring(startOfObj, endOfObj + 1);
-                    try {
-                        const unescaped = rawSlice
-                            .replace(/\\"/g, '"')
-                            .replace(/\\\\/g, '\\')
-                            .replace(/\\u0026/g, '&');
-                        
-                        const obj = JSON.parse(unescaped);
-                        if (obj.id && obj.name && !seenIds.has(obj.id)) {
-                            seenIds.add(obj.id);
-                            bots.push({
-                                id: obj.id,
-                                internalId: obj.internalId || obj.id,
-                                username: obj.name,
-                                avatar: obj.iconUrl || 'https://top.gg/images/topgg-logo.png'
-                            });
-                        }
-                    } catch (e) {}
-                }
-            }
-            index += 30;
-        }
-        
-        res.json({ bots });
-    } catch (e) {
-        handleRouteError(res, e, '/api/user/topgg/bots');
-    }
-});
 
 const getWebFilePath = (filename) => {
     const distPath = path.join(__dirname, '../dist', filename);
@@ -1727,94 +1685,7 @@ app.get('/ai-studio', (req, res) => {
     res.sendFile(getWebFilePath('ai-studio.html'));
 });
 
-const handleTopggWebhook = async (req, res) => {
-    try {
-        const payload = req.body;
-        console.log('[Top.gg Webhook] Received payload:', JSON.stringify(payload));
 
-        const targetId = payload.bot || payload.guild;
-        if (!targetId) {
-            return res.status(400).json({ error: 'Missing bot or guild ID in payload' });
-        }
-
-        const trackingCategory = payload.bot ? 'bot' : 'server';
-
-        // 1. Authorization checks
-        const authHeader = req.headers.authorization || '';
-        const cleanAuth = authHeader.replace(/^Bearer\s+/i, '').trim();
-
-        // Check legacy main bot webhook token first
-        const globalSecret = (process.env.VOTE_SECRET || 'NORA_VOTE_SECRET_2026').trim();
-        const isGlobalMatch = cleanAuth === globalSecret;
-
-        // Find connections matching targetId
-        const TopggConnection = require('./database/models/TopggConnection');
-        const connections = await TopggConnection.findAll({
-            where: { targetId, verified: true }
-        });
-
-        // Let's also look at req.params.guildId if it was sent to the old guild-specific route
-        const guildIdParam = req.params.guildId;
-        
-        let isValid = false;
-        let ownerId = null;
-
-        if (isGlobalMatch) {
-            isValid = true;
-        } else {
-            // Check connections list
-            const matchedConnection = connections.find(conn => {
-                const connToken = conn.token ? conn.token.replace(/^Bearer\s+/i, '').trim() : '';
-                return connToken && cleanAuth === connToken;
-            });
-
-            if (matchedConnection) {
-                isValid = true;
-                ownerId = matchedConnection.ownerId;
-            } else if (guildIdParam) {
-                // Check if the old route matches the guild's settings auth
-                const GuildSettings = require('./database/models/GuildSettings');
-                const settings = await GuildSettings.findOne({ where: { guildId: guildIdParam } });
-                const cleanSettingsAuth = settings && settings.topggWebhookAuth ? settings.topggWebhookAuth.trim() : '';
-                if (cleanSettingsAuth && cleanAuth === cleanSettingsAuth) {
-                    isValid = true;
-                }
-            }
-        }
-
-        if (!isValid) {
-            console.warn(`[Top.gg Webhook] Unauthorized request received for target: ${targetId}`);
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
-        // Return 200 OK immediately to satisfy high-throughput/asynchronous processing constraints
-        res.status(200).json({ success: true });
-
-        // Enqueue the vote payload for async processing
-        const voteQueue = require('./utils/voteQueue');
-        voteQueue.enqueue({
-            bot: payload.bot,
-            guild: payload.guild,
-            user: payload.user,
-            type: payload.type || 'upvote',
-            isWeekend: !!payload.isWeekend,
-            nora_metadata: {
-                tracking_category: trackingCategory,
-                verified_owner: ownerId || 'legacy'
-            }
-        });
-    } catch (e) {
-        console.error('[Top.gg Webhook] Error handling webhook:', e);
-        try {
-            if (!res.headersSent) res.status(500).json({ error: e.message });
-        } catch (err) {}
-    }
-};
-
-app.post('/v1/webhooks/topgg', handleTopggWebhook);
-app.post('/api/v1/webhooks/topgg', handleTopggWebhook);
-app.post('/topgg/webhook', handleTopggWebhook);
-app.post('/api/webhooks/topgg/:guildId', handleTopggWebhook);
 
 app.get('/install', (req, res) => {
     res.sendFile(getWebFilePath('install.html'));
@@ -1877,11 +1748,7 @@ app.use((req, res) => {
 app.listen(PORT, () => {
     console.log(`[System] Web Dashboard and Webhook listener online at port ${PORT}`);
     
-    // Start AutoPoster using the v0 token for statistics
-    const ap = AutoPoster(NORA_V0, client);
-    ap.on('posted', () => {
-        console.log('[Top.gg] Statistics automatically posted.');
-    });
+
 });
 
 

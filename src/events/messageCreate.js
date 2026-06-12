@@ -22,6 +22,11 @@ module.exports = {
             // Robust High-Performance Settings Fetch
             let settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } });
 
+            // Forward-only timeline privacy check
+            const botJoinTime = settings && settings.installedAt ? new Date(settings.installedAt).getTime() : Date.now();
+            const messageTime = new Date(message.createdAt).getTime();
+            if (messageTime < botJoinTime) return;
+
             // If the guild is new, we fallback to Default-OFF
             const levelingEnabled = settings ? settings.levelingEnabled : false;
             if (!levelingEnabled) return;

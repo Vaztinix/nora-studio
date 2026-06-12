@@ -32,7 +32,7 @@ module.exports = {
             embed.setTitle('🎉 JACKPOT! You won!')
                  .setColor(0x57acf2)
                  .setDescription(`Incredible luck! The number was exactly **${targetNumber}** and you guessed it perfectly. You are amazing!`);
-            await interaction.reply({ embeds: [embed], ephemeral: false });
+            await interaction.reply({ embeds: [embed], ephemeral: true });
         } else if (Math.abs(userGuess - targetNumber) <= 5) {
             embed.setTitle('😅 So Close!')
                  .setColor(0x57acf2)

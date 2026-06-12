@@ -14,6 +14,9 @@ module.exports = {
         ),
 
     async execute(interaction) {
+        if (interaction.guild) {
+            return await interaction.reply({ content: '⛔ This control command can only be executed in private Direct Messages with Nora.', ephemeral: true });
+        }
         const APP_OWNER_ID = '1214048435632603137';
         if (interaction.user.id !== APP_OWNER_ID) {
             const { handleError } = require('../../utils/embeds');

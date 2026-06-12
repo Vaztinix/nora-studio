@@ -1,7 +1,6 @@
 const { Events } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const GlobalSettings = require('../database/models/GlobalSettings');
-const { updateStats } = require('../utils/topgg');
 const { logEvent } = require('../utils/logistics');
 
 module.exports = {
@@ -41,9 +40,6 @@ module.exports = {
             console.error(`[Privacy Boundary Error] Failed to write installedAt for ${guild.id}:`, e.message);
         }
 
-        // Update Top.gg Stats
-        await updateStats(guild.client);
-        
         // Log to Master HQ Logistics Webhook
         await logEvent(guild, 'join');
     },

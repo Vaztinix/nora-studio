@@ -24,36 +24,54 @@ module.exports = {
         const settings = await settingsCache.get(guildId);
         if (!settings || !settings.robloxVerifyEnabled) return;
 
-        const verifiedUsers = await RobloxVerify.findAll({ where: { status: 'VERIFIED' } });
-        if (!verifiedUsers.length) return;
+        const verifiedRecords = await RobloxVerify.findAll({ where: { userId: { [require('sequelize').Op.ne]: null }, status: 'VERIFIED' } });
+        if (!verifiedRecords.length) return;
 
-        // Filter users actually in this guild
-        const guildVerifiedUsers = [];
-        for (const record of verifiedUsers) {
-            const member = guild.members.cache.get(record.userId);
-            if (member) guildVerifiedUsers.push({ member, record });
-        }
-
-        if (!guildVerifiedUsers.length) return;
-
-        // 1. Group Rank Synchronization
+        // Group bindings are [{ groupId, rank, roleId }]
         let groupBindings = [];
         try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
+        if (!groupBindings || groupBindings.length === 0) return;
 
-        if (groupBindings.length > 0) {
-            for (const { member, record } of guildVerifiedUsers) {
-                await syncGroupRanks(member, record.robloxId, groupBindings);
+        // Organize records by Discord userId
+        const userRecordsMap = new Map();
+        for (const record of verifiedRecords) {
+            if (!userRecordsMap.has(record.userId)) {
+                userRecordsMap.set(record.userId, []);
+            }
+            userRecordsMap.get(record.userId).push(record);
+        }
+
+        // For each member who is in this guild, resolve their active Roblox account and sync roles
+        for (const [userId, records] of userRecordsMap.entries()) {
+            const member = guild.members.cache.get(userId);
+            if (!member) continue;
+
+            // Find active record
+            let activeRecord = records.find(r => r.isActive);
+            if (!activeRecord && records.length > 0) {
+                // Fallback: set the first verified record as active
+                activeRecord = records[0];
+                await activeRecord.update({ isActive: true });
+                // Ensure other records for this user are inactive
+                for (let i = 1; i < records.length; i++) {
+                    await records[i].update({ isActive: false });
+                }
+            }
+
+            if (activeRecord && activeRecord.robloxId) {
+                await syncRobloxRolesWithBackoff(member, activeRecord.robloxId, groupBindings);
             }
         }
+    },
 
-        // 2. Live Presence Tracking (Optional announcement or role)
-        if (settings.robloxLiveActivityEnabled) {
-            // We could implement something here, but polling 1000s of users is heavy.
-            // For now, we rely on the manual "Check Status" in dashboard or /verify-roblox check
-        }
+    syncGroupRanks: async (member, robloxId, bindings) => {
+        // Fallback backward-compatible sync
+        await syncRobloxRolesWithBackoff(member, robloxId, bindings);
+    },
+
+    syncRobloxRolesWithBackoff: async (member, robloxId, bindings) => {
+        await syncRobloxRolesWithBackoff(member, robloxId, bindings);
     }
-    syncGroupRanks: syncGroupRanks,
-    syncRobloxRolesWithBackoff: syncRobloxRolesWithBackoff
 };
 
 async function syncAllGuilds(client) {
@@ -72,11 +90,14 @@ async function syncRobloxRolesWithBackoff(member, robloxId, bindings, attempts =
         const userGroups = res.data.data || [];
 
         for (const binding of bindings) {
+            if (!binding.groupId || !binding.roleId) continue;
             const userGroup = userGroups.find(g => g.group.id.toString() === binding.groupId.toString());
             const role = member.guild.roles.cache.get(binding.roleId);
             if (!role) continue;
 
             const hasRole = member.roles.cache.has(role.id);
+            // Rank match is true if user is in group and rank matches
+            // If rank is configured as any/member or specific rank
             const rankMatch = userGroup && userGroup.role.rank.toString() === binding.rank.toString();
 
             if (rankMatch && !hasRole) {
@@ -96,34 +117,5 @@ async function syncRobloxRolesWithBackoff(member, robloxId, bindings, attempts =
         } else {
             console.error(`[Roblox Group Sync] Failed to sync roles for Roblox ID ${robloxId} after 5 attempts. Skipping.`);
         }
-    }
-}
-
-async function syncGroupRanks(member, robloxId, bindings) {
-    try {
-        // Group bindings are [{ groupId, rank, roleId }]
-        // We need to fetch all groups the user is in
-        const res = await axios.get(`https://groups.roblox.com/v2/users/${robloxId}/groups/roles`, { timeout: 5000 });
-        const userGroups = res.data.data || [];
-
-        for (const binding of bindings) {
-            const userGroup = userGroups.find(g => g.group.id.toString() === binding.groupId.toString());
-            const role = member.guild.roles.cache.get(binding.roleId);
-            if (!role) continue;
-
-            const hasRole = member.roles.cache.has(role.id);
-            const rankMatch = userGroup && userGroup.role.rank.toString() === binding.rank.toString();
-
-            if (rankMatch && !hasRole) {
-                await member.roles.add(role, 'Nora Roblox Group Sync').catch(() => {});
-            } else if (!rankMatch && hasRole) {
-                // Only remove if they are NOT in the group or rank doesn't match
-                // We might want to be careful here if they have roles manually.
-                // But for "Sync", it should be strict.
-                await member.roles.remove(role, 'Nora Roblox Group Sync').catch(() => {});
-            }
-        }
-    } catch (e) {
-        // Silent fail for rate limits
     }
 }

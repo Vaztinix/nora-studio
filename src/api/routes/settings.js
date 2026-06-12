@@ -117,9 +117,9 @@ router.post('/', async (req, res) => {
             try {
                 const rewards = JSON.parse(payload.roleRewards);
                 const count = Object.keys(rewards).length;
-                const cap = isPremium ? 15 : 10;
+                const cap = isPremium ? 25 : 5;
                 if (count > cap) {
-                    return res.status(400).json({ error: `Premium Limit: Free servers are capped at 10 role rewards, while Premium servers get up to 15. Your count: ${count}` });
+                    return res.status(400).json({ error: `Premium Limit: Free servers are capped at 5 role rewards, while Premium servers get up to 25. Your count: ${count}` });
                 }
             } catch (err) {
                 return res.status(400).json({ error: 'Invalid JSON format for roleRewards.' });

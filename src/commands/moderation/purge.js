@@ -42,6 +42,10 @@ module.exports = {
             return handleError(interaction, 'Bot Permission Error', 'I lack the **Manage Messages** physical permission. Please update my roles.');
         }
 
+        if (amount < 1 || amount > 100) {
+            return handleError(interaction, 'Input Error', 'The amount to scan must be strictly between 1 and 100.');
+        }
+
         await interaction.deferReply({ ephemeral: true });
 
         try {
@@ -59,6 +63,10 @@ module.exports = {
             } else if (filter === 'users') {
                 toDelete = messages.filter(m => !m.author.bot);
             }
+
+            // Exclude messages older than 14 days (Discord bulk delete limit)
+            const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+            toDelete = toDelete.filter(m => m.createdTimestamp > fourteenDaysAgo);
 
             if (toDelete.size === 0) {
                 return interaction.editReply({ content: 'I scanned the specified range but found zero messages that matched your filter.' });

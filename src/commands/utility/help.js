@@ -49,8 +49,7 @@ module.exports = {
                          { name: '`/info` & `/invite`', value: 'Review bot uptime, status telemetry, and invite links.' },
                          { name: '`/language`', value: 'Change local command languages.' },
                          { name: '`/verify`', value: 'Verify and link Roblox account to gain server roles.' },
-                         { name: '`/roblox`', value: 'Search profile and group structures on Roblox.' },
-                         { name: '`/topgg` / `/vote`', value: 'Setup custom bots on Top.gg and check user voting status.' }
+                         { name: '`/roblox`', value: 'Search profile and group structures on Roblox.' }
                      );
             } else if (category === 'fun') {
                 embed.setTitle('🎮 Fun & Games Commands')

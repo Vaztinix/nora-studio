@@ -49,11 +49,15 @@
             padding: 0;
         }
 
+        /* Mesh Gradient Background */
         body {
             font-family: "Inter", system-ui, sans-serif;
-            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
-                        radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
-                        var(--bg);
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(174, 239, 255, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(122, 162, 255, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(197, 163, 255, 0.12) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(255, 117, 181, 0.08) 0px, transparent 50%);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
@@ -61,58 +65,31 @@
             flex-direction: column;
         }
 
-        /* iOS-like Liquid Blobs */
-        .liquid-blob {
+        /* Abstract Glow Orbs */
+        .glow-orb {
             position: fixed;
             border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0;
+            filter: blur(80px);
+            opacity: 0.5;
             pointer-events: none;
             z-index: -1;
-            transition: opacity 1.5s ease;
         }
-        body.theme-glass .liquid-blob {
-            opacity: 0.35;
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: rgba(174, 239, 255, 0.15);
+            top: -100px; left: -100px;
+            animation: float 20s infinite ease-in-out alternate;
         }
-        .liquid-blob-1 {
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(174, 239, 255, 0.5) 0%, rgba(122, 162, 255, 0) 70%);
-            top: -10%;
-            left: -10%;
-            animation: drift 25s infinite alternate ease-in-out;
+        .orb-2 {
+            width: 500px; height: 500px;
+            background: rgba(122, 162, 255, 0.15);
+            bottom: -150px; right: -150px;
+            animation: float 25s infinite ease-in-out alternate-reverse;
         }
-        .liquid-blob-2 {
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle, rgba(197, 163, 255, 0.45) 0%, rgba(197, 163, 255, 0) 70%);
-            bottom: -15%;
-            right: -10%;
-            animation: drift-reverse 30s infinite alternate ease-in-out;
-        }
-        .liquid-blob-3 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255, 117, 181, 0.3) 0%, rgba(255, 117, 181, 0) 70%);
-            top: 40%;
-            left: 50%;
-            animation: drift-middle 22s infinite alternate ease-in-out;
-        }
-
-        @keyframes drift {
+        
+        @keyframes float {
             0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(150px, 80px) scale(1.2) rotate(90deg); }
-            100% { transform: translate(-50px, 150px) scale(0.9) rotate(180deg); }
-        }
-        @keyframes drift-reverse {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-120px, -100px) scale(0.8) rotate(-60deg); }
-            100% { transform: translate(100px, 50px) scale(1.1) rotate(-120deg); }
-        }
-        @keyframes drift-middle {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-30%, -60%) scale(1.3); }
-            100% { transform: translate(-60%, -40%) scale(0.9); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
         }
 
         /* Themes support */
@@ -121,8 +98,8 @@
             --bg-soft: #0c0c0c;
             --bg-glow: transparent;
             --border: #222222;
-            --card: #080808;
-            --card-hover: #121212;
+            --card: rgba(8, 8, 8, 0.6);
+            --card-hover: rgba(18, 18, 18, 0.8);
         }
         body.theme-sapphire {
             --bg: #050a18;
@@ -134,23 +111,23 @@
         }
         body.theme-solid-glass {
             --bg: #07090e;
-            --card: rgba(10, 14, 25, 0.85);
-            --card-hover: rgba(15, 20, 35, 0.9);
+            --card: rgba(10, 14, 25, 0.6);
+            --card-hover: rgba(15, 20, 35, 0.8);
             --border: rgba(255, 255, 255, 0.12);
         }
-        body.theme-solid-glass .card {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+        body.theme-solid-glass .card, body.theme-solid-glass .glass-panel {
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
         }
         body.theme-glass {
             --bg: #030509;
             --card: rgba(255, 255, 255, 0.02);
-            --card-hover: rgba(255, 255, 255, 0.06);
+            --card-hover: rgba(255, 255, 255, 0.05);
             --border: rgba(255, 255, 255, 0.08);
         }
-        body.theme-glass .card {
-            backdrop-filter: blur(35px);
-            -webkit-backdrop-filter: blur(35px);
+        body.theme-glass .card, body.theme-glass .glass-panel {
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
         }
 
@@ -181,10 +158,20 @@
         .nav-links a.active { color: var(--primary); opacity: 1; }
 
         .container { max-width: 1200px; margin: 4rem auto; padding: 0 1.5rem; flex-grow: 1; }
-        
+        .glass-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 50px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: border-color 0.3s;
+        }
+
         .profile-container {
             display: grid;
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 300px 1fr;
             gap: 50px;
             align-items: center;
             margin-bottom: 5rem;
@@ -193,113 +180,149 @@
         .profile-image-wrapper {
             position: relative;
             width: 100%;
-            max-width: 320px;
             aspect-ratio: 1/1;
-            border-radius: var(--radius);
-            padding: 5px;
+            border-radius: 50%;
+            padding: 8px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            box-shadow: 0 10px 40px rgba(174, 239, 255, 0.2);
-            transition: transform 0.3s ease;
+            box-shadow: 0 15px 40px rgba(174, 239, 255, 0.3);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s;
         }
 
         .profile-image-wrapper:hover {
-            transform: scale(1.03) translateY(-4px);
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 20px 50px rgba(174, 239, 255, 0.4);
+        }
+
+        .profile-image-wrapper .img-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #161b2c;
+            border: 4px solid var(--bg);
         }
 
         .profile-image-wrapper img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: calc(var(--radius) - 5px);
-            background: #161b2c;
+            display: block;
         }
 
         .profile-details h1 {
-            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-size: clamp(3rem, 6vw, 4.5rem);
             font-weight: 800;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             color: #fff;
-            letter-spacing: -1px;
-        }
-
-        .profile-details .subtitle {
-            font-size: 1.25rem;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 20px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1;
         }
 
         .profile-details .bio-text {
-            color: var(--muted);
+            color: rgba(255,255,255,0.7);
             font-size: 1.15rem;
-            line-height: 1.7;
+            line-height: 1.8;
             margin-bottom: 30px;
+            max-width: 650px;
         }
 
-        .buttons { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; }
+        .buttons { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 35px; }
         .btn {
             padding: 14px 28px;
             border-radius: 999px;
-            font-weight: 800;
+            font-weight: 700;
             border: none;
             cursor: pointer;
-            transition: .25s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             text-decoration: none;
             font-size: 1rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
         }
-        .btn-primary { background: var(--primary); color: #000; }
-        .btn-primary:hover { transform: translateY(-4px); background: #fff; }
-        .btn-secondary { background: var(--card); color: white; border: 1px solid var(--border); }
-        .btn-secondary:hover { background: var(--card-hover); }
+        .btn-primary { 
+            background: var(--primary); 
+            color: #000; 
+            box-shadow: 0 8px 20px var(--bg-glow);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-4px); 
+            background: #fff; 
+            box-shadow: 0 12px 25px rgba(255,255,255,0.3);
+        }
+        .btn-secondary { 
+            background: rgba(255,255,255,0.05); 
+            color: white; 
+            border: 1px solid var(--border); 
+            backdrop-filter: blur(10px);
+        }
+        .btn-secondary:hover { 
+            background: rgba(255,255,255,0.1); 
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-4px);
+        }
 
         .social-links {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
         .social-links a {
-            background: rgba(255, 255, 255, 0.04);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: var(--primary);
+            color: rgba(255,255,255,0.8);
             border: 1px solid var(--border);
             text-decoration: none;
-            transition: 0.2s ease-in-out;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         .social-links a:hover {
             background: var(--primary);
-            color: #0b0f1a;
-            transform: translateY(-2px);
+            color: #000;
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--bg-glow);
         }
 
-        .section-title { font-size: 2.2rem; margin-bottom: 40px; color: white; font-weight: 800; text-align: left; }
+        .section-title { font-size: 2.2rem; margin-bottom: 40px; color: white; font-weight: 800; text-align: left; letter-spacing: -1px; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-bottom: 6rem; }
         .card { 
-            background: var(--card); 
+            background: rgba(255,255,255,0.02); 
             border: 1px solid var(--border); 
-            border-radius: var(--radius); 
+            border-radius: 24px; 
             padding: 40px; 
-            transition: transform 0.3s ease, border-color 0.3s, box-shadow 0.3s; 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            position: relative;
+            overflow: hidden;
         }
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--bg-glow) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            z-index: 0;
+        }
+        .card > * { position: relative; z-index: 1; }
         .card:hover { 
             transform: translateY(-8px); 
-            background: var(--card-hover); 
-            border-color: var(--primary);
-            box-shadow: 0 15px 35px rgba(174, 239, 255, 0.08);
+            background: rgba(255,255,255,0.04); 
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
+        .card:hover::before { opacity: 1; }
         .card h3 { color: white; font-size: 1.6rem; margin-bottom: 15px; margin-top: 0;}
         .card p { color: var(--muted); line-height: 1.6; font-size: 1rem; margin-bottom: 25px; flex-grow: 1; }
 
@@ -474,48 +497,56 @@
             opacity: 1;
         }
 
-        @media(max-width: 768px) {
-            .nav-links { display: none; }
-            .profile-container { grid-template-columns: 1fr; gap: 30px; text-align: center; }
-            .profile-image-wrapper { margin: 0 auto; }
+        @media(max-width: 900px) {
+            .profile-container { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+            .profile-image-wrapper { margin: 0 auto; max-width: 250px; }
             .buttons { justify-content: center; }
             .social-links { justify-content: center; }
+            .profile-details .bio-text { margin: 0 auto 30px auto; }
+        }
+
+        @media(max-width: 768px) {
+            .nav-links { display: none; }
+            .glass-panel { padding: 30px 20px; border-radius: 24px; }
             .grid { grid-template-columns: 1fr; }
-            .container { margin: 3rem auto; }
-            .section-title { text-align: center; }
+            .container { margin: 2rem auto; }
+            .section-title { text-align: center; font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
-    <div class="liquid-blob liquid-blob-1"></div>
-    <div class="liquid-blob liquid-blob-2"></div>
-    <div class="liquid-blob liquid-blob-3"></div>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
 
     <main class="container">
-        <section class="profile-container">
+        <section class="glass-panel profile-container">
             <div class="profile-image-wrapper">
-                <img src="ReVaztinix.jpeg" alt="Vaztinix Profile">
+                <div style="position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; background: inherit; filter: blur(25px); z-index: -1; opacity: 0.6; border-radius: 50%;"></div>
+                <div class="img-inner">
+                    <img src="ReVaztinix.jpeg" alt="Vaztinix Profile">
+                </div>
             </div>
             <div class="profile-details">
                 <h1 id="dev-name">Vaz</h1>
-
+                
                 <div class="discord-badges" id="dev-badges"></div>
+                <div class="discord-join-date" id="dev-join-date"></div>
+
                 <p class="bio-text">
                     I started out building bots just for fun, but that quickly turned into a full-time gig making apps and digital tools. Lately, I spend most of my time connecting different apps and APIs—mostly making things that link up community features, Roblox stuff, and handy scripts.
-
-When I’m not coding, I'm usually working out, hanging out with friends, or hitting the trails outdoors. I like keeping a good balance between screen time and real life, and I’m always down to learn new things and build cool new projects.
                 </p>
-                <div class="discord-join-date" id="dev-join-date"></div>
+                
                 <div class="buttons">
-                    <a href="/nora" class="btn btn-primary">Explore Nora Bot</a>
-                    <button class="btn btn-secondary" onclick="openContactModal()">Contact Developer</button>
+                    <a href="/nora" class="btn btn-primary"><i class="fas fa-rocket"></i> Explore Nora</a>
+                    <a href="mailto:vaztinixstudios@gmail.com" class="btn btn-secondary"><i class="fas fa-envelope"></i> Contact Developer</a>
                 </div>
+                
                 <div class="social-links">
-                    <a href="https://github.com/Vaztinix" target="_blank">GitHub</a>
-                    <a href="https://www.youtube.com/@Vaztinix" target="_blank">YouTube</a>
-                    <a href="https://www.twitch.tv/vaztinix" target="_blank">Twitch</a>
-                    <a href="https://guns.lol/vaztinix" target="_blank">guns.lol</a>
-                    <a href="https://www.roblox.com/users/3089063186/profile" target="_blank">Roblox Profile</a>
+                    <a href="https://github.com/Vaztinix" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                    <a href="https://www.youtube.com/@Vaztinix" target="_blank"><i class="fab fa-youtube"></i> YouTube</a>
+                    <a href="https://www.twitch.tv/vaztinix" target="_blank"><i class="fab fa-twitch"></i> Twitch</a>
+                    <a href="https://guns.lol/vaztinix" target="_blank"><i class="fas fa-link"></i> guns.lol</a>
+                    <a href="https://www.roblox.com/users/3089063186/profile" target="_blank"><i class="fas fa-gamepad"></i> Roblox</a>
                 </div>
             </div>
         </section>

@@ -18,10 +18,7 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    email: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
+
     customTheme: {
         type: DataTypes.STRING,
         defaultValue: 'default'

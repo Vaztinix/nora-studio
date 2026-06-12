@@ -45,11 +45,26 @@
             margin: 0;
             font-family: 'Inter', sans-serif;
             color: var(--text);
-            background:
-                radial-gradient(circle at 20% 20%, rgba(174,239,255,0.12), transparent 14%),
-                radial-gradient(circle at 80% 10%, rgba(114, 125, 255, 0.12), transparent 16%),
-                linear-gradient(135deg, #060a14, #0d1325 50%, #0a0f1c 100%);
+            background-color: var(--bg);
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+                radial-gradient(circle at 20% 20%, rgba(174,239,255,0.12), transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(114, 125, 255, 0.12), transparent 40%);
+            background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
+            background-attachment: fixed;
             min-height: 100vh;
+        }
+
+        /* Ambient Visualizer Overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, var(--glow), transparent 70%);
+            opacity: 0.5;
+            z-index: -1;
+            pointer-events: none;
         }
 
         .topbar {
@@ -283,6 +298,14 @@
             color: var(--text);
             font: inherit;
             padding: 12px 14px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .field input:focus, .field select:focus, .field textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0,0,0,0.4);
+            box-shadow: 0 0 0 3px rgba(174, 239, 255, 0.15), inset 0 0 10px rgba(174, 239, 255, 0.05);
         }
 
         .field textarea {
@@ -341,10 +364,12 @@
 
         .switch input:checked + .slider {
             background: linear-gradient(135deg, var(--primary), #7de4ff);
+            box-shadow: 0 0 15px rgba(174, 239, 255, 0.4);
         }
 
         .switch input:checked + .slider::before {
             transform: translateX(26px);
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
         }
 
         .mini-stack {
@@ -638,14 +663,17 @@
 
     <div class="container">
         <div class="hero">
-            <div class="hero-card">
-                <div class="eyebrow">
-                    <i class="fas fa-brain"></i>
-                    Operational Workspace
+            <div class="hero-card" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.15) 0%, rgba(235, 69, 158, 0.1) 100%); border: 1px solid rgba(88, 101, 242, 0.15); position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+                <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: #5865F2; filter: blur(90px); opacity: 0.1; border-radius: 50%;"></div>
+                <div style="position: relative; z-index: 2;">
+                    <div class="eyebrow" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                        <i class="fas fa-brain"></i>
+                        Operational Workspace
+                    </div>
+                    <h1 style="color: #fff; font-weight: 800; font-size: 2.8rem; letter-spacing: -0.02em;">Design Nora’s AI behavior, memory, and hosted-bot workflows from one place.</h1>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 1.05rem;">This workspace gives you live controls for persona tuning, current-memory visibility, bot profile management, and automation templates. It is built to make Nora feel faster, more personalized, and honest about what it is doing.</p>
                 </div>
-                <h1>Design Nora’s AI behavior, memory, and hosted-bot workflows from one place.</h1>
-                <p>This workspace gives you live controls for persona tuning, current-memory visibility, bot profile management, and automation templates. It is built to make Nora feel faster, more personalized, and honest about what it is doing.</p>
-                <div class="hero-actions">
+                <div class="hero-actions" style="position: relative; z-index: 2;">
                     <button id="save-ai-profile" class="primary-btn"><i class="fas fa-save"></i> Save AI Profile</button>
                     <button id="save-hosted-bot" class="secondary-btn"><i class="fas fa-robot"></i> Create Hosted Bot</button>
                     <button id="refresh-studio" class="secondary-btn"><i class="fas fa-sync-alt"></i> Refresh Data</button>

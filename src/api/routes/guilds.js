@@ -356,379 +356,82 @@ router.post('/members/:userId/level', async (req, res) => {
 });
 
 /**
- * POST /api/guilds/:guildId/topgg/link
- * Link a Top.gg bot or server connection to this guild.
+ * GET /api/guilds/:guildId/feeds
+ * List all social media feeds for this guild.
  */
-router.post('/topgg/link', async (req, res) => {
+router.get('/feeds', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { targetId, type, token, legacyOwnerId } = req.body;
-
-        if (!targetId || !type) {
-            return res.status(400).json({ error: 'targetId and type are required' });
-        }
-        if (!['bot', 'server'].includes(type)) {
-            return res.status(400).json({ error: 'type must be either "bot" or "server"' });
-        }
-
-        const trimmedTargetId = targetId.toString().trim();
-        const trimmedToken = token ? token.toString().trim() : '';
-        const trimmedLegacyOwnerId = legacyOwnerId ? legacyOwnerId.toString().trim() : '';
-
-        // Retrieve token from Authorization header to know who the user is
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-        const userToken = authHeader.split(' ')[1];
+        const ContentFeed = require('../../database/models/ContentFeed');
+        const feeds = await ContentFeed.findAll({ where: { guildId } });
         
-        const user = await getDiscordUser(userToken).catch(() => null);
-        if (!user) return res.status(401).json({ error: 'Invalid Discord token' });
+        // Map to format dashboard expects
+        res.json(feeds.map(f => ({
+            id: f.id,
+            platform: f.platform.toLowerCase(),
+            platformId: f.publicHandle,
+            discordChannelId: f.targetChannelId,
+            customMessage: f.alertTemplate
+        })));
+    } catch (e) {
+        console.error('Error fetching feeds:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
 
-        // If tracking type is bot, perform bot ownership check on Top.gg
-        if (type === 'bot') {
-            let isOwner = false;
-            let matchedBot = null;
-            
-            // 1. Try public profile scraper check
-            try {
-                const profileUrl = `https://top.gg/user/${user.id}`;
-                const profileRes = await fetch(profileUrl, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                    }
-                });
-                if (profileRes.ok) {
-                    const html = await profileRes.text();
-                    let index = 0;
-                    while (true) {
-                        index = html.indexOf('"__typename\\":\\"DiscordBot\\"', index);
-                        if (index === -1) break;
-                        
-                        const startOfObj = html.lastIndexOf('{', index);
-                        if (startOfObj !== -1) {
-                            let braceCount = 0;
-                            let endOfObj = -1;
-                            for (let i = startOfObj; i < html.length; i++) {
-                                if (html[i] === '{') braceCount++;
-                                else if (html[i] === '}') {
-                                    braceCount--;
-                                    if (braceCount === 0) {
-                                        endOfObj = i;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (endOfObj !== -1) {
-                                const rawSlice = html.substring(startOfObj, endOfObj + 1);
-                                try {
-                                    const unescaped = rawSlice
-                                        .replace(/\\"/g, '"')
-                                        .replace(/\\\\/g, '\\')
-                                        .replace(/\\u0026/g, '&');
-                                    const obj = JSON.parse(unescaped);
-                                    if (obj.id === trimmedTargetId) {
-                                        isOwner = true;
-                                        matchedBot = obj;
-                                        break;
-                                    }
-                                } catch (e) {}
-                            }
-                        }
-                        index += 30;
-                    }
-                }
-            } catch (err) {
-                console.error('Error parsing Top.gg profile for server link:', err.message);
-            }
-
-            // 2. Fallback: REST API check
-            if (!isOwner) {
-                const NORA_V0 = process.env.TOPGG_TOKEN || process.env.NORA_V0 || '';
-                const axios = require('axios');
-                const topggRes = await axios.get(`https://top.gg/api/bots/${trimmedTargetId}`, {
-                    headers: { Authorization: NORA_V0 }
-                }).catch(() => null);
-
-                if (!topggRes) {
-                    return res.status(400).json({ error: 'Bot not found on Top.gg.' });
-                }
-
-                const botData = topggRes.data;
-                const owners = botData.owners || [];
-                isOwner = owners.includes(user.id) || (trimmedLegacyOwnerId && owners.includes(trimmedLegacyOwnerId));
-
-                // Verification code description check fallback
-                if (!isOwner) {
-                    const expectedCode = `NORA-${guildId.slice(-4)}-${(trimmedLegacyOwnerId || user.id).slice(-4)}`.toUpperCase();
-                    const shortDesc = botData.shortdesc || '';
-                    const longDesc = botData.longdesc || '';
-                    if (shortDesc.toUpperCase().includes(expectedCode) || longDesc.toUpperCase().includes(expectedCode)) {
-                        isOwner = true;
-                    }
-                }
-            }
-
-            if (!isOwner) {
-                return res.status(403).json({ error: 'Verification failed. You must own this bot on Top.gg or include the verification code in your bot description.' });
-            }
-        } else if (type === 'server') {
-            // Check that targetId matches guildId
-            if (trimmedTargetId !== guildId) {
-                return res.status(400).json({ error: 'Forbidden: Server vote tracking can only be linked to the corresponding server.' });
-            }
+/**
+ * POST /api/guilds/:guildId/feeds
+ * Add a new social media feed.
+ */
+router.post('/feeds', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { platform, url, discordChannelId, customMessage } = req.body;
+        
+        if (!platform || !url || !discordChannelId) {
+            return res.status(400).json({ error: 'Platform, URL, and Channel ID are required.' });
         }
-
-        // Create or update connection
-        const TopggConnection = require('../../database/models/TopggConnection');
-        const connId = `${guildId}-${trimmedTargetId}-${type}`;
-        const [conn, created] = await TopggConnection.findOrCreate({
-            where: { id: connId },
-            defaults: {
-                id: connId,
-                guildId,
-                targetId: trimmedTargetId,
-                type,
-                token: trimmedToken,
-                verified: true,
-                ownerId: user.id
-            }
+        
+        // Parse URL to get public handle
+        let publicHandle = url;
+        if (platform === 'youtube' && url.includes('@')) {
+            publicHandle = url.split('@')[1].split('/')[0];
+        } else if (platform === 'twitch') {
+            const parts = url.replace(/\/$/, '').split('/');
+            publicHandle = parts[parts.length - 1];
+        }
+        
+        const ContentFeed = require('../../database/models/ContentFeed');
+        const feed = await ContentFeed.create({
+            guildId,
+            platform: platform.toUpperCase(),
+            publicHandle,
+            targetChannelId: discordChannelId,
+            alertTemplate: customMessage || 'Hey @everyone! {creator} is live/uploaded! Link: {link}'
         });
-
-        if (!created) {
-            await conn.update({
-                token: trimmedToken || conn.token,
-                ownerId: user.id,
-                verified: true
-            });
-        }
-
-        // Update legacy GuildSettings fields for backwards compatibility
-        const GuildSettings = require('../../database/models/GuildSettings');
-        const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
-        settings.topggVerified = true;
-        if (type === 'bot') {
-            settings.topggBotId = trimmedTargetId;
-        }
-        if (trimmedToken) {
-            settings.topggWebhookAuth = trimmedToken;
-        }
-        await settings.save();
-
-        res.json({ success: true, connection: conn });
+        
+        res.json({ success: true, feed });
     } catch (e) {
-        console.error('Error linking Top.gg integration:', e);
+        console.error('Error adding feed:', e);
         res.status(500).json({ error: e.message });
     }
 });
 
 /**
- * POST /api/guilds/:guildId/topgg/unlink
- * Unlink a Top.gg bot or server connection from this guild.
+ * DELETE /api/guilds/:guildId/feeds/:feedId
+ * Delete a social media feed.
  */
-router.post('/topgg/unlink', async (req, res) => {
+router.delete('/feeds/:feedId', async (req, res) => {
     try {
-        const { guildId } = req.params;
-        const { targetId, type } = req.body;
-
-        if (!targetId || !type) {
-            return res.status(400).json({ error: 'targetId and type are required' });
-        }
-
-        const TopggConnection = require('../../database/models/TopggConnection');
-        const connId = `${guildId}-${targetId}-${type}`;
-        await TopggConnection.destroy({ where: { id: connId } });
-
-        // Update legacy GuildSettings
-        const GuildSettings = require('../../database/models/GuildSettings');
-        const settings = await GuildSettings.findOne({ where: { guildId } });
-        if (settings) {
-            const connectionsCount = await TopggConnection.count({ where: { guildId } });
-            if (connectionsCount === 0) {
-                settings.topggVerified = false;
-                settings.topggBotId = null;
-            } else if (settings.topggBotId === targetId) {
-                const anotherBot = await TopggConnection.findOne({ where: { guildId, type: 'bot' } });
-                settings.topggBotId = anotherBot ? anotherBot.targetId : null;
-            }
-            await settings.save();
-        }
-
+        const { guildId, feedId } = req.params;
+        const ContentFeed = require('../../database/models/ContentFeed');
+        
+        const deleted = await ContentFeed.destroy({ where: { id: feedId, guildId } });
+        if (!deleted) return res.status(404).json({ error: 'Feed not found.' });
+        
         res.json({ success: true });
     } catch (e) {
-        console.error('Error unlinking Top.gg connection:', e);
-        res.status(500).json({ error: e.message });
-    }
-});
-
-/**
- * POST /api/guilds/:guildId/webhook-send
- * Send a broadcast announcement using a Discord Webhook.
- */
-router.post('/webhook-send', async (req, res) => {
-    try {
-        const { guildId } = req.params;
-        const { channelId, name, avatar, content, embedTitle, embedDesc, embedColor, embedImage, components } = req.body;
-
-        if (!channelId) return res.status(400).json({ error: 'Missing channelId' });
-
-        const { saveBase64Image } = require('../../utils/imageSaver');
-        const processedAvatar = avatar ? saveBase64Image(avatar, 'broadcast_avatar') : null;
-        const processedEmbedImage = embedImage ? saveBase64Image(embedImage, 'broadcast_embed') : null;
-
-        const guild = req.client.guilds.cache.get(guildId);
-        if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
-
-        const channel = guild.channels.cache.get(channelId);
-        if (!channel) return res.status(404).json({ error: 'Channel not found in this guild.' });
-
-        if (!channel.isTextBased()) return res.status(400).json({ error: 'Selected channel is not a text-based channel.' });
-
-        const botMember = guild.members.me || await guild.members.fetch(req.client.user.id).catch(() => null);
-        if (!botMember) return res.status(500).json({ error: 'Failed to fetch bot member context.' });
-
-        // Check view channel and manage webhooks permission
-        const canView = channel.permissionsFor(botMember)?.has('ViewChannel');
-        const canManageWebhooks = channel.permissionsFor(botMember)?.has('ManageWebhooks');
-
-        if (!canView) {
-            return res.status(403).json({ error: 'Nora does not have permission to view the selected channel.' });
-        }
-        if (!canManageWebhooks) {
-            return res.status(403).json({ error: 'Nora does not have "Manage Webhooks" permission in the selected channel.' });
-        }
-
-        // Get or create webhook
-        const webhooks = await channel.fetchWebhooks();
-        let webhook = webhooks.find(wh => wh.owner.id === req.client.user.id);
-        if (!webhook) {
-            webhook = await channel.createWebhook({
-                name: name || 'Nora Broadcast',
-                avatar: processedAvatar || null,
-                reason: 'Nora Broadcast Webhook Builder'
-            });
-        }
-
-        // Build embeds
-        const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-        const embeds = [];
-        if (embedTitle || embedDesc || processedEmbedImage) {
-            const embed = new EmbedBuilder();
-            if (embedTitle) embed.setTitle(embedTitle);
-            if (embedDesc) embed.setDescription(embedDesc);
-            if (embedColor) {
-                try {
-                    embed.setColor(embedColor);
-                } catch (_) {
-                    embed.setColor('#aeefff');
-                }
-            } else {
-                embed.setColor('#aeefff');
-            }
-            if (processedEmbedImage) embed.setImage(processedEmbedImage);
-            embeds.push(embed);
-        }
-
-        // Build components (buttons)
-        const messageComponents = [];
-        if (components && Array.isArray(components) && components.length > 0) {
-            const row = new ActionRowBuilder();
-            components.forEach((btn, index) => {
-                const button = new ButtonBuilder();
-                if (btn.label) button.setLabel(btn.label);
-
-                let style = ButtonStyle.Primary;
-                if (btn.style === 'SUCCESS') style = ButtonStyle.Success;
-                else if (btn.style === 'DANGER') style = ButtonStyle.Danger;
-                else if (btn.style === 'SECONDARY') style = ButtonStyle.Secondary;
-                else if (btn.style === 'LINK') style = ButtonStyle.Link;
-
-                const isUrl = btn.url && (btn.url.startsWith('http://') || btn.url.startsWith('https://'));
-                if (isUrl) {
-                    button.setStyle(ButtonStyle.Link);
-                    button.setURL(btn.url);
-                } else {
-                    button.setStyle(style === ButtonStyle.Link ? ButtonStyle.Primary : style);
-                    button.setCustomId(`broadcast_btn_${index}_${Date.now()}`);
-                }
-                row.addComponents(button);
-            });
-            messageComponents.push(row);
-        }
-
-        // Send via webhook
-        const sendPayload = {
-            content: content || undefined,
-            embeds,
-            components: messageComponents
-        };
-
-        if (name) sendPayload.username = name;
-        if (processedAvatar) sendPayload.avatarURL = processedAvatar;
-
-        await webhook.send(sendPayload);
-
-        res.json({ success: true });
-    } catch (e) {
-        console.error('Error sending broadcast:', e);
-        res.status(500).json({ error: e.message });
-    }
-});
-
-/**
- * POST /api/guilds/:guildId/topgg/test
- * Triggers a test vote announcement message using the current configurations.
- */
-router.post('/topgg/test', async (req, res) => {
-    try {
-        const { guildId } = req.params;
-        const guild = req.client.guilds.cache.get(guildId);
-        if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
-
-        const GuildSettings = require('../../database/models/GuildSettings');
-        const settings = await GuildSettings.findOne({ where: { guildId } });
-        if (!settings) return res.status(404).json({ error: 'Settings not found.' });
-
-        if (!settings.topggVoteChannelId) {
-            return res.status(400).json({ error: 'No notification channel selected. Please configure one first.' });
-        }
-
-        const channel = guild.channels.cache.get(settings.topggVoteChannelId);
-        if (!channel) {
-            return res.status(404).json({ error: 'Configured notification channel not found.' });
-        }
-
-        // Get user details from authorization token and verify owner
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-        const token = authHeader.split(' ')[1];
-        const user = await getDiscordUser(token).catch(() => null);
-        if (!user) return res.status(401).json({ error: 'Invalid Discord token' });
-
-        // Verify that the user is the bot owner
-        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
-        let isOwnerUser = APP_OWNER_IDS.includes(user.id);
-        if (!isOwnerUser) {
-            try {
-                const app = await req.client.application.fetch();
-                if (app.owner) {
-                    if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
-                        isOwnerUser = true;
-                    }
-                }
-            } catch (e) {}
-        }
-        if (!isOwnerUser) {
-            return res.status(403).json({ error: 'Forbidden: Only the bot owner can configure Top.gg settings.' });
-        }
-
-        let testUser = await req.client.users.fetch(user.id).catch(() => req.client.user);
-
-        // Send simulated vote
-        const { sendVoteNotification } = require('../../utils/topggWebhookHandler');
-        await sendVoteNotification(guild, settings, testUser.id, true);
-
-        res.json({ success: true });
-    } catch (e) {
-        console.error('Error sending Top.gg test vote:', e);
+        console.error('Error deleting feed:', e);
         res.status(500).json({ error: e.message });
     }
 });

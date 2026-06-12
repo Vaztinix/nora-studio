@@ -29,11 +29,11 @@ const requireAuth = async (req, res, next) => {
         
         let user = null;
         if (session) {
-            // Check session hardening
-            const prefs = await UserPrefs.findOne({ where: { userId: session.userId } });
-            if (prefs && prefs.sessionHardened && session.ipAddress !== clientIp) {
+            // Generational Session UUID Lock validation
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: session.userId } });
+            if (session.sessionGenerationMarker && session.sessionGenerationMarker !== prefs.sessionGenerationMarker) {
                 await session.destroy();
-                return res.status(403).json({ error: 'Session Hardening: IP mismatch. Session terminated.' });
+                return res.status(401).json({ error: 'Unauthorized: Session has been globally invalidated.' });
             }
             
             const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
@@ -62,6 +62,7 @@ const requireAuth = async (req, res, next) => {
                 }
             } catch (e) {}
             
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             session = await Session.create({
                 id: tokenHash,
                 userId: user.id,
@@ -69,6 +70,7 @@ const requireAuth = async (req, res, next) => {
                 ipAddress: clientIp,
                 userAgent: req.headers['user-agent'] || 'Unknown',
                 location: location,
+                sessionGenerationMarker: prefs.sessionGenerationMarker,
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
             });
         }
@@ -351,6 +353,18 @@ router.get('/ai-history', requireAuth, async (req, res) => {
     }
 });
 
+// Helper to parse User Agent string into device / OS type
+function parseUserAgent(ua) {
+    if (!ua) return 'Unknown Device';
+    if (ua.includes('iPhone')) return 'iPhone';
+    if (ua.includes('iPad')) return 'iPad';
+    if (ua.includes('Android')) return 'Android';
+    if (ua.includes('Windows')) return 'Windows';
+    if (ua.includes('Macintosh') || ua.includes('Mac OS X')) return 'macOS';
+    if (ua.includes('Linux')) return 'Linux';
+    return 'Other Device';
+}
+
 // GET /api/user/sessions
 router.get('/sessions', requireAuth, async (req, res) => {
     try {
@@ -365,6 +379,7 @@ router.get('/sessions', requireAuth, async (req, res) => {
             id: s.id,
             ipAddress: s.ipAddress,
             userAgent: s.userAgent,
+            deviceType: parseUserAgent(s.userAgent),
             location: s.location || 'Unknown Location',
             createdAt: s.createdAt,
             expiresAt: s.expiresAt,

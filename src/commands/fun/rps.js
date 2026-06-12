@@ -119,7 +119,8 @@ module.exports = {
             const response = await interaction.reply({
                 embeds: [embed],
                 components: [row],
-                fetchReply: true
+                fetchReply: true,
+                ephemeral: true
             });
 
             const filter = i => i.user.id === interaction.user.id && i.customId.startsWith('rps_');

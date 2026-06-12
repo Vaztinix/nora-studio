@@ -32,7 +32,7 @@ module.exports = {
         }
 
         // Handle Ticket Close Button Action
-        if (interaction.isButton() && interaction.customId.startsWith('ticket_close_')) {
+        if (interaction.isButton() && (interaction.customId.startsWith('ticket_close_') || interaction.customId.startsWith('ticket_close_btn_'))) {
             const ActiveTicket = require('../database/models/ActiveTicket');
             const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
             if (!ticket) return interaction.reply({ content: 'Could not resolve this ticket in database.', ephemeral: true });
@@ -52,24 +52,39 @@ module.exports = {
             const messages = await interaction.channel.messages.fetch({ limit: 100 }).catch(() => []);
             const sortedMessages = [...messages.values()].reverse();
 
-            let transcriptText = `--- NORA SUPPORT TICKET TRANSCRIPT ---\n`;
-            transcriptText += `Guild ID: ${interaction.guildId}\n`;
-            transcriptText += `Channel ID: ${interaction.channelId}\n`;
-            transcriptText += `Ticket Owner: ${ticket.ownerId}\n`;
-            transcriptText += `Closed By: ${interaction.user.tag} (${interaction.user.id})\n`;
-            transcriptText += `Timestamp: ${new Date().toISOString()}\n`;
-            transcriptText += `--------------------------------------\n\n`;
+            let intakeText = '';
+            if (ticket.capturedIntake) {
+                try {
+                    const parsed = JSON.parse(ticket.capturedIntake);
+                    intakeText = Object.entries(parsed)
+                        .map(([label, val]) => `* **${label}**: ${val}`)
+                        .join('\n');
+                } catch (e) {
+                    intakeText = `* **Raw Intake**: ${ticket.capturedIntake}`;
+                }
+            } else {
+                intakeText = '*No intake data captured.*';
+            }
+
+            let transcriptText = `# 🎫 Support Ticket Transcript: #${interaction.channel.name}\n\n`;
+            transcriptText += `## 📌 Ticket Metadata\n`;
+            transcriptText += `- **Guild:** ${interaction.guild.name} (${interaction.guildId})\n`;
+            transcriptText += `- **Ticket Owner:** <@${ticket.ownerId}> (${ticket.ownerId})\n`;
+            transcriptText += `- **Closed By:** ${interaction.user.tag} (${interaction.user.id})\n`;
+            transcriptText += `- **Closed At:** ${new Date().toISOString()}\n\n`;
+            transcriptText += `## 📋 Intake Form Responses\n${intakeText}\n\n`;
+            transcriptText += `## 💬 Chat Logs\n`;
 
             sortedMessages.forEach(msg => {
-                const timestamp = new Date(msg.createdAt).toISOString();
+                const timestamp = new Date(msg.createdAt).toLocaleTimeString();
                 const attachmentUrls = msg.attachments.map(a => a.url).join(', ');
-                const attachmentsSuffix = attachmentUrls ? ` [Attachments: ${attachmentUrls}]` : '';
-                transcriptText += `[${timestamp}] ${msg.author.tag}: ${msg.content}${attachmentsSuffix}\n`;
+                const attachmentsSuffix = attachmentUrls ? ` *[Attachments: ${attachmentUrls}]*` : '';
+                transcriptText += `* **[${timestamp}] ${msg.author.tag}**: ${msg.content}${attachmentsSuffix}\n`;
             });
 
             const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
             const transcriptBuffer = Buffer.from(transcriptText, 'utf-8');
-            const transcriptFile = new AttachmentBuilder(transcriptBuffer, { name: `transcript-${interaction.channel.name}.txt` });
+            const transcriptFile = new AttachmentBuilder(transcriptBuffer, { name: `transcript-${interaction.channel.name}.md` });
 
             // DM Owner
             const owner = await interaction.client.users.fetch(ticket.ownerId).catch(() => null);
@@ -87,7 +102,7 @@ module.exports = {
             // Send to Server Logging Channel
             if (settings.loggingChannelId) {
                 const logChannel = interaction.guild.channels.cache.get(settings.loggingChannelId)
-                    || await message.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+                    || await interaction.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
                 if (logChannel) {
                     const embed = new EmbedBuilder()
                         .setTitle('🎫 Ticket Closed & Transcribed')

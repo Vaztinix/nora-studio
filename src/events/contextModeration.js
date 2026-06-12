@@ -16,6 +16,11 @@ module.exports = {
             const settings = await settingsCache.get(message.guild.id);
             if (!settings || !settings.autoModActive) return;
 
+            // Forward-only timeline privacy check
+            const botJoinTime = settings && settings.installedAt ? new Date(settings.installedAt).getTime() : Date.now();
+            const messageTime = new Date(message.createdAt).getTime();
+            if (messageTime < botJoinTime) return;
+
             const res = await assessMessageThreatContext(settings, message);
             
             if (res.contextClassification === "TARGETED_HARASSMENT") {

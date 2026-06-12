@@ -1,5 +1,4 @@
 const { Events } = require('discord.js');
-const { updateStats } = require('../utils/topgg');
 const { logEvent } = require('../utils/logistics');
 
 module.exports = {
@@ -12,9 +11,6 @@ module.exports = {
         await performCascadingErasure(guild.id).catch(err => {
             console.error(`[GuildDelete Erasure Error] Failed:`, err);
         });
-
-        // Update Top.gg Stats
-        await updateStats(guild.client);
 
         // Log to Master HQ Logistics Webhook
         await logEvent(guild, 'leave');

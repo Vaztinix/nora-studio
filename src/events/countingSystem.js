@@ -74,6 +74,11 @@ module.exports = {
         const settings = await settingsCache.get(message.guild.id);
         if (!settings || !settings.countingChannelId || message.channel.id !== settings.countingChannelId) return;
 
+        // Forward-only timeline privacy check
+        const botJoinTime = settings && settings.installedAt ? new Date(settings.installedAt).getTime() : Date.now();
+        const messageTime = new Date(message.createdAt).getTime();
+        if (messageTime < botJoinTime) return;
+
         // 1. Blacklisted users check
         let blacklistedUsers = [];
         try {
@@ -129,6 +134,21 @@ module.exports = {
         allData[message.guild.id] = guildData;
         queueSave();
         await message.react('✅').catch(() => {});
+
+        // Award XP for successful count
+        try {
+            const xpReward = settings.countingChannelXpReward !== undefined ? settings.countingChannelXpReward : 15;
+            if (xpReward > 0) {
+                const NoraLeveling = require('../utils/noraLeveling');
+                const userLevel = await NoraLeveling.getOrInitializeUser(message.author.id, message.guild.id);
+                if (userLevel) {
+                    await NoraLeveling.addExperience(userLevel, xpReward);
+                    await userLevel.save();
+                }
+            }
+        } catch (e) {
+            console.error('Failed to award counting XP:', e);
+        }
 
         const { checkAndAwardEgg } = require('../utils/easterEggSystem');
         checkAndAwardEgg(message, 7);
