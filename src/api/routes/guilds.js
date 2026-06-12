@@ -386,7 +386,7 @@ router.get('/feeds', async (req, res) => {
 router.post('/feeds', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { platform, url, discordChannelId, customMessage } = req.body;
+        const { platform, url, discordChannelId, customMessage, pingType } = req.body;
         
         if (!platform || !url || !discordChannelId) {
             return res.status(400).json({ error: 'Platform, URL, and Channel ID are required.' });
@@ -394,21 +394,80 @@ router.post('/feeds', async (req, res) => {
         
         // Parse URL to get public handle
         let publicHandle = url;
-        if (platform === 'youtube' && url.includes('@')) {
-            publicHandle = url.split('@')[1].split('/')[0];
+        let channelId = null;
+        const axios = require('axios');
+        const { getYoutubeChannelId, checkYoutube, checkTwitch } = require('../../utils/socialScraper');
+
+        if (platform === 'youtube') {
+            if (url.includes('@')) {
+                publicHandle = url.split('@')[1].split('/')[0];
+            } else if (url.includes('/channel/')) {
+                publicHandle = url.split('/channel/')[1].split('/')[0];
+            } else if (url.includes('/c/')) {
+                publicHandle = url.split('/c/')[1].split('/')[0];
+            } else if (url.startsWith('UC') && url.length === 24) {
+                publicHandle = url;
+            } else if (url.includes('youtube.com/')) {
+                const parts = url.replace(/\/$/, '').split('/');
+                publicHandle = parts[parts.length - 1];
+            }
+
+            if (publicHandle.startsWith('UC') && publicHandle.length === 24) {
+                channelId = publicHandle;
+            } else {
+                channelId = await getYoutubeChannelId(publicHandle);
+            }
+
+            if (!channelId) {
+                return res.status(400).json({ error: 'Could not find a valid YouTube channel. Make sure the handle/URL is correct and active.' });
+            }
         } else if (platform === 'twitch') {
             const parts = url.replace(/\/$/, '').split('/');
             publicHandle = parts[parts.length - 1];
+
+            const twitchCheck = await axios.get(`https://decapi.me/twitch/uptime/${publicHandle}`).catch(() => null);
+            if (twitchCheck && twitchCheck.data.includes('not exist')) {
+                return res.status(400).json({ error: 'Twitch channel does not exist.' });
+            }
         }
         
+        let pingPrefix = 'Hey @everyone! ';
+        if (pingType === 'none') {
+            pingPrefix = '';
+        } else if (pingType === 'here') {
+            pingPrefix = 'Hey @here! ';
+        } else if (pingType && pingType !== 'everyone') {
+            // It's a role ID
+            pingPrefix = `Hey <@&${pingType}>! `;
+        }
+
+        let alertTemplate;
+        if (customMessage && customMessage.trim()) {
+            // If the user specifies customMessage, prepend ping and append Link suffix if it's not already there
+            const cleanMessage = customMessage.trim();
+            const suffix = cleanMessage.includes('{link}') ? '' : ' Link: {link}';
+            alertTemplate = `${pingPrefix}${cleanMessage}${suffix}`;
+        } else {
+            alertTemplate = `${pingPrefix}{creator} is live/uploaded! Link: {link}`;
+        }
+
         const ContentFeed = require('../../database/models/ContentFeed');
         const feed = await ContentFeed.create({
             guildId,
             platform: platform.toUpperCase(),
             publicHandle,
+            channelId,
             targetChannelId: discordChannelId,
-            alertTemplate: customMessage || 'Hey @everyone! {creator} is live/uploaded! Link: {link}'
+            alertTemplate
         });
+
+        // Run an immediate check in the background to initialize state (lastVideoId or isLive)
+        // so we don't alert retroactively when the next cron runs.
+        if (platform === 'youtube') {
+            checkYoutube(feed, req.client).catch(e => console.error('Error in initial youtube feed check:', e));
+        } else if (platform === 'twitch') {
+            checkTwitch(feed, req.client).catch(e => console.error('Error in initial twitch feed check:', e));
+        }
         
         res.json({ success: true, feed });
     } catch (e) {

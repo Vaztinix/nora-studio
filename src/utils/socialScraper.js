@@ -23,9 +23,12 @@ async function getYoutubeChannelId(handle) {
 
 async function checkYoutube(feed, client) {
     try {
-        let channelId = feed.publicHandle;
-        if (!channelId.startsWith('UC')) {
+        let channelId = feed.channelId || feed.publicHandle;
+        if (!channelId || !channelId.startsWith('UC')) {
             channelId = await getYoutubeChannelId(feed.publicHandle);
+            if (channelId) {
+                await feed.update({ channelId });
+            }
         }
         if (!channelId) return;
 
@@ -41,9 +44,16 @@ async function checkYoutube(feed, client) {
         const author = latest.author[0].name[0];
         const link = latest.link[0].$.href;
         
-        const cacheKey = `yt-${feed.id}-${videoId}`;
-        if (alertsCache.has(cacheKey)) return;
-        alertsCache.add(cacheKey);
+        // Persistent check to prevent alerts for old videos or duplicate alerts on restart
+        if (!feed.lastVideoId) {
+            // First scan: save state without alerting
+            await feed.update({ lastVideoId: videoId });
+            return;
+        }
+
+        if (feed.lastVideoId === videoId) return;
+        
+        await feed.update({ lastVideoId: videoId });
 
         const guild = client.guilds.cache.get(feed.guildId);
         if (!guild) return;
@@ -67,18 +77,19 @@ async function checkTwitch(feed, client) {
         const res = await axios.get(`https://decapi.me/twitch/uptime/${feed.publicHandle}`);
         const data = res.data;
         
-        // If it returns a string like "X is offline", they are offline.
-        // If it returns a time duration, they are live.
-        const cacheKey = `tw-${feed.id}-live`;
+        const isOffline = data.includes('offline') || data.includes('not exist');
         
-        if (data.includes('offline') || data.includes('not exist')) {
-            alertsCache.delete(cacheKey);
+        if (isOffline) {
+            if (feed.isLive) {
+                await feed.update({ isLive: false });
+            }
             return;
         }
 
-        // They are live!
-        if (alertsCache.has(cacheKey)) return;
-        alertsCache.add(cacheKey);
+        // Streamer is live!
+        if (feed.isLive) return; // Already alerted for this stream session
+        
+        await feed.update({ isLive: true });
 
         const guild = client.guilds.cache.get(feed.guildId);
         if (!guild) return;
@@ -116,8 +127,8 @@ function init(client) {
     // Initial delay to let bot startup fully
     setTimeout(() => {
         pollFeeds(client);
-        setInterval(() => pollFeeds(client), 5 * 60 * 1000); // 5 minutes
+        setInterval(() => pollFeeds(client), 3 * 60 * 1000); // 3 minutes
     }, 10000);
 }
 
-module.exports = { init, pollFeeds };
+module.exports = { init, pollFeeds, checkYoutube, checkTwitch, getYoutubeChannelId };

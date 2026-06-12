@@ -84,9 +84,20 @@ commandHandler(client);
 eventHandler(client);
 
 // Sync database and login with high-stability index handling
-sequelize.sync().then(() => {
+sequelize.sync().then(async () => {
     console.log('Nora - Database Synchronized (Leveling Indices Healthy)');
     
+    // Safely add columns to ContentFeeds if they don't exist
+    try {
+        await sequelize.query("ALTER TABLE `ContentFeeds` ADD COLUMN `lastVideoId` VARCHAR(255) NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `ContentFeeds` ADD COLUMN `channelId` VARCHAR(255) NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `ContentFeeds` ADD COLUMN `isLive` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+
     // 🛡️ Nora System Persistence (System Backup) - V17.2
     const { systemBackup } = require('./utils/persistence');
     systemBackup();

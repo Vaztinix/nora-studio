@@ -3653,6 +3653,15 @@
                                     <option value="">Select a text channel...</option>
                                 </select>
                             </div>
+
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Announcement Ping</label>
+                                <select id="new-feed-ping" style="width: 100%;">
+                                    <option value="everyone">@everyone</option>
+                                    <option value="here">@here</option>
+                                    <option value="none">No Ping</option>
+                                </select>
+                            </div>
                             
                             <div class="input-group" style="margin-bottom: 20px;">
                                 <label>Custom Message (Optional)</label>
@@ -8959,6 +8968,23 @@
                     }
                 });
 
+                // Populate Feed Announcement Ping dropdown
+                const feedPing = document.getElementById('new-feed-ping');
+                if (feedPing) {
+                    feedPing.innerHTML = `
+                        <option value="everyone">@everyone</option>
+                        <option value="here">@here</option>
+                        <option value="none">No Ping</option>
+                    `;
+                    roles.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.setAttribute('data-no-translate', 'true');
+                        opt.value = r.id;
+                        opt.textContent = `@${r.name}`;
+                        feedPing.appendChild(opt);
+                    });
+                }
+
                 // Initialize custom multiselect dropdowns for verify roles and immune roles
                 initMultiselect('setting-verifyRoleId', roles);
                 initMultiselect('setting-automodImmuneRoles', roles);
@@ -9886,6 +9912,7 @@
             const url = document.getElementById('new-feed-url').value;
             const channelId = document.getElementById('new-feed-channel').value;
             const message = document.getElementById('new-feed-message').value;
+            const pingType = document.getElementById('new-feed-ping').value;
             
             if (!url || !channelId) return showToast('Please provide a URL and select a channel.', 'error');
             
@@ -9897,7 +9924,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${t}` 
                     },
-                    body: JSON.stringify({ platform, url, discordChannelId: channelId, customMessage: message })
+                    body: JSON.stringify({ platform, url, discordChannelId: channelId, customMessage: message, pingType })
                 });
                 const d = await res.json();
                 if (!res.ok) throw new Error(d.error || 'Failed to add feed');

@@ -27,7 +27,20 @@ const ContentFeed = sequelize.define('ContentFeed', {
         type: DataTypes.TEXT,
         allowNull: false,
         defaultValue: 'Hey @everyone! {creator} is live! Link: {link}'
+    },
+    lastVideoId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    channelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    isLive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 
 module.exports = ContentFeed;
+
