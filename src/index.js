@@ -464,7 +464,8 @@ function serveDashboard(req, res) {
     try {
         let html = fs.readFileSync(filePath, 'utf8');
         // Inject the canonical API URL as the very first script — before any other JS runs
-        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}';</script>\n`;
+        const clientId = req.client && req.client.user ? req.client.user.id : process.env.CLIENT_ID;
+        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
         html = html.replace('</head>', injection + '</head>');
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(html);
@@ -1179,7 +1180,14 @@ app.get('/api/user/guilds', async (req, res) => {
         }
 
         const managedGuilds = filteredGuilds.map(g => {
-            const hasNora = req.client.guilds.cache.has(g.id);
+            const isCached = req.client.guilds.cache.has(g.id);
+            const hasSettings = settingsMap.has(g.id);
+            const hasNora = isCached || hasSettings;
+            
+            if (!isCached) {
+                // Log caching issues for guilds the user has access to
+                console.log(`[Guild Sync Info] Bot is not cached in guild: ${g.name} (${g.id}). Available bot cache size: ${req.client.guilds.cache.size}`);
+            }
             const liveGuild = req.client.guilds.cache.get(g.id);
             const settings = settingsMap.get(g.id);
 

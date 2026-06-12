@@ -49,6 +49,43 @@
             initial-value: rgba(255, 255, 255, 0.08);
         }
 
+        /* Liquid Glow Animations */
+        .liquid-blob {
+            position: fixed;
+            filter: blur(80px);
+            opacity: 0.4;
+            border-radius: 50%;
+            z-index: -2;
+            pointer-events: none;
+            animation: float 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .liquid-blob-1 {
+            top: -10%; left: -10%;
+            width: 50vw; height: 50vw;
+            background: radial-gradient(circle, var(--primary), transparent 70%);
+            animation-duration: 25s;
+        }
+        .liquid-blob-2 {
+            bottom: -20%; right: -10%;
+            width: 60vw; height: 60vw;
+            background: radial-gradient(circle, var(--accent, #6c5ce7), transparent 70%);
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+        .liquid-blob-3 {
+            top: 40%; left: 30%;
+            width: 40vw; height: 40vw;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent 60%);
+            animation-duration: 20s;
+            animation-delay: -10s;
+        }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            33% { transform: translate(5%, 5%) scale(1.1) rotate(10deg); }
+            66% { transform: translate(-5%, 8%) scale(0.9) rotate(-5deg); }
+            100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        }
+
         :root {
             --bg: #080b16;
             --sidebar-bg: #0d1020;
@@ -69,7 +106,7 @@
             --row-bg: rgba(0, 0, 0, 0.12);
             --glow-1: rgba(0, 212, 255, 0.06);
             --glow-2: rgba(108, 92, 231, 0.06);
-            --rail-width: 72px;
+            --rail-width: 240px;
         }
 
         /* Smooth Transition when Switching Themes */
@@ -362,7 +399,7 @@
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
-            padding: 40px 40px 40px calc(var(--rail-width) + 40px);
+            padding: 40px 40px 40px calc(240px + 60px);
             gap: 0;
         }
 
@@ -378,10 +415,10 @@
             -webkit-backdrop-filter: blur(30px) saturate(180%);
             border: 1px solid var(--border);
             border-radius: 24px;
-            padding: 24px 0;
+            padding: 24px 16px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
             z-index: 200;
             overflow: visible;
@@ -401,29 +438,37 @@
         .sidebar-nav { display: flex; flex-direction: column; gap: 4px; width: 100%; align-items: center; padding: 8px 0; }
         .sidebar-btn {
             background: transparent; border: none; color: var(--muted); font-size: 0.95rem; font-weight: 600;
-            padding: 12px 16px; border-radius: var(--radius-md); text-align: left; cursor: pointer; transition: 0.2s;
+            padding: 12px; border-radius: var(--radius-md); text-align: left; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 12px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .sidebar-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
         .sidebar-btn.active { background: var(--primary); color: #000; box-shadow: 0 4px 15px var(--primary-glow); }
+        .v-tab {
+            background: transparent; border: none; color: var(--muted); font-size: 0.95rem; font-weight: 600;
+            padding: 12px; border-radius: var(--radius-md); text-align: left; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 12px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative;
+        }
+        .v-tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+        .v-tab.active { background: var(--primary); color: #000; box-shadow: 0 4px 15px var(--primary-glow); }
         
         .logout-btn {
             background: transparent; border: 1px solid var(--border); color: var(--text);
-            width: 40px; height: 40px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
-            margin-top: auto; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
-            padding: 0;
+            width: 100%; height: 44px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            margin-top: auto; font-size: 0.95rem; display: flex; align-items: center; justify-content: flex-start;
+            padding: 0 16px; gap: 12px;
         }
         .logout-btn:hover { background: rgba(255, 71, 87, 0.1); border-color: rgba(255, 71, 87, 0.3); color: var(--danger); }
 
         /* Navigation Rail Item Styles */
         .v-tab {
-            width: 44px; height: 44px;
-            display: flex; align-items: center; justify-content: center;
+            width: 100%; height: 44px;
+            display: flex; align-items: center; justify-content: flex-start; gap: 12px;
             background: transparent; border: none;
             color: var(--muted); border-radius: 14px;
             cursor: pointer; transition: all 0.2s ease;
-            position: relative; font-size: 0; padding: 0;
+            position: relative; font-size: 0.95rem; padding: 0 16px; font-weight: 600;
         }
-        .v-tab i { font-size: 1.15rem; }
+        .v-tab i { font-size: 1.15rem; width: 24px; text-align: center; }
         .v-tab:hover { background: rgba(255,255,255,0.06); color: var(--text); }
         .v-tab.active {
             background: rgba(0, 212, 255, 0.12);
@@ -835,11 +880,18 @@
 
         .row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 20px; background: var(--row-bg); border: 1px solid var(--border);
-            border-radius: var(--radius-md); margin-bottom: 12px; transition: 0.2s;
+            padding: 22px 24px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px; margin-bottom: 14px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .row:hover { border-color: var(--primary-glow); }
-        .row-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+        .row:hover { 
+            border-color: var(--primary); 
+            background: rgba(255,255,255,0.03); 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25), 0 0 15px rgba(174, 239, 255, 0.1); 
+        }
+        .row-info h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: #fff; letter-spacing: -0.01em; }
         .row-info p { color: var(--muted); font-size: 0.85rem; line-height: 1.5; max-width: 500px;}
         
         .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;}
@@ -885,11 +937,12 @@
             box-shadow: 0 0 0 3px rgba(174, 239, 255, 0.15);
         }
 
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #2a2f4c; transition: .3s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 34px; border: 1px solid rgba(255,255,255,0.05); }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: #fff; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        input:checked + .slider { background-color: var(--primary); box-shadow: inset 0 0 5px rgba(0,0,0,0.1), 0 0 15px rgba(174, 239, 255, 0.4); border-color: transparent; }
+        input:checked + .slider:before { transform: translateX(22px); box-shadow: -2px 2px 5px rgba(0,0,0,0.2); }
 
         .badge-slash {
             font-size: 0.55rem;
@@ -1065,15 +1118,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 18px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
             font-size: 0.85rem;
             font-weight: 600;
-            transition: 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
-        .log-row-compact:hover { border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); }
+        .log-row-compact:hover { border-color: var(--primary); background: rgba(255, 255, 255, 0.03); transform: translateX(4px); box-shadow: -2px 4px 15px rgba(0,0,0,0.2); }
         .switch.small { width: 34px; height: 18px; }
         .switch.small .slider:before { height: 12px; width: 12px; left: 3px; bottom: 3px; }
         .switch.small input:checked + .slider:before { transform: translateX(16px); }
@@ -1780,19 +1834,19 @@
         </div>
         <div class="topbar-actions">
             <!-- User Profile in Topbar -->
-            <div class="user-profile-topbar" style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 6px 16px 6px 6px; border-radius: 999px; border: 1px solid var(--border);">
+            <div class="user-profile-topbar" style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 6px 12px 6px 6px; border-radius: 999px; border: 1px solid var(--border); cursor: pointer; transition: background 0.2s, transform 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.transform='none';" onclick="sessionStorage.removeItem('discord_token'); localStorage.removeItem('nora_last_user_id'); window.location.reload();" title="Click to Logout">
                 <div style="position: relative;">
                     <img id="user-avatar-top" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="User" style="width: 32px; height: 32px; border-radius: 50%;">
-                    <div id="user-status-dot-top" style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background: #2ed573; border: 2px solid var(--sidebar-bg);"></div>
+                    <div id="user-status-dot-top" style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background: #ff5555; border: 2px solid var(--sidebar-bg);"></div>
                 </div>
-                <div style="display: flex; flex-direction: column;">
+                <div style="display: flex; flex-direction: column; padding-right: 4px;">
                     <span id="user-name-top" style="font-size: 0.85rem; font-weight: 700; color: #fff;">...</span>
-                    <span style="font-size: 0.7rem; color: var(--primary);">Developer</span>
+                    <span style="font-size: 0.7rem; color: #ff6b6b; font-weight: 600;">Logout</span>
                 </div>
             </div>
-            <button class="btn-outline" style="border-color: rgba(255,85,85,0.3); color: #ff6b6b;" onclick="sessionStorage.removeItem('discord_token'); localStorage.removeItem('nora_last_user_id'); window.location.reload();">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
+            <a href="https://github.com/Vaztinix/nora-studio" target="_blank" style="background: none; border: none; color: #fff; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                <i class="fab fa-github" style="font-size: 1.15rem;"></i> Repository
+            </a>
             <a href="/" class="btn-outline">Back to Site</a>
         </div>
     </header>
@@ -1804,20 +1858,19 @@
                 <!-- Replaced by topbar user profile -->
             </div>
             <div class="sidebar-nav">
-                    <button class="v-tab" data-tooltip="Servers" onclick="showTab('servers')"><i class="fas fa-server"></i></button>
-                    <button class="v-tab" data-tooltip="My Profile" onclick="showTab('profile')"><i class="fas fa-user-circle"></i></button>
+                    <button class="v-tab" data-tooltip="Servers" onclick="showTab('servers')"><i class="fas fa-server"></i> Servers</button>
+                    <button class="v-tab" data-tooltip="My Profile" onclick="showTab('profile')"><i class="fas fa-user-circle"></i> Profile</button>
                     <button class="v-tab" data-tooltip="Notifications" onclick="showTab('notifications')">
-                        <i class="fas fa-bell"></i>
+                        <i class="fas fa-bell"></i> Notifications
                         <span id="notif-badge" class="notif-badge" style="position:absolute;top:4px;right:4px;"></span>
                     </button>
-                    <button class="v-tab" data-tooltip="Settings" onclick="showTab('prefs')"><i class="fas fa-cog"></i></button>
+                    <button class="v-tab" data-tooltip="Settings" onclick="showTab('prefs')"><i class="fas fa-cog"></i> Settings</button>
             </div>
 
-            <div id="sidebar-premium-ad" class="premium-ad" style="display:none;width:44px;height:44px;padding:0;border-radius:14px;margin:0;" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">
-                <i class="fas fa-gem" style="font-size:1.1rem;"></i>
+            <div id="sidebar-premium-ad" class="premium-ad" style="display:none;width:100%;height:44px;padding:0;border-radius:14px;margin:0;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">
+                <i class="fas fa-gem" style="font-size:1.1rem;"></i> Premium
             </div>
 
-            <button class="logout-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
         </aside>
 
         <main class="main-content">
@@ -1859,50 +1912,71 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 350px; gap: 24px;">
                     <div style="display: flex; flex-direction: column; gap: 24px;">
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 20px;">Identity Configuration</h3>
-                            <div class="row">
-                                <div class="row-info">
-                                    <h4>Public Roblox Status</h4>
-                                    <p>Display your linked Roblox account and game status.</p>
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(88, 101, 242, 0.15); color: #5865F2; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    <i class="fas fa-user-cog"></i>
                                 </div>
-                                <label class="switch"><input type="checkbox" id="user-pref-robloxPublic" onchange="saveUserProfile()"><span class="slider"></span></label>
+                                <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Identity Configuration</h3>
                             </div>
-                            <div class="row">
-                                <div class="row-info">
-                                    <h4>Public Dashboard Profile</h4>
-                                    <p>Allow server owners to see your profile in the member list.</p>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03);">
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <h4 style="margin: 0; font-size: 1rem; color: #fff;">Public Roblox Status</h4>
+                                        <p style="margin: 0; font-size: 0.85rem; color: var(--muted);">Display your linked Roblox account and game status.</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="user-pref-robloxPublic" onchange="saveUserProfile()"><span class="slider"></span></label>
                                 </div>
-                                <label class="switch"><input type="checkbox" id="user-pref-profilePublic" onchange="saveUserProfile()"><span class="slider"></span></label>
+                                <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03);">
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <h4 style="margin: 0; font-size: 1rem; color: #fff;">Public Dashboard Profile</h4>
+                                        <p style="margin: 0; font-size: 0.85rem; color: var(--muted);">Allow server owners to see your profile in the member list.</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="user-pref-profilePublic" onchange="saveUserProfile()"><span class="slider"></span></label>
+                                </div>
+                                
+                                <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
+                                    <label style="display: block; font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 8px;">Global Bio</label>
+                                    <textarea id="user-pref-bio" placeholder="Tell the community about yourself..." style="width: 100%; min-height: 100px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 8px; resize: vertical; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+                                </div>
                             </div>
-                            <div class="input-group" style="margin-top: 20px;">
-                                <label>Global Bio</label>
-                                <textarea id="user-pref-bio" placeholder="Tell the community about yourself..." style="width: 100%; min-height: 120px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px;"></textarea>
-                            </div>
-                            <button class="save-btn" style="margin-top: 20px; width: 100%;" onclick="saveUserProfile()">Save Profile Changes</button>
+                            
+                            <button class="save-btn" style="margin-top: 24px; width: 100%; padding: 14px; font-size: 1rem; font-weight: 600;" onclick="saveUserProfile()">Save Profile Changes</button>
                         </div>
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 20px;">
-                        <div class="panel" style="background: linear-gradient(135deg, rgba(174, 239, 255, 0.05) 0%, rgba(0,0,0,0) 100%); border-color: rgba(174, 239, 255, 0.1); padding: 0; overflow: hidden;">
-                            <div style="padding: 20px 20px 0 20px;">
-                                <h3>Live Preview</h3>
+                        <div class="panel" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 0; overflow: hidden; border-radius: 20px; backdrop-filter: blur(10px);">
+                            <div style="padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-eye" style="color: var(--primary);"></i>
+                                <h3 style="margin: 0;">Live Preview</h3>
                             </div>
-                            <div id="profile-card-preview" data-no-translate style="background: var(--sidebar-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin: 15px;">
-                                <div id="profile-banner" style="height: 80px; background: linear-gradient(135deg, var(--primary) 0%, #4b69ff 100%); opacity: 0.9;"></div>
-                                <div style="padding: 15px; position: relative; margin-top: -45px;">
-                                    <img id="profile-preview-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 72px; height: 72px; border-radius: 50%; border: 6px solid var(--sidebar-bg); background: var(--sidebar-bg);">
+                            <div id="profile-card-preview" data-no-translate style="background: rgba(0,0,0,0.3); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); margin: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+                                <div id="profile-banner" style="height: 100px; background: linear-gradient(135deg, var(--primary) 0%, #4b69ff 100%); position: relative;">
+                                    <div style="position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); opacity: 0.3;"></div>
+                                </div>
+                                <div style="padding: 20px; position: relative; margin-top: -55px;">
+                                    <img id="profile-preview-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 90px; height: 90px; border-radius: 50%; border: 6px solid #1a1b1f; background: #1a1b1f; position: relative; z-index: 2; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
                                     <div style="margin-top: 15px;">
-                                        <h2 id="profile-preview-name" style="font-size: 1.3rem; font-weight: 800;">Username</h2>
-                                        <div id="profile-preview-handle" style="color: var(--muted); font-size: 0.85rem; margin-bottom: 10px;">@handle</div>
-                                        <div id="profile-preview-bio" style="font-size: 0.9rem; margin-bottom: 20px; color: #eee; line-height: 1.5; font-style: italic;">No bio set.</div>
+                                        <h2 id="profile-preview-name" style="font-size: 1.5rem; font-weight: 800; color: #fff; margin: 0;">Username</h2>
+                                        <div id="profile-preview-handle" style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 12px; font-weight: 500;">@handle</div>
+                                        <div id="profile-preview-bio" style="font-size: 0.95rem; margin-bottom: 24px; color: rgba(255,255,255,0.8); line-height: 1.6; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">No bio set.</div>
                                         
-                                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                                            <div class="profile-status-pill" id="profile-discord-status">
-                                                <i class="fab fa-discord"></i> Discord: <span style="color: var(--success); font-weight: 600;">Online</span>
+                                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                                            <div style="background: rgba(88, 101, 242, 0.1); border: 1px solid rgba(88, 101, 242, 0.2); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
+                                                <i class="fab fa-discord" style="color: #5865F2; font-size: 1.2rem;"></i>
+                                                <div style="flex: 1;">
+                                                    <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Discord</div>
+                                                    <div style="color: var(--success); font-weight: 600; font-size: 0.9rem;">Online</div>
+                                                </div>
                                             </div>
-                                            <div class="profile-status-pill" id="profile-roblox-status">
-                                                <i class="fas fa-gamepad"></i> Roblox: <span id="profile-roblox-val" style="color: var(--muted);">Private</span>
+                                            <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
+                                                <i class="fas fa-gamepad" style="color: #fff; font-size: 1.2rem;"></i>
+                                                <div style="flex: 1;">
+                                                    <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Roblox</div>
+                                                    <div id="profile-roblox-val" style="color: rgba(255,255,255,0.6); font-weight: 500; font-size: 0.9rem;">Private</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -2520,13 +2594,11 @@
                     <button class="h-tab" data-tab="tab-logging">Logging</button>
                     <button class="h-tab" data-tab="tab-leveling">Leveling</button>
                     <button class="h-tab" data-tab="tab-modules">Modules & Games</button>
-                    <button class="h-tab" data-tab="tab-ai" style="opacity: 0.85;">Nora AI <span style="font-size: 0.65rem; background: rgba(255, 68, 68, 0.15); color: #ff5555; padding: 2px 6px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.2);">Disabled</span></button>
                     <button class="h-tab" data-tab="tab-roblox">Roblox</button>
                     <button class="h-tab" data-tab="tab-topgg" style="display: none; opacity: 0.85;">Top.gg <span style="font-size: 0.65rem; background: rgba(255, 68, 68, 0.15); color: #ff5555; padding: 2px 6px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.2);">Disabled</span></button>
                     <button class="h-tab" data-tab="tab-broadcast">Broadcast</button>
                     <button class="h-tab" data-tab="tab-members">Members</button>
                     <button class="h-tab" data-tab="tab-commands">Commands</button>
-                    <button class="h-tab" data-tab="tab-theme">Theme Manager</button>
                 </div>
 
                 <div id="tab-overview" class="tab-content active">
@@ -2549,87 +2621,100 @@
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
-                        <div style="display: flex; flex-direction: column; gap: 25px;">
-                            <div class="panel" style="background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                    <h3>Engagement Trends</h3>
-                                    <div style="display: flex; gap: 15px; font-size: 0.8rem;">
-                                        <span style="display: flex; align-items: center; gap: 5px;"><div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div> New Members</span>
-                                        <span style="display: flex; align-items: center; gap: 5px; opacity: 0.6;"><div style="width: 8px; height: 8px; background: #fff; border-radius: 50%;"></div> Message Activity</span>
-                                    </div>
-                                </div>
-                                <div style="width: 100%; height: 220px; position: relative;">
-                                    <svg id="analytics-chart" width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none">
-                                        <defs>
-                                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3"></stop>
-                                                <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"></stop>
-                                            </linearGradient>
-                                        </defs>
-                                        <g id="chart-grid-group"></g>
-                                        <path id="chart-path-joins-fill" fill="url(#chartGradient)"></path>
-                                        <path id="chart-path-joins" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"></path>
-                                        <path id="chart-path-activity" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="5,5" opacity="0.3"></path>
-                                    </svg>
-                                    <div id="chart-no-data" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--muted); font-size: 0.85rem; display: none;">Insufficient data to plot trends.</div>
+                    <!-- Modern Settings Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 30px;">
+                        
+                        <!-- Automation & Safety -->
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-safety]').click()" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.04)'; this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(255,85,85,0.3)'; this.style.boxShadow='0 10px 30px rgba(255,85,85,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='none'; this.style.borderColor='rgba(255,255,255,0.05)'; this.style.boxShadow='none';">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,85,85,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,85,85,0.1); color: #ff6b6b; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255,85,85,0.2);">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Automation & Safety</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">Anti-raid gates, auto-moderation rules, spam filters, and logging settings.</p>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <span style="font-size: 0.75rem; color: #ff6b6b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
+                                <i class="fas fa-arrow-right" style="color: #ff6b6b; font-size: 0.8rem;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Moderation -->
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-automod]').click()" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.04)'; this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(155,93,229,0.3)'; this.style.boxShadow='0 10px 30px rgba(155,93,229,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='none'; this.style.borderColor='rgba(255,255,255,0.05)'; this.style.boxShadow='none';">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(155,93,229,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(155,93,229,0.1); color: #b485ee; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(155,93,229,0.2);">
+                                <i class="fas fa-gavel"></i>
+                            </div>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Auto Moderation</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">Profanity filters, link blockers, and automated punishment scales.</p>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <span style="font-size: 0.75rem; color: #b485ee; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
+                                <i class="fas fa-arrow-right" style="color: #b485ee; font-size: 0.8rem;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Leveling & Progression -->
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-leveling]').click()" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.04)'; this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(0,245,212,0.3)'; this.style.boxShadow='0 10px 30px rgba(0,245,212,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='none'; this.style.borderColor='rgba(255,255,255,0.05)'; this.style.boxShadow='none';">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(0,245,212,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(0,245,212,0.1); color: #33ffd8; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(0,245,212,0.2);">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Progression & XP</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">Leveling up formulas, custom rank cards, and automated role rewards.</p>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <span style="font-size: 0.75rem; color: #33ffd8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
+                                <i class="fas fa-arrow-right" style="color: #33ffd8; font-size: 0.8rem;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Modules & Games -->
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-modules]').click()" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.04)'; this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(255,142,60,0.3)'; this.style.boxShadow='0 10px 30px rgba(255,142,60,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='none'; this.style.borderColor='rgba(255,255,255,0.05)'; this.style.boxShadow='none';">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,142,60,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,142,60,0.1); color: #ffa668; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255,142,60,0.2);">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Modules & Fun</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">Counting channels, ticket systems, welcome messages, and fun toggles.</p>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <span style="font-size: 0.75rem; color: #ffa668; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
+                                <i class="fas fa-arrow-right" style="color: #ffa668; font-size: 0.8rem;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Content Feeds -->
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-broadcast]').click()" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.04)'; this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(174,239,255,0.3)'; this.style.boxShadow='0 10px 30px rgba(174,239,255,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='none'; this.style.borderColor='rgba(255,255,255,0.05)'; this.style.boxShadow='none';">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(174,239,255,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(174,239,255,0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(174,239,255,0.2);">
+                                <i class="fas fa-broadcast-tower"></i>
+                            </div>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Content Feeds</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">YouTube, Twitch, and Reddit notifications synced directly to channels.</p>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
+                                <i class="fas fa-arrow-right" style="color: var(--primary); font-size: 0.8rem;"></i>
+                            </div>
+                        </div>
+
+                        <!-- System Status -->
+                        <div class="config-card" style="background: rgba(174, 239, 255, 0.02); border: 1px solid rgba(174, 239, 255, 0.1); border-radius: 16px; padding: 24px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">System Pulse</h3>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="pulse-dot" style="width: 8px; height: 8px;"></div>
+                                    <span style="font-size: 0.7rem; color: var(--success); font-weight: 700; text-transform: uppercase;">Stable</span>
                                 </div>
                             </div>
-                            
-                            <div class="panel" style="background: rgba(174, 239, 255, 0.02); border-color: rgba(174, 239, 255, 0.1);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                    <h3>System Pulse</h3>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div class="pulse-dot" style="width: 8px; height: 8px;"></div>
-                                        <span style="font-size: 0.7rem; color: var(--success); font-weight: 700; text-transform: uppercase;">Stable</span>
-                                    </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1;">
+                                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                                    <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; margin-bottom: 4px;">Heartbeat</div>
+                                    <div id="system-heartbeat" data-no-translate style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">42ms</div>
                                 </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                    <div style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; text-align: center;">
-                                        <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;">Heartbeat</div>
-                                        <div id="system-heartbeat" data-no-translate style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">42ms</div>
-                                    </div>
-                                    <div style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; text-align: center;">
-                                        <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;">DB Sync</div>
-                                        <div id="system-db-sync" data-no-translate style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Online</div>
-                                    </div>
+                                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                                    <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; margin-bottom: 4px;">DB Sync</div>
+                                    <div id="system-db-sync" data-no-translate style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">Online</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="panel">
-                            <h3>Module Center</h3>
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <span style="font-size: 0.85rem;">Moderation Core</span>
-                                    <div id="stat-moderation" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
-                                </div>
-                                <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <span style="font-size: 0.85rem;">Fun & Social</span>
-                                    <div id="stat-fun" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
-                                </div>
-                                <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <span style="font-size: 0.85rem;">Utility Tools</span>
-                                    <div id="stat-utility" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
-                                </div>
-                                <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <span style="font-size: 0.85rem;">Safety & Raid</span>
-                                    <div id="stat-safety" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
-                                </div>
-                                <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <span style="font-size: 0.85rem;">Leveling</span>
-                                    <div id="stat-leveling" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
-                                </div>
-                                <div class="row" style="padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <span style="font-size: 0.85rem;">Nora AI</span>
-                                    <div id="stat-ai" data-no-translate style="font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px;">...</div>
-                                </div>
-                            </div>
-                            <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                <button class="config-btn" style="font-size: 0.75rem;" onclick="document.querySelector('[data-tab=tab-broadcast]').click()">Broadcast</button>
-                                <button class="config-btn" style="font-size: 0.75rem;" onclick="document.querySelector('[data-tab=tab-safety]').click()">Security</button>
-                            </div>
-                        </div>
                     </div>
 
                     <div id="overview-topgg-analytics" style="display: none; margin-top: 25px;">
@@ -3168,29 +3253,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="tab-ai" class="tab-content">
-                    <div class="panel" style="border-color: var(--border); background: linear-gradient(135deg, rgba(174, 239, 255, 0.03) 0%, transparent 100%);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h3>Intelligence Core</h3>
-                            <span class="badge-user" style="background: rgba(174, 239, 255, 0.1); color: var(--primary); border: 1px solid rgba(174, 239, 255, 0.15); font-size: 0.7rem; padding: 3px 8px;">ACTIVE</span>
-                        </div>
-                        <p style="margin-bottom: 20px;">Nora's intelligence is powered by several state-of-the-art models. We are personally building "Aura," a custom-tuned neural engine designed specifically for natural conversation and community management within Discord.</p>
-
-                        <div class="input-group">
-                            <label>Brain Engine</label>
-                            <select id="setting-aiPreference">
-                                <option value="none" selected>OFF / Disabled</option>
-                                <option value="LOCAL">Local Aura V10 (Optimized)</option>
-                                <option value="BUILT_IN">Gemini 1.5 Flash (Fast)</option>
-                                <option value="OPENAI">GPT-4o Mini (Analytical)</option>
-                            </select>
-                        </div>
-                        <div style="margin-top: 20px; font-size: 0.85rem; color: var(--muted); line-height: 1.6;">
-                            <strong>About Our AI:</strong> Our goal is to create an AI that feels like a member of your community rather than a bot. Aura V10 is trained on privacy-first datasets and runs locally to ensure your data never leaves our secure environment.
-                        </div>
-                    </div>
-                </div>
                 <div id="tab-roblox" class="tab-content">
                     <div class="panel">
                         <h3>Roblox Identity Core</h3>
@@ -3364,51 +3426,58 @@
                     <div style="display: grid; grid-template-columns: 1.2fr 2fr; gap: 25px;">
                         <!-- Analytics Column -->
                         <div style="display: flex; flex-direction: column; gap: 25px;">
-                            <div class="panel" style="background: linear-gradient(135deg, rgba(255, 142, 60, 0.05) 0%, transparent 100%); border-color: rgba(255, 142, 60, 0.1);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div class="panel" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; position: relative; overflow: hidden; backdrop-filter: blur(10px);">
+                                <div style="position: absolute; top: -50px; left: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(174,239,255,0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; position: relative; z-index: 2;">
                                     <div>
-                                        <h3 style="margin: 0;">Activity Insight</h3>
-                                        <p style="font-size: 0.75rem; color: var(--muted); margin-top: 4px;" id="analytics-server-desc">Analytics and insights for this server.</p>
+                                        <h3 style="margin: 0; font-size: 1.3rem; color: #fff;">Server Insights</h3>
+                                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;" id="analytics-server-desc">Real-time engagement telemetry.</p>
                                     </div>
-                                    <i class="fas fa-chart-line" style="color: var(--primary); opacity: 0.8;"></i>
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(174,239,255,0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid rgba(174,239,255,0.2);">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
                                 </div>
-                                <div style="display: flex; flex-direction: column; gap: 15px;">
-                                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                        <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Messages Sent (Last 7d)</span>
-                                        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 10px;">
-                                            <h2 id="analytics-text-count" style="font-size: 1.8rem; font-weight: 800;">...</h2>
-                                            <span id="analytics-text-trend" style="font-size: 0.75rem; color: var(--success); font-weight: 700; background: rgba(46, 204, 113, 0.15); padding: 4px 8px; border-radius: 6px;">--%</span>
+                                <div style="display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2;">
+                                    <!-- Messages Sent -->
+                                    <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'; this.style.borderColor='rgba(174,239,255,0.2)';" onmouseout="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.03)';">
+                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                            <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Messages Sent (7D)</span>
+                                            <h2 id="analytics-text-count" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
                                         </div>
+                                        <span id="analytics-text-trend" style="font-size: 0.75rem; color: #2ecc71; font-weight: 700; background: rgba(46, 204, 113, 0.15); padding: 6px 10px; border-radius: 8px;">--%</span>
                                     </div>
-                                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                        <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Voice Activity (Last 7d)</span>
-                                        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 10px;">
-                                            <h2 id="analytics-voice-count" style="font-size: 1.8rem; font-weight: 800;">...</h2>
-                                            <span id="analytics-voice-status" style="font-size: 0.75rem; color: var(--primary); font-weight: 700; background: rgba(255, 142, 60, 0.15); padding: 4px 8px; border-radius: 6px;">-- active</span>
+                                    <!-- Voice Activity -->
+                                    <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'; this.style.borderColor='rgba(255,142,60,0.2)';" onmouseout="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.03)';">
+                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                            <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Voice Activity (7D)</span>
+                                            <h2 id="analytics-voice-count" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
                                         </div>
+                                        <span id="analytics-voice-status" style="font-size: 0.75rem; color: #ff8e3c; font-weight: 700; background: rgba(255, 142, 60, 0.15); padding: 6px 10px; border-radius: 8px;">-- active</span>
                                     </div>
-                                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                        <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Active Communicators (7d)</span>
-                                        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 10px;">
-                                            <h2 id="analytics-active-communicators" style="font-size: 1.8rem; font-weight: 800;">...</h2>
-                                            <span style="font-size: 0.75rem; color: var(--muted); font-weight: 500;">unique users</span>
+                                    <!-- Active Communicators -->
+                                    <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'; this.style.borderColor='rgba(155,93,229,0.2)';" onmouseout="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.03)';">
+                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                            <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Active Users (7D)</span>
+                                            <h2 id="analytics-active-communicators" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
                                         </div>
+                                        <span style="font-size: 0.75rem; color: #9b5de5; font-weight: 700; background: rgba(155, 93, 229, 0.15); padding: 6px 10px; border-radius: 8px;">Unique</span>
                                     </div>
-                                     <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                                         <div>
-                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Activity Hour</span>
+                                    
+                                     <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 15px;">
+                                         <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);">
+                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Hour</span>
                                              <div id="analytics-peak-hour" style="font-size: 1.1rem; font-weight: 700; margin-top: 2px; color: #fff;">...</div>
                                          </div>
-                                         <div>
-                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Top Active Channel</span>
+                                         <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);">
+                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Top Channel</span>
                                              <div id="analytics-top-channel" style="font-size: 1.1rem; font-weight: 700; margin-top: 2px; color: var(--primary);">...</div>
                                          </div>
-                                         <div style="grid-column: 1 / -1; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 8px; margin-top: 4px;">
-                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Active User</span>
+                                         <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);">
+                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Active</span>
                                              <div id="analytics-peak-active" style="font-size: 0.95rem; font-weight: 700; margin-top: 2px; color: var(--success); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">...</div>
                                          </div>
-                                         <div style="grid-column: 1 / -1;">
-                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Least Active User</span>
+                                         <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);">
+                                             <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Least Active</span>
                                              <div id="analytics-least-active" style="font-size: 0.95rem; font-weight: 700; margin-top: 2px; color: var(--warning); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">...</div>
                                          </div>
                                      </div>
@@ -3538,47 +3607,6 @@
                     </div>
                 </div>
                 
-                <div id="tab-theme" class="tab-content">
-                    <div class="panel">
-                        <h3>Theme Configuration</h3>
-                        <p>Customize the look and feel of the Nora Studio Dashboard for this server.</p>
-                        <div class="row-inputs" style="margin-top: 15px;">
-                            <div class="input-group">
-                                <label>Primary Theme Color</label>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="color" id="setting-themePrimaryColor" value="#4F46E5" style="width: 50px; height: 38px; padding: 2px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" oninput="document.getElementById('setting-themePrimaryColor-text').value = this.value; applyThemeVariables();">
-                                    <input type="text" id="setting-themePrimaryColor-text" placeholder="#4F46E5" style="flex: 1;" oninput="document.getElementById('setting-themePrimaryColor').value = this.value; applyThemeVariables();">
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label>Component Rounding</label>
-                                <select id="setting-themeComponentRounding" onchange="applyThemeVariables()">
-                                    <option value="0px">Sharp (0px)</option>
-                                    <option value="4px">Sleek (4px)</option>
-                                    <option value="8px">Standard (8px)</option>
-                                    <option value="12px">Rounded (12px)</option>
-                                    <option value="16px">Extra Rounded (16px)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row-inputs" style="margin-top: 15px;">
-                            <div class="input-group">
-                                <label>Sidebar Status</label>
-                                <select id="setting-themeSidebarState" onchange="applyThemeVariables()">
-                                    <option value="Locked">Locked (Default)</option>
-                                    <option value="Collapsed">Collapsed</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label>Custom Background Image (URL)</label>
-                                <input type="text" id="setting-themeBackgroundImage" placeholder="https://example.com/bg.jpg" oninput="applyThemeVariables()">
-                            </div>
-                        </div>
-                        <div style="margin-top: 20px; text-align: right;">
-                            <button class="config-btn" style="width: auto; padding: 8px 16px; border-color: var(--danger); color: var(--danger);" onclick="resetThemeToDefault()">Reset Theme</button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </main>
     </div>
@@ -3586,6 +3614,8 @@
     <footer>© 2026 Nora | Privacy-First AI & Moderation</footer>
 
     <script>
+        let notifications = [];
+        let newNotifCount = 0;
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
         // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
         // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
@@ -4280,7 +4310,7 @@
             }
         });
 
-        const CLIENT_ID = "1375943730951098549";
+        const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
         // Fixed redirect URI for production to prevent Discord OAuth mismatch errors
         const REDIRECT_URI = encodeURIComponent(
             (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
@@ -4295,7 +4325,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -4470,11 +4500,14 @@
                     authOverlay.style.opacity = '1';
                 }
             }
-        });
 
-        document.getElementById('login-btn').onclick = () => window.location.href = discordLoginURL;
-        document.getElementById('logout-btn').onclick = () => { sessionStorage.clear(); localStorage.removeItem('nora_last_user_id'); window.location.reload(); };
-        document.getElementById('back-to-servers').onclick = () => showTab('servers');
+            const loginBtn = document.getElementById('login-btn');
+            if (loginBtn) loginBtn.onclick = () => window.location.href = discordLoginURL;
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) logoutBtn.onclick = () => { sessionStorage.clear(); localStorage.removeItem('nora_last_user_id'); window.location.reload(); };
+            const backToServersBtn = document.getElementById('back-to-servers');
+            if (backToServersBtn) backToServersBtn.onclick = () => showTab('servers');
+        });
 
         function inviteBot() {
             window.open(`https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+email+applications.commands&redirect_uri=${REDIRECT_URI}`, '_blank');
@@ -4671,10 +4704,13 @@
 
             if (typeof syncThemeCardsActiveState === 'function') syncThemeCardsActiveState();
             
-            if (document.getElementById('pref-compact').checked) {
-                document.body.classList.add('compact-mode');
-            } else {
-                document.body.classList.remove('compact-mode');
+            const compactCheck = document.getElementById('pref-compact');
+            if (compactCheck) {
+                if (compactCheck.checked) {
+                    document.body.classList.add('compact-mode');
+                } else {
+                    document.body.classList.remove('compact-mode');
+                }
             }
             
             // Ensure device classes are preserved
@@ -4763,7 +4799,10 @@
                 localStorage.setItem('nora_last_user_id', d.id);
                 loadNotifications();
 
-                document.getElementById('pref-secure-session').checked = d.sessionHardened;
+                const prefSecureSession = document.getElementById('pref-secure-session');
+                if (prefSecureSession) {
+                    prefSecureSession.checked = d.sessionHardened;
+                }
                 
                 const avatarEl = document.getElementById('user-avatar-top');
                 if (avatarEl) {
@@ -4777,10 +4816,17 @@
                 }
                 
                 // Populate Settings
-                document.getElementById('pref-username').value = d.username;
-                document.getElementById('pref-display-name').value = localStorage.getItem('nora_display_name') || d.global_name || d.username;
-                document.getElementById('pref-premium-status').innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
-                if (d.noraPremium) document.getElementById('pref-premium-status').innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
+                const prefUser = document.getElementById('pref-username');
+                if (prefUser) prefUser.value = d.username;
+
+                const prefDisplay = document.getElementById('pref-display-name');
+                if (prefDisplay) prefDisplay.value = localStorage.getItem('nora_display_name') || d.global_name || d.username;
+
+                const prefPremium = document.getElementById('pref-premium-status');
+                if (prefPremium) {
+                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
+                    if (d.noraPremium) prefPremium.innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
+                }
 
                 const premiumStatusEl = document.getElementById('premium-center-status');
                 if (premiumStatusEl) {
@@ -4829,15 +4875,24 @@
 
                         // Populate the checkbox preferences
                         const notifVotes = localStorage.getItem('nora_notif_votes');
-                        if (notifVotes !== null) document.getElementById('pref-notif-votes').checked = notifVotes === 'true';
+                        const nvEl = document.getElementById('pref-notif-votes');
+                        if (notifVotes !== null && nvEl) nvEl.checked = notifVotes === 'true';
+
                         const notifLevels = localStorage.getItem('nora_notif_levels');
-                        if (notifLevels !== null) document.getElementById('pref-notif-levels').checked = notifLevels === 'true';
+                        const nlEl = document.getElementById('pref-notif-levels');
+                        if (notifLevels !== null && nlEl) nlEl.checked = notifLevels === 'true';
+
                         const notifSafety = localStorage.getItem('nora_notif_safety');
-                        if (notifSafety !== null) document.getElementById('pref-notif-safety').checked = notifSafety === 'true';
+                        const nsEl = document.getElementById('pref-notif-safety');
+                        if (notifSafety !== null && nsEl) nsEl.checked = notifSafety === 'true';
+
                         const notifBroadcast = localStorage.getItem('nora_notif_broadcast');
-                        if (notifBroadcast !== null) document.getElementById('pref-notif-broadcast').checked = notifBroadcast === 'true';
+                        const nbEl = document.getElementById('pref-notif-broadcast');
+                        if (notifBroadcast !== null && nbEl) nbEl.checked = notifBroadcast === 'true';
+
                         const accessLogs = localStorage.getItem('nora_access_logs');
-                        if (accessLogs !== null) document.getElementById('pref-access-logs').checked = accessLogs === 'true';
+                        const alEl = document.getElementById('pref-access-logs');
+                        if (accessLogs !== null && alEl) alEl.checked = accessLogs === 'true';
                     }
                 } catch (e) {
                     console.error('Failed to parse remote dashboard settings', e);
@@ -5032,7 +5087,8 @@
         }
 
         async function savePersonalPrefs() {
-            const displayName = document.getElementById('pref-display-name').value;
+            const displayNameEl = document.getElementById('pref-display-name');
+            const displayName = displayNameEl ? displayNameEl.value : (localStorage.getItem('nora_display_name') || '');
             localStorage.setItem('nora_display_name', displayName);
             currentDashboardSettings['nora_display_name'] = displayName;
             
@@ -5041,11 +5097,17 @@
                 userNameEl.textContent = displayName;
             }
 
-            const notifVotes = document.getElementById('pref-notif-votes').checked;
-            const notifLevels = document.getElementById('pref-notif-levels').checked;
-            const notifSafety = document.getElementById('pref-notif-safety').checked;
-            const notifBroadcast = document.getElementById('pref-notif-broadcast').checked;
-            const accessLogs = document.getElementById('pref-access-logs').checked;
+            const notifVotesEl = document.getElementById('pref-notif-votes');
+            const notifLevelsEl = document.getElementById('pref-notif-levels');
+            const notifSafetyEl = document.getElementById('pref-notif-safety');
+            const notifBroadcastEl = document.getElementById('pref-notif-broadcast');
+            const accessLogsEl = document.getElementById('pref-access-logs');
+
+            const notifVotes = notifVotesEl ? notifVotesEl.checked : localStorage.getItem('nora_notif_votes') === 'true';
+            const notifLevels = notifLevelsEl ? notifLevelsEl.checked : localStorage.getItem('nora_notif_levels') === 'true';
+            const notifSafety = notifSafetyEl ? notifSafetyEl.checked : localStorage.getItem('nora_notif_safety') === 'true';
+            const notifBroadcast = notifBroadcastEl ? notifBroadcastEl.checked : localStorage.getItem('nora_notif_broadcast') === 'true';
+            const accessLogs = accessLogsEl ? accessLogsEl.checked : localStorage.getItem('nora_access_logs') === 'true';
 
             localStorage.setItem('nora_notif_votes', notifVotes.toString());
             localStorage.setItem('nora_notif_levels', notifLevels.toString());
@@ -5060,7 +5122,8 @@
             currentDashboardSettings['nora_access_logs'] = accessLogs.toString();
 
             const t = sessionStorage.getItem('discord_token');
-            const sessionHardened = document.getElementById('pref-secure-session').checked;
+            const sessionHardenedEl = document.getElementById('pref-secure-session');
+            const sessionHardened = sessionHardenedEl ? sessionHardenedEl.checked : false;
             
             try {
                 await fetch('/api/user/profile', {
@@ -5434,8 +5497,6 @@
             }
         }
 
-        let newNotifCount = 0;
-        let notifications = [];
         let currentNotifFilter = 'all';
 
         function filterNotifs(type, btn) {
@@ -5585,18 +5646,21 @@
             `;
 
             item.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            ${typeTag}
-                            <strong style="font-size: 0.95rem; color: #fff;">${displayTitle}</strong>
+                <div style="display: flex; gap: 16px; align-items: flex-start; padding-bottom: 8px;">
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background: ${n.read ? 'transparent' : style.color}; box-shadow: ${n.read ? 'none' : '0 0 8px ' + style.color}; margin-top: 6px; flex-shrink: 0; border: 1px solid ${n.read ? 'rgba(255,255,255,0.1)' : 'transparent'};"></div>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${typeTag}
+                                <strong style="font-size: 1rem; color: #fff; font-weight: 700;">${displayTitle}</strong>
+                            </div>
+                            <span style="font-size: 0.7rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 10px;">${time}</span>
                         </div>
-                        ${serverTag}
+                        <div style="font-size: 0.9rem; color: ${n.read ? 'var(--muted)' : 'rgba(255,255,255,0.85)'}; white-space: pre-line; line-height: 1.5; overflow-wrap: anywhere; word-break: break-word; margin-top: 4px;">${displayContent}</div>
+                        ${serverTag ? `<div style="margin-top: 6px;">${serverTag}</div>` : ''}
                         ${groupedBadge}
                     </div>
-                    <span style="font-size: 0.7rem; color: var(--muted);">${time}</span>
                 </div>
-                <div style="font-size: 0.85rem; color: var(--muted); white-space: pre-line; line-height: 1.5; overflow-wrap: anywhere; word-break: break-word;">${displayContent}</div>
                 <div class="notif-actions-row" style="max-height: 0; opacity: 0; overflow: hidden; display: flex; gap: 10px; transition: all 0.3s ease; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; margin-top: 0;">
                     ${readBtn}
                     ${trashBtn}
@@ -6158,9 +6222,9 @@
 
         // Initial application from local storage (will be overwritten by checkAuth if logged in)
         function applyInitialSettings() {
-            loadReminders();
+            if (typeof loadReminders === 'function') loadReminders();
             const mode = localStorage.getItem('nora_theme_mode') || 'default';
-            themeModeSelect.value = mode;
+            if (themeModeSelect) themeModeSelect.value = mode;
             updateThemeMode(false);
 
             const themeColors = {
@@ -6178,14 +6242,18 @@
             };
             const defaultColor = themeColors[mode] || '#aeefff';
             const savedColor = localStorage.getItem('nora_theme_color') || defaultColor;
-            colorPicker.value = savedColor;
+            if (colorPicker) colorPicker.value = savedColor;
             applyThemeColor(savedColor, false);
 
-            compactCheck.checked = localStorage.getItem('nora_compact') === 'true';
-            if (compactCheck.checked) document.body.classList.add('compact-mode');
+            if (compactCheck) {
+                compactCheck.checked = localStorage.getItem('nora_compact') === 'true';
+                if (compactCheck.checked) document.body.classList.add('compact-mode');
+            }
             
-            document.getElementById('user-name').textContent = localStorage.getItem('nora_display_name') || 'Nora User';
-            applyBackdropSettings();
+            const oldUserNameEl = document.getElementById('user-name');
+            if (oldUserNameEl) oldUserNameEl.textContent = localStorage.getItem('nora_display_name') || 'Nora User';
+            
+            if (typeof applyBackdropSettings === 'function') applyBackdropSettings();
         }
         window.toggleRowDropdown = function(headerEl) {
             const container = headerEl.parentElement;
@@ -8748,7 +8816,7 @@
             updateStat('stat-logging', hasLogChannel && hasAnyLogEvent);
             
             updateStat('stat-leveling', getV('levelingEnabled'));
-            updateStat('stat-ai', getV('aiPreference'));
+            updateStat('stat-automod', getV('autoModActive'));
             
             const overviewActiveEl = document.getElementById('overview-active-count');
             if (overviewActiveEl) {
@@ -8850,7 +8918,7 @@
                 syncMultiselectUI('setting-automodImmuneRoles');
                 syncMultiselectUI('setting-countingWhitelistedRoles');
 
-                refreshTopggAvatarPreview();
+                // refreshTopggAvatarPreview();
                 applyThemeVariables();
 
                 // Populate role multipliers
