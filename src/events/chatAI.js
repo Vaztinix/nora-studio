@@ -15,7 +15,8 @@ module.exports = {
         
         if (!isMentioned && !isReply) return;
 
-        return message.reply({ content: "Nora's AI features are currently undergoing upgrades to advanced LLM models. Stay tuned!" });
+        // Fail silently / do nothing
+        return;
     }
 };
 

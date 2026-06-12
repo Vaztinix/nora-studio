@@ -425,6 +425,34 @@
         #broadcast-send-btn { box-shadow: none !important; }
         #broadcast-send-btn:hover { box-shadow: none !important; }
 
+        .numerical-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md, 8px);
+            color: #fff;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .numerical-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+        .numerical-input.invalid {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 2px rgba(255, 85, 85, 0.25) !important;
+        }
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.75rem;
+            display: none;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
         .h-nav {
             display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto; padding: 5px 0;
             scrollbar-width: none; /* Firefox */
@@ -1874,6 +1902,25 @@
                 </div>
             </div>
 
+            <!-- Pairing Confirmation Modal -->
+            <div id="pairing-confirmation-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+                <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Pairing Request</h2>
+                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">A secondary device is attempting to pair with your account. Do you want to authorize it?</p>
+                    
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: left;">
+                        <div style="font-size: 0.9rem; color: #fff; margin-bottom: 8px;"><b>Device Name:</b> <span id="pairing-request-device-name" style="color: var(--primary);">Loading...</span></div>
+                        <div style="font-size: 0.8rem; color: var(--muted); margin-bottom: 8px;"><b>IP Address:</b> <span id="pairing-request-ip">Loading...</span></div>
+                        <div style="font-size: 0.8rem; color: var(--muted); word-break: break-all;"><b>User Agent:</b> <span id="pairing-request-ua">Loading...</span></div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <button class="config-btn" style="flex: 1; color: #ff5555; border-color: rgba(255,85,85,0.3); min-height: 44px; display: inline-flex; align-items: center; justify-content: center;" onclick="respondToPairingRequest(false)">Deny</button>
+                        <button class="save-btn" style="flex: 1; background: var(--success); min-height: 44px; display: inline-flex; align-items: center; justify-content: center;" onclick="respondToPairingRequest(true)">Confirm</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- XP Multipliers Modal -->
             <div id="role-multipliers-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
                 <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
@@ -2080,43 +2127,39 @@
                     <p>Manage your linked external accounts and bot ownerships.</p>
                     
                     <div style="border-bottom: 1px solid var(--border); padding-bottom: 25px; margin-bottom: 25px;">
-                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Roblox Identity</h4>
-                        <div id="roblox-unlinked-view">
-                            <div class="input-group" style="margin-bottom: 15px;">
-                                <label>Roblox Username</label>
-                                <input type="text" id="roblox-link-username" placeholder="Enter username">
-                            </div>
-                            <button class="save-btn" style="background: #2ea043;" onclick="linkRoblox()">Link Account</button>
+                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Roblox Identity & Multi-Account Switcher</h4>
+                        
+                        <!-- Accounts List -->
+                        <div id="roblox-accounts-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                            <!-- Dynamic Roblox Accounts rendered here -->
                         </div>
-                        <div id="roblox-pending-view" style="display: none;">
-                            <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px;">
-                                <p style="margin-bottom: 10px; font-size: 0.9rem;">Add this code to your Roblox "About" section:</p>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <code id="roblox-verify-code" data-no-translate style="background: #000; padding: 10px; border-radius: 6px; font-size: 1.1rem; flex: 1; text-align: center; color: var(--primary); font-weight: 700;">...</code>
-                                    <button class="config-btn" style="width: auto;" onclick="copyCode()">Copy</button>
+
+                        <!-- Add/Link Account Form -->
+                        <div id="roblox-link-new-account-form" style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px dashed var(--border);">
+                            <h5 style="margin-top: 0; margin-bottom: 10px; font-size: 0.85rem; font-weight: 600; color: #fff;">Link New Roblox Account</h5>
+                            <div style="display: flex; gap: 10px; align-items: flex-end;">
+                                <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                                    <input type="text" id="roblox-link-username" placeholder="Enter username" style="width: 100%; box-sizing: border-box; height: 38px;">
                                 </div>
+                                <button class="save-btn" style="background: #2ea043; height: 38px; width: auto; padding: 0 20px; font-size: 0.85rem; line-height: 38px; display: flex; align-items: center;" onclick="linkRoblox()">Link Account</button>
                             </div>
-                            <button class="save-btn" style="background: var(--primary); color: #000;" onclick="checkRoblox()">Verify Now</button>
                         </div>
-                        <div id="roblox-verified-view" style="display: none;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px;">
-                                <div style="display: flex; align-items: center; gap: 15px;">
-                                    <div style="width: 35px; height: 35px; background: #2ea043; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✅</div>
-                                    <div>
-                                        <h4 id="roblox-linked-name" data-no-translate style="margin: 0; font-size: 0.95rem;">Roblox Linked</h4>
-                                        <p id="roblox-linked-id" data-no-translate style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ...</p>
-                                    </div>
-                                </div>
-                                <button class="config-btn" style="width: auto; padding: 6px 12px; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="unlinkRoblox()">Unlink</button>
+                    </div>
+
+                    <div style="border-bottom: 1px solid var(--border); padding-bottom: 25px; margin-bottom: 25px;">
+                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Top.gg Bot Ownership</h4>
+                        <div id="topgg-integrations-list" data-no-translate>
+                            <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
+                                No bots verified. Connect via the Top.gg server tab.
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Top.gg Bot Ownership</h4>
-                        <div id="topgg-integrations-list" data-no-translate>
+                        <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">TOP.GG SERVER OWNERSHIP</h4>
+                        <div id="topgg-servers-list" data-no-translate>
                             <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
-                                No bots verified. Connect via the Top.gg server tab.
+                                No servers verified. Connect via the Top.gg server tab.
                             </div>
                         </div>
                     </div>
@@ -2146,7 +2189,25 @@
                             <label style="color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 6px;">This device's name (optional)</label>
                             <input type="text" id="primary-device-name" maxlength="40" placeholder="e.g. Living Room PC, Work Laptop..." style="width: 100%; padding: 9px 13px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.88rem; box-sizing: border-box;">
                         </div>
-                        <button class="save-btn" id="generate-pair-btn" style="width: auto; padding: 10px 25px;" onclick="generatePairingCode()">Generate Pairing Code</button>
+                        <button class="save-btn" id="generate-pair-btn" style="width: auto; padding: 10px 25px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;" onclick="generatePairingCode()">Generate Pairing Code</button>
+                        
+                        <!-- Help Guide for Pairing -->
+                        <details class="help-guide" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; margin-top: 20px; text-align: left; overflow: hidden; transition: all 0.3s ease;">
+                            <summary style="padding: 12px 18px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; color: var(--primary); font-size: 0.85rem;">
+                                <span><i class="fas fa-question-circle" style="margin-right: 8px;"></i> How do I pair a secondary device?</span>
+                                <i class="fas fa-chevron-down summary-chevron" style="transition: transform 0.2s; font-size: 0.8rem;"></i>
+                            </summary>
+                            <div style="padding: 15px 18px; border-top: 1px solid var(--border); font-size: 0.8rem; line-height: 1.6; color: var(--muted);">
+                                <ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                                    <li>Ensure both this device and your secondary device (e.g. phone) are connected to the internet.</li>
+                                    <li>Click the <b>Generate Pairing Code</b> button above. A 6-digit code and a QR code will be displayed.</li>
+                                    <li>Open the pairing page on your secondary device by scanning the QR code, or navigating to the pairing URL.</li>
+                                    <li>Enter the 6-digit code on the secondary device and click submit.</li>
+                                    <li>A confirmation popup will immediately appear on this screen (primary device). Review the device name and click <b>Confirm</b> to authorize it.</li>
+                                    <li>Once confirmed, the secondary device will be securely logged in without needing Discord redirection. You can revoke it at any time in the <b>Paired Devices</b> section below.</li>
+                                </ol>
+                            </div>
+                        </details>
                         
                         <div id="pairing-code-display" style="display: none; margin-top: 20px; text-align: center;">
                             <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 15px;">Enter this 6-digit code on your other device:</p>
@@ -2381,6 +2442,7 @@
                     <button class="h-tab" data-tab="tab-broadcast">Broadcast</button>
                     <button class="h-tab" data-tab="tab-members">Members</button>
                     <button class="h-tab" data-tab="tab-commands">Commands</button>
+                    <button class="h-tab" data-tab="tab-theme">Theme Manager</button>
                 </div>
 
                 <div id="tab-overview" class="tab-content active">
@@ -2532,14 +2594,8 @@
                         <div class="row-inputs" style="margin-top: 15px;">
                             <div class="input-group">
                                 <label>Warning Threshold</label>
-                                <select id="setting-warningThreshold">
-                                    <option value="">Select Option</option>
-                                    <option value="1">1 Warning</option>
-                                    <option value="2">2 Warnings</option>
-                                    <option value="3">3 Warnings</option>
-                                    <option value="5">5 Warnings</option>
-                                    <option value="10">10 Warnings</option>
-                                </select>
+                                <input type="number" id="setting-warningThreshold" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
+                                <span class="error-msg" id="error-warningThreshold" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 50</span>
                             </div>
                             <div class="input-group">
                                 <label>Action on Threshold</label>
@@ -2573,10 +2629,21 @@
                     <div class="panel">
                         <h3>Anti-Spam Engine</h3>
                         <div class="row"><h4>Enable Anti-Spam</h4><label class="switch"><input type="checkbox" id="setting-spamDetectionEnabled"><span class="slider"></span></label></div>
-                        <div class="row-inputs">
-                            <div class="input-group"><label>Sensitivity</label><select id="setting-spamThreshold"><option value="3">High</option><option value="5">Normal</option></select></div>
-                            <div class="input-group"><label>Time Window</label><select id="setting-spamInterval"><option value="5000">5s</option><option value="10000">10s</option></select></div>
-                            <div class="input-group"><label>Mute Time</label><select id="setting-antiSpamMuteDuration"><option value="60000">1m</option><option value="300000">5m</option></select></div>
+                            <div class="input-group">
+                                <label>Sensitivity (Messages)</label>
+                                <input type="number" id="setting-spamThreshold" min="1" max="20" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
+                                <span class="error-msg" id="error-spamThreshold" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 20</span>
+                            </div>
+                            <div class="input-group">
+                                <label>Time Window (Seconds)</label>
+                                <input type="number" id="setting-spamInterval" min="1" max="60" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
+                                <span class="error-msg" id="error-spamInterval" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 60 seconds</span>
+                            </div>
+                            <div class="input-group">
+                                <label>Mute Time (Minutes)</label>
+                                <input type="number" id="setting-antiSpamMuteDuration" min="1" max="1440" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
+                                <span class="error-msg" id="error-antiSpamMuteDuration" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 1440 minutes</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2964,26 +3031,16 @@
                 </div>
 
                 <div id="tab-ai" class="tab-content">
-                    <div class="panel" style="border-color: rgba(255, 85, 85, 0.15); background: linear-gradient(135deg, rgba(255, 85, 85, 0.03) 0%, transparent 100%);">
+                    <div class="panel" style="border-color: var(--border); background: linear-gradient(135deg, rgba(174, 239, 255, 0.03) 0%, transparent 100%);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3>Intelligence Core</h3>
-                            <span class="badge-user" style="background: rgba(255, 85, 85, 0.15); color: #ff5555; border: 1px solid rgba(255, 85, 85, 0.2); font-size: 0.7rem; padding: 3px 8px;">MAINTENANCE</span>
+                            <span class="badge-user" style="background: rgba(174, 239, 255, 0.1); color: var(--primary); border: 1px solid rgba(174, 239, 255, 0.15); font-size: 0.7rem; padding: 3px 8px;">ACTIVE</span>
                         </div>
                         <p style="margin-bottom: 20px;">Nora's intelligence is powered by several state-of-the-art models. We are personally building "Aura," a custom-tuned neural engine designed specifically for natural conversation and community management within Discord.</p>
-                        
-                        <div style="background: rgba(255, 85, 85, 0.08); border: 1px solid rgba(255, 85, 85, 0.15); padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; color: #ff5555; font-size: 0.85rem;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 1.25rem;">⚠️</span>
-                                <div>
-                                    <strong>AI Features Offline</strong>
-                                    <p style="margin-top: 4px; color: var(--muted); line-height: 1.4; font-size: 0.8rem;">Nora's AI features are currently undergoing upgrades to advanced LLM models. Settings are read-only and all processing is paused.</p>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="input-group" style="opacity: 0.6; pointer-events: none;">
+                        <div class="input-group">
                             <label>Brain Engine</label>
-                            <select id="setting-aiPreference" disabled style="cursor: not-allowed; background: rgba(0,0,0,0.3);">
+                            <select id="setting-aiPreference">
                                 <option value="none" selected>OFF / Disabled</option>
                                 <option value="LOCAL">Local Aura V10 (Optimized)</option>
                                 <option value="BUILT_IN">Gemini 1.5 Flash (Fast)</option>
@@ -3059,24 +3116,29 @@
                 <div id="tab-topgg" class="tab-content">
                     <div id="topgg-unverified-view">
                         <div class="panel">
-                            <h3>Top.gg Bot Verification</h3>
-                            <p>Connect your bot to Nora for vote tracking, role rewards, and engagement analytics.</p>
+                            <h3>Top.gg Bot & Server Verification</h3>
+                            <p>Connect your bot or server to Nora for vote tracking, role rewards, and engagement analytics.</p>
                             
                             <div style="background: rgba(174, 239, 255, 0.05); padding: 25px; border-radius: 12px; border: 1px dashed var(--border); text-align: center; margin-bottom: 20px;">
                                 <h4 style="margin-bottom: 10px;">Auto-Detection</h4>
-                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">We'll check Top.gg for any bots owned by your Discord account.</p>
-                                <button class="config-btn" id="topgg-search-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 12px 30px;" onclick="fetchTopggBots()">Search My Bots</button>
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">We'll check Top.gg for any bots or servers owned by your Discord account.</p>
+                                <button class="config-btn" id="topgg-search-btn" style="background: var(--primary); color: #000; border: none; width: auto; padding: 12px 30px;" onclick="fetchTopggBots()">Search My Bots & Servers</button>
                                 
                                 <div id="topgg-bot-results" style="margin-top: 25px; display: none;">
-                                    <h5 style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Bots on Top.gg</h5>
-                                    <div id="topgg-bot-list" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <h5 id="topgg-bots-header" style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Bots on Top.gg</h5>
+                                    <div id="topgg-bot-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
                                         <!-- Bot results will appear here -->
+                                    </div>
+                                    
+                                    <h5 id="topgg-servers-header" style="text-align: left; margin-bottom: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Your Servers on Top.gg</h5>
+                                    <div id="topgg-server-list" style="display: flex; flex-direction: column; gap: 10px;">
+                                        <!-- Server results will appear here -->
                                     </div>
                                 </div>
                             </div>
 
                             <div style="text-align: center;">
-                                <p style="font-size: 0.8rem; color: var(--muted);">Don't see your bot? <a href="javascript:void(0)" onclick="document.getElementById('topgg-manual-setup').style.display='block'" style="color: var(--primary);">Use Manual Bot ID</a></p>
+                                <p style="font-size: 0.8rem; color: var(--muted);">Don't see your bot or server? <a href="javascript:void(0)" onclick="document.getElementById('topgg-manual-setup').style.display='block'" style="color: var(--primary);">Use Manual ID Setup</a></p>
                             </div>
 
                             <div id="topgg-manual-setup" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
@@ -3085,10 +3147,17 @@
                                     If you joined Top.gg several years ago, your profile might use a legacy ID. If linking fails, simply open your Top.gg profile, copy the ID from the URL, and ensure your current Discord ID is added as a <b>Manager</b> on your bot's Top.gg "Edit" page.
                                 </div>
                                 <div class="input-group">
-                                    <label>Bot / Server ID</label>
-                                    <input type="text" id="setting-topggBotId" placeholder="123456789012345678">
+                                    <label>Tracking Type</label>
+                                    <select id="setting-topggType" onchange="toggleManualTypeLayout()">
+                                        <option value="bot">Discord Bot</option>
+                                        <option value="server">Discord Server</option>
+                                    </select>
                                 </div>
                                 <div class="input-group" style="margin-top: 15px;">
+                                    <label id="manual-id-label">Bot ID</label>
+                                    <input type="text" id="setting-topggBotId" placeholder="123456789012345678">
+                                </div>
+                                <div class="input-group" id="legacy-owner-group" style="margin-top: 15px;">
                                     <label>Legacy Top.gg User ID (Optional)</label>
                                     <input type="text" id="setting-topggLegacyOwnerId" placeholder="If joined Top.gg before 2020" oninput="updateLegacyVerification()">
                                 </div>
@@ -3097,7 +3166,7 @@
                                     <code id="topgg-verify-code-display" style="background: #000; color: var(--primary); padding: 8px 12px; border-radius: 6px; font-weight: 800; display: block; text-align: center; font-size: 1.1rem; border: 1px solid var(--border); letter-spacing: 2px;">LOADING...</code>
                                     <p style="font-size: 0.75rem; margin-top: 10px; color: var(--muted);">Nora will check your bio during the linking process.</p>
                                 </div>
-                                <button class="btn-outline" style="margin-top: 15px;" onclick="linkTopggBot(document.getElementById('setting-topggBotId').value)">Link via ID</button>
+                                <button class="btn-outline" style="margin-top: 15px;" onclick="handleManualLink()">Link via ID</button>
                             </div>
                         </div>
                     </div>
@@ -3110,6 +3179,14 @@
                                     <button class="btn-outline" style="margin-top: 10px; font-size: 0.8rem;" onclick="document.getElementById('topgg-unverified-view').style.display='block'; this.style.display='none';">+ Link Another Bot</button>
                                 </div>
                                 <span class="badge-user" style="background: var(--success); color: #000; margin: 0;">VERIFIED</span>
+                            </div>
+                            
+                            <div class="input-group" id="topgg-asset-selector-group" style="margin-bottom: 25px; display: none;">
+                                <label>Active Top.gg Asset</label>
+                                <select id="topgg-asset-select" onchange="window.switchTopggAsset(this.value)">
+                                    <!-- Dynamic options -->
+                                </select>
+                                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">Switch between your linked bots/servers to view/configure their webhook token.</p>
                             </div>
                             
                             <div id="topgg-advanced-features">
@@ -3251,7 +3328,8 @@
                                 <div class="input-group">
                                     <label>Authorization Header Token</label>
                                     <div style="display: flex; gap: 10px;">
-                                        <input type="text" id="setting-topggWebhookAuth" readonly style="flex: 1; background: rgba(0, 0, 0, 0.3); border-color: var(--border); color: var(--muted); font-size: 0.8rem;" placeholder="Click Search Bots / Manual Setup to generate...">
+                                        <input type="text" id="setting-topggWebhookAuth" style="flex: 1; font-size: 0.8rem;" placeholder="Enter or generate webhook authorization token...">
+                                        <button class="btn-outline" onclick="window.generateTopggAuth()" style="padding: 8px 12px; font-size: 0.75rem; white-space: nowrap;"><i class="fas fa-magic"></i> Generate</button>
                                         <button class="btn-outline" onclick="copyWebhookDetails('setting-topggWebhookAuth')" style="padding: 8px 12px; font-size: 0.75rem; white-space: nowrap;"><i class="far fa-copy"></i> Copy Token</button>
                                     </div>
                                 </div>
@@ -3547,6 +3625,48 @@
                         </div>
                     </div>
                 </div>
+                
+                <div id="tab-theme" class="tab-content">
+                    <div class="panel">
+                        <h3>Theme Configuration</h3>
+                        <p>Customize the look and feel of the Nora Studio Dashboard for this server.</p>
+                        <div class="row-inputs" style="margin-top: 15px;">
+                            <div class="input-group">
+                                <label>Primary Theme Color</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="setting-themePrimaryColor" value="#4F46E5" style="width: 50px; height: 38px; padding: 2px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" oninput="document.getElementById('setting-themePrimaryColor-text').value = this.value; applyThemeVariables();">
+                                    <input type="text" id="setting-themePrimaryColor-text" placeholder="#4F46E5" style="flex: 1;" oninput="document.getElementById('setting-themePrimaryColor').value = this.value; applyThemeVariables();">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Component Rounding</label>
+                                <select id="setting-themeComponentRounding" onchange="applyThemeVariables()">
+                                    <option value="0px">Sharp (0px)</option>
+                                    <option value="4px">Sleek (4px)</option>
+                                    <option value="8px">Standard (8px)</option>
+                                    <option value="12px">Rounded (12px)</option>
+                                    <option value="16px">Extra Rounded (16px)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row-inputs" style="margin-top: 15px;">
+                            <div class="input-group">
+                                <label>Sidebar Status</label>
+                                <select id="setting-themeSidebarState" onchange="applyThemeVariables()">
+                                    <option value="Locked">Locked (Default)</option>
+                                    <option value="Collapsed">Collapsed</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Custom Background Image (URL)</label>
+                                <input type="text" id="setting-themeBackgroundImage" placeholder="https://example.com/bg.jpg" oninput="applyThemeVariables()">
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; text-align: right;">
+                            <button class="config-btn" style="width: auto; padding: 8px 16px; border-color: var(--danger); color: var(--danger);" onclick="resetThemeToDefault()">Reset Theme</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -3759,8 +3879,10 @@
             const overlay = document.getElementById('api-offline-overlay');
             if (overlay) {
                 overlay.style.display = 'flex';
-                const countdownEl = document.getElementById('offline-countdown');
-                if (countdownEl) countdownEl.textContent = '3';
+                const statusEl = document.getElementById('offline-retry-status');
+                if (statusEl) {
+                    statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s';
+                }
             }
 
             if (!isOfflinePolling) {
@@ -3816,9 +3938,12 @@
             countdownInterval = setInterval(async () => {
                 secondsLeft--;
                 const cdEl = document.getElementById('offline-countdown');
+                const statusEl = document.getElementById('offline-retry-status');
 
                 if (secondsLeft <= 0) {
-                    if (cdEl) cdEl.textContent = 'Checking...';
+                    if (statusEl) {
+                        statusEl.innerHTML = 'Checking connection...';
+                    }
 
                     const currentBase = window.getApiBaseUrl();
 
@@ -3857,7 +3982,9 @@
 
                     console.log('[Offline] Health check failed, retrying...');
                     secondsLeft = 3;
-                    if (cdEl) cdEl.textContent = '3';
+                    if (statusEl) {
+                        statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s';
+                    }
                 } else {
                     if (cdEl) cdEl.textContent = secondsLeft;
                 }
@@ -3953,6 +4080,25 @@
                 const list = document.getElementById('paired-devices-list');
                 const pairedAt = document.getElementById('pairing-paired-at');
 
+                // Toggle pending request confirmation modal
+                if (data.pending) {
+                    const modal = document.getElementById('pairing-confirmation-modal');
+                    const nameSpan = document.getElementById('pairing-request-device-name');
+                    const ipSpan = document.getElementById('pairing-request-ip');
+                    const uaSpan = document.getElementById('pairing-request-ua');
+                    if (modal && nameSpan && ipSpan && uaSpan) {
+                        nameSpan.textContent = data.pending.deviceName || 'Unknown Device';
+                        ipSpan.textContent = (data.pending.ip || '').replace('::ffff:', '');
+                        uaSpan.textContent = data.pending.userAgent || 'Unknown User Agent';
+                        modal.style.display = 'flex';
+                    }
+                } else {
+                    const modal = document.getElementById('pairing-confirmation-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                }
+
                 if (!data.paired || !data.devices || data.devices.length === 0) {
                     section.style.display = 'none';
                     empty.style.display = 'block';
@@ -3973,26 +4119,89 @@
                         ? `<span style="background: rgba(52,211,153,0.18); color: #34d399; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(52,211,153,0.3); margin-left: 8px;">This Device</span>`
                         : '';
                     const cleanIp = device.ip ? device.ip.replace('::ffff:', '') : '';
+                    
+                    const disconnectButton = !device.isCurrent
+                        ? `<button class="config-btn" style="width: auto; padding: 6px 12px; min-height: 44px; min-width: 44px; font-size: 0.75rem; color: #ff5555; border-color: rgba(255,85,85,0.3); display: inline-flex; align-items: center; justify-content: center;" onclick="window.disconnectSingleDevice('${device.sessionId}')">Disconnect</button>`
+                        : '';
+
                     return `
-                    <div style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;">
-                        <div style="font-size: 1.8rem; line-height: 1;">${icon}</div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
-                                <span style="font-weight: 700; color: var(--text); font-size: 0.95rem;">${device.name}</span>
-                                ${currentBadge}
-                            </div>
-                            <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <span style="background: rgba(255,255,255,0.06); color: ${roleColor}; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid ${roleColor}33;">${roleLabel}</span>
-                                ${cleanIp ? `<span style="color: var(--muted); font-size: 0.75rem;">${cleanIp}</span>` : ''}
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div style="font-size: 1.8rem; line-height: 1;">${icon}</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                                    <span style="font-weight: 700; color: var(--text); font-size: 0.95rem;">${device.name}</span>
+                                    ${currentBadge}
+                                </div>
+                                <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span style="background: rgba(255,255,255,0.06); color: ${roleColor}; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid ${roleColor}33;">${roleLabel}</span>
+                                    ${cleanIp ? `<span style="color: var(--muted); font-size: 0.75rem;">${cleanIp}</span>` : ''}
+                                </div>
                             </div>
                         </div>
-                        <div style="width: 9px; height: 9px; border-radius: 50%; background: #34d399; flex-shrink: 0; box-shadow: 0 0 6px #34d399;"></div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            ${disconnectButton}
+                            <div style="width: 9px; height: 9px; border-radius: 50%; background: #34d399; flex-shrink: 0; box-shadow: 0 0 6px #34d399;"></div>
+                        </div>
                     </div>`;
                 }).join('');
             } catch (e) {
                 // Silent fail — devices section just won't update
             }
         }
+
+        window.disconnectSingleDevice = async function(sessionId) {
+            if (!confirm('Are you sure you want to disconnect this device?')) return;
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const res = await originalFetch(`${apiBase}/api/auth/paired-devices/disconnect`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ sessionId })
+                });
+                if (res.ok) {
+                    showToast('Device disconnected successfully.', 'success');
+                    loadPairedDevices();
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    showToast(`Disconnect failed: ${d.error || res.status}`, 'error');
+                }
+            } catch (e) {
+                showToast(`Disconnect error: ${e.message}`, 'error');
+            }
+        };
+
+        window.respondToPairingRequest = async function(confirmRequest) {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const res = await originalFetch(`${apiBase}/api/auth/pair/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ confirm: confirmRequest })
+                });
+                if (res.ok) {
+                    showToast(confirmRequest ? 'Pairing approved!' : 'Pairing denied.', 'success');
+                    const modal = document.getElementById('pairing-confirmation-modal');
+                    if (modal) modal.style.display = 'none';
+                    loadPairedDevices();
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    showToast(`Response failed: ${d.error || res.status}`, 'error');
+                }
+            } catch (e) {
+                showToast(`Pairing confirmation error: ${e.message}`, 'error');
+            }
+        };
 
         function startPairedDevicesPolling() {
             loadPairedDevices();
@@ -4174,9 +4383,10 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage'];
 
         document.addEventListener('DOMContentLoaded', () => {
+            setupNumericalValidators();
             // Early notifications loading if we have a last known user ID to prevent showing 0 count badge
             const lastUserId = localStorage.getItem('nora_last_user_id');
             if (lastUserId) {
@@ -4815,38 +5025,120 @@
 
         async function fetchRobloxStatus(t) {
             try {
-                const res = await fetch('/api/user/roblox', { headers: { Authorization: `Bearer ${t}` } });
+                const res = await fetch('/api/user/roblox/accounts', { headers: { Authorization: `Bearer ${t}` } });
                 if (!res.ok) {
                     const errData = await res.json().catch(() => ({}));
                     throw new Error(errData.error || `HTTP ${res.status}`);
                 }
-                const d = await res.json();
+                const accounts = await res.json();
                 
-                document.getElementById('roblox-unlinked-view').style.display = 'none';
-                document.getElementById('roblox-pending-view').style.display = 'none';
-                document.getElementById('roblox-verified-view').style.display = 'none';
+                const container = document.getElementById('roblox-accounts-container');
+                if (!container) return;
+                container.innerHTML = '';
 
-                if (!d.linked) {
-                    document.getElementById('roblox-unlinked-view').style.display = 'block';
-                } else if (d.status === 'PENDING') {
-                    document.getElementById('roblox-pending-view').style.display = 'block';
-                    document.getElementById('roblox-verify-code').textContent = d.verifyCode;
-                } else {
-                    document.getElementById('roblox-verified-view').style.display = 'flex';
-                    document.getElementById('roblox-linked-name').textContent = d.robloxUsername || 'Roblox Linked';
-                    document.getElementById('roblox-linked-id').textContent = `ID: ${d.robloxId}`;
+                if (accounts.length === 0) {
+                    container.innerHTML = `
+                        <div style="padding: 15px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: 8px; text-align: center; color: var(--muted); font-size: 0.85rem;">
+                            No Roblox accounts linked yet. Use the form below to connect your first account.
+                        </div>
+                    `;
                     
-                    // Unlock Roblox advanced features for verified users
+                    // Lock advanced features
                     const advancedRoblox = document.getElementById('roblox-advanced-features');
                     if (advancedRoblox) {
+                        advancedRoblox.classList.add('locked-feature');
+                        const overlay = advancedRoblox.querySelector('.locked-overlay-text');
+                        if (overlay) overlay.style.display = 'block';
+                    }
+                    return;
+                }
+
+                let hasVerified = false;
+
+                accounts.forEach(acc => {
+                    const isVerified = acc.status === 'VERIFIED';
+                    if (isVerified) hasVerified = true;
+
+                    const card = document.createElement('div');
+                    card.className = 'panel';
+                    card.style = `
+                        display: flex; 
+                        flex-direction: column; 
+                        background: ${acc.isActive ? 'rgba(79, 70, 229, 0.08)' : 'rgba(0,0,0,0.15)'}; 
+                        border: 1px solid ${acc.isActive ? 'var(--primary)' : 'var(--border)'}; 
+                        padding: 15px; 
+                        border-radius: 12px;
+                        gap: 12px;
+                        margin-bottom: 0px;
+                    `;
+
+                    // Main info row
+                    let infoHtml = `
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="position: relative;">
+                                    <img src="https://www.roblox.com/headshot-thumbnail/image?userId=${acc.robloxId}&width=150&height=150&format=png" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.src='https://www.roblox.com/headshot-thumbnail/image?userId=1&width=150&height=150&format=png'">
+                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">✓</div>' : ''}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                        <span data-no-translate>${acc.robloxUsername}</span>
+                                        ${acc.robloxDisplayName && acc.robloxDisplayName !== acc.robloxUsername ? `<span data-no-translate style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">(${acc.robloxDisplayName})</span>` : ''}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--muted); display: flex; gap: 8px;">
+                                        <span data-no-translate>ID: ${acc.robloxId}</span>
+                                        <span>•</span>
+                                        <span style="color: ${isVerified ? 'var(--success)' : 'var(--warning)'}; font-weight: 600;">${isVerified ? 'Verified' : 'Pending Verification'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${isVerified ? `
+                                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: ${acc.isActive ? 'var(--primary)' : 'var(--muted)'}; font-weight: 600; margin-bottom: 0;">
+                                        <input type="radio" name="roblox-active-account" ${acc.isActive ? 'checked' : ''} onchange="toggleRobloxActive('${acc.robloxId}')" style="accent-color: var(--primary);">
+                                        Active Profile
+                                    </label>
+                                ` : ''}
+                                <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.75rem; color: var(--danger); border-color: rgba(255,85,85,0.25);" onclick="unlinkRobloxSpecific('${acc.robloxId}', '${acc.robloxUsername}')">Unlink</button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Verification pending details
+                    let pendingHtml = '';
+                    if (!isVerified) {
+                        pendingHtml = `
+                            <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px;">
+                                <div style="font-size: 0.8rem; color: var(--muted);">Add this code to your Roblox profile description / "About" section:</div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <code data-no-translate style="background: #000; padding: 6px 10px; border-radius: 4px; font-size: 0.95rem; flex: 1; text-align: center; color: var(--primary); font-weight: 700; border: 1px solid rgba(79, 70, 229, 0.2);">${acc.verifyCode}</code>
+                                    <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.75rem;" onclick="navigator.clipboard.writeText('${acc.verifyCode}').then(() => showToast('Code copied!', 'success'))">Copy</button>
+                                    <button class="save-btn" style="width: auto; padding: 0 15px; font-size: 0.75rem; height: 32px; line-height: 32px; background: var(--primary); color: #000;" onclick="checkRobloxSpecific('${acc.robloxId}')">Verify</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = infoHtml + pendingHtml;
+                    container.appendChild(card);
+                });
+
+                // Unlock/Lock Roblox advanced features based on verified accounts presence
+                const advancedRoblox = document.getElementById('roblox-advanced-features');
+                if (advancedRoblox) {
+                    if (hasVerified) {
                         advancedRoblox.classList.remove('locked-feature');
                         const overlay = advancedRoblox.querySelector('.locked-overlay-text');
                         if (overlay) overlay.style.display = 'none';
+                    } else {
+                        advancedRoblox.classList.add('locked-feature');
+                        const overlay = advancedRoblox.querySelector('.locked-overlay-text');
+                        if (overlay) overlay.style.display = 'block';
                     }
                 }
             } catch (e) {
                 console.error('[Roblox Status Load Error]:', e);
-                showToast(`Failed to load Roblox status: ${e.message}`, 'error');
+                showToast(`Failed to load Roblox accounts: ${e.message}`, 'error');
             }
         }
 
@@ -4942,43 +5234,77 @@
             if (res.ok) {
                 addNotification('Roblox Link Started', `Link initiated for user: ${username}. Please verify in-game.`, 'info', 'System');
                 fetchRobloxStatus(t);
+                document.getElementById('roblox-link-username').value = '';
             }
             else alert(d.error || 'Failed to link account.');
         }
 
-        async function checkRoblox() {
-            logToTerminal('Verifying Roblox linkage.', 'ROBLOX_VERIFY');
+        async function toggleRobloxActive(robloxId) {
+            logToTerminal(`Toggling active Roblox profile to: ${robloxId}`, 'ROBLOX_ACTIVATE');
             const t = sessionStorage.getItem('discord_token');
-            const res = await fetch('/api/user/roblox/check', {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${t}` }
-            });
-            const d = await res.json();
-            if (res.ok) {
-                alert('Account successfully verified!');
-                addNotification('Roblox Verified', 'Your Roblox account has been successfully linked and verified.', 'success', 'System');
-                fetchRobloxStatus(t);
-            } else alert(d.error || 'Verification failed.');
+            try {
+                const res = await fetch('/api/user/roblox/accounts/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({ robloxId })
+                });
+                const d = await res.json();
+                if (res.ok) {
+                    showToast('Active Roblox profile updated!', 'success');
+                    fetchRobloxStatus(t);
+                } else {
+                    alert(d.error || 'Failed to toggle active profile.');
+                }
+            } catch (e) {
+                console.error('[Roblox Active Toggle Error]:', e);
+                showToast(`Error: ${e.message}`, 'error');
+            }
         }
 
-        async function unlinkRoblox() {
-            if (!confirm('Are you sure you want to unlink your Roblox account?')) return;
-            logToTerminal('Unlinking Roblox account.', 'ROBLOX_UNLINK');
+        async function checkRobloxSpecific(robloxId) {
+            logToTerminal(`Verifying Roblox account ID: ${robloxId}`, 'ROBLOX_VERIFY');
             const t = sessionStorage.getItem('discord_token');
-            const res = await fetch('/api/user/roblox/unlink', {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${t}` }
-            });
-            if (res.ok) fetchRobloxStatus(t);
+            try {
+                const res = await fetch('/api/user/roblox/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({ robloxId })
+                });
+                const d = await res.json();
+                if (res.ok) {
+                    showToast('Account successfully verified!', 'success');
+                    addNotification('Roblox Verified', `Your Roblox account "${d.robloxUsername}" has been successfully linked and verified.`, 'success', 'System');
+                    fetchRobloxStatus(t);
+                } else {
+                    alert(d.error || 'Verification failed. Make sure the code is in your Roblox description.');
+                }
+            } catch (e) {
+                console.error('[Roblox Check Error]:', e);
+                showToast(`Error: ${e.message}`, 'error');
+            }
         }
 
-        function copyCode() {
-            const code = document.getElementById('roblox-verify-code').textContent;
-            navigator.clipboard.writeText(code).then(() => alert('Code copied!'));
-        }
-
-        function cancelRobloxLink() {
-            unlinkRoblox();
+        async function unlinkRobloxSpecific(robloxId, username) {
+            if (!confirm(`Are you sure you want to unlink the Roblox account "${username}"?`)) return;
+            logToTerminal(`Unlinking Roblox account ID: ${robloxId}`, 'ROBLOX_UNLINK');
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch('/api/user/roblox/unlink', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({ robloxId })
+                });
+                if (res.ok) {
+                    showToast('Roblox account unlinked.', 'info');
+                    fetchRobloxStatus(t);
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    alert(d.error || 'Failed to unlink account.');
+                }
+            } catch (e) {
+                console.error('[Roblox Unlink Error]:', e);
+                showToast(`Error: ${e.message}`, 'error');
+            }
         }
 
         async function fetchGuilds(t) {
@@ -4994,60 +5320,116 @@
 
                 logToTerminal(`Fetched ${guilds.length} guilds.`, 'GUILD_SUCCESS');
                 const container = document.getElementById('guilds-container');
-                container.innerHTML = guilds.length ? '' : '<p>No servers.</p>';
-                guilds.forEach(g => {
-                    const card = document.createElement('div'); card.className = 'server-card';
-                    const btn = g.hasNora ? '<button class="config-btn">Configure</button>' : `<button class="config-btn invite" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+email+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')">Invite</button>`;
-                    
-                    let memberInfo = '';
-                    if (g.hasNora) {
-                        const onlineStr = g.onlineCount ? `<span style="color: #23a55a; display: flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; background: #23a55a; border-radius: 50%;"></span> ${g.onlineCount} Online</span>` : '';
-                        memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px; display: flex; justify-content: center; gap: 12px;"><span>${g.memberCount} Members</span>${onlineStr}</div>`;
-                    } else {
-                        memberInfo = `<p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">Invite required</p>`;
-                    }
+                if (container) {
+                    container.innerHTML = guilds.length ? '' : '<p>No servers.</p>';
+                    guilds.forEach(g => {
+                        const card = document.createElement('div'); card.className = 'server-card';
+                        const btn = g.hasNora ? '<button class="config-btn">Configure</button>' : `<button class="config-btn invite" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+email+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')">Invite</button>`;
+                        
+                        let memberInfo = '';
+                        if (g.hasNora) {
+                            const onlineStr = g.onlineCount ? `<span style="color: #23a55a; display: flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; background: #23a55a; border-radius: 50%;"></span> ${g.onlineCount} Online</span>` : '';
+                            memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px; display: flex; justify-content: center; gap: 12px;"><span>${g.memberCount} Members</span>${onlineStr}</div>`;
+                        } else {
+                            memberInfo = `<p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">Invite required</p>`;
+                        }
 
-                    const slashBadge = g.hasNora ? '<div class="badge-slash"><span>/</span> Active</div>' : '';
-                    card.innerHTML = `<img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">${slashBadge}<h3>${g.name}</h3>${memberInfo}${btn}`;
-                    if (g.hasNora) card.onclick = () => openConfig(g);
-                    container.appendChild(card);
+                        const slashBadge = g.hasNora ? '<div class="badge-slash"><span>/</span> Active</div>' : '';
+                        card.innerHTML = `<img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">${slashBadge}<h3>${g.name}</h3>${memberInfo}${btn}`;
+                        if (g.hasNora) card.onclick = () => openConfig(g);
+                        container.appendChild(card);
+                    });
+                }
+
+                // Fetch connections
+                const connRes = await fetch('/api/user/topgg/connections', {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                let connections = [];
+                if (connRes.ok) {
+                    const connData = await connRes.json();
+                    connections = connData.connections || [];
+                }
+
+                // Fetch scraped user servers (to match names/icons)
+                const scrapedRes = await fetch('/api/user/topgg/servers', {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                let scrapedServers = [];
+                if (scrapedRes.ok) {
+                    const scrapedData = await scrapedRes.json();
+                    scrapedServers = scrapedData.servers || [];
+                }
+
+                // Map target IDs/guild IDs to name and icon
+                const detailsMap = new Map();
+                scrapedServers.forEach(s => {
+                    detailsMap.set(s.id, { name: s.name, icon: s.icon });
+                });
+                guilds.forEach(g => {
+                    detailsMap.set(g.id, { name: g.name, icon: g.icon });
                 });
 
-                // Update the global prefs Top.gg list
+                // Populate bots list
                 const topggIntegrationsList = document.getElementById('topgg-integrations-list');
                 if (topggIntegrationsList) {
-                    let allVerifiedBots = new Set();
-                    guilds.forEach(g => {
-                        if (g.topggVerified) {
-                            const botIds = g.topggBotId ? g.topggBotId.split(',') : [g.topggLegacyOwnerId || 'Verified'];
-                            botIds.forEach(id => {
-                                if (id.trim()) allVerifiedBots.add(id.trim());
-                            });
-                        }
-                    });
-
-                    if (allVerifiedBots.size > 0) {
-                        let html = '';
-                        Array.from(allVerifiedBots).forEach(id => {
-                            html += `
-                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px;">
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <div style="width: 35px; height: 35px; background: #2ea043; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✅</div>
-                                        <div>
-                                            <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">Top.gg Verified</h4>
-                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ${id}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        topggIntegrationsList.innerHTML = html;
-                    } else {
+                    const botConns = connections.filter(c => c.type === 'bot');
+                    if (botConns.length === 0) {
                         topggIntegrationsList.innerHTML = `
                             <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
                                 No bots verified. Connect via the Top.gg server tab.
                             </div>
                         `;
+                    } else {
+                        let html = '';
+                        botConns.forEach(c => {
+                            const details = detailsMap.get(c.targetId) || { name: c.targetName || 'Top.gg Bot', icon: c.targetIcon || 'https://top.gg/images/topgg-logo.png' };
+                            html += `
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <div style="width: 35px; height: 35px; background: #2ea043; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✅</div>
+                                        <div>
+                                            <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${details.name}</h4>
+                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ${c.targetId}</p>
+                                        </div>
+                                    </div>
+                                    <button class="config-btn" style="width: auto; padding: 10px 16px; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="window.unlinkBot('${c.targetId}')">Unlink</button>
+                                </div>
+                            `;
+                        });
+                        topggIntegrationsList.innerHTML = html;
+                    }
+                }
+
+                // Populate servers list
+                const topggServersList = document.getElementById('topgg-servers-list');
+                if (topggServersList) {
+                    const serverConns = connections.filter(c => c.type === 'server');
+                    if (serverConns.length === 0) {
+                        topggServersList.innerHTML = `
+                            <div style="padding: 20px; background: rgba(0,0,0,0.15); border: 1px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); font-size: 0.85rem;">
+                                No servers verified. Connect via the Top.gg server tab.
+                            </div>
+                        `;
+                    } else {
+                        let html = '';
+                        serverConns.forEach(c => {
+                            const details = detailsMap.get(c.targetId) || { name: 'Discord Server', icon: 'https://top.gg/images/topgg-logo.png' };
+                            const iconUrl = details.icon || 'https://top.gg/images/topgg-logo.png';
+                            html += `
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 160, 67, 0.1); border: 1px solid rgba(46, 160, 67, 0.2); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <img src="${iconUrl}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                                        <div>
+                                            <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${details.name}</h4>
+                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted);">ID: ${c.targetId}</p>
+                                        </div>
+                                    </div>
+                                    <button class="config-btn" style="width: auto; padding: 10px 16px; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; color: #ff5555; border-color: rgba(255,85,85,0.3);" onclick="window.unlinkServer('${c.targetId}')">Unlink</button>
+                                </div>
+                            `;
+                        });
+                        topggServersList.innerHTML = html;
                     }
                 }
             } catch (e) {
@@ -5060,6 +5442,46 @@
             }
         }
 
+        window.unlinkBot = async function(botId) {
+            if (!confirm('Are you sure you want to unlink this bot? This will delete all webhook tracking connections.')) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/user/topgg/bots/${botId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Bot connection deleted successfully.', 'success');
+                    fetchGuilds(t);
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Failed to delete connection.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error deleting connection.', 'error');
+            }
+        }
+
+        window.unlinkServer = async function(serverId) {
+            if (!confirm('Are you sure you want to unlink this server? This will delete all webhook tracking connections.')) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/user/topgg/servers/${serverId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Server connection deleted successfully.', 'success');
+                    fetchGuilds(t);
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Failed to delete connection.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error deleting connection.', 'error');
+            }
+        }
+
         let pendingSavePayload = null;
 
         async function saveSettings() {
@@ -5067,7 +5489,17 @@
             KEYS.forEach(k => {
                 const el = document.getElementById('setting-' + k);
                 if (!el) return;
-                payload[k] = el.type === 'checkbox' ? el.checked : el.value;
+                let val = el.type === 'checkbox' ? el.checked : el.value;
+                if (el.type === 'number') {
+                    if (val !== "") {
+                        val = parseInt(val, 10);
+                        if (k === 'spamInterval') val = val * 1000;
+                        if (k === 'antiSpamMuteDuration') val = val * 60000;
+                    } else {
+                        val = null;
+                    }
+                }
+                payload[k] = val;
             });
             const d = [];
             const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'ban', 'kick', 'mute', 'unmute', 'purge', 'warn', 'role', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
@@ -6265,8 +6697,8 @@
             if (aiSelect) {
                 const openaiOpt = aiSelect.querySelector('option[value="OPENAI"]');
                 if (openaiOpt) {
-                    openaiOpt.disabled = !currentServerIsPremium;
-                    openaiOpt.textContent = currentServerIsPremium ? 'GPT-4o Mini (Analytical)' : 'GPT-4o Mini (Nora+ Required)';
+                    openaiOpt.disabled = false;
+                    openaiOpt.textContent = 'GPT-4o Mini (Analytical)';
                 }
             }
 
@@ -6907,6 +7339,7 @@
                 }
             } catch (e) {
                 console.error('Analytics Error:', e);
+                logErrorToTerminal(`Analytics Error: ${e.message}`, 'ERROR', { stack: e.stack });
             } finally {
                 toggleLoading(false);
             }
@@ -7819,6 +8252,7 @@
 
             const t = sessionStorage.getItem('discord_token');
             try {
+                // Fetch bots
                 const res = await fetch(`/api/user/topgg/bots?guildId=${currentServerId}`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -7834,12 +8268,28 @@
                 if (!res.ok) {
                     throw new Error(d.error || 'Failed to fetch bots');
                 }
+
+                // Fetch servers
+                const serversRes = await fetch(`/api/user/topgg/servers`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                let serversData = { servers: [] };
+                if (serversRes.ok) {
+                    serversData = await serversRes.json().catch(() => ({ servers: [] }));
+                }
                 
                 const list = document.getElementById('topgg-bot-list');
+                const serverList = document.getElementById('topgg-server-list');
+                const botsHeader = document.getElementById('topgg-bots-header');
+                const serversHeader = document.getElementById('topgg-servers-header');
                 const resultsDiv = document.getElementById('topgg-bot-results');
-                list.innerHTML = '';
                 
+                list.innerHTML = '';
+                serverList.innerHTML = '';
+                
+                // Show/hide bots section
                 if (d.bots && d.bots.length > 0) {
+                    if (botsHeader) botsHeader.style.display = 'block';
                     d.bots.forEach(bot => {
                         const row = document.createElement('div');
                         row.className = 'row';
@@ -7854,58 +8304,202 @@
                                     <div style="font-size: 0.7rem; color: var(--muted);">${bot.id}</div>
                                 </div>
                             </div>
-                            <button class="config-btn" style="width: auto; padding: 5px 15px;" onclick="linkTopggBot('${bot.id}')">Link Bot</button>
+                            <button class="config-btn" style="width: auto; padding: 5px 15px; background: var(--primary); color: #000; font-weight: 600; border: none;" onclick="linkTopggBot('${bot.id}')">Link Bot</button>
                         `;
                         list.appendChild(row);
                     });
-                    resultsDiv.style.display = 'block';
                 } else {
-                    list.innerHTML = '<p style="font-size: 0.8rem; color: var(--muted); padding: 10px;">No bots found associated with your account on Top.gg.</p>';
-                    resultsDiv.style.display = 'block';
+                    if (botsHeader) botsHeader.style.display = 'none';
+                    list.innerHTML = '';
                 }
+
+                // Show/hide servers section
+                if (serversData.servers && serversData.servers.length > 0) {
+                    if (serversHeader) serversHeader.style.display = 'block';
+                    serversData.servers.forEach(srv => {
+                        const row = document.createElement('div');
+                        row.className = 'row';
+                        row.style.background = 'rgba(255,255,255,0.05)';
+                        row.style.padding = '12px 15px';
+                        row.style.borderRadius = '10px';
+                        
+                        // Disable the Link Server button if this server is not the one we are currently configuring
+                        const isCurrentServer = srv.id === currentServerId;
+                        const buttonHtml = isCurrentServer
+                            ? `<button class="config-btn" style="width: auto; padding: 5px 15px; background: var(--primary); color: #000; font-weight: 600; border: none;" onclick="linkTopggServer('${srv.id}')">Link Server</button>`
+                            : `<button class="config-btn" style="width: auto; padding: 5px 15px; opacity: 0.5; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);" disabled title="To link this server, switch to it in the server list first.">Link Server</button>`;
+
+                        row.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="${srv.icon || 'https://top.gg/images/topgg-logo.png'}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.9rem;">${srv.name}</div>
+                                    <div style="font-size: 0.7rem; color: var(--muted);">${srv.id} ${!isCurrentServer ? '(Switch server to link)' : ''}</div>
+                                </div>
+                            </div>
+                            ${buttonHtml}
+                        `;
+                        serverList.appendChild(row);
+                    });
+                } else {
+                    if (serversHeader) serversHeader.style.display = 'none';
+                    serverList.innerHTML = '';
+                }
+
+                // If neither found
+                if ((!d.bots || d.bots.length === 0) && (!serversData.servers || serversData.servers.length === 0)) {
+                    list.innerHTML = '<p style="font-size: 0.8rem; color: var(--muted); padding: 10px;">No bots or servers found associated with your account on Top.gg.</p>';
+                    if (botsHeader) botsHeader.style.display = 'block';
+                    if (serversHeader) serversHeader.style.display = 'none';
+                }
+                
+                resultsDiv.style.display = 'block';
             } catch (e) {
                 console.error('[Top.gg Search Error]:', e);
-                showToast(e.message || 'Failed to fetch bots from Top.gg.', 'error');
+                showToast(e.message || 'Failed to fetch bots/servers from Top.gg.', 'error');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
         }
 
-        async function linkTopggBot(botId) {
+        async function linkTopgg(targetId, type) {
             if (!currentServerId) return showToast('Please select a server first.', 'error');
-            if (!botId) return showToast('Please enter a Bot ID.', 'error');
+            if (!targetId) return showToast(`Please enter a ${type === 'bot' ? 'Bot' : 'Server'} ID.`, 'error');
             
-            showToast('Linking bot...', 'info');
+            showToast(`Linking ${type}...`, 'info');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const legacyOwnerId = document.getElementById('setting-topggLegacyOwnerId').value;
-                const res = await fetch(`/api/guilds/${currentServerId}/topgg/link-bot`, {
+                const legacyOwnerId = document.getElementById('setting-topggLegacyOwnerId')?.value || '';
+                const token = document.getElementById('setting-topggWebhookAuth')?.value || '';
+                const res = await fetch(`/api/guilds/${currentServerId}/topgg/link`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${t}`
                     },
-                    body: JSON.stringify({ botId, legacyOwnerId })
+                    body: JSON.stringify({ targetId, type, token, legacyOwnerId })
                 });
                 const d = await res.json();
                 
                 if (res.ok) {
-                    showToast('Bot linked and verified successfully!', 'success');
-                    addNotification('Top.gg Linked', `Top.gg integration successfully established for Bot ID: ${botId}.`, 'success');
+                    showToast(`${type === 'bot' ? 'Bot' : 'Server'} linked and verified successfully!`, 'success');
+                    addNotification('Top.gg Linked', `Top.gg integration successfully established for ${type === 'bot' ? 'Bot' : 'Server'} ID: ${targetId}.`, 'success');
                     fetchSettings(); // Refresh UI to show verified view
                 } else {
-                    showToast(d.error || 'Failed to link bot.', 'error');
+                    showToast(d.error || `Failed to link ${type}.`, 'error');
                 }
             } catch (e) {
-                console.error('[Link Bot Error]:', e);
+                console.error(`[Link ${type} Error]:`, e);
                 showToast('Network error: ' + e.message, 'error');
             }
         }
 
-        async function unlinkTopggBot() {
-            if (!confirm('Are you sure you want to unlink this bot? This will disable all vote tracking for this server.')) return;
+        async function linkTopggBot(botId) {
+            await linkTopgg(botId, 'bot');
+        }
+
+        async function linkTopggServer(serverId) {
+            await linkTopgg(serverId, 'server');
+        }
+
+        window.toggleManualTypeLayout = function() {
+            const type = document.getElementById('setting-topggType').value;
+            const label = document.getElementById('manual-id-label');
+            const input = document.getElementById('setting-topggBotId');
+            const legacyGroup = document.getElementById('legacy-owner-group');
+            const legacyInfo = document.getElementById('legacy-verification-info');
+            
+            if (type === 'server') {
+                if (label) label.textContent = 'Server ID';
+                if (input) input.placeholder = currentServerId || '123456789012345678';
+                if (legacyGroup) legacyGroup.style.display = 'none';
+                if (legacyInfo) legacyInfo.style.display = 'none';
+            } else {
+                if (label) label.textContent = 'Bot ID';
+                if (input) input.placeholder = '123456789012345678';
+                if (legacyGroup) legacyGroup.style.display = 'block';
+                updateLegacyVerification();
+            }
+        };
+
+        window.handleManualLink = function() {
+            const type = document.getElementById('setting-topggType').value;
+            const targetId = document.getElementById('setting-topggBotId').value;
+            if (type === 'server') {
+                linkTopggServer(targetId);
+            } else {
+                linkTopggBot(targetId);
+            }
+        };
+
+        window.generateTopggAuth = function() {
+            const newVal = 'nora_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            const authInput = document.getElementById('setting-topggWebhookAuth');
+            if (authInput) {
+                authInput.value = newVal;
+                showToast('Generated new auth token. Don\'t forget to save changes!', 'info');
+            }
+        };
+
+        window.switchTopggAsset = function(targetId) {
+            const select = document.getElementById('topgg-asset-select');
+            if (!select) return;
+            const opt = select.querySelector(`option[value="${targetId}"]`);
+            if (!opt) return;
+            
+            const token = opt.dataset.token || '';
+            const type = opt.dataset.type || 'bot';
+            
+            const authInput = document.getElementById('setting-topggWebhookAuth');
+            if (authInput) {
+                authInput.value = token;
+            }
+            
+            const botIdInput = document.getElementById('setting-topggBotId');
+            if (botIdInput) {
+                botIdInput.value = (type === 'bot') ? targetId : '';
+            }
+            
+            const topggWebUrlFinal = document.getElementById('topgg-webhook-url-final');
+            if (topggWebUrlFinal) {
+                const API_WEBHOOK_BASE = window.getApiBaseUrl() || window.location.origin;
+                topggWebUrlFinal.value = `${API_WEBHOOK_BASE}/api/webhooks/topgg/${currentServerId}`;
+            }
+        };
+
+        window.unlinkTopggBot = async function() {
+            let targetId = document.getElementById('setting-topggBotId')?.value;
+            let type = 'bot';
+            const select = document.getElementById('topgg-asset-select');
+            if (select && select.value) {
+                targetId = select.value;
+                const opt = select.querySelector(`option[value="${targetId}"]`);
+                if (opt) type = opt.dataset.type || 'bot';
+            }
+            if (!targetId) {
+                targetId = currentServerId;
+                type = 'server';
+            }
+            
+            if (!confirm(`Are you sure you want to unlink this Top.gg ${type}? This will disable vote tracking for it.`)) return;
             const t = sessionStorage.getItem('discord_token');
+            
+            try {
+                if (targetId) {
+                    await fetch(`/api/guilds/${currentServerId}/topgg/unlink`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${t}`
+                        },
+                        body: JSON.stringify({ targetId, type })
+                    });
+                }
+            } catch (e) {
+                console.error('Relational unlink failed:', e);
+            }
+
             const p = { topggVerified: false, topggBotId: null, topggWebhookAuth: null };
             const res = await fetch(`/api/guilds/${currentServerId}/settings`, { 
                 method: 'POST', 
@@ -7916,10 +8510,10 @@
                 body: JSON.stringify(p) 
             });
             if (res.ok) {
-                showToast('Bot unlinked successfully.', 'success');
+                showToast('Top.gg integration unlinked successfully.', 'success');
                 fetchSettings();
             }
-        }
+        };
 
         function copyConnectionDetails() {
             const url = document.getElementById('topgg-webhook-url-final').value;
@@ -8238,6 +8832,112 @@
             });
         }
 
+        function applyThemeVariables() {
+            const primaryColorEl = document.getElementById('setting-themePrimaryColor');
+            const colorTextEl = document.getElementById('setting-themePrimaryColor-text');
+            const roundingEl = document.getElementById('setting-themeComponentRounding');
+            const sidebarEl = document.getElementById('setting-themeSidebarState');
+            const bgImageEl = document.getElementById('setting-themeBackgroundImage');
+
+            if (primaryColorEl && colorTextEl && colorTextEl.value !== primaryColorEl.value) {
+                colorTextEl.value = primaryColorEl.value;
+            }
+
+            const primaryColor = primaryColorEl ? primaryColorEl.value : '#4F46E5';
+            const rounding = roundingEl ? roundingEl.value : '8px';
+            const sidebarState = sidebarEl ? sidebarEl.value : 'Locked';
+            const bgImage = bgImageEl ? bgImageEl.value : '';
+
+            // Apply color, rounding, background variables
+            document.documentElement.style.setProperty('--primary', primaryColor);
+            document.documentElement.style.setProperty('--primary-glow', primaryColor + '22');
+            document.documentElement.style.setProperty('--radius-md', rounding);
+            
+            // Apply background image if provided, otherwise reset
+            if (bgImage && bgImage.trim() !== '') {
+                document.body.style.backgroundImage = `url('${bgImage}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = '';
+            }
+
+            // Apply sidebar state
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                if (sidebarState === 'Collapsed') {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
+            }
+        }
+
+        function resetThemeToDefault() {
+            const primaryColorEl = document.getElementById('setting-themePrimaryColor');
+            const colorTextEl = document.getElementById('setting-themePrimaryColor-text');
+            const roundingEl = document.getElementById('setting-themeComponentRounding');
+            const sidebarEl = document.getElementById('setting-themeSidebarState');
+            const bgImageEl = document.getElementById('setting-themeBackgroundImage');
+
+            if (primaryColorEl) primaryColorEl.value = '#4F46E5';
+            if (colorTextEl) colorTextEl.value = '#4F46E5';
+            if (roundingEl) roundingEl.value = '8px';
+            if (sidebarEl) sidebarEl.value = 'Locked';
+            if (bgImageEl) bgImageEl.value = '';
+
+            applyThemeVariables();
+        }
+
+        function setupNumericalValidators() {
+            const inputs = [
+                { id: 'setting-warningThreshold', min: 1, max: 50, errorId: 'error-warningThreshold', name: 'Warning Threshold' },
+                { id: 'setting-spamThreshold', min: 1, max: 20, errorId: 'error-spamThreshold', name: 'Sensitivity' },
+                { id: 'setting-spamInterval', min: 1, max: 60, errorId: 'error-spamInterval', name: 'Time Window' },
+                { id: 'setting-antiSpamMuteDuration', min: 1, max: 1440, errorId: 'error-antiSpamMuteDuration', name: 'Mute Time' }
+            ];
+
+            const saveBtn = document.getElementById('save-settings-btn');
+
+            function validate() {
+                let hasError = false;
+                inputs.forEach(input => {
+                    const el = document.getElementById(input.id);
+                    const errEl = document.getElementById(input.errorId);
+                    if (!el || !errEl) return;
+                    const val = parseInt(el.value, 10);
+                    if (el.value !== '' && (isNaN(val) || val < input.min || val > input.max)) {
+                        errEl.style.display = 'block';
+                        el.classList.add('invalid');
+                        hasError = true;
+                    } else {
+                        errEl.style.display = 'none';
+                        el.classList.remove('invalid');
+                    }
+                });
+                
+                if (saveBtn) {
+                    saveBtn.disabled = hasError;
+                    if (hasError) {
+                        saveBtn.style.opacity = '0.5';
+                        saveBtn.style.cursor = 'not-allowed';
+                    } else {
+                        saveBtn.style.opacity = '';
+                        saveBtn.style.cursor = '';
+                    }
+                }
+            }
+
+            inputs.forEach(input => {
+                const el = document.getElementById(input.id);
+                if (el) {
+                    el.addEventListener('input', validate);
+                    el.addEventListener('change', validate);
+                }
+            });
+        }
+
         function startTopggSetup() {
             const botId = document.getElementById('setting-topggBotId').value;
             if (!botId || botId.length < 15) return alert('Please enter a valid Top.gg Bot or Server ID.');
@@ -8394,7 +9094,6 @@
                 }
                 
                 const defaultTrueKeys = [
-                    'levelingEnabled', 
                     'welcomerEnabled', 
                     'moderationEnabled', 
                     'funEnabled', 
@@ -8421,6 +9120,16 @@
                         const val = (s[k] !== null && s[k] !== undefined) ? String(s[k]) : '';
                         const hasOption = Array.from(el.options).some(opt => opt.value === val);
                         el.value = hasOption ? val : '';
+                    } else if (el.type === 'number') {
+                        let val = s[k];
+                        if (k === 'spamInterval' && val) val = Math.round(val / 1000);
+                        if (k === 'antiSpamMuteDuration' && val) val = Math.round(val / 60000);
+                        el.value = (val !== null && val !== undefined) ? val : '';
+                    } else if (el.type === 'color') {
+                        const val = (s[k] && s[k].startsWith('#')) ? s[k] : '#4F46E5';
+                        el.value = val;
+                        const textEl = document.getElementById('setting-' + k + '-text');
+                        if (textEl) textEl.value = val;
                     } else {
                         el.value = (s[k] !== null && s[k] !== undefined) ? s[k] : '';
                     }
@@ -8431,6 +9140,7 @@
                 syncMultiselectUI('setting-automodImmuneRoles');
 
                 refreshTopggAvatarPreview();
+                applyThemeVariables();
 
                 // Populate role multipliers
                 const multsList = document.getElementById('role-multipliers-list');
@@ -8521,6 +9231,51 @@
                 
                 if (topggAuthInput && !topggAuthInput.value) {
                     topggAuthInput.value = 'nora_' + Math.random().toString(36).substring(2, 15);
+                }
+
+                // Fetch Top.gg Connections and populate asset dropdown
+                let guildConns = [];
+                try {
+                    const connRes = await fetch('/api/user/topgg/connections', {
+                        headers: { 'Authorization': `Bearer ${t}` }
+                    });
+                    if (connRes.ok) {
+                        const connData = await connRes.json();
+                        const allConns = connData.connections || [];
+                        guildConns = allConns.filter(c => c.guildId === currentServerId);
+                    }
+                } catch (connErr) {
+                    console.error('[Top.gg Connections Load Error]:', connErr);
+                }
+
+                const assetSelectorGroup = document.getElementById('topgg-asset-selector-group');
+                const assetSelect = document.getElementById('topgg-asset-select');
+                if (assetSelect) {
+                    assetSelect.innerHTML = '';
+                    if (guildConns.length > 0) {
+                        guildConns.forEach(conn => {
+                            const opt = document.createElement('option');
+                            opt.value = conn.targetId;
+                            opt.textContent = `${conn.type === 'bot' ? 'Bot' : 'Server'} (ID: ${conn.targetId})`;
+                            opt.dataset.token = conn.token || '';
+                            opt.dataset.type = conn.type;
+                            assetSelect.appendChild(opt);
+                        });
+
+                        // Default select connection matching settings botId or guildId
+                        let matchedConn = guildConns.find(c => c.targetId === s.topggBotId) || guildConns.find(c => c.targetId === currentServerId) || guildConns[0];
+                        if (matchedConn) {
+                            assetSelect.value = matchedConn.targetId;
+                            if (topggAuthInput) topggAuthInput.value = matchedConn.token || '';
+                            const botIdInput = document.getElementById('setting-topggBotId');
+                            if (botIdInput) botIdInput.value = (matchedConn.type === 'bot') ? matchedConn.targetId : '';
+                        }
+                        if (assetSelectorGroup) {
+                            assetSelectorGroup.style.display = guildConns.length > 1 ? 'block' : 'none';
+                        }
+                    } else {
+                        if (assetSelectorGroup) assetSelectorGroup.style.display = 'none';
+                    }
                 }
 
                 const unverifiedView = document.getElementById('topgg-unverified-view');
@@ -8775,6 +9530,31 @@
                     onmouseover="this.style.background='var(--primary-hover)'; this.style.transform='scale(1.02)';"
                     onmouseout="this.style.background='var(--primary)'; this.style.transform='none';">
                     Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Pairing Approval Modal -->
+    <div id="pairing-confirmation-modal" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 25000; align-items: center; justify-content: center; flex-direction: column; padding: 20px;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); text-align: left;">
+            <div style="font-size: 3rem; margin-bottom: 20px; text-align: center; color: var(--primary);">📱</div>
+            <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800; text-align: center;">Pairing Request</h2>
+            <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; text-align: center;">
+                A secondary device is attempting to pair with your account.
+            </p>
+            
+            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 24px;">
+                <div style="font-size: 0.85rem; margin-bottom: 8px; color: #fff;"><strong style="color: var(--muted);">Device Name:</strong> <span id="pairing-request-device-name">...</span></div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px; color: #fff;"><strong style="color: var(--muted);">IP Address:</strong> <span id="pairing-request-ip">...</span></div>
+                <div style="font-size: 0.85rem; color: #fff;"><strong style="color: var(--muted);">User Agent:</strong> <span id="pairing-request-ua" style="font-size: 0.75rem; word-break: break-all;">...</span></div>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button onclick="window.respondToPairingRequest(false)" style="flex: 1; background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.2); border-radius: 10px; color: #ff6b6b; font-size: 0.85rem; font-weight: 700; padding: 12px; cursor: pointer; min-height: 44px; text-align: center; border: 1px solid rgba(255,80,80,0.2);">
+                    Deny
+                </button>
+                <button onclick="window.respondToPairingRequest(true)" style="flex: 1; background: var(--primary); border: none; border-radius: 10px; color: #0f111a; font-size: 0.85rem; font-weight: 700; padding: 12px; cursor: pointer; min-height: 44px; text-align: center; box-shadow: 0 0 15px var(--primary-glow);">
+                    Confirm
                 </button>
             </div>
         </div>

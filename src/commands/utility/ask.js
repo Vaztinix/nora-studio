@@ -5,7 +5,6 @@ const { checkRateLimit } = require('../../utils/aiRateLimiter');
 
 module.exports = {
     category: 'utility',
-    earlyAccess: true,
     data: new SlashCommandBuilder()
         .setName('ask')
         .setDescription('Ask the Nora AI a question privately.')
@@ -78,19 +77,10 @@ Nora (Respond privately):`;
             const shortResponse = responseText.length > 3900 ? responseText.substring(0, 3900) + '...' : responseText;
             */
 
-            const shortResponse = "Nora's AI features are currently undergoing upgrades to advanced LLM models. Stay tuned!";
-
-            const embed = new EmbedBuilder()
-                .setTitle('Nora AI Analysis')
-                .setColor(require('../../utils/embeds').getRoleColor(interaction))
-                .setDescription(`**Prompt:** ${query}\n\n**Response:**\n${shortResponse}`)
-                .setFooter({ text: 'Private & Secure Query' })
-                .setTimestamp();
-
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.deleteReply().catch(() => {});
+            return;
         } catch (error) {
             console.error('Ask Command OpenAI Error:', error);
-            await interaction.editReply({ content: 'I encountered an error trying to process your prompt. Please try again later.' });
         }
     },
 };

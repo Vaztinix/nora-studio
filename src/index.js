@@ -55,6 +55,7 @@ require('./database/models/HostedBot');
 require('./database/models/CustomCommand');
 require('./database/models/Session');
 require('./database/models/TopggConnection');
+require('./database/models/ActiveTicket');
 
 
 const client = new Client({
@@ -580,6 +581,17 @@ const resolveDiscordToken = async (token) => {
             err.status = 401;
             throw err;
         }
+
+        // --- Generational Session Eviction Check ---
+        const UserPrefs = require('./database/models/UserPrefs');
+        const prefs = await UserPrefs.findOne({ where: { userId: session.userId } });
+        if (prefs && session.sessionGenerationMarker && prefs.sessionGenerationMarker && session.sessionGenerationMarker !== prefs.sessionGenerationMarker) {
+            await session.destroy();
+            const err = new Error('Session invalidated by generation eviction');
+            err.status = 401;
+            throw err;
+        }
+
         return session.discordToken;
     }
     return token;
@@ -715,13 +727,20 @@ app.get('/api/user/me', async (req, res) => {
                 }
             } catch (e) {}
             
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+            if (!prefs.sessionGenerationMarker) {
+                prefs.sessionGenerationMarker = require('uuid').v4();
+                await prefs.save();
+            }
+
             session = await Session.create({
                 id: tokenHash,
                 userId: user.id,
                 ipAddress: clientIp,
                 userAgent: req.headers['user-agent'] || 'Unknown',
                 location: location,
-                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                sessionGenerationMarker: prefs.sessionGenerationMarker
             });
         }
         
@@ -952,6 +971,13 @@ app.post('/api/auth/pair/confirm', async (req, res) => {
                 }
             } catch (e) {}
             
+            const UserPrefs = require('./database/models/UserPrefs');
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+            if (!prefs.sessionGenerationMarker) {
+                prefs.sessionGenerationMarker = require('uuid').v4();
+                await prefs.save();
+            }
+
             await Session.create({
                 id: secondaryTokenHash,
                 userId: user.id,
@@ -959,7 +985,8 @@ app.post('/api/auth/pair/confirm', async (req, res) => {
                 ipAddress: pending.secondaryDevice.ip,
                 userAgent: pending.secondaryDevice.userAgent,
                 location: location,
-                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+                sessionGenerationMarker: prefs.sessionGenerationMarker
             });
             
             pending.res.json({
@@ -1043,7 +1070,19 @@ app.post('/api/auth/paired-devices/disconnect', async (req, res) => {
             // Revoke target session
             await Session.destroy({ where: { id: sessionId, userId: user.id } });
         } else {
-            // Revoke all secondary sessions
+            // Generational Eviction: Mint fresh marker in user profile
+            const UserPrefs = require('./database/models/UserPrefs');
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+            const freshMarker = require('uuid').v4();
+            await prefs.update({ sessionGenerationMarker: freshMarker });
+
+            // Keep current session active by updating its marker
+            await Session.update(
+                { sessionGenerationMarker: freshMarker },
+                { where: { id: tokenHash, userId: user.id } }
+            );
+
+            // Destroy all other sessions (whose markers are now invalid/old)
             const { Op } = require('sequelize');
             await Session.destroy({
                 where: {
@@ -1141,7 +1180,10 @@ app.get('/api/user/roblox', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        const record = await RobloxVerify.findOne({ where: { userId: user.id } });
+        const record = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } }) || 
+                       await RobloxVerify.findOne({ where: { userId: user.id, status: 'VERIFIED' } }) || 
+                       await RobloxVerify.findOne({ where: { userId: user.id } });
+                       
         if (!record) return res.json({ linked: false });
         
         let username = record.robloxId;
@@ -1157,9 +1199,113 @@ app.get('/api/user/roblox', async (req, res) => {
             }
         }
         
-        res.json({ linked: true, status: record.status, robloxId: record.robloxId, robloxUsername: username, verifyCode: record.verifyCode });
+        res.json({ linked: true, status: record.status, robloxId: record.robloxId, robloxUsername: username, verifyCode: record.verifyCode, isActive: record.isActive });
     } catch (e) {
         handleRouteError(res, e, '/api/user/roblox');
+    }
+});
+
+app.get('/api/user/roblox/accounts', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const records = await RobloxVerify.findAll({ where: { userId: user.id } });
+        
+        const userIds = records.map(r => parseInt(r.robloxId)).filter(id => !isNaN(id));
+        let profileMap = new Map();
+        if (userIds.length > 0) {
+            try {
+                const usersRes = await fetch('https://users.roblox.com/v1/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userIds, excludeBannedUsers: false })
+                });
+                if (usersRes.ok) {
+                    const usersData = await usersRes.json();
+                    if (usersData.data) {
+                        for (const u of usersData.data) {
+                            profileMap.set(u.id.toString(), u);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to batch fetch Roblox users:', e);
+            }
+        }
+
+        const accounts = records.map(r => {
+            const profile = profileMap.get(r.robloxId);
+            return {
+                id: r.id,
+                robloxId: r.robloxId,
+                robloxUsername: profile ? profile.name : r.robloxId,
+                robloxDisplayName: profile ? profile.displayName : r.robloxId,
+                status: r.status,
+                isActive: r.isActive,
+                verifyCode: r.verifyCode
+            };
+        });
+
+        res.json(accounts);
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/accounts');
+    }
+});
+
+app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    const { robloxId } = req.body || {};
+    if (!robloxId) return res.status(400).json({ error: 'Missing robloxId' });
+
+    try {
+        const user = await getDiscordUser(token);
+        const targetRecord = await RobloxVerify.findOne({ where: { userId: user.id, robloxId } });
+        if (!targetRecord) {
+            return res.status(404).json({ error: 'Roblox account verification record not found' });
+        }
+        if (targetRecord.status !== 'VERIFIED') {
+            return res.status(400).json({ error: 'Account must be verified before activation' });
+        }
+
+        // Toggle isActive: make all other accounts inactive
+        await RobloxVerify.update(
+            { isActive: false },
+            { where: { userId: user.id } }
+        );
+
+        // Update target to active
+        targetRecord.isActive = true;
+        await targetRecord.save();
+
+        // Immediately trigger role sync with backoff
+        const robloxSystem = require('./utils/robloxSystem');
+        const settingsCache = require('./utils/settingsCache');
+
+        for (const guild of client.guilds.cache.values()) {
+            try {
+                const member = await guild.members.fetch(user.id).catch(() => null);
+                if (member) {
+                    const settings = await settingsCache.get(guild.id);
+                    if (settings && settings.robloxVerifyEnabled) {
+                        let groupBindings = [];
+                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
+                        if (groupBindings.length > 0) {
+                            await robloxSystem.syncRobloxRolesWithBackoff(member, robloxId, groupBindings);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(`[Roblox API Sync] Guild roles sync failed for guild ${guild.id}:`, err.message);
+            }
+        }
+
+        res.json({ success: true, isActive: true });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/accounts/toggle');
     }
 });
 
@@ -1189,22 +1335,21 @@ app.post('/api/user/roblox/link', async (req, res) => {
         const code = `Nora-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
         const [record] = await RobloxVerify.findOrCreate({ 
-            where: { userId: user.id }, 
+            where: { userId: user.id, robloxId: robloxUser.id.toString() }, 
             defaults: { 
-                robloxId: robloxUser.id.toString(),
                 verifyCode: code, 
-                status: 'PENDING' 
+                status: 'PENDING',
+                isActive: false
             } 
         });
 
         if (record.status !== 'VERIFIED') {
             record.verifyCode = code;
-            record.robloxId = robloxUser.id.toString();
             record.status = 'PENDING';
             await record.save();
         }
 
-        res.json({ success: true, verifyCode: record.verifyCode, status: record.status, linked: true });
+        res.json({ success: true, verifyCode: record.verifyCode, status: record.status, linked: true, robloxId: record.robloxId });
     } catch (e) {
         handleRouteError(res, e, '/api/user/roblox/link');
     }
@@ -1214,9 +1359,15 @@ app.post('/api/user/roblox/check', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
+    const { robloxId } = req.body || {};
     try {
         const user = await getDiscordUser(token);
-        const record = await RobloxVerify.findOne({ where: { userId: user.id } });
+        let record;
+        if (robloxId) {
+            record = await RobloxVerify.findOne({ where: { userId: user.id, robloxId } });
+        } else {
+            record = await RobloxVerify.findOne({ where: { userId: user.id, status: 'PENDING' } });
+        }
         if (!record) return res.status(404).json({ error: 'Link not initialized' });
 
         // If robloxId is not numeric, it's a legacy username string. Let's resolve it first.
@@ -1245,7 +1396,47 @@ app.post('/api/user/roblox/check', async (req, res) => {
 
         if (description.includes(record.verifyCode)) {
             record.status = 'VERIFIED';
+            
+            // Check if user has an active verified account. If not, make this active.
+            const hasActive = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true, status: 'VERIFIED' } });
+            if (!hasActive) {
+                record.isActive = true;
+            }
             await record.save();
+
+            // Add to UserPrefs.auxiliaryRobloxHandles
+            const UserPrefs = require('./database/models/UserPrefs');
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+            let handles = [];
+            try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) {}
+            if (!handles.includes(record.robloxId)) {
+                handles.push(record.robloxId);
+                await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
+            }
+
+            // Sync Roblox roles with backoff
+            if (record.isActive) {
+                const robloxSystem = require('./utils/robloxSystem');
+                const settingsCache = require('./utils/settingsCache');
+                for (const guild of client.guilds.cache.values()) {
+                    try {
+                        const member = await guild.members.fetch(user.id).catch(() => null);
+                        if (member) {
+                            const settings = await settingsCache.get(guild.id);
+                            if (settings && settings.robloxVerifyEnabled) {
+                                let groupBindings = [];
+                                try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
+                                if (groupBindings.length > 0) {
+                                    await robloxSystem.syncRobloxRolesWithBackoff(member, record.robloxId, groupBindings);
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error(`[Roblox API Sync] Guild roles sync failed for guild ${guild.id}:`, err.message);
+                    }
+                }
+            }
+
             res.json({ success: true, status: 'VERIFIED', robloxId: record.robloxId, robloxUsername: profileData.name });
         } else {
             res.status(400).json({ error: `Verification code "${record.verifyCode}" was not found in your Roblox description.` });
@@ -1259,9 +1450,34 @@ app.post('/api/user/roblox/unlink', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
+    const { robloxId } = req.body || {};
     try {
         const user = await getDiscordUser(token);
-        await RobloxVerify.destroy({ where: { userId: user.id } });
+        
+        if (robloxId) {
+            await RobloxVerify.destroy({ where: { userId: user.id, robloxId } });
+            
+            const UserPrefs = require('./database/models/UserPrefs');
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+            let handles = [];
+            try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) {}
+            handles = handles.filter(h => h !== robloxId);
+            await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
+
+            const remainingActive = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } });
+            if (!remainingActive) {
+                const nextActive = await RobloxVerify.findOne({ where: { userId: user.id, status: 'VERIFIED' } });
+                if (nextActive) {
+                    nextActive.isActive = true;
+                    await nextActive.save();
+                }
+            }
+        } else {
+            await RobloxVerify.destroy({ where: { userId: user.id } });
+            const UserPrefs = require('./database/models/UserPrefs');
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+            await prefs.update({ auxiliaryRobloxHandles: '[]' });
+        }
         res.json({ success: true });
     } catch (e) {
         handleRouteError(res, e, '/api/user/roblox/unlink');
@@ -1274,7 +1490,8 @@ app.get('/api/user/roblox/presence', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        const record = await RobloxVerify.findOne({ where: { userId: user.id } });
+        const record = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } }) || 
+                       await RobloxVerify.findOne({ where: { userId: user.id, status: 'VERIFIED' } });
         
         if (!record || record.status !== 'VERIFIED') {
             return res.json({ error: 'Not linked' });
@@ -1282,7 +1499,6 @@ app.get('/api/user/roblox/presence', async (req, res) => {
         
         let robloxId = record.robloxId;
         
-        // If robloxId is not numeric, it's a legacy username string. Let's resolve it first.
         if (!/^\d+$/.test(robloxId)) {
             try {
                 const searchRes = await fetch('https://users.roblox.com/v1/usernames/users', {

@@ -138,12 +138,46 @@ router.post('/', async (req, res) => {
             }
         }
 
+        // Decode topggWebhookAvatar base64 image if present
+        if (payload.topggWebhookAvatar) {
+            const { saveBase64Image } = require('../../utils/imageSaver');
+            payload.topggWebhookAvatar = saveBase64Image(payload.topggWebhookAvatar, 'topgg_avatar');
+        }
+
         // Force levelUpDmEnabled to false/disabled until a robust opt-out mechanism is implemented
         payload.levelUpDmEnabled = false;
 
         // Update the settings model with the payload provided by the dashboard
         await settings.update(payload);
         settingsCache.invalidate(guildId);
+
+        // Sync Top.gg Webhook Auth Token to TopggConnection if updated
+        if (payload.topggWebhookAuth !== undefined) {
+            const TopggConnection = require('../../database/models/TopggConnection');
+            const targetId = payload.topggBotId !== undefined ? payload.topggBotId : settings.topggBotId;
+            
+            if (targetId) {
+                // Try updating the bot connection
+                const botConn = await TopggConnection.findOne({
+                    where: { guildId, targetId, type: 'bot' }
+                });
+                if (botConn) {
+                    await botConn.update({ token: payload.topggWebhookAuth });
+                    console.log(`[Top.gg Sync] Updated webhook auth token for bot connection ${botConn.id}`);
+                }
+            }
+            
+            // Also try updating the server connection if no bot connection was found/updated, or if targetId is the guildId
+            if (!targetId || targetId === guildId) {
+                const serverConn = await TopggConnection.findOne({
+                    where: { guildId, targetId: guildId, type: 'server' }
+                });
+                if (serverConn) {
+                    await serverConn.update({ token: payload.topggWebhookAuth });
+                    console.log(`[Top.gg Sync] Updated webhook auth token for server connection ${serverConn.id}`);
+                }
+            }
+        }
 
         // Trigger live Discord integration: sync AutoMod rules live on settings change
         const { syncAllAutoModRules } = require('../../utils/automodSync');
@@ -157,6 +191,27 @@ router.post('/', async (req, res) => {
     } catch (error) {
         console.error(`Error updating settings for guild ${req.params.guildId}:`, error);
         res.status(500).json({ error: 'Internal server error while updating settings.' });
+    }
+});
+
+/**
+ * DELETE /api/guilds/:guildId/settings
+ * Performs a cascading reset / data erasure for the guild.
+ */
+router.delete('/', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { performCascadingErasure } = require('../../utils/erasure');
+        
+        await performCascadingErasure(guildId);
+        
+        // Invalidate the settings cache as well
+        settingsCache.invalidate(guildId);
+        
+        res.json({ success: true, message: 'Cascading settings reset successfully performed.' });
+    } catch (error) {
+        console.error(`Error deleting settings for guild ${req.params.guildId}:`, error);
+        res.status(500).json({ error: 'Internal server error during settings reset.' });
     }
 });
 

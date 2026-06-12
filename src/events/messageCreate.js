@@ -22,8 +22,8 @@ module.exports = {
             // Robust High-Performance Settings Fetch
             let settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } });
 
-            // If the guild is new, we fallback to Default-ON
-            const levelingEnabled = settings ? settings.levelingEnabled : true;
+            // If the guild is new, we fallback to Default-OFF
+            const levelingEnabled = settings ? settings.levelingEnabled : false;
             if (!levelingEnabled) return;
 
             // 🛡️ AutoMod Priority: If member is timed out (likely by Discord AutoMod), skip bot-level processing

@@ -2,9 +2,14 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
 const RobloxVerify = sequelize.define('RobloxVerify', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     userId: {
         type: DataTypes.STRING,
-        primaryKey: true
+        allowNull: false
     },
     robloxId: {
         type: DataTypes.STRING,
@@ -17,6 +22,10 @@ const RobloxVerify = sequelize.define('RobloxVerify', {
     status: {
         type: DataTypes.STRING,
         defaultValue: 'PENDING' // PENDING, VERIFIED
+    },
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 

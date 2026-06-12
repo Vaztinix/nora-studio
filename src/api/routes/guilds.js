@@ -570,6 +570,10 @@ router.post('/webhook-send', async (req, res) => {
 
         if (!channelId) return res.status(400).json({ error: 'Missing channelId' });
 
+        const { saveBase64Image } = require('../../utils/imageSaver');
+        const processedAvatar = avatar ? saveBase64Image(avatar, 'broadcast_avatar') : null;
+        const processedEmbedImage = embedImage ? saveBase64Image(embedImage, 'broadcast_embed') : null;
+
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
@@ -598,7 +602,7 @@ router.post('/webhook-send', async (req, res) => {
         if (!webhook) {
             webhook = await channel.createWebhook({
                 name: name || 'Nora Broadcast',
-                avatar: avatar || null,
+                avatar: processedAvatar || null,
                 reason: 'Nora Broadcast Webhook Builder'
             });
         }
@@ -606,7 +610,7 @@ router.post('/webhook-send', async (req, res) => {
         // Build embeds
         const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
         const embeds = [];
-        if (embedTitle || embedDesc || embedImage) {
+        if (embedTitle || embedDesc || processedEmbedImage) {
             const embed = new EmbedBuilder();
             if (embedTitle) embed.setTitle(embedTitle);
             if (embedDesc) embed.setDescription(embedDesc);
@@ -619,7 +623,7 @@ router.post('/webhook-send', async (req, res) => {
             } else {
                 embed.setColor('#aeefff');
             }
-            if (embedImage) embed.setImage(embedImage);
+            if (processedEmbedImage) embed.setImage(processedEmbedImage);
             embeds.push(embed);
         }
 
@@ -658,7 +662,7 @@ router.post('/webhook-send', async (req, res) => {
         };
 
         if (name) sendPayload.username = name;
-        if (avatar) sendPayload.avatarURL = avatar;
+        if (processedAvatar) sendPayload.avatarURL = processedAvatar;
 
         await webhook.send(sendPayload);
 

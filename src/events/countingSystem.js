@@ -74,24 +74,50 @@ module.exports = {
         const settings = await settingsCache.get(message.guild.id);
         if (!settings || !settings.countingChannelId || message.channel.id !== settings.countingChannelId) return;
 
-        const number = parseInt(message.content.trim(), 10);
-        if (isNaN(number)) return;
+        // 1. Blacklisted users check
+        let blacklistedUsers = [];
+        try {
+            blacklistedUsers = JSON.parse(settings.countingBlacklistedUsers || '[]');
+        } catch (e) {}
+        if (blacklistedUsers.includes(message.author.id)) {
+            return; // Silently drop
+        }
+
+        // 2. Whitelisted roles check
+        let whitelistedRoles = [];
+        try {
+            whitelistedRoles = JSON.parse(settings.countingWhitelistedRoles || '[]');
+        } catch (e) {}
+        if (whitelistedRoles.length > 0) {
+            const hasRole = message.member?.roles.cache.some(role => whitelistedRoles.includes(role.id));
+            if (!hasRole) {
+                return; // Silently drop
+            }
+        }
 
         const allData = await loadCountingData();
         const guildData = allData[message.guild.id] || { currentCount: 0, lastUserId: null };
         const expectedNext = guildData.currentCount + 1;
 
-        // Rule: No double-counting in a row on this specific server
-        if (guildData.lastUserId === message.author.id) {
-            await message.reply({ content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to 0.` });
+        // 3. Evaluate expression using evaluateCountingInput
+        const { evaluateCountingInput } = require('../bot/engines/counter');
+        const evalResult = evaluateCountingInput(message.content.trim(), expectedNext);
+
+        if (!evalResult.isValid) {
+            // Reject any message with letters silently to allow chatter, but ruin if they typed a wrong number
+            if (evalResult.reason && evalResult.reason.includes("Security rejection")) {
+                return; 
+            }
+            
+            await message.reply({ content: `You ruined it, <@${message.author.id}>! ${evalResult.reason} The count is reset back to 0.` });
             allData[message.guild.id] = { currentCount: 0, lastUserId: null };
             queueSave();
             return;
         }
 
-        // Rule: Correct number must be sent
-        if (number !== expectedNext) {
-            await message.reply({ content: `You ruined it, <@${message.author.id}>! The next number was supposed to be **${expectedNext}**. The count is reset back to 0.` });
+        // Rule: No double-counting in a row on this specific server
+        if (guildData.lastUserId === message.author.id) {
+            await message.reply({ content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to 0.` });
             allData[message.guild.id] = { currentCount: 0, lastUserId: null };
             queueSave();
             return;

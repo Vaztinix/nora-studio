@@ -38,6 +38,10 @@ const Session = sequelize.define('Session', {
     expiresAt: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    sessionGenerationMarker: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 });
 

@@ -30,6 +30,17 @@ module.exports = {
 
         console.log(`[System] System Connection Synchronized: ${guild.name} (ID: ${guild.id})`);
         
+        // Write non-volatile timestamp boundary anchor for forward-only privacy
+        try {
+            const [settings] = await GuildSettings.findOrCreate({ where: { guildId: guild.id } });
+            if (!settings.installedAt) {
+                await settings.update({ installedAt: new Date() });
+                console.log(`[Privacy Boundary] Initialized installedAt for server ${guild.name} (${guild.id})`);
+            }
+        } catch (e) {
+            console.error(`[Privacy Boundary Error] Failed to write installedAt for ${guild.id}:`, e.message);
+        }
+
         // Update Top.gg Stats
         await updateStats(guild.client);
         

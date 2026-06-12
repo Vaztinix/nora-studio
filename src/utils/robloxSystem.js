@@ -52,6 +52,8 @@ module.exports = {
             // For now, we rely on the manual "Check Status" in dashboard or /verify-roblox check
         }
     }
+    syncGroupRanks: syncGroupRanks,
+    syncRobloxRolesWithBackoff: syncRobloxRolesWithBackoff
 };
 
 async function syncAllGuilds(client) {
@@ -60,6 +62,39 @@ async function syncAllGuilds(client) {
             await module.exports.syncGuild(client, guild.id);
         } catch (e) {
             console.error(`[Roblox System] Failed sync for ${guild.name}:`, e.message);
+        }
+    }
+}
+
+async function syncRobloxRolesWithBackoff(member, robloxId, bindings, attempts = 1, delay = 1000) {
+    try {
+        const res = await axios.get(`https://groups.roblox.com/v2/users/${robloxId}/groups/roles`, { timeout: 5000 });
+        const userGroups = res.data.data || [];
+
+        for (const binding of bindings) {
+            const userGroup = userGroups.find(g => g.group.id.toString() === binding.groupId.toString());
+            const role = member.guild.roles.cache.get(binding.roleId);
+            if (!role) continue;
+
+            const hasRole = member.roles.cache.has(role.id);
+            const rankMatch = userGroup && userGroup.role.rank.toString() === binding.rank.toString();
+
+            if (rankMatch && !hasRole) {
+                await member.roles.add(role, 'Nora Roblox Group Sync').catch(() => {});
+            } else if (!rankMatch && hasRole) {
+                await member.roles.remove(role, 'Nora Roblox Group Sync').catch(() => {});
+            }
+        }
+        console.log(`[Roblox Group Sync] Successfully synced roles for User ${member.id} / Roblox ${robloxId}`);
+    } catch (e) {
+        if (attempts < 5) {
+            const nextDelay = delay * 2;
+            console.warn(`[Roblox Group Sync] Transient error fetching group roles for Roblox ID ${robloxId}. Retrying attempt ${attempts + 1} in ${nextDelay}ms. Error: ${e.message}`);
+            setTimeout(() => {
+                syncRobloxRolesWithBackoff(member, robloxId, bindings, attempts + 1, nextDelay);
+            }, nextDelay);
+        } else {
+            console.error(`[Roblox Group Sync] Failed to sync roles for Roblox ID ${robloxId} after 5 attempts. Skipping.`);
         }
     }
 }

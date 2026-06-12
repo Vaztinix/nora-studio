@@ -19,7 +19,19 @@ module.exports = (client) => {
             if (event.once) {
                 client.once(event.name, (...args) => event.execute(...args, client));
             } else {
-                client.on(event.name, (...args) => event.execute(...args, client));
+                client.on(event.name, async (...args) => {
+                    if (event.name === 'messageCreate') {
+                        const message = args[0];
+                        try {
+                            const { processMessageEvent } = require('../bot/middleware/gateway');
+                            const processed = await processMessageEvent(message);
+                            if (!processed) return; // Silent discard
+                        } catch (err) {
+                            console.error('[Gateway Middleware Error]:', err.message);
+                        }
+                    }
+                    event.execute(...args, client);
+                });
             }
             registeredCount++;
         } catch (e) {

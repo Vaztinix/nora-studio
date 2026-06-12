@@ -7,6 +7,12 @@ module.exports = {
     async execute(guild) {
         console.log(`[System] System Link Deactivated: ${guild.name} (ID: ${guild.id})`);
         
+        // Trigger Cascading Erasure Sequence
+        const { performCascadingErasure } = require('../utils/erasure');
+        await performCascadingErasure(guild.id).catch(err => {
+            console.error(`[GuildDelete Erasure Error] Failed:`, err);
+        });
+
         // Update Top.gg Stats
         await updateStats(guild.client);
 

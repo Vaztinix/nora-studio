@@ -9,7 +9,7 @@ const GuildSettings = sequelize.define('GuildSettings', {
     },
     levelingEnabled: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
+        defaultValue: false
     },
     welcomerEnabled: {
         type: DataTypes.BOOLEAN,
@@ -450,6 +450,55 @@ const GuildSettings = sequelize.define('GuildSettings', {
     customModResponses: {
         type: DataTypes.TEXT,
         defaultValue: '{}'
+    },
+    installedAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
+    },
+    autoModActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    useDefaultSafetyRules: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    customBlockedContexts: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    muteDurationMinutes: {
+        type: DataTypes.INTEGER,
+        defaultValue: 60
+    },
+    maxWarningsBeforeAction: {
+        type: DataTypes.INTEGER,
+        defaultValue: 3
+    },
+    countingWhitelistedRoles: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    countingBlacklistedUsers: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    themePrimaryColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#4F46E5'
+    },
+    themeComponentRounding: {
+        type: DataTypes.STRING,
+        defaultValue: '8px'
+    },
+    themeSidebarState: {
+        type: DataTypes.STRING,
+        defaultValue: 'Locked'
+    },
+    themeBackgroundImage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
     }
 });
 

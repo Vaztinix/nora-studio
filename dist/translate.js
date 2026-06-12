@@ -1899,6 +1899,7 @@
                     const txt = el.childNodes[0].nodeValue.trim();
                     if (txt && txt.length > 0 && !el.hasAttribute('data-i18n')) {
                         el.setAttribute('data-i18n', txt);
+                        el.setAttribute('data-i18n-original-text', el.childNodes[0].nodeValue);
                     }
                 } else if (el.childNodes.length > 1) {
                     // Check for mixed content: mix of text nodes and element nodes (e.g. icon + text)
@@ -1919,6 +1920,7 @@
                                 if (txt && txt.length > 0) {
                                     const span = document.createElement('span');
                                     span.setAttribute('data-i18n', txt);
+                                    span.setAttribute('data-i18n-original-text', node.nodeValue);
                                     span.textContent = node.nodeValue; // Preserve whitespace
                                     el.replaceChild(span, node);
                                 }
@@ -1951,10 +1953,11 @@
         target.querySelectorAll('[data-i18n]').forEach(el => {
             const original = el.getAttribute('data-i18n').trim();
             if (!original) return;
+            const originalFullText = el.getAttribute('data-i18n-original-text') || original;
             if (lang !== 'en' && DASHBOARD_I18N[lang] && DASHBOARD_I18N[lang][original]) {
                 el.textContent = DASHBOARD_I18N[lang][original];
             } else {
-                el.textContent = original;
+                el.textContent = originalFullText;
             }
         });
 

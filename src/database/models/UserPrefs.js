@@ -77,6 +77,14 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.DATE,
         allowNull: true,
         defaultValue: null
+    },
+    sessionGenerationMarker: {
+        type: DataTypes.STRING,
+        defaultValue: () => require('uuid').v4()
+    },
+    auxiliaryRobloxHandles: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
     }
 });
 
