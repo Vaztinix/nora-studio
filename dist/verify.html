@@ -563,7 +563,10 @@
                 const res = await fetch(getApiBaseUrl() + '/api/user/me', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                if (!res.ok) throw new Error('Invalid session');
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || `HTTP ${res.status}`);
+                }
                 const user = await res.json();
                 currentUser = user;
 
@@ -579,6 +582,14 @@
                 loadLinkedAccounts();
             } catch (err) {
                 console.error(err);
+                showToast(`Authentication failed: ${err.message || err}`, 'error');
+
+                if (window.location.protocol === 'https:' && getApiBaseUrl().startsWith('http://')) {
+                    setTimeout(() => {
+                        showToast('Mixed Content: Secure site (https) cannot query local API (http). Please use http://localhost:3000/verify for local testing.', 'error');
+                    }, 1500);
+                }
+
                 sessionStorage.removeItem('discord_token');
                 document.getElementById('view-auth').style.display = 'block';
                 document.getElementById('view-main').style.display = 'none';
