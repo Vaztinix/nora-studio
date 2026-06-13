@@ -387,21 +387,25 @@ router.post('/webhook-send', async (req, res) => {
             }
         }
         
+        const { saveBase64Image } = require('../../utils/imageSaver');
+        const resolvedAvatar = saveBase64Image(avatar, 'webhook_avatar');
+        const resolvedEmbedImage = saveBase64Image(embedImage, 'webhook_embed');
+
         // Build the webhook payload
         const webhookPayload = {};
         
         if (name) webhookPayload.username = name;
-        if (avatar) webhookPayload.avatarURL = avatar;
+        if (resolvedAvatar) webhookPayload.avatarURL = resolvedAvatar;
         if (content) webhookPayload.content = content;
         
         // Build embed if any embed fields are provided
-        if (embedTitle || embedDesc || embedImage) {
+        if (embedTitle || embedDesc || resolvedEmbedImage) {
             const { EmbedBuilder } = require('discord.js');
             const embed = new EmbedBuilder();
             if (embedTitle) embed.setTitle(embedTitle);
             if (embedDesc) embed.setDescription(embedDesc);
             if (embedColor) embed.setColor(embedColor);
-            if (embedImage) embed.setImage(embedImage);
+            if (resolvedEmbedImage) embed.setImage(resolvedEmbedImage);
             webhookPayload.embeds = [embed];
         }
         
@@ -424,6 +428,26 @@ router.post('/webhook-send', async (req, res) => {
         }
         
         await webhook.send(webhookPayload);
+
+        try {
+            const authHeader = req.headers.authorization;
+            const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+            const user = token ? await getDiscordUser(token).catch(() => null) : null;
+            const logger = require('../../utils/logger');
+            const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Action - Webhook Broadcast Sent',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Channel', value: `<#${channelId}>`, inline: true },
+                    { name: 'Embed Title', value: embedTitle || '*None*', inline: true },
+                    { name: 'Content Preview', value: content ? content.substring(0, 500) : '*Embed Only*' }
+                ],
+                0x2ecc71
+            ).catch(() => null);
+        } catch (err) {}
+
         res.json({ success: true, message: 'Broadcast sent successfully!' });
     } catch (e) {
         console.error('Webhook broadcast error:', e);
@@ -442,6 +466,11 @@ router.post('/action', async (req, res) => {
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found.' });
 
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
         // ─── Utility Spawn Actions (no userId required) ───
         if (action === 'spawn_tickets') {
             const settingsCache = require('../../utils/settingsCache');
@@ -450,11 +479,16 @@ router.post('/action', async (req, res) => {
                 return res.status(400).json({ error: 'Ticket Category ID must be set in settings first.' });
             }
 
-            // Find a suitable channel to spawn in (first text channel in the ticket category, or general)
-            const category = guild.channels.cache.get(settings.ticketCategoryId);
+            // Find a suitable channel to spawn in
             let targetChannel = null;
-            if (category && category.type === 4) { // Category channel
-                targetChannel = category.children.cache.find(c => c.type === 0);
+            if (settings.ticketChannelId) {
+                targetChannel = guild.channels.cache.get(settings.ticketChannelId);
+            }
+            if (!targetChannel) {
+                const category = guild.channels.cache.get(settings.ticketCategoryId);
+                if (category && category.type === 4) { // Category channel
+                    targetChannel = category.children.cache.find(c => c.type === 0);
+                }
             }
             if (!targetChannel) {
                 targetChannel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
@@ -475,6 +509,18 @@ router.post('/action', async (req, res) => {
                 new ButtonBuilder().setCustomId('ticket_Other').setLabel('Other').setStyle(ButtonStyle.Secondary)
             );
             await targetChannel.send({ embeds: [pEmbed], components: [pRow] });
+
+            const logger = require('../../utils/logger');
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Action - Spawn Ticket Panel',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Channel', value: `<#${targetChannel.id}>`, inline: true }
+                ],
+                0x3498db
+            ).catch(() => null);
+
             return res.json({ success: true, message: `Ticket panel spawned in #${targetChannel.name}!` });
         }
 
@@ -502,6 +548,18 @@ router.post('/action', async (req, res) => {
                 new ButtonBuilder().setCustomId('verify_system_button').setLabel('Verify').setStyle(ButtonStyle.Success)
             );
             await channel.send({ embeds: [pEmbed], components: [pRow] });
+
+            const logger = require('../../utils/logger');
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Action - Spawn Verification Panel',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Channel', value: `<#${channel.id}>`, inline: true }
+                ],
+                0x3498db
+            ).catch(() => null);
+
             return res.json({ success: true, message: `Verification panel spawned in #${channel.name}!` });
         }
 
@@ -515,16 +573,46 @@ router.post('/action', async (req, res) => {
                 return res.status(400).json({ error: 'Roblox verified role must be set in settings first.' });
             }
 
-            let channel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
+            let channel = null;
+            if (settings.robloxVerifyChannelId) {
+                channel = guild.channels.cache.get(settings.robloxVerifyChannelId);
+            }
+            if (!channel) {
+                channel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
+            }
             if (!channel) return res.status(400).json({ error: 'No suitable text channel found.' });
 
-            const { EmbedBuilder } = require('discord.js');
+            const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
             const pEmbed = new EmbedBuilder()
-                .setTitle('🎮 Roblox Account Verification')
+                .setTitle('Roblox Account Verification')
                 .setDescription('Link your Roblox account to this Discord server for access, roles, and perks!\n\n**How to verify:**\n1️⃣ Use the `/verify link` command with your Roblox username\n2️⃣ Copy the verification code provided\n3️⃣ Paste it into your Roblox profile description\n4️⃣ Run `/verify check` to complete verification\n\n**Manage your accounts:**\n• `/verify list` — View all linked accounts\n• `/verify switch` — Change your active account\n• `/verify unlink` — Remove a linked account')
                 .setColor('#00b4d8')
                 .setFooter({ text: 'Roblox Verification System' });
-            await channel.send({ embeds: [pEmbed] });
+
+            const pRow = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setLabel('Verify via Website')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL('https://vaztinix.dev/verify'),
+                new ButtonBuilder()
+                    .setCustomId('roblox_verify_alt')
+                    .setLabel('Alternative Verification')
+                    .setStyle(ButtonStyle.Secondary)
+            );
+
+            await channel.send({ embeds: [pEmbed], components: [pRow] });
+
+            const logger = require('../../utils/logger');
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Action - Spawn Roblox Verification Panel',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Channel', value: `<#${channel.id}>`, inline: true }
+                ],
+                0x00b4d8
+            ).catch(() => null);
+
             return res.json({ success: true, message: `Roblox verification panel spawned in #${channel.name}!` });
         }
 
@@ -554,9 +642,31 @@ router.post('/action', async (req, res) => {
 
         if (action === 'kick') {
             await member.kick(reason || 'Kicked from Web Dashboard');
+            const logger = require('../../utils/logger');
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Action - Member Kicked',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                    { name: 'Reason', value: reason || 'No reason provided' }
+                ],
+                0xffaa00
+            ).catch(() => null);
             return res.json({ success: true, message: `Successfully kicked ${member.user.tag}` });
         } else if (action === 'ban') {
             await member.ban({ reason: reason || 'Banned from Web Dashboard' });
+            const logger = require('../../utils/logger');
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Action - Member Banned',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                    { name: 'Reason', value: reason || 'No reason provided' }
+                ],
+                0xff0000
+            ).catch(() => null);
             return res.json({ success: true, message: `Successfully banned ${member.user.tag}` });
         } else if (action === 'warn') {
             await Warning.create({
@@ -565,6 +675,17 @@ router.post('/action', async (req, res) => {
                 reason: reason || 'Warned from Web Dashboard',
                 moderatorId: req.userGuild.id
             });
+            const logger = require('../../utils/logger');
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Action - Member Warned',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                    { name: 'Reason', value: reason || 'No reason provided' }
+                ],
+                0xffff00
+            ).catch(() => null);
             return res.json({ success: true, message: `Successfully warned ${member.user.tag}` });
         }
 

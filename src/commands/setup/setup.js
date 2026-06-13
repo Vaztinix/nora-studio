@@ -100,6 +100,7 @@ module.exports = {
                     { label: 'Strikes & Bans', value: 'view_warnings', description: 'Manage how users are punished for bad behavior.' },
                     { label: 'Support Tickets', value: 'view_ticketing', description: 'Help members with a private ticket system.' },
                     { label: 'Join Verification', value: 'view_verify', description: 'Verify new members before they join.' },
+                    { label: 'Roblox Verification', value: 'view_roblox', description: 'Configure Roblox integration and panel.' },
                     { label: 'Self Roles', value: 'view_selfroles', description: 'Create interactive role panels.' },
                     { label: 'Fun & Games', value: 'view_extras', description: 'Welcomer, Counting game, and more.' },
                     { label: 'AI Settings', value: 'view_ai', description: 'Change Nora\'s AI engine and personality.' }
@@ -303,10 +304,11 @@ module.exports = {
             // --- TICKETING ---
             if (viewName === 'view_ticketing') {
                 embed.setTitle('Support Tickets')
-                     .setDescription(`Current Ticket Category: ${settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : 'None'}`);
+                     .setDescription(`Current Ticket Category: ${settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : 'None'}\nTicket Spawn Channel: ${settings.ticketChannelId ? `<#${settings.ticketChannelId}>` : 'First suitable text channel'}`);
                 const row = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_ticket_category').setPlaceholder('Select Ticket Category...').setChannelTypes(ChannelType.GuildCategory));
-                const rowB = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_ticket_spawn').setLabel('Spawn Ticket Panel Here').setStyle(ButtonStyle.Success));
-                return { embeds: [embed], components: [row, rowB, backRow] };
+                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_ticket_channel').setPlaceholder('Select Spawn Channel...').setChannelTypes(ChannelType.GuildText));
+                const rowC = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_ticket_spawn').setLabel('Spawn Ticket Panel').setStyle(ButtonStyle.Success));
+                return { embeds: [embed], components: [row, rowB, rowC, backRow] };
             }
 
             // --- VERIFY ---
@@ -322,6 +324,24 @@ module.exports = {
                 const rowB = new ActionRowBuilder().addComponents(new RoleSelectMenuBuilder().setCustomId('action_verify_role').setPlaceholder('Select Verified Role(s)...').setMinValues(1).setMaxValues(5));
                 const rowC = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_verify_spawn').setLabel('Spawn Verify Panel').setStyle(ButtonStyle.Success));
                 return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+            }
+
+            // --- ROBLOX ---
+            if (viewName === 'view_roblox') {
+                embed.setTitle('Roblox Verification')
+                     .setDescription('Configure Roblox integration and panel spawning.')
+                     .addFields(
+                          { name: 'Status', value: settings.robloxVerifyEnabled ? 'Enabled' : 'Disabled', inline: true },
+                          { name: 'Verified Role', value: settings.robloxVerifyRoleId ? `<@&${settings.robloxVerifyRoleId}>` : 'None', inline: true },
+                          { name: 'Spawn Channel', value: settings.robloxVerifyChannelId ? `<#${settings.robloxVerifyChannelId}>` : 'First text channel', inline: true }
+                      );
+                const rowA = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_roblox_toggle').setLabel(settings.robloxVerifyEnabled ? 'Disable Roblox Verify' : 'Enable Roblox Verify').setStyle(settings.robloxVerifyEnabled ? ButtonStyle.Danger : ButtonStyle.Success));
+                const rowB = new ActionRowBuilder().addComponents(new RoleSelectMenuBuilder().setCustomId('action_roblox_role').setPlaceholder('Select Roblox Verified Role...'));
+                const rowC = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_roblox_channel').setPlaceholder('Select Spawn Channel...').setChannelTypes(ChannelType.GuildText));
+                const rowD = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_roblox_spawn').setLabel('Spawn Roblox Verify Panel').setStyle(ButtonStyle.Success)
+                );
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
             // --- SELF ROLES ---
@@ -437,8 +457,12 @@ module.exports = {
                 
                 // Ticketing
                 if (i.customId === 'action_ticket_category') { settings.ticketCategoryId = i.values[0]; update = true; }
+                if (i.customId === 'action_ticket_channel') { settings.ticketChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_ticket_spawn') {
                     if (!settings.ticketCategoryId) return i.reply({ content: '⚠️ You must select a Ticket Category above first!', ephemeral: true });
+                    const targetChannelId = settings.ticketChannelId || i.channel.id;
+                    const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
+                    
                     const pEmbed = new EmbedBuilder()
                         .setTitle('Support Center')
                         .setDescription('Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.')
@@ -451,8 +475,8 @@ module.exports = {
                         new ButtonBuilder().setCustomId('ticket_Appeals').setLabel('Appeals').setStyle(ButtonStyle.Secondary),
                         new ButtonBuilder().setCustomId('ticket_Other').setLabel('Other').setStyle(ButtonStyle.Secondary)
                     );
-                    await i.channel.send({ embeds: [pEmbed], components: [pRow] });
-                    return i.reply({ content: 'Ticketing panel spawned in this channel!', ephemeral: true });
+                    await channel.send({ embeds: [pEmbed], components: [pRow] });
+                    return i.reply({ content: `Ticketing panel spawned in <#${channel.id}>!`, ephemeral: true });
                 }
                 
                 // Verify
@@ -472,6 +496,38 @@ module.exports = {
                     
                     await channel.send({ embeds: [pEmbed], components: [pRow] });
                     return i.reply({ content: `Verification panel spawned in <#${channel.id}>!`, ephemeral: true });
+                }
+
+                // Roblox
+                if (i.customId === 'action_roblox_toggle') { settings.robloxVerifyEnabled = !settings.robloxVerifyEnabled; update = true; }
+                if (i.customId === 'action_roblox_role') { settings.robloxVerifyRoleId = i.values[0]; update = true; }
+                if (i.customId === 'action_roblox_channel') { settings.robloxVerifyChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_roblox_spawn') {
+                    if (!settings.robloxVerifyEnabled) return i.reply({ content: '⚠️ Roblox verification must be enabled in settings first!', ephemeral: true });
+                    if (!settings.robloxVerifyRoleId) return i.reply({ content: '⚠️ Roblox verified role must be set in settings first!', ephemeral: true });
+                    
+                    const targetChannelId = settings.robloxVerifyChannelId || i.channel.id;
+                    const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
+
+                    const pEmbed = new EmbedBuilder()
+                        .setTitle('Roblox Account Verification')
+                        .setDescription('Link your Roblox account to this Discord server for access, roles, and perks!\n\n**How to verify:**\n1️⃣ Use the `/verify link` command with your Roblox username\n2️⃣ Copy the verification code provided\n3️⃣ Paste it into your Roblox profile description\n4️⃣ Run `/verify check` to complete verification\n\n**Manage your accounts:**\n• `/verify list` — View all linked accounts\n• `/verify switch` — Change your active account\n• `/verify unlink` — Remove a linked account')
+                        .setColor('#00b4d8')
+                        .setFooter({ text: 'Roblox Verification System' });
+
+                    const pRow = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setLabel('Verify via Website')
+                            .setStyle(ButtonStyle.Link)
+                            .setURL('https://vaztinix.dev/verify'),
+                        new ButtonBuilder()
+                            .setCustomId('roblox_verify_alt')
+                            .setLabel('Alternative Verification')
+                            .setStyle(ButtonStyle.Secondary)
+                    );
+
+                    await channel.send({ embeds: [pEmbed], components: [pRow] });
+                    return i.reply({ content: `Roblox verification panel spawned in <#${channel.id}>!`, ephemeral: true });
                 }
 
                 // Self Roles

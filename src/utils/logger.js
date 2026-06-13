@@ -55,6 +55,32 @@ class Logger {
     info(context, message) {
         console.log('\x1b[32m%s\x1b[0m', `[${context}] ${message}`);
     }
+
+    async logDashboardOrCommandAction(guild, title, fields, color = 0x57acf2) {
+        if (!guild) return;
+        try {
+            const GuildSettings = require('../database/models/GuildSettings');
+            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+            if (!settings || !settings.loggingChannelId || !settings.logDashboardActions) return;
+
+            let logChannel = guild.channels.cache.get(settings.loggingChannelId);
+            if (!logChannel) logChannel = await guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+            if (!logChannel) return;
+
+            const { EmbedBuilder } = require('discord.js');
+            const embed = new EmbedBuilder()
+                .setTitle(title)
+                .setColor(color)
+                .addFields(fields)
+                .setTimestamp();
+
+            await logChannel.send({ embeds: [embed] }).catch(err => {
+                console.error(`[Logger ERROR] Failed to send log to ${logChannel.name}:`, err.message);
+            });
+        } catch (e) {
+            console.error('[Logger] Error sending dashboard or command log:', e);
+        }
+    }
 }
 
 module.exports = new Logger();

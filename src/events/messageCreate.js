@@ -102,14 +102,25 @@ module.exports = {
 
                 if (settings?.levelUpNotificationsEnabled !== false) {
                     const template = settings?.levelUpMessage;
-                    const desc = template ? formatMessage(template, message.member || message.author, level) : `Congratulations <@${message.author.id}>! You've climbed to **Level ${level}**!`;
+                    const desc = template ? formatMessage(template, message.member || message.author, level) : `<@${message.author.id}> has reached level **${level}**. GG!`;
 
-                    const embed = new EmbedBuilder()
-                        .setTitle('Level Up')
-                        .setDescription(desc)
-                        .setColor(require('../utils/embeds').getRoleColor(message))
-                        .setTimestamp();
-                    await notifyChannel.send({ embeds: [embed] }).catch(() => { });
+                    const showPfp = settings?.levelingPfpEnabled !== false;
+
+                    try {
+                        const { generateLevelUpCard } = require('../utils/levelUpGenerator');
+                        const imageBuffer = await generateLevelUpCard({
+                            oldLevel: level - 1,
+                            newLevel: level,
+                            avatarUrl: message.author.displayAvatarURL({ extension: 'png', size: 128 }),
+                            showPfp: showPfp
+                        });
+
+                        const attachment = new AttachmentBuilder(imageBuffer, { name: 'level-up.png' });
+                        await notifyChannel.send({ content: desc, files: [attachment] }).catch(() => { });
+                    } catch (err) {
+                        console.error('Error generating level-up card:', err);
+                        await notifyChannel.send({ content: desc }).catch(() => { });
+                    }
                 }
             }
         } catch (error) {

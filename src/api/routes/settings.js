@@ -187,6 +187,24 @@ router.post('/', async (req, res) => {
             });
         }
 
+        if (guild) {
+            const authHeader = req.headers.authorization;
+            const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+            const user = token ? await getDiscordUser(token).catch(() => null) : null;
+            const logger = require('../../utils/logger');
+            const changedKeys = Object.keys(payload);
+            const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Settings Updated',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Updated Config Keys', value: changedKeys.length > 0 ? `\`${changedKeys.join(', ')}\`` : '*None*' }
+                ],
+                0x2ed573
+            ).catch(() => null);
+        }
+
         res.json({ success: true, settings });
     } catch (error) {
         console.error(`Error updating settings for guild ${req.params.guildId}:`, error);

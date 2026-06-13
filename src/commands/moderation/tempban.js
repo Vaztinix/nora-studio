@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { handleError, handleSuccess } = require('../../utils/embeds');
 const TempBan = require('../../database/models/TempBan');
+const Case = require('../../database/models/Case');
 
 module.exports = {
     category: 'moderation',
@@ -68,7 +69,15 @@ module.exports = {
                 unbanTime
             });
 
-            await handleSuccess(interaction, 'User Temporarily Banned', `**${target.tag}** has been banned successfully.\n**Duration:** ${durationStr}\n**Reason:** ${reason}`);
+            const caseRecord = await Case.create({
+                guildId: interaction.guild.id,
+                userId: target.id,
+                moderatorId: interaction.user.id,
+                action: 'Tempban',
+                reason: `[Duration: ${durationStr}] ${reason}`
+            });
+
+            await handleSuccess(interaction, 'User Temporarily Banned', `**${target.tag}** has been banned successfully.\n**Duration:** ${durationStr}\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
         } catch (error) {
             console.error(error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to temporarily ban the user.');

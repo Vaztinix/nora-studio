@@ -1,8 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const UserLevel = require('../../database/models/UserLevel');
 const GuildSettings = require('../../database/models/GuildSettings');
 const { handleError } = require('../../utils/embeds');
-
+// Rank command implementation
 module.exports = {
     category: 'leveling',
     data: new SlashCommandBuilder()
@@ -55,38 +55,66 @@ module.exports = {
         const rankIndex = guildUsers.findIndex(u => u.userId === target.id) + 1;
         const totalUsers = guildUsers.length;
 
-        // Build a text progress bar
-        const barLength = 15;
-        const filledLength = Math.floor((progressPercentage / 100) * barLength);
-        const emptyLength = barLength - filledLength;
-        const progressBar = '█'.repeat(filledLength) + '░'.repeat(emptyLength);
-
         const { isPremium } = require('../../utils/premiumManager');
         const viewerIsPremium = isPremium(interaction);
         const targetIsPremium = userLevel.isPremium || (target.id === interaction.user.id && viewerIsPremium);
         
         // 🚀 Promoter Awareness
         const settings = await GuildSettings.findOne({ where: { guildId: interaction.guild.id } });
-        const isPromoting = settings?.promoterRoleId && member ? member.roles.cache.has(settings.promoterRoleId) : false;
+        const showPfp = settings?.levelingPfpEnabled !== false;
 
-        const embed = new EmbedBuilder()
-            .setAuthor({ 
-                name: `${target.username}${targetIsPremium ? ' [PREMIUM]' : ''}${isPromoting ? ' [Promoter]' : ''}'s Rank Profile`, 
-                iconURL: target.displayAvatarURL({ dynamic: true }) 
-            })
-            .setColor(isPromoting ? 0xFF007A : (targetIsPremium ? 0xFFD700 : 0x57acf2)) // Pink for promoter, gold for premium
+        if (settings?.levelingUseImages === false) {
+            const barLength = 15;
+            const filledLength = Math.floor((progressPercentage / 100) * barLength);
+            const emptyLength = barLength - filledLength;
+            const progressBar = '█'.repeat(filledLength) + '░'.repeat(emptyLength);
+            const isPromoting = settings?.promoterRoleId && member ? member.roles.cache.has(settings.promoterRoleId) : false;
 
-            .addFields(
-                { name: 'Rank', value: `**#${rankIndex}** / ${totalUsers}`, inline: true },
-                { name: 'Level', value: `**${currentLevel}**`, inline: true },
-                { name: 'Lifetime XP', value: `**${userLevel.totalXp.toLocaleString()}**`, inline: true },
-                { name: 'Last Message', value: userLevel.lastMessageTimestamp ? `<t:${Math.floor(new Date(userLevel.lastMessageTimestamp).getTime() / 1000)}:R>` : 'Never', inline: true },
-                { name: 'Progression Path', value: `\`${progressBar}\` (${Math.floor(progressPercentage)}%)\n*${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()} XP in Level*`, inline: false }
-            )
-            .setThumbnail(target.displayAvatarURL({ dynamic: true, size: 256 }))
-            .setFooter({ text: `Server Rank | ${interaction.guild.name}`, iconURL: interaction.guild.iconURL() })
-            .setTimestamp();
+            const embed = new EmbedBuilder()
+                .setAuthor({ 
+                    name: `${target.username}${targetIsPremium ? ' [PREMIUM]' : ''}${isPromoting ? ' [Promoter]' : ''}'s Rank Profile`, 
+                    iconURL: showPfp ? target.displayAvatarURL({ dynamic: true }) : null
+                })
+                .setColor(isPromoting ? 0xFF007A : (targetIsPremium ? 0xFFD700 : 0x57acf2))
+                .addFields(
+                    { name: 'Rank', value: `**#${rankIndex}** / ${totalUsers}`, inline: true },
+                    { name: 'Level', value: `**${currentLevel}**`, inline: true },
+                    { name: 'Lifetime XP', value: `**${userLevel.totalXp.toLocaleString()}**`, inline: true },
+                    { name: 'Last Message', value: userLevel.lastMessageTimestamp ? `<t:${Math.floor(new Date(userLevel.lastMessageTimestamp).getTime() / 1000)}:R>` : 'Never', inline: true },
+                    { name: 'Progression Path', value: `\`${progressBar}\` (${Math.floor(progressPercentage)}%)\n*${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()} XP in Level*`, inline: false }
+                );
 
-        await interaction.reply({ embeds: [embed] });
+            if (showPfp) {
+                embed.setThumbnail(target.displayAvatarURL({ dynamic: true, size: 256 }));
+            }
+
+            embed.setFooter({ text: `Server Rank | ${interaction.guild.name}`, iconURL: interaction.guild.iconURL() })
+                .setTimestamp();
+
+            return interaction.reply({ embeds: [embed] });
+        }
+
+        // Defer reply as generating rank card might take a bit due to asset fetching and processing
+        await interaction.deferReply();
+
+        try {
+            const { generateRankCard } = require('../../utils/rankCardGenerator');
+            const imageBuffer = await generateRankCard({
+                username: target.username,
+                level: currentLevel,
+                currentXp: xpProgressInLevel,
+                nextLevelXp: xpStepForLevelIncrement,
+                rank: rankIndex,
+                avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
+                showPfp: showPfp
+            });
+
+            const attachment = new AttachmentBuilder(imageBuffer, { name: 'rank-card.png' });
+            await interaction.editReply({ files: [attachment] });
+        } catch (err) {
+            console.error('Error generating rank card:', err);
+            // Fallback: send simple text reply if generation fails
+            await interaction.editReply({ content: `**${target.username}** | Level **${currentLevel}** | Rank **#${rankIndex}** | XP **${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()}**` });
+        }
     },
 };

@@ -1,5 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { handleError, handleSuccess } = require('../../utils/embeds');
+const TempRole = require('../../database/models/TempRole');
+const Case = require('../../database/models/Case');
 
 module.exports = {
     category: 'moderation',
@@ -19,6 +21,13 @@ module.exports = {
             .setDescription('Remove a role from a user')
             .addUserOption(opt => opt.setName('target').setDescription('The user').setRequired(true))
             .addRoleOption(opt => opt.setName('role').setDescription('The role').setRequired(true))
+        )
+        .addSubcommand(sub =>
+            sub.setName('temp')
+            .setDescription('Temporarily give a user a role')
+            .addUserOption(opt => opt.setName('target').setDescription('The user').setRequired(true))
+            .addRoleOption(opt => opt.setName('role').setDescription('The role').setRequired(true))
+            .addStringOption(opt => opt.setName('duration').setDescription('Duration (e.g. 30m, 2h, 1d)').setRequired(true))
         ),
     
     async execute(interaction) {
@@ -58,13 +67,57 @@ module.exports = {
                     return handleError(interaction, 'Already Has Role', `The user <@${target.id}> already has the ${role} role.`);
                 }
                 await member.roles.add(role);
-                await handleSuccess(interaction, 'Role Added', `Successfully added ${role} to **${target.tag}**.`);
+                const caseRecord = await Case.create({
+                    guildId: interaction.guild.id,
+                    userId: target.id,
+                    moderatorId: interaction.user.id,
+                    action: 'RoleAdd',
+                    reason: `Role ${role.name} added`
+                });
+                await handleSuccess(interaction, 'Role Added', `Successfully added ${role} to **${target.tag}**. (Case #${caseRecord.id})`);
             } else if (subcommand === 'remove') {
                 if (!member.roles.cache.has(role.id)) {
                     return handleError(interaction, "Doesn't Have Role", `The user <@${target.id}> does not have the ${role} role.`);
                 }
                 await member.roles.remove(role);
-                await handleSuccess(interaction, 'Role Removed', `Successfully removed ${role} from **${target.tag}**.`);
+                const caseRecord = await Case.create({
+                    guildId: interaction.guild.id,
+                    userId: target.id,
+                    moderatorId: interaction.user.id,
+                    action: 'RoleRemove',
+                    reason: `Role ${role.name} removed`
+                });
+                await handleSuccess(interaction, 'Role Removed', `Successfully removed ${role} from **${target.tag}**. (Case #${caseRecord.id})`);
+            } else if (subcommand === 'temp') {
+                const durationStr = interaction.options.getString('duration');
+                const durationMs = parseDuration(durationStr);
+                if (!durationMs) {
+                    return handleError(interaction, 'Invalid Duration', 'Please provide a valid duration (e.g., `30m` for 30 minutes, `2h` for 2 hours, `1d` for 1 day).');
+                }
+
+                if (member.roles.cache.has(role.id)) {
+                    return handleError(interaction, 'Already Has Role', `The user <@${target.id}> already has the ${role} role.`);
+                }
+
+                await member.roles.add(role);
+
+                const removeTime = new Date(Date.now() + durationMs);
+                await TempRole.create({
+                    guildId: interaction.guild.id,
+                    userId: target.id,
+                    roleId: role.id,
+                    removeTime
+                });
+
+                const caseRecord = await Case.create({
+                    guildId: interaction.guild.id,
+                    userId: target.id,
+                    moderatorId: interaction.user.id,
+                    action: 'RoleTemp',
+                    reason: `Temporarily given role ${role.name} for ${durationStr}`
+                });
+
+                await handleSuccess(interaction, 'Role Temporarily Added', `Successfully gave role ${role} to **${target.tag}** temporarily for ${durationStr}. (Case #${caseRecord.id})`);
             }
         } catch (error) {
             console.error(error);
@@ -72,3 +125,18 @@ module.exports = {
         }
     },
 };
+
+function parseDuration(str) {
+    const regex = /^(\d+)([smhd])$/i;
+    const match = str.match(regex);
+    if (!match) return null;
+    const value = parseInt(match[1], 10);
+    const unit = match[2].toLowerCase();
+    switch (unit) {
+        case 's': return value * 1000;
+        case 'm': return value * 60 * 1000;
+        case 'h': return value * 60 * 60 * 1000;
+        case 'd': return value * 24 * 60 * 60 * 1000;
+        default: return null;
+    }
+}

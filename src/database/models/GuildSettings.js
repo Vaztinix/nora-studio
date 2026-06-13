@@ -447,6 +447,18 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true,
         defaultValue: null
     },
+    levelingPfpEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    levelingUseImages: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    logDashboardActions: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
     customModResponses: {
         type: DataTypes.TEXT,
         defaultValue: '{}'
@@ -499,6 +511,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: null
+    },
+    ticketChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    robloxVerifyChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 });
 

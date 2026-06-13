@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { handleError, handleSuccess } = require('../../utils/embeds');
+const Case = require('../../database/models/Case');
 
 module.exports = {
     category: 'moderation',
@@ -41,7 +42,14 @@ module.exports = {
 
         try {
             await member.kick(reason);
-            await handleSuccess(interaction, 'User Kicked', `**${target.tag}** has been kicked successfully.\n**Reason:** ${reason}`);
+            const caseRecord = await Case.create({
+                guildId: interaction.guild.id,
+                userId: target.id,
+                moderatorId: interaction.user.id,
+                action: 'Kick',
+                reason
+            });
+            await handleSuccess(interaction, 'User Kicked', `**${target.tag}** has been kicked successfully.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
         } catch (error) {
             console.error(error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to kick the user.');

@@ -83,7 +83,7 @@ module.exports = {
         let blacklistedUsers = [];
         try {
             blacklistedUsers = JSON.parse(settings.countingBlacklistedUsers || '[]');
-        } catch (e) {}
+        } catch (e) { }
         if (blacklistedUsers.includes(message.author.id)) {
             return; // Silently drop
         }
@@ -92,7 +92,7 @@ module.exports = {
         let whitelistedRoles = [];
         try {
             whitelistedRoles = JSON.parse(settings.countingWhitelistedRoles || '[]');
-        } catch (e) {}
+        } catch (e) { }
         if (whitelistedRoles.length > 0) {
             const hasRole = message.member?.roles.cache.some(role => whitelistedRoles.includes(role.id));
             if (!hasRole) {
@@ -116,10 +116,10 @@ module.exports = {
                 evalResult.reason.includes("Non-counting content") ||
                 evalResult.reason.includes("Calculation error")
             )) {
-                return; 
+                return;
             }
-            
-            await message.reply({ content: `You ruined it, <@${message.author.id}>! ${evalResult.reason} The count is reset back to 0.` });
+
+            await message.reply({ content: `You ruined it, <@${message.author.id}>! The next number was ${expectedNext}. The count is reset back to 0.` });
             allData[message.guild.id] = { currentCount: 0, lastUserId: null };
             queueSave();
             return;
@@ -138,7 +138,7 @@ module.exports = {
         guildData.lastUserId = message.author.id;
         allData[message.guild.id] = guildData;
         queueSave();
-        await message.react('✅').catch(() => {});
+        await message.react('✅').catch(() => { });
 
         // Award XP for successful count
         try {

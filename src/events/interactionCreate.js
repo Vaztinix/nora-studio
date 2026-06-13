@@ -50,6 +50,14 @@ module.exports = {
             return;
         }
 
+        if (interaction.isButton() && interaction.customId === 'roblox_verify_alt') {
+            await interaction.reply({
+                content: 'To verify in Discord, please run the /verify link command with your Roblox username, paste the verification code into your Roblox profile description, and run /verify check to complete verification.',
+                ephemeral: true
+            });
+            return;
+        }
+
         // Handle "Enter CAPTCHA Code" button click
         if (interaction.isButton() && interaction.customId.startsWith('verify_enter_code_')) {
             const verifyEngine = require('../bot/engines/verify');
@@ -528,6 +536,20 @@ module.exports = {
                 argsStr = mapOptions(interaction.options.data);
             }
             console.log(`[System Command] ${interaction.user.tag} used /${interaction.commandName} ${argsStr ? `[${argsStr}]` : ''} in ${interaction.guild ? interaction.guild.name : 'Direct Messages'}`);
+            if (interaction.guild) {
+                const logger = require('../utils/logger');
+                logger.logDashboardOrCommandAction(
+                    interaction.guild,
+                    'Command Used',
+                    [
+                        { name: 'Command', value: `\`/${interaction.commandName}\``, inline: true },
+                        { name: 'User', value: `<@${interaction.user.id}> (${interaction.user.id})`, inline: true },
+                        { name: 'Channel', value: `<#${interaction.channelId}>`, inline: true },
+                        { name: 'Arguments', value: argsStr ? `\`\`\`${argsStr}\`\`\`` : '*None*' }
+                    ],
+                    0x57acf2
+                ).catch(() => null);
+            }
 
             // Monkey-patch reply methods to handle deferred/replied states gracefully
             const originalReply = interaction.reply.bind(interaction);

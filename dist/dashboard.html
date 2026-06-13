@@ -2907,7 +2907,8 @@
                         <button class="h-tab" data-tab="tab-logging"><i class="fas fa-list-alt"></i> Logging</button>
                         <button class="h-tab" data-tab="tab-leveling"><i class="fas fa-arrow-up"></i> Leveling</button>
                         <button class="h-tab" data-tab="tab-modules"><i class="fas fa-gamepad"></i> Modules & Games</button>
-                        <button class="h-tab" data-tab="tab-roblox"><i class="fas fa-cube"></i> Roblox</button>
+                        <button class="h-tab" data-tab="tab-verify"><i class="fas fa-user-check"></i> Verification</button>
+                        <button class="h-tab" data-tab="tab-tickets"><i class="fas fa-ticket-alt"></i> Support Tickets</button>
                         <button class="h-tab" data-tab="tab-feeds"><i class="fas fa-rss"></i> Content Feeds</button>
                         <button class="h-tab" data-tab="tab-broadcast"><i class="fas fa-bullhorn"></i> Broadcast</button>
                         <button class="h-tab" data-tab="tab-members"><i class="fas fa-users"></i> Members</button>
@@ -3318,9 +3319,13 @@
                                 <span>Voice Moves</span>
                                 <label class="switch small"><input type="checkbox" id="setting-logVoiceMoves" class="log-toggle"><span class="slider"></span></label>
                             </div>
-                            <div class="log-row-compact" style="grid-column: span 2;">
+                            <div class="log-row-compact">
                                 <span>Automod Events</span>
                                 <label class="switch small"><input type="checkbox" id="setting-logAutomod" class="log-toggle"><span class="slider"></span></label>
+                            </div>
+                            <div class="log-row-compact">
+                                <span>Dashboard & Command Actions</span>
+                                <label class="switch small"><input type="checkbox" id="setting-logDashboardActions" class="log-toggle"><span class="slider"></span></label>
                             </div>
                         </div>
                     </div>
@@ -3343,6 +3348,20 @@
                                         <p style="font-size: 0.7rem; color: var(--muted);">Track user activity and levels</p>
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-levelingEnabled"><span class="slider"></span></label>
+                                </div>
+                                <div class="log-row-compact">
+                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                        <strong>Display Profile Pictures</strong>
+                                        <p style="font-size: 0.7rem; color: var(--muted);">Show user avatar in rank card and alerts</p>
+                                    </div>
+                                    <label class="switch small"><input type="checkbox" id="setting-levelingPfpEnabled"><span class="slider"></span></label>
+                                </div>
+                                <div class="log-row-compact">
+                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                        <strong>Use Image Cards</strong>
+                                        <p style="font-size: 0.7rem; color: var(--muted);">Display rank/level up as beautiful images; if disabled, uses text/embed fallback</p>
+                                    </div>
+                                    <label class="switch small"><input type="checkbox" id="setting-levelingUseImages"><span class="slider"></span></label>
                                 </div>
                             <div class="log-row-container" style="display: flex; flex-direction: column;">
                                 <div class="log-row-compact" onclick="toggleRowDropdown(this)" style="cursor: pointer; border-radius: 12px; transition: border-radius 0.2s;">
@@ -3513,20 +3532,6 @@
                         </div>
                     </div>
 
-                    <div class="panel">
-                        <h3>Server Modules</h3>
-                        <div class="input-group" style="margin-bottom: 20px;">
-                            <label>Verify Channel</label>
-                            <select id="setting-verifyChannelId"><option value="">Select channel...</option></select>
-                        </div>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Verify Roles</label><input type="hidden" id="setting-verifyRoleId"></div>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Ticket Category ID</label><input type="text" id="setting-ticketCategoryId"></div>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning these panels so the bot uses your latest role and channel configurations.</p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-                             <button class="config-btn" onclick="triggerAction('spawn_verify', this)">Spawn Verify Panel</button>
-                             <button class="config-btn" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
-                        </div>
-                    </div>
 
                     <div class="panel" style="margin-top: 25px;">
                         <h3>Welcomer Settings</h3>
@@ -3557,10 +3562,29 @@
                         </div>
                     </div>
                 </div>
-                <div id="tab-roblox" class="tab-content">
+
+                <div id="tab-verify" class="tab-content" style="display: none;">
+                    <div class="panel">
+                        <h3>Verification System</h3>
+                        <p>Configure Nora's member verification gate.</p>
+                        <div class="input-group" style="margin-top: 15px; margin-bottom: 20px;">
+                            <label>Verify Channel</label>
+                            <select id="setting-verifyChannelId"><option value="">Select channel...</option></select>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 20px;"><label>Verify Roles</label><input type="hidden" id="setting-verifyRoleId"></div>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the verification panel so the bot uses your latest configurations.</p>
+                        <div style="margin-top: 20px;">
+                             <button class="config-btn" onclick="triggerAction('spawn_verify', this)">Spawn Verify Panel</button>
+                        </div>
+                    </div>
+
                     <div class="panel">
                         <h3>Roblox Identity Core</h3>
                         <div class="input-group" style="margin-bottom: 20px;"><label>Verified Role</label><select id="setting-robloxVerifyRoleId"><option value="">No role selected</option></select></div>
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <label>Spawn Channel</label>
+                            <select id="setting-robloxVerifyChannelId"><option value="">Select channel...</option></select>
+                        </div>
                         <div class="row"><h4>Enable Verification Module</h4><label class="switch"><input type="checkbox" id="setting-robloxVerifyEnabled"><span class="slider"></span></label></div>
                         <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the verification panel so the bot uses your latest Roblox configurations.</p>
                         <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -3616,6 +3640,22 @@
                                     <p style="margin-top: 4px; opacity: 0.8;">Visit our support server to upgrade Nora for this guild.</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-tickets" class="tab-content" style="display: none;">
+                    <div class="panel">
+                        <h3>Support Ticket System</h3>
+                        <p>Configure the system for handling private support tickets.</p>
+                        <div class="input-group" style="margin-top: 15px; margin-bottom: 20px;"><label>Ticket Category ID</label><input type="text" id="setting-ticketCategoryId"></div>
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <label>Ticket Spawn Channel</label>
+                            <select id="setting-ticketChannelId"><option value="">Select channel...</option></select>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the ticket panel so the bot uses your latest configurations.</p>
+                        <div style="margin-top: 20px;">
+                             <button class="config-btn" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
                         </div>
                     </div>
                 </div>
@@ -4707,7 +4747,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -7849,6 +7889,8 @@
                     'setting-countingChannelId',
                     'setting-boostChannelId',
                     'setting-verifyChannelId',
+                    'setting-ticketChannelId',
+                    'setting-robloxVerifyChannelId',
                     'new-feed-channel'
                 ];
 

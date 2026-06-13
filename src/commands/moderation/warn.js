@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const Warning = require('../../database/models/Warning');
+const Case = require('../../database/models/Case');
 const settingsCache = require('../../utils/settingsCache');
 const { handleError, handleSuccess } = require('../../utils/embeds');
 
@@ -105,6 +106,14 @@ module.exports = {
             userId: user.id,
             guildId: interaction.guild.id,
             moderatorId: interaction.user.id,
+            reason: reason
+        });
+
+        const caseRecord = await Case.create({
+            guildId: interaction.guild.id,
+            userId: user.id,
+            moderatorId: interaction.user.id,
+            action: 'Warn',
             reason: reason
         });
 

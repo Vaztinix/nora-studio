@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const { handleError, handleSuccess } = require('../../utils/embeds');
+const Case = require('../../database/models/Case');
 
 module.exports = {
     category: 'moderation',
@@ -53,7 +54,14 @@ module.exports = {
 
         try {
             await member.ban({ reason });
-            await handleSuccess(interaction, 'User Banned', `**${target.tag}** has been banned successfully.\n**Reason:** ${reason}`);
+            const caseRecord = await Case.create({
+                guildId: interaction.guild.id,
+                userId: target.id,
+                moderatorId: interaction.user.id,
+                action: 'Ban',
+                reason
+            });
+            await handleSuccess(interaction, 'User Banned', `**${target.tag}** has been banned successfully.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
         } catch (error) {
             console.error(error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to ban the user. Please check my permissions and try again.');

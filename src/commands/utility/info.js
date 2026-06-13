@@ -3,6 +3,9 @@ const os = require('os');
 const ActiveTicket = require('../../database/models/ActiveTicket');
 const Warning = require('../../database/models/Warning');
 const RobloxVerify = require('../../database/models/RobloxVerify');
+const Case = require('../../database/models/Case');
+const Note = require('../../database/models/Note');
+const TempRole = require('../../database/models/TempRole');
 
 module.exports = {
     category: 'utility',
@@ -34,6 +37,9 @@ module.exports = {
         const activeTickets = await ActiveTicket.count().catch(() => 0);
         const totalWarnings = await Warning.count().catch(() => 0);
         const verifiedRoblox = await RobloxVerify.count().catch(() => 0);
+        const totalCases = await Case.count().catch(() => 0);
+        const totalNotes = await Note.count().catch(() => 0);
+        const activeTempRoles = await TempRole.count({ where: { completed: false } }).catch(() => 0);
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: 'Nora • System Diagnostics', iconURL: interaction.client.user.displayAvatarURL() })
@@ -43,7 +49,7 @@ module.exports = {
                 { name: 'Latency & Sharding', value: `• **Gateway Latency:** \`${ping}ms\`\n• **Active Shards:** \`${shardCount}\``, inline: true },
                 { name: 'Bot Statistics', value: `• **Total Servers:** \`${totalServers}\`\n• **Total Members:** \`${totalMembers.toLocaleString()}\`\n• **Loaded Commands:** \`${commandCount}\``, inline: true },
                 { name: 'Resource Allocation', value: `• **Heap Memory:** \`${heapUsedMB}MB / ${heapTotalMB}MB\`\n• **Platform:** \`${process.platform} (${os.arch()})\`\n• **Node.js:** \`${process.version}\`\n• **Discord.js:** \`v${require('discord.js').version}\``, inline: false },
-                { name: 'Database Statistics', value: `• **Roblox Verifications:** \`${verifiedRoblox}\`\n• **Total Warnings Logged:** \`${totalWarnings}\`\n• **Active Support Tickets:** \`${activeTickets}\``, inline: true },
+                { name: 'Database Statistics', value: `• **Roblox Verifications:** \`${verifiedRoblox}\`\n• **Total Warnings Logged:** \`${totalWarnings}\`\n• **Active Support Tickets:** \`${activeTickets}\`\n• **Total Cases Logged:** \`${totalCases}\`\n• **Total Notes Logged:** \`${totalNotes}\`\n• **Active Temp Roles:** \`${activeTempRoles}\``, inline: true },
                 { name: 'Uptime Status', value: `• **Online since:** <t:${startTimestamp}:F>\n• **Uptime:** <t:${startTimestamp}:R>`, inline: true },
                 { name: 'System Operations', value: '```diff\n+ Operations: NOMINAL\n+ Databases: HEALTHY\n+ Shards: STABLE\n```', inline: false }
             )

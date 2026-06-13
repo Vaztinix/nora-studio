@@ -377,6 +377,30 @@
                         <li><code>/warn clear</code>: Clear all warnings from a user's record.</li>
                     </ul>
                 </li>
+                <li><strong>Case Management System (/case):</strong> Track, inspect, and manage server moderation actions dynamically:
+                    <ul>
+                        <li><code>/case view [number]</code>: Inspect a specific case's moderator, target user, action type, reason, and timestamp.</li>
+                        <li><code>/case remove [number]</code>: Permanently remove a case number from a user's history.</li>
+                    </ul>
+                </li>
+                <li><strong>Moderator Notes (/note):</strong> Add contextual notes to user profiles to track behavior:
+                    <ul>
+                        <li><code>/note add [user] [content]</code>: Record a new staff note on a user.</li>
+                        <li><code>/note remove [id]</code>: Delete a specific note by ID.</li>
+                        <li><code>/note view [user]</code>: View all historical notes recorded for a user.</li>
+                    </ul>
+                </li>
+                <li><strong>Temporary Roles (/role temp):</strong> Assign server roles with an automatic expiry:
+                    <ul>
+                        <li><code>/role temp [target] [role] [duration]</code>: Assign a role that is automatically removed after the specified duration (e.g. 30m, 2h, 1d).</li>
+                    </ul>
+                </li>
+                <li><strong>Poll Utilities (/poll-create & /poll-end):</strong> Standardized reaction polls:
+                    <ul>
+                        <li><code>/poll-create [question] [choices...]</code>: Create a reaction poll with up to 10 choices.</li>
+                        <li><code>/poll-end [message_id]</code>: End a poll, calculate reaction tallies and percentages, and lock the original message.</li>
+                    </ul>
+                </li>
                 <li><strong>One-Step Roblox Link (/verify):</strong> The legacy multi-command verification flow is replaced by the singular <code>/verify</code> command. Users link their Roblox accounts, verify their identities, and receive server-assigned roles in a single fluid interaction.</li>
                 <li><strong>Instant Settings Sync:</strong> Changes to settings made on the Nora Studio web dashboard or in-game using <code>/setup dashboard</code> are pushed with O(1) performance using active cache invalidation, ensuring no stale settings affect moderation loops.</li>
             </ul>
