@@ -3965,6 +3965,7 @@
                             <div class="row"><h4>/undeafen</h4><label class="switch"><input type="checkbox" id="cmd-undeafen" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/purge</h4><label class="switch"><input type="checkbox" id="cmd-purge" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/slowmode</h4><label class="switch"><input type="checkbox" id="cmd-slowmode" checked><span class="slider"></span></label></div>
+                            <div class="row"><h4>/channel</h4><label class="switch"><input type="checkbox" id="cmd-channel" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/warn</h4><label class="switch"><input type="checkbox" id="cmd-warn" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/role</h4><label class="switch"><input type="checkbox" id="cmd-role" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/user</h4><label class="switch"><input type="checkbox" id="cmd-user" checked><span class="slider"></span></label></div>
@@ -5818,7 +5819,7 @@
                 payload[k] = val;
             });
             const d = [];
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
             allCmds.forEach(c => { const cmdCheck = document.getElementById('cmd-'+c); if(cmdCheck && !cmdCheck.checked) d.push(c); });
             payload.disabledCommands = JSON.stringify(d);
 
@@ -7030,7 +7031,7 @@
 
         function toggleAllCommands(state) {
             logToTerminal(`Setting all commands state: ${state}`, 'UI_PREF');
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
             allCmds.forEach(c => {
                 const el = document.getElementById('cmd-' + c);
                 if (el) el.checked = state;
@@ -8476,7 +8477,7 @@
                     state[k] = el.type === 'checkbox' ? el.checked : el.value;
                 }
             });
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
             allCmds.forEach(c => {
                 const cmdCheck = document.getElementById('cmd-'+c);
                 if (cmdCheck) {
@@ -9703,7 +9704,7 @@
                 if (el.type === 'checkbox') el.checked = false;
                 else el.value = '';
             });
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
             allCmds.forEach(c => {
                 const el = document.getElementById('cmd-' + c);
                 if (el) el.checked = false;
