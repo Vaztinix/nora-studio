@@ -93,7 +93,7 @@ async function handleEnterCodeButtonClick(interaction) {
     const captchaInput = new TextInputBuilder()
         .setCustomId('captcha_answer')
         .setLabel('Enter the code you see in the image')
-        .setPlaceholder(captchaCode)
+        .setPlaceholder('e.g. A1B2C3')
         .setStyle(TextInputStyle.Short)
         .setRequired(true)
         .setMinLength(6)
