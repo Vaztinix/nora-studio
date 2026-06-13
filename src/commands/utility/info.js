@@ -40,12 +40,12 @@ module.exports = {
             .setTitle('Core Status Report')
             .setColor(0x57acf2)
             .addFields(
-                { name: '⚡ Latency & Sharding', value: `• **Gateway Latency:** \`${ping}ms\`\n• **Active Shards:** \`${shardCount}\``, inline: true },
-                { name: '📈 Bot Statistics', value: `• **Total Servers:** \`${totalServers}\`\n• **Total Members:** \`${totalMembers.toLocaleString()}\`\n• **Loaded Commands:** \`${commandCount}\``, inline: true },
-                { name: '💾 Resource Allocation', value: `• **Heap Memory:** \`${heapUsedMB}MB / ${heapTotalMB}MB\`\n• **Platform:** \`${process.platform} (${os.arch()})\`\n• **Node.js:** \`${process.version}\`\n• **Discord.js:** \`v${require('discord.js').version}\``, inline: false },
-                { name: '🗄️ Database Statistics', value: `• **Roblox Verifications:** \`${verifiedRoblox}\`\n• **Total Warnings Logged:** \`${totalWarnings}\`\n• **Active Support Tickets:** \`${activeTickets}\``, inline: true },
-                { name: '⏰ Uptime Status', value: `• **Online since:** <t:${startTimestamp}:F>\n• **Uptime:** <t:${startTimestamp}:R>`, inline: true },
-                { name: '🖥️ System Operations', value: '```diff\n+ Operations: NOMINAL\n+ Databases: HEALTHY\n+ Shards: STABLE\n```', inline: false }
+                { name: 'Latency & Sharding', value: `• **Gateway Latency:** \`${ping}ms\`\n• **Active Shards:** \`${shardCount}\``, inline: true },
+                { name: 'Bot Statistics', value: `• **Total Servers:** \`${totalServers}\`\n• **Total Members:** \`${totalMembers.toLocaleString()}\`\n• **Loaded Commands:** \`${commandCount}\``, inline: true },
+                { name: 'Resource Allocation', value: `• **Heap Memory:** \`${heapUsedMB}MB / ${heapTotalMB}MB\`\n• **Platform:** \`${process.platform} (${os.arch()})\`\n• **Node.js:** \`${process.version}\`\n• **Discord.js:** \`v${require('discord.js').version}\``, inline: false },
+                { name: 'Database Statistics', value: `• **Roblox Verifications:** \`${verifiedRoblox}\`\n• **Total Warnings Logged:** \`${totalWarnings}\`\n• **Active Support Tickets:** \`${activeTickets}\``, inline: true },
+                { name: 'Uptime Status', value: `• **Online since:** <t:${startTimestamp}:F>\n• **Uptime:** <t:${startTimestamp}:R>`, inline: true },
+                { name: 'System Operations', value: '```diff\n+ Operations: NOMINAL\n+ Databases: HEALTHY\n+ Shards: STABLE\n```', inline: false }
             )
             .setFooter({ text: 'Nora V2.0 Core Status' })
             .setTimestamp();
