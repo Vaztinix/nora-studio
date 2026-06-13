@@ -153,15 +153,28 @@ router.get('/analytics', async (req, res) => {
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
+        // Prevent browser caching so analytics update properly per server
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
         const levels = await UserLevel.findAll({ where: { guildId } });
-        const totalNoraUsers = levels.length;
+        // Clean levels database records: only keep users who are currently in the guild
+        const activeGuildLevels = levels.filter(r => guild.members.cache.has(r.userId));
+        const totalNoraUsers = activeGuildLevels.length;
+
+        const nowTime = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const sevenDaysMs = 7 * oneDayMs;
 
         let weeklyXpSum = 0;
         let maxMember = null;
         let minMember = null;
 
-        levels.forEach(r => {
-            weeklyXpSum += (r.weeklyXp || 0);
+        activeGuildLevels.forEach(r => {
+            const lastActive = r.lastMessageTimestamp ? new Date(r.lastMessageTimestamp).getTime() : 0;
+            // Only count weekly XP if user has been active within the last 7 days
+            if (nowTime - lastActive <= sevenDaysMs) {
+                weeklyXpSum += (r.weeklyXp || 0);
+            }
             const xp = r.totalXp || r.xp || 0;
             if (xp > 0) {
                 if (!maxMember || xp > (maxMember.totalXp || maxMember.xp || 0)) {
@@ -179,19 +192,22 @@ router.get('/analytics', async (req, res) => {
         let leastActiveName = 'None';
 
         if (maxMember) {
-            const member = guild.members.cache.get(maxMember.userId);
-            peakActiveName = member ? member.displayName : `User (${maxMember.userId})`;
+            let member = guild.members.cache.get(maxMember.userId);
+            if (!member) {
+                member = await guild.members.fetch(maxMember.userId).catch(() => null);
+            }
+            peakActiveName = member ? (member.displayName || member.user.globalName || member.user.username) : `User (${maxMember.userId})`;
         }
         if (minMember) {
-            const member = guild.members.cache.get(minMember.userId);
-            leastActiveName = member ? member.displayName : `User (${minMember.userId})`;
+            let member = guild.members.cache.get(minMember.userId);
+            if (!member) {
+                member = await guild.members.fetch(minMember.userId).catch(() => null);
+            }
+            leastActiveName = member ? (member.displayName || member.user.globalName || member.user.username) : `User (${minMember.userId})`;
         }
 
         // Get members from cache to prevent Discord API timeouts and ensure instant page loads
         const membersList = Array.from(guild.members.cache.values());
-
-        const nowTime = Date.now();
-        const oneDayMs = 24 * 60 * 60 * 1000;
 
         // Generate actual chart data for the last 7 days
         const chartData = [];
@@ -210,7 +226,7 @@ router.get('/analytics', async (req, res) => {
             }).length;
 
             // Count real active users who sent their last message on this day
-            const activeUsers = levels.filter(r => {
+            const activeUsers = activeGuildLevels.filter(r => {
                 if (!r.lastMessageTimestamp) return false;
                 const activeTime = new Date(r.lastMessageTimestamp).getTime();
                 return activeTime >= startOfDay && activeTime < endOfDay;
@@ -224,8 +240,8 @@ router.get('/analytics', async (req, res) => {
         }
 
         // Calculate growth trend percentage by comparing last 3 days of message volume with the 3 days prior
-        const last3DaysCount = levels.filter(r => r.lastMessageTimestamp && (nowTime - new Date(r.lastMessageTimestamp).getTime() <= 3 * oneDayMs)).length;
-        const prior3DaysCount = levels.filter(r => {
+        const last3DaysCount = activeGuildLevels.filter(r => r.lastMessageTimestamp && (nowTime - new Date(r.lastMessageTimestamp).getTime() <= 3 * oneDayMs)).length;
+        const prior3DaysCount = activeGuildLevels.filter(r => {
             const diff = nowTime - new Date(r.lastMessageTimestamp).getTime();
             return diff > 3 * oneDayMs && diff <= 6 * oneDayMs;
         }).length;
@@ -245,11 +261,11 @@ router.get('/analytics', async (req, res) => {
         const activeVoiceUsers = guild.voiceStates.cache.filter(vs => vs.channelId && vs.member && !vs.member.user.bot).size;
 
         // Calculate Active Communicators (active in last 7 days)
-        const activeCommunicators = levels.filter(r => r.lastMessageTimestamp && (Date.now() - new Date(r.lastMessageTimestamp).getTime() <= 7 * oneDayMs)).length;
+        const activeCommunicators = activeGuildLevels.filter(r => r.lastMessageTimestamp && (Date.now() - new Date(r.lastMessageTimestamp).getTime() <= 7 * oneDayMs)).length;
 
         // Calculate real peak hour from the database level timestamps (UTC hour)
         const hours = Array(24).fill(0);
-        levels.forEach(r => {
+        activeGuildLevels.forEach(r => {
             if (r.lastMessageTimestamp) {
                 const hr = new Date(r.lastMessageTimestamp).getUTCHours();
                 hours[hr]++;
@@ -264,22 +280,39 @@ router.get('/analytics', async (req, res) => {
             }
         }
 
-        // Calculate actual Top Active Channel sorted by lastMessageId descending
-        const textChannels = Array.from(guild.channels.cache.filter(c => c.type === 0).values());
-        let topChannelName = '#general';
-        if (textChannels.length > 0) {
-            textChannels.sort((a, b) => {
-                const idA = a.lastMessageId ? BigInt(a.lastMessageId) : 0n;
-                const idB = b.lastMessageId ? BigInt(b.lastMessageId) : 0n;
-                return idA > idB ? -1 : idA < idB ? 1 : 0;
-            });
-            topChannelName = `#${textChannels[0].name}`;
+        // Calculate actual Top Active Channel based on bot-logged message counts, falling back to lastMessageId
+        let topChannelName = 'None';
+        const guildChannels = req.client.channelActivity?.[guildId] || {};
+        const activeChannelIds = Object.keys(guildChannels);
+        if (activeChannelIds.length > 0) {
+            activeChannelIds.sort((a, b) => guildChannels[b] - guildChannels[a]);
+            const topChannel = guild.channels.cache.get(activeChannelIds[0]);
+            if (topChannel) {
+                topChannelName = `#${topChannel.name}`;
+            }
+        }
+
+        if (topChannelName === 'None') {
+            const textChannels = Array.from(guild.channels.cache.filter(c => c.type === 0).values());
+            if (textChannels.length > 0) {
+                textChannels.sort((a, b) => {
+                    const idA = a.lastMessageId ? BigInt(a.lastMessageId) : 0n;
+                    const idB = b.lastMessageId ? BigInt(b.lastMessageId) : 0n;
+                    return idA > idB ? -1 : idA < idB ? 1 : 0;
+                });
+                const bestChannel = textChannels.find(c => c.lastMessageId);
+                if (bestChannel) {
+                    topChannelName = `#${bestChannel.name}`;
+                } else {
+                    topChannelName = `#${textChannels[0].name}`;
+                }
+            }
         }
 
         res.json({
             totalMembers: guild.memberCount,
             totalNoraUsers,
-            totalVotes: levels.reduce((sum, r) => sum + (r.voteCount || 0), 0),
+            totalVotes: activeGuildLevels.reduce((sum, r) => sum + (r.voteCount || 0), 0),
             totalTextActivity,
             totalVoiceActivity: Math.floor(weeklyXpSum * 0.15), // estimate voice minutes based on weekly XP (real data)
             avgTextActivity,
@@ -293,9 +326,9 @@ router.get('/analytics', async (req, res) => {
             chartData,
             activityTrend,
             topggVoteStats: {
-                daily: levels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 86400000)).length,
-                weekly: levels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 604800000)).length,
-                monthly: levels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 2592000000)).length
+                daily: activeGuildLevels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 86400000)).length,
+                weekly: activeGuildLevels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 604800000)).length,
+                monthly: activeGuildLevels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 2592000000)).length
             }
         });
     } catch (e) {
@@ -305,8 +338,102 @@ router.get('/analytics', async (req, res) => {
 });
 
 /**
+ * POST /api/guilds/:guildId/webhook-send
+ * Send a webhook broadcast message to a channel.
+ */
+router.post('/webhook-send', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { channelId, name, avatar, content, embedTitle, embedDesc, embedColor, embedImage, components } = req.body;
+        
+        if (!channelId) return res.status(400).json({ error: 'Target channel is required.' });
+        if (!content && !embedTitle && !embedDesc) return res.status(400).json({ error: 'Message content or embed is required.' });
+        
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+        
+        const channel = guild.channels.cache.get(channelId);
+        if (!channel) return res.status(404).json({ error: 'Channel not found.' });
+        
+        // Check permissions
+        const me = guild.members.me;
+        if (!me) return res.status(500).json({ error: 'Bot member not found.' });
+        
+        const perms = channel.permissionsFor(me);
+        if (!perms || !perms.has('ManageWebhooks')) {
+            return res.status(403).json({ error: 'Nora needs "Manage Webhooks" permission in this channel.' });
+        }
+        if (!perms.has('SendMessages')) {
+            return res.status(403).json({ error: 'Nora needs "Send Messages" permission in this channel.' });
+        }
+        
+        // Create or reuse a webhook in the target channel
+        let webhook = null;
+        try {
+            const webhooks = await channel.fetchWebhooks();
+            webhook = webhooks.find(wh => wh.owner && wh.owner.id === req.client.user.id);
+        } catch (e) {
+            return res.status(403).json({ error: `Failed to fetch webhooks: ${e.message}` });
+        }
+        
+        if (!webhook) {
+            try {
+                webhook = await channel.createWebhook({
+                    name: name || 'Nora Broadcast',
+                    avatar: req.client.user.displayAvatarURL({ size: 256 })
+                });
+            } catch (e) {
+                return res.status(403).json({ error: `Failed to create webhook: ${e.message}` });
+            }
+        }
+        
+        // Build the webhook payload
+        const webhookPayload = {};
+        
+        if (name) webhookPayload.username = name;
+        if (avatar) webhookPayload.avatarURL = avatar;
+        if (content) webhookPayload.content = content;
+        
+        // Build embed if any embed fields are provided
+        if (embedTitle || embedDesc || embedImage) {
+            const { EmbedBuilder } = require('discord.js');
+            const embed = new EmbedBuilder();
+            if (embedTitle) embed.setTitle(embedTitle);
+            if (embedDesc) embed.setDescription(embedDesc);
+            if (embedColor) embed.setColor(embedColor);
+            if (embedImage) embed.setImage(embedImage);
+            webhookPayload.embeds = [embed];
+        }
+        
+        // Build action row if components (buttons) are provided
+        if (components && Array.isArray(components) && components.length > 0) {
+            const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+            const validButtons = components.filter(b => b.label && b.label.trim() !== '' && b.url && b.url.trim() !== '');
+            if (validButtons.length > 0) {
+                const row = new ActionRowBuilder();
+                validButtons.slice(0, 5).forEach(b => {
+                    row.addComponents(
+                        new ButtonBuilder()
+                            .setLabel(b.label)
+                            .setStyle(ButtonStyle.Link)
+                            .setURL(b.url)
+                    );
+                });
+                webhookPayload.components = [row];
+            }
+        }
+        
+        await webhook.send(webhookPayload);
+        res.json({ success: true, message: 'Broadcast sent successfully!' });
+    } catch (e) {
+        console.error('Webhook broadcast error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
  * POST /api/guilds/:guildId/action
- * Kick/Ban/Warn members from the dashboard.
+ * Handle dashboard actions: member moderation (kick/ban/warn) and utility spawns.
  */
 router.post('/action', async (req, res) => {
     try {
@@ -314,6 +441,108 @@ router.post('/action', async (req, res) => {
         const { userId, action, reason } = req.body;
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        // ─── Utility Spawn Actions (no userId required) ───
+        if (action === 'spawn_tickets') {
+            const settingsCache = require('../../utils/settingsCache');
+            const settings = await settingsCache.get(guildId);
+            if (!settings || !settings.ticketCategoryId) {
+                return res.status(400).json({ error: 'Ticket Category ID must be set in settings first.' });
+            }
+
+            // Find a suitable channel to spawn in (first text channel in the ticket category, or general)
+            const category = guild.channels.cache.get(settings.ticketCategoryId);
+            let targetChannel = null;
+            if (category && category.type === 4) { // Category channel
+                targetChannel = category.children.cache.find(c => c.type === 0);
+            }
+            if (!targetChannel) {
+                targetChannel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
+            }
+            if (!targetChannel) return res.status(400).json({ error: 'No suitable text channel found to spawn the ticket panel.' });
+
+            const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+            const pEmbed = new EmbedBuilder()
+                .setTitle('Support Center')
+                .setDescription('Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.')
+                .setColor('#aeefff')
+                .setFooter({ text: 'Support Ticketing System' });
+
+            const pRow = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('ticket_Support').setLabel('Support').setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('ticket_Reporting').setLabel('Reporting').setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId('ticket_Appeals').setLabel('Appeals').setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId('ticket_Other').setLabel('Other').setStyle(ButtonStyle.Secondary)
+            );
+            await targetChannel.send({ embeds: [pEmbed], components: [pRow] });
+            return res.json({ success: true, message: `Ticket panel spawned in #${targetChannel.name}!` });
+        }
+
+        if (action === 'spawn_verify') {
+            const settingsCache = require('../../utils/settingsCache');
+            const settings = await settingsCache.get(guildId);
+            if (!settings || !settings.verifyRoleId) {
+                return res.status(400).json({ error: 'Verify role must be set in settings first.' });
+            }
+
+            const targetChannelId = settings.verifyChannelId;
+            let channel = targetChannelId ? guild.channels.cache.get(targetChannelId) : null;
+            if (!channel) {
+                channel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
+            }
+            if (!channel) return res.status(400).json({ error: 'No suitable text channel found. Set a Verify Channel in settings.' });
+
+            const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+            const pEmbed = new EmbedBuilder()
+                .setTitle('Server Verification Required')
+                .setDescription('To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and complete the CAPTCHA.')
+                .setColor('#aeefff')
+                .setFooter({ text: 'Nora Security Systems' });
+            const pRow = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('verify_system_button').setLabel('Verify').setStyle(ButtonStyle.Success)
+            );
+            await channel.send({ embeds: [pEmbed], components: [pRow] });
+            return res.json({ success: true, message: `Verification panel spawned in #${channel.name}!` });
+        }
+
+        if (action === 'spawn_verify_roblox') {
+            const settingsCache = require('../../utils/settingsCache');
+            const settings = await settingsCache.get(guildId);
+            if (!settings || !settings.robloxVerifyEnabled) {
+                return res.status(400).json({ error: 'Roblox verification must be enabled in settings first.' });
+            }
+            if (!settings.robloxVerifyRoleId) {
+                return res.status(400).json({ error: 'Roblox verified role must be set in settings first.' });
+            }
+
+            let channel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
+            if (!channel) return res.status(400).json({ error: 'No suitable text channel found.' });
+
+            const { EmbedBuilder } = require('discord.js');
+            const pEmbed = new EmbedBuilder()
+                .setTitle('🎮 Roblox Account Verification')
+                .setDescription('Link your Roblox account to this Discord server for access, roles, and perks!\n\n**How to verify:**\n1️⃣ Use the `/verify link` command with your Roblox username\n2️⃣ Copy the verification code provided\n3️⃣ Paste it into your Roblox profile description\n4️⃣ Run `/verify check` to complete verification\n\n**Manage your accounts:**\n• `/verify list` — View all linked accounts\n• `/verify switch` — Change your active account\n• `/verify unlink` — Remove a linked account')
+                .setColor('#00b4d8')
+                .setFooter({ text: 'Roblox Verification System' });
+            await channel.send({ embeds: [pEmbed] });
+            return res.json({ success: true, message: `Roblox verification panel spawned in #${channel.name}!` });
+        }
+
+        if (action === 'check_group_ranks') {
+            const settingsCache = require('../../utils/settingsCache');
+            const settings = await settingsCache.get(guildId);
+            let groupBindings = [];
+            try { groupBindings = JSON.parse(settings?.robloxGroupBindings || '[]'); } catch (e) {}
+
+            if (!groupBindings || groupBindings.length === 0) {
+                return res.status(400).json({ error: 'No Roblox group bindings configured. Add group bindings in the Roblox settings section.' });
+            }
+
+            return res.json({ success: true, message: `Found ${groupBindings.length} group binding(s). Group rank sync is active.` });
+        }
+
+        // ─── Member Moderation Actions (userId required) ───
+        if (!userId) return res.status(400).json({ error: 'userId is required for this action.' });
 
         const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
         if (!member) return res.status(404).json({ error: 'Member not found in guild.' });
@@ -334,7 +563,7 @@ router.post('/action', async (req, res) => {
                 guildId,
                 userId,
                 reason: reason || 'Warned from Web Dashboard',
-                moderatorId: req.userGuild.id // Guild context ID of the user performing moderator action
+                moderatorId: req.userGuild.id
             });
             return res.json({ success: true, message: `Successfully warned ${member.user.tag}` });
         }
@@ -383,13 +612,54 @@ router.get('/feeds', async (req, res) => {
         const feeds = await ContentFeed.findAll({ where: { guildId } });
         
         // Map to format dashboard expects
-        res.json(feeds.map(f => ({
-            id: f.id,
-            platform: f.platform.toLowerCase(),
-            platformId: f.publicHandle,
-            discordChannelId: f.targetChannelId,
-            customMessage: f.alertTemplate
-        })));
+        res.json(feeds.map(f => {
+            let pingType = 'none';
+            let cleanMessage = f.alertTemplate || '';
+            
+            if (cleanMessage.startsWith('Hey @everyone! ')) {
+                pingType = 'everyone';
+                cleanMessage = cleanMessage.substring('Hey @everyone! '.length);
+            } else if (cleanMessage.startsWith('Hey @here! ')) {
+                pingType = 'here';
+                cleanMessage = cleanMessage.substring('Hey @here! '.length);
+            } else if (cleanMessage.startsWith('Hey <@&') && cleanMessage.includes('>! ')) {
+                const match = cleanMessage.match(/^Hey <@&(\d+)>!\s*/);
+                if (match) {
+                    pingType = match[1];
+                    cleanMessage = cleanMessage.substring(match[0].length);
+                }
+            }
+            
+            // Remove the link suffix if present
+            if (cleanMessage.endsWith(' Link: {link}')) {
+                cleanMessage = cleanMessage.substring(0, cleanMessage.length - ' Link: {link}'.length);
+            } else if (cleanMessage.endsWith('Link: {link}')) {
+                cleanMessage = cleanMessage.substring(0, cleanMessage.length - 'Link: {link}'.length);
+            }
+            
+            // Reconstruct URL or show publicHandle
+            let url = f.publicHandle;
+            if (f.platform.toLowerCase() === 'youtube') {
+                if (f.publicHandle.startsWith('UC') && f.publicHandle.length === 24) {
+                    url = `https://youtube.com/channel/${f.publicHandle}`;
+                } else {
+                    url = `https://youtube.com/@${f.publicHandle}`;
+                }
+            } else if (f.platform.toLowerCase() === 'twitch') {
+                url = `https://twitch.tv/${f.publicHandle}`;
+            }
+
+            return {
+                id: f.id,
+                platform: f.platform.toLowerCase(),
+                platformId: f.publicHandle,
+                discordChannelId: f.targetChannelId,
+                customMessage: f.alertTemplate,
+                pingType,
+                cleanMessage,
+                url
+            };
+        }));
     } catch (e) {
         console.error('Error fetching feeds:', e);
         res.status(500).json({ error: e.message });
@@ -489,6 +759,113 @@ router.post('/feeds', async (req, res) => {
         res.json({ success: true, feed });
     } catch (e) {
         console.error('Error adding feed:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * PUT /api/guilds/:guildId/feeds/:feedId
+ * Update an existing social media feed.
+ */
+router.put('/feeds/:feedId', async (req, res) => {
+    try {
+        const { guildId, feedId } = req.params;
+        const { platform, url, discordChannelId, customMessage, pingType } = req.body;
+
+        const ContentFeed = require('../../database/models/ContentFeed');
+        const feed = await ContentFeed.findOne({ where: { id: feedId, guildId } });
+        if (!feed) return res.status(404).json({ error: 'Feed not found.' });
+
+        if (platform) feed.platform = platform.toUpperCase();
+        if (discordChannelId) feed.targetChannelId = discordChannelId;
+
+        if (url) {
+            let publicHandle = url;
+            let channelId = null;
+            const { getYoutubeChannelId } = require('../../utils/socialScraper');
+
+            if (feed.platform === 'YOUTUBE') {
+                if (url.includes('@')) {
+                    publicHandle = url.split('@')[1].split('/')[0];
+                } else if (url.includes('/channel/')) {
+                    publicHandle = url.split('/channel/')[1].split('/')[0];
+                } else if (url.includes('/c/')) {
+                    publicHandle = url.split('/c/')[1].split('/')[0];
+                } else if (url.startsWith('UC') && url.length === 24) {
+                    publicHandle = url;
+                } else if (url.includes('youtube.com/')) {
+                    const parts = url.replace(/\/$/, '').split('/');
+                    publicHandle = parts[parts.length - 1];
+                }
+
+                if (publicHandle.startsWith('UC') && publicHandle.length === 24) {
+                    channelId = publicHandle;
+                } else {
+                    channelId = await getYoutubeChannelId(publicHandle);
+                }
+
+                if (!channelId) {
+                    return res.status(400).json({ error: 'Could not find a valid YouTube channel. Make sure the handle/URL is correct and active.' });
+                }
+                feed.publicHandle = publicHandle;
+                feed.channelId = channelId;
+            } else if (feed.platform === 'TWITCH') {
+                const parts = url.replace(/\/$/, '').split('/');
+                publicHandle = parts[parts.length - 1];
+                
+                const axios = require('axios');
+                const twitchCheck = await axios.get(`https://decapi.me/twitch/uptime/${publicHandle}`).catch(() => null);
+                if (twitchCheck && twitchCheck.data.includes('not exist')) {
+                    return res.status(400).json({ error: 'Twitch channel does not exist.' });
+                }
+                feed.publicHandle = publicHandle;
+            }
+        }
+
+        // Recalculate alert template
+        let resolvedPingType = pingType;
+        if (resolvedPingType === undefined) {
+            // Extract from existing
+            if (feed.alertTemplate.startsWith('Hey @everyone! ')) resolvedPingType = 'everyone';
+            else if (feed.alertTemplate.startsWith('Hey @here! ')) resolvedPingType = 'here';
+            else if (feed.alertTemplate.startsWith('Hey <@&')) {
+                const match = feed.alertTemplate.match(/^Hey <@&(\d+)>!\s*/);
+                resolvedPingType = match ? match[1] : 'none';
+            } else resolvedPingType = 'none';
+        }
+
+        let resolvedCustomMsg = customMessage;
+        if (resolvedCustomMsg === undefined) {
+            // Extract from existing
+            resolvedCustomMsg = feed.alertTemplate;
+            if (resolvedCustomMsg.startsWith('Hey @everyone! ')) resolvedCustomMsg = resolvedCustomMsg.substring('Hey @everyone! '.length);
+            else if (resolvedCustomMsg.startsWith('Hey @here! ')) resolvedCustomMsg = resolvedCustomMsg.substring('Hey @here! '.length);
+            else if (resolvedCustomMsg.startsWith('Hey <@&')) {
+                const match = resolvedCustomMsg.match(/^Hey <@&(\d+)>!\s*/);
+                if (match) resolvedCustomMsg = resolvedCustomMsg.substring(match[0].length);
+            }
+            if (resolvedCustomMsg.endsWith(' Link: {link}')) resolvedCustomMsg = resolvedCustomMsg.substring(0, resolvedCustomMsg.length - ' Link: {link}'.length);
+            else if (resolvedCustomMsg.endsWith('Link: {link}')) resolvedCustomMsg = resolvedCustomMsg.substring(0, resolvedCustomMsg.length - 'Link: {link}'.length);
+        }
+
+        let pingPrefix = 'Hey @everyone! ';
+        if (resolvedPingType === 'none') {
+            pingPrefix = '';
+        } else if (resolvedPingType === 'here') {
+            pingPrefix = 'Hey @here! ';
+        } else if (resolvedPingType && resolvedPingType !== 'everyone') {
+            pingPrefix = `Hey <@&${resolvedPingType}>! `;
+        }
+
+        const cleanMessage = resolvedCustomMsg.trim();
+        const suffix = cleanMessage.includes('{link}') ? '' : ' Link: {link}';
+        feed.alertTemplate = `${pingPrefix}${cleanMessage}${suffix}`;
+
+        await feed.save();
+
+        res.json({ success: true, feed });
+    } catch (e) {
+        console.error('Error updating feed:', e);
         res.status(500).json({ error: e.message });
     }
 });

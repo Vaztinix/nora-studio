@@ -18,6 +18,14 @@ module.exports = {
             return;
         }
 
+        // Track channel activity in-memory for top channel analytics
+        if (!client.channelActivity) {
+            client.channelActivity = {};
+        }
+        const guildChannels = client.channelActivity[message.guild.id] || {};
+        guildChannels[message.channel.id] = (guildChannels[message.channel.id] || 0) + 1;
+        client.channelActivity[message.guild.id] = guildChannels;
+
         try {
             // Robust High-Performance Settings Fetch
             let settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } });

@@ -79,8 +79,23 @@ module.exports = {
             nextGoal = NORA_CONFIG.getTotalXP(currentLevel + 1);
         }
 
+        // Auto-reset rolling daily and weekly XP if last active was too long ago
+        const lastActiveTime = userRecord.lastMessageTimestamp ? new Date(userRecord.lastMessageTimestamp).getTime() : 0;
+        const now = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const sevenDaysMs = 7 * oneDayMs;
+
+        if (now - lastActiveTime > sevenDaysMs) {
+            userRecord.weeklyXp = 0;
+        }
+        if (now - lastActiveTime > oneDayMs) {
+            userRecord.dailyXp = 0;
+        }
+
         userRecord.xp = totalXp;
         userRecord.totalXp = totalXp;
+        userRecord.weeklyXp = (userRecord.weeklyXp || 0) + xpGained;
+        userRecord.dailyXp = (userRecord.dailyXp || 0) + xpGained;
         userRecord.level = currentLevel;
         userRecord.lastMessageTimestamp = new Date();
 

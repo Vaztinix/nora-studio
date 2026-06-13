@@ -34,6 +34,123 @@ console.warn = (...args) => {
 };
 
 const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js');
+
+// ─── Roblox API Rate Limiter (Token Bucket) ───
+// Prevents 429s by throttling outbound requests to Roblox APIs.
+// Allows burst of 10, refills at 30 tokens/minute (1 every 2s).
+const robloxRateLimiter = {
+    tokens: 10,
+    maxTokens: 10,
+    refillRate: 2000, // ms per token refill
+    lastRefill: Date.now(),
+    queue: [],
+    _refill() {
+        const now = Date.now();
+        const elapsed = now - this.lastRefill;
+        const newTokens = Math.floor(elapsed / this.refillRate);
+        if (newTokens > 0) {
+            this.tokens = Math.min(this.maxTokens, this.tokens + newTokens);
+            this.lastRefill = now;
+        }
+    },
+    async acquire() {
+        this._refill();
+        if (this.tokens > 0) {
+            this.tokens--;
+            return;
+        }
+        // Wait for a token to become available
+        return new Promise(resolve => {
+            this.queue.push(resolve);
+            if (this.queue.length === 1) {
+                this._startDrain();
+            }
+        });
+    },
+    _startDrain() {
+        const drain = () => {
+            if (this.queue.length === 0) return;
+            this._refill();
+            if (this.tokens > 0) {
+                this.tokens--;
+                const next = this.queue.shift();
+                next();
+                if (this.queue.length > 0) {
+                    setTimeout(drain, 50);
+                }
+            } else {
+                setTimeout(drain, this.refillRate);
+            }
+        };
+        setTimeout(drain, this.refillRate);
+    }
+};
+
+// ─── Roblox Avatar URL Cache (in-memory, 1-hour TTL) ───
+// Caches resolved avatar thumbnail URLs so repeated <img> loads don't hit Roblox.
+const robloxAvatarCache = new Map();
+const ROBLOX_AVATAR_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const ROBLOX_AVATAR_CACHE_MAX = 500;
+
+function getCachedAvatar(userId) {
+    const entry = robloxAvatarCache.get(String(userId));
+    if (!entry) return null;
+    if (Date.now() - entry.ts > ROBLOX_AVATAR_CACHE_TTL) {
+        robloxAvatarCache.delete(String(userId));
+        return null;
+    }
+    return entry.url;
+}
+
+function setCachedAvatar(userId, url) {
+    // Evict oldest entries if cache is full
+    if (robloxAvatarCache.size >= ROBLOX_AVATAR_CACHE_MAX) {
+        const firstKey = robloxAvatarCache.keys().next().value;
+        robloxAvatarCache.delete(firstKey);
+    }
+    robloxAvatarCache.set(String(userId), { url, ts: Date.now() });
+}
+
+// Robust, retryable fetch helper for Roblox APIs to prevent transient timeout crashes.
+// Now integrates the token-bucket rate limiter to prevent 429 errors.
+async function fetchRoblox(url, options = {}) {
+    const retries = options.retries !== undefined ? options.retries : 2;
+    const timeoutMs = options.timeout !== undefined ? options.timeout : 3000;
+    let lastError = null;
+    for (let i = 0; i < retries; i++) {
+        try {
+            // Acquire a rate-limit token before making the request
+            await robloxRateLimiter.acquire();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            const fetchOptions = { ...options };
+            delete fetchOptions.retries;
+            delete fetchOptions.timeout;
+            const res = await fetch(url, { ...fetchOptions, signal: controller.signal });
+            clearTimeout(timeoutId);
+            // If Roblox returns 429, back off exponentially before retrying
+            if (res.status === 429) {
+                const retryAfter = parseInt(res.headers.get('retry-after') || '5', 10);
+                console.warn(`[Roblox Rate Limit] 429 received, backing off ${retryAfter}s (attempt ${i + 1}/${retries})`);
+                if (i < retries - 1) {
+                    await new Promise(r => setTimeout(r, retryAfter * 1000));
+                    continue;
+                }
+                throw new Error(`Roblox rate limited (429) after ${retries} attempts`);
+            }
+            if (res.ok || res.status < 500) {
+                return res;
+            }
+            throw new Error(`Roblox HTTP status ${res.status}`);
+        } catch (e) {
+            lastError = e;
+            if (i < retries - 1) {
+                await new Promise(r => setTimeout(r, 500 * (i + 1)));
+            }
+        }
+    }
+    throw lastError;
+}
 const fs = require('fs');
 const path = require('path');
 const sequelize = require('./database/db');
@@ -285,19 +402,19 @@ const recordFail2ban404 = (ip) => {
 // ─────────────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-    // Content Security Policy — applied to HTML page responses
+    // Content Security Policy — applied to HTML page responses only
     if (!req.path.startsWith('/api/')) {
+        res.setHeader('X-Frame-Options', 'SAMEORIGIN'); // Legacy fallback for older browsers
         res.setHeader('Content-Security-Policy',
             "default-src 'self' https://discord.com https://cdn.discordapp.com; " +
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
-            "img-src 'self' data: blob: https://cdn.discordapp.com https://*.roblox.com https://thumbnails.roblox.com https://images.unsplash.com https://top.gg; " +
+            "img-src 'self' data: blob: https://cdn.discordapp.com https://*.roblox.com https://thumbnails.roblox.com https://*.rbxcdn.com https://images.unsplash.com https://top.gg; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
             "connect-src 'self' https://discord.com https://api.vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com; " +
+            "frame-ancestors 'self'; " +
             "frame-src 'none'; " +
             "object-src 'none';"
         );
@@ -489,8 +606,18 @@ function serveDashboard(req, res) {
 app.get(['/dashboard', '/dashboard.html', '/'], serveDashboard);
 
 // Serve static assets (JS, CSS, images) — dashboard.html itself is handled above
-app.use(express.static(path.join(__dirname, '../dist')));
-app.use(express.static(path.join(__dirname, 'web')));
+app.use(express.static(path.join(__dirname, '../dist'), {
+    maxAge: '1d',
+    setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+}));
+app.use(express.static(path.join(__dirname, 'web'), {
+    maxAge: '1d',
+    setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+}));
 
 
 // Mount the API Router for settings
@@ -1253,7 +1380,7 @@ app.get('/api/user/roblox', async (req, res) => {
         let username = record.robloxId;
         if (/^\d+$/.test(record.robloxId)) {
             try {
-                const profileRes = await fetch(`https://users.roblox.com/v1/users/${record.robloxId}`);
+                const profileRes = await fetchRoblox(`https://users.roblox.com/v1/users/${record.robloxId}`);
                 if (profileRes.ok) {
                     const data = await profileRes.json();
                     username = data.name;
@@ -1281,7 +1408,7 @@ app.get('/api/user/roblox/accounts', async (req, res) => {
         let profileMap = new Map();
         if (userIds.length > 0) {
             try {
-                const usersRes = await fetch('https://users.roblox.com/v1/users', {
+                const usersRes = await fetchRoblox('https://users.roblox.com/v1/users', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userIds, excludeBannedUsers: false })
@@ -1383,7 +1510,7 @@ app.post('/api/user/roblox/link', async (req, res) => {
         const user = await getDiscordUser(token);
         
         // Search Roblox API for ID
-        const searchRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+        const searchRes = await fetchRoblox('https://users.roblox.com/v1/usernames/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
@@ -1436,7 +1563,7 @@ app.post('/api/user/roblox/check', async (req, res) => {
 
         // If robloxId is not numeric, it's a legacy username string. Let's resolve it first.
         if (!/^\d+$/.test(record.robloxId)) {
-            const searchRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+            const searchRes = await fetchRoblox('https://users.roblox.com/v1/usernames/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ usernames: [record.robloxId], excludeBannedUsers: true })
@@ -1451,7 +1578,7 @@ app.post('/api/user/roblox/check', async (req, res) => {
         }
 
         // Fetch Roblox profile to verify description code
-        const profileRes = await fetch(`https://users.roblox.com/v1/users/${record.robloxId}`);
+        const profileRes = await fetchRoblox(`https://users.roblox.com/v1/users/${record.robloxId}`);
         if (!profileRes.ok) {
             return res.status(400).json({ error: 'Failed to fetch Roblox profile for verification. Check that the ID is valid.' });
         }
@@ -1548,6 +1675,39 @@ app.post('/api/user/roblox/unlink', async (req, res) => {
     }
 });
 
+app.get('/api/user/roblox/avatar', async (req, res) => {
+    const userId = req.query.userId || '1';
+    
+    // Check cache first — avoids hitting Roblox API entirely
+    const cached = getCachedAvatar(userId);
+    if (cached) {
+        res.setHeader('Cache-Control', 'public, max-age=14400, stale-while-revalidate=3600'); // 4h cache, 1h stale OK
+        res.setHeader('X-Cache', 'HIT');
+        return res.redirect(cached);
+    }
+    
+    try {
+        const robloxRes = await fetchRoblox(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`);
+        if (robloxRes.ok) {
+            const data = await robloxRes.json();
+            if (data.data && data.data.length > 0) {
+                const imageUrl = data.data[0].imageUrl;
+                setCachedAvatar(userId, imageUrl);
+                res.setHeader('Cache-Control', 'public, max-age=14400, stale-while-revalidate=3600');
+                res.setHeader('X-Cache', 'MISS');
+                return res.redirect(imageUrl);
+            }
+        }
+    } catch (e) {
+        console.error('Failed to proxy Roblox avatar headshot:', e.message);
+    }
+    // Fallback — also cache the fallback to prevent retrying on missing users
+    const fallback = 'https://cdn.discordapp.com/embed/avatars/0.png';
+    setCachedAvatar(userId, fallback);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.redirect(fallback);
+});
+
 app.get('/api/user/roblox/presence', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
@@ -1565,7 +1725,7 @@ app.get('/api/user/roblox/presence', async (req, res) => {
         
         if (!/^\d+$/.test(robloxId)) {
             try {
-                const searchRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+                const searchRes = await fetchRoblox('https://users.roblox.com/v1/usernames/users', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ usernames: [robloxId], excludeBannedUsers: true })
@@ -1588,67 +1748,87 @@ app.get('/api/user/roblox/presence', async (req, res) => {
             }
         }
         
-        // 1. Fetch profile details
+        // 1, 2, 3: Fetch profile, avatar (if not cached), and presence in parallel
         let displayName = record.robloxId;
         let username = record.robloxId;
-        try {
-            const profileRes = await fetch(`https://users.roblox.com/v1/users/${robloxId}`);
-            if (profileRes.ok) {
-                const profileData = await profileRes.json();
-                username = profileData.name;
-                displayName = profileData.displayName;
-            }
-        } catch (e) {
-            console.error('Failed to fetch Roblox profile:', e);
-        }
-        
-        // 2. Fetch avatar headshot thumbnail
-        let avatarUrl = `https://www.roblox.com/headshot-thumbnail/image?userId=${robloxId}&width=150&height=150&format=png`;
-        try {
-            const avatarRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`);
-            if (avatarRes.ok) {
-                const avatarData = await avatarRes.json();
-                if (avatarData.data && avatarData.data.length > 0) {
-                    avatarUrl = avatarData.data[0].imageUrl;
-                }
-            }
-        } catch (e) {
-            console.error('Failed to fetch Roblox avatar headshot:', e);
-        }
-        
-        // 3. Fetch presence info
+        let avatarUrl = getCachedAvatar(robloxId) || `/api/user/roblox/avatar?userId=${robloxId}`;
+        const avatarCached = !!getCachedAvatar(robloxId);
         let online = false;
         let status = 'Offline';
         let joinable = false;
         let placeId = null;
         let gameId = null;
-        
+
         try {
-            const presenceRes = await fetch('https://presence.roblox.com/v1/presence/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userIds: [parseInt(robloxId)] })
-            });
-            if (presenceRes.ok) {
-                const presenceData = await presenceRes.json();
-                if (presenceData.userPresences && presenceData.userPresences.length > 0) {
-                    const p = presenceData.userPresences[0];
-                    const type = p.userPresenceType; // 0: Offline, 1: Online, 2: InGame, 3: InStudio
-                    online = type > 0;
-                    if (type === 1) {
-                        status = 'Online on Website';
-                    } else if (type === 2) {
-                        status = p.lastLocation || 'Playing Roblox';
-                        joinable = true;
-                        placeId = p.rootPlaceId || p.placeId;
-                        gameId = p.gameId;
-                    } else if (type === 3) {
-                        status = 'Editing in Studio';
-                    }
+            // Only fetch avatar from Roblox if not already in cache
+            const fetchPromises = [
+                fetchRoblox(`https://users.roblox.com/v1/users/${robloxId}`),
+                avatarCached
+                    ? Promise.resolve(null) // Skip avatar fetch — already cached
+                    : fetchRoblox(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`),
+                fetchRoblox('https://presence.roblox.com/v1/presence/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userIds: [parseInt(robloxId)] })
+                })
+            ];
+            const [profileResResult, avatarResResult, presenceResResult] = await Promise.allSettled(fetchPromises);
+
+            // Parse profile details
+            if (profileResResult.status === 'fulfilled' && profileResResult.value.ok) {
+                try {
+                    const profileData = await profileResResult.value.json();
+                    username = profileData.name;
+                    displayName = profileData.displayName;
+                } catch (e) {
+                    console.error('Failed to parse Roblox profile response:', e);
                 }
+            } else if (profileResResult.status === 'rejected') {
+                console.error('Failed to fetch Roblox profile:', profileResResult.reason);
             }
-        } catch (e) {
-            console.error('Failed to fetch Roblox presence:', e);
+
+            // Parse avatar headshot (skipped if already cached)
+            if (avatarResResult.status === 'fulfilled' && avatarResResult.value && avatarResResult.value.ok) {
+                try {
+                    const avatarData = await avatarResResult.value.json();
+                    if (avatarData.data && avatarData.data.length > 0) {
+                        avatarUrl = avatarData.data[0].imageUrl;
+                        setCachedAvatar(robloxId, avatarUrl);
+                    }
+                } catch (e) {
+                    console.error('Failed to parse Roblox avatar response:', e);
+                }
+            } else if (avatarResResult.status === 'rejected') {
+                console.error('Failed to fetch Roblox avatar headshot:', avatarResResult.reason);
+            }
+
+            // Parse presence info
+            if (presenceResResult.status === 'fulfilled' && presenceResResult.value.ok) {
+                try {
+                    const presenceData = await presenceResResult.value.json();
+                    if (presenceData.userPresences && presenceData.userPresences.length > 0) {
+                        const p = presenceData.userPresences[0];
+                        const type = p.userPresenceType; // 0: Offline, 1: Online, 2: InGame, 3: InStudio
+                        online = type > 0;
+                        if (type === 1) {
+                            status = 'Online on Website';
+                        } else if (type === 2) {
+                            status = p.lastLocation || 'Playing Roblox';
+                            joinable = true;
+                            placeId = p.rootPlaceId || p.placeId;
+                            gameId = p.gameId;
+                        } else if (type === 3) {
+                            status = 'Editing in Studio';
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to parse Roblox presence response:', e);
+                }
+            } else if (presenceResResult.status === 'rejected') {
+                console.error('Failed to fetch Roblox presence:', presenceResResult.reason);
+            }
+        } catch (err) {
+            console.error('General error during parallel Roblox fetches:', err);
         }
         
         res.json({

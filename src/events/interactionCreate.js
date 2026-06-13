@@ -29,274 +29,32 @@ module.exports = {
                     { where: { userId: interaction.user.id } }
                 ).catch(() => {}); // Silent fail if database is busy
             }
-        }
-
-        // Handle Ticket Close Button Action
+        }        // Handle Ticket Close Button Action
         if (interaction.isButton() && (interaction.customId.startsWith('ticket_close_') || interaction.customId.startsWith('ticket_close_btn_'))) {
-            const ActiveTicket = require('../database/models/ActiveTicket');
-            const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
-            if (!ticket) return interaction.reply({ content: 'Could not resolve this ticket in database.', ephemeral: true });
-
-            const isCreator = interaction.user.id === ticket.ownerId;
+            const ticketsEngine = require('../bot/engines/tickets');
             const settings = await settingsCache.get(interaction.guildId);
-            const isSupport = settings.ticketSupportRoleId && interaction.member?.roles.cache.has(settings.ticketSupportRoleId);
-            const isAdmin = interaction.member?.permissions.has(PermissionFlagsBits.ManageChannels) || interaction.member?.permissions.has(PermissionFlagsBits.Administrator);
-
-            if (!isCreator && !isSupport && !isAdmin) {
-                return interaction.reply({ content: '⛔ Only the ticket creator or Support staff can close this ticket.', ephemeral: true });
-            }
-
-            await interaction.reply({ content: '🔒 Close request acknowledged. Compiling transcript and closing...', ephemeral: true });
-
-            // Fetch and compile transcript
-            const messages = await interaction.channel.messages.fetch({ limit: 100 }).catch(() => []);
-            const sortedMessages = [...messages.values()].reverse();
-
-            let intakeText = '';
-            if (ticket.capturedIntake) {
-                try {
-                    const parsed = JSON.parse(ticket.capturedIntake);
-                    intakeText = Object.entries(parsed)
-                        .map(([label, val]) => `* **${label}**: ${val}`)
-                        .join('\n');
-                } catch (e) {
-                    intakeText = `* **Raw Intake**: ${ticket.capturedIntake}`;
-                }
-            } else {
-                intakeText = '*No intake data captured.*';
-            }
-
-            let transcriptText = `# 🎫 Support Ticket Transcript: #${interaction.channel.name}\n\n`;
-            transcriptText += `## 📌 Ticket Metadata\n`;
-            transcriptText += `- **Guild:** ${interaction.guild.name} (${interaction.guildId})\n`;
-            transcriptText += `- **Ticket Owner:** <@${ticket.ownerId}> (${ticket.ownerId})\n`;
-            transcriptText += `- **Closed By:** ${interaction.user.tag} (${interaction.user.id})\n`;
-            transcriptText += `- **Closed At:** ${new Date().toISOString()}\n\n`;
-            transcriptText += `## 📋 Intake Form Responses\n${intakeText}\n\n`;
-            transcriptText += `## 💬 Chat Logs\n`;
-
-            sortedMessages.forEach(msg => {
-                const timestamp = new Date(msg.createdAt).toLocaleTimeString();
-                const attachmentUrls = msg.attachments.map(a => a.url).join(', ');
-                const attachmentsSuffix = attachmentUrls ? ` *[Attachments: ${attachmentUrls}]*` : '';
-                transcriptText += `* **[${timestamp}] ${msg.author.tag}**: ${msg.content}${attachmentsSuffix}\n`;
-            });
-
-            const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
-            const transcriptBuffer = Buffer.from(transcriptText, 'utf-8');
-            const transcriptFile = new AttachmentBuilder(transcriptBuffer, { name: `transcript-${interaction.channel.name}.md` });
-
-            // DM Owner
-            const owner = await interaction.client.users.fetch(ticket.ownerId).catch(() => null);
-            if (owner) {
-                try {
-                    await owner.send({
-                        content: `👋 Hi! Your support ticket in **${interaction.guild.name}** has been closed. Attached is your transcript logs file.`,
-                        files: [transcriptFile]
-                    });
-                } catch (e) {
-                    console.log(`Failed to DM transcript:`, e.message);
-                }
-            }
-
-            // Send to Server Logging Channel
-            if (settings.loggingChannelId) {
-                const logChannel = interaction.guild.channels.cache.get(settings.loggingChannelId)
-                    || await interaction.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
-                if (logChannel) {
-                    const embed = new EmbedBuilder()
-                        .setTitle('🎫 Ticket Closed & Transcribed')
-                        .setDescription(`**Owner:** <@${ticket.ownerId}> (${ticket.ownerId})\n**Closed By:** <@${interaction.user.id}>\n**Channel:** ${interaction.channel.name}`)
-                        .setColor(0x8b90a5)
-                        .setTimestamp();
-                    await logChannel.send({ embeds: [embed], files: [transcriptFile] }).catch(() => {});
-                }
-            }
-
-            await ticket.destroy();
-            setTimeout(async () => {
-                await interaction.channel.delete().catch(() => {});
-            }, 3000);
+            await ticketsEngine.handleTicketClose(interaction, settings);
             return;
         }
 
         // Handle Ticket Spawn Panel Button Click (Pop Modals)
         if (interaction.isButton() && interaction.customId.startsWith('ticket_') && !interaction.customId.startsWith('ticket_close')) {
-            const ticketType = interaction.customId.split('_')[1];
-            const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-            
+            const ticketsEngine = require('../bot/engines/tickets');
             const settings = await settingsCache.get(interaction.guildId);
-            const modal = new ModalBuilder()
-                .setCustomId(`ticket_modal_${ticketType}`)
-                .setTitle(`Create ${ticketType} Ticket`);
-
-            let inputs = [];
-            let configInputs = [];
-            if (settings?.ticketFormInputs) {
-                try {
-                    configInputs = JSON.parse(settings.ticketFormInputs);
-                } catch (e) {}
-            }
-
-            if (configInputs && Array.isArray(configInputs) && configInputs.length > 0) {
-                configInputs.slice(0, 5).forEach((inp, idx) => {
-                    const textInp = new TextInputBuilder()
-                        .setCustomId(inp.customId || `ticket_input_${idx}`)
-                        .setLabel(inp.label || 'Details')
-                        .setStyle(inp.style === 'paragraph' ? TextInputStyle.Paragraph : TextInputStyle.Short)
-                        .setRequired(!!inp.required)
-                        .setPlaceholder(inp.placeholder || '');
-                    inputs.push(textInp);
-                });
-            } else {
-                const reasonInput = new TextInputBuilder()
-                    .setCustomId('ticket_reason')
-                    .setLabel('Reason for Request')
-                    .setStyle(TextInputStyle.Paragraph)
-                    .setRequired(true)
-                    .setPlaceholder('Describe your issue or request here...');
-
-                const orderInput = new TextInputBuilder()
-                    .setCustomId('ticket_order')
-                    .setLabel('Order Identifier (Optional)')
-                    .setStyle(TextInputStyle.Short)
-                    .setRequired(false)
-                    .setPlaceholder('e.g. Order # or Username');
-
-                inputs.push(reasonInput, orderInput);
-            }
-
-            const rows = inputs.map(input => new ActionRowBuilder().addComponents(input));
-            modal.addComponents(rows);
-
-            await interaction.showModal(modal);
+            await ticketsEngine.handleTicketButton(interaction, settings);
             return;
-        }
-
-        // Handle Verification Buttons (Anti-Bot Modal Upgrade)
+        }        // Handle Verification Buttons (Anti-Bot Modal Upgrade)
         if (interaction.isButton() && interaction.customId === 'verify_system_button') {
-            const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-            
-            const modal = new ModalBuilder()
-                .setCustomId('verify_modal_submit')
-                .setTitle('Security Verification');
-
-            const captchaInput = new TextInputBuilder()
-                .setCustomId('captcha_answer')
-                .setLabel('Type the word NORA in ALL CAPS')
-                .setPlaceholder('NORA')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-                .setMinLength(4)
-                .setMaxLength(4);
-
-            const row = new ActionRowBuilder().addComponents(captchaInput);
-            modal.addComponents(row);
-
-            await interaction.showModal(modal);
+            const verifyEngine = require('../bot/engines/verify');
+            await verifyEngine.handleVerifyButtonClick(interaction);
             return;
         }
 
         // Handle Ticket Modal Submission
         if (interaction.isModalSubmit() && interaction.customId.startsWith('ticket_modal_')) {
-            const ticketType = interaction.customId.split('_')[2];
-            await interaction.deferReply({ ephemeral: true });
-
-            try {
-                const settings = await settingsCache.get(interaction.guildId);
-                const safeName = `ticket-${interaction.user.username}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-
-                // Gather modal inputs
-                const capturedIntake = {};
-                let configInputs = [];
-                if (settings?.ticketFormInputs) {
-                    try {
-                        configInputs = JSON.parse(settings.ticketFormInputs);
-                    } catch(e) {}
-                }
-
-                if (configInputs && Array.isArray(configInputs) && configInputs.length > 0) {
-                    configInputs.forEach((inp, idx) => {
-                        const customId = inp.customId || `ticket_input_${idx}`;
-                        const label = inp.label || `Field ${idx + 1}`;
-                        const value = interaction.fields.getTextInputValue(customId);
-                        capturedIntake[label] = value;
-                    });
-                } else {
-                    capturedIntake['Reason for Request'] = interaction.fields.getTextInputValue('ticket_reason');
-                    capturedIntake['Order Identifier'] = interaction.fields.getTextInputValue('ticket_order') || 'N/A';
-                }
-
-                // Resolve support roles for viewing permissions
-                const permissionOverwrites = [
-                    {
-                        id: interaction.guild.id,
-                        deny: [PermissionFlagsBits.ViewChannel],
-                    },
-                    {
-                        id: interaction.user.id,
-                        allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory],
-                    },
-                    {
-                        id: interaction.client.user.id,
-                        allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles],
-                    }
-                ];
-
-                if (settings?.ticketSupportRoleId) {
-                    permissionOverwrites.push({
-                        id: settings.ticketSupportRoleId,
-                        allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory]
-                    });
-                }
-
-                const ticketChannel = await interaction.guild.channels.create({
-                    name: safeName,
-                    type: ChannelType.GuildText,
-                    parent: settings?.ticketCategoryId || null,
-                    permissionOverwrites
-                });
-
-                // Create ActiveTicket in Database
-                const ActiveTicket = require('../database/models/ActiveTicket');
-                await ActiveTicket.create({
-                    guildId: interaction.guildId,
-                    channelId: ticketChannel.id,
-                    ownerId: interaction.user.id,
-                    isOpen: true,
-                    capturedIntake: JSON.stringify(capturedIntake)
-                });
-
-                // Send Ticket Header Embed with Close Button
-                const { ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } = require('discord.js');
-                const embed = new EmbedBuilder()
-                    .setTitle(`🎫 Support Ticket: ${ticketType}`)
-                    .setDescription(`Thank you for reaching out. A support ticket has been opened. Please wait for Support staff to assist you.`)
-                    .setColor(0x4F46E5)
-                    .setTimestamp();
-
-                Object.entries(capturedIntake).forEach(([label, val]) => {
-                    if (val) embed.addFields({ name: label, value: val.substring(0, 1024) });
-                });
-
-                const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder()
-                        .setCustomId(`ticket_close_${interaction.user.id}`)
-                        .setLabel('Close Ticket')
-                        .setStyle(ButtonStyle.Danger)
-                );
-
-                await ticketChannel.send({
-                    content: `<@${interaction.user.id}> ${settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : ''}`,
-                    embeds: [embed],
-                    components: [row]
-                });
-
-                await interaction.editReply({ content: `Ticket opened! Please check <#${ticketChannel.id}>.` });
-            } catch (error) {
-                console.error('[Ticket Modals Error]:', error);
-                await interaction.editReply({ content: `Failed to create ticket: ${error.message}` });
-            }
+            const ticketsEngine = require('../bot/engines/tickets');
+            const settings = await settingsCache.get(interaction.guildId);
+            await ticketsEngine.handleTicketSubmit(interaction, settings);
             return;
         }
 
@@ -361,50 +119,10 @@ module.exports = {
         }
 
         // Handle Verification Modal Submission
-        if (interaction.isModalSubmit() && interaction.customId === 'verify_modal_submit') {
-            const answer = interaction.fields.getTextInputValue('captcha_answer');
-
-            if (answer.trim().toUpperCase() !== 'NORA') {
-                return interaction.reply({ content: '❌ Verification failed. You must type the word **NORA** exactly as shown.', ephemeral: true });
-            }
-
-            const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
-            if (!member) return interaction.reply({ content: 'Could not resolve your member profile.', ephemeral: true });
-
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('verify_modal_submit_')) {
+            const verifyEngine = require('../bot/engines/verify');
             const settings = await settingsCache.get(interaction.guildId);
-            if (!settings || !settings.verifyRoleId) {
-                return interaction.reply({ content: 'Verification is not fully set up on this server. Please contact an admin.', ephemeral: true });
-            }
-
-            try {
-                const roleIds = settings.verifyRoleId.split(',');
-                let rolesAdded = 0;
-                
-                if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
-                    return interaction.reply({ content: 'I do not have the **Manage Roles** permission physically required to verify you. Please alert an admin.', ephemeral: true });
-                }
-
-                for (const rId of roleIds) {
-                    const roleObj = interaction.guild.roles.cache.get(rId);
-                    if (roleObj && interaction.guild.members.me.roles.highest.position <= roleObj.position) {
-                        return interaction.reply({ content: 'I cannot assign the verification role because it is higher than my highest role. Please alert an admin.', ephemeral: true });
-                    }
-
-                    if (!member.roles.cache.has(rId)) {
-                        await member.roles.add(rId).catch(()=>{});
-                        rolesAdded++;
-                    }
-                }
-
-                if (rolesAdded === 0) {
-                    await interaction.reply({ content: 'You are already verified!', ephemeral: true });
-                } else {
-                    await interaction.reply({ content: '✅ **Verification Successful!** You have been granted access to the server.', ephemeral: true });
-                }
-            } catch (error) {
-                console.error('Verification Error:', error);
-                await interaction.reply({ content: 'I encountered an error trying to assign the roles. Please contact an admin.', ephemeral: true });
-            }
+            await verifyEngine.handleVerifyModalSubmit(interaction, settings);
             return;
         }
 
@@ -682,10 +400,10 @@ module.exports = {
                 // 1. Check if the User lacks permissions defined natively on the command
                 const requiredUserPerms = command.data.default_member_permissions;
                 if (requiredUserPerms) {
-                    const hasUserPerms = interaction.member.permissions.has(BigInt(requiredUserPerms));
+                    const hasUserPerms = interaction.memberPermissions?.has(BigInt(requiredUserPerms));
                     if (!hasUserPerms) {
                         const { PermissionsBitField } = require('discord.js');
-                        const missing = new PermissionsBitField(BigInt(requiredUserPerms)).missing(interaction.member.permissions);
+                        const missing = new PermissionsBitField(BigInt(requiredUserPerms)).missing(interaction.memberPermissions || new PermissionsBitField());
                         return handleError(interaction, 'Unauthorized Access', `You lack the physical permissions to run this command.\n\n**Missing:** \`${missing.join(', ')}\``);
                     }
                 }
@@ -740,11 +458,11 @@ module.exports = {
             const restrictedCmds = ['giveaway-start'];
             
             // 🛡️ Nora System Security (V10.5 Security Matrix) - Layer 1
-            const isStaff = interaction.member.permissions.has(PermissionFlagsBits.ManageGuild) || 
-                            interaction.member.permissions.has(PermissionFlagsBits.BanMembers) || 
-                            interaction.member.permissions.has(PermissionFlagsBits.KickMembers) ||
-                            interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers) ||
-                            interaction.member.permissions.has(PermissionFlagsBits.ManageMessages);
+            const isStaff = interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) || 
+                            interaction.memberPermissions?.has(PermissionFlagsBits.BanMembers) || 
+                            interaction.memberPermissions?.has(PermissionFlagsBits.KickMembers) ||
+                            interaction.memberPermissions?.has(PermissionFlagsBits.ModerateMembers) ||
+                            interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages);
 
             // 🔐 HARDENING: Layer 2 Redundant Permission Check (Double-Verify)
             // Even if Discord allowed the command, Nora re-probes the member locally.
@@ -765,7 +483,7 @@ module.exports = {
             }
 
             // Special Category: Setup & Configure is strictly for Server Management (Admins)
-            if (category === 'setup' && !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+            if (category === 'setup' && !interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
                 return handleError(interaction, 'Admin Required', 'Configuration access requires the physical **Manage Server** permission to prevent accidental mis-calibration.');
             }
 

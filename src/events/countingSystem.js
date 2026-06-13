@@ -109,8 +109,13 @@ module.exports = {
         const evalResult = evaluateCountingInput(message.content.trim(), expectedNext);
 
         if (!evalResult.isValid) {
-            // Reject any message with letters silently to allow chatter, but ruin if they typed a wrong number
-            if (evalResult.reason && evalResult.reason.includes("Security rejection")) {
+            // Silently ignore non-counting content: pure emojis, text, or malformed expressions
+            // Only reset the count if someone deliberately typed a wrong number
+            if (evalResult.reason && (
+                evalResult.reason.includes("Security rejection") ||
+                evalResult.reason.includes("Non-counting content") ||
+                evalResult.reason.includes("Calculation error")
+            )) {
                 return; 
             }
             

@@ -127,7 +127,7 @@ function init(client) {
     // Initial delay to let bot startup fully
     setTimeout(() => {
         pollFeeds(client);
-        setInterval(() => pollFeeds(client), 3 * 60 * 1000); // 3 minutes
+        setInterval(() => pollFeeds(client), 60 * 1000); // 1 minute
     }, 10000);
 }
 
