@@ -4032,6 +4032,9 @@
                             <div class="row"><h4>/guess</h4><label class="switch"><input type="checkbox" id="cmd-guess" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/announce</h4><label class="switch"><input type="checkbox" id="cmd-announce" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/say</h4><label class="switch"><input type="checkbox" id="cmd-say" checked><span class="slider"></span></label></div>
+                            <div class="row"><h4>/reactionrole</h4><label class="switch"><input type="checkbox" id="cmd-reactionrole" checked><span class="slider"></span></label></div>
+                            <div class="row"><h4>/autoresponder</h4><label class="switch"><input type="checkbox" id="cmd-autoresponder" checked><span class="slider"></span></label></div>
+                            <div class="row"><h4>/youtube</h4><label class="switch"><input type="checkbox" id="cmd-youtube" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/poll</h4><label class="switch"><input type="checkbox" id="cmd-poll" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/ban</h4><label class="switch"><input type="checkbox" id="cmd-ban" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/tempban</h4><label class="switch"><input type="checkbox" id="cmd-tempban" checked><span class="slider"></span></label></div>
@@ -5905,7 +5908,7 @@
                 payload.logBoostMessage = boosterMsgEl.value;
             }
             const d = [];
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say', 'reactionrole', 'autoresponder', 'youtube'];
             allCmds.forEach(c => { const cmdCheck = document.getElementById('cmd-'+c); if(cmdCheck && !cmdCheck.checked) d.push(c); });
             payload.disabledCommands = JSON.stringify(d);
 
@@ -9792,7 +9795,7 @@
                 if (el.type === 'checkbox') el.checked = false;
                 else el.value = '';
             });
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say', 'reactionrole', 'autoresponder', 'youtube'];
             allCmds.forEach(c => {
                 const el = document.getElementById('cmd-' + c);
                 if (el) el.checked = false;

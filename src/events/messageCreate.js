@@ -26,6 +26,31 @@ module.exports = {
         guildChannels[message.channel.id] = (guildChannels[message.channel.id] || 0) + 1;
         client.channelActivity[message.guild.id] = guildChannels;
 
+        // 🤖 Autoresponder Hook
+        try {
+            const Autoresponder = require('../database/models/Autoresponder');
+            const responders = await Autoresponder.findAll({ where: { guildId: message.guild.id } });
+            const content = message.content.toLowerCase().trim();
+            for (const responder of responders) {
+                const trigger = responder.trigger.toLowerCase().trim();
+                let isMatch = false;
+                if (responder.matchType === 'exact' && content === trigger) {
+                    isMatch = true;
+                } else if (responder.matchType === 'startsWith' && content.startsWith(trigger)) {
+                    isMatch = true;
+                } else if (responder.matchType === 'contains' && content.includes(trigger)) {
+                    isMatch = true;
+                }
+
+                if (isMatch) {
+                    await message.reply(responder.response).catch(() => {});
+                    return; // Match found, exit processing
+                }
+            }
+        } catch (err) {
+            console.error('[Autoresponder Event Error]:', err);
+        }
+
         try {
             // Robust High-Performance Settings Fetch
             let settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } });
