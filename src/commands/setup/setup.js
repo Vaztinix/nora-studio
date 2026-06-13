@@ -63,12 +63,19 @@ module.exports = {
     async runDashboard(interaction, settings) {
         const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
 
+        const Autoresponder = require('../../database/models/Autoresponder');
+        const ContentFeed = require('../../database/models/ContentFeed');
+        const autoresponderCount = await Autoresponder.count({ where: { guildId: interaction.guild.id } }).catch(() => 0);
+        const youtubeFeedCount = await ContentFeed.count({ where: { guildId: interaction.guild.id, platform: 'YOUTUBE' } }).catch(() => 0);
+
         let state = {
             rewardLevel: null,
             verifyChannel: null,
             verifyRole: null,
             ticketCh: null,
-            currentView: 'main'
+            currentView: 'main',
+            autoresponderCount,
+            youtubeFeedCount
         };
 
         const getRoleColor = (interaction) => {
@@ -361,7 +368,9 @@ module.exports = {
                         { name: 'Welcomer', value: settings.welcomerEnabled ? 'Enabled' : 'Disabled', inline: true },
                         { name: 'Welcome Ch.', value: settings.welcomeChannelId ? `<#${settings.welcomeChannelId}>` : 'None', inline: true },
                         { name: 'Counting Ch.', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : 'None', inline: true },
-                        { name: 'Vote Log', value: settings.voteLogChannelId ? `<#${settings.voteLogChannelId}>` : 'None', inline: true }
+                        { name: 'Vote Log', value: settings.voteLogChannelId ? `<#${settings.voteLogChannelId}>` : 'None', inline: true },
+                        { name: 'Autoresponder', value: `${state.autoresponderCount} trigger(s)`, inline: true },
+                        { name: 'YouTube Alerts', value: `${state.youtubeFeedCount} channel(s)`, inline: true }
                      );
                 const rowA = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_welcomer_toggle').setLabel(settings.welcomerEnabled ? 'Disable Welcomer' : 'Enable Welcomer').setStyle(settings.welcomerEnabled ? ButtonStyle.Danger : ButtonStyle.Success));
                 const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_welcome_channel').setPlaceholder('Select Welcome Channel...').setChannelTypes(ChannelType.GuildText));
@@ -387,6 +396,10 @@ module.exports = {
         collector.on('collect', async i => {
             try {
                 if (i.user.id !== interaction.user.id) return i.reply({ content: 'Not your menu.', ephemeral: true });
+
+                // Refresh counts dynamically
+                state.autoresponderCount = await Autoresponder.count({ where: { guildId: interaction.guild.id } }).catch(() => 0);
+                state.youtubeFeedCount = await ContentFeed.count({ where: { guildId: interaction.guild.id, platform: 'YOUTUBE' } }).catch(() => 0);
 
                 if (i.customId === 'config_main' || i.customId.startsWith('view_')) {
                     const view = i.customId.startsWith('view_') ? i.customId : i.values[0];
