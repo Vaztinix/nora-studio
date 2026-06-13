@@ -611,6 +611,30 @@ function serveDashboard(req, res) {
 
 app.get(['/dashboard', '/dashboard.html', '/'], serveDashboard);
 
+function serveVerify(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    const distPath = path.join(__dirname, '../dist/verify.html');
+    const webPath  = path.join(__dirname, 'web/verify.html');
+    const filePath = fs.existsSync(distPath) ? distPath : webPath;
+
+    try {
+        let html = fs.readFileSync(filePath, 'utf8');
+        const clientId = req.client && req.client.user ? req.client.user.id : process.env.CLIENT_ID;
+        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
+        html = html.replace('</head>', injection + '</head>');
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+    } catch (err) {
+        console.error('[Verify] Failed to serve verify.html:', err.message);
+        res.status(500).send('Verify portal unavailable.');
+    }
+}
+
+app.get('/verify', serveVerify);
+
 // Serve static assets (JS, CSS, images) — dashboard.html itself is handled above
 app.use(express.static(path.join(__dirname, '../dist'), {
     maxAge: '1d',
@@ -1881,10 +1905,6 @@ app.get('/team', (req, res) => {
 
 app.get('/docs', (req, res) => {
     res.sendFile(getWebFilePath('docs.html'));
-});
-
-app.get('/verify', (req, res) => {
-    res.sendFile(getWebFilePath('verify.html'));
 });
 
 app.get('/ai', (req, res) => {

@@ -483,13 +483,37 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        const CLIENT_ID = "1375943730951098549";
+        const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
         const REDIRECT_URI = encodeURIComponent(
             (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
             ? window.location.origin + '/verify'
             : 'https://vaztinix.dev/verify'
         );
         const discordLoginURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify`;
+
+        window.getApiBaseUrl = function() {
+            const host = window.location.hostname;
+            const port = window.location.port;
+
+            if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
+                return window.location.origin;
+            }
+
+            const localOverride = localStorage.getItem('nora_api_url');
+            if (localOverride) {
+                if (localOverride.includes('vaztinix.dev') && !localOverride.includes('api.vaztinix.dev')) {
+                    // fall through
+                } else {
+                    return localOverride;
+                }
+            }
+
+            if (window.__NORA_API_BASE_URL__) {
+                return window.__NORA_API_BASE_URL__;
+            }
+
+            return 'https://api.vaztinix.dev';
+        };
 
         let currentUser = null;
         let pendingRobloxId = null;
@@ -536,7 +560,7 @@
         async function verifyToken(token) {
             toggleLoading(true);
             try {
-                const res = await fetch('/api/user/me', {
+                const res = await fetch(getApiBaseUrl() + '/api/user/me', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Invalid session');
@@ -566,7 +590,7 @@
         async function loadLinkedAccounts() {
             const token = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch('/api/user/roblox/accounts', {
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/accounts', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (!res.ok) return;
@@ -607,7 +631,7 @@
             toggleLoading(true);
             const token = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch('/api/user/roblox/link', {
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/link', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -651,7 +675,7 @@
             toggleLoading(true);
             const token = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch('/api/user/roblox/check', {
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/check', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
