@@ -1,4 +1,5 @@
 const { PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const sharp = require('sharp');
 
 function generateRandomCaptcha(length = 6) {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid confusing characters like O, 0, I, 1
@@ -60,7 +61,8 @@ function generateSvgCaptcha(text) {
 async function handleVerifyButtonClick(interaction) {
     const captchaCode = generateRandomCaptcha(6);
     const svgString = generateSvgCaptcha(captchaCode);
-    const attachment = new AttachmentBuilder(Buffer.from(svgString), { name: 'captcha.svg' });
+    const pngBuffer = await sharp(Buffer.from(svgString)).png().toBuffer();
+    const attachment = new AttachmentBuilder(pngBuffer, { name: 'captcha.png' });
 
     const enterCodeBtn = new ButtonBuilder()
         .setCustomId(`verify_enter_code_${captchaCode}`)
