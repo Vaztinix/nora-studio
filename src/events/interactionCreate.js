@@ -50,6 +50,13 @@ module.exports = {
             return;
         }
 
+        // Handle "Enter CAPTCHA Code" button click
+        if (interaction.isButton() && interaction.customId.startsWith('verify_enter_code_')) {
+            const verifyEngine = require('../bot/engines/verify');
+            await verifyEngine.handleEnterCodeButtonClick(interaction);
+            return;
+        }
+
         // Handle Ticket Modal Submission
         if (interaction.isModalSubmit() && interaction.customId.startsWith('ticket_modal_')) {
             const ticketsEngine = require('../bot/engines/tickets');
