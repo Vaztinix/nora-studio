@@ -221,6 +221,12 @@ sequelize.sync().then(async () => {
     try {
         await sequelize.query("ALTER TABLE `ContentFeeds` ADD COLUMN `isLive` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `isEmbed` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `reactionRoleNotifyDm` TINYINT(1) DEFAULT 1;");
+    } catch (e) {}
 
     // 🛡️ Nora System Persistence (System Backup) - V17.2
     const { systemBackup } = require('./utils/persistence');

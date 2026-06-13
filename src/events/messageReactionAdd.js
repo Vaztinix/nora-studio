@@ -40,6 +40,17 @@ module.exports = {
                             await member.roles.add(role).catch(err => {
                                 console.error(`[Reaction Role] Failed to add role ${role.name} to ${member.user.tag}:`, err.message);
                             });
+
+                            const GuildSettings = require('../database/models/GuildSettings');
+                            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+                            if (!settings || settings.reactionRoleNotifyDm !== false) {
+                                const { EmbedBuilder } = require('discord.js');
+                                const dmEmbed = new EmbedBuilder()
+                                    .setTitle('Role Added')
+                                    .setDescription(`You have been given the **${role.name}** role in **${guild.name}**!`)
+                                    .setColor(role.color || 0x4F46E5);
+                                await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                            }
                         }
                     }
                 }

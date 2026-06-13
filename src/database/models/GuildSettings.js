@@ -519,6 +519,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
     robloxVerifyChannelId: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    reactionRoleNotifyDm: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     }
 });
 

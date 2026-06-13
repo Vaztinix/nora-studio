@@ -43,7 +43,22 @@ module.exports = {
                 }
 
                 if (isMatch) {
-                    await message.reply(responder.response).catch(() => {});
+                    const formattedResponse = responder.response
+                        .replace(/{user}/g, `<@${message.author.id}>`)
+                        .replace(/{username}/g, message.author.username)
+                        .replace(/{id}/g, message.author.id)
+                        .replace(/{guild}/g, message.guild.name)
+                        .replace(/{membercount}/g, message.guild.memberCount);
+
+                    if (responder.isEmbed) {
+                        const { EmbedBuilder } = require('discord.js');
+                        const embed = new EmbedBuilder()
+                            .setDescription(formattedResponse)
+                            .setColor(message.guild.members.me?.roles.highest.color || 0x4F46E5);
+                        await message.reply({ embeds: [embed] }).catch(() => {});
+                    } else {
+                        await message.reply(formattedResponse).catch(() => {});
+                    }
                     return; // Match found, exit processing
                 }
             }

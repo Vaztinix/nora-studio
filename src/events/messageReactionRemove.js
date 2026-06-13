@@ -40,6 +40,17 @@ module.exports = {
                             await member.roles.remove(role).catch(err => {
                                 console.error(`[Reaction Role] Failed to remove role ${role.name} from ${member.user.tag}:`, err.message);
                             });
+
+                            const GuildSettings = require('../database/models/GuildSettings');
+                            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+                            if (!settings || settings.reactionRoleNotifyDm !== false) {
+                                const { EmbedBuilder } = require('discord.js');
+                                const dmEmbed = new EmbedBuilder()
+                                    .setTitle('Role Removed')
+                                    .setDescription(`The **${role.name}** role has been removed from you in **${guild.name}**!`)
+                                    .setColor(role.color || 0x4F46E5);
+                                await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                            }
                         }
                     }
                 }

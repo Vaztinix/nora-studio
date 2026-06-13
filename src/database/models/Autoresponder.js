@@ -22,6 +22,10 @@ const Autoresponder = sequelize.define('Autoresponder', {
     matchType: {
         type: DataTypes.STRING,
         defaultValue: 'contains' // contains, exact, startsWith
+    },
+    isEmbed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 

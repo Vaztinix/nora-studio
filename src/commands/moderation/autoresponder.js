@@ -22,6 +22,7 @@ module.exports = {
                         )
                         .setRequired(false)
                 )
+                .addBooleanOption(opt => opt.setName('as_embed').setDescription('Respond using a styled embed message instead of plain text').setRequired(false))
         )
         .addSubcommand(sub =>
             sub.setName('remove')
@@ -43,23 +44,24 @@ module.exports = {
             const trigger = interaction.options.getString('trigger').trim();
             const response = interaction.options.getString('response');
             const matchType = interaction.options.getString('match_type') || 'contains';
+            const asEmbed = interaction.options.getBoolean('as_embed') || false;
 
             await interaction.deferReply({ ephemeral: true });
 
             try {
                 const [record, created] = await Autoresponder.findOrCreate({
                     where: { guildId, trigger },
-                    defaults: { response, matchType }
+                    defaults: { response, matchType, isEmbed: asEmbed }
                 });
 
                 if (!created) {
-                    await record.update({ response, matchType });
+                    await record.update({ response, matchType, isEmbed: asEmbed });
                 }
 
                 return await handleSuccess(
                     interaction,
                     'Autoresponder Configured',
-                    `Successfully configured trigger!\n- **Trigger**: \`${trigger}\`\n- **Match Type**: \`${matchType}\`\n- **Response**: ${response}`
+                    `Successfully configured trigger!\n- **Trigger**: \`${trigger}\`\n- **Match Type**: \`${matchType}\`\n- **Embed Response**: \`${asEmbed ? 'Yes' : 'No'}\`\n- **Response**: ${response}`
                 );
             } catch (error) {
                 console.error('[Autoresponder Add Command Error]:', error);
@@ -108,7 +110,7 @@ module.exports = {
                     .setTitle('🤖 Server Autoresponders')
                     .setColor('#4F46E5')
                     .setDescription(
-                        list.map((r, i) => `**${i + 1}.** Trigger: \`${r.trigger}\` (Match: \`${r.matchType}\`)\n   Response: ${r.response.length > 100 ? r.response.slice(0, 97) + '...' : r.response}`)
+                        list.map((r, i) => `**${i + 1}.** Trigger: \`${r.trigger}\` (Match: \`${r.matchType}\`, Embed: \`${r.isEmbed ? 'Yes' : 'No'}\`)\n   Response: ${r.response.length > 100 ? r.response.slice(0, 97) + '...' : r.response}`)
                             .join('\n\n')
                     );
 
