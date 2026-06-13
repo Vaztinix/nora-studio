@@ -1,4 +1,4 @@
-const { Events, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { Events, EmbedBuilder, PermissionFlagsBits, AttachmentBuilder } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const GlobalSettings = require('../database/models/GlobalSettings');
 const NoraLeveling = require('../utils/noraLeveling');

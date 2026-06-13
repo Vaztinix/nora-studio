@@ -635,6 +635,25 @@ function serveVerify(req, res) {
 
 app.get('/verify', serveVerify);
 
+app.get('/api/public/guilds/:guildId', async (req, res) => {
+    try {
+        const guild = client.guilds.cache.get(req.params.guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Server not found' });
+        }
+        const settingsCache = require('./utils/settingsCache');
+        const settings = await settingsCache.get(guild.id);
+        res.json({
+            id: guild.id,
+            name: guild.name,
+            icon: guild.iconURL({ size: 128 }),
+            robloxVerifyEnabled: settings ? settings.robloxVerifyEnabled : false
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Serve static assets (JS, CSS, images) — dashboard.html itself is handled above
 app.use(express.static(path.join(__dirname, '../dist'), {
     maxAge: '1d',
@@ -1512,6 +1531,14 @@ app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
                 if (member) {
                     const settings = await settingsCache.get(guild.id);
                     if (settings && settings.robloxVerifyEnabled) {
+                        // Grant base verification role
+                        if (settings.robloxVerifyRoleId) {
+                            const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
+                            if (role) {
+                                await member.roles.add(role).catch(e => console.error(`Failed to grant base Roblox role in guild ${guild.id}:`, e));
+                            }
+                        }
+
                         let groupBindings = [];
                         try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
                         if (groupBindings.length > 0) {
@@ -1580,7 +1607,7 @@ app.post('/api/user/roblox/check', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
-    const { robloxId } = req.body || {};
+    const { robloxId, guildId } = req.body || {};
     try {
         const user = await getDiscordUser(token);
         let record;
@@ -1615,15 +1642,18 @@ app.post('/api/user/roblox/check', async (req, res) => {
         const profileData = await profileRes.json();
         const description = profileData.description || '';
 
-        if (description.includes(record.verifyCode)) {
-            record.status = 'VERIFIED';
-            
-            // Check if user has an active verified account. If not, make this active.
-            const hasActive = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true, status: 'VERIFIED' } });
-            if (!hasActive) {
-                record.isActive = true;
+        const isAlreadyVerified = record.status === 'VERIFIED';
+        if (isAlreadyVerified || description.includes(record.verifyCode)) {
+            if (!isAlreadyVerified) {
+                record.status = 'VERIFIED';
+                
+                // Check if user has an active verified account. If not, make this active.
+                const hasActive = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true, status: 'VERIFIED' } });
+                if (!hasActive) {
+                    record.isActive = true;
+                }
+                await record.save();
             }
-            await record.save();
 
             // Add to UserPrefs.auxiliaryRobloxHandles
             const UserPrefs = require('./database/models/UserPrefs');
@@ -1635,16 +1665,61 @@ app.post('/api/user/roblox/check', async (req, res) => {
                 await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
             }
 
+            let syncError = null;
             // Sync Roblox roles with backoff
             if (record.isActive) {
                 const robloxSystem = require('./utils/robloxSystem');
                 const settingsCache = require('./utils/settingsCache');
+
+                // If guildId is provided, fetch and process it first to ensure immediate execution and feedback
+                if (guildId) {
+                    const guild = client.guilds.cache.get(guildId);
+                    if (guild) {
+                        try {
+                            const member = await guild.members.fetch(user.id);
+                            const settings = await settingsCache.get(guild.id);
+                            if (settings && settings.robloxVerifyEnabled) {
+                                if (settings.robloxVerifyRoleId) {
+                                    const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
+                                    if (role) {
+                                        await member.roles.add(role);
+                                    } else {
+                                        syncError = 'Verified role configured on server no longer exists.';
+                                    }
+                                }
+                                let groupBindings = [];
+                                try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
+                                if (groupBindings.length > 0) {
+                                    await robloxSystem.syncRobloxRolesWithBackoff(member, record.robloxId, groupBindings);
+                                }
+                            } else {
+                                syncError = 'Roblox verification is not enabled on this server.';
+                            }
+                        } catch (err) {
+                            console.error(`[Roblox API Sync] Explicit guild roles sync failed for guild ${guildId}:`, err);
+                            syncError = `Failed to assign roles: ${err.message || err}`;
+                        }
+                    } else {
+                        syncError = 'Server not found by the bot.';
+                    }
+                }
+
+                // Process remaining mutual guilds
                 for (const guild of client.guilds.cache.values()) {
+                    if (guild.id === guildId) continue;
                     try {
                         const member = await guild.members.fetch(user.id).catch(() => null);
                         if (member) {
                             const settings = await settingsCache.get(guild.id);
                             if (settings && settings.robloxVerifyEnabled) {
+                                // Grant base verification role
+                                if (settings.robloxVerifyRoleId) {
+                                    const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
+                                    if (role) {
+                                        await member.roles.add(role).catch(e => console.error(`Failed to grant base Roblox role in guild ${guild.id}:`, e));
+                                    }
+                                }
+
                                 let groupBindings = [];
                                 try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
                                 if (groupBindings.length > 0) {
@@ -1658,7 +1733,7 @@ app.post('/api/user/roblox/check', async (req, res) => {
                 }
             }
 
-            res.json({ success: true, status: 'VERIFIED', robloxId: record.robloxId, robloxUsername: profileData.name });
+            res.json({ success: true, status: 'VERIFIED', robloxId: record.robloxId, robloxUsername: profileData.name, syncError });
         } else {
             res.status(400).json({ error: `Verification code "${record.verifyCode}" was not found in your Roblox description.` });
         }

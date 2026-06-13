@@ -3547,6 +3547,24 @@
                             <label>Welcome Channel</label>
                             <select id="setting-welcomeChannelId"><option value="">Select channel...</option></select>
                         </div>
+                        <div class="input-group" style="margin-top: 15px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <label style="margin: 0;">Welcome Message Template</label>
+                                <div style="position: relative; display: inline-block;">
+                                    <i class="far fa-question-circle placeholder-help-icon" style="color: var(--primary); cursor: pointer; font-size: 0.9rem;" onclick="togglePlaceholderHelp(event)"></i>
+                                    <div class="placeholder-tooltip" style="display: none; position: absolute; bottom: 125%; right: 0; background: #0c101b; border: 1px solid var(--border); padding: 10px; border-radius: 8px; z-index: 100; width: 220px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                                        <strong>Available Placeholders:</strong><br>
+                                        <code style="color: var(--primary);">{user}</code> - Mentions the member<br>
+                                        <code style="color: var(--primary);">{username}</code> - Plain name<br>
+                                        <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
+                                        <code style="color: var(--primary);">{guild}</code> - Server name<br>
+                                        <code style="color: var(--primary);">{membercount}</code> - Member count<br>
+                                        <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Markdown.</em>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="text" id="setting-logJoinMessage_welcomer" class="custom-msg-input" placeholder="Welcome {user} to the server!" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                        </div>
                     </div>
 
                     <div class="panel" style="margin-top: 25px;">
@@ -3559,6 +3577,24 @@
                         <div class="input-group" style="margin-bottom: 20px;">
                             <label>Boost Reward Role ID</label>
                             <select id="setting-boostRewardRoleId"><option value="">No role selected</option></select>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <label style="margin: 0;">Boost Announcement Template</label>
+                                <div style="position: relative; display: inline-block;">
+                                    <i class="far fa-question-circle placeholder-help-icon" style="color: var(--primary); cursor: pointer; font-size: 0.9rem;" onclick="togglePlaceholderHelp(event)"></i>
+                                    <div class="placeholder-tooltip" style="display: none; position: absolute; bottom: 125%; right: 0; background: #0c101b; border: 1px solid var(--border); padding: 10px; border-radius: 8px; z-index: 100; width: 220px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                                        <strong>Available Placeholders:</strong><br>
+                                        <code style="color: var(--primary);">{user}</code> - Mentions the member<br>
+                                        <code style="color: var(--primary);">{username}</code> - Plain name<br>
+                                        <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
+                                        <code style="color: var(--primary);">{guild}</code> - Server name<br>
+                                        <code style="color: var(--primary);">{membercount}</code> - Member count<br>
+                                        <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Markdown.</em>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="text" id="setting-logBoostMessage_booster" class="custom-msg-input" placeholder="Thank you {user} for boosting the server! 🚀" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white;">
                         </div>
                     </div>
                 </div>
@@ -3995,6 +4031,7 @@
                             <div class="row"><h4>/rank</h4><label class="switch"><input type="checkbox" id="cmd-rank" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/guess</h4><label class="switch"><input type="checkbox" id="cmd-guess" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/announce</h4><label class="switch"><input type="checkbox" id="cmd-announce" checked><span class="slider"></span></label></div>
+                            <div class="row"><h4>/say</h4><label class="switch"><input type="checkbox" id="cmd-say" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/poll</h4><label class="switch"><input type="checkbox" id="cmd-poll" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/ban</h4><label class="switch"><input type="checkbox" id="cmd-ban" checked><span class="slider"></span></label></div>
                             <div class="row"><h4>/tempban</h4><label class="switch"><input type="checkbox" id="cmd-tempban" checked><span class="slider"></span></label></div>
@@ -5858,8 +5895,17 @@
                 }
                 payload[k] = val;
             });
+
+            const welcomerMsgEl = document.getElementById('setting-logJoinMessage_welcomer');
+            if (welcomerMsgEl) {
+                payload.logJoinMessage = welcomerMsgEl.value;
+            }
+            const boosterMsgEl = document.getElementById('setting-logBoostMessage_booster');
+            if (boosterMsgEl) {
+                payload.logBoostMessage = boosterMsgEl.value;
+            }
             const d = [];
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say'];
             allCmds.forEach(c => { const cmdCheck = document.getElementById('cmd-'+c); if(cmdCheck && !cmdCheck.checked) d.push(c); });
             payload.disabledCommands = JSON.stringify(d);
 
@@ -9746,7 +9792,7 @@
                 if (el.type === 'checkbox') el.checked = false;
                 else el.value = '';
             });
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps'];
+            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say'];
             allCmds.forEach(c => {
                 const el = document.getElementById('cmd-' + c);
                 if (el) el.checked = false;
@@ -9848,6 +9894,16 @@
                         el.value = (s[k] !== null && s[k] !== undefined) ? s[k] : '';
                     }
                 });
+
+                const welcomerMsgEl = document.getElementById('setting-logJoinMessage_welcomer');
+                if (welcomerMsgEl) {
+                    welcomerMsgEl.value = (s.logJoinMessage !== null && s.logJoinMessage !== undefined) ? s.logJoinMessage : '';
+                }
+
+                const boosterMsgEl = document.getElementById('setting-logBoostMessage_booster');
+                if (boosterMsgEl) {
+                    boosterMsgEl.value = (s.logBoostMessage !== null && s.logBoostMessage !== undefined) ? s.logBoostMessage : '';
+                }
 
                 // Sync custom multiselect dropdowns with loaded values
                 syncMultiselectUI('setting-verifyRoleId');

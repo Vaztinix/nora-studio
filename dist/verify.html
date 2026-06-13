@@ -368,6 +368,10 @@
             border-color: var(--danger);
             color: #fff;
         }
+        .toast-warning {
+            border-color: #f1c40f;
+            color: #fff;
+        }
 
         #loading-overlay {
             position: absolute;
@@ -415,6 +419,12 @@
         <h1>Roblox Verification</h1>
         <p id="portal-description">Link and verify your Roblox profile with your Discord identity.</p>
 
+        <!-- Guild Target Badge -->
+        <div id="guild-info" style="display: none; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <img id="guild-icon" src="" style="width: 32px; height: 32px; border-radius: 50%; display: none;" onerror="this.style.display='none'">
+            <span id="guild-name" style="font-weight: 500; font-size: 0.95rem; color: #fff;"></span>
+        </div>
+
         <!-- View 1: Auth Required -->
         <div id="view-auth" style="display: none;">
             <button id="discord-login-btn" class="btn btn-discord">
@@ -429,6 +439,16 @@
                 <div>
                     <span id="discord-name" class="username">username</span>
                     <span class="logout-link" onclick="logout()">Logout</span>
+                </div>
+            </div>
+
+            <!-- Already Verified Confirmation Section -->
+            <div id="confirm-verification-section" style="display: none; margin-bottom: 25px;">
+                <div style="background: rgba(0, 180, 216, 0.08); border: 1px solid var(--primary); padding: 15px; border-radius: 12px; text-align: center;">
+                    <p style="margin-top: 0; margin-bottom: 12px; font-size: 0.95rem; color: #fff; line-height: 1.4;">
+                        You are logged in and already verified as <strong id="confirm-roblox-username" style="color: var(--primary);">Username</strong>.
+                    </p>
+                    <button onclick="confirmExistingVerification()" class="btn btn-primary" style="width: auto; padding: 8px 20px;">Confirm & Sync Roles</button>
                 </div>
             </div>
 
@@ -517,6 +537,7 @@
 
         let currentUser = null;
         let pendingRobloxId = null;
+        let currentUserActiveAccount = null;
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -534,11 +555,41 @@
             window.location.href = '/verify';
         }
 
+        async function loadGuildInfo(guildId) {
+            try {
+                const res = await fetch(getApiBaseUrl() + '/api/public/guilds/' + guildId);
+                if (res.ok) {
+                    const guild = await res.json();
+                    document.getElementById('guild-name').textContent = `Verifying for: ${guild.name}`;
+                    if (guild.icon) {
+                        document.getElementById('guild-icon').src = guild.icon;
+                        document.getElementById('guild-icon').style.display = 'block';
+                    } else {
+                        document.getElementById('guild-icon').style.display = 'none';
+                    }
+                    document.getElementById('guild-info').style.display = 'flex';
+                }
+            } catch (e) {
+                console.error('Failed to load guild info:', e);
+            }
+        }
+
         // Initialize Authentication
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('discord-login-btn').onclick = () => {
                 window.location.href = discordLoginURL;
             };
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild');
+            if (guildId) {
+                sessionStorage.setItem('verify_guild_id', guildId);
+            }
+
+            const savedGuildId = sessionStorage.getItem('verify_guild_id');
+            if (savedGuildId) {
+                loadGuildInfo(savedGuildId);
+            }
 
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
@@ -609,6 +660,14 @@
                 const container = document.getElementById('accounts-list-container');
                 container.innerHTML = '';
 
+                currentUserActiveAccount = accounts.find(acc => acc.isActive && acc.status === 'VERIFIED');
+                if (currentUserActiveAccount) {
+                    document.getElementById('confirm-roblox-username').textContent = currentUserActiveAccount.robloxUsername || currentUserActiveAccount.robloxId;
+                    document.getElementById('confirm-verification-section').style.display = 'block';
+                } else {
+                    document.getElementById('confirm-verification-section').style.display = 'none';
+                }
+
                 if (accounts.length > 0) {
                     document.getElementById('linked-accounts-section').style.display = 'block';
                     accounts.forEach(acc => {
@@ -629,6 +688,41 @@
                 }
             } catch (e) {
                 console.error(e);
+            }
+        }
+
+        async function confirmExistingVerification() {
+            if (!currentUserActiveAccount) return;
+            toggleLoading(true);
+            const token = sessionStorage.getItem('discord_token');
+            const guildId = sessionStorage.getItem('verify_guild_id');
+            try {
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        robloxId: currentUserActiveAccount.robloxId,
+                        guildId: guildId || undefined
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Verification failed');
+                }
+
+                if (data.syncError) {
+                    showToast(`Verified, but: ${data.syncError}`, 'warning');
+                } else {
+                    showToast('Verification confirmed! Roles have been synced on the server.', 'success');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                toggleLoading(false);
             }
         }
 
@@ -685,6 +779,7 @@
         async function checkVerification() {
             toggleLoading(true);
             const token = sessionStorage.getItem('discord_token');
+            const guildId = sessionStorage.getItem('verify_guild_id');
             try {
                 const res = await fetch(getApiBaseUrl() + '/api/user/roblox/check', {
                     method: 'POST',
@@ -692,7 +787,10 @@
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`
                     },
-                    body: JSON.stringify({ robloxId: pendingRobloxId })
+                    body: JSON.stringify({ 
+                        robloxId: pendingRobloxId,
+                        guildId: guildId || undefined
+                    })
                 });
 
                 const data = await res.json();
@@ -700,7 +798,11 @@
                     throw new Error(data.error || 'Verification failed');
                 }
 
-                showToast('Verification successful! Account verified.', 'success');
+                if (data.syncError) {
+                    showToast(`Verified, but: ${data.syncError}`, 'warning');
+                } else {
+                    showToast('Verification successful! Account verified and roles granted.', 'success');
+                }
                 cancelVerification();
                 loadLinkedAccounts();
             } catch (err) {

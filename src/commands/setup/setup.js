@@ -519,7 +519,7 @@ module.exports = {
                         new ButtonBuilder()
                             .setLabel('Verify via Website')
                             .setStyle(ButtonStyle.Link)
-                            .setURL('https://vaztinix.dev/verify'),
+                            .setURL(`https://vaztinix.dev/verify?guild=${i.guild.id}`),
                         new ButtonBuilder()
                             .setCustomId('roblox_verify_alt')
                             .setLabel('Alternative Verification')

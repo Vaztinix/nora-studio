@@ -593,7 +593,7 @@ router.post('/action', async (req, res) => {
                 new ButtonBuilder()
                     .setLabel('Verify via Website')
                     .setStyle(ButtonStyle.Link)
-                    .setURL('https://vaztinix.dev/verify'),
+                    .setURL(`https://vaztinix.dev/verify?guild=${guildId}`),
                 new ButtonBuilder()
                     .setCustomId('roblox_verify_alt')
                     .setLabel('Alternative Verification')
