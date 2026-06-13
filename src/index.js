@@ -174,6 +174,7 @@ require('./database/models/Session');
 require('./database/models/TopggConnection');
 require('./database/models/ActiveTicket');
 require('./database/models/ContentFeed');
+require('./database/models/TempBan');
 
 
 const client = new Client({
@@ -223,6 +224,7 @@ sequelize.sync().then(async () => {
     require('./utils/presence').startPresence();
     require('./utils/voiceTracker').start(client);
     require('./utils/giveawayManager').startGiveawayManager(client);
+    require('./utils/tempBanManager').startTempBanManager(client);
     require('./utils/socialScraper').init(client);
     
     // Final check for token stability
