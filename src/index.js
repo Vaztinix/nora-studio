@@ -1883,6 +1883,10 @@ app.get('/docs', (req, res) => {
     res.sendFile(getWebFilePath('docs.html'));
 });
 
+app.get('/verify', (req, res) => {
+    res.sendFile(getWebFilePath('verify.html'));
+});
+
 app.get('/ai', (req, res) => {
     res.sendFile(getWebFilePath('AI.html'));
 });
