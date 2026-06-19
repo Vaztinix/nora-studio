@@ -1,46 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nora — Staff</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Studio | Team & Staff</title>
+    <meta name="description" content="Meet the creators, administrators, and contributors behind Nora Studio.">
     <link rel="icon" type="image/png" href="nora.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="/translate.js"></script>
-    <script>
-        (function() {
-            const savedColor = localStorage.getItem('nora_theme_color');
-            if (savedColor) {
-                document.documentElement.style.setProperty('--primary', savedColor);
-                const r = parseInt(savedColor.slice(1, 3), 16);
-                const g = parseInt(savedColor.slice(3, 5), 16);
-                const b = parseInt(savedColor.slice(5, 7), 16);
-                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
-                document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
-            }
-            const mode = localStorage.getItem('nora_theme_mode') || 'default';
-            if (mode !== 'default') {
-                document.documentElement.classList.add('theme-' + mode);
-                document.addEventListener('DOMContentLoaded', () => {
-                    document.body.classList.add('theme-' + mode);
-                });
-            }
-        })();
-    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
-            --bg: #0b0f1a;
-            --bg-soft: #12182b;
-            --bg-glow: rgba(174, 239, 255, 0.1);
-            --card: rgba(255, 255, 255, 0.04);
-            --card-hover: rgba(255, 255, 255, 0.08);
-            --border: rgba(255, 255, 255, 0.1);
-            --primary: #aeefff;
-            --accent: #7aa2ff;
-            --text: #ffffff;
-            --muted: rgba(255, 255, 255, 0.6);
-            --radius: 22px;
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
         }
 
         * {
@@ -50,180 +27,124 @@
         }
 
         body {
-            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
-                radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
-                var(--bg);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
         }
 
-        /* iOS-like Liquid Blobs */
-        .liquid-blob {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0;
-            pointer-events: none;
-            z-index: -1;
-            transition: opacity 1.5s ease;
-        }
-        body.theme-glass .liquid-blob {
-            opacity: 0.35;
-        }
-        .liquid-blob-1 {
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(174, 239, 255, 0.5) 0%, rgba(122, 162, 255, 0) 70%);
-            top: -10%;
-            left: -10%;
-            animation: drift 25s infinite alternate ease-in-out;
-        }
-        .liquid-blob-2 {
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle, rgba(197, 163, 255, 0.45) 0%, rgba(197, 163, 255, 0) 70%);
-            bottom: -15%;
-            right: -10%;
-            animation: drift-reverse 30s infinite alternate ease-in-out;
-        }
-        .liquid-blob-3 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255, 117, 181, 0.3) 0%, rgba(255, 117, 181, 0) 70%);
-            top: 40%;
-            left: 50%;
-            animation: drift-middle 22s infinite alternate ease-in-out;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
         }
 
-        @keyframes drift {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(150px, 80px) scale(1.2) rotate(90deg); }
-            100% { transform: translate(-50px, 150px) scale(0.9) rotate(180deg); }
-        }
-        @keyframes drift-reverse {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-120px, -100px) scale(0.8) rotate(-60deg); }
-            100% { transform: translate(100px, 50px) scale(1.1) rotate(-120deg); }
-        }
-        @keyframes drift-middle {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-30%, -60%) scale(1.3); }
-            100% { transform: translate(-60%, -40%) scale(0.9); }
-        }
-
-        /* Themes support */
-        body.theme-oled {
-            --bg: #000000;
-            --bg-soft: #0c0c0c;
-            --bg-glow: transparent;
-            --border: #222222;
-            --card: #080808;
-            --card-hover: #121212;
-        }
-        body.theme-sapphire {
-            --bg: #050a18;
-            --bg-soft: #081125;
-            --bg-glow: rgba(75, 105, 255, 0.15);
-            --border: rgba(75, 105, 255, 0.2);
-            --card: rgba(8, 17, 37, 0.6);
-            --card-hover: rgba(12, 25, 55, 0.8);
-        }
-        body.theme-solid-glass {
-            --bg: #07090e;
-            --card: rgba(10, 14, 25, 0.85);
-            --card-hover: rgba(15, 20, 35, 0.9);
-            --border: rgba(255, 255, 255, 0.12);
-        }
-        body.theme-solid-glass .card {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-        body.theme-glass {
-            --bg: #030509;
-            --card: rgba(255, 255, 255, 0.02);
-            --card-hover: rgba(255, 255, 255, 0.06);
-            --border: rgba(255, 255, 255, 0.08);
-        }
-        body.theme-glass .card {
-            backdrop-filter: blur(35px);
-            -webkit-backdrop-filter: blur(35px);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-
+        /* Header / Navbar */
         header {
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 100;
             backdrop-filter: blur(12px);
-            background: rgba(10, 14, 30, 0.8);
+            background: rgba(7, 7, 6, 0.8);
             border-bottom: 1px solid var(--border);
         }
 
-        .nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 1.5rem;
+        .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            height: 70px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-weight: 700;
+            font-size: 1.15rem;
             color: white;
             text-decoration: none;
         }
 
         .brand img {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
         }
 
         .nav-links {
             display: flex;
-            gap: 22px;
+            gap: 28px;
         }
 
-        .nav-links a { font-weight: 600; color: white; text-decoration: none; transition: color 0.2s ease; opacity: 0.8; }
-        .nav-links a:hover { color: var(--primary); opacity: 1; }
-        .nav-links a.active { color: var(--primary); opacity: 1; }
+        .nav-links a {
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 1.5rem;
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .btn-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-header:hover {
+            background: var(--border-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Team Wrapper */
+        .team-wrapper {
+            padding: 60px 0;
             flex-grow: 1;
         }
 
         .page-hero {
             text-align: center;
-            margin-bottom: 4rem;
+            margin-bottom: 50px;
         }
 
         .badge {
             display: inline-block;
             padding: 6px 14px;
             border-radius: 999px;
-            background: rgba(174, 239, 255, 0.12);
-            color: var(--primary);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
             font-weight: 700;
             font-size: 0.75rem;
             margin-bottom: 18px;
+            border: 1px solid var(--border);
         }
 
         .page-hero h1 {
-            font-size: clamp(2rem, 4vw, 2.8rem);
+            font-size: 2.5rem;
             margin-bottom: 14px;
             font-weight: 800;
             letter-spacing: -0.5px;
+            color: white;
         }
 
         .page-hero p {
@@ -235,28 +156,26 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
         }
 
         .card {
-            background: var(--card);
+            background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 16px;
             padding: 30px;
             text-align: center;
-            backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            transform-style: preserve-3d;
-            will-change: transform;
-            transition: border-color 0.25s, box-shadow 0.25s;
+            transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
         }
 
         .card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(174, 239, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.03);
         }
 
         .avatar {
@@ -266,32 +185,23 @@
             object-fit: cover;
             margin-bottom: 16px;
             border: 2px solid var(--border);
-            background: #161b2c;
-            transition: 0.3s;
-            transform: translateZ(30px);
-        }
-
-        .card:hover .avatar {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px var(--accent);
+            background: #111110;
         }
 
         .role {
-            color: var(--primary);
+            color: var(--muted);
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            transform: translateZ(20px);
         }
 
         .card h2 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             color: #fff;
             font-weight: 700;
-            transform: translateZ(25px);
         }
 
         .card h5 {
@@ -299,7 +209,6 @@
             color: var(--muted);
             font-weight: 500;
             font-size: 0.85rem;
-            transform: translateZ(15px);
         }
 
         .discord-badges {
@@ -308,7 +217,6 @@
             margin-bottom: 16px;
             min-height: 24px;
             align-items: center;
-            transform: translateZ(20px);
         }
 
         .discord-badge {
@@ -321,20 +229,14 @@
             align-items: center;
             justify-content: center;
             cursor: default;
-            transition: background 0.2s;
-        }
-
-        .discord-badge:hover {
-            background: rgba(255,255,255,0.12);
         }
 
         .bio {
             color: var(--muted);
-            font-size: 0.95rem;
-            line-height: 1.6;
+            font-size: 0.9rem;
+            line-height: 1.5;
             margin-bottom: 18px;
             flex-grow: 1;
-            transform: translateZ(10px);
         }
 
         .discord-join-date {
@@ -342,7 +244,6 @@
             color: var(--muted);
             margin-bottom: 20px;
             font-weight: 500;
-            transform: translateZ(12px);
             opacity: 0.85;
         }
 
@@ -352,340 +253,217 @@
             justify-content: center;
             gap: 8px;
             width: 100%;
-            transform: translateZ(15px);
         }
 
         .social-links a {
-            background: rgba(255, 255, 255, 0.04);
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
             font-weight: 600;
-            color: var(--primary);
+            color: white;
             border: 1px solid var(--border);
             text-decoration: none;
-            transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: 0.2s;
         }
 
         .social-links a:hover {
             background: var(--primary);
-            color: #0b0f1a;
+            color: #070706;
             transform: translateY(-2px);
         }
 
         footer {
             border-top: 1px solid var(--border);
-            padding: 32px 1.5rem;
+            padding: 40px 0;
             text-align: center;
             color: var(--muted);
-            margin-top: auto;
-        }
-
-        /* Mobile Navigation Toggle Button */
-        .mobile-nav-toggle {
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 24px;
-            height: 18px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            z-index: 10000;
-        }
-
-        .mobile-nav-toggle span {
-            width: 100%;
-            height: 2px;
-            background-color: var(--text, #fff);
-            border-radius: 2px;
-            transition: all 0.3s ease;
-        }
-
-        /* Mobile Navigation Overlay */
-        .mobile-nav-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 11, 16, 0.98);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .mobile-nav-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .mobile-nav-close {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            font-size: 2.5rem;
-            color: var(--text, #fff);
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .mobile-nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            text-align: center;
-        }
-
-        .mobile-nav-links a {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text, #fff);
-            text-decoration: none;
-            opacity: 0.8;
-            transition: opacity 0.2s ease, color 0.2s ease;
-        }
-
-        .mobile-nav-links a:hover,
-        .mobile-nav-links a.active {
-            opacity: 1;
-            color: var(--primary, #5865f2);
-        }
-
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none !important;
-            }
-            .mobile-nav-toggle {
-                display: flex !important;
-            }
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            .card {
-                transform: none !important; /* Disable 3D tilt on mobile for performance */
-            }
+            font-size: 0.85rem;
+            background: #0b0b0a;
         }
     </style>
 </head>
-
 <body>
-    <div class="mobile-nav-overlay" id="mobile-nav-overlay">
-        <button class="mobile-nav-close" id="mobile-nav-close">&times;</button>
-        <nav class="mobile-nav-links">
-            <a href="/">Home</a>
-            <a href="/nora">Nora</a>
-            <a href="/team" class="active">Team</a>
-            <a href="/docs">Docs</a>
-            <a href="/ai">Nora AI</a>
-            <a href="/legal">Legal</a>
-            <a href="/dashboard">Dashboard</a>
-        </nav>
-    </div>
-
-    <div class="liquid-blob liquid-blob-1"></div>
-    <div class="liquid-blob liquid-blob-2"></div>
-    <div class="liquid-blob liquid-blob-3"></div>
-
     <header>
-        <div class="nav">
-            <div class="brand">
-                <img src="nora.png" alt="Nora" />
-                <span>Nora</span>
-            </div>
+        <div class="container nav-container">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
+            </a>
             <nav class="nav-links">
-                <a href="/">Home</a>
-                <a href="/nora">Nora</a>
-                <a href="/team" class="active">Team</a>
+                <a href="/install">Invite</a>
                 <a href="/docs">Docs</a>
-                <a href="/ai">Nora AI</a>
-                <a href="/legal">Legal</a>
                 <a href="/dashboard">Dashboard</a>
+                <a href="/team" class="active">Team</a>
+                <a href="/legal">Legal</a>
             </nav>
-            <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle Navigation">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+            <a href="/dashboard" class="btn-header">Open Console</a>
         </div>
     </header>
 
-    <main class="container">
-        <section class="page-hero">
-            <div class="badge">Nora's Team and Friends</div>
-            <h1>Our Group</h1>
-            <p>Nora is built to ensure communities have a safer and better experience on Discord while keeping their
-                data secure and fully under their control.</p>
-        </section>
+    <main class="team-wrapper">
+        <div class="container">
+            <section class="page-hero">
+                <div class="badge">Nora's Team and Friends</div>
+                <h1>Our Group</h1>
+                <p>Nora Studio is built to ensure communities have a safer and better experience on Discord while keeping their data secure and fully under their control.</p>
+            </section>
 
-        <div class="grid">
-            <div class="card" data-user="1214048435632603137">
-                <img class="avatar" src="ReVaztinix.jpeg" alt="vaztinix" />
-                <div class="role">Founder & Developer</div>
-                <h2 class="display-name">Vaz</h2>
-                <h5 class="handle">vaztinix</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">💕 | I care for everyone, but those closest to me will never understand the trust they
-                    have.</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <a href="https://github.com/Vaztinix" target="_blank">GitHub</a>
-                    <a href="https://www.youtube.com/@Vaztinix" target="_blank">YouTube</a>
-                    <a href="https://www.twitch.tv/vaztinix" target="_blank">Twitch</a>
-                    <a href="https://guns.lol/vaztinix" target="_blank">guns.lol</a>
-                    <a href="https://www.roblox.com/users/3089063186/profile" target="_blank">Roblox Profile</a>
-                    <a href="https://discord.com/users/1214048435632603137" target="_blank">Discord</a>
+            <div class="grid">
+                <div class="card" data-user="1214048435632603137">
+                    <img class="avatar" src="ReVaztinix.jpeg" alt="vaztinix" />
+                    <div class="role">Founder & Developer</div>
+                    <h2 class="display-name">Vaz</h2>
+                    <h5 class="handle">vaztinix</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">💕 | I care for everyone, but those closest to me will never understand the trust they have.</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://github.com/Vaztinix" target="_blank">GitHub</a>
+                        <a href="https://www.youtube.com/@Vaztinix" target="_blank">YouTube</a>
+                        <a href="https://www.twitch.tv/vaztinix" target="_blank">Twitch</a>
+                        <a href="https://guns.lol/vaztinix" target="_blank">guns.lol</a>
+                        <a href="https://www.roblox.com/users/3089063186/profile" target="_blank">Roblox Profile</a>
+                        <a href="https://discord.com/users/1214048435632603137" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="1366229304257544213">
-                <img class="avatar" src="waffles.png" alt="sillywillywood" />
-                <div class="role">Co-Owner</div>
-                <h2 class="display-name">HALLUCINOGENIC™</h2>
-                <h5 class="handle">sillywillywood</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">D1 Hater</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <a href="https://strawberryangel0000.straw.page/" target="_blank">strawberryangel</a>
-                    <a href="https://1angel1.straw.page/" target="_blank">1angel1</a>
-                    <a href="https://discord.com/users/1366229304257544213" target="_blank">Discord</a>
+                <div class="card" data-user="1366229304257544213">
+                    <img class="avatar" src="waffles.png" alt="sillywillywood" />
+                    <div class="role">Co-Owner</div>
+                    <h2 class="display-name">HALLUCINOGENIC™</h2>
+                    <h5 class="handle">sillywillywood</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">D1 Hater</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://strawberryangel0000.straw.page/" target="_blank">Strawpage</a>
+                        <a href="https://1angel1.straw.page/" target="_blank">1angel1</a>
+                        <a href="https://discord.com/users/1366229304257544213" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="914530504718561351">
-                <img class="avatar" src="nora.png" alt="charlieisme" />
-                <div class="role">Administrator</div>
-                <h2 class="display-name">TheCasualEnderman/ EnderVarium</h2>
-                <h5 class="handle">charlieisme</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">Friendly administrator here at Nora. Keeping the community safe and building cool features.</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <a href="https://discord.com/users/914530504718561351" target="_blank">Discord</a>
+                <div class="card" data-user="914530504718561351">
+                    <img class="avatar" src="nora.png" alt="charlieisme" />
+                    <div class="role">Administrator</div>
+                    <h2 class="display-name">TheCasualEnderman/ EnderVarium</h2>
+                    <h5 class="handle">charlieisme</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">Friendly administrator here at Nora. Keeping the community safe and building cool features.</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://discord.com/users/914530504718561351" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="1375943730951098549">
-                <img class="avatar" src="nora.png" alt="Nora" />
-                <div class="role">Privacy-First App</div>
-                <h2 class="display-name">Nora</h2>
-                <h5 class="handle">nora</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">The project we all love and is the reason we are all here today!</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <a href="https://vaztinix.dev/nora" target="_blank">Nora's Official Site</a>
-                    <a href="https://discord.com/users/1375943730951098549" target="_blank">Discord</a>
+                <div class="card" data-user="1375943730951098549">
+                    <img class="avatar" src="nora.png" alt="Nora" />
+                    <div class="role">Privacy-First App</div>
+                    <h2 class="display-name">Nora</h2>
+                    <h5 class="handle">nora</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">The project we all love and is the reason we are all here today!</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://vaztinix.dev/nora" target="_blank">Nora's Official Site</a>
+                        <a href="https://discord.com/users/1375943730951098549" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="941084096673755188">
-                <img class="avatar" src="solorads_pfp.png" alt="solorads" />
-                <div class="role">Tester and Friend</div>
-                <h2 class="display-name">solorads</h2>
-                <h5 class="handle">solorads</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">Create's idea's and tests Nora from time to time to ensure stability.</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <a href="https://www.roblox.com/communities/32778698/SMRP-United-States-Military#!/about"
-                        target="_blank">Roblox Community</a>
-                    <a href="https://www.roblox.com/users/2987228682/profile" target="_blank">Roblox Profile</a>
-                    <a href="https://discord.com/users/941084096673755188" target="_blank">Discord</a>
+                <div class="card" data-user="941084096673755188">
+                    <img class="avatar" src="solorads_pfp.png" alt="solorads" />
+                    <div class="role">Tester and Friend</div>
+                    <h2 class="display-name">solorads</h2>
+                    <h5 class="handle">solorads</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">Create's idea's and tests Nora from time to time to ensure stability.</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://www.roblox.com/communities/32778698/SMRP-United-States-Military#!/about" target="_blank">Roblox Community</a>
+                        <a href="https://www.roblox.com/users/2987228682/profile" target="_blank">Roblox Profile</a>
+                        <a href="https://discord.com/users/941084096673755188" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="1223693570662334604">
-                <img class="avatar" src="silasvr8.png" alt="silasvr8" />
-                <div class="role">Administrator</div>
-                <h2 class="display-name">silasvr8</h2>
-                <h5 class="handle">silasvr8</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">Helps manage Nora and its community, testing features to repair them early to keep Nora
-                    running smoothly.</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <a href="https://www.youtube.com/@SilasVR8" target="_blank">YouTube</a>
-                    <a href="https://guns.lol/silasvr8" target="_blank">guns.lol</a>
-                    <a href="https://discord.com/users/1223693570662334604" target="_blank">Discord</a>
+                <div class="card" data-user="1223693570662334604">
+                    <img class="avatar" src="silasvr8.png" alt="silasvr8" />
+                    <div class="role">Administrator</div>
+                    <h2 class="display-name">silasvr8</h2>
+                    <h5 class="handle">silasvr8</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">Helps manage Nora and its community, testing features to repair them early to keep Nora running smoothly.</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://www.youtube.com/@SilasVR8" target="_blank">YouTube</a>
+                        <a href="https://guns.lol/silasvr8" target="_blank">guns.lol</a>
+                        <a href="https://discord.com/users/1223693570662334604" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="1301949827701149697">
-                <img class="avatar" src="beecet.png" alt="discounted_chaos" />
-                <div class="role">Administrator</div>
-                <h2 class="display-name">discounted_chaos</h2>
-                <h5 class="handle">discounted_chaos</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">"The dumbass"</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <!-- TODO: Ask team member Bee for custom social handles or links she wants mapped here -->
-                    <a href="https://discord.com/users/1301949827701149697" target="_blank">Discord</a>
+                <div class="card" data-user="1301949827701149697">
+                    <img class="avatar" src="beecet.png" alt="discounted_chaos" />
+                    <div class="role">Administrator</div>
+                    <h2 class="display-name">discounted_chaos</h2>
+                    <h5 class="handle">discounted_chaos</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">"The dumbass"</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://discord.com/users/1301949827701149697" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="1364634555977564230">
-                <img class="avatar" src="aryarec.jpg" alt="poppys.ang3l" />
-                <div class="role">Administrator</div>
-                <h2 class="display-name">✦Arya/Vixen┆She/Fae/It✦</h2>
-                <h5 class="handle">poppys.ang3l</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">A very silly person</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <a href="https://poppys-ang3l.straw.page/" target="_blank">Strawpage</a>
-                    <a href="https://prns.cc/eprnd" target="_blank">pronouns.cc</a>
-                    <a href="https://discord.com/users/1364634555977564230" target="_blank">Discord</a>
+                <div class="card" data-user="1364634555977564230">
+                    <img class="avatar" src="aryarec.jpg" alt="poppys.ang3l" />
+                    <div class="role">Administrator</div>
+                    <h2 class="display-name">✦Arya/Vixen┆She/Fae/It✦</h2>
+                    <h5 class="handle">poppys.ang3l</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">A very silly person</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://poppys-ang3l.straw.page/" target="_blank">Strawpage</a>
+                        <a href="https://prns.cc/eprnd" target="_blank">pronouns.cc</a>
+                        <a href="https://discord.com/users/1364634555977564230" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="734113955986931734">
-                <img class="avatar" src="sanedish.png" alt="sanedish" />
-                <div class="role">Tester</div>
-                <h2 class="display-name">sanedish</h2>
-                <h5 class="handle">sanedish</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">The one who suffers from acute silliness and "gay lesbian"</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <a href="https://discord.com/users/734113955986931734" target="_blank">Discord</a>
+                <div class="card" data-user="734113955986931734">
+                    <img class="avatar" src="sanedish.png" alt="sanedish" />
+                    <div class="role">Tester</div>
+                    <h2 class="display-name">sanedish</h2>
+                    <h5 class="handle">sanedish</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">The one who suffers from acute silliness and "gay lesbian"</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://discord.com/users/734113955986931734" target="_blank">Discord</a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card" data-user="1387499169870254230">
-                <img class="avatar" src="boris.png" alt="boris10106" />
-                <div class="role">Friend</div>
-                <h2 class="display-name">boris10106</h2>
-                <h5 class="handle">boris10106</h5>
-                <div class="discord-badges"></div>
-                <p class="bio">The cameras are on my big toe now.</p>
-                <div class="discord-join-date"></div>
-                <div class="social-links">
-                    <!-- TODO: Ask team member Boris for custom social handles or links he wants mapped here -->
-                    <a href="https://discord.com/users/1387499169870254230" target="_blank">Discord</a>
+                <div class="card" data-user="1387499169870254230">
+                    <img class="avatar" src="boris.png" alt="boris10106" />
+                    <div class="role">Friend</div>
+                    <h2 class="display-name">boris10106</h2>
+                    <h5 class="handle">boris10106</h5>
+                    <div class="discord-badges"></div>
+                    <p class="bio">The cameras are on my big toe now.</p>
+                    <div class="discord-join-date"></div>
+                    <div class="social-links">
+                        <a href="https://discord.com/users/1387499169870254230" target="_blank">Discord</a>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <footer>
-        © 2026 Nora | Privacy-First AI & Moderation
+        <div class="container">
+            &copy; 2026 Nora Studio. All rights reserved.
+        </div>
     </footer>
 
     <script>
-        // Snowflake ID to creation date calculator
         function getDiscordJoinDate(id) {
             try {
                 const snowflake = BigInt(id);
@@ -697,36 +475,33 @@
             }
         }
 
-        // Lanyard public_flags bitmask decoder to badges
         function getBadges(flags) {
             const badges = [];
             const STAFF = 1 << 0;
             const PARTNER = 1 << 1;
-            const HYPESQUAD_EVENTS = 1 << 2;
             const BUG_HUNTER_L1 = 1 << 3;
+            const BUG_HUNTER_L2 = 1 << 14;
             const HYPESQUAD_BRAVERY = 1 << 6;
             const HYPESQUAD_BRILLIANCE = 1 << 7;
             const HYPESQUAD_BALANCE = 1 << 8;
             const EARLY_SUPPORTER = 1 << 9;
-            const BUG_HUNTER_L2 = 1 << 14;
             const VERIFIED_DEVELOPER = 1 << 17;
             const ACTIVE_DEVELOPER = 1 << 22;
 
-            if (flags & STAFF) badges.push({ name: 'Discord Staff', emoji: '🔨', class: 'staff' });
-            if (flags & PARTNER) badges.push({ name: 'Partnered Server Owner', emoji: '👑', class: 'partner' });
-            if (flags & BUG_HUNTER_L1) badges.push({ name: 'Bug Hunter Lvl 1', emoji: '🐛', class: 'bug-1' });
-            if (flags & BUG_HUNTER_L2) badges.push({ name: 'Bug Hunter Lvl 2', emoji: '🪲', class: 'bug-2' });
-            if (flags & HYPESQUAD_BRAVERY) badges.push({ name: 'HypeSquad Bravery', emoji: '🛡️', class: 'bravery' });
-            if (flags & HYPESQUAD_BRILLIANCE) badges.push({ name: 'HypeSquad Brilliance', emoji: '☀️', class: 'brilliance' });
-            if (flags & HYPESQUAD_BALANCE) badges.push({ name: 'HypeSquad Balance', emoji: '⚖️', class: 'balance' });
-            if (flags & EARLY_SUPPORTER) badges.push({ name: 'Early Supporter', emoji: '🏅', class: 'early' });
-            if (flags & VERIFIED_DEVELOPER) badges.push({ name: 'Verified Developer', emoji: '💻', class: 'developer' });
-            if (flags & ACTIVE_DEVELOPER) badges.push({ name: 'Active Developer', emoji: '⚡', class: 'active-dev' });
+            if (flags & STAFF) badges.push({ name: 'Discord Staff', emoji: '🔨' });
+            if (flags & PARTNER) badges.push({ name: 'Partner', emoji: '👑' });
+            if (flags & BUG_HUNTER_L1) badges.push({ name: 'Bug Hunter L1', emoji: '🐛' });
+            if (flags & BUG_HUNTER_L2) badges.push({ name: 'Bug Hunter L2', emoji: '🪲' });
+            if (flags & HYPESQUAD_BRAVERY) badges.push({ name: 'HypeSquad Bravery', emoji: '🛡️' });
+            if (flags & HYPESQUAD_BRILLIANCE) badges.push({ name: 'HypeSquad Brilliance', emoji: '☀️' });
+            if (flags & HYPESQUAD_BALANCE) badges.push({ name: 'HypeSquad Balance', emoji: '⚖️' });
+            if (flags & EARLY_SUPPORTER) badges.push({ name: 'Early Supporter', emoji: '🏅' });
+            if (flags & VERIFIED_DEVELOPER) badges.push({ name: 'Verified Dev', emoji: '💻' });
+            if (flags & ACTIVE_DEVELOPER) badges.push({ name: 'Active Dev', emoji: '⚡' });
             
-            return badges.map(b => `<span class="discord-badge ${b.class}" title="${b.name}">${b.emoji}</span>`).join('');
+            return badges.map(b => `<span class="discord-badge" title="${b.name}">${b.emoji}</span>`).join('');
         }
 
-        // Initialize user cards
         document.querySelectorAll('.card').forEach(card => {
             const userId = card.getAttribute('data-user');
             const img = card.querySelector('.avatar');
@@ -737,12 +512,10 @@
 
             if (!userId) return;
 
-            // Compute snowflake join date immediately
             if (joinDateContainer) {
                 joinDateContainer.textContent = getDiscordJoinDate(userId);
             }
 
-            // Skip Lanyard for bots (Bot IDs usually start with 13 or similar, but we'll check if it's the Nora bot ID)
             if (userId === '1375943730951098549') return;
 
             fetch(`https://api.lanyard.rest/v1/users/${userId}`)
@@ -767,12 +540,10 @@
                             handleHeading.textContent = `@${user.username}`;
                         }
 
-                        // Render badges from public flags
                         if (badgeContainer && user.public_flags !== undefined) {
                             badgeContainer.innerHTML = getBadges(user.public_flags);
                         }
 
-                        // Auto-update Bio if available in Lanyard (KV or Custom Status)
                         const bioPara = card.querySelector('.bio');
                         if (res.data.kv && res.data.kv.bio) {
                             bioPara.textContent = res.data.kv.bio;
@@ -784,49 +555,8 @@
                         }
                     }
                 })
-                .catch(err => console.error("Update failed for " + userId));
-        });
-
-        // 3D Parallax Tilt Hover Interaction (Desktop Only)
-        if (window.innerWidth > 768) {
-            document.querySelectorAll('.card').forEach(card => {
-                card.addEventListener('mousemove', e => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const xc = rect.width / 2;
-                    const yc = rect.height / 2;
-                    const angleX = (yc - y) / 10;
-                    const angleY = (x - xc) / 10;
-                    card.style.transition = 'border-color 0.25s, box-shadow 0.25s'; // No transform transition during active hover
-                    card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateY(-8px)`;
-                });
-                card.addEventListener('mouseleave', () => {
-                    card.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s, box-shadow 0.25s'; // Smooth slow go-back
-                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
-                });
-            });
-        }
-
-        // Mobile Navigation Handler
-        document.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('mobile-nav-toggle');
-            const closeBtn = document.getElementById('mobile-nav-close');
-            const overlay = document.getElementById('mobile-nav-overlay');
-
-            if (toggleBtn && overlay) {
-                toggleBtn.addEventListener('click', () => overlay.classList.add('open'));
-            }
-            if (closeBtn && overlay) {
-                closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
-            }
-            if (overlay) {
-                overlay.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => overlay.classList.remove('open'));
-                });
-            }
+                .catch(err => console.error("Lanyard update failed for " + userId));
         });
     </script>
 </body>
-
 </html>

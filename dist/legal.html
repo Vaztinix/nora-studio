@@ -3,41 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora - Legal & Privacy</title>
+    <title>Nora Studio | Transparency & Legal Docs</title>
+    <meta name="description" content="Legal agreements, terms of service, and privacy policies for the Nora Discord workspace bot.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <script src="/translate.js"></script>
-    <script>
-        (function() {
-            const savedColor = localStorage.getItem('nora_theme_color');
-            if (savedColor) {
-                document.documentElement.style.setProperty('--primary', savedColor);
-                const r = parseInt(savedColor.slice(1, 3), 16);
-                const g = parseInt(savedColor.slice(3, 5), 16);
-                const b = parseInt(savedColor.slice(5, 7), 16);
-                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
-                document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
-            }
-            const mode = localStorage.getItem('nora_theme_mode') || 'default';
-            if (mode !== 'default') {
-                document.documentElement.classList.add('theme-' + mode);
-                document.addEventListener('DOMContentLoaded', () => {
-                    document.body.classList.add('theme-' + mode);
-                });
-            }
-        })();
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
-            --bg: #0b0f1a;
-            --bg-soft: #12182b;
-            --bg-glow: rgba(174, 239, 255, 0.1);
-            --card: rgba(255, 255, 255, 0.04);
-            --card-hover: rgba(255, 255, 255, 0.08);
-            --border: rgba(255, 255, 255, 0.08);
-            --primary: #aeefff;
-            --text: #ffffff;
-            --muted: rgba(255, 255, 255, 0.7);
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
         }
 
         * {
@@ -47,424 +27,343 @@
         }
 
         body {
-            font-family: "Inter", system-ui, sans-serif;
-            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
-                        radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
-                        var(--bg);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
         }
 
-        /* iOS-like Liquid Blobs */
-        .liquid-blob {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0;
-            pointer-events: none;
-            z-index: -1;
-            transition: opacity 1.5s ease;
-        }
-        body.theme-glass .liquid-blob {
-            opacity: 0.35;
-        }
-        .liquid-blob-1 {
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(174, 239, 255, 0.5) 0%, rgba(122, 162, 255, 0) 70%);
-            top: -10%;
-            left: -10%;
-            animation: drift 25s infinite alternate ease-in-out;
-        }
-        .liquid-blob-2 {
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle, rgba(197, 163, 255, 0.45) 0%, rgba(197, 163, 255, 0) 70%);
-            bottom: -15%;
-            right: -10%;
-            animation: drift-reverse 30s infinite alternate ease-in-out;
-        }
-        .liquid-blob-3 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255, 117, 181, 0.3) 0%, rgba(255, 117, 181, 0) 70%);
-            top: 40%;
-            left: 50%;
-            animation: drift-middle 22s infinite alternate ease-in-out;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
         }
 
-        @keyframes drift {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(150px, 80px) scale(1.2) rotate(90deg); }
-            100% { transform: translate(-50px, 150px) scale(0.9) rotate(180deg); }
-        }
-        @keyframes drift-reverse {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-120px, -100px) scale(0.8) rotate(-60deg); }
-            100% { transform: translate(100px, 50px) scale(1.1) rotate(-120deg); }
-        }
-        @keyframes drift-middle {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-30%, -60%) scale(1.3); }
-            100% { transform: translate(-60%, -40%) scale(0.9); }
-        }
-
-        /* Themes support */
-        body.theme-oled {
-            --bg: #000000;
-            --bg-soft: #0c0c0c;
-            --bg-glow: transparent;
-            --border: #222222;
-            --card: #080808;
-        }
-        body.theme-sapphire {
-            --bg: #050a18;
-            --bg-soft: #081125;
-            --bg-glow: rgba(75, 105, 255, 0.15);
-            --border: rgba(75, 105, 255, 0.2);
-            --card: rgba(8, 17, 37, 0.6);
-        }
-        body.theme-solid-glass {
-            --bg: #07090e;
-            --card: rgba(10, 14, 25, 0.85);
-            --border: rgba(255, 255, 255, 0.12);
-        }
-        body.theme-solid-glass .legal-container {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-        body.theme-glass {
-            --bg: #030509;
-            --card: rgba(255, 255, 255, 0.02);
-            --border: rgba(255, 255, 255, 0.08);
-        }
-        body.theme-glass .legal-container {
-            backdrop-filter: blur(35px);
-            -webkit-backdrop-filter: blur(35px);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
-        }
-
+        /* Header / Navbar */
         header {
             position: sticky;
             top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            background: rgba(10, 14, 30, 0.75);
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            background: rgba(7, 7, 6, 0.8);
             border-bottom: 1px solid var(--border);
         }
 
-        .nav {
-            max-width: 1200px;
-            margin: auto;
-            padding: 1rem 1.5rem;
+        .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            height: 70px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
-        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; color: white; text-decoration: none; }
-        .brand img { width: 40px; height: 40px; border-radius: 10px; }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: white;
+            text-decoration: none;
+        }
 
-        .nav-links { display: flex; gap: 22px; }
-        .nav-links a { font-weight: 600; color: white; text-decoration: none; transition: 0.25s; opacity: 0.8; }
-        .nav-links a:hover { color: var(--primary); opacity: 1; }
-        .nav-links a.active { color: var(--primary); opacity: 1; }
+        .brand img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
 
-        .legal-container { max-width: 900px; margin: 4rem auto; padding: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 24px; backdrop-filter: blur(15px); }
-        
-        h1 { font-size: 2.5rem; margin-bottom: 10px; color: white; font-weight: 800; text-align: center; }
-        .subtitle { color: var(--muted); text-align: center; margin-bottom: 40px; }
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
 
-        /* PREMIUM SLIDER SWITCH */
-        .switch-container { display: flex; justify-content: center; margin-bottom: 60px; }
-        .legal-switch {
-            background: rgba(255,255,255,0.03);
+        .nav-links a {
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .btn-header {
+            background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 8px;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-header:hover {
+            background: var(--border-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Legal Content Container */
+        .legal-wrapper {
+            padding: 60px 0;
+            flex-grow: 1;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            text-align: center;
+            font-size: 0.95rem;
+            margin-bottom: 40px;
+        }
+
+        /* Switch Controls */
+        .switch-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .legal-switch {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px;
             display: flex;
             position: relative;
-            width: 400px;
-            height: 60px;
+            width: 360px;
+            height: 50px;
             cursor: pointer;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
         }
+
         .switch-slider {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            width: 192px;
-            height: calc(100% - 16px);
+            top: 6px;
+            left: 6px;
+            width: 170px;
+            height: calc(100% - 12px);
             background: var(--primary);
-            border-radius: 14px;
-            transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            border-radius: 999px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 0;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
-        .legal-switch.active .switch-slider { left: 200px; }
-        
+
+        .legal-switch.active .switch-slider {
+            transform: translateX(178px);
+        }
+
         .switch-label {
             flex: 1;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
             z-index: 1;
-            transition: 0.3s;
+            transition: color 0.3s;
             color: var(--muted);
-            letter-spacing: 0.5px;
         }
-        .switch-label.active { color: #000; }
-        .legal-switch:not(.active) #label-tos { color: #000; }
-        .legal-switch.active #label-privacy { color: #000; }
 
-        .legal-content { position: relative; min-height: 400px; }
-        .legal-section { 
-            display: none; 
+        .legal-switch:not(.active) #label-tos { color: #070706; }
+        .legal-switch.active #label-privacy { color: #070706; }
+
+        /* Document Styling */
+        .legal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .legal-section {
+            display: none;
             animation: fadeIn 0.4s ease forwards;
         }
-        .legal-section.active { display: block; }
+
+        .legal-section.active {
+            display: block;
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        h2 { font-size: 1.8rem; color: var(--primary); margin-top: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; }
-        h2::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        
-        h3 { font-size: 1.2rem; color: var(--primary); margin-top: 30px; margin-bottom: 10px; }
-        p { color: var(--muted); line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px; }
-        section { margin-bottom: 40px; }
-
-        /* Mobile Navigation Toggle Button */
-        .mobile-nav-toggle {
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 24px;
-            height: 18px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            z-index: 10000;
+        h2 {
+            font-size: 1.6rem;
+            color: white;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
         }
 
-        .mobile-nav-toggle span {
-            width: 100%;
-            height: 2px;
-            background-color: var(--text, #fff);
-            border-radius: 2px;
-            transition: all 0.3s ease;
+        h3 {
+            font-size: 1.15rem;
+            color: white;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
 
-        /* Mobile Navigation Overlay */
-        .mobile-nav-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 11, 16, 0.98);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+        p {
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
         }
 
-        .mobile-nav-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
+        section {
+            margin-bottom: 35px;
         }
 
-        .mobile-nav-close {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            font-size: 2.5rem;
-            color: var(--text, #fff);
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .mobile-nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
             text-align: center;
-        }
-
-        .mobile-nav-links a {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text, #fff);
-            text-decoration: none;
-            opacity: 0.8;
-            transition: opacity 0.2s ease, color 0.2s ease;
-        }
-
-        .mobile-nav-links a:hover,
-        .mobile-nav-links a.active {
-            opacity: 1;
-            color: var(--primary, #5865f2);
-        }
-
-        @media(max-width:768px) {
-            .nav-links { display: none !important; }
-            .mobile-nav-toggle { display: flex !important; }
-            .legal-container { margin: 2rem 15px; padding: 20px; }
-            .legal-switch { width: 100%; }
-            .switch-slider { width: calc(50% - 8px); }
-            .legal-switch.active .switch-slider { left: calc(50%); }
+            color: var(--muted);
+            font-size: 0.85rem;
+            background: #0b0b0a;
         }
     </style>
 </head>
 <body>
-    <div class="mobile-nav-overlay" id="mobile-nav-overlay">
-        <button class="mobile-nav-close" id="mobile-nav-close">&times;</button>
-        <nav class="mobile-nav-links">
-            <a href="/">Home</a>
-            <a href="/nora">Nora</a>
-            <a href="/team">Team</a>
-            <a href="/docs">Docs</a>
-            <a href="/ai">Nora AI</a>
-            <a href="/legal" class="active">Legal</a>
-            <a href="/dashboard">Dashboard</a>
-        </nav>
-    </div>
-
-    <div class="liquid-blob liquid-blob-1"></div>
-    <div class="liquid-blob liquid-blob-2"></div>
-    <div class="liquid-blob liquid-blob-3"></div>
-
     <header>
-        <div class="nav">
+        <div class="nav-container">
             <a href="/" class="brand">
-                <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-                <span>Nora</span>
+                <img src="nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
             </a>
             <nav class="nav-links">
-                <a href="/">Home</a>
-                <a href="/nora">Nora</a>
-                <a href="/team">Team</a>
+                <a href="/install">Invite</a>
                 <a href="/docs">Docs</a>
-                <a href="/ai">Nora AI</a>
-                <a href="/legal" class="active">Legal</a>
                 <a href="/dashboard">Dashboard</a>
+                <a href="/team">Team</a>
+                <a href="/legal" class="active">Legal</a>
             </nav>
-            <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle Navigation">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+            <a href="/dashboard" class="btn-header">Open Console</a>
         </div>
     </header>
 
-    <main class="legal-container">
-        <h1>Transparency & Trust</h1>
-        <p class="subtitle">Last Updated: June 12, 2026</p>
+    <main class="legal-wrapper">
+        <div class="container">
+            <h1>Transparency & Trust</h1>
+            <p class="subtitle">Last Updated: June 19, 2026</p>
 
-        <div class="switch-container">
-            <div class="legal-switch" id="legal-switch" onclick="toggleLegal()">
-                <div class="switch-slider"></div>
-                <div class="switch-label active" id="label-tos">Terms of Service</div>
-                <div class="switch-label" id="label-privacy">Privacy Policy</div>
-            </div>
-        </div>
-
-        <div class="legal-content">
-            <!-- TERMS OF SERVICE -->
-            <div id="tos-content" class="legal-section active">
-                <h2>Terms of Service</h2>
-                <section>
-                    <h3>1. Agreement to Terms</h3>
-                    <p>By inviting, installing, or using Nora within a Discord server, you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service. If you do not agree with these terms, you must remove the bot from your server immediately.</p>
-                </section>
-                <section>
-                    <h3>2. Relationship with Discord</h3>
-                    <p>Nora is an independent application operating on the Discord platform. Our services rely entirely on the Discord API. Users must comply with Discord's official Terms of Service and Community Guidelines in all actions associated with the bot.</p>
-                </section>
-                <section>
-                    <h3>3. Description of the Service & Modifications</h3>
-                    <p>Nora is an automated community moderation and management ecosystem. We reserve the right to modify, suspend, or discontinue any features, layouts, or command syntaxes at any time without notice to maintain service stability and integrity.</p>
-                </section>
-                <section>
-                    <h3>4. Moderation Responsibility</h3>
-                    <p>Nora provides automated assistance systems (such as anti-raid gates and profanity filters). However, Nora does not replace human oversight. Server owners and designated administrators remain solely responsible for the actions of their staff and the moderation choices executed via Nora.</p>
-                </section>
-                <section>
-                    <h3>5. Command and Permission Usage</h3>
-                    <p>Nora acts strictly upon the permissions granted by server administrators. We are not liable for any misconfigurations or damage caused by granting excessive permissions (such as Admin, Manage Roles, or Manage Channels) to the bot.</p>
-                </section>
-                <section>
-                    <h3>6. AI Interfaces (Local & Third-Party)</h3>
-                    <p>Some of Nora's features utilize local AI processing models or third-party Artificial Intelligence APIs (including OpenAI and Google Gemini). AI-generated content is provided for contextual aid and amusement. We do not guarantee the absolute accuracy, completeness, or safety of any automated AI responses.</p>
-                </section>
-                <section>
-                    <h3>7. Subscriptions and Payments</h3>
-                    <p>All financial transactions, premium subscriptions, and boosts are processed securely through Discord's official monetization portal. Nora does not collect, process, or store credit cards, billing addresses, or bank details.</p>
-                </section>
-                <section>
-                    <h3>8. Limitation of Liability</h3>
-                    <p>Nora is provided "as is" and "as available". The developers (Vaztinix and the Nora team) disclaim all warranties and shall not be held liable for any direct, indirect, incidental, or consequential damages resulting from bot downtime, API bugs, or server administration errors.</p>
-                </section>
+            <div class="switch-container">
+                <div class="legal-switch" id="legal-switch" onclick="toggleLegal()">
+                    <div class="switch-slider"></div>
+                    <div class="switch-label" id="label-tos">Terms of Service</div>
+                    <div class="switch-label" id="label-privacy">Privacy Policy</div>
+                </div>
             </div>
 
-            <!-- PRIVACY POLICY -->
-            <div id="privacy-content" class="legal-section">
-                <h2>Privacy Policy</h2>
-                <section>
-                    <h3>1. Privacy-First Philosophy</h3>
-                    <p>Nora was founded on a strict Zero-Access architecture. We believe that your server's data is private. Developers have no backend overrides to read server chats, configuration logs, or private user details.</p>
-                </section>
-                <section>
-                    <h3>2. Data We Collect</h3>
-                    <p>To provide baseline functionality, Nora stores limited configuration data in our local SQLite database. This includes guild configurations, level XP scores, custom roles, log channels, issued user warnings/infraction logs, and Roblox verification/link details. We do not store message history permanently.</p>
-                </section>
-                <section>
-                    <h3>3. Message Processing</h3>
-                    <p>Message content is processed in real-time memory strictly to enforce active moderation rules (AutoMod) or to supply context to chosen AI engines. This processing occurs in memory and is instantly discarded; it is never written to disk or logged.</p>
-                </section>
-                <section>
-                    <h3>4. AI Data Policies</h3>
-                    <p>We do not share your server's logs, member conversations, or leveling data with third parties to train machine learning models. Interactions with our AI features are sent only to designated API endpoints (OpenAI / Google Gemini) for real-time response generation.</p>
-                </section>
-                <section>
-                    <h3>5. Web Dashboard & Analytics Privacy</h3>
-                    <p>The Nora Studio Dashboard connects directly to your authorized Discord account to load the servers you manage. We do not permanently store your OAuth2 tokens; they are maintained in session memory and cleared upon logout. Configuration changes made via the dashboard, including Guild Configurations, Integrations, and Top.gg Analytics, are transmitted securely and validated on our backend, ensuring that only users with Administrator or Manage Server permissions can view or edit settings.</p>
-                </section>
-                <section>
-                    <h3>6. User Sovereignty & The Kill Switch</h3>
-                    <p>We respect the right to be forgotten. Users can run the `/mycard` command inside Discord at any time to inspect their database record, and press the "Erase Data" button to instantly and permanently wipe their leveling statistics, XP, Roblox connections, and warning records from the database across all Nora nodes.</p>
-                </section>
-                <section>
-                    <h3>6. Server Data Isolation</h3>
-                    <p>Every server is treated as an isolated container. Data, logs, settings, and XP systems generated in one guild are strictly isolated and are never shared or made visible to other servers.</p>
-                </section>
-                <section>
-                    <h3>7. Data Erasure upon Bot Removal</h3>
-                    <p>If Nora is kicked or removed from a guild, all stored configuration records and log parameters associated with that server ID are scheduled for deletion to keep our databases clean and protect your privacy.</p>
-                </section>
+            <div class="legal-card">
+                <!-- TERMS OF SERVICE -->
+                <div id="tos-content" class="legal-section active">
+                    <h2>Terms of Service</h2>
+                    <section>
+                        <h3>1. Agreement to Terms</h3>
+                        <p>By inviting, installing, or using Nora within a Discord server, you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service. If you do not agree with these terms, you must remove the bot from your server immediately.</p>
+                    </section>
+                    <section>
+                        <h3>2. Relationship with Discord</h3>
+                        <p>Nora is an independent application operating on the Discord platform. Our services rely entirely on the Discord API. Users must comply with Discord's official Terms of Service and Community Guidelines in all actions associated with the bot.</p>
+                    </section>
+                    <section>
+                        <h3>3. Description of the Service & Modifications</h3>
+                        <p>Nora is an automated community moderation and management ecosystem. We reserve the right to modify, suspend, or discontinue any features, layouts, or command syntaxes at any time without notice to maintain service stability and integrity.</p>
+                    </section>
+                    <section>
+                        <h3>4. Moderation Responsibility</h3>
+                        <p>Nora provides automated assistance systems (such as anti-raid gates and profanity filters). However, Nora does not replace human oversight. Server owners and designated administrators remain solely responsible for the actions of their staff and the moderation choices executed via Nora.</p>
+                    </section>
+                    <section>
+                        <h3>5. Command and Permission Usage</h3>
+                        <p>Nora acts strictly upon the permissions granted by server administrators. We are not liable for any misconfigurations or damage caused by granting excessive permissions (such as Admin, Manage Roles, or Manage Channels) to the bot.</p>
+                    </section>
+                    <section>
+                        <h3>6. AI Interfaces (Local & Third-Party)</h3>
+                        <p>Some of Nora's features utilize local AI processing models or third-party Artificial Intelligence APIs (including OpenAI and Google Gemini). AI-generated content is provided for contextual aid and amusement. We do not guarantee the absolute accuracy, completeness, or safety of any automated AI responses.</p>
+                    </section>
+                    <section>
+                        <h3>7. Subscriptions and Payments</h3>
+                        <p>All financial transactions, premium subscriptions, and boosts are processed securely through Discord's official monetization portal. Nora does not collect, process, or store credit cards, billing addresses, or bank details.</p>
+                    </section>
+                    <section>
+                        <h3>8. Limitation of Liability</h3>
+                        <p>Nora is provided "as is" and "as available". The developers (Vaztinix and the Nora team) disclaim all warranties and shall not be held liable for any direct, indirect, incidental, or consequential damages resulting from bot downtime, API bugs, or server administration errors.</p>
+                    </section>
+                </div>
+
+                <!-- PRIVACY POLICY -->
+                <div id="privacy-content" class="legal-section">
+                    <h2>Privacy Policy</h2>
+                    <section>
+                        <h3>1. Privacy-First Philosophy</h3>
+                        <p>Nora was founded on a strict Zero-Access architecture. We believe that your server's data is private. Developers have no backend overrides to read server chats, configuration logs, or private user details.</p>
+                    </section>
+                    <section>
+                        <h3>2. Data We Collect</h3>
+                        <p>To provide baseline functionality, Nora stores limited configuration data in our local SQLite database. This includes guild configurations, level XP scores, custom roles, log channels, issued user warnings/infraction logs, and Roblox verification/link details. We do not store message history permanently.</p>
+                    </section>
+                    <section>
+                        <h3>3. Message Processing</h3>
+                        <p>Message content is processed in real-time memory strictly to enforce active moderation rules (AutoMod) or to supply context to chosen AI engines. This processing occurs in memory and is instantly discarded; it is never written to disk or logged.</p>
+                    </section>
+                    <section>
+                        <h3>4. AI Data Policies</h3>
+                        <p>We do not share your server's logs, member conversations, or leveling data with third parties to train machine learning models. Interactions with our AI features are sent only to designated API endpoints (OpenAI / Google Gemini) for real-time response generation.</p>
+                    </section>
+                    <section>
+                        <h3>5. Web Dashboard & Analytics Privacy</h3>
+                        <p>The Nora Studio Dashboard connects directly to your authorized Discord account to load the servers you manage. We do not permanently store your OAuth2 tokens; they are maintained in session memory and cleared upon logout. Configuration changes made via the dashboard, including Guild Configurations, Integrations, and Top.gg Analytics, are transmitted securely and validated on our backend, ensuring that only users with Administrator or Manage Server permissions can view or edit settings.</p>
+                    </section>
+                    <section>
+                        <h3>6. User Sovereignty & The Kill Switch</h3>
+                        <p>We respect the right to be forgotten. Users can run the `/mycard` command inside Discord at any time to inspect their database record, and press the "Erase Data" button to instantly and permanently wipe their leveling statistics, XP, Roblox connections, and warning records from the database across all Nora nodes.</p>
+                    </section>
+                    <section>
+                        <h3>7. Server Data Isolation</h3>
+                        <p>Every server is treated as an isolated container. Data, logs, settings, and XP systems generated in one guild are strictly isolated and are never shared or made visible to other servers.</p>
+                    </section>
+                    <section>
+                        <h3>8. Data Erasure upon Bot Removal</h3>
+                        <p>If Nora is kicked or removed from a guild, all stored configuration records and log parameters associated with that server ID are scheduled for deletion to keep our databases clean and protect your privacy.</p>
+                    </section>
+                </div>
             </div>
         </div>
     </main>
 
     <footer>
-        © 2026 Nora | Privacy-First AI & Moderation
+        <div class="container">
+            &copy; 2026 Nora Studio. All rights reserved.
+        </div>
     </footer>
 
     <script>
@@ -489,25 +388,6 @@
                 labelPrivacy.classList.remove('active');
             }
         }
-
-        // Mobile Navigation Handler
-        document.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('mobile-nav-toggle');
-            const closeBtn = document.getElementById('mobile-nav-close');
-            const overlay = document.getElementById('mobile-nav-overlay');
-
-            if (toggleBtn && overlay) {
-                toggleBtn.addEventListener('click', () => overlay.classList.add('open'));
-            }
-            if (closeBtn && overlay) {
-                closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
-            }
-            if (overlay) {
-                overlay.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => overlay.classList.remove('open'));
-                });
-            }
-        });
     </script>
 </body>
 </html>

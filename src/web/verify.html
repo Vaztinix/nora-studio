@@ -10,17 +10,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #0b0f1a;
-            --bg-soft: #12182b;
-            --bg-glow: rgba(174, 239, 255, 0.1);
-            --card: rgba(255, 255, 255, 0.04);
-            --card-hover: rgba(255, 255, 255, 0.08);
-            --border: rgba(255, 255, 255, 0.08);
-            --primary: #aeefff;
-            --accent: #7aa2ff;
-            --text: #ffffff;
-            --muted: rgba(255, 255, 255, 0.7);
-            --radius: 18px;
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
+            --radius: 12px;
             --success: #2ea043;
             --danger: #f85149;
         }
@@ -33,9 +31,7 @@
 
         body {
             font-family: "Inter", system-ui, sans-serif;
-            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
-                        radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
-                        var(--bg);
+            background-color: var(--site-bg);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
@@ -44,55 +40,25 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
         }
 
-        /* iOS-like Liquid Blobs */
+        /* iOS-like Liquid Blobs - Disabled/Hidden for uniform minimal theme */
         .liquid-blob {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.3;
-            pointer-events: none;
-            z-index: -1;
-        }
-        .liquid-blob-1 {
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(174, 239, 255, 0.4) 0%, rgba(122, 162, 255, 0) 70%);
-            top: -10%;
-            left: -10%;
-            animation: drift 25s infinite alternate ease-in-out;
-        }
-        .liquid-blob-2 {
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle, rgba(197, 163, 255, 0.35) 0%, rgba(197, 163, 255, 0) 70%);
-            bottom: -15%;
-            right: -10%;
-            animation: drift-reverse 30s infinite alternate ease-in-out;
-        }
-
-        @keyframes drift {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(100px, 50px) scale(1.1); }
-            100% { transform: translate(-30px, 100px) scale(0.9); }
-        }
-        @keyframes drift-reverse {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-80px, -80px) scale(0.9); }
-            100% { transform: translate(80px, 30px) scale(1.05); }
+            display: none;
         }
 
         .portal-container {
             width: 100%;
             max-width: 500px;
-            background: rgba(15, 20, 35, 0.7);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
+            background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 40px 30px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
             text-align: center;
             position: relative;
         }
@@ -102,7 +68,7 @@
             height: 70px;
             border-radius: 16px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(174,239,255,0.15);
+            border: 1px solid var(--border);
         }
 
         h1 {
@@ -123,7 +89,7 @@
         .btn {
             width: 100%;
             padding: 14px;
-            border-radius: 12px;
+            border-radius: 8px;
             font-weight: 700;
             border: none;
             cursor: pointer;
@@ -145,10 +111,10 @@
         }
         .btn-primary {
             background: var(--primary);
-            color: #0b0f1a;
+            color: #070706;
         }
         .btn-primary:hover {
-            background: #fff;
+            background: var(--primary-hover);
             transform: translateY(-2px);
         }
         .btn-secondary {
@@ -198,7 +164,7 @@
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border);
             padding: 10px 15px;
-            border-radius: 12px;
+            border-radius: 8px;
             margin-bottom: 25px;
             text-align: left;
         }
@@ -314,7 +280,7 @@
         }
         .account-card.active {
             border-color: var(--primary);
-            background: rgba(174, 239, 255, 0.03);
+            background: rgba(255, 255, 255, 0.03);
         }
         .account-name {
             font-weight: 600;
@@ -379,7 +345,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(11, 15, 26, 0.85);
+            background: rgba(7, 7, 6, 0.85);
             border-radius: var(--radius);
             display: flex;
             align-items: center;
