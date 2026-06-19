@@ -829,11 +829,11 @@
                 </div>
 
                 <div class="showcase-tabs">
-                    <div class="showcase-tab active" onclick="switchShowcase(0, this)">Ticket Creation</div>
-                    <div class="showcase-tab" onclick="switchShowcase(1, this)">Multiple Ticket Panels</div>
-                    <div class="showcase-tab" onclick="switchShowcase(2, this)">Ticket Questions</div>
-                    <div class="showcase-tab" onclick="switchShowcase(3, this)">Custom Panels</div>
-                    <div class="showcase-tab" onclick="switchShowcase(4, this)">Auto-Close Automation</div>
+                    <div class="showcase-tab active" onclick="switchShowcase(0, this)">Support Tickets</div>
+                    <div class="showcase-tab" onclick="switchShowcase(1, this)">Roblox Verification</div>
+                    <div class="showcase-tab" onclick="switchShowcase(2, this)">Custom Commands</div>
+                    <div class="showcase-tab" onclick="switchShowcase(3, this)">Invite Tracker</div>
+                    <div class="showcase-tab" onclick="switchShowcase(4, this)">Leveling Engine</div>
                 </div>
 
                 <div class="showcase-display" id="showcase-display">
@@ -1145,12 +1145,12 @@
         // Showcase switch
         const showcaseData = [
             {
-                title: "Instant Support Ticket Creation",
-                desc: "Allow members to spawn private support channels instantly at the click of a button. Nora handles permissions, staff mentions, and setups automatically behind the scenes.",
+                title: "Support Ticket Center",
+                desc: "Allow members to spawn private support channels instantly at the click of a button. Nora handles permissions, staff mentions, categories routing, and transcript logging automatically.",
                 visual: `
                     <div class="discord-embed" style="border-color:#5865F2;">
                         <strong style="color:white; font-size:0.9rem;"># ticket-0042</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Ticket created by @Member. Staff will be with you shortly.</p>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Support ticket created by @Member. Staff will assist you shortly.</p>
                         <div class="discord-buttons" style="margin-top:10px;">
                             <button class="discord-btn" style="background:#ff4d4d; color:white; border:none;"><i class="fas fa-lock"></i> Close Ticket</button>
                             <button class="discord-btn"><i class="fas fa-download"></i> Transcript</button>
@@ -1159,53 +1159,42 @@
                 `
             },
             {
-                title: "Multiple Support Ticket Panels",
-                desc: "Configure and deploy up to 10 distinct panel embeds with distinct routing. Group them into billing, gameplay support, moderator contact, or administrative requests.",
+                title: "Roblox Group Verification & Role Binding",
+                desc: "Securely bind and synchronize your community roles with Roblox group ranks. Automatically verify Roblox account mappings and assign corresponding roles when members join the Discord.",
                 visual: `
-                    <div class="discord-embed" style="border-color:#FFFFFF;">
-                        <strong style="color:white; font-size:0.9rem;">Billing Panel</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Click to open a billing issue or store inquiry ticket.</p>
-                        <div class="discord-buttons" style="margin-top:10px;">
-                            <button class="discord-btn discord-btn-primary">Open Billing Ticket</button>
-                        </div>
+                    <div class="discord-embed" style="border-color:#23a55a;">
+                        <strong style="color:white; font-size:0.9rem;">Roblox Verification Status</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Roblox User: <strong>BuildBoy</strong> (Rank: Captain)<br>Roles Assigned: <span style="background:rgba(35,165,90,0.1); color:#23a55a; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Verified</span> <span style="background:rgba(35,165,90,0.1); color:#23a55a; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Captain Role</span></p>
                     </div>
                 `
             },
             {
-                title: "Pre-Flight Ticket Questions",
-                desc: "Prompt users with custom questions (Discord modals) before their ticket opens. Automatically query usernames, transaction IDs, or reason for appeal before staff review.",
-                visual: `
-                    <div class="discord-embed" style="border-color:#9D9D9D;">
-                        <strong style="color:white; font-size:0.9rem;">Information Modal</strong>
-                        <div style="background:#2a2a28; padding:8px; border-radius:4px; font-size:0.75rem; color:white; margin-top:8px; border:1px solid #3b3a37;">
-                            Question 1: What is your order reference?
-                        </div>
-                        <div style="background:#2a2a28; padding:8px; border-radius:4px; font-size:0.75rem; color:white; margin-top:8px; border:1px solid #3b3a37;">
-                            Question 2: Please describe your issue.
-                        </div>
-                    </div>
-                `
-            },
-            {
-                title: "Fully Branded Custom Panels",
-                desc: "Modify embed titles, colors, footer texts, button labels, and custom icons. Nora lets you build clean integrations that complement your server's style.",
+                title: "Custom Commands & Autoresponders",
+                desc: "Create dynamic workflows and customized commands. Includes an ignore filter for server staff and bots, channel exclusions, and button-triggered reactions.",
                 visual: `
                     <div class="discord-embed" style="border-color:#eb459e;">
-                        <strong style="color:white; font-size:0.9rem;">🌸 Community Appeal Hub 🌸</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Submit an appeal regarding a server action here.</p>
-                        <div class="discord-buttons" style="margin-top:10px;">
-                            <button class="discord-btn" style="background:#eb459e; color:white; border:none;">Submit Appeal</button>
-                        </div>
+                        <strong style="color:white; font-size:0.9rem;">Autoresponder Triggered</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Trigger: <code>!emergency</code><br>Action: Pings emergency staff, ignores other bots, and posts safety guidelines.</p>
                     </div>
                 `
             },
             {
-                title: "Automatic Closing Rules",
-                desc: "Set automatic inactivity sweep timers. Nora alerts members when tickets have been dormant, subsequently saving transcripts and archiving channels.",
+                title: "Invite Tracker Logs",
+                desc: "Track referral links and keep logs of precisely which invite code was utilized and who invited the new member, counting referral totals automatically.",
                 visual: `
-                    <div class="discord-embed" style="border-color:#ff4d4d;">
-                        <strong style="color:white; font-size:0.9rem;">⚠️ Auto-Archive Notice</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">No activity detected for 48 hours. Closing channel automatically.</p>
+                    <div class="discord-embed" style="border-color:#FFFFFF;">
+                        <strong style="color:white; font-size:0.9rem;">Invite Tracker Notification</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">📥 @NewUser joined the server using invite link <code>nora-dev</code> (Created by @Inviter - Total Invites: 42).</p>
+                    </div>
+                `
+            },
+            {
+                title: "Advanced Leveling & XP Multipliers",
+                desc: "Build community engagement with automated experience (XP) systems. Set promoter roles, adjust voice/text XP cooldown intervals, and define role-based multipliers.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#faa61a;">
+                        <strong style="color:white; font-size:0.9rem;">🎉 Level Up!</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Congratulations @Member! You have reached <strong>Level 15</strong> and unlocked the <span style="color:#faa61a;">Silver Elite Role</span>.</p>
                     </div>
                 `
             }
