@@ -166,7 +166,7 @@ router.get('/autoresponders', requireAuth, async (req, res) => {
 // POST /api/user/autoresponders
 router.post('/autoresponders', requireAuth, async (req, res) => {
     try {
-        const { id, guildId, trigger, response, matchType, isEmbed, ignoreStaffAndBots, ignoredChannels } = req.body;
+        const { id, guildId, trigger, response, matchType, isEmbed, ignoreStaffAndBots, ignoredChannels, ignoredRoles, allowedRoles } = req.body;
         if (!guildId || !trigger || !response) {
             return res.status(400).json({ error: 'Missing required parameters' });
         }
@@ -184,7 +184,9 @@ router.post('/autoresponders', requireAuth, async (req, res) => {
             matchType: matchType || 'contains',
             isEmbed: !!isEmbed,
             ignoreStaffAndBots: !!ignoreStaffAndBots,
-            ignoredChannels: typeof ignoredChannels === 'string' ? ignoredChannels : JSON.stringify(ignoredChannels || [])
+            ignoredChannels: typeof ignoredChannels === 'string' ? ignoredChannels : JSON.stringify(ignoredChannels || []),
+            ignoredRoles: typeof ignoredRoles === 'string' ? ignoredRoles : JSON.stringify(ignoredRoles || []),
+            allowedRoles: typeof allowedRoles === 'string' ? allowedRoles : JSON.stringify(allowedRoles || [])
         };
 
         if (record) {

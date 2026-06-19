@@ -34,6 +34,14 @@ const Autoresponder = sequelize.define('Autoresponder', {
     ignoredChannels: {
         type: DataTypes.TEXT, // JSON array of channel IDs
         defaultValue: '[]'
+    },
+    ignoredRoles: {
+        type: DataTypes.TEXT, // JSON array of role IDs
+        defaultValue: '[]'
+    },
+    allowedRoles: {
+        type: DataTypes.TEXT, // JSON array of role IDs
+        defaultValue: '[]'
     }
 });
 

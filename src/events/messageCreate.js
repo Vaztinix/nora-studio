@@ -43,6 +43,33 @@ module.exports = {
                 }
 
                 if (isMatch) {
+                    // 🛡️ Filter checks
+                    if (responder.ignoreStaffAndBots && message.member) {
+                        if (message.member.permissions.has(PermissionFlagsBits.ManageMessages) || message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+                            continue;
+                        }
+                    }
+
+                    if (responder.ignoredChannels) {
+                        try {
+                            const chans = JSON.parse(responder.ignoredChannels || '[]');
+                            if (chans.includes(message.channel.id)) continue;
+                        } catch (e) {}
+                    }
+
+                    if (responder.ignoredRoles && message.member) {
+                        try {
+                            const igRoles = JSON.parse(responder.ignoredRoles || '[]');
+                            if (igRoles.some(roleId => message.member.roles.cache.has(roleId))) continue;
+                        } catch (e) {}
+                    }
+
+                    if (responder.allowedRoles && message.member) {
+                        try {
+                            const alRoles = JSON.parse(responder.allowedRoles || '[]');
+                            if (alRoles.length > 0 && !alRoles.some(roleId => message.member.roles.cache.has(roleId))) continue;
+                        } catch (e) {}
+                    }
                     const formattedResponse = responder.response
                         .replace(/{user}/g, `<@${message.author.id}>`)
                         .replace(/{username}/g, message.author.username)

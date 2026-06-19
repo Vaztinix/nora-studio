@@ -23,6 +23,8 @@ module.exports = {
                         .setRequired(false)
                 )
                 .addBooleanOption(opt => opt.setName('as_embed').setDescription('Respond using a styled embed message instead of plain text').setRequired(false))
+                .addRoleOption(opt => opt.setName('ignored_role').setDescription('Users with this role will never trigger this autoresponder').setRequired(false))
+                .addRoleOption(opt => opt.setName('allowed_role').setDescription('Only users with this role will trigger this autoresponder').setRequired(false))
         )
         .addSubcommand(sub =>
             sub.setName('remove')
@@ -45,23 +47,32 @@ module.exports = {
             const response = interaction.options.getString('response');
             const matchType = interaction.options.getString('match_type') || 'contains';
             const asEmbed = interaction.options.getBoolean('as_embed') || false;
+            const ignoredRole = interaction.options.getRole('ignored_role');
+            const allowedRole = interaction.options.getRole('allowed_role');
+
+            const ignoredRoles = ignoredRole ? JSON.stringify([ignoredRole.id]) : '[]';
+            const allowedRoles = allowedRole ? JSON.stringify([allowedRole.id]) : '[]';
 
             await interaction.deferReply({ ephemeral: true });
 
             try {
                 const [record, created] = await Autoresponder.findOrCreate({
                     where: { guildId, trigger },
-                    defaults: { response, matchType, isEmbed: asEmbed }
+                    defaults: { response, matchType, isEmbed: asEmbed, ignoredRoles, allowedRoles }
                 });
 
                 if (!created) {
-                    await record.update({ response, matchType, isEmbed: asEmbed });
+                    await record.update({ response, matchType, isEmbed: asEmbed, ignoredRoles, allowedRoles });
                 }
+
+                let roleInfo = '';
+                if (ignoredRole) roleInfo += `\n- **Ignored Role**: <@&${ignoredRole.id}>`;
+                if (allowedRole) roleInfo += `\n- **Required Role**: <@&${allowedRole.id}>`;
 
                 return await handleSuccess(
                     interaction,
                     'Autoresponder Configured',
-                    `Successfully configured trigger!\n- **Trigger**: \`${trigger}\`\n- **Match Type**: \`${matchType}\`\n- **Embed Response**: \`${asEmbed ? 'Yes' : 'No'}\`\n- **Response**: ${response}`
+                    `Successfully configured trigger!\n- **Trigger**: \`${trigger}\`\n- **Match Type**: \`${matchType}\`\n- **Embed Response**: \`${asEmbed ? 'Yes' : 'No'}\`\n- **Response**: ${response}${roleInfo}`
                 );
             } catch (error) {
                 console.error('[Autoresponder Add Command Error]:', error);
@@ -110,8 +121,22 @@ module.exports = {
                     .setTitle('🤖 Server Autoresponders')
                     .setColor('#4F46E5')
                     .setDescription(
-                        list.map((r, i) => `**${i + 1}.** Trigger: \`${r.trigger}\` (Match: \`${r.matchType}\`, Embed: \`${r.isEmbed ? 'Yes' : 'No'}\`)\n   Response: ${r.response.length > 100 ? r.response.slice(0, 97) + '...' : r.response}`)
-                            .join('\n\n')
+                        list.map((r, i) => {
+                            let roleDetails = '';
+                            if (r.ignoredRoles && r.ignoredRoles !== '[]') {
+                                try {
+                                    const ids = JSON.parse(r.ignoredRoles);
+                                    if (ids.length > 0) roleDetails += ` (Ignored: ${ids.map(id => `<@&${id}>`).join(', ')})`;
+                                } catch (e) {}
+                            }
+                            if (r.allowedRoles && r.allowedRoles !== '[]') {
+                                try {
+                                    const ids = JSON.parse(r.allowedRoles);
+                                    if (ids.length > 0) roleDetails += ` (Required: ${ids.map(id => `<@&${id}>`).join(', ')})`;
+                                } catch (e) {}
+                            }
+                            return `**${i + 1}.** Trigger: \`${r.trigger}\` (Match: \`${r.matchType}\`, Embed: \`${r.isEmbed ? 'Yes' : 'No'}\`)${roleDetails}\n   Response: ${r.response.length > 100 ? r.response.slice(0, 97) + '...' : r.response}`;
+                        }).join('\n\n')
                     );
 
                 return await interaction.editReply({ embeds: [embed] });
