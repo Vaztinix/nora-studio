@@ -73,8 +73,10 @@ module.exports = {
                 guildId: interaction.guild.id,
                 userId: target.id,
                 moderatorId: interaction.user.id,
-                action: 'Tempban',
-                reason: `[Duration: ${durationStr}] ${reason}`
+                type: 'TEMPBAN',
+                reason: `[Duration: ${durationStr}] ${reason}`,
+                status: 'active',
+                duration: durationMs
             });
 
             await handleSuccess(interaction, 'User Temporarily Banned', `**${target.tag}** has been banned successfully.\n**Duration:** ${durationStr}\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);

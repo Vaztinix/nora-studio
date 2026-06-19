@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { handleError, handleSuccess } = require('../../utils/embeds');
+const Case = require('../../database/models/Case');
 
 module.exports = {
     category: 'moderation',
@@ -37,7 +38,15 @@ module.exports = {
 
         try {
             await member.timeout(null, reason);
-            await handleSuccess(interaction, 'User Unmuted', `**${target.tag}**'s timeout has been removed.\n**Reason:** ${reason}`);
+            const caseRecord = await Case.create({
+                guildId: interaction.guild.id,
+                userId: target.id,
+                moderatorId: interaction.user.id,
+                type: 'UNMUTE',
+                reason,
+                status: 'resolved'
+            });
+            await handleSuccess(interaction, 'User Unmuted', `**${target.tag}**'s timeout has been removed.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
         } catch (error) {
             console.error(error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to unmute the user.');

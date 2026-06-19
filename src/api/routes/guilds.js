@@ -5,6 +5,7 @@ const UserLevel = require('../../database/models/UserLevel');
 const RobloxVerify = require('../../database/models/RobloxVerify');
 const UserPrefs = require('../../database/models/UserPrefs');
 const Warning = require('../../database/models/Warning');
+const Case = require('../../database/models/Case');
 
 // Apply guild permission checking middleware
 router.use(requireGuildPermission);
@@ -808,16 +809,14 @@ router.post('/feeds', async (req, res) => {
 
         if (platform === 'youtube') {
             if (url.includes('@')) {
-                publicHandle = url.split('@')[1].split('/')[0];
+                publicHandle = url.split('@')[1].split('/')[0].split('?')[0];
             } else if (url.includes('/channel/')) {
-                publicHandle = url.split('/channel/')[1].split('/')[0];
-            } else if (url.includes('/c/')) {
-                publicHandle = url.split('/c/')[1].split('/')[0];
+                publicHandle = url.split('/channel/')[1].split('/')[0].split('?')[0];
             } else if (url.startsWith('UC') && url.length === 24) {
                 publicHandle = url;
             } else if (url.includes('youtube.com/')) {
                 const parts = url.replace(/\/$/, '').split('/');
-                publicHandle = parts[parts.length - 1];
+                publicHandle = parts[parts.length - 1].split('?')[0];
             }
 
             if (publicHandle.startsWith('UC') && publicHandle.length === 24) {
@@ -850,13 +849,35 @@ router.post('/feeds', async (req, res) => {
         }
 
         let alertTemplate;
-        if (customMessage && customMessage.trim()) {
-            // If the user specifies customMessage, prepend ping and append Link suffix if it's not already there
-            const cleanMessage = customMessage.trim();
-            const suffix = cleanMessage.includes('{link}') ? '' : ' Link: {link}';
-            alertTemplate = `${pingPrefix}${cleanMessage}${suffix}`;
-        } else {
-            alertTemplate = `${pingPrefix}{creator} is live/uploaded! Link: {link}`;
+        if (platform === 'youtube') {
+            try {
+                const parsed = JSON.parse(customMessage);
+                if (parsed.video !== undefined || parsed.short !== undefined || parsed.live !== undefined) {
+                    const videoMsg = (parsed.video || '{creator} uploaded a new video! Link: {link}').trim();
+                    const shortMsg = (parsed.short || '{creator} uploaded a new Short! Link: {link}').trim();
+                    const liveMsg = (parsed.live || '{creator} is LIVE! Link: {link}').trim();
+                    
+                    const videoSuffix = videoMsg.includes('{link}') ? '' : ' Link: {link}';
+                    const shortSuffix = shortMsg.includes('{link}') ? '' : ' Link: {link}';
+                    const liveSuffix = liveMsg.includes('{link}') ? '' : ' Link: {link}';
+
+                    alertTemplate = JSON.stringify({
+                        video: `${pingPrefix}${videoMsg}${videoSuffix}`,
+                        short: `${pingPrefix}${shortMsg}${shortSuffix}`,
+                        live: `${pingPrefix}${liveMsg}${liveSuffix}`
+                    });
+                }
+            } catch (e) {}
+        }
+
+        if (!alertTemplate) {
+            if (customMessage && customMessage.trim()) {
+                const cleanMessage = customMessage.trim();
+                const suffix = cleanMessage.includes('{link}') ? '' : ' Link: {link}';
+                alertTemplate = `${pingPrefix}${cleanMessage}${suffix}`;
+            } else {
+                alertTemplate = `${pingPrefix}{creator} is live/uploaded! Link: {link}`;
+            }
         }
 
         const ContentFeed = require('../../database/models/ContentFeed');
@@ -907,16 +928,14 @@ router.put('/feeds/:feedId', async (req, res) => {
 
             if (feed.platform === 'YOUTUBE') {
                 if (url.includes('@')) {
-                    publicHandle = url.split('@')[1].split('/')[0];
+                    publicHandle = url.split('@')[1].split('/')[0].split('?')[0];
                 } else if (url.includes('/channel/')) {
-                    publicHandle = url.split('/channel/')[1].split('/')[0];
-                } else if (url.includes('/c/')) {
-                    publicHandle = url.split('/c/')[1].split('/')[0];
+                    publicHandle = url.split('/channel/')[1].split('/')[0].split('?')[0];
                 } else if (url.startsWith('UC') && url.length === 24) {
                     publicHandle = url;
                 } else if (url.includes('youtube.com/')) {
                     const parts = url.replace(/\/$/, '').split('/');
-                    publicHandle = parts[parts.length - 1];
+                    publicHandle = parts[parts.length - 1].split('?')[0];
                 }
 
                 if (publicHandle.startsWith('UC') && publicHandle.length === 24) {
@@ -1006,6 +1025,232 @@ router.delete('/feeds/:feedId', async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         console.error('Error deleting feed:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/guilds/:guildId/members/:userId/infractions
+ * Returns all warnings for a member with filtering (?active=true, ?severity=high).
+ */
+router.get('/members/:userId/infractions', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { active, severity } = req.query;
+        
+        const where = { guildId, userId };
+        if (active !== undefined) {
+            where.active = active === 'true';
+        }
+        if (severity) {
+            where.severity = severity;
+        }
+
+        const infractions = await Warning.findAll({
+            where,
+            order: [['timestamp', 'DESC']]
+        });
+        res.json(infractions);
+    } catch (e) {
+        console.error('Error fetching member infractions:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/guilds/:guildId/members/:userId/cases
+ * Returns all cases for a member with filtering (?type=WARN, ?status=active).
+ */
+router.get('/members/:userId/cases', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { type, status } = req.query;
+
+        const where = { guildId, userId };
+        if (type) {
+            where.type = type.toUpperCase();
+        }
+        if (status) {
+            where.status = status;
+        }
+
+        const cases = await Case.findAll({
+            where,
+            order: [['timestamp', 'DESC']]
+        });
+        res.json(cases);
+    } catch (e) {
+        console.error('Error fetching member cases:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/guilds/:guildId/cases
+ * Returns all guild-level cases (paginated ?page=1&limit=25, filterable by type/status).
+ */
+router.get('/cases', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { type, status } = req.query;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 25;
+        const offset = (page - 1) * limit;
+
+        const where = { guildId };
+        if (type) {
+            where.type = type.toUpperCase();
+        }
+        if (status) {
+            where.status = status;
+        }
+
+        const { count, rows } = await Case.findAndCountAll({
+            where,
+            order: [['timestamp', 'DESC']],
+            limit,
+            offset
+        });
+
+        res.json({
+            total: count,
+            page,
+            limit,
+            pages: Math.ceil(count / limit),
+            cases: rows
+        });
+    } catch (e) {
+        console.error('Error fetching guild cases:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/guilds/:guildId/cases/:caseId
+ * Returns a single case with full detail.
+ */
+router.get('/cases/:caseId', async (req, res) => {
+    try {
+        const { guildId, caseId } = req.params;
+        const c = await Case.findOne({
+            where: { id: caseId, guildId }
+        });
+        if (!c) return res.status(404).json({ error: 'Case not found.' });
+        res.json(c);
+    } catch (e) {
+        console.error('Error fetching case:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * PUT /api/guilds/:guildId/cases/:caseId
+ * Edit a case's reason or status from the dashboard.
+ */
+router.put('/cases/:caseId', async (req, res) => {
+    try {
+        const { guildId, caseId } = req.params;
+        const { reason, status } = req.body;
+
+        const c = await Case.findOne({
+            where: { id: caseId, guildId }
+        });
+        if (!c) return res.status(404).json({ error: 'Case not found.' });
+
+        const updateData = {};
+        if (reason !== undefined) updateData.reason = reason;
+        if (status !== undefined) {
+            if (!['active', 'resolved', 'appealed', 'expired'].includes(status)) {
+                return res.status(400).json({ error: 'Invalid status value.' });
+            }
+            updateData.status = status;
+        }
+
+        // Audit tracking
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        
+        if (user) {
+            updateData.editedBy = user.id;
+            updateData.editedAt = new Date();
+        }
+
+        await c.update(updateData);
+        res.json({ success: true, case: c });
+    } catch (e) {
+        console.error('Error updating case:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * PUT /api/guilds/:guildId/infractions/:warningId
+ * Edit a warning's reason from the dashboard.
+ */
+router.put('/infractions/:warningId', async (req, res) => {
+    try {
+        const { guildId, warningId } = req.params;
+        const { reason, severity } = req.body;
+
+        const warning = await Warning.findOne({
+            where: { id: warningId, guildId }
+        });
+        if (!warning) return res.status(404).json({ error: 'Infraction not found.' });
+
+        const updateData = {};
+        if (reason !== undefined) updateData.reason = reason;
+        if (severity !== undefined) {
+            if (!['low', 'medium', 'high', 'critical'].includes(severity)) {
+                return res.status(400).json({ error: 'Invalid severity value.' });
+            }
+            updateData.severity = severity;
+        }
+
+        // Audit tracking
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        
+        if (user) {
+            updateData.editedBy = user.id;
+            updateData.editedAt = new Date();
+        }
+
+        await warning.update(updateData);
+        res.json({ success: true, infraction: warning });
+    } catch (e) {
+        console.error('Error updating infraction:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * DELETE /api/guilds/:guildId/infractions/:warningId
+ * Soft-delete a warning from the dashboard.
+ */
+router.delete('/infractions/:warningId', async (req, res) => {
+    try {
+        const { guildId, warningId } = req.params;
+
+        const warning = await Warning.findOne({
+            where: { id: warningId, guildId }
+        });
+        if (!warning) return res.status(404).json({ error: 'Infraction not found.' });
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+
+        await warning.update({
+            active: false,
+            editedBy: user ? user.id : 'dashboard',
+            editedAt: new Date()
+        });
+
+        res.json({ success: true, message: 'Infraction soft-deleted successfully.' });
+    } catch (e) {
+        console.error('Error deleting infraction:', e);
         res.status(500).json({ error: e.message });
     }
 });

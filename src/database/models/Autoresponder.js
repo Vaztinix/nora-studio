@@ -26,6 +26,14 @@ const Autoresponder = sequelize.define('Autoresponder', {
     isEmbed: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    ignoreStaffAndBots: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    ignoredChannels: {
+        type: DataTypes.TEXT, // JSON array of channel IDs
+        defaultValue: '[]'
     }
 });
 

@@ -327,4 +327,70 @@ router.post('/premium/revoke-time', requireOwner, async (req, res) => {
     }
 });
 
+// POST /api/admin/oauth-exchange
+router.post('/oauth-exchange', async (req, res) => {
+    try {
+        const { code, redirect_uri } = req.body;
+        if (!code || !redirect_uri) {
+            return res.status(400).json({ error: 'Missing code or redirect_uri' });
+        }
+
+        const client_id = process.env.CLIENT_ID || '1351304498185900184';
+        const client_secret = process.env.CLIENT_SECRET;
+        if (!client_secret) {
+            return res.status(500).json({ error: 'System configuration error: client_secret missing' });
+        }
+
+        const params = new URLSearchParams();
+        params.append('client_id', client_id);
+        params.append('client_secret', client_secret);
+        params.append('grant_type', 'authorization_code');
+        params.append('code', code);
+        params.append('redirect_uri', redirect_uri);
+
+        const tokenRes = await fetch('https://discord.com/api/v10/oauth2/token', {
+            method: 'POST',
+            body: params,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+
+        if (!tokenRes.ok) {
+            const errBody = await tokenRes.text();
+            console.error('OAuth token exchange error:', errBody);
+            return res.status(400).json({ error: 'Discord OAuth token exchange failed' });
+        }
+
+        const tokenData = await tokenRes.json();
+        res.json({ token: tokenData.access_token });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/global-ban
+router.post('/global-ban', requireOwner, async (req, res) => {
+    try {
+        const { action, userId } = req.body;
+        if (!userId || !action) {
+            return res.status(400).json({ error: 'Missing userId or action' });
+        }
+
+        const UserPrefs = require('../../database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId } });
+
+        if (action === 'ban') {
+            await prefs.update({ profilePublic: false, robloxPublic: false }); // Disable visibility
+            console.log(`[GLOBAL MITIGATION] Blacklisted user ${userId}`);
+            return res.json({ success: true, message: `Successfully blacklisted user ${userId}` });
+        } else if (action === 'unban') {
+            console.log(`[GLOBAL MITIGATION] Restored user ${userId}`);
+            return res.json({ success: true, message: `Successfully removed user ${userId} from blacklist` });
+        } else {
+            return res.status(400).json({ error: 'Invalid action' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

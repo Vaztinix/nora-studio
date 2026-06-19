@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { handleError, handleSuccess } = require('../../utils/embeds');
+const Case = require('../../database/models/Case');
 
 module.exports = {
     category: 'moderation',
@@ -55,7 +56,16 @@ module.exports = {
 
         try {
             await member.timeout(duration * 60 * 1000, reason);
-            await handleSuccess(interaction, 'User Muted', `**${target.tag}** has been timed out for ${duration} minute(s).\n**Reason:** ${reason}`);
+            const caseRecord = await Case.create({
+                guildId: interaction.guild.id,
+                userId: target.id,
+                moderatorId: interaction.user.id,
+                type: 'MUTE',
+                reason,
+                status: 'active',
+                duration: duration * 60 * 1000
+            });
+            await handleSuccess(interaction, 'User Muted', `**${target.tag}** has been timed out for ${duration} minute(s).\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
         } catch (error) {
             console.error(error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to mute the user. Check my permissions or hierarchy.');

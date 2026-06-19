@@ -46,8 +46,9 @@ module.exports = {
                 guildId: interaction.guild.id,
                 userId: target.id,
                 moderatorId: interaction.user.id,
-                action: 'Kick',
-                reason
+                type: 'KICK',
+                reason,
+                status: 'active'
             });
             await handleSuccess(interaction, 'User Kicked', `**${target.tag}** has been kicked successfully.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
         } catch (error) {

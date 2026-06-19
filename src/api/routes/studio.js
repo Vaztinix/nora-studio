@@ -150,6 +150,98 @@ router.post('/ai-profile', requireAuth, async (req, res) => {
     }
 });
 
+// GET /api/user/autoresponders
+router.get('/autoresponders', requireAuth, async (req, res) => {
+    try {
+        const { guildId } = req.query;
+        if (!guildId) return res.status(400).json({ error: 'Missing guildId' });
+        const Autoresponder = require('../../database/models/Autoresponder');
+        const list = await Autoresponder.findAll({ where: { guildId } });
+        res.json(list);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/user/autoresponders
+router.post('/autoresponders', requireAuth, async (req, res) => {
+    try {
+        const { id, guildId, trigger, response, matchType, isEmbed, ignoreStaffAndBots, ignoredChannels } = req.body;
+        if (!guildId || !trigger || !response) {
+            return res.status(400).json({ error: 'Missing required parameters' });
+        }
+        const Autoresponder = require('../../database/models/Autoresponder');
+        
+        let record;
+        if (id) {
+            record = await Autoresponder.findOne({ where: { id, guildId } });
+        }
+        
+        const payload = {
+            guildId,
+            trigger,
+            response,
+            matchType: matchType || 'contains',
+            isEmbed: !!isEmbed,
+            ignoreStaffAndBots: !!ignoreStaffAndBots,
+            ignoredChannels: typeof ignoredChannels === 'string' ? ignoredChannels : JSON.stringify(ignoredChannels || [])
+        };
+
+        if (record) {
+            await record.update(payload);
+        } else {
+            record = await Autoresponder.create(payload);
+        }
+        res.json({ success: true, autoresponder: record });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// DELETE /api/user/autoresponders/:id
+router.delete('/autoresponders/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { guildId } = req.query;
+        if (!guildId) return res.status(400).json({ error: 'Missing guildId' });
+        const Autoresponder = require('../../database/models/Autoresponder');
+        const deleted = await Autoresponder.destroy({ where: { id, guildId } });
+        res.json({ success: deleted > 0 });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// GET /api/user/validate-social-channel
+router.get('/validate-social-channel', requireAuth, async (req, res) => {
+    try {
+        const { platform, url } = req.query;
+        if (!platform || !url) return res.status(400).json({ error: 'Missing platform or url' });
+        
+        // Simulating the keystrokes calculation loader "NoraCalculatingAnswers" with a 1.2 second timeout
+        await new Promise(r => setTimeout(r, 1200));
+
+        let username = 'Creator';
+        let avatar = 'https://cdn.discordapp.com/embed/avatars/0.png';
+        
+        if (url.includes('twitch.tv/')) {
+            username = url.split('twitch.tv/')[1].split('/')[0];
+            avatar = `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`;
+        } else if (url.includes('youtube.com/')) {
+            username = url.split('youtube.com/')[1].split('/')[0].replace('@', '');
+            avatar = `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`;
+        }
+        
+        res.json({
+            success: true,
+            username,
+            avatar
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // GET /api/user/hosted-bots
 router.get('/hosted-bots', requireAuth, async (req, res) => {
     try {

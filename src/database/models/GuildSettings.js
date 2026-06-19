@@ -523,6 +523,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
     reactionRoleNotifyDm: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+    },
+    inviteTrackerEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    inviteTrackerChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 });
 

@@ -20,8 +20,27 @@ const Warning = sequelize.define('Warning', {
         allowNull: false
     },
     reason: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         defaultValue: 'No reason provided'
+    },
+    severity: {
+        type: DataTypes.STRING,
+        defaultValue: 'medium',
+        validate: {
+            isIn: [['low', 'medium', 'high', 'critical']]
+        }
+    },
+    active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    editedBy: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    editedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
     },
     timestamp: {
         type: DataTypes.DATE,

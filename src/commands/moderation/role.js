@@ -71,8 +71,9 @@ module.exports = {
                     guildId: interaction.guild.id,
                     userId: target.id,
                     moderatorId: interaction.user.id,
-                    action: 'RoleAdd',
-                    reason: `Role ${role.name} added`
+                    type: 'ROLE_ADD',
+                    reason: `Role ${role.name} added`,
+                    status: 'active'
                 });
                 await handleSuccess(interaction, 'Role Added', `Successfully added ${role} to **${target.tag}**. (Case #${caseRecord.id})`);
             } else if (subcommand === 'remove') {
@@ -84,8 +85,9 @@ module.exports = {
                     guildId: interaction.guild.id,
                     userId: target.id,
                     moderatorId: interaction.user.id,
-                    action: 'RoleRemove',
-                    reason: `Role ${role.name} removed`
+                    type: 'ROLE_REMOVE',
+                    reason: `Role ${role.name} removed`,
+                    status: 'active'
                 });
                 await handleSuccess(interaction, 'Role Removed', `Successfully removed ${role} from **${target.tag}**. (Case #${caseRecord.id})`);
             } else if (subcommand === 'temp') {
@@ -113,8 +115,10 @@ module.exports = {
                     guildId: interaction.guild.id,
                     userId: target.id,
                     moderatorId: interaction.user.id,
-                    action: 'RoleTemp',
-                    reason: `Temporarily given role ${role.name} for ${durationStr}`
+                    type: 'ROLE_ADD',
+                    reason: `Temporarily given role ${role.name} for ${durationStr}`,
+                    status: 'active',
+                    duration: durationMs
                 });
 
                 await handleSuccess(interaction, 'Role Temporarily Added', `Successfully gave role ${role} to **${target.tag}** temporarily for ${durationStr}. (Case #${caseRecord.id})`);

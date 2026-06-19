@@ -58,8 +58,9 @@ module.exports = {
                 guildId: interaction.guild.id,
                 userId: target.id,
                 moderatorId: interaction.user.id,
-                action: 'Ban',
-                reason
+                type: 'BAN',
+                reason,
+                status: 'active'
             });
             await handleSuccess(interaction, 'User Banned', `**${target.tag}** has been banned successfully.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
         } catch (error) {

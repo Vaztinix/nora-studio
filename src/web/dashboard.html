@@ -2189,10 +2189,21 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; margin-top: 10px;">
                     <div>
-                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff;">Your Servers</h2>
-                        <p style="color: var(--muted); font-size: 0.85rem;">Showing servers where you have administrative access.</p>
+                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff;">Server Management</h2>
+                        <p style="color: var(--muted); font-size: 0.85rem;">Manage your Discord servers with Nora</p>
                     </div>
                     <button class="save-btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: #fff; padding: 8px 16px; font-size: 0.85rem;" onclick="inviteBot()">+ Invite Nora</button>
+                </div>
+
+                <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div style="position: relative; flex: 1; min-width: 250px;">
+                        <input type="text" id="server-search" placeholder="Search for a server..." oninput="filterServers()" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 10px 16px 10px 38px; border-radius: 8px; color: white; outline: none; font-size: 0.9rem; border-color: rgba(255,255,255,0.08);">
+                        <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem;"></i>
+                    </div>
+                    <div style="display: flex; gap: 10px; font-size: 0.8rem; font-weight: 600;">
+                        <span class="badge" id="servers-count-active" style="background: rgba(35, 165, 90, 0.15); color: #23a55a; border: 1px solid rgba(35, 165, 90, 0.3); padding: 6px 12px; border-radius: 99px;">0 Active</span>
+                        <span class="badge" id="servers-count-not-config" style="background: rgba(255, 255, 255, 0.05); color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; border-radius: 99px;">0 Not Configured</span>
+                    </div>
                 </div>
                 
                 <div class="server-grid" id="guilds-container"></div>
@@ -2469,67 +2480,32 @@
                             <div style="margin-bottom: 20px;">
                                 <h4 style="margin-bottom: 10px; font-weight: 600; font-size: 0.9rem; color: #fff;">Theme Mode</h4>
                                 <select id="pref-theme-mode" onchange="updateThemeMode(true)" style="display: none;">
-                                    <option value="default">Nora Default (Dark)</option>
-                                    <option value="oled">Midnight OLED (Black)</option>
-                                    <option value="sapphire">Sapphire Night (Deep Blue)</option>
-                                    <option value="forest">Forest Deep (Dark Green)</option>
-                                    <option value="sunset">Crimson Sunset (Dark Orange)</option>
-                                    <option value="rose">Aura Pink (Rose/Neon Magenta)</option>
-                                    <option value="cyber">Cyberpunk Amber (Bright Gold)</option>
-                                    <option value="amethyst">Amethyst Glow (Lavender Purple)</option>
-                                    <option value="mint">Mint Breeze (Teal)</option>
-                                    <option value="light">Nora Light (White)</option>
-                                    <option value="solid-glass">Solid Glass (iOS-like Static)</option>
-                                    <option value="glass">Liquid Glass (iOS-like Animated)</option>
+                                    <option value="default">Obsidian Dusk (Default)</option>
+                                    <option value="cyber">Cyber Punk</option>
+                                    <option value="sapphire">Nordic Frost</option>
+                                    <option value="rose">Midnight Rose</option>
+                                    <option value="glass">Eclipse Amber (Glassmorphic)</option>
                                 </select>
                                 <div class="theme-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px;">
                                     <div class="theme-card-option" data-theme="default" onclick="selectThemeOption('default')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #0f111a; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #aeefff; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Nora Dark</span>
-                                    </div>
-                                    <div class="theme-card-option" data-theme="oled" onclick="selectThemeOption('oled')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #000000; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #ffffff; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">OLED Black</span>
-                                    </div>
-                                    <div class="theme-card-option" data-theme="sapphire" onclick="selectThemeOption('sapphire')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #050a1f; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #4b69ff; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Sapphire</span>
-                                    </div>
-                                    <div class="theme-card-option" data-theme="forest" onclick="selectThemeOption('forest')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #05140d; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #2ecc71; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Forest</span>
-                                    </div>
-                                    <div class="theme-card-option" data-theme="sunset" onclick="selectThemeOption('sunset')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #1a0d0a; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #ff8e3c; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Sunset</span>
-                                    </div>
-                                    <div class="theme-card-option" data-theme="rose" onclick="selectThemeOption('rose')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #14050d; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #ff6b8b; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Aura Pink</span>
+                                        <div class="theme-card-preview" style="background: #080b16; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #00d4ff; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
+                                        <span style="font-size: 0.75rem; color: #fff;">Obsidian Dusk</span>
                                     </div>
                                     <div class="theme-card-option" data-theme="cyber" onclick="selectThemeOption('cyber')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
                                         <div class="theme-card-preview" style="background: #141205; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #ffd700; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Amber Gold</span>
+                                        <span style="font-size: 0.75rem; color: #fff;">Cyber Punk</span>
                                     </div>
-                                    <div class="theme-card-option" data-theme="amethyst" onclick="selectThemeOption('amethyst')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #0e0514; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #9b5de5; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Amethyst</span>
+                                    <div class="theme-card-option" data-theme="sapphire" onclick="selectThemeOption('sapphire')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
+                                        <div class="theme-card-preview" style="background: #050a1f; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #4b69ff; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
+                                        <span style="font-size: 0.75rem; color: #fff;">Nordic Frost</span>
                                     </div>
-                                    <div class="theme-card-option" data-theme="mint" onclick="selectThemeOption('mint')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #051412; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #00f5d4; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Mint Breeze</span>
-                                    </div>
-                                    <div class="theme-card-option" data-theme="light" onclick="selectThemeOption('light')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: #f5f7fb; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #5865f2; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Nora Light</span>
-                                    </div>
-                                    <div class="theme-card-option" data-theme="solid-glass" onclick="selectThemeOption('solid-glass')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
-                                        <div class="theme-card-preview" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #ff8e3c; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Solid Glass</span>
+                                    <div class="theme-card-option" data-theme="rose" onclick="selectThemeOption('rose')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
+                                        <div class="theme-card-preview" style="background: #14050d; height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #ff6b8b; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
+                                        <span style="font-size: 0.75rem; color: #fff;">Midnight Rose</span>
                                     </div>
                                     <div class="theme-card-option" data-theme="glass" onclick="selectThemeOption('glass')" style="padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; cursor: pointer;">
                                         <div class="theme-card-preview" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(20px); height: 35px; border-radius: 6px; position: relative; margin-bottom: 6px;"><div class="theme-accent-dot" style="background: #ff8e3c; width: 8px; height: 8px; border-radius: 50%; position: absolute; bottom: 6px; right: 6px;"></div></div>
-                                        <span style="font-size: 0.75rem; color: #fff;">Liquid Glass</span>
+                                        <span style="font-size: 0.75rem; color: #fff;">Eclipse Amber</span>
                                     </div>
                                 </div>
                             </div>
@@ -2901,18 +2877,14 @@
 
                 <div class="config-container">
                     <div class="config-sidebar">
-                        <button class="h-tab active" data-tab="tab-overview"><i class="fas fa-chart-line"></i> Dashboard</button>
-                        <button class="h-tab" data-tab="tab-safety"><i class="fas fa-shield-alt"></i> Safety & Raid</button>
-                        <button class="h-tab" data-tab="tab-automod"><i class="fas fa-gavel"></i> AutoMod</button>
-                        <button class="h-tab" data-tab="tab-logging"><i class="fas fa-list-alt"></i> Logging</button>
+                        <button class="h-tab active" data-tab="tab-overview"><i class="fas fa-chart-line"></i> Overview</button>
+                        <button class="h-tab" data-tab="tab-tickets"><i class="fas fa-ticket-alt"></i> Tickets</button>
+                        <button class="h-tab" data-tab="tab-feeds"><i class="fas fa-rss"></i> Social Alerts</button>
+                        <button class="h-tab" data-tab="tab-welcome"><i class="fas fa-door-open"></i> Welcome & Leave</button>
+                        <button class="h-tab" data-tab="tab-commands"><i class="fas fa-terminal"></i> Custom Commands</button>
+                        <button class="h-tab" data-tab="tab-safety"><i class="fas fa-cog"></i> General Settings</button>
+                        <button class="h-tab" data-tab="tab-logging"><i class="fas fa-list-alt"></i> Server Logs</button>
                         <button class="h-tab" data-tab="tab-leveling"><i class="fas fa-arrow-up"></i> Leveling</button>
-                        <button class="h-tab" data-tab="tab-modules"><i class="fas fa-gamepad"></i> Modules & Games</button>
-                        <button class="h-tab" data-tab="tab-verify"><i class="fas fa-user-check"></i> Verification</button>
-                        <button class="h-tab" data-tab="tab-tickets"><i class="fas fa-ticket-alt"></i> Support Tickets</button>
-                        <button class="h-tab" data-tab="tab-feeds"><i class="fas fa-rss"></i> Content Feeds</button>
-                        <button class="h-tab" data-tab="tab-broadcast"><i class="fas fa-bullhorn"></i> Broadcast</button>
-                        <button class="h-tab" data-tab="tab-members"><i class="fas fa-users"></i> Members</button>
-                        <button class="h-tab" data-tab="tab-commands"><i class="fas fa-terminal"></i> Commands</button>
 
                         <!-- Compact System Pulse in Sidebar -->
                         <div class="panel" style="padding: 12px; margin-top: 15px; background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 12px; font-size: 0.8rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.15); width: 100%;">
@@ -2938,24 +2910,134 @@
                     <div class="config-main">
 
                 <div id="tab-overview" class="tab-content active">
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
-                        <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);">
-                            <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Total Members</span>
-                            <h2 id="stats-total-members" data-no-translate style="font-size: 1.8rem; margin-top: 5px; font-weight: 800;">...</h2>
+                    <div style="margin-bottom: 25px;">
+                        <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 5px; letter-spacing: -0.5px;">Dashboard</h1>
+                        <p style="color: var(--muted); font-size: 0.85rem;">Overview of your Discord server data and statistics.</p>
+                    </div>
+
+                    <!-- 4-Column Ticket Statistics Row -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px;">
+                        <div class="panel" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                <span>Open Tickets</span>
+                                <i class="fas fa-ticket-alt" style="color: var(--primary);"></i>
+                            </div>
+                            <h2 style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
                         </div>
-                        <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);">
-                            <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Active Users</span>
-                            <h2 id="stats-nora-users" data-no-translate style="font-size: 1.8rem; margin-top: 5px; font-weight: 800;">...</h2>
+                        <div class="panel" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                <span>In-Progress Tickets</span>
+                                <i class="fas fa-clock" style="color: var(--primary);"></i>
+                            </div>
+                            <h2 style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
                         </div>
-                        <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);">
-                            <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Growth Rate</span>
-                            <h2 id="stats-growth-rate" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--success); font-weight: 800;">...</h2>
+                        <div class="panel" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                <span>Closed Tickets</span>
+                                <i class="fas fa-archive" style="color: var(--primary);"></i>
+                            </div>
+                            <h2 style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
                         </div>
-                        <div class="panel" style="padding: 20px; margin-bottom: 0; text-align: center; border: 1px solid var(--primary-glow); background: rgba(0, 212, 255, 0.03);">
-                            <span style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Counting Sessions</span>
-                            <h2 id="stats-total-votes" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--primary); font-weight: 800;">0</h2>
+                        <div class="panel" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                <span>Total Tickets</span>
+                                <i class="fas fa-calculator" style="color: var(--primary);"></i>
+                            </div>
+                            <h2 style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
                         </div>
                     </div>
+
+                    <!-- Server Meta Badges Row -->
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; font-size: 0.8rem; color: var(--muted); font-weight: 500;">
+                        <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="fas fa-hashtag"></i> 38 channels</span>
+                        <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="fas fa-user-shield"></i> 21 roles</span>
+                        <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="fas fa-robot"></i> 8 bots</span>
+                        <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="far fa-smile"></i> 23 emojis</span>
+                        <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="sticky-note"></i> 1 stickers</span>
+                    </div>
+
+                    <!-- Analytics Section -->
+                    <div style="display: grid; grid-template-columns: 1fr 1.8fr; gap: 20px; margin-bottom: 30px;">
+                        <div class="panel" style="margin-bottom: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h4 style="font-weight: 700; color: white;">Ticket Distribution</h4>
+                                <span style="font-size: 0.75rem; color: var(--muted);">Last 7 days</span>
+                            </div>
+                            <div style="display: flex; justify-content: center; align-items: center; height: 180px; position: relative;">
+                                <!-- Simulated Pie Chart with SVG -->
+                                <svg width="140" height="140" viewBox="0 0 36 36" style="transform: rotate(-90deg);">
+                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#2a2a28" stroke-width="3"></circle>
+                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--primary)" stroke-width="3.5" stroke-dasharray="100 0" stroke-dashoffset="0"></circle>
+                                </svg>
+                                <div style="position: absolute; text-align: center; display: flex; flex-direction: column;">
+                                    <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">Total</span>
+                                    <span style="font-size: 1.4rem; font-weight: 800; color: white;">0</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px; font-size: 0.75rem;">
+                                <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></span> Open (0%)</span>
+                                <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: #6c5ce7; border-radius: 50%;"></span> In Progress (0%)</span>
+                                <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: #262626; border-radius: 50%;"></span> Resolved (0%)</span>
+                            </div>
+                        </div>
+
+                        <div class="panel" style="margin-bottom: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h4 style="font-weight: 700; color: white;">Recent Activity</h4>
+                                <span style="font-size: 0.75rem; color: var(--muted);">Last 7 days</span>
+                            </div>
+                            <div style="height: 180px; display: flex; align-items: flex-end; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); position: relative;">
+                                <!-- Grid Lines -->
+                                <div style="position: absolute; left: 0; right: 0; top: 25%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
+                                <div style="position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
+                                <div style="position: absolute; left: 0; right: 0; top: 75%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
+                                
+                                <!-- Empty state text -->
+                                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.8rem; font-weight: 500;">
+                                    No activity records in this period
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">
+                                <span>18 Sat</span>
+                                <span>19 Sun</span>
+                                <span>20 Mon</span>
+                                <span>21 Tue</span>
+                                <span>22 Wed</span>
+                                <span>23 Thu</span>
+                                <span>24 Fri</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Ticket History Table -->
+                    <div class="panel" style="margin-bottom: 25px;">
+                        <h4 style="font-weight: 700; color: white; margin-bottom: 15px;">Recent Ticket History</h4>
+                        <div style="overflow-x: auto; width: 100%;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.82rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem;">
+                                        <th style="padding: 10px 15px;">Ticket Name</th>
+                                        <th style="padding: 10px 15px;">Topic</th>
+                                        <th style="padding: 10px 15px;">Status</th>
+                                        <th style="padding: 10px 15px;">Open Time</th>
+                                        <th style="padding: 10px 15px;">Resolved Time</th>
+                                        <th style="padding: 10px 15px;">Ticket Author</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="color: var(--muted);">
+                                        <td colspan="6" style="padding: 40px 15px; text-align: center;">
+                                            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                                <i class="fas fa-ticket-alt" style="font-size: 2rem; color: var(--border);"></i>
+                                                <span>No Tickets Found</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
 
                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 30px;">
                         
@@ -3443,7 +3525,7 @@
                     </script>
                 </div>
 
-                <div id="tab-modules" class="tab-content">
+                <div id="tab-welcome" class="tab-content">
                     <div class="panel">
                         <h3>Global Module Control</h3>
                         <p>Enable or disable entire command categories for this server.</p>
@@ -3559,11 +3641,30 @@
                                         <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
                                         <code style="color: var(--primary);">{guild}</code> - Server name<br>
                                         <code style="color: var(--primary);">{membercount}</code> - Member count<br>
+                                        <code style="color: var(--primary);">{inviter}</code> - Inviter user tag<br>
+                                        <code style="color: var(--primary);">{code}</code> - Invite code used<br>
+                                        <code style="color: var(--primary);">{invites_count}</code> - Inviter invites count<br>
                                         <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Markdown.</em>
                                     </div>
                                 </div>
                             </div>
                             <input type="text" id="setting-logJoinMessage_welcomer" class="custom-msg-input" placeholder="Welcome {user} to the server!" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                        </div>
+                        
+                        <!-- Invite Tracker Subsection -->
+                        <div style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 20px;">
+                            <h4 style="margin-bottom: 10px; font-weight: 700; color: #fff;">Invite Tracker Integration</h4>
+                            <div class="row" style="margin-bottom: 15px;">
+                                <div class="row-info">
+                                    <h4 style="font-size: 0.9rem; font-weight: 600;">Enable Invite Logs</h4>
+                                    <p style="font-size: 0.75rem; color: var(--muted);">Announce which member invited the user and via which invite link.</p>
+                                </div>
+                                <label class="switch"><input type="checkbox" id="setting-inviteTrackerEnabled"><span class="slider"></span></label>
+                            </div>
+                            <div class="input-group">
+                                <label>Invite Log Channel</label>
+                                <select id="setting-inviteTrackerChannelId"><option value="">Select channel...</option></select>
+                            </div>
                         </div>
                     </div>
 
@@ -3731,9 +3832,9 @@
                             
                             <div class="input-group" style="margin-bottom: 15px;">
                                 <label>Platform</label>
-                                <select id="new-feed-platform" style="width: 100%;">
-                                    <option value="youtube">YouTube</option>
-                                    <option value="twitch">Twitch</option>
+                                <select id="new-feed-platform" style="width: 100%;" onchange="toggleFeedCustomMessages(this.value)">
+                                    <option value="youtube">YouTube (Videos, Shorts, Lives)</option>
+                                    <option value="twitch">Twitch (Live Streams)</option>
                                 </select>
                             </div>
                             
@@ -3752,7 +3853,7 @@
                                 </select>
                             </div>
 
-                            <div class="input-group" style="margin-bottom: 15px;">
+                             <div class="input-group" style="margin-bottom: 15px;">
                                 <label>Announcement Ping</label>
                                 <select id="new-feed-ping" style="width: 100%;">
                                     <option value="everyone">@everyone</option>
@@ -3761,9 +3862,25 @@
                                 </select>
                             </div>
                             
-                            <div class="input-group" style="margin-bottom: 20px;">
-                                <label>Custom Message (Optional)</label>
-                                <input type="text" id="new-feed-message" placeholder="New video from {channel}!" style="width: 100%; box-sizing: border-box;">
+                            <div id="youtube-custom-messages" style="display: block;">
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Video Announcement Message (Optional)</label>
+                                    <input type="text" id="new-feed-message-video" placeholder="New video: {title}! Link: {link}" style="width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Short Announcement Message (Optional)</label>
+                                    <input type="text" id="new-feed-message-short" placeholder="New Short: {title}! Link: {link}" style="width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 20px;">
+                                    <label>Live Stream Announcement Message (Optional)</label>
+                                    <input type="text" id="new-feed-message-live" placeholder="{creator} is LIVE: {title}! Link: {link}" style="width: 100%; box-sizing: border-box;">
+                                </div>
+                            </div>
+                            <div id="twitch-custom-messages" style="display: none;">
+                                <div class="input-group" style="margin-bottom: 20px;">
+                                    <label>Twitch Announcement Message (Optional)</label>
+                                    <input type="text" id="new-feed-message-twitch" placeholder="{creator} is live! Link: {link}" style="width: 100%; box-sizing: border-box;">
+                                </div>
                             </div>
 
                             <button onclick="submitNewFeed()" class="config-btn" style="background: var(--primary); border: none; color: #0f111a; font-weight: 700; width: 100%; padding: 12px; border-radius: 10px; box-shadow: 0 0 15px var(--primary-glow);">
@@ -4800,7 +4917,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -5791,6 +5908,56 @@
             }
         }
 
+        window.userGuilds = [];
+
+        function renderGuilds(guilds) {
+            const container = document.getElementById('guilds-container');
+            if (!container) return;
+            container.innerHTML = guilds.length ? '' : '<p style="color: var(--muted); text-align: center; width: 100%; grid-column: 1/-1; padding: 40px 0;">No servers found matching search.</p>';
+            
+            guilds.forEach(g => {
+                const card = document.createElement('div');
+                card.className = 'server-card';
+                if (g.hasNora) {
+                    card.classList.add('configured');
+                }
+                
+                const btn = g.hasNora 
+                    ? '<button class="config-btn">Manage Server</button>' 
+                    : `<button class="config-btn invite" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')">Add to Server</button>`;
+                
+                let memberInfo = '';
+                if (g.hasNora) {
+                    const onlineStr = g.onlineCount 
+                        ? `<span style="color: #23a55a; display: flex; align-items: center; gap: 4px; justify-content: center; margin-top: 4px;"><span style="width: 6px; height: 6px; background: #23a55a; border-radius: 50%;"></span> ${g.onlineCount} Online</span>` 
+                        : '';
+                    memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 4px;"><span>${g.memberCount} Members</span>${onlineStr}</div>`;
+                } else {
+                    memberInfo = `<p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px; text-align: center;">Not configured yet</p>`;
+                }
+
+                const slashBadge = g.hasNora ? '<div class="badge-slash"><span>/</span> Active</div>' : '';
+                card.innerHTML = `<img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">${slashBadge}<h3 style="text-align: center;">${g.name}</h3>${memberInfo}${btn}`;
+                
+                if (g.hasNora) {
+                    card.onclick = () => {
+                        openConfig(g);
+                    };
+                }
+                container.appendChild(card);
+            });
+        }
+
+        function filterServers() {
+            const query = (document.getElementById('server-search').value || '').toLowerCase().trim();
+            if (!query) {
+                renderGuilds(window.userGuilds);
+                return;
+            }
+            const filtered = window.userGuilds.filter(g => (g.name || '').toLowerCase().includes(query));
+            renderGuilds(filtered);
+        }
+
         async function fetchGuilds(t) {
             logToTerminal('Fetching user guilds...', 'GUILD_FETCH');
             toggleLoading(true);
@@ -5803,38 +5970,18 @@
                 }
 
                 logToTerminal(`Fetched ${guilds.length} guilds.`, 'GUILD_SUCCESS');
-                const container = document.getElementById('guilds-container');
-                if (container) {
-                    container.innerHTML = guilds.length ? '' : '<p>No servers.</p>';
-                    guilds.forEach(g => {
-                        const card = document.createElement('div');
-                        card.className = 'server-card';
-                        
-                        const btn = g.hasNora 
-                            ? '<button class="config-btn">Configure</button>' 
-                            : `<button class="config-btn invite" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')">Invite</button>`;
-                        
-                        let memberInfo = '';
-                        if (g.hasNora) {
-                            const onlineStr = g.onlineCount 
-                                ? `<span style="color: #23a55a; display: flex; align-items: center; gap: 4px; justify-content: center; margin-top: 4px;"><span style="width: 6px; height: 6px; background: #23a55a; border-radius: 50%;"></span> ${g.onlineCount} Online</span>` 
-                                : '';
-                            memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 4px;"><span>${g.memberCount} Members</span>${onlineStr}</div>`;
-                        } else {
-                            memberInfo = `<p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px; text-align: center;">Invite required</p>`;
-                        }
+                window.userGuilds = guilds;
+                
+                // Calculate stats
+                const activeCount = guilds.filter(g => g.hasNora).length;
+                const inactiveCount = guilds.length - activeCount;
+                
+                const activeEl = document.getElementById('servers-count-active');
+                const inactiveEl = document.getElementById('servers-count-not-config');
+                if (activeEl) activeEl.textContent = `${activeCount} Active`;
+                if (inactiveEl) inactiveEl.textContent = `${inactiveCount} Not Configured`;
 
-                        const slashBadge = g.hasNora ? '<div class="badge-slash"><span>/</span> Active</div>' : '';
-                        card.innerHTML = `<img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">${slashBadge}<h3 style="text-align: center;">${g.name}</h3>${memberInfo}${btn}`;
-                        
-                        if (g.hasNora) {
-                            card.onclick = () => {
-                                openConfig(g);
-                            };
-                        }
-                        container.appendChild(card);
-                    });
-                }
+                renderGuilds(guilds);
 
             } catch (e) {
                 console.error(e);
@@ -10319,12 +10466,31 @@
             }
         }
 
+        function toggleFeedCustomMessages(platform) {
+            if (platform === 'youtube') {
+                document.getElementById('youtube-custom-messages').style.display = 'block';
+                document.getElementById('twitch-custom-messages').style.display = 'none';
+            } else {
+                document.getElementById('youtube-custom-messages').style.display = 'none';
+                document.getElementById('twitch-custom-messages').style.display = 'block';
+            }
+        }
+
         async function submitNewFeed() {
             const platform = document.getElementById('new-feed-platform').value;
             const url = document.getElementById('new-feed-url').value;
             const channelId = document.getElementById('new-feed-channel').value;
-            const message = document.getElementById('new-feed-message').value;
             const pingType = document.getElementById('new-feed-ping').value;
+            
+            let message = '';
+            if (platform === 'youtube') {
+                const videoMsg = document.getElementById('new-feed-message-video').value;
+                const shortMsg = document.getElementById('new-feed-message-short').value;
+                const liveMsg = document.getElementById('new-feed-message-live').value;
+                message = JSON.stringify({ video: videoMsg, short: shortMsg, live: liveMsg });
+            } else {
+                message = document.getElementById('new-feed-message-twitch').value;
+            }
             
             if (!url || !channelId) return showToast('Please provide a URL and select a channel.', 'error');
             
@@ -10343,7 +10509,13 @@
                 
                 showToast('Feed added successfully!', 'success');
                 document.getElementById('new-feed-url').value = '';
-                document.getElementById('new-feed-message').value = '';
+                if (platform === 'youtube') {
+                    document.getElementById('new-feed-message-video').value = '';
+                    document.getElementById('new-feed-message-short').value = '';
+                    document.getElementById('new-feed-message-live').value = '';
+                } else {
+                    document.getElementById('new-feed-message-twitch').value = '';
+                }
                 fetchContentFeeds();
             } catch (e) {
                 showToast(e.message, 'error');
