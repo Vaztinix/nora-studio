@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora | Premium Discord Workspace Bot</title>
-    <meta name="description" content="Elevate your Discord server with Nora - the ultimate custom workspace and support bot. Branded ticket systems, advanced leveling, and privacy-first features.">
+    <title>Nora | Premium Discord Support & Community Workspace Bot</title>
+    <meta name="description" content="Simplify your Discord server's support system with Nora - the most powerful custom workspace and ticket bot. Manage support tickets efficiently with customizable panels and detailed analytics.">
     <link rel="icon" type="image/png" href="nora.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -14,9 +14,12 @@
             --primary: #FFE629;
             --primary-hover: #E6CF24;
             --border: #191918;
+            --border-hover: #222221;
             --muted: #9D9D9D;
             --card-bg: #111110;
             --text: #EEEEEC;
+            --discord-blurple: #5865F2;
+            --discord-blurple-hover: #4752C4;
         }
 
         * {
@@ -35,45 +38,38 @@
             flex-direction: column;
             background-image: 
                 radial-gradient(at 0% 0%, rgba(254, 229, 41, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(0, 212, 255, 0.03) 0px, transparent 50%);
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
             background-attachment: fixed;
         }
 
-        /* Floating Golden Tickets/Badges background effect */
-        .ambient-badge {
-            position: absolute;
-            width: 120px;
-            height: 70px;
-            border: 2px solid rgba(254, 229, 41, 0.08);
-            border-radius: 10px;
-            opacity: 0.15;
-            pointer-events: none;
-            z-index: 0;
-            transform: rotate(25deg);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
         }
 
+        /* Header / Navbar */
         header {
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(8px);
-            background: rgba(11, 11, 10, 0.85);
+            backdrop-filter: blur(12px);
+            background: rgba(7, 7, 6, 0.8);
             border-bottom: 1px solid var(--border);
         }
 
         .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            height: 70px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-weight: 700;
             font-size: 1.15rem;
             color: white;
@@ -98,27 +94,11 @@
             transition: color 0.2s ease;
             opacity: 0.8;
             font-size: 0.95rem;
-            position: relative;
         }
 
         .nav-links a:hover {
             color: var(--primary);
             opacity: 1;
-        }
-
-        .nav-links a::after {
-            content: "";
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #FEE529, #FAE022);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
         }
 
         .btn-header {
@@ -134,29 +114,48 @@
         }
 
         .btn-header:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--border-hover);
             border-color: rgba(255, 255, 255, 0.15);
         }
 
+        /* Hero Section */
         .hero-section {
-            max-width: 1200px;
-            margin: 60px auto;
-            padding: 0 24px;
             display: grid;
             grid-template-columns: 1.2fr 1fr;
             gap: 60px;
             align-items: center;
+            padding: 80px 0;
             position: relative;
-            z-index: 10;
+        }
+
+        @media (max-width: 900px) {
+            .hero-section {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+            .hero-info {
+                align-items: center;
+            }
+            .hero-buttons {
+                justify-content: center;
+            }
         }
 
         .hero-info {
             display: flex;
             flex-direction: column;
             gap: 20px;
+            text-align: left;
         }
 
-        .sub-tagline {
+        @media (max-width: 900px) {
+            .hero-info {
+                text-align: center;
+            }
+        }
+
+        .tagline {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -198,11 +197,13 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            cursor: pointer;
         }
 
         .btn-main-primary {
             background: var(--primary);
             color: #0b0b0a;
+            border: none;
         }
 
         .btn-main-primary:hover {
@@ -217,12 +218,18 @@
         }
 
         .btn-main-secondary:hover {
-            background: #171716;
+            background: var(--border-hover);
             border-color: rgba(255, 255, 255, 0.15);
             transform: translateY(-2px);
         }
 
-        /* Try Me Card Simulator */
+        /* Interactive Simulator Card */
+        .simulator-wrapper {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
         .simulator-card {
             background: #252523;
             border: 1px solid #3E3E3B;
@@ -231,7 +238,7 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             display: flex;
             flex-direction: column;
-            height: 100%;
+            width: 100%;
         }
 
         .simulator-header {
@@ -239,6 +246,7 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
+            padding: 0 4px;
         }
 
         .bot-profile {
@@ -297,6 +305,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            transition: all 0.3s ease;
         }
 
         .discord-embed {
@@ -331,7 +340,7 @@
             background: #2a2a28;
             border: 1px solid #3b3a37;
             color: #b5b3ad;
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
@@ -353,73 +362,405 @@
             background: #5b4bff;
         }
 
-        .features-grid {
-            max-width: 1200px;
-            margin: 60px auto;
-            padding: 0 24px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+        .discord-btn-success {
+            background: #23a55a;
+            border-color: #24b662;
+            color: white;
         }
 
-        .feature-card {
+        /* Features Showcase Section */
+        .features-showcase {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .section-header {
+            max-width: 600px;
+            margin: 0 auto 50px auto;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        .showcase-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .showcase-tab {
+            padding: 10px 20px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .showcase-tab:hover {
+            color: white;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .showcase-tab.active {
+            background: var(--primary);
+            color: #070706;
+            border-color: var(--primary);
+        }
+
+        .showcase-display {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 30px;
-            transition: 0.3s;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+            text-align: left;
+            align-items: center;
+            min-height: 380px;
+        }
+
+        @media (max-width: 768px) {
+            .showcase-display {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+        }
+
+        .showcase-content {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
-        .feature-card:hover {
-            border-color: rgba(254, 229, 41, 0.2);
-            transform: translateY(-4px);
+        .showcase-content h3 {
+            font-size: 1.5rem;
+            color: white;
         }
 
-        .feature-icon {
-            width: 42px;
-            height: 42px;
+        .showcase-content p {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .showcase-visual {
+            background: #191918;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* 12 Grid Secondary Features */
+        .secondary-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 60px;
+        }
+
+        .secondary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .secondary-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(254, 229, 41, 0.2);
+        }
+
+        .secondary-icon {
+            width: 40px;
+            height: 40px;
             border-radius: 8px;
             background: rgba(254, 229, 41, 0.08);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary);
-            font-size: 1.2rem;
-        }
-
-        .feature-card h3 {
             font-size: 1.15rem;
-            font-weight: 700;
-            color: white;
+            margin-bottom: 16px;
         }
 
-        .feature-card p {
-            font-size: 0.85rem;
+        .secondary-card h4 {
+            font-size: 1.1rem;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .secondary-card p {
             color: var(--muted);
+            font-size: 0.88rem;
             line-height: 1.5;
         }
 
+        /* Pricing Plan Matrix */
+        .pricing-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .pricing-table-container {
+            overflow-x: auto;
+            margin-top: 40px;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 600px;
+        }
+
+        .pricing-table th, .pricing-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pricing-table th {
+            font-weight: 600;
+            color: white;
+            background: var(--card-bg);
+        }
+
+        .pricing-table td {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .pricing-table tr:hover td {
+            color: white;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .pricing-table td:nth-child(2), .pricing-table td:nth-child(3) {
+            text-align: center;
+        }
+
+        .pricing-table th:nth-child(2), .pricing-table th:nth-child(3) {
+            text-align: center;
+        }
+
+        .check-icon {
+            color: var(--primary);
+        }
+
+        .cross-icon {
+            color: #ff4d4d;
+        }
+
+        /* Benefits Showcase */
+        .benefits-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .benefit-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            margin-bottom: 80px;
+        }
+
+        .benefit-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .benefit-row.reversed {
+            direction: rtl;
+        }
+
+        .benefit-row.reversed .benefit-info {
+            direction: ltr;
+        }
+
+        @media (max-width: 768px) {
+            .benefit-row, .benefit-row.reversed {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                direction: ltr;
+            }
+        }
+
+        .benefit-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .benefit-info h3 {
+            font-size: 1.8rem;
+            color: white;
+            font-weight: 700;
+        }
+
+        .benefit-info p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .benefit-visual {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Call To Action */
+        .cta-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            background: linear-gradient(180deg, var(--site-bg) 0%, #111110 100%);
+        }
+
+        .cta-card {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 50px 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: rgba(17, 17, 16, 0.5);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .cta-card h2 {
+            font-size: 2.2rem;
+            color: white;
+            font-weight: 800;
+        }
+
+        /* Footer */
         footer {
             border-top: 1px solid var(--border);
-            padding: 40px 24px;
-            text-align: center;
+            background: #0b0b0a;
+            padding: 60px 0 30px 0;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr repeat(4, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+            .footer-brand-col {
+                grid-column: span 2;
+            }
+        }
+
+        .footer-brand-col {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .footer-brand-col p {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .footer-col h5 {
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-col ul a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
             color: var(--muted);
             font-size: 0.85rem;
-            margin-top: auto;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(35, 165, 90, 0.1);
+            color: #23a55a;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.78rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #23a55a;
         }
     </style>
 </head>
 <body>
-    <!-- Ambient Badge Decorators -->
-    <div class="ambient-badge" style="top: 20%; left: 5%; transform: rotate(15deg);"></div>
-    <div class="ambient-badge" style="top: 60%; right: 8%; transform: rotate(-35deg);"></div>
-    <div class="ambient-badge" style="bottom: 15%; left: 12%; transform: rotate(45deg);"></div>
-
     <header>
-        <div class="nav-container">
+        <div class="container nav-container">
             <a href="/" class="brand">
                 <img src="nora.png" alt="Nora Logo">
                 <span>Nora Studio</span>
@@ -435,13 +776,14 @@
     </header>
 
     <main>
-        <section class="hero-section">
+        <!-- Hero Section -->
+        <section class="container hero-section">
             <div class="hero-info">
-                <div class="sub-tagline">
-                    <i class="fas fa-bolt"></i> The Ultimate Discord Support & Verification Bot
+                <div class="tagline">
+                    <i class="fas fa-bolt"></i> THE ULTIMATE DISCORD WORKSPACE & SUPPORT SYSTEM
                 </div>
-                <h1>The only workspace manager your server needs</h1>
-                <p>Streamline your Discord server support, member onboarding, automated roles management, and custom auto-responders under a single, beautiful workspace. Privacy-focused by design.</p>
+                <h1>The only Discord workspace & support manager your server will ever need</h1>
+                <p>Nora Studio simplifies your community's ticketing, autoresponders, member color roles, and logging. Trusted by communities worldwide to run fast, secure, and customizable support workflows.</p>
                 <div class="hero-buttons">
                     <a href="/install" class="btn-main btn-main-primary">Invite Nora</a>
                     <a href="/dashboard" class="btn-main btn-main-secondary">Open Dashboard <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i></a>
@@ -459,51 +801,428 @@
                             <span class="bot-name">Nora</span>
                             <span class="bot-badge">Bot</span>
                         </div>
-                        <span style="font-size: 0.75rem; color: var(--muted);">Interactive Demo</span>
+                        <span style="font-size: 0.75rem; color: var(--muted);">Live Interactive Demo</span>
                     </div>
-                    <div class="simulator-body">
-                        <div class="discord-embed">
-                            <span class="embed-title">Nora Support Ticket Hub</span>
-                            <span class="embed-description">
-                                Need help? Click the appropriate category button below to launch a secure ticket channel. Our staff team will be paged instantly.
+                    <div class="simulator-body" id="demo-body">
+                        <div class="discord-embed" id="demo-embed">
+                            <span class="embed-title" id="demo-title">Nora Support Workspace Hub</span>
+                            <span class="embed-description" id="demo-desc">
+                                Welcome to our support center! Click one of the categories below to launch a private support channel. Our server staff will be paged immediately to assist you.
                             </span>
                         </div>
-                        <div class="discord-buttons">
-                            <button class="discord-btn discord-btn-primary" onclick="alert('Demo: This spawns a private support ticket.')">General Question</button>
-                            <button class="discord-btn" onclick="alert('Demo: Submits a suggestion card.')">Suggestion</button>
-                            <button class="discord-btn" onclick="alert('Demo: Opens a bug report modal.')">Report Bug</button>
+                        <div class="discord-buttons" id="demo-buttons">
+                            <button class="discord-btn discord-btn-primary" onclick="triggerDemo('general')">General Support</button>
+                            <button class="discord-btn" onclick="triggerDemo('suggestion')">Suggestion</button>
+                            <button class="discord-btn" onclick="triggerDemo('bug')">Bug Report</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-ticket-alt"></i></div>
-                <h3>Unlimited Ticket Panels</h3>
-                <p>Deploy highly customizable ticket panels with granular staff workflows, role overrides, auto-archiving, and transcripts.</p>
+        <!-- Interactive Showcase Section -->
+        <section class="features-showcase">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Powerful Features for Discord Communities</h2>
+                    <p>Everything you need to manage support tickets, roles, and logs no matter how big your community grows.</p>
+                </div>
+
+                <div class="showcase-tabs">
+                    <div class="showcase-tab active" onclick="switchShowcase(0, this)">Ticket Creation</div>
+                    <div class="showcase-tab" onclick="switchShowcase(1, this)">Multiple Ticket Panels</div>
+                    <div class="showcase-tab" onclick="switchShowcase(2, this)">Ticket Questions</div>
+                    <div class="showcase-tab" onclick="switchShowcase(3, this)">Custom Panels</div>
+                    <div class="showcase-tab" onclick="switchShowcase(4, this)">Auto-Close Automation</div>
+                </div>
+
+                <div class="showcase-display" id="showcase-display">
+                    <div class="showcase-content">
+                        <h3 id="showcase-title">Instant Support Ticket Creation</h3>
+                        <p id="showcase-desc">Allow members to spawn private support channels instantly at the click of a button. Nora handles permissions, staff mentions, and setups automatically behind the scenes.</p>
+                    </div>
+                    <div class="showcase-visual">
+                        <div class="discord-embed" style="border-color:#5865F2;">
+                            <strong style="color:white; font-size:0.9rem;"># ticket-0042</strong>
+                            <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Ticket created by @Member. Staff will be with you shortly.</p>
+                            <div class="discord-buttons" style="margin-top:10px;">
+                                <button class="discord-btn" style="background:#ff4d4d; color:white; border:none;"><i class="fas fa-lock"></i> Close Ticket</button>
+                                <button class="discord-btn"><i class="fas fa-download"></i> Transcript</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 12-Grid Features -->
+                <div class="secondary-features-grid">
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-comment-alt"></i></div>
+                        <h4>Custom Messages</h4>
+                        <p>Personalize your ticket panels with custom text, buttons, and emojis to deliver professional, branded user experiences.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-file-alt"></i></div>
+                        <h4>Detailed Transcripts</h4>
+                        <p>Keep complete records of support channels with permanent HTML transcripts viewable directly from the workspace console.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h4>Roblox Integration</h4>
+                        <p>Automate role synchronization based on Roblox Group details, validating members securely upon arrival.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-history"></i></div>
+                        <h4>Ticket Logging</h4>
+                        <p>Track ticket creation, actions, closures, and staff claims in specified channels to ensure audit logs are complete.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-user-check"></i></div>
+                        <h4>Ticket Claim System</h4>
+                        <p>Let staff claim tickets to take ownership of requests, preventing duplicate responses and keeping support focused.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-folder-open"></i></div>
+                        <h4>Custom Categories</h4>
+                        <p>Route support tickets into dedicated categories (e.g. general inquiries, billing, appeals) to keep workflows clean.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-key"></i></div>
+                        <h4>Role-Based Access</h4>
+                        <p>Control precisely which staff and manager roles can view, claim, delete, or participate in open channels.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-language"></i></div>
+                        <h4>Multi-Language Support</h4>
+                        <p>Serve global communities with customizable messages, responses, and labels in any language your server speaks.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-copy"></i></div>
+                        <h4>Panel Templating</h4>
+                        <p>Save and replicate layout configurations to spin up new ticket desks instantly without starting from scratch.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-terminal"></i></div>
+                        <h4>Custom Autoresponders</h4>
+                        <p>Set up advanced autoresponders with admin-bypass protection, allowing the bot to guide members automatically.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-chart-line"></i></div>
+                        <h4>Live Dashboard Tickets</h4>
+                        <p>Review active tickets, read transcripts, and send announcements directly from the console desk.</p>
+                    </div>
+                    <div class="secondary-card">
+                        <div class="secondary-icon"><i class="fas fa-users-cog"></i></div>
+                        <h4>Invite Tracker Logs</h4>
+                        <p>Track who invited new arrivals, log active codes, and monitor counts to organize referral statistics.</p>
+                    </div>
+                </div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-user-shield"></i></div>
-                <h3>Roblox Verification</h3>
-                <p>Seamlessly bind server roles to Roblox group ranks, ensuring verification flows remain automated and secure.</p>
+        </section>
+
+        <!-- Pricing Plan Matrix -->
+        <section class="pricing-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Choose the Right Plan for Your Community</h2>
+                    <p>Compare Nora Studio Free and Pro tiers to find the perfect fit for your Discord server.</p>
+                </div>
+
+                <div class="pricing-table-container">
+                    <table class="pricing-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Nora Free</th>
+                                <th>Nora Pro</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Unlimited Support Tickets</td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Support Ticket Panels Limit</td>
+                                <td>5 Panels</td>
+                                <td>Unlimited Panels</td>
+                            </tr>
+                            <tr>
+                                <td>Custom Panel Embed Colors</td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Permanent HTML Transcripts</td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Role-Based Permissions</td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Ticket Claiming & Categories</td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Web dashboard Ticketing Console</td>
+                                <td><i class="fas fa-times cross-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Advanced Auto-Close Inactivity Rules</td>
+                                <td><i class="fas fa-times cross-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Panel Templating & Layout Backups</td>
+                                <td><i class="fas fa-times cross-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Premium Custom Role Color Hover Effects</td>
+                                <td><i class="fas fa-times cross-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-door-open"></i></div>
-                <h3>Invite Tracker logs</h3>
-                <p>Announce precisely which member invited joining users, which invite link was utilized, and count overall inviter stats.</p>
+        </section>
+
+        <!-- Benefits Showcase -->
+        <section class="benefits-section">
+            <div class="container">
+                <div class="benefit-row">
+                    <div class="benefit-info">
+                        <h3>Automated Ticket Management</h3>
+                        <p>Configure automatic triggers, inactivity warning timers, and smart close presets. Keep your Discord categories clean without manual moderation overhead, saving staff hours every day.</p>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="discord-embed" style="width:100%;">
+                            <span style="color:#FFE629; font-size:0.8rem; font-weight:700;"><i class="fas fa-clock"></i> INACTIVITY AUTOMATION</span>
+                            <p style="color:white; font-size:0.9rem; margin-top:8px;">This ticket has been marked inactive. It will archive in 24 hours.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="benefit-row reversed">
+                    <div class="benefit-info">
+                        <h3>Complete Ticket Transparency</h3>
+                        <p>Every ticket generates an offline transcript with log details, claim indicators, and messages. Never lose community context and maintain comprehensive auditing logs.</p>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="discord-embed" style="width:100%; border-color:#23a55a;">
+                            <span style="color:#23a55a; font-size:0.8rem; font-weight:700;"><i class="fas fa-file-invoice"></i> TRANSCRIPT GENERATED</span>
+                            <p style="color:white; font-size:0.9rem; margin-top:8px;">Ticket closed. Access transcript at <a href="#" style="color:var(--primary);">nora.studio/transcripts/42</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="benefit-row">
+                    <div class="benefit-info">
+                        <h3>Fully Customizable Experience</h3>
+                        <p>Brand every single aspect. From panel description texts, colors, custom action button emojis, and modal fields to the final offline transcript header styles.</p>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="discord-embed" style="border-color:#5865F2; width:100%;">
+                            <strong style="color:white; font-size:1rem;">Nora Premium Customization</strong>
+                            <p style="color:#B5B3AD; font-size:0.82rem; margin-top:5px;">Zero forced branding. Clean layout that feels native to your community.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-history"></i></div>
-                <h3>Granular Event Logs</h3>
-                <p>Audit channel actions, voice adjustments, message edits, and joins separately into any channel of your choosing.</p>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-card">
+                    <h2>Ready to Elevate Your Server Support?</h2>
+                    <p>Set up Nora Support Workspace in under five minutes. No credit card required.</p>
+                    <div class="hero-buttons">
+                        <a href="/install" class="btn-main btn-main-primary">Invite Nora Bot</a>
+                        <a href="/dashboard" class="btn-main btn-main-secondary">Open Console</a>
+                    </div>
+                </div>
             </div>
-        </features-grid>
+        </section>
     </main>
 
     <footer>
-        &copy; 2026 Nora Studio | Privacy-First AI & Community Workspace
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand-col">
+                    <a href="/" class="brand">
+                        <img src="nora.png" alt="Nora Logo">
+                        <span>Nora Studio</span>
+                    </a>
+                    <p>The ultimate support and workspace management solution for Discord servers. Enhance workflows and keep communities safe.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Compare</h5>
+                    <ul>
+                        <li><a href="#">vs Ticket King</a></li>
+                        <li><a href="#">vs Ticket Tool</a></li>
+                        <li><a href="#">vs Helper.gg</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Resources</h5>
+                    <ul>
+                        <li><a href="/dashboard">Dashboard</a></li>
+                        <li><a href="/install">Invite Bot</a></li>
+                        <li><a href="/team">Our Team</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Learn</h5>
+                    <ul>
+                        <li><a href="/docs">Documentation</a></li>
+                        <li><a href="/docs#panels">Ticket Panels</a></li>
+                        <li><a href="/docs#automations">Automations</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Support & Legal</h5>
+                    <ul>
+                        <li><a href="/support">Discord Support</a></li>
+                        <li><a href="/legal">Terms & Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>&copy; 2026 Nora Studio. All rights reserved.</span>
+                <span class="status-badge">
+                    <span class="status-dot"></span> All Systems Operational
+                </span>
+            </div>
+        </div>
     </footer>
+
+    <!-- Interactive Logic Script -->
+    <script>
+        // Interactive Live Demo Simulator
+        function triggerDemo(type) {
+            const embed = document.getElementById('demo-embed');
+            const title = document.getElementById('demo-title');
+            const desc = document.getElementById('demo-desc');
+            const buttons = document.getElementById('demo-buttons');
+
+            if (type === 'general') {
+                title.innerText = "Support Ticket #01 Created!";
+                desc.innerHTML = "Creating ticket in category <strong>#general-support</strong>... Please visit your private ticket channel to discuss your query.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Close Ticket</button>';
+            } else if (type === 'suggestion') {
+                title.innerText = "Suggestion Ticket #02 Created!";
+                desc.innerHTML = "Creating ticket in category <strong>#suggestions</strong>... Please detail your feature suggestion within your channel.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Close Ticket</button>';
+            } else if (type === 'bug') {
+                title.innerText = "Bug Report Ticket #03 Created!";
+                desc.innerHTML = "Creating ticket in category <strong>#bug-reports</strong>... Please detail reproduction steps in the created channel.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Close Ticket</button>';
+            }
+        }
+
+        function resetDemo() {
+            const title = document.getElementById('demo-title');
+            const desc = document.getElementById('demo-desc');
+            const buttons = document.getElementById('demo-buttons');
+
+            title.innerText = "Nora Support Workspace Hub";
+            desc.innerHTML = "Welcome to our support center! Click one of the categories below to launch a private support channel. Our server staff will be paged immediately to assist you.";
+            buttons.innerHTML = `
+                <button class="discord-btn discord-btn-primary" onclick="triggerDemo('general')">General Support</button>
+                <button class="discord-btn" onclick="triggerDemo('suggestion')">Suggestion</button>
+                <button class="discord-btn" onclick="triggerDemo('bug')">Bug Report</button>
+            `;
+        }
+
+        // Showcase switch
+        const showcaseData = [
+            {
+                title: "Instant Support Ticket Creation",
+                desc: "Allow members to spawn private support channels instantly at the click of a button. Nora handles permissions, staff mentions, and setups automatically behind the scenes.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#5865F2;">
+                        <strong style="color:white; font-size:0.9rem;"># ticket-0042</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Ticket created by @Member. Staff will be with you shortly.</p>
+                        <div class="discord-buttons" style="margin-top:10px;">
+                            <button class="discord-btn" style="background:#ff4d4d; color:white; border:none;"><i class="fas fa-lock"></i> Close Ticket</button>
+                            <button class="discord-btn"><i class="fas fa-download"></i> Transcript</button>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Multiple Support Ticket Panels",
+                desc: "Configure and deploy up to 10 distinct panel embeds with distinct routing. Group them into billing, gameplay support, moderator contact, or administrative requests.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#FFE629;">
+                        <strong style="color:white; font-size:0.9rem;">Billing Panel</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Click to open a billing issue or store inquiry ticket.</p>
+                        <div class="discord-buttons" style="margin-top:10px;">
+                            <button class="discord-btn discord-btn-primary">Open Billing Ticket</button>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Pre-Flight Ticket Questions",
+                desc: "Prompt users with custom questions (Discord modals) before their ticket opens. Automatically query usernames, transaction IDs, or reason for appeal before staff review.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#9D9D9D;">
+                        <strong style="color:white; font-size:0.9rem;">Information Modal</strong>
+                        <div style="background:#2a2a28; padding:8px; border-radius:4px; font-size:0.75rem; color:white; margin-top:8px; border:1px solid #3b3a37;">
+                            Question 1: What is your order reference?
+                        </div>
+                        <div style="background:#2a2a28; padding:8px; border-radius:4px; font-size:0.75rem; color:white; margin-top:8px; border:1px solid #3b3a37;">
+                            Question 2: Please describe your issue.
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Fully Branded Custom Panels",
+                desc: "Modify embed titles, colors, footer texts, button labels, and custom icons. Nora lets you build clean integrations that complement your server's style.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#eb459e;">
+                        <strong style="color:white; font-size:0.9rem;">🌸 Community Appeal Hub 🌸</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Submit an appeal regarding a server action here.</p>
+                        <div class="discord-buttons" style="margin-top:10px;">
+                            <button class="discord-btn" style="background:#eb459e; color:white; border:none;">Submit Appeal</button>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Automatic Closing Rules",
+                desc: "Set automatic inactivity sweep timers. Nora alerts members when tickets have been dormant, subsequently saving transcripts and archiving channels.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#ff4d4d;">
+                        <strong style="color:white; font-size:0.9rem;">⚠️ Auto-Archive Notice</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">No activity detected for 48 hours. Closing channel automatically.</p>
+                    </div>
+                `
+            }
+        ];
+
+        function switchShowcase(index, tabEl) {
+            // Remove active classes
+            const tabs = document.querySelectorAll('.showcase-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabEl.classList.add('active');
+
+            // Update content
+            const data = showcaseData[index];
+            document.getElementById('showcase-title').innerText = data.title;
+            document.getElementById('showcase-desc').innerText = data.desc;
+            document.getElementById('showcase-display').querySelector('.showcase-visual').innerHTML = data.visual;
+        }
+    </script>
 </body>
 </html>
