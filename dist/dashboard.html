@@ -49,41 +49,8 @@
             initial-value: rgba(255, 255, 255, 0.08);
         }
 
-        /* Liquid Glow Animations */
         .liquid-blob {
-            position: fixed;
-            filter: blur(80px);
-            opacity: 0.4;
-            border-radius: 50%;
-            z-index: -2;
-            pointer-events: none;
-            animation: float 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .liquid-blob-1 {
-            top: -10%; left: -10%;
-            width: 50vw; height: 50vw;
-            background: radial-gradient(circle, var(--primary), transparent 70%);
-            animation-duration: 25s;
-        }
-        .liquid-blob-2 {
-            bottom: -20%; right: -10%;
-            width: 60vw; height: 60vw;
-            background: radial-gradient(circle, var(--accent, #6c5ce7), transparent 70%);
-            animation-duration: 30s;
-            animation-delay: -5s;
-        }
-        .liquid-blob-3 {
-            top: 40%; left: 30%;
-            width: 40vw; height: 40vw;
-            background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent 60%);
-            animation-duration: 20s;
-            animation-delay: -10s;
-        }
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-            33% { transform: translate(5%, 5%) scale(1.1) rotate(10deg); }
-            66% { transform: translate(-5%, 8%) scale(0.9) rotate(-5deg); }
-            100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            display: none;
         }
 
         :root {
@@ -337,10 +304,8 @@
             color-scheme: var(--color-scheme, dark);
             background-color: var(--bg);
             background-image: 
-                radial-gradient(at 0% 0%, var(--glow-1) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, var(--glow-2) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(197, 163, 255, 0.05) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(255, 117, 181, 0.03) 0px, transparent 50%);
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
             background-size: 100% 100%;
             background-attachment: fixed;
             color: var(--text);
@@ -348,23 +313,6 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
-        }
-
-        /* Ambient Animated Mesh Overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at 50% 0%, var(--primary-glow), transparent 70%);
-            opacity: 0.5;
-            z-index: -1;
-            pointer-events: none;
-            animation: pulse-glow 10s ease-in-out infinite alternate;
-        }
-
-        @keyframes pulse-glow {
-            0% { opacity: 0.3; transform: scale(1); }
-            100% { opacity: 0.7; transform: scale(1.05); }
         }
 
         @media (min-width: 993px) {
