@@ -87,17 +87,17 @@
         }
 
         :root {
-            --bg: #080b16;
-            --sidebar-bg: #0d1020;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --card-hover: rgba(255, 255, 255, 0.06);
-            --primary: #00d4ff;
-            --primary-glow: rgba(0, 212, 255, 0.25);
-            --primary-hover: #33dfff;
-            --text: #f0f2f5;
-            --muted: #6b7a99;
-            --border: rgba(255, 255, 255, 0.06);
-            --radius-md: 14px;
+            --bg: #070706;
+            --sidebar-bg: #111110;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-hover: rgba(255, 255, 255, 0.05);
+            --primary: #FFE629;
+            --primary-glow: rgba(254, 229, 41, 0.25);
+            --primary-hover: #E6CF24;
+            --text: #EEEEEC;
+            --muted: #9D9D9D;
+            --border: #191918;
+            --radius-md: 10px;
             --radius-lg: 20px;
             --danger: #ff4757;
             --success: #2ed573;
@@ -2877,14 +2877,23 @@
 
                 <div class="config-container">
                     <div class="config-sidebar">
-                        <button class="h-tab active" data-tab="tab-overview"><i class="fas fa-chart-line"></i> Overview</button>
-                        <button class="h-tab" data-tab="tab-tickets"><i class="fas fa-ticket-alt"></i> Tickets</button>
-                        <button class="h-tab" data-tab="tab-feeds"><i class="fas fa-rss"></i> Social Alerts</button>
-                        <button class="h-tab" data-tab="tab-welcome"><i class="fas fa-door-open"></i> Welcome & Leave</button>
+                        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 10px 14px; font-weight: 700;">Main Menu</div>
+                        <button class="h-tab active" data-tab="tab-overview"><i class="fas fa-home"></i> Home</button>
+                        <button class="h-tab" data-tab="tab-tickets"><i class="fas fa-ticket-alt"></i> Panels</button>
+                        <button class="h-tab" data-tab="tab-welcome"><i class="fas fa-copy"></i> Templates</button>
+                        <button class="h-tab" data-tab="tab-logging" onclick="alert('Transcripts are loaded directly in Server Logs.')"><i class="fas fa-history"></i> Ticket History</button>
+                        <button class="h-tab" data-tab="tab-verify"><i class="fas fa-file-signature"></i> Applications</button>
                         <button class="h-tab" data-tab="tab-commands"><i class="fas fa-terminal"></i> Custom Commands</button>
-                        <button class="h-tab" data-tab="tab-safety"><i class="fas fa-cog"></i> General Settings</button>
-                        <button class="h-tab" data-tab="tab-logging"><i class="fas fa-list-alt"></i> Server Logs</button>
-                        <button class="h-tab" data-tab="tab-leveling"><i class="fas fa-arrow-up"></i> Leveling</button>
+                        <button class="h-tab" data-tab="tab-leveling"><i class="fas fa-chart-bar"></i> Statistics</button>
+                        <button class="h-tab" data-tab="tab-safety"><i class="fas fa-cog"></i> Settings</button>
+                        <button class="h-tab" data-tab="tab-automod"><i class="fas fa-user-lock"></i> Permissions</button>
+                        <button class="h-tab" data-tab="tab-logging"><i class="fas fa-file-alt"></i> Audit Logs</button>
+                        <button class="h-tab" data-tab="tab-welcome"><i class="fas fa-sliders-h"></i> Bot Personalizer</button>
+                        
+                        <div style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
+                            <button class="config-btn" style="border-color: var(--border); color: var(--muted); font-size: 0.75rem;" onclick="alert('Tutorial will restart on your next login.')"><i class="fas fa-sync-alt"></i> Restart Tutorial</button>
+                            <button class="save-btn" style="background: var(--primary); color: #0b0b0a; font-weight: 700; font-size: 0.8rem; text-align: center; justify-content: center; box-shadow: 0 0 10px var(--primary-glow);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown"></i> Get Premium</button>
+                        </div>
 
                         <!-- Compact System Pulse in Sidebar -->
                         <div class="panel" style="padding: 12px; margin-top: 15px; background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 12px; font-size: 0.8rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.15); width: 100%;">
