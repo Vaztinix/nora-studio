@@ -1091,7 +1091,138 @@
 
         footer { text-align: center; padding: 30px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: auto;}
 
-        #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; opacity: 0;}
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(13, 13, 15, 0.98) 0%, #070706 100%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .auth-card {
+            background: rgba(17, 17, 16, 0.55);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 50px 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 100px rgba(255, 255, 255, 0.01);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 5;
+            animation: auth-card-entrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes auth-card-entrance {
+            from {
+                transform: translateY(30px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .auth-logo-container {
+            position: relative;
+            margin-bottom: 25px;
+            width: 96px;
+            height: 96px;
+        }
+
+        .auth-logo-glow {
+            position: absolute;
+            inset: -8px;
+            background: #ffffff;
+            filter: blur(16px);
+            opacity: 0.12;
+            border-radius: 24px;
+            animation: auth-logo-pulse 3s infinite ease-in-out;
+        }
+
+        @keyframes auth-logo-pulse {
+            0%, 100% { opacity: 0.08; filter: blur(16px); }
+            50% { opacity: 0.18; filter: blur(22px); }
+        }
+
+        .auth-logo {
+            width: 96px;
+            height: 96px;
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #ffffff;
+            padding: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 2;
+            object-fit: contain;
+        }
+
+        .auth-features {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 20px;
+            text-align: left;
+        }
+
+        .auth-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.82rem;
+            color: #d1d1d6;
+        }
+
+        .auth-feature-item i {
+            color: var(--primary);
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        .btn-discord-login {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #ffffff;
+            color: #070706;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        .btn-discord-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(255, 255, 255, 0.15);
+            background: #eeeeee;
+        }
+
+        .btn-discord-login:active {
+            transform: translateY(0);
+        }
 
         .badge-user {
             font-size: 0.6rem;
@@ -2130,11 +2261,44 @@
     <div id="loading-overlay"><div class="pulse-dot"></div></div>
     <div id="toast-container" class="toast-tr"></div>
 
-        <div id="auth-overlay">
-        <img src="nora.png" style="width: 80px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(174,239,255,0.15);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-        <h1 style="margin-bottom: 10px; font-size: 2rem; color: white;">Login Required</h1>
-        <p style="color: var(--muted); margin-bottom: 20px;">Log in with Discord to configure your servers.</p>
-        <button id="login-btn" class="save-btn" style="background: var(--primary); margin-bottom: 15px;">Login with Discord</button>
+    <div id="auth-overlay">
+        <!-- Background decorative glows -->
+        <div style="position: absolute; width: 350px; height: 350px; background: rgba(255, 255, 255, 0.03); filter: blur(120px); border-radius: 50%; top: 20%; left: 20%; z-index: 1;"></div>
+        <div style="position: absolute; width: 300px; height: 300px; background: rgba(255, 255, 255, 0.02); filter: blur(100px); border-radius: 50%; bottom: 20%; right: 20%; z-index: 1;"></div>
+        
+        <!-- Glassmorphic Login Card -->
+        <div class="auth-card">
+            <div class="auth-logo-container">
+                <div class="auth-logo-glow"></div>
+                <img class="auth-logo" src="nora.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+            </div>
+            
+            <h1 style="margin-bottom: 8px; font-size: 2.2rem; font-weight: 800; color: #fff; letter-spacing: -0.5px;">Nora Studio</h1>
+            <h2 style="margin-bottom: 24px; font-size: 0.95rem; font-weight: 500; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase;">Command Control Deck</h2>
+            
+            <p style="color: var(--muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 30px; max-width: 320px;">
+                Authenticate with your Discord account to securely load your server configurations and management tools.
+            </p>
+            
+            <div class="auth-features">
+                <div class="auth-feature-item">
+                    <i class="fas fa-shield-alt" style="color: #fff; width: 16px;"></i>
+                    <span>Privacy-First & Secure Encryption</span>
+                </div>
+                <div class="auth-feature-item">
+                    <i class="fas fa-lock" style="color: #fff; width: 16px;"></i>
+                    <span>Zero Third-Party Telemetry Logging</span>
+                </div>
+                <div class="auth-feature-item">
+                    <i class="fas fa-check-circle" style="color: #fff; width: 16px;"></i>
+                    <span>All-in-One Operations Dashboard</span>
+                </div>
+            </div>
+            
+            <button id="login-btn" class="btn-discord-login">
+                <i class="fab fa-discord" style="font-size: 1.15rem;"></i> Login with Discord
+            </button>
+        </div>
     </div>
 
         <header class="topbar" style="background: #0a0a0b; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; height: auto;">
