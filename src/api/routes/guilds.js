@@ -655,13 +655,15 @@ router.get('/analytics', async (req, res) => {
 
 
 
-        const openTicketsCount = await TicketHistory.count({ where: { guildId, status: 'open' } }).catch(() => 0);
+        const activeTicketsCount = await ActiveTicket.count({ where: { guildId, isOpen: true } }).catch(() => 0);
 
-        const inProgressTicketsCount = await ActiveTicket.count({ where: { guildId, isOpen: true } }).catch(() => 0);
+        const openTicketsCount = activeTicketsCount;
+
+        const inProgressTicketsCount = 0;
 
         const closedTicketsCount = await TicketHistory.count({ where: { guildId, status: 'closed' } }).catch(() => 0);
 
-        const totalTicketsCount = await TicketHistory.count({ where: { guildId } }).catch(() => 0);
+        const totalTicketsCount = activeTicketsCount + closedTicketsCount;
 
         const autoModActions = await Case.count({ where: { guildId } }).catch(() => 0);
 

@@ -3023,25 +3023,14 @@
                                 <h4 style="font-weight: 700; color: white;">Recent Activity</h4>
                                 <span style="font-size: 0.75rem; color: var(--muted);">Last 7 days</span>
                             </div>
-                            <div style="height: 180px; display: flex; align-items: flex-end; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); position: relative;">
+                            <div id="recent-activity-chart-container" style="height: 180px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid var(--border); position: relative; width: 100%;">
                                 <!-- Grid Lines -->
                                 <div style="position: absolute; left: 0; right: 0; top: 25%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
                                 <div style="position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
                                 <div style="position: absolute; left: 0; right: 0; top: 75%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
-                                
-                                <!-- Empty state text -->
-                                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.8rem; font-weight: 500;">
-                                    No activity records in this period
-                                </div>
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">
-                                <span>18 Sat</span>
-                                <span>19 Sun</span>
-                                <span>20 Mon</span>
-                                <span>21 Tue</span>
-                                <span>22 Wed</span>
-                                <span>23 Thu</span>
-                                <span>24 Fri</span>
+                            <div id="recent-activity-labels-container" style="display: flex; justify-content: space-around; margin-top: 10px; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; width: 100%;">
+                                <!-- Labels will be dynamically populated -->
                             </div>
                         </div>
                     </div>
@@ -8643,6 +8632,54 @@
                                 </tr>
                             `;
                         }).join('');
+                    }
+                }
+
+                // Recent Activity Bar Chart Rendering
+                const activityContainer = document.getElementById('recent-activity-chart-container');
+                const labelsContainer = document.getElementById('recent-activity-labels-container');
+                if (activityContainer && labelsContainer) {
+                    activityContainer.innerHTML = `
+                        <div style="position: absolute; left: 0; right: 0; top: 25%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
+                        <div style="position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
+                        <div style="position: absolute; left: 0; right: 0; top: 75%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
+                    `;
+                    labelsContainer.innerHTML = '';
+
+                    const cData = data.chartData || [];
+                    const maxAct = Math.max(...cData.map(d => d.activity), 5);
+
+                    if (cData.length === 0 || cData.every(d => d.activity === 0)) {
+                        activityContainer.innerHTML += `
+                            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.8rem; font-weight: 500;">
+                                No activity records in this period
+                            </div>
+                        `;
+                        for (let i = 6; i >= 0; i--) {
+                            const d = new Date();
+                            d.setDate(d.getDate() - i);
+                            const lbl = document.createElement('span');
+                            lbl.textContent = d.toLocaleDateString(undefined, { day: 'numeric', weekday: 'short' });
+                            labelsContainer.appendChild(lbl);
+                        }
+                    } else {
+                        cData.forEach(d => {
+                            const barWrapper = document.createElement('div');
+                            barWrapper.style = 'display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 30px; z-index: 1; position: relative;';
+                            
+                            const pct = (d.activity / maxAct) * 100;
+                            const bar = document.createElement('div');
+                            bar.style = `width: 12px; height: ${Math.max(4, pct)}%; background: var(--primary); border-radius: 4px 4px 0 0; transition: height 0.3s; cursor: pointer;`;
+                            bar.title = `${d.activity} active users`;
+                            
+                            barWrapper.appendChild(bar);
+                            activityContainer.appendChild(barWrapper);
+
+                            const label = document.createElement('span');
+                            label.style = 'width: 30px; text-align: center;';
+                            label.textContent = d.date ? d.date.split(',')[0] : '';
+                            labelsContainer.appendChild(label);
+                        });
                     }
                 }
 
