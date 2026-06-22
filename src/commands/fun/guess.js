@@ -8,20 +8,25 @@ module.exports = {
         .setDescription('Play a number guessing game. Can you beat the odds?')
         .addIntegerOption(option => 
             option.setName('number')
-            .setDescription('Your guess (between 1 and 100)')
-            .setMinValue(1)
-            .setMaxValue(100)
+            .setDescription('Your guess')
             .setRequired(true)
         )
         .setContexts(0, 1, 2)
         .setIntegrationTypes(0, 1),
     
-    async execute(interaction) {
+    async execute(interaction, settings) {
         const { checkAndAwardEgg } = require('../../utils/easterEggSystem');
         checkAndAwardEgg(interaction, 4);
 
         const userGuess = interaction.options.getInteger('number');
-        const targetNumber = Math.floor(Math.random() * 100) + 1;
+        const min = (settings && settings.guessGameMin !== undefined) ? settings.guessGameMin : 1;
+        const max = (settings && settings.guessGameMax !== undefined) ? settings.guessGameMax : 100;
+
+        if (userGuess < min || userGuess > max) {
+            return handleError(interaction, 'Out of Bounds', `Your guess of **${userGuess}** is outside the allowed range for this server. Please guess a number between **${min}** and **${max}**.`);
+        }
+
+        const targetNumber = Math.floor(Math.random() * (max - min + 1)) + min;
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: 'Nora Mini-Game', iconURL: interaction.client.user.displayAvatarURL() })

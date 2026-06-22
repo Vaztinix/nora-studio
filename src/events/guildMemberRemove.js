@@ -51,7 +51,7 @@ module.exports = {
             // 2. Logging Module (Audit Logs)
             if (settings.logMemberLeaves) {
                 const loggerUtil = require('../utils/logger');
-                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
+                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberLeaves');
                 if (logChannelId) {
                     let logChannel = member.guild.channels.cache.get(logChannelId);
                     if (!logChannel) logChannel = await member.guild.channels.fetch(logChannelId).catch(() => null);

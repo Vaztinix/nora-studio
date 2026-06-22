@@ -19,6 +19,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    welcomeRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     moderationEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -132,6 +136,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
     ticketCategoryId: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    ticketAutoArchive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    ticketLastNumber: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     },
     // ---- AutoMod Integration ----
     automodProfanity: {
@@ -342,7 +354,7 @@ const GuildSettings = sequelize.define('GuildSettings', {
     },
     topggVoteEmbedColor: {
         type: DataTypes.STRING,
-        defaultValue: '#aeefff'
+        defaultValue: '#ffffff'
     },
     topggRewardRoleId: {
         type: DataTypes.STRING,
@@ -425,6 +437,22 @@ const GuildSettings = sequelize.define('GuildSettings', {
     rpsGameXpReward: {
         type: DataTypes.INTEGER,
         defaultValue: 25
+    },
+    guessGameMin: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1
+    },
+    guessGameMax: {
+        type: DataTypes.INTEGER,
+        defaultValue: 100
+    },
+    rpsMinBet: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    rpsMaxBet: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10000
     },
     // ---- Language ----
     language: {

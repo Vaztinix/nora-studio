@@ -63,7 +63,12 @@ async function syncDB() {
             { name: 'themePrimaryColor', type: 'VARCHAR(50) DEFAULT "#4F46E5"' },
             { name: 'themeComponentRounding', type: 'VARCHAR(50) DEFAULT "8px"' },
             { name: 'themeSidebarState', type: 'VARCHAR(50) DEFAULT "Locked"' },
-            { name: 'themeBackgroundImage', type: 'TEXT DEFAULT NULL' }
+            { name: 'themeBackgroundImage', type: 'TEXT DEFAULT NULL' },
+            { name: 'welcomeRoleId', type: 'VARCHAR(255) DEFAULT NULL' },
+            { name: 'guessGameMin', type: 'INTEGER DEFAULT 1' },
+            { name: 'guessGameMax', type: 'INTEGER DEFAULT 100' },
+            { name: 'rpsMinBet', type: 'INTEGER DEFAULT 0' },
+            { name: 'rpsMaxBet', type: 'INTEGER DEFAULT 10000' }
         ];
 
         for (const col of newGuildSettingsColumns) {
@@ -83,7 +88,11 @@ async function syncDB() {
             { name: 'sessionGenerationMarker', type: 'TEXT DEFAULT NULL' },
             { name: 'auxiliaryRobloxHandles', type: 'TEXT DEFAULT "[]"' },
             { name: 'isTerminated', type: 'TINYINT(1) DEFAULT 0' },
-            { name: 'terminationReason', type: 'TEXT DEFAULT NULL' }
+            { name: 'terminationReason', type: 'TEXT DEFAULT NULL' },
+            { name: 'dmNotificationsEnabled', type: 'TINYINT(1) DEFAULT 0' },
+            { name: 'dmNotifLevels', type: 'TINYINT(1) DEFAULT 0' },
+            { name: 'dmNotifModeration', type: 'TINYINT(1) DEFAULT 0' },
+            { name: 'dmNotifBroadcasts', type: 'TINYINT(1) DEFAULT 0' }
         ];
 
         for (const col of newUserPrefsColumns) {

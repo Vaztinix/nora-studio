@@ -124,6 +124,16 @@ module.exports = {
             }
         }, 300000);
 
+        // Ticket Auto-Archive Scheduler: runs every 15 minutes (900000 ms)
+        setInterval(async () => {
+            try {
+                const ticketsEngine = require('../bot/engines/tickets');
+                await ticketsEngine.autoArchiveTickets(client);
+            } catch (err) {
+                console.error('[Ticket Auto-Archive Scheduler Error]:', err);
+            }
+        }, 900000);
+
         console.log(`[System Check] Keeping an eye on things! Heartbeat active.`);
     },
 };

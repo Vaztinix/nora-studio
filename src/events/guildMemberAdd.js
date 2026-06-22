@@ -196,7 +196,7 @@ module.exports = {
                         }
                         
                         const loggerUtil = require('../utils/logger');
-                        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
+                        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberJoins');
                         if (logChannelId) {
                             const logChannel = member.guild.channels.cache.get(logChannelId) ||
                                                await member.guild.channels.fetch(logChannelId).catch(() => null);
@@ -222,7 +222,7 @@ module.exports = {
             // 2. --- Join Logging (Audit Logs) ---
             if (settings.logMemberJoins) {
                 const loggerUtil = require('../utils/logger');
-                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
+                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberJoins');
                 if (logChannelId) {
                     let logChannel = member.guild.channels.cache.get(logChannelId);
                     if (!logChannel) logChannel = await member.guild.channels.fetch(logChannelId).catch(() => null);
@@ -240,6 +240,16 @@ module.exports = {
                             .setTimestamp();
                         await logChannel.send({ embeds: [logEmbed] }).catch(() => { });
                     }
+                }
+            }
+
+            // 2.5. --- Add Welcome Role on Join ---
+            if (settings.welcomeRoleId) {
+                const role = member.guild.roles.cache.get(settings.welcomeRoleId);
+                if (role) {
+                    await member.roles.add(role, 'Nora: Welcome Role assigned on join').catch(err => {
+                        console.error(`[Welcome Role] Failed to assign role ${role.name} for ${member.user.tag}:`, err.message);
+                    });
                 }
             }
 

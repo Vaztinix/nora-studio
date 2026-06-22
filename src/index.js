@@ -242,10 +242,43 @@ sequelize.sync().then(async () => {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `reactionRoleNotifyDm` TINYINT(1) DEFAULT 1;");
     } catch (e) {}
     try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `welcomeRoleId` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketLastNumber` INTEGER DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessGameMin` INTEGER DEFAULT 1;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessGameMax` INTEGER DEFAULT 100;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `rpsMinBet` INTEGER DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `rpsMaxBet` INTEGER DEFAULT 10000;");
+    } catch (e) {}
+    try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `isTerminated` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `terminationReason` TEXT DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotificationsEnabled` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifLevels` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifModeration` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifBroadcasts` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
 
     // 🛡️ Nora System Persistence (System Backup) - V17.2
@@ -1165,10 +1198,14 @@ app.post('/api/user/profile', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
         
-        const { robloxPublic, profilePublic, bio, language, dashboardSettings } = req.body;
+        const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts } = req.body;
         if (robloxPublic !== undefined) prefs.robloxPublic = robloxPublic;
         if (profilePublic !== undefined) prefs.profilePublic = profilePublic;
         if (bio !== undefined) prefs.bio = bio;
+        if (dmNotificationsEnabled !== undefined) prefs.dmNotificationsEnabled = dmNotificationsEnabled;
+        if (dmNotifLevels !== undefined) prefs.dmNotifLevels = dmNotifLevels;
+        if (dmNotifModeration !== undefined) prefs.dmNotifModeration = dmNotifModeration;
+        if (dmNotifBroadcasts !== undefined) prefs.dmNotifBroadcasts = dmNotifBroadcasts;
         if (language !== undefined) {
             prefs.language = language;
             prefs.customTheme = language;

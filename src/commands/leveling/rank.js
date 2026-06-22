@@ -30,34 +30,43 @@ module.exports = {
             where: { userId: target.id, guildId: interaction.guild.id }
         });
 
-        if (!userLevel) {
-            return handleError(interaction, 'No Rank Data', `**${target.username}** has not earned any XP in this server yet.`);
-        }
-
-        const currentLevel = userLevel.level || 0;
-        const totalXpRaw = userLevel.totalXp || 0;
-
-        // 🧠 Cumulative Progress Unit
-        const { getTotalXPForLevel } = require('../../utils/noraLeveling');
-        const xpFloorForCurrentLevel = getTotalXPForLevel(currentLevel);
-        const xpGoalForNextLevel = getTotalXPForLevel(currentLevel + 1);
-
-        const xpProgressInLevel = totalXpRaw - xpFloorForCurrentLevel;
-        const xpStepForLevelIncrement = xpGoalForNextLevel - xpFloorForCurrentLevel;
-
-        const progressPercentage = Math.min(100, Math.max(0, (xpProgressInLevel / xpStepForLevelIncrement) * 100));
-
-        // Get actual rank position (by totalXp)
         const guildUsers = await UserLevel.findAll({
             where: { guildId: interaction.guild.id },
             order: [['totalXp', 'DESC']]
         });
-        const rankIndex = guildUsers.findIndex(u => u.userId === target.id) + 1;
+
+        let currentLevel = 0;
+        let totalXpRaw = 0;
+        let xpProgressInLevel = 0;
+        let xpStepForLevelIncrement = 100;
+        let progressPercentage = 0;
+        let rankIndex = guildUsers.length + 1;
         const totalUsers = guildUsers.length;
+        const hasNoXp = !userLevel;
+
+        const { getTotalXPForLevel } = require('../../utils/noraLeveling');
+
+        if (userLevel) {
+            currentLevel = userLevel.level || 0;
+            totalXpRaw = userLevel.totalXp || 0;
+            const xpFloorForCurrentLevel = getTotalXPForLevel(currentLevel);
+            const xpGoalForNextLevel = getTotalXPForLevel(currentLevel + 1);
+
+            xpProgressInLevel = totalXpRaw - xpFloorForCurrentLevel;
+            xpStepForLevelIncrement = xpGoalForNextLevel - xpFloorForCurrentLevel;
+            progressPercentage = Math.min(100, Math.max(0, (xpProgressInLevel / xpStepForLevelIncrement) * 100));
+            rankIndex = guildUsers.findIndex(u => u.userId === target.id) + 1;
+        } else {
+            try {
+                xpStepForLevelIncrement = getTotalXPForLevel(1);
+            } catch (e) {
+                xpStepForLevelIncrement = 100;
+            }
+        }
 
         const { isPremium } = require('../../utils/premiumManager');
         const viewerIsPremium = isPremium(interaction);
-        const targetIsPremium = userLevel.isPremium || (target.id === interaction.user.id && viewerIsPremium);
+        const targetIsPremium = (userLevel && userLevel.isPremium) || (target.id === interaction.user.id && viewerIsPremium);
         
         // 🚀 Promoter Awareness
         const settings = await GuildSettings.findOne({ where: { guildId: interaction.guild.id } });
@@ -79,8 +88,8 @@ module.exports = {
                 .addFields(
                     { name: 'Rank', value: `**#${rankIndex}** / ${totalUsers}`, inline: true },
                     { name: 'Level', value: `**${currentLevel}**`, inline: true },
-                    { name: 'Lifetime XP', value: `**${userLevel.totalXp.toLocaleString()}**`, inline: true },
-                    { name: 'Last Message', value: userLevel.lastMessageTimestamp ? `<t:${Math.floor(new Date(userLevel.lastMessageTimestamp).getTime() / 1000)}:R>` : 'Never', inline: true },
+                    { name: 'Lifetime XP', value: `**${totalXpRaw.toLocaleString()}**`, inline: true },
+                    { name: 'Last Message', value: (userLevel && userLevel.lastMessageTimestamp) ? `<t:${Math.floor(new Date(userLevel.lastMessageTimestamp).getTime() / 1000)}:R>` : 'Never', inline: true },
                     { name: 'Progression Path', value: `\`${progressBar}\` (${Math.floor(progressPercentage)}%)\n*${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()} XP in Level*`, inline: false }
                 );
 
@@ -91,7 +100,10 @@ module.exports = {
             embed.setFooter({ text: `Server Rank | ${interaction.guild.name}`, iconURL: interaction.guild.iconURL() })
                 .setTimestamp();
 
-            return interaction.reply({ embeds: [embed] });
+            return interaction.reply({ 
+                content: hasNoXp ? `👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:` : null,
+                embeds: [embed] 
+            });
         }
 
         // Defer reply as generating rank card might take a bit due to asset fetching and processing
@@ -110,11 +122,16 @@ module.exports = {
             });
 
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'rank-card.png' });
-            await interaction.editReply({ files: [attachment] });
+            await interaction.editReply({ 
+                content: hasNoXp ? `👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:` : null,
+                files: [attachment] 
+            });
         } catch (err) {
             console.error('Error generating rank card:', err);
             // Fallback: send simple text reply if generation fails
-            await interaction.editReply({ content: `**${target.username}** | Level **${currentLevel}** | Rank **#${rankIndex}** | XP **${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()}**` });
+            await interaction.editReply({ 
+                content: `👋 **${target.username}** | Level **${currentLevel}** | Rank **#${rankIndex}** | XP **${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()}** (No XP earned yet)` 
+            });
         }
     },
 };

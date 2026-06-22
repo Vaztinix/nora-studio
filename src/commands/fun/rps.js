@@ -18,9 +18,9 @@ module.exports = {
         )
         .addIntegerOption(option =>
             option.setName('bet')
-            .setDescription('Amount of XP to bet (optional, min 100 XP, max 3,500 XP)')
-            .setMinValue(100)
-            .setMaxValue(3500)
+            .setDescription('Amount of XP to bet (optional, bet rules defined per-server)')
+            .setMinValue(0)
+            .setMaxValue(10000)
             .setRequired(false)
         )
         .setContexts(0, 1, 2)
@@ -37,6 +37,15 @@ module.exports = {
         // Verify if feature is enabled in guild
         if (interaction.guildId && settings && settings.rpsGameEnabled === false) {
             return handleError(interaction, I18n.t(lang, 'feature_disabled'), 'The Rock, Paper, Scissors game is currently disabled on this server.');
+        }
+
+        // Validate bet limits per server
+        if (bet > 0) {
+            const minBet = (settings && settings.rpsMinBet !== undefined) ? settings.rpsMinBet : 0;
+            const maxBet = (settings && settings.rpsMaxBet !== undefined) ? settings.rpsMaxBet : 10000;
+            if (bet < minBet || bet > maxBet) {
+                return handleError(interaction, 'Invalid Bet', `Your bet of **${bet} XP** is outside the allowed range for this server. Bets must be between **${minBet} XP** and **${maxBet} XP**.`);
+            }
         }
 
         // Fetch server game rewards config
@@ -99,7 +108,7 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: I18n.t(lang, 'rps_title'), iconURL: interaction.client.user.displayAvatarURL() })
-            .setColor('#aeefff')
+            .setColor('#ffffff')
             .setTimestamp();
 
         const row = new ActionRowBuilder().addComponents(

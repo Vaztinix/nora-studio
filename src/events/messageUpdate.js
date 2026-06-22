@@ -15,7 +15,7 @@ module.exports = {
             // console.log(`[Logger DEBUG] MsgUpdate event in ${oldMessage.guild.name}. ChannelSet: ${!!settings?.loggingChannelId}, Toggle: ${settings?.logMessageEdits}`);
             if (!settings || !settings.logMessageEdits) return;
             const loggerUtil = require('../utils/logger');
-            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'messageLogs');
+            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'messageEdits');
             if (!logChannelId) return;
 
             let logChannel = oldMessage.guild.channels.cache.get(logChannelId);

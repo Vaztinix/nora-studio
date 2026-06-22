@@ -3,24 +3,11 @@ const ActiveTicket = require('../../database/models/ActiveTicket');
 const TicketHistory = require('../../database/models/TicketHistory');
 
 /**
- * Handles the ticket close button interaction.
+ * Common core logic to close a ticket, compile transcript, send logs, and delete channel.
  */
-async function handleTicketClose(interaction, settings) {
-    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
-    if (!ticket) return interaction.reply({ content: 'Could not resolve this ticket in database.', ephemeral: true });
-    
-    const isCreator = interaction.user.id === ticket.ownerId;
-    const isSupport = settings.ticketSupportRoleId && interaction.member?.roles.cache.has(settings.ticketSupportRoleId);
-    const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.ManageChannels) || interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
-
-    if (!isCreator && !isSupport && !isAdmin) {
-        return interaction.reply({ content: '⛔ Only the ticket creator or Support staff can close this ticket.', ephemeral: true });
-    }
-
-    await interaction.reply({ content: '🔒 Close request acknowledged. Compiling transcript and closing...', ephemeral: true });
-
+async function closeTicket(channel, ticket, settings, closedByUserId, closedByTag, client) {
     // Fetch and compile transcript
-    const messages = await interaction.channel.messages.fetch({ limit: 100 }).catch(() => []);
+    const messages = await channel.messages.fetch({ limit: 100 }).catch(() => []);
     const sortedMessages = [...messages.values()].reverse();
 
     let intakeText = '';
@@ -37,11 +24,11 @@ async function handleTicketClose(interaction, settings) {
         intakeText = '*No intake data captured.*';
     }
 
-    let transcriptText = `# 🎫 Support Ticket Transcript: #${interaction.channel.name}\n\n`;
+    let transcriptText = `# 🎫 Support Ticket Transcript: #${channel.name}\n\n`;
     transcriptText += `## 📌 Ticket Metadata\n`;
-    transcriptText += `- **Guild:** ${interaction.guild.name} (${interaction.guildId})\n`;
+    transcriptText += `- **Guild:** ${channel.guild.name} (${channel.guild.id})\n`;
     transcriptText += `- **Ticket Owner:** <@${ticket.ownerId}> (${ticket.ownerId})\n`;
-    transcriptText += `- **Closed By:** ${interaction.user.tag} (${interaction.user.id})\n`;
+    transcriptText += `- **Closed By:** ${closedByTag} (${closedByUserId})\n`;
     transcriptText += `- **Closed At:** ${new Date().toISOString()}\n\n`;
     transcriptText += `## 📋 Intake Form Responses\n${intakeText}\n\n`;
     transcriptText += `## 💬 Chat Logs\n`;
@@ -55,14 +42,14 @@ async function handleTicketClose(interaction, settings) {
 
     const { AttachmentBuilder } = require('discord.js');
     const transcriptBuffer = Buffer.from(transcriptText, 'utf-8');
-    const transcriptFile = new AttachmentBuilder(transcriptBuffer, { name: `transcript-${interaction.channel.name}.md` });
+    const transcriptFile = new AttachmentBuilder(transcriptBuffer, { name: `transcript-${channel.name}.md` });
 
     // DM Owner
-    const owner = await interaction.client.users.fetch(ticket.ownerId).catch(() => null);
+    const owner = await client.users.fetch(ticket.ownerId).catch(() => null);
     if (owner) {
         try {
             await owner.send({
-                content: `👋 Hi! Your support ticket in **${interaction.guild.name}** has been closed. Attached is your transcript logs file.`,
+                content: `👋 Hi! Your support ticket in **${channel.guild.name}** has been closed. Attached is your transcript logs file.`,
                 files: [transcriptFile]
             });
         } catch (e) {
@@ -72,12 +59,12 @@ async function handleTicketClose(interaction, settings) {
 
     // Send to Server Logging Channel
     if (settings.loggingChannelId) {
-        const logChannel = interaction.guild.channels.cache.get(settings.loggingChannelId)
-            || await interaction.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+        const logChannel = channel.guild.channels.cache.get(settings.loggingChannelId)
+            || await channel.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
         if (logChannel) {
             const embed = new EmbedBuilder()
                 .setTitle('🎫 Ticket Closed & Transcribed')
-                .setDescription(`**Owner:** <@${ticket.ownerId}> (${ticket.ownerId})\n**Closed By:** <@${interaction.user.id}>\n**Channel:** ${interaction.channel.name}`)
+                .setDescription(`**Owner:** <@${ticket.ownerId}> (${ticket.ownerId})\n**Closed By:** <@${closedByUserId}>\n**Channel:** ${channel.name}`)
                 .setColor(0x8b90a5)
                 .setTimestamp();
             await logChannel.send({ embeds: [embed], files: [transcriptFile] }).catch(() => {});
@@ -87,13 +74,13 @@ async function handleTicketClose(interaction, settings) {
     // Update TicketHistory record to resolved/closed
     try {
         const historyRecord = await TicketHistory.findOne({
-            where: { guildId: interaction.guildId, channelId: interaction.channelId }
+            where: { guildId: channel.guild.id, channelId: channel.id }
         });
         if (historyRecord) {
             await historyRecord.update({
                 status: 'closed',
                 resolveTime: new Date(),
-                closedById: interaction.user.id
+                closedById: closedByUserId
             });
         }
     } catch (err) {
@@ -102,8 +89,28 @@ async function handleTicketClose(interaction, settings) {
 
     await ticket.destroy();
     setTimeout(async () => {
-        await interaction.channel.delete().catch(() => {});
+        await channel.delete().catch(() => {});
     }, 3000);
+}
+
+/**
+ * Handles the ticket close button interaction.
+ */
+async function handleTicketClose(interaction, settings) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) return interaction.reply({ content: 'Could not resolve this ticket in database.', ephemeral: true });
+    
+    const isCreator = interaction.user.id === ticket.ownerId;
+    const isSupport = settings.ticketSupportRoleId && interaction.member?.roles.cache.has(settings.ticketSupportRoleId);
+    const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.ManageChannels) || interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
+
+    if (!isCreator && !isSupport && !isAdmin) {
+        return interaction.reply({ content: '⛔ Only the ticket creator or Support staff can close this ticket.', ephemeral: true });
+    }
+
+    await interaction.reply({ content: '🔒 Close request acknowledged. Compiling transcript and closing...', ephemeral: true });
+
+    await closeTicket(interaction.channel, ticket, settings, interaction.user.id, interaction.user.tag, interaction.client);
 }
 
 /**
@@ -167,7 +174,15 @@ async function handleTicketSubmit(interaction, settings) {
     await interaction.deferReply({ ephemeral: true });
 
     try {
-        const safeName = `ticket-${interaction.user.username}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+        // Sequential Padded Ticket Numbering
+        let ticketNum = (settings.ticketLastNumber || 0) + 1;
+        await settings.update({ ticketLastNumber: ticketNum });
+
+        const settingsCache = require('../../utils/settingsCache');
+        settingsCache.invalidate(interaction.guildId);
+
+        const paddedNumber = String(ticketNum).padStart(4, '0');
+        const safeName = `ticket-${paddedNumber}`;
 
         // Gather modal inputs
         const capturedIntake = {};
@@ -244,7 +259,7 @@ async function handleTicketSubmit(interaction, settings) {
         const embed = new EmbedBuilder()
             .setTitle(`🎫 Support Ticket: ${ticketType}`)
             .setDescription(`Thank you for reaching out. A support ticket has been opened. Please wait for Support staff to assist you.`)
-            .setColor(0x4F46E5)
+            .setColor(0xffffff) // Pure white theme for Nora Studio
             .setTimestamp();
 
         Object.entries(capturedIntake).forEach(([label, val]) => {
@@ -271,8 +286,51 @@ async function handleTicketSubmit(interaction, settings) {
     }
 }
 
+/**
+ * Automatically archives inactive tickets.
+ */
+async function autoArchiveTickets(client) {
+    try {
+        const activeTickets = await ActiveTicket.findAll({ where: { isOpen: true } });
+        const settingsCache = require('../../utils/settingsCache');
+
+        for (const ticket of activeTickets) {
+            try {
+                const guild = client.guilds.cache.get(ticket.guildId) || await client.guilds.fetch(ticket.guildId).catch(() => null);
+                if (!guild) continue;
+
+                const channel = guild.channels.cache.get(ticket.channelId) || await guild.channels.fetch(ticket.channelId).catch(() => null);
+                if (!channel) {
+                    await ticket.destroy().catch(() => {});
+                    continue;
+                }
+
+                const settings = await settingsCache.get(ticket.guildId);
+                if (!settings || !settings.ticketAutoArchive) continue;
+
+                const messages = await channel.messages.fetch({ limit: 1 }).catch(() => null);
+                const lastMsg = messages ? messages.first() : null;
+                const lastActive = lastMsg ? lastMsg.createdAt : channel.createdAt;
+                const msSinceActive = Date.now() - lastActive.getTime();
+                const inactiveLimit = 24 * 60 * 60 * 1000; // 24 hours
+
+                if (msSinceActive >= inactiveLimit) {
+                    console.log(`[Auto-Archive] Closing inactive ticket channel: ${channel.name} in guild: ${guild.name}`);
+                    await channel.send('🔒 This ticket has been inactive for 24 hours and is being auto-archived. Compiling transcript...').catch(() => {});
+                    await closeTicket(channel, ticket, settings, client.user.id, `${client.user.username} (Auto-Archive)`, client);
+                }
+            } catch (err) {
+                console.error(`[Auto-Archive] Error processing ticket ${ticket.id}:`, err);
+            }
+        }
+    } catch (err) {
+        console.error('[Auto-Archive] Fatal error in sweeper:', err);
+    }
+}
+
 module.exports = {
     handleTicketClose,
     handleTicketButton,
-    handleTicketSubmit
+    handleTicketSubmit,
+    autoArchiveTickets
 };

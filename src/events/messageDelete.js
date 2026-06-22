@@ -18,7 +18,7 @@ module.exports = {
             // console.log(`[Logger DEBUG] MsgDelete event in ${message.guild.name}. ChannelSet: ${!!settings?.loggingChannelId}, Toggle: ${settings?.logMessageDeletes}`);
             if (!settings || !settings.logMessageDeletes) return;
             const loggerUtil = require('../utils/logger');
-            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'messageLogs');
+            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'messageDeletes');
             if (!logChannelId) return;
 
             let logChannel = message.guild.channels.cache.get(logChannelId);
