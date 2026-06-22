@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora | Premium Discord Support & Community Workspace Bot</title>
-    <meta name="description" content="Simplify your Discord server's support system with Nora - the most powerful custom workspace and ticket bot. Manage support tickets efficiently with customizable panels and detailed analytics.">
+    <title>Nora Studio | Privacy-First, All-in-One Discord Automation Bot</title>
+    <meta name="description" content="Nora Studio is a privacy-first, all-in-one Discord bot designed to keep your server secure, automated, and running smoothly. From robust Roblox integrations and leveling systems to secure verification and custom autoresponders, Nora handles all your server tasks while keeping your community's data safe and private.">
     <link rel="icon" type="image/png" href="nora.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -780,10 +780,10 @@
         <section class="container hero-section">
             <div class="hero-info">
                 <div class="tagline">
-                    <i class="fas fa-bolt"></i> THE ULTIMATE DISCORD OPERATIONS, AUTOMATION, & SUPPORT HUB
+                    <i class="fas fa-shield-alt"></i> THE PRIVACY-FIRST, ALL-IN-ONE DISCORD OPERATIONS & AUTOMATION HUB
                 </div>
-                <h1>The ultimate operations and automation workspace for Discord</h1>
-                <p>Nora Studio goes beyond support ticketing. It is a comprehensive community command deck coordinating Roblox integrations, leveling systems, automated content moderation, granular audit logging, and custom autoresponders under one unified dashboard.</p>
+                <h1>The ultimate privacy-first and all-in-one workspace for Discord</h1>
+                <p>Nora Studio is a privacy-first, all-in-one Discord bot designed to keep your server secure, automated, and running smoothly. From robust Roblox integrations and leveling systems to secure verification and custom autoresponders, Nora handles all your server tasks while keeping your community's data safe and private.</p>
                 <div class="hero-buttons">
                     <a href="/install" class="btn-main btn-main-primary">Invite Nora</a>
                     <a href="/dashboard" class="btn-main btn-main-secondary">Open Dashboard <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i></a>
@@ -805,15 +805,15 @@
                     </div>
                     <div class="simulator-body" id="demo-body">
                         <div class="discord-embed" id="demo-embed">
-                            <span class="embed-title" id="demo-title">Nora Support Workspace Hub</span>
+                            <span class="embed-title" id="demo-title">Nora Privacy-First Guard</span>
                             <span class="embed-description" id="demo-desc">
-                                Welcome to our support center! Click one of the categories below to launch a private support channel. Our server staff will be paged immediately to assist you.
+                                Protect your server with Nora. We use local database storage, zero third-party data tracking, and end-to-end telemetry controls to ensure your guild records, verification states, and moderator actions remain completely secure and private.
                             </span>
                         </div>
                         <div class="discord-buttons" id="demo-buttons">
-                            <button class="discord-btn discord-btn-primary" onclick="triggerDemo('general')">General Support</button>
-                            <button class="discord-btn" onclick="triggerDemo('suggestion')">Suggestion</button>
-                            <button class="discord-btn" onclick="triggerDemo('bug')">Bug Report</button>
+                            <button class="discord-btn discord-btn-primary" onclick="triggerDemo('security')">Security Shield</button>
+                            <button class="discord-btn" onclick="triggerDemo('privacy')">Privacy Status</button>
+                            <button class="discord-btn" onclick="triggerDemo('moderation')">All-in-One Dashboard</button>
                         </div>
                     </div>
                 </div>
@@ -1051,8 +1051,8 @@
         <section class="cta-section">
             <div class="container">
                 <div class="cta-card">
-                    <h2>Ready to Elevate Your Server Support?</h2>
-                    <p>Set up Nora Support Workspace in under five minutes. No credit card required.</p>
+                    <h2>Ready to Elevate Your Server Operations?</h2>
+                    <p>Set up Nora Studio in under five minutes. Privacy-first, zero configurations required.</p>
                     <div class="hero-buttons">
                         <a href="/install" class="btn-main btn-main-primary">Invite Nora Bot</a>
                         <a href="/dashboard" class="btn-main btn-main-secondary">Open Console</a>
@@ -1070,7 +1070,7 @@
                         <img src="nora.png" alt="Nora Logo">
                         <span>Nora Studio</span>
                     </a>
-                    <p>The ultimate operations, automation, and support solution for Discord servers. Enhance workflows and keep communities safe.</p>
+                    <p>The ultimate privacy-first, all-in-one operations and automation solution for Discord servers. Enhance workflows, enforce security, and keep communities safe.</p>
                 </div>
                 <div class="footer-col">
                     <h5>Resources</h5>
@@ -1115,18 +1115,18 @@
             const desc = document.getElementById('demo-desc');
             const buttons = document.getElementById('demo-buttons');
 
-            if (type === 'general') {
-                title.innerText = "Support Ticket #01 Created!";
-                desc.innerHTML = "Creating ticket in category <strong>#general-support</strong>... Please visit your private ticket channel to discuss your query.";
-                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Close Ticket</button>';
-            } else if (type === 'suggestion') {
-                title.innerText = "Suggestion Ticket #02 Created!";
-                desc.innerHTML = "Creating ticket in category <strong>#suggestions</strong>... Please detail your feature suggestion within your channel.";
-                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Close Ticket</button>';
-            } else if (type === 'bug') {
-                title.innerText = "Bug Report Ticket #03 Created!";
-                desc.innerHTML = "Creating ticket in category <strong>#bug-reports</strong>... Please detail reproduction steps in the created channel.";
-                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Close Ticket</button>';
+            if (type === 'security') {
+                title.innerText = "Nora Security Shield Active";
+                desc.innerHTML = "Anti-Raid, Profile Picture checks, and Account Age verification gates are actively protecting your server. Intrusion attempts blocked: <strong>0</strong>.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
+            } else if (type === 'privacy') {
+                title.innerText = "Nora Privacy Status: Secure";
+                desc.innerHTML = "Telemetry data: <strong>Disabled</strong>. Database storage: <strong>Encrypted</strong>. Third-party data selling: <strong>Zero</strong>. Your community's privacy is fully guaranteed.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
+            } else if (type === 'moderation') {
+                title.innerText = "All-in-One Task Management";
+                desc.innerHTML = "Managing leveling systems, Roblox verification, autoresponders, tickets, and custom commands. All features run locally on the Nora node.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
             }
         }
 
@@ -1135,12 +1135,12 @@
             const desc = document.getElementById('demo-desc');
             const buttons = document.getElementById('demo-buttons');
 
-            title.innerText = "Nora Support Workspace Hub";
-            desc.innerHTML = "Welcome to our support center! Click one of the categories below to launch a private support channel. Our server staff will be paged immediately to assist you.";
+            title.innerText = "Nora Privacy-First Guard";
+            desc.innerHTML = "Protect your server with Nora. We use local database storage, zero third-party data tracking, and end-to-end telemetry controls to ensure your guild records, verification states, and moderator actions remain completely secure and private.";
             buttons.innerHTML = `
-                <button class="discord-btn discord-btn-primary" onclick="triggerDemo('general')">General Support</button>
-                <button class="discord-btn" onclick="triggerDemo('suggestion')">Suggestion</button>
-                <button class="discord-btn" onclick="triggerDemo('bug')">Bug Report</button>
+                <button class="discord-btn discord-btn-primary" onclick="triggerDemo('security')">Security Shield</button>
+                <button class="discord-btn" onclick="triggerDemo('privacy')">Privacy Status</button>
+                <button class="discord-btn" onclick="triggerDemo('moderation')">All-in-One Dashboard</button>
             `;
         }
 
