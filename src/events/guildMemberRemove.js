@@ -10,6 +10,24 @@ module.exports = {
             // console.log(`[Logger DEBUG] MemberLeave event in ${member.guild.name}. LogChannelSet: ${!!settings?.loggingChannelId}, Toggle: ${settings?.logMemberLeaves}, WelcomeChannelSet: ${!!settings?.welcomeChannelId}, Toggle: ${settings?.welcomerEnabled}`);
             if (!settings) return;
 
+            // ─── Role Recovery save logic ───
+            try {
+                const MemberRolesHistory = require('../database/models/MemberRolesHistory');
+                const roleIds = member.roles.cache
+                    .filter(role => role.id !== member.guild.id)
+                    .map(role => role.id);
+                
+                if (roleIds.length > 0) {
+                    await MemberRolesHistory.upsert({
+                        userId: member.id,
+                        guildId: member.guild.id,
+                        roles: JSON.stringify(roleIds)
+                    });
+                }
+            } catch (roleSaveErr) {
+                console.error('[Role Recovery Error] Failed to save roles on leave:', roleSaveErr.message);
+            }
+
             // 1. Leave Announcement (Welcomer Module)
             if (settings.welcomerEnabled && settings.welcomeChannelId) {
                 let welcomeChannel = member.guild.channels.cache.get(settings.welcomeChannelId);
@@ -31,22 +49,26 @@ module.exports = {
             }
 
             // 2. Logging Module (Audit Logs)
-            if (settings.loggingChannelId && settings.logMemberLeaves) {
-                let logChannel = member.guild.channels.cache.get(settings.loggingChannelId);
-                if (!logChannel) logChannel = await member.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+            if (settings.logMemberLeaves) {
+                const loggerUtil = require('../utils/logger');
+                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
+                if (logChannelId) {
+                    let logChannel = member.guild.channels.cache.get(logChannelId);
+                    if (!logChannel) logChannel = await member.guild.channels.fetch(logChannelId).catch(() => null);
                 
-                if (logChannel) {
-                    const logEmbed = new EmbedBuilder()
-                        .setTitle('Member Left')
-                        .setColor(0xff4b4b)
-                        .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
-                        .addFields(
-                            { name: 'User', value: `<@${member.id}>`, inline: true },
-                            { name: 'ID', value: `\`${member.id}\``, inline: true }
-                        )
-                        .setTimestamp();
+                    if (logChannel) {
+                        const logEmbed = new EmbedBuilder()
+                            .setTitle('Member Left')
+                            .setColor(0xff4b4b)
+                            .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
+                            .addFields(
+                                { name: 'User', value: `<@${member.id}>`, inline: true },
+                                { name: 'ID', value: `\`${member.id}\``, inline: true }
+                            )
+                            .setTimestamp();
 
-                    await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
+                        await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
+                    }
                 }
             }
         } catch (error) {

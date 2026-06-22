@@ -8,10 +8,13 @@ module.exports = {
 
         try {
             const settings = await GuildSettings.findOne({ where: { guildId: oldState.guild.id } });
-            if (!settings || !settings.loggingChannelId) return;
+            if (!settings) return;
+            const loggerUtil = require('../utils/logger');
+            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'voiceStates');
+            if (!logChannelId) return;
 
-            let logChannel = oldState.guild.channels.cache.get(settings.loggingChannelId);
-            if (!logChannel) logChannel = await oldState.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+            let logChannel = oldState.guild.channels.cache.get(logChannelId);
+            if (!logChannel) logChannel = await oldState.guild.channels.fetch(logChannelId).catch(() => null);
             if (!logChannel) return;
 
             const member = newState.member || oldState.member;

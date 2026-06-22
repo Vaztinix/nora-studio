@@ -31,6 +31,10 @@ const requireAuth = async (req, res, next) => {
         if (session) {
             // Generational Session UUID Lock validation
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: session.userId } });
+            if (prefs.isTerminated) {
+                await session.destroy();
+                return res.status(403).json({ error: 'Terminated', reason: prefs.terminationReason || 'Violation of terms of service.' });
+            }
             if (session.sessionGenerationMarker && session.sessionGenerationMarker !== prefs.sessionGenerationMarker) {
                 await session.destroy();
                 return res.status(401).json({ error: 'Unauthorized: Session has been globally invalidated.' });
@@ -53,6 +57,11 @@ const requireAuth = async (req, res, next) => {
             }
             user = userRes.data;
             
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+            if (prefs.isTerminated) {
+                return res.status(403).json({ error: 'Terminated', reason: prefs.terminationReason || 'Violation of terms of service.' });
+            }
+
             // Fetch GeoIP
             let location = 'Unknown Location';
             try {
@@ -62,7 +71,6 @@ const requireAuth = async (req, res, next) => {
                 }
             } catch (e) {}
             
-            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             session = await Session.create({
                 id: tokenHash,
                 userId: user.id,

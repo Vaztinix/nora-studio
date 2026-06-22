@@ -335,7 +335,7 @@ router.post('/oauth-exchange', async (req, res) => {
             return res.status(400).json({ error: 'Missing code or redirect_uri' });
         }
 
-        const client_id = process.env.CLIENT_ID || '1351304498185900184';
+        const client_id = process.env.CLIENT_ID || '1375943730951098549';
         const client_secret = process.env.CLIENT_SECRET;
         if (!client_secret) {
             return res.status(500).json({ error: 'System configuration error: client_secret missing' });
@@ -367,24 +367,63 @@ router.post('/oauth-exchange', async (req, res) => {
     }
 });
 
+// GET /api/admin/terminated
+router.get('/terminated', requireOwner, async (req, res) => {
+    try {
+        const terminatedPrefs = await UserPrefs.findAll({
+            where: { isTerminated: true }
+        });
+        const list = [];
+        for (const up of terminatedPrefs) {
+            let userObj = req.client.users.cache.get(up.userId);
+            if (!userObj) {
+                try {
+                    userObj = await req.client.users.fetch(up.userId);
+                } catch (e) {}
+            }
+            list.push({
+                userId: up.userId,
+                username: userObj ? userObj.username : 'Unknown User',
+                avatar: userObj && userObj.avatar 
+                    ? `https://cdn.discordapp.com/avatars/${up.userId}/${userObj.avatar}.png?size=128` 
+                    : `https://cdn.discordapp.com/embed/avatars/${(BigInt(up.userId) % 5n) + 1n}.png`,
+                terminationReason: up.terminationReason || 'No reason specified.'
+            });
+        }
+        res.json({ terminated: list });
+    } catch (e) {
+        console.error('Error fetching terminated users:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // POST /api/admin/global-ban
 router.post('/global-ban', requireOwner, async (req, res) => {
     try {
-        const { action, userId } = req.body;
+        const { action, userId, reason } = req.body;
         if (!userId || !action) {
             return res.status(400).json({ error: 'Missing userId or action' });
         }
 
-        const UserPrefs = require('../../database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId } });
 
         if (action === 'ban') {
-            await prefs.update({ profilePublic: false, robloxPublic: false }); // Disable visibility
-            console.log(`[GLOBAL MITIGATION] Blacklisted user ${userId}`);
-            return res.json({ success: true, message: `Successfully blacklisted user ${userId}` });
+            const banReason = reason || 'Violation of terms of service.';
+            await prefs.update({ 
+                isTerminated: true, 
+                terminationReason: banReason, 
+                profilePublic: false, 
+                robloxPublic: false 
+            }); // Disable visibility and block logins
+            console.log(`[GLOBAL MITIGATION] Suspended user ${userId} for: ${banReason}`);
+            return res.json({ success: true, message: `Successfully suspended user ${userId}` });
         } else if (action === 'unban') {
+            await prefs.update({
+                isTerminated: false,
+                terminationReason: null
+            });
             console.log(`[GLOBAL MITIGATION] Restored user ${userId}`);
-            return res.json({ success: true, message: `Successfully removed user ${userId} from blacklist` });
+            return res.json({ success: true, message: `Successfully removed user ${userId} from suspension` });
         } else {
             return res.status(400).json({ error: 'Invalid action' });
         }

@@ -116,6 +116,20 @@ module.exports = {
                 if (disabledCats.includes('leveling')) return;
             }
 
+            // 🛡️ Privacy Telemetry Opt-Out check
+            const UserPrefs = require('../database/models/UserPrefs');
+            const userPrefs = await UserPrefs.findOne({ where: { userId: message.author.id } });
+            if (userPrefs && userPrefs.dashboardSettings) {
+                try {
+                    const parsedSettings = JSON.parse(userPrefs.dashboardSettings);
+                    if (parsedSettings.nora_telemetry_enabled === 'false') {
+                        return;
+                    }
+                } catch (e) {
+                    console.error('[Telemetry Opt-Out Check Error]:', e);
+                }
+            }
+
             // Get or create XP record retries
             let userLevel = null;
             for (let attempt = 1; attempt <= 3; attempt++) {

@@ -13,10 +13,13 @@ module.exports = {
         try {
             const settings = await GuildSettings.findOne({ where: { guildId: oldMessage.guild.id } });
             // console.log(`[Logger DEBUG] MsgUpdate event in ${oldMessage.guild.name}. ChannelSet: ${!!settings?.loggingChannelId}, Toggle: ${settings?.logMessageEdits}`);
-            if (!settings || !settings.loggingChannelId || !settings.logMessageEdits) return;
+            if (!settings || !settings.logMessageEdits) return;
+            const loggerUtil = require('../utils/logger');
+            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'messageLogs');
+            if (!logChannelId) return;
 
-            let logChannel = oldMessage.guild.channels.cache.get(settings.loggingChannelId);
-            if (!logChannel) logChannel = await oldMessage.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+            let logChannel = oldMessage.guild.channels.cache.get(logChannelId);
+            if (!logChannel) logChannel = await oldMessage.guild.channels.fetch(logChannelId).catch(() => null);
             
             if (!logChannel) {
                 console.error(`[Logger ERROR] Target channel ${settings.loggingChannelId} not found in ${oldMessage.guild.name}.`);

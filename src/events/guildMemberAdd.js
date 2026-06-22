@@ -1,4 +1,4 @@
-const { Events, EmbedBuilder } = require('discord.js');
+const { Events, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const { formatMessage } = require('../utils/messageFormatter');
 
@@ -151,23 +151,95 @@ module.exports = {
                 }
             }
 
-            // 2. --- Join Logging (Audit Logs) ---
-            if (settings.loggingChannelId && settings.logMemberJoins) {
-                let logChannel = member.guild.channels.cache.get(settings.loggingChannelId);
-                if (!logChannel) logChannel = await member.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+            // ─── Role Recovery restoration logic ───
+            try {
+                const MemberRolesHistory = require('../database/models/MemberRolesHistory');
+                const history = await MemberRolesHistory.findOne({
+                    where: { userId: member.id, guildId: member.guild.id }
+                });
+                
+                if (history && history.roles) {
+                    const roleIds = JSON.parse(history.roles || '[]');
+                    if (roleIds.length > 0) {
+                        const rolesToRestore = [];
+                        const skippedRoles = [];
+                        
+                        for (const roleId of roleIds) {
+                            const role = member.guild.roles.cache.get(roleId);
+                            if (!role) continue;
+                            
+                            // Check for sensitive permissions: Administrator, Manage Guild (Manage Server), Manage Roles, Manage Channels, Kick Members, Ban Members
+                            const isSensitive = role.permissions.has(PermissionFlagsBits.Administrator) ||
+                                                role.permissions.has(PermissionFlagsBits.ManageGuild) ||
+                                                role.permissions.has(PermissionFlagsBits.ManageRoles) ||
+                                                role.permissions.has(PermissionFlagsBits.ManageChannels) ||
+                                                role.permissions.has(PermissionFlagsBits.KickMembers) ||
+                                                role.permissions.has(PermissionFlagsBits.BanMembers);
+                                                
+                            if (isSensitive) {
+                                skippedRoles.push(role.name);
+                            } else {
+                                // Also ensure the bot can actually assign this role (role position is below the bot's highest role)
+                                const botHighest = member.guild.members.me.roles.highest.position;
+                                if (role.position < botHighest) {
+                                    rolesToRestore.push(role);
+                                } else {
+                                    skippedRoles.push(`${role.name} (Higher than bot)`);
+                                }
+                            }
+                        }
+                        
+                        if (rolesToRestore.length > 0) {
+                            await member.roles.add(rolesToRestore, 'Nora: Automatic Role Recovery on Rejoin').catch(err => {
+                                console.error(`[Role Recovery] Failed to assign roles for ${member.user.tag}:`, err.message);
+                            });
+                        }
+                        
+                        const loggerUtil = require('../utils/logger');
+                        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
+                        if (logChannelId) {
+                            const logChannel = member.guild.channels.cache.get(logChannelId) ||
+                                               await member.guild.channels.fetch(logChannelId).catch(() => null);
+                            if (logChannel) {
+                                const restoreEmbed = new EmbedBuilder()
+                                    .setTitle('🛡️ Role Recovery')
+                                    .setColor(0xffffff) // Pure white theme for Nora Studio
+                                    .setDescription(`Restored roles for **${member.user.tag}** on rejoin.`)
+                                    .addFields(
+                                        { name: 'Restored Roles', value: rolesToRestore.length > 0 ? rolesToRestore.map(r => `<@&${r.id}>`).join(', ') : 'None' },
+                                        { name: 'Skipped Roles (Sensitive/High)', value: skippedRoles.length > 0 ? skippedRoles.join(', ') : 'None' }
+                                    )
+                                    .setTimestamp();
+                                await logChannel.send({ embeds: [restoreEmbed] }).catch(() => {});
+                            }
+                        }
+                    }
+                }
+            } catch (roleRestoreErr) {
+                console.error('[Role Recovery Error] Failed to restore roles:', roleRestoreErr.message);
+            }
 
-                if (logChannel) {
-                    const logEmbed = new EmbedBuilder()
-                        .setTitle('Member Joined')
-                        .setColor(0x43b581) // Green for joins
-                        .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
-                        .addFields(
-                            { name: 'User', value: `<@${member.id}>`, inline: true },
-                            { name: 'ID', value: `\`${member.id}\``, inline: true },
-                            { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true }
-                        )
-                        .setTimestamp();
-                    await logChannel.send({ embeds: [logEmbed] }).catch(() => { });
+            // 2. --- Join Logging (Audit Logs) ---
+            if (settings.logMemberJoins) {
+                const loggerUtil = require('../utils/logger');
+                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
+                if (logChannelId) {
+                    let logChannel = member.guild.channels.cache.get(logChannelId);
+                    if (!logChannel) logChannel = await member.guild.channels.fetch(logChannelId).catch(() => null);
+
+                    if (logChannel) {
+                        const logEmbed = new EmbedBuilder()
+                            .setTitle('Member Joined')
+                            .setColor(0x43b581) // Green for joins
+                            .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
+                            .addFields(
+                                { name: 'User', value: `<@${member.id}>`, inline: true },
+                                { name: 'ID', value: `\`${member.id}\``, inline: true },
+                                { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true }
+                            )
+                            .setTimestamp();
+                        await logChannel.send({ embeds: [logEmbed] }).catch(() => { });
+                    }
                 }
             }
 
@@ -183,11 +255,52 @@ module.exports = {
                     const embed = new EmbedBuilder()
                         .setTitle(`Welcome to ${member.guild.name}!`)
                         .setDescription(desc)
-                        .setColor(0x57acf2)
+                        .setColor(0xffffff) // Pure white theme for Nora Studio
                         .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                         .setFooter({ text: `Member #${member.guild.memberCount}` })
                         .setTimestamp();
                     await welcomeChannel.send({ embeds: [embed] }).catch(() => { });
+                }
+            }
+
+            // 4. --- Invite Tracker Module ---
+            if (settings.inviteTrackerEnabled && settings.inviteTrackerChannelId) {
+                try {
+                    const trackingChannel = member.guild.channels.cache.get(settings.inviteTrackerChannelId);
+                    if (trackingChannel) {
+                        const newInvites = await member.guild.invites.fetch().catch(() => null);
+                        const cachedInvites = member.client.invites?.get(member.guild.id);
+                        
+                        let usedInvite = null;
+                        if (newInvites && cachedInvites) {
+                            for (const [code, invite] of newInvites.entries()) {
+                                const oldUses = cachedInvites.get(code) || 0;
+                                if (invite.uses > oldUses) {
+                                    usedInvite = invite;
+                                    break;
+                                }
+                            }
+                            
+                            // Update cache
+                            member.client.invites.set(member.guild.id, new Map(newInvites.map(inv => [inv.code, inv.uses])));
+                        }
+
+                        let inviteInfo = `joined using a vanity link or unknown invite.`;
+                        if (usedInvite) {
+                            const inviter = usedInvite.inviter;
+                            inviteInfo = `was invited by ${inviter ? `<@${inviter.id}> (\`${inviter.username}\`)` : 'Unknown'} (Invite: \`${usedInvite.code}\`, Uses: **${usedInvite.uses}**).`;
+                        }
+
+                        const inviteEmbed = new EmbedBuilder()
+                            .setTitle('📥 Member Join Invite Tracker')
+                            .setColor(0x57acf2)
+                            .setDescription(`<@${member.id}> (\`${member.user.username}\`) ${inviteInfo}`)
+                            .setTimestamp()
+                            .setFooter({ text: `Member ID: ${member.id}` });
+                        await trackingChannel.send({ embeds: [inviteEmbed] }).catch(() => {});
+                    }
+                } catch (inviteTrackErr) {
+                    console.error('[Invite Tracker Engine Error]:', inviteTrackErr.message);
                 }
             }
         } catch (error) {

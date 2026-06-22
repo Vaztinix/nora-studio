@@ -9,6 +9,23 @@ module.exports = {
     async execute(client) {
         console.log(`[System] Ready! Initializing Nora Mainframe as ${client.user.tag}`);
 
+        // Initialize invite tracker cache
+        client.invites = new Map();
+        for (const guild of client.guilds.cache.values()) {
+            try {
+                const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
+                if (me && me.permissions.has('ManageGuild')) {
+                    const invites = await guild.invites.fetch().catch(() => null);
+                    if (invites) {
+                        client.invites.set(guild.id, new Map(invites.map(invite => [invite.code, invite.uses])));
+                        console.log(`[Invite Tracker] Cached ${invites.size} invites for server: ${guild.name}`);
+                    }
+                }
+            } catch (e) {
+                console.error(`[Invite Tracker] Failed to cache invites for server ${guild.name}:`, e.message);
+            }
+        }
+
         try {
             // 🔮 Optics Maintenance: Physically Set Banner on Startup - V18.0
             const axios = require('axios');

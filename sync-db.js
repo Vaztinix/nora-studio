@@ -81,7 +81,9 @@ async function syncDB() {
 
         const newUserPrefsColumns = [
             { name: 'sessionGenerationMarker', type: 'TEXT DEFAULT NULL' },
-            { name: 'auxiliaryRobloxHandles', type: 'TEXT DEFAULT "[]"' }
+            { name: 'auxiliaryRobloxHandles', type: 'TEXT DEFAULT "[]"' },
+            { name: 'isTerminated', type: 'TINYINT(1) DEFAULT 0' },
+            { name: 'terminationReason', type: 'TEXT DEFAULT NULL' }
         ];
 
         for (const col of newUserPrefsColumns) {
@@ -118,6 +120,23 @@ async function syncDB() {
                 console.warn('Failed to drop RobloxVerifies:', e.message);
             }
         }
+
+        // Safely add columns to Autoresponders if they don't exist
+        try {
+            await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `isEmbed` TINYINT(1) DEFAULT 0;");
+        } catch (e) {}
+        try {
+            await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoreStaffAndBots` TINYINT(1) DEFAULT 0;");
+        } catch (e) {}
+        try {
+            await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoredChannels` TEXT DEFAULT '[]';");
+        } catch (e) {}
+        try {
+            await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoredRoles` TEXT DEFAULT '[]';");
+        } catch (e) {}
+        try {
+            await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `allowedRoles` TEXT DEFAULT '[]';");
+        } catch (e) {}
 
         console.log('Syncing database tables...');
         // Sync without alter: true to avoid SQLite backup recreation table mismatch bug

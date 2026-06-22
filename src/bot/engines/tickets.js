@@ -1,5 +1,6 @@
 const { PermissionFlagsBits, ChannelType, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } = require('discord.js');
 const ActiveTicket = require('../../database/models/ActiveTicket');
+const TicketHistory = require('../../database/models/TicketHistory');
 
 /**
  * Handles the ticket close button interaction.
@@ -81,6 +82,22 @@ async function handleTicketClose(interaction, settings) {
                 .setTimestamp();
             await logChannel.send({ embeds: [embed], files: [transcriptFile] }).catch(() => {});
         }
+    }
+
+    // Update TicketHistory record to resolved/closed
+    try {
+        const historyRecord = await TicketHistory.findOne({
+            where: { guildId: interaction.guildId, channelId: interaction.channelId }
+        });
+        if (historyRecord) {
+            await historyRecord.update({
+                status: 'closed',
+                resolveTime: new Date(),
+                closedById: interaction.user.id
+            });
+        }
+    } catch (err) {
+        console.error('Failed to update TicketHistory on close:', err);
     }
 
     await ticket.destroy();
@@ -211,6 +228,17 @@ async function handleTicketSubmit(interaction, settings) {
             isOpen: true,
             capturedIntake: JSON.stringify(capturedIntake)
         });
+
+        // Create TicketHistory in Database
+        await TicketHistory.create({
+            guildId: interaction.guildId,
+            channelId: ticketChannel.id,
+            ownerId: interaction.user.id,
+            status: 'open',
+            topic: ticketType || 'Support',
+            openTime: new Date(),
+            intakeResponses: JSON.stringify(capturedIntake)
+        }).catch(err => console.error('Failed to log ticket to TicketHistory:', err));
 
         // Send Ticket Header Embed with Close Button
         const embed = new EmbedBuilder()

@@ -65,6 +65,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    loggingChannels: {
+        type: DataTypes.JSON,
+        defaultValue: {}
+    },
     logMessageEdits: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
@@ -455,6 +459,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
+    rankCardColorPrimary: {
+        type: DataTypes.STRING,
+        defaultValue: '#23a55a'
+    },
+    rankCardColorSecondary: {
+        type: DataTypes.STRING,
+        defaultValue: '#1e1f22'
+    },
     logDashboardActions: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -515,6 +527,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
     ticketChannelId: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    ticketPanels: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
     },
     robloxVerifyChannelId: {
         type: DataTypes.STRING,

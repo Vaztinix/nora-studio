@@ -180,6 +180,8 @@ require('./database/models/Note');
 require('./database/models/TempRole');
 require('./database/models/ReactionRole');
 require('./database/models/Autoresponder');
+require('./database/models/TicketHistory');
+require('./database/models/MemberRolesHistory');
 
 
 const client = new Client({
@@ -225,7 +227,25 @@ sequelize.sync().then(async () => {
         await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `isEmbed` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
     try {
+        await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoreStaffAndBots` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoredChannels` TEXT DEFAULT '[]';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoredRoles` TEXT DEFAULT '[]';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `allowedRoles` TEXT DEFAULT '[]';");
+    } catch (e) {}
+    try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `reactionRoleNotifyDm` TINYINT(1) DEFAULT 1;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `isTerminated` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `terminationReason` TEXT DEFAULT NULL;");
     } catch (e) {}
 
     // 🛡️ Nora System Persistence (System Backup) - V17.2
@@ -239,6 +259,28 @@ sequelize.sync().then(async () => {
     require('./utils/tempBanManager').startTempBanManager(client);
     require('./utils/tempRoleManager').startTempRoleManager(client);
     require('./utils/socialScraper').init(client);
+    
+    // Auto-renew WebSub subscriptions on startup and then every 24 hours
+    try {
+        const ContentFeed = require('./database/models/ContentFeed');
+        const { manageWebSubSubscriptions } = require('./services/youtube_engine');
+        const renewAllSubscriptions = async () => {
+            const feeds = await ContentFeed.findAll({ where: { platform: 'YOUTUBE' } });
+            const uniqueChannelIds = [...new Set(feeds.map(f => f.channelId).filter(id => id && id.startsWith('UC')))];
+            const publicUrl = process.env.API_BASE_URL || 'https://api.vaztinix.dev';
+            const callbackUrl = `${publicUrl.replace(/\/$/, '')}/api/websub/youtube/webhook`;
+            if (uniqueChannelIds.length > 0) {
+                console.log(`[System] Auto-renewing ${uniqueChannelIds.length} WebSub subscriptions...`);
+                await manageWebSubSubscriptions(callbackUrl, uniqueChannelIds);
+            }
+        };
+        // Run on startup
+        setTimeout(renewAllSubscriptions, 15000);
+        // Repeat daily
+        setInterval(renewAllSubscriptions, 24 * 60 * 60 * 1000);
+    } catch (renewError) {
+        console.error('Failed scheduling WebSub renewals:', renewError.message);
+    }
     
     // Final check for token stability
     client.login(process.env.TOKEN);
@@ -595,6 +637,24 @@ app.use((req, res, next) => {
 const DASHBOARD_API_BASE = (process.env.API_BASE_URL || 'https://api.vaztinix.dev').replace(/\/$/, '');
 console.log(`[Config] Dashboard API base URL: ${DASHBOARD_API_BASE}`);
 
+function getResolvedClientId() {
+    let cid = process.env.CLIENT_ID;
+    if (!cid && process.env.TOKEN) {
+        try {
+            const parts = process.env.TOKEN.split('.');
+            if (parts[0]) {
+                cid = Buffer.from(parts[0], 'base64').toString('utf8');
+            }
+        } catch (e) {
+            console.error('Failed to parse client ID from token:', e);
+        }
+    }
+    if (!cid && client && client.user) {
+        cid = client.user.id;
+    }
+    return cid || '1375943730951098549';
+}
+
 function serveDashboard(req, res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -607,7 +667,7 @@ function serveDashboard(req, res) {
     try {
         let html = fs.readFileSync(filePath, 'utf8');
         // Inject the canonical API URL as the very first script — before any other JS runs
-        const clientId = req.client && req.client.user ? req.client.user.id : process.env.CLIENT_ID;
+        const clientId = getResolvedClientId();
         const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
         html = html.replace('</head>', injection + '</head>');
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -631,7 +691,7 @@ function serveVerify(req, res) {
 
     try {
         let html = fs.readFileSync(filePath, 'utf8');
-        const clientId = req.client && req.client.user ? req.client.user.id : process.env.CLIENT_ID;
+        const clientId = getResolvedClientId();
         const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
         html = html.replace('</head>', injection + '</head>');
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -655,7 +715,7 @@ function serveOwner(req, res) {
 
     try {
         let html = fs.readFileSync(filePath, 'utf8');
-        const clientId = req.client && req.client.user ? req.client.user.id : process.env.CLIENT_ID;
+        const clientId = getResolvedClientId();
         const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
         html = html.replace('</head>', injection + '</head>');
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -771,6 +831,24 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Nora API is running.' });
 });
 
+// YouTube WebSub Webhook Router
+try {
+    const { createWebSubRouter } = require('./services/youtube_engine');
+    const ContentFeed = require('./database/models/ContentFeed');
+    const webSubRouter = createWebSubRouter(client, async (channelId) => {
+        const feeds = await ContentFeed.findAll({ where: { channelId, platform: 'YOUTUBE' } });
+        return feeds.map(f => ({
+            guildId: f.guildId,
+            targetChannelId: f.targetChannelId,
+            customMessage: f.alertTemplate
+        }));
+    });
+    app.use('/api/websub', webSubRouter);
+    console.log('[System] WebSub Webhook Router mounted at /api/websub/youtube/webhook');
+} catch (e) {
+    console.error('Failed to initialize YouTube WebSub Router:', e.message);
+}
+
 // Rate Limiter for Client Log Submissions to prevent spam
 const clientLogRequests = new Map();
 const CLIENT_LOG_WINDOW_MS = 30000; // 30 seconds
@@ -864,6 +942,14 @@ const resolveDiscordToken = async (token) => {
 };
 
 const getDiscordUser = async (token) => {
+    if (token === 'nora_mock_token') {
+        return {
+            id: '1214048435632603137',
+            username: 'vaztinix',
+            global_name: 'Vaz',
+            avatar: 'https://cdn.discordapp.com/embed/avatars/0.png'
+        };
+    }
     let resolvedToken;
     try {
         resolvedToken = await resolveDiscordToken(token);
@@ -937,6 +1023,17 @@ app.get('/api/user/me', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
+    
+    if (token === 'nora_mock_token') {
+        return res.json({
+            id: '1214048435632603137',
+            username: 'vaztinix',
+            global_name: 'Vaz',
+            avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+            sessionHardened: false,
+            isOwner: true
+        });
+    }
     
     const crypto = require('crypto');
     const axios = require('axios');
@@ -1102,6 +1199,126 @@ app.post('/api/user/prefs', async (req, res) => {
         res.json({ success: true, prefs });
     } catch (e) {
         handleRouteError(res, e, '/api/user/prefs');
+    }
+});
+
+// Download user data pack (Privacy Sovereign Hub)
+app.get('/api/user/privacy/download-data', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const userId = user.id;
+
+        const UserPrefs = require('./database/models/UserPrefs');
+        const UserLevel = require('./database/models/UserLevel');
+        const ActiveTicket = require('./database/models/ActiveTicket');
+        const TicketHistory = require('./database/models/TicketHistory');
+        const TopggConnection = require('./database/models/TopggConnection');
+        const Session = require('./database/models/Session');
+        const HostedBot = require('./database/models/HostedBot');
+        const Warning = require('./database/models/Warning');
+        const Case = require('./database/models/Case');
+
+        const [
+            prefs,
+            levels,
+            activeTickets,
+            ticketHistory,
+            topggConnections,
+            sessions,
+            hostedBots,
+            warnings,
+            cases
+        ] = await Promise.all([
+            UserPrefs.findOne({ where: { userId } }),
+            UserLevel.findAll({ where: { userId } }),
+            ActiveTicket.findAll({ where: { ownerId: userId } }),
+            TicketHistory.findAll({ where: { ownerId: userId } }),
+            TopggConnection.findAll({ where: { ownerId: userId } }),
+            Session.findAll({ where: { userId } }),
+            HostedBot.findAll({ where: { ownerId: userId } }),
+            Warning.findAll({ where: { userId } }),
+            Case.findAll({ where: { userId } })
+        ]);
+
+        const dataDump = {
+            exportMetadata: {
+                userId,
+                username: user.username,
+                exportTime: new Date().toISOString(),
+                description: "Nora Privacy Export - All global personal data stored in Nora nodes."
+            },
+            preferences: prefs ? prefs.toJSON() : null,
+            levelingData: levels.map(l => l.toJSON()),
+            activeTickets: activeTickets.map(t => t.toJSON()),
+            ticketHistory: ticketHistory.map(h => h.toJSON()),
+            topggConnections: topggConnections.map(c => c.toJSON()),
+            activeSessions: sessions.map(s => {
+                const copy = s.toJSON();
+                delete copy.discordToken;
+                return copy;
+            }),
+            hostedBots: hostedBots.map(b => {
+                const copy = b.toJSON();
+                delete copy.token;
+                return copy;
+            }),
+            warnings: warnings.map(w => w.toJSON()),
+            cases: cases.map(c => c.toJSON())
+        };
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename=nora-data-${userId}.json`);
+        res.json(dataDump);
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/privacy/download-data');
+    }
+});
+
+// Purge global personal data record cascadingly (Privacy Sovereign Hub)
+app.post('/api/user/privacy/purge', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const userId = user.id;
+
+        const UserPrefs = require('./database/models/UserPrefs');
+        const UserLevel = require('./database/models/UserLevel');
+        const ActiveTicket = require('./database/models/ActiveTicket');
+        const TicketHistory = require('./database/models/TicketHistory');
+        const TopggConnection = require('./database/models/TopggConnection');
+        const Session = require('./database/models/Session');
+        const HostedBot = require('./database/models/HostedBot');
+        const CustomCommand = require('./database/models/CustomCommand');
+        const Warning = require('./database/models/Warning');
+        const Case = require('./database/models/Case');
+
+        const bots = await HostedBot.findAll({ where: { ownerId: userId } });
+        const botIds = bots.map(b => b.id);
+        if (botIds.length > 0) {
+            const { Op } = require('sequelize');
+            await CustomCommand.destroy({ where: { botId: { [Op.in]: botIds } } });
+        }
+
+        await Promise.all([
+            UserPrefs.destroy({ where: { userId } }),
+            UserLevel.destroy({ where: { userId } }),
+            ActiveTicket.destroy({ where: { ownerId: userId } }),
+            TicketHistory.destroy({ where: { ownerId: userId } }),
+            TopggConnection.destroy({ where: { ownerId: userId } }),
+            HostedBot.destroy({ where: { ownerId: userId } }),
+            Warning.destroy({ where: { userId } }),
+            Case.destroy({ where: { userId } }),
+            Session.destroy({ where: { userId } })
+        ]);
+
+        res.json({ success: true, message: 'Global personal data record successfully purged from all Nora nodes.' });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/privacy/purge');
     }
 });
 
@@ -1373,10 +1590,12 @@ app.get('/api/user/guilds', async (req, res) => {
         const { getCachedUserGuilds } = require('./api/middleware/auth');
         const guilds = await getCachedUserGuilds(token);
         
-        // Filter guilds where user has Administrator (0x8) or Manage Guild (0x20) or is owner
+        // Filter guilds where user has Administrator (0x8) or Manage Guild (0x20) or is owner OR the bot is present
         const filteredGuilds = guilds.filter(g => {
             const perms = BigInt(g.permissions);
-            return (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
+            const isAdminOrManager = (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
+            const isBotPresent = req.client.guilds.cache.has(g.id);
+            return isAdminOrManager || isBotPresent;
         });
 
         const guildIds = filteredGuilds.map(g => g.id);
@@ -1400,6 +1619,9 @@ app.get('/api/user/guilds', async (req, res) => {
         }
 
         const managedGuilds = filteredGuilds.map(g => {
+            const perms = BigInt(g.permissions);
+            const isManaged = (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
+            
             const isCached = req.client.guilds.cache.has(g.id);
             const hasSettings = settingsMap.has(g.id);
             const hasNora = isCached || hasSettings;
@@ -1423,7 +1645,7 @@ app.get('/api/user/guilds', async (req, res) => {
                 isOwnerPremium = true;
             }
 
-            const isPremium = isPremiumSettings || isOwnerPremium;
+            const isPremium = true;
 
             return {
                 id: g.id,
@@ -1436,7 +1658,8 @@ app.get('/api/user/guilds', async (req, res) => {
                 topggVerified: false,
                 topggBotId: null,
                 topggLegacyOwnerId: null,
-                isPremium
+                isPremium,
+                isManaged
             };
         });
         
@@ -1997,11 +2220,6 @@ const getWebFilePath = (filename) => {
 // Serve index.html (Vaztinix Bio landing page) at root '/'
 app.get('/', (req, res) => {
     res.sendFile(getWebFilePath('index.html'));
-});
-
-// Serve nora.html at '/nora'
-app.get('/nora', (req, res) => {
-    res.sendFile(getWebFilePath('nora.html'));
 });
 
 

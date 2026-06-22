@@ -82,6 +82,15 @@ const UserPrefs = sequelize.define('UserPrefs', {
     auxiliaryRobloxHandles: {
         type: DataTypes.TEXT,
         defaultValue: '[]'
+    },
+    isTerminated: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    terminationReason: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
     }
 });
 

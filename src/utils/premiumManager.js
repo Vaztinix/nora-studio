@@ -14,12 +14,7 @@ module.exports = {
      * @returns {Boolean}
      */
     isPremium: (interaction) => {
-        if (!interaction || !interaction.entitlements) return false;
-
-        // Check if the user has an active entitlement for our specific SKU
-        return interaction.entitlements.some(entitlement => 
-            entitlement.skuId === PREMIUM_SKU_ID
-        );
+        return true;
     },
 
     /**
@@ -28,10 +23,10 @@ module.exports = {
      */
     getBenefits: (isPremium) => {
         return {
-            roleRewardLimit: isPremium ? 15 : 10,
-            rateLimitReductionFactor: isPremium ? 0.5 : 1.0,
-            hasEarlyAccess: isPremium,
-            hasBadge: isPremium
+            roleRewardLimit: 25,
+            rateLimitReductionFactor: 0.5,
+            hasEarlyAccess: true,
+            hasBadge: true
         };
     }
 };

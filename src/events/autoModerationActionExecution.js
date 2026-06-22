@@ -7,9 +7,12 @@ module.exports = {
         const GuildSettings = require('../database/models/GuildSettings');
 
         const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
-        if (!settings || !settings.loggingChannelId || !settings.logAutomod) return;
+        if (!settings || !settings.logAutomod) return;
+        const loggerUtil = require('../utils/logger');
+        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'moderation');
+        if (!logChannelId) return;
 
-        const logChannel = guild.channels.cache.get(settings.loggingChannelId);
+        const logChannel = guild.channels.cache.get(logChannelId) || await guild.channels.fetch(logChannelId).catch(() => null);
         if (!logChannel) return;
 
         const { action, userId, channelId, matchedKeyword, matchedContent, ruleName } = autoModerationActionExecution;
