@@ -381,7 +381,7 @@
             <div class="spinner"></div>
         </div>
 
-        <img src="nora.png" class="logo" alt="Nora Logo" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+        <img src="nora.png" class="logo" alt="Nora Logo" onerror="this.onerror=null; this.src='nora.png'">
         <h1>Roblox Verification</h1>
         <p id="portal-description">Link and verify your Roblox profile with your Discord identity.</p>
 
@@ -591,7 +591,7 @@
                 document.getElementById('view-auth').style.display = 'none';
                 document.getElementById('view-main').style.display = 'block';
                 document.getElementById('discord-name').textContent = `${user.global_name || user.username}`;
-                document.getElementById('discord-avatar').src = user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                document.getElementById('discord-avatar').src = user.avatar || 'nora.png';
                 if (user.avatar && user.avatar.startsWith('a_')) {
                     document.getElementById('discord-avatar').src += '.gif';
                 }

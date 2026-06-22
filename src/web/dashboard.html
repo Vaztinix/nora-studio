@@ -2336,7 +2336,7 @@
             </div>
             <!-- User Profile (Vazzy / Avatar) -->
             <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 4px 12px 4px 6px;">
-                <img id="user-avatar-top" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 24px; height: 24px; border-radius: 50%; margin: 0;">
+                <img id="user-avatar-top" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 24px; height: 24px; border-radius: 50%; margin: 0;">
                 <span id="user-name-top" style="color: #fff; font-size: 0.8rem; font-weight: 700;" data-no-translate>Loading</span>
             </div>
             <!-- Logout Button in Topbar -->
@@ -2352,7 +2352,7 @@
             <!-- User Profile in Sidebar -->
             <div class="user-profile" data-no-translate>
                 <div style="position: relative;">
-                    <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="User">
+                    <img id="user-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" alt="User">
                     <div id="user-status-dot" style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-radius: 50%; background: #23a55a; border: 2px solid var(--sidebar-bg);"></div>
                 </div>
                 <div class="user-profile-info">
@@ -2552,7 +2552,7 @@
                                     <div style="position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); opacity: 0.25;"></div>
                                 </div>
                                 <div style="padding: 20px; position: relative; margin-top: -65px;">
-                                    <img id="profile-preview-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 96px; height: 96px; border-radius: 50%; border: 6px solid #111214; background: #111214; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
+                                    <img id="profile-preview-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 96px; height: 96px; border-radius: 50%; border: 6px solid #111214; background: #111214; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
                                     <div style="margin-top: 12px; background: #1b1c1e; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
                                         <h2 id="profile-preview-name" style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.01em;">Username</h2>
                                         <div id="profile-preview-handle" style="color: rgba(255,255,255,0.45); font-size: 0.85rem; margin-bottom: 12px; font-weight: 500;">@handle</div>
@@ -2604,7 +2604,7 @@
                 <div class="modal-content" style="max-width: 450px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 0; animation: fadeIn 0.3s ease-out;">
                     <div id="modal-profile-banner" style="height: 100px; background: var(--primary); opacity: 0.8;"></div>
                     <div style="padding: 20px; position: relative; margin-top: -50px;">
-                        <img id="modal-profile-avatar" src="" style="width: 100px; height: 100px; border-radius: 50%; border: 6px solid var(--sidebar-bg); background: var(--sidebar-bg);">
+                        <img id="modal-profile-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 100px; height: 100px; border-radius: 50%; border: 6px solid var(--sidebar-bg); background: var(--sidebar-bg);">
                         <div style="margin-top: 15px;">
                             <h2 id="modal-profile-name" style="font-size: 1.5rem; font-weight: 800;">Username</h2>
                             <p id="modal-profile-handle" style="color: var(--muted); margin-bottom: 15px;">@handle</p>
@@ -2870,7 +2870,7 @@
                     <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
                         <button class="back-link" id="back-to-servers">← Back to Servers</button>
                         <div class="config-title">
-                            <img id="cfg-icon" src="nora.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                            <img id="cfg-icon" src="nora.png" onerror="this.onerror=null; this.src='nora.png';">
                             <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p></div>
                         </div>
                     </div>
@@ -2893,7 +2893,7 @@
                         <div id="sidebar-server-selector-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin: 0 14px 15px 14px; position: relative;">
                             <div id="sidebar-server-trigger" onclick="const d = document.getElementById('sidebar-server-dropdown'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; event.stopPropagation();" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
-                                    <img id="sidebar-server-icon" src="nora.png" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                    <img id="sidebar-server-icon" src="nora.png" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;" onerror="this.onerror=null; this.src='nora.png';">
                                     <span id="sidebar-server-name" style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-no-translate>Select Server</span>
                                 </div>
                                 <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted); margin-left: 8px;"></i>
@@ -4011,7 +4011,7 @@
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Real-time status monitoring for your linked Roblox account.</p>
                             <div class="row" style="align-items: center; gap: 20px; background: rgba(0,0,0,0.1); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
                                 <div style="position: relative;">
-                                    <img id="roblox-presence-avatar" src="/api/user/roblox/avatar?userId=1" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border); background: #000;">
+                                    <img id="roblox-presence-avatar" src="nora.png" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border); background: #000;" onerror="this.src='nora.png'">
                                     <div id="roblox-presence-dot" style="position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; background: #555; border: 2px solid #1a1b1e;"></div>
                                 </div>
                                 <div style="flex: 1;">
@@ -4175,7 +4175,7 @@
                                 <!-- Discord Embed Wrapper -->
                                 <div style="background: #313338; border-radius: 8px; padding: 16px; font-family: 'gg sans', 'Noto Sans', sans-serif; max-width: 100%; color: #dbdee1;">
                                     <div style="display: flex; gap: 16px; align-items: flex-start;">
-                                        <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="rr-preview-bot-avatar" style="width: 40px; height: 40px; border-radius: 50%;" alt="Bot avatar">
+                                        <img src="nora.png" id="rr-preview-bot-avatar" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%;" alt="Bot avatar">
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                                 <span style="font-weight: 600; color: #f2f3f5; font-size: 1rem;">Nora</span>
@@ -4385,7 +4385,7 @@
                                 
                                 <div class="preview-container" style="background: #313338; border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.05);">
                                     <div class="discord-msg" style="display: flex; gap: 15px;">
-                                        <img id="preview-avatar" class="discord-avatar" src="nora.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0;">
+                                        <img id="preview-avatar" class="discord-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0;">
                                         <div class="discord-content" style="flex: 1;">
                                             <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;"><span id="preview-name">Nora</span> <span class="discord-bot-tag" style="background: #5865F2; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; text-transform: uppercase;">APP</span></div>
                                             <div id="preview-text" class="discord-text" style="color: #dbdee1; font-size: 0.9rem; margin-top: 4px; line-height: 1.4;">Message content will appear here...</div>

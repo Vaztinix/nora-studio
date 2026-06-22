@@ -489,7 +489,7 @@
                     serversContainer.innerHTML = filteredServers.map(s => `
                         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border); gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='nora.png'">
                                 <div style="min-width: 0;">
                                     <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</div>
                                     <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${s.guildId}</div>
@@ -510,7 +510,7 @@
                     usersContainer.innerHTML = filteredUsers.map(u => `
                         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border); gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
                                 <div style="min-width: 0;">
                                     <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${u.username}</div>
                                     <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${u.userId}</div>
@@ -532,7 +532,7 @@
                         <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(248,81,73,0.15);">
                             <div style="display: flex; align-items: center; justify-content: space-between; min-width: 0; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                    <img src="${t.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                    <img src="${t.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.username}</div>
                                         <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${t.userId}</div>
