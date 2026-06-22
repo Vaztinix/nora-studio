@@ -3002,19 +3002,19 @@
                             </div>
                             <div style="display: flex; justify-content: center; align-items: center; height: 180px; position: relative;">
                                 <!-- Simulated Pie Chart with SVG -->
-                                <svg width="140" height="140" viewBox="0 0 36 36" style="transform: rotate(-90deg);">
+                                <svg id="ticket-chart-svg" width="140" height="140" viewBox="0 0 36 36" style="transform: rotate(-90deg);">
                                     <circle cx="18" cy="18" r="15.915" fill="none" stroke="#2a2a28" stroke-width="3"></circle>
                                     <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--primary)" stroke-width="3.5" stroke-dasharray="100 0" stroke-dashoffset="0"></circle>
                                 </svg>
                                 <div style="position: absolute; text-align: center; display: flex; flex-direction: column;">
                                     <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">Total</span>
-                                    <span style="font-size: 1.4rem; font-weight: 800; color: white;">0</span>
+                                    <span id="ticket-total-count" style="font-size: 1.4rem; font-weight: 800; color: white;">0</span>
                                 </div>
                             </div>
                             <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px; font-size: 0.75rem;">
-                                <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></span> Open (0%)</span>
-                                <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: #6c5ce7; border-radius: 50%;"></span> In Progress (0%)</span>
-                                <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: #262626; border-radius: 50%;"></span> Resolved (0%)</span>
+                                <span id="ticket-legend-open" style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></span> Open (0%)</span>
+                                <span id="ticket-legend-progress" style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: #6c5ce7; border-radius: 50%;"></span> In Progress (0%)</span>
+                                <span id="ticket-legend-resolved" style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: #262626; border-radius: 50%;"></span> Resolved (0%)</span>
                             </div>
                         </div>
 
@@ -3061,7 +3061,7 @@
                                         <th style="padding: 10px 15px;">Ticket Author</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="ticket-history-body">
                                     <tr style="color: var(--muted);">
                                         <td colspan="6" style="padding: 40px 15px; text-align: center;">
                                             <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
@@ -8535,6 +8535,116 @@
                 if (dailyEl) dailyEl.textContent = (topggStats.daily || 0).toLocaleString();
                 if (weeklyEl) weeklyEl.textContent = (topggStats.weekly || 0).toLocaleString();
                 if (monthlyEl) monthlyEl.textContent = (topggStats.monthly || 0).toLocaleString();
+
+                // Ticket Distribution & History Rendering
+                const chartSvg = document.getElementById('ticket-chart-svg');
+                if (chartSvg) {
+                    chartSvg.innerHTML = '<circle cx="18" cy="18" r="15.915" fill="none" stroke="#2b2d31" stroke-width="3"></circle>';
+                    const total = data.totalTickets || 0;
+                    if (total > 0) {
+                        const openPct = ((data.openTickets || 0) / total) * 100;
+                        const progPct = ((data.inProgressTickets || 0) / total) * 100;
+                        const closedPct = ((data.closedTickets || 0) / total) * 100;
+
+                        let offset = 0;
+                        
+                        // Open Circle (var(--primary))
+                        if (openPct > 0) {
+                            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                            c.setAttribute('cx', '18');
+                            c.setAttribute('cy', '18');
+                            c.setAttribute('r', '15.915');
+                            c.setAttribute('fill', 'none');
+                            c.setAttribute('stroke', 'var(--primary)');
+                            c.setAttribute('stroke-width', '3.5');
+                            c.setAttribute('stroke-dasharray', `${openPct} ${100 - openPct}`);
+                            c.setAttribute('stroke-dashoffset', `${offset}`);
+                            chartSvg.appendChild(c);
+                            offset -= openPct;
+                        }
+
+                        // In Progress Circle (#6c5ce7)
+                        if (progPct > 0) {
+                            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                            c.setAttribute('cx', '18');
+                            c.setAttribute('cy', '18');
+                            c.setAttribute('r', '15.915');
+                            c.setAttribute('fill', 'none');
+                            c.setAttribute('stroke', '#6c5ce7');
+                            c.setAttribute('stroke-width', '3.5');
+                            c.setAttribute('stroke-dasharray', `${progPct} ${100 - progPct}`);
+                            c.setAttribute('stroke-dashoffset', `${offset}`);
+                            chartSvg.appendChild(c);
+                            offset -= progPct;
+                        }
+
+                        // Resolved Circle (#262626)
+                        if (closedPct > 0) {
+                            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                            c.setAttribute('cx', '18');
+                            c.setAttribute('cy', '18');
+                            c.setAttribute('r', '15.915');
+                            c.setAttribute('fill', 'none');
+                            c.setAttribute('stroke', '#262626');
+                            c.setAttribute('stroke-width', '3.5');
+                            c.setAttribute('stroke-dasharray', `${closedPct} ${100 - closedPct}`);
+                            c.setAttribute('stroke-dashoffset', `${offset}`);
+                            chartSvg.appendChild(c);
+                            offset -= closedPct;
+                        }
+                    }
+                }
+
+                const totalTkts = data.totalTickets || 0;
+                const openPct = totalTkts > 0 ? Math.round(((data.openTickets || 0) / totalTkts) * 100) : 0;
+                const progPct = totalTkts > 0 ? Math.round(((data.inProgressTickets || 0) / totalTkts) * 100) : 0;
+                const closedPct = totalTkts > 0 ? Math.round(((data.closedTickets || 0) / totalTkts) * 100) : 0;
+
+                const tTotal = document.getElementById('ticket-total-count');
+                if (tTotal) tTotal.textContent = totalTkts.toLocaleString();
+
+                const lOpen = document.getElementById('ticket-legend-open');
+                const lProg = document.getElementById('ticket-legend-progress');
+                const lRes = document.getElementById('ticket-legend-resolved');
+
+                if (lOpen) lOpen.innerHTML = `<span style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></span> Open (${data.openTickets || 0} - ${openPct}%)`;
+                if (lProg) lProg.innerHTML = `<span style="width: 8px; height: 8px; background: #6c5ce7; border-radius: 50%;"></span> In Progress (${data.inProgressTickets || 0} - ${progPct}%)`;
+                if (lRes) lRes.innerHTML = `<span style="width: 8px; height: 8px; background: #262626; border-radius: 50%;"></span> Resolved (${data.closedTickets || 0} - ${closedPct}%)`;
+
+                const historyBody = document.getElementById('ticket-history-body');
+                if (historyBody) {
+                    const recent = data.recentTickets || [];
+                    if (recent.length === 0) {
+                        historyBody.innerHTML = `
+                            <tr style="color: var(--muted);">
+                                <td colspan="6" style="padding: 40px 15px; text-align: center;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                        <i class="fas fa-ticket-alt" style="font-size: 2rem; color: var(--border);"></i>
+                                        <span>No Tickets Found</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        historyBody.innerHTML = recent.map(t => {
+                            const openTime = t.openTime ? new Date(t.openTime).toLocaleString() : 'N/A';
+                            const resolveTime = t.resolveTime ? new Date(t.resolveTime).toLocaleString() : 'N/A';
+                            const statusColor = t.status === 'open' ? 'var(--primary)' : (t.status === 'closed' ? 'var(--muted)' : '#6c5ce7');
+                            const statusLabel = t.status === 'open' ? 'Open' : (t.status === 'closed' ? 'Resolved' : 'In Progress');
+                            
+                            return `
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff;">
+                                    <td style="padding: 12px 15px; font-weight: 500;">ticket-${t.id.slice(-4)}</td>
+                                    <td style="padding: 12px 15px;">${t.topic || 'Support'}</td>
+                                    <td style="padding: 12px 15px;"><span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; background: ${statusColor}15; color: ${statusColor}; border: 1px solid ${statusColor}30;">${statusLabel}</span></td>
+                                    <td style="padding: 12px 15px; color: var(--muted);">${openTime}</td>
+                                    <td style="padding: 12px 15px; color: var(--muted);">${resolveTime}</td>
+                                    <td style="padding: 12px 15px; color: var(--muted);">${t.ownerTag || t.ownerId}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
 
                 const width = 800;
                 const height = 200;
