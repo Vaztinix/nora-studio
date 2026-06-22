@@ -7870,6 +7870,7 @@
         async function openConfig(g) {
             logToTerminal(`Opening configuration for server: ${g.name} (${g.id})`, 'SERVER_SELECT');
             currentServerId = g.id; 
+            window.currentGuild = g;
             currentServerName = g.name;
             currentServerIsPremium = g.isPremium;
             document.getElementById('cfg-icon').src = g.icon;

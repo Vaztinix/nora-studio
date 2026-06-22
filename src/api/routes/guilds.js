@@ -2927,5 +2927,97 @@ router.delete('/autoresponders/:id', async (req, res) => {
 
 
 
+/**
+ * POST /api/guilds/:guildId/reaction-roles/publish
+ * Publishes a new reaction roles embed panel to a channel.
+ */
+router.post('/reaction-roles/publish', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { channelId, title, description, color, imageUrl, roles } = req.body;
+
+        if (!channelId) return res.status(400).json({ error: 'Destination channel is required.' });
+        if (!roles || !Array.isArray(roles) || roles.length === 0) {
+            return res.status(400).json({ error: 'Please configure at least one role mapping.' });
+        }
+
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        const channel = guild.channels.cache.get(channelId);
+        if (!channel) return res.status(404).json({ error: 'Channel not found.' });
+
+        const me = guild.members.me;
+        if (!me) return res.status(500).json({ error: 'Bot member not found.' });
+
+        const perms = channel.permissionsFor(me);
+        if (!perms || !perms.has('SendMessages') || !perms.has('EmbedLinks') || !perms.has('AddReactions')) {
+            return res.status(403).json({ error: 'Nora requires "Send Messages", "Embed Links", and "Add Reactions" permissions in the destination channel.' });
+        }
+
+        const { EmbedBuilder } = require('discord.js');
+        const embed = new EmbedBuilder()
+            .setDescription(description && description.trim() ? description : 'Click the emoji reactions below to assign/remove roles on your profile.')
+            .setColor(color || '#ffffff');
+
+        if (title && title.trim()) {
+            embed.setTitle(title);
+        }
+        if (imageUrl && imageUrl.trim()) {
+            embed.setImage(imageUrl);
+        }
+
+        const targetMessage = await channel.send({ embeds: [embed] });
+
+        const ReactionRole = require('../../database/models/ReactionRole');
+        for (const mapping of roles) {
+            const { roleId, emoji } = mapping;
+            let emojiKey = emoji.trim();
+            const customEmojiRegex = /^<?(a)?:([a-zA-Z0-9_]+):([0-9]+)>?$/;
+            const customMatch = emojiKey.match(customEmojiRegex);
+            if (customMatch) {
+                emojiKey = customMatch[3];
+            }
+
+            await ReactionRole.create({
+                guildId,
+                messageId: targetMessage.id,
+                emoji: emojiKey,
+                roleId
+            });
+
+            await targetMessage.react(emoji).catch(err => {
+                console.warn(`[Reaction Role Publish] Failed to react with ${emoji}:`, err.message);
+            });
+        }
+
+        try {
+            const authHeader = req.headers.authorization;
+            const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+            const user = token ? await getDiscordUser(token).catch(() => null) : null;
+            const logger = require('../../utils/logger');
+            const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+            logger.logDashboardOrCommandAction(
+                guild,
+                'Dashboard Action - Published Reaction Roles Panel',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Channel', value: `<#${channelId}>`, inline: true },
+                    { name: 'Message ID', value: targetMessage.id, inline: true },
+                    { name: 'Mappings Count', value: String(roles.length), inline: true }
+                ],
+                0x2ecc71
+            ).catch(() => null);
+        } catch (err) {}
+
+        res.json({ success: true, message: 'Reaction roles panel published successfully!' });
+    } catch (e) {
+        console.error('Error publishing reaction roles panel:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+
+
 module.exports = router;
 
