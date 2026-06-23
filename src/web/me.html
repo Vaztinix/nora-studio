@@ -6,26 +6,31 @@
     <title>Vaztinix | Founder & Developer</title>
     <meta name="description" content="Official profile of Vaztinix - Founder & Developer of Nora Studio.">
     <link rel="icon" type="image/png" href="/nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #030308;
-            --primary: #00e5ff;
-            --primary-glow: rgba(0, 229, 255, 0.2);
-            --secondary: #bf00ff;
-            --accent: #ff003c;
-            --card-bg: rgba(8, 8, 20, 0.65);
-            --border: rgba(0, 229, 255, 0.12);
+            --bg: #020205;
+            --primary: #00e5ff; /* Futuristic Cyan */
+            --primary-glow: rgba(0, 229, 255, 0.15);
+            --secondary: #bd00ff; /* Purple Glow */
+            --card-bg: rgba(10, 10, 18, 0.6);
+            --border: rgba(0, 229, 255, 0.15);
+            --border-hover: rgba(0, 229, 255, 0.4);
             --text: #e2e8f0;
             --muted: #64748b;
+            --accent: #5865f2;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: var(--bg);
+            background-color: var(--bg);
             color: var(--text);
             min-height: 100vh;
             display: flex;
@@ -35,214 +40,200 @@
             position: relative;
         }
 
-        /* ===== CANVAS BACKGROUNDS ===== */
-        #aurora-canvas, #particle-canvas {
-            position: fixed;
+        /* Canvas Particle Background */
+        #bg-canvas {
+            position: absolute;
             inset: 0;
             z-index: 1;
+            pointer-events: auto;
+        }
+
+        /* Holographic grid lines */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center;
+            z-index: 2;
             pointer-events: none;
         }
-        #particle-canvas { z-index: 2; pointer-events: auto; }
 
-        /* ===== FLOATING ORBS ===== */
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: 1;
+        /* Scanlines for CRT feel */
+        .scanlines {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg, 
+                rgba(255, 0, 0, 0.06), 
+                rgba(0, 255, 0, 0.02), 
+                rgba(0, 0, 255, 0.06)
+            );
+            background-size: 100% 4px, 6px 100%;
+            z-index: 999;
             pointer-events: none;
-            animation: orbFloat 12s ease-in-out infinite alternate;
-        }
-        .orb-1 { width: 300px; height: 300px; background: rgba(0,229,255,0.08); top: 10%; left: -5%; animation-delay: 0s; }
-        .orb-2 { width: 400px; height: 400px; background: rgba(191,0,255,0.06); bottom: 5%; right: -8%; animation-delay: -4s; }
-        .orb-3 { width: 200px; height: 200px; background: rgba(255,0,60,0.05); top: 50%; left: 50%; animation-delay: -8s; }
-
-        @keyframes orbFloat {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -20px) scale(1.1); }
-            66% { transform: translate(-20px, 30px) scale(0.95); }
-            100% { transform: translate(15px, -15px) scale(1.05); }
         }
 
-        /* ===== INTRO OVERLAY ===== */
+        /* Cyberpunk Glitch Intro Overlay */
         .intro-overlay {
             position: fixed;
             inset: 0;
-            background: #010104;
+            background: #010103;
             z-index: 10000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.8s ease, backdrop-filter 0.8s ease;
-        }
-        .intro-overlay.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #intro-canvas {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-        }
-
-        .intro-text-center {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-        }
-
-        .intro-glitch {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(2rem, 6vw, 4.5rem);
-            font-weight: 900;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 6px;
-            position: relative;
-            animation: glitchIn 0.6s ease forwards;
-            opacity: 0;
-        }
-
-        @keyframes glitchIn {
-            0% { opacity: 0; transform: scale(1.3) skewX(-5deg); filter: blur(8px); }
-            40% { opacity: 1; transform: scale(1) skewX(2deg); filter: blur(0); }
-            60% { transform: scale(1.02) skewX(-1deg); }
-            100% { opacity: 1; transform: scale(1) skewX(0deg); filter: blur(0); }
-        }
-
-        .intro-subtitle {
             font-family: 'Share Tech Mono', monospace;
+            padding: 40px;
+        }
+
+        .terminal-box {
+            width: 100%;
+            max-width: 600px;
             color: var(--primary);
             font-size: 0.95rem;
-            margin-top: 16px;
-            letter-spacing: 3px;
+            line-height: 1.5;
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .terminal-line {
             opacity: 0;
-            animation: fadeUp 0.5s 0.4s ease forwards;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 2px solid transparent;
         }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Shutter Slide Out Reveal Animation */
+        .intro-overlay.reveal-left {
+            animation: shutterLeft 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        }
+        .intro-overlay.reveal-right {
+            animation: shutterRight 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
         }
 
-        /* ===== MAIN PROFILE ===== */
-        .profile-scene {
+        @keyframes shutterLeft {
+            0% { clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%); }
+            100% { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); opacity: 0; visibility: hidden; }
+        }
+        @keyframes shutterRight {
+            0% { clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%); }
+            100% { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); opacity: 0; visibility: hidden; }
+        }
+
+        /* Main Profile View Port */
+        .profile-container {
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 480px;
-            padding: 20px;
-            perspective: 1200px;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-        .profile-scene.visible {
-            opacity: 1;
-            transform: translateY(0);
+            max-width: 500px;
+            padding: 24px;
+            perspective: 1000px;
         }
 
-        /* Animated border wrapper */
-        .card-shell {
+        /* Animated border glowing card */
+        .card-wrapper {
             position: relative;
-            padding: 2px;
-            border-radius: 28px;
-            background: conic-gradient(from var(--angle, 0deg), var(--primary), var(--secondary), var(--accent), var(--primary));
-            animation: borderSpin 4s linear infinite;
+            padding: 1px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--primary) 100%);
+            background-size: 300% 300%;
+            border-radius: 24px;
+            animation: gradientMove 6s infinite alternate ease-in-out;
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.1);
         }
 
-        @property --angle {
-            syntax: '<angle>';
-            initial-value: 0deg;
-            inherits: false;
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        @keyframes borderSpin {
-            to { --angle: 360deg; }
-        }
-
-        .card-inner {
+        .profile-card {
             background: var(--card-bg);
-            backdrop-filter: blur(40px) saturate(1.5);
-            -webkit-backdrop-filter: blur(40px) saturate(1.5);
-            border-radius: 26px;
-            padding: 44px 32px 36px;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 23px;
+            padding: 40px 30px;
             text-align: center;
             position: relative;
             overflow: hidden;
         }
 
-        /* Noise texture overlay */
-        .card-inner::before {
-            content: '';
+        /* HUD tech lines decoration */
+        .hud-corner {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--primary);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .hud-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .hud-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .hud-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .hud-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+        /* Tech HUD Ring surrounding Avatar */
+        .hud-circle-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hud-ring {
             position: absolute;
             inset: 0;
-            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .card-inner > * { position: relative; z-index: 1; }
-
-        /* HUD Corners */
-        .hud-c { position: absolute; width: 18px; height: 18px; border: 2px solid var(--primary); pointer-events: none; opacity: 0.5; z-index: 2; }
-        .hud-tl { top: 14px; left: 14px; border-right: none; border-bottom: none; }
-        .hud-tr { top: 14px; right: 14px; border-left: none; border-bottom: none; }
-        .hud-bl { bottom: 14px; left: 14px; border-right: none; border-top: none; }
-        .hud-br { bottom: 14px; right: 14px; border-left: none; border-top: none; }
-
-        /* ===== AVATAR ===== */
-        .avatar-container {
-            position: relative;
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 20px;
-        }
-
-        /* Rotating rings */
-        .ring {
-            position: absolute;
+            border: 2px dashed var(--primary);
             border-radius: 50%;
-            border: 2px solid transparent;
-        }
-        .ring-1 {
-            inset: -10px;
-            border-top-color: var(--primary);
-            border-right-color: var(--primary);
-            animation: spin 6s linear infinite;
-            opacity: 0.5;
-        }
-        .ring-2 {
-            inset: -18px;
-            border-bottom-color: var(--secondary);
-            border-left-color: var(--secondary);
-            animation: spin 8s linear infinite reverse;
-            opacity: 0.35;
-        }
-        .ring-3 {
-            inset: -26px;
-            border-top-color: var(--accent);
-            animation: spin 12s linear infinite;
-            opacity: 0.2;
-            border-style: dashed;
+            animation: rotateRing 20s linear infinite;
+            opacity: 0.3;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .hud-ring-outer {
+            position: absolute;
+            inset: -8px;
+            border: 1px solid var(--secondary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+            animation: rotateRingBack 10s linear infinite;
+            opacity: 0.4;
+        }
 
-        .avatar-frame {
-            width: 100%;
-            height: 100%;
+        @keyframes rotateRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes rotateRingBack {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+
+        .avatar-box {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             padding: 3px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            position: relative;
+            z-index: 5;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
         }
-        .avatar-frame:hover {
-            transform: scale(1.08);
-            box-shadow: 0 0 35px var(--primary-glow), 0 0 60px rgba(191,0,255,0.15);
+
+        .avatar-box:hover {
+            transform: scale(1.06) rotate(3deg);
+            box-shadow: 0 0 25px var(--primary-glow);
         }
 
         .avatar {
@@ -251,116 +242,85 @@
             border-radius: 50%;
             object-fit: cover;
             background: #0c0a15;
-            border: 3px solid #07060f;
+            border: 3px solid #0a0813;
         }
 
         .status-dot {
             position: absolute;
-            bottom: 6px;
-            right: 6px;
-            width: 22px;
-            height: 22px;
+            bottom: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: #747f8d;
-            border: 4px solid rgba(8,8,20,0.9);
+            background: #64748b;
+            border: 4px solid #0d0c15;
             z-index: 6;
-            box-shadow: 0 0 12px rgba(0,0,0,0.5);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-        .status-dot.online { background: #23a55a; box-shadow: 0 0 12px rgba(35,165,90,0.5); }
-        .status-dot.idle { background: #f0b232; box-shadow: 0 0 12px rgba(240,178,50,0.4); }
-        .status-dot.dnd { background: #f23f43; box-shadow: 0 0 12px rgba(242,63,67,0.4); }
 
-        /* ===== NAME & HANDLE ===== */
         .name {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2rem;
-            font-weight: 800;
+            font-size: 2.2rem;
+            font-weight: 900;
             color: #fff;
-            letter-spacing: 2px;
+            letter-spacing: -0.5px;
             margin-bottom: 4px;
-            text-shadow: 0 0 20px rgba(255,255,255,0.15);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
         }
 
         .handle {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--primary);
-            letter-spacing: 2px;
+            font-family: 'Share Tech Mono', monospace;
             margin-bottom: 16px;
-            text-shadow: 0 0 8px var(--primary-glow);
+            letter-spacing: 1px;
         }
 
-        /* ===== BADGES ===== */
-        .badge-row {
+        .badge-container {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 22px;
-            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
         }
 
         .badge {
-            background: rgba(0,229,255,0.06);
-            border: 1px solid rgba(0,229,255,0.15);
-            padding: 5px 14px;
-            border-radius: 8px;
-            font-size: 0.7rem;
-            font-weight: 800;
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            font-family: 'Orbitron', sans-serif;
-        }
-        .badge.purple {
-            background: rgba(191,0,255,0.06);
-            border-color: rgba(191,0,255,0.2);
-            color: var(--secondary);
+            letter-spacing: 1px;
+            font-family: 'Share Tech Mono', monospace;
         }
 
-        /* ===== BIO ===== */
-        .bio-section {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(0,229,255,0.06);
-            padding: 18px 20px;
-            border-radius: 14px;
-            margin-bottom: 26px;
-            position: relative;
-            min-height: 60px;
-        }
-
-        .bio-section::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 20px;
-            width: 40px; height: 2px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-        }
-
-        .bio-text {
-            font-size: 0.92rem;
+        .bio-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(0, 229, 255, 0.08);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
             line-height: 1.6;
             color: #94a3b8;
+            position: relative;
         }
 
-        .bio-cursor {
-            display: inline-block;
-            width: 2px;
-            height: 1em;
+        .bio-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20px;
+            width: 30px;
+            height: 2px;
             background: var(--primary);
-            margin-left: 2px;
-            vertical-align: text-bottom;
-            animation: blink 1s step-end infinite;
         }
 
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-
-        /* ===== SOCIAL LINKS ===== */
         .social-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }
 
         .social-link {
@@ -368,103 +328,92 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px;
             border-radius: 12px;
             color: #fff;
             text-decoration: none;
-            font-size: 0.82rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease-in-out;
             position: relative;
             overflow: hidden;
         }
 
-        .social-link::before {
+        .social-link::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, transparent, rgba(0,229,255,0.04), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.4s;
         }
-        .social-link:hover::before { opacity: 1; }
+
+        .social-link:hover::after {
+            transform: translateX(100%);
+        }
 
         .social-link:hover {
             border-color: var(--primary);
             color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,229,255,0.1);
+            transform: translateY(-2px);
+            background: rgba(0, 229, 255, 0.04);
+            box-shadow: 0 5px 15px rgba(0, 229, 255, 0.1);
         }
 
         .social-link.discord:hover {
-            border-color: #5865f2;
+            border-color: var(--accent);
             color: #fff;
-            background: rgba(88,101,242,0.12);
-            box-shadow: 0 8px 20px rgba(88,101,242,0.2);
+            background: rgba(88, 101, 242, 0.1);
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.25);
         }
 
-        .social-link i { font-size: 1rem; }
-
-        /* ===== BACK LINK ===== */
         .back-home {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             color: var(--muted);
             text-decoration: none;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-top: 28px;
-            font-family: 'Share Tech Mono', monospace;
-            letter-spacing: 1px;
+            margin-top: 30px;
             transition: color 0.2s, transform 0.2s;
-        }
-        .back-home:hover {
-            color: var(--primary);
-            transform: translateX(-5px);
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 0.5px;
         }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 520px) {
-            .social-grid { grid-template-columns: repeat(2, 1fr); }
-            .name { font-size: 1.6rem; }
-            .card-inner { padding: 32px 20px 28px; }
+        .back-home:hover {
+            color: var(--primary);
+            transform: translateX(-4px);
         }
     </style>
 </head>
 <body>
-    <!-- Background layers -->
-    <canvas id="aurora-canvas"></canvas>
-    <canvas id="particle-canvas"></canvas>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
+    <canvas id="bg-canvas"></canvas>
+    <div class="grid-overlay"></div>
+    <div class="scanlines"></div>
 
-    <!-- Intro Overlay -->
+    <!-- Entertaining Cyber Boot Intro Overlay -->
     <div class="intro-overlay" id="intro-screen">
-        <canvas id="intro-canvas"></canvas>
-        <div class="intro-text-center">
-            <div class="intro-glitch" id="intro-title">VAZTINIX</div>
-            <div class="intro-subtitle">NORA STUDIO // FOUNDER ACCESS</div>
-        </div>
+        <div class="terminal-box" id="terminal-text"></div>
     </div>
 
-    <!-- Profile Card -->
-    <div class="profile-scene" id="profile-scene">
-        <div class="card-shell" id="card-shell">
-            <div class="card-inner" id="card-inner">
-                <div class="hud-c hud-tl"></div>
-                <div class="hud-c hud-tr"></div>
-                <div class="hud-c hud-bl"></div>
-                <div class="hud-c hud-br"></div>
+    <!-- Hidden right-half screen clip reveal helper -->
+    <div class="intro-overlay" id="intro-screen-right" style="display: none; background: transparent; pointer-events: none;"></div>
 
-                <div class="avatar-container">
-                    <div class="ring ring-1"></div>
-                    <div class="ring ring-2"></div>
-                    <div class="ring ring-3"></div>
-                    <div class="avatar-frame">
+    <div class="profile-container">
+        <div class="card-wrapper">
+            <div class="profile-card">
+                <div class="hud-corner hud-tl"></div>
+                <div class="hud-corner hud-tr"></div>
+                <div class="hud-corner hud-bl"></div>
+                <div class="hud-corner hud-br"></div>
+
+                <div class="hud-circle-container">
+                    <div class="hud-ring"></div>
+                    <div class="hud-ring-outer"></div>
+                    <div class="avatar-box">
                         <img class="avatar" src="/ReVaztinix.jpeg" alt="vaztinix" onerror="this.onerror=null; this.src='/nora.png';">
                         <div class="status-dot" id="status-dot"></div>
                     </div>
@@ -473,280 +422,269 @@
                 <h1 class="name" id="name">Vaz</h1>
                 <div class="handle" id="handle">@vaztinix</div>
 
-                <div class="badge-row">
+                <div class="badge-container">
                     <span class="badge">Founder</span>
-                    <span class="badge purple">Developer</span>
+                    <span class="badge">Developer</span>
                 </div>
 
-                <div class="bio-section">
-                    <p class="bio-text" id="bio"></p>
+                <div class="bio-box">
+                    <p id="bio">💕 | I care for everyone, but those closest to me will never understand the trust they have.</p>
                 </div>
 
                 <div class="social-grid">
-                    <a href="https://github.com/Vaztinix" class="social-link" target="_blank"><i class="fab fa-github"></i> GitHub</a>
-                    <a href="https://www.youtube.com/@Vaztinix" class="social-link" target="_blank"><i class="fab fa-youtube"></i> YouTube</a>
-                    <a href="https://www.twitch.tv/vaztinix" class="social-link" target="_blank"><i class="fab fa-twitch"></i> Twitch</a>
-                    <a href="https://guns.lol/vaztinix" class="social-link" target="_blank"><i class="fas fa-link"></i> guns.lol</a>
-                    <a href="https://www.roblox.com/users/3089063186/profile" class="social-link" target="_blank"><i class="fas fa-gamepad"></i> Roblox</a>
-                    <a href="https://discord.com/users/1214048435632603137" class="social-link discord" target="_blank"><i class="fab fa-discord"></i> Discord</a>
+                    <a href="https://github.com/Vaztinix" class="social-link" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://www.youtube.com/@Vaztinix" class="social-link" target="_blank">
+                        <i class="fab fa-youtube"></i> YouTube
+                    </a>
+                    <a href="https://www.twitch.tv/vaztinix" class="social-link" target="_blank">
+                        <i class="fab fa-twitch"></i> Twitch
+                    </a>
+                    <a href="https://guns.lol/vaztinix" class="social-link" target="_blank">
+                        <i class="fas fa-link"></i> guns.lol
+                    </a>
+                    <a href="https://www.roblox.com/users/3089063186/profile" class="social-link" target="_blank">
+                        <i class="fas fa-gamepad"></i> Roblox
+                    </a>
+                    <a href="https://discord.com/users/1214048435632603137" class="social-link discord" target="_blank">
+                        <i class="fab fa-discord"></i> Discord
+                    </a>
                 </div>
 
-                <a href="/" class="back-home"><i class="fas fa-arrow-left"></i> BACK_TO_NORA</a>
+                <a href="/" class="back-home">
+                    <i class="fas fa-arrow-left"></i> BACK_TO_NORA
+                </a>
             </div>
         </div>
     </div>
 
     <script>
-    // ===== 1. DIGITAL RAIN INTRO =====
-    (function() {
-        const c = document.getElementById('intro-canvas');
-        const ctx = c.getContext('2d');
-        c.width = window.innerWidth;
-        c.height = window.innerHeight;
+        // --- 1. Cyber Terminal Boot Intro Script ---
+        const logs = [
+            { text: "INITIALIZING NORA BOOTLOADER V2.1...", delay: 50 },
+            { text: "ESTABLISHING SECURE PORT LINK... [CONNECTED]", delay: 150 },
+            { text: "DECRYPTION MATRIX SYNC... [SUCCESS]", delay: 50 },
+            { text: "MOUNTING MODULE PATH: /PUBLIC/DEV/VAZTINIX...", delay: 100 },
+            { text: "PARSING SYSTEM PRIVILEGES... LEVEL: FOUNDER [OK]", delay: 80 },
+            { text: "NORA ENGINE READY. ENJOY THE EXPERIENCE.", delay: 200 }
+        ];
 
-        const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン01VAZ';
-        const fontSize = 14;
-        const cols = Math.floor(c.width / fontSize);
-        const drops = Array(cols).fill(1);
+        const term = document.getElementById("terminal-text");
+        let lineIdx = 0;
 
-        function drawRain() {
-            ctx.fillStyle = 'rgba(1,1,4,0.06)';
-            ctx.fillRect(0, 0, c.width, c.height);
-            ctx.fillStyle = 'rgba(0,229,255,0.35)';
-            ctx.font = fontSize + 'px monospace';
-
-            for (let i = 0; i < drops.length; i++) {
-                const ch = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillText(ch, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
+        function printLogLine() {
+            if (lineIdx < logs.length) {
+                const lineData = logs[lineIdx];
+                const div = document.createElement("div");
+                div.className = "terminal-line";
+                div.style.opacity = 1;
+                div.textContent = "> " + lineData.text;
+                term.appendChild(div);
+                lineIdx++;
+                setTimeout(printLogLine, lineData.delay);
+            } else {
+                // Completed lines, kick off the shutter split reveal
+                setTimeout(startShutterReveal, 400);
             }
         }
 
-        const rainInterval = setInterval(drawRain, 33);
+        function startShutterReveal() {
+            const leftScreen = document.getElementById("intro-screen");
+            const rightScreen = document.getElementById("intro-screen-right");
 
-        // Dismiss intro after 2s
-        setTimeout(() => {
-            clearInterval(rainInterval);
-            const intro = document.getElementById('intro-screen');
-            intro.classList.add('fade-out');
-            document.getElementById('profile-scene').classList.add('visible');
-            setTimeout(() => intro.remove(), 900);
-        }, 2000);
-    })();
+            // Setup right half clone
+            rightScreen.innerHTML = leftScreen.innerHTML;
+            rightScreen.style.display = "flex";
 
-    // ===== 2. AURORA BACKGROUND =====
-    (function() {
-        const c = document.getElementById('aurora-canvas');
-        const ctx = c.getContext('2d');
-        let w, h, t = 0;
+            // Trigger shutter animations
+            leftScreen.classList.add("reveal-left");
+            rightScreen.classList.add("reveal-right");
 
-        function resize() { w = c.width = window.innerWidth; h = c.height = window.innerHeight; }
-        resize();
-        window.addEventListener('resize', resize);
-
-        function draw() {
-            ctx.clearRect(0, 0, w, h);
-            for (let i = 0; i < 3; i++) {
-                const grad = ctx.createLinearGradient(0, 0, w, h);
-                grad.addColorStop(0, `hsla(${180 + i * 40 + t * 0.3}, 100%, 60%, 0.015)`);
-                grad.addColorStop(0.5, `hsla(${270 + i * 30 - t * 0.2}, 100%, 50%, 0.02)`);
-                grad.addColorStop(1, `hsla(${340 + i * 20 + t * 0.1}, 100%, 45%, 0.01)`);
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                const yOff = Math.sin(t * 0.008 + i) * 80;
-                ctx.moveTo(0, h * 0.3 + yOff);
-                ctx.bezierCurveTo(w * 0.25, h * 0.15 + yOff + Math.sin(t * 0.01) * 60, w * 0.75, h * 0.5 + yOff - Math.cos(t * 0.012) * 50, w, h * 0.35 + yOff);
-                ctx.lineTo(w, h);
-                ctx.lineTo(0, h);
-                ctx.closePath();
-                ctx.fill();
-            }
-            t++;
-            requestAnimationFrame(draw);
+            // Clean up elements after completion
+            setTimeout(() => {
+                leftScreen.remove();
+                rightScreen.remove();
+            }, 850);
         }
-        draw();
-    })();
 
-    // ===== 3. INTERACTIVE PARTICLES =====
-    (function() {
-        const c = document.getElementById('particle-canvas');
-        const ctx = c.getContext('2d');
-        let w, h;
-        let mouse = { x: null, y: null, radius: 120 };
+        // Start Boot Animation
+        setTimeout(printLogLine, 100);
+
+
+        // --- 2. Interactive Canvas Particles Background ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
         let particles = [];
+        let mouse = { x: null, y: null, radius: 100 };
 
-        function resize() {
-            w = c.width = window.innerWidth;
-            h = c.height = window.innerHeight;
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
             initParticles();
         }
 
-        class P {
+        class Particle {
             constructor(x, y) {
-                this.x = x; this.y = y;
-                this.bx = x; this.by = y;
-                this.sz = Math.random() * 2.2 + 0.8;
-                this.d = Math.random() * 30 + 15;
-                this.hue = Math.random() > 0.7 ? 290 : 185;
+                this.x = x;
+                this.y = y;
+                this.baseX = x;
+                this.baseY = y;
+                this.size = Math.random() * 2 + 1;
+                this.density = (Math.random() * 30) + 15;
             }
             draw() {
-                ctx.fillStyle = `hsla(${this.hue}, 100%, 65%, 0.5)`;
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.55)';
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.sz, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
                 ctx.fill();
             }
             update() {
-                let dx = mouse.x - this.x, dy = mouse.y - this.y;
-                let dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < mouse.radius) {
-                    let f = (mouse.radius - dist) / mouse.radius;
-                    this.x -= (dx / dist) * f * this.d;
-                    this.y -= (dy / dist) * f * this.d;
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    let force = (mouse.radius - distance) / mouse.radius;
+                    let directionX = dx / distance;
+                    let directionY = dy / distance;
+                    this.x -= directionX * force * this.density;
+                    this.y -= directionY * force * this.density;
                 } else {
-                    this.x += (this.bx - this.x) * 0.05;
-                    this.y += (this.by - this.y) * 0.05;
+                    if (this.x !== this.baseX) {
+                        let dx = this.x - this.baseX;
+                        this.x -= dx / 15;
+                    }
+                    if (this.y !== this.baseY) {
+                        let dy = this.y - this.baseY;
+                        this.y -= dy / 15;
+                    }
                 }
             }
         }
 
         function initParticles() {
             particles = [];
-            const count = Math.floor((w * h) / 12000);
+            let count = Math.floor((canvas.width * canvas.height) / 14000);
             for (let i = 0; i < count; i++) {
-                particles.push(new P(Math.random() * w, Math.random() * h));
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                particles.push(new Particle(x, y));
             }
         }
 
-        function animate() {
-            ctx.clearRect(0, 0, w, h);
-            // Draw connections
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    let dx = particles[i].x - particles[j].x;
-                    let dy = particles[i].y - particles[j].y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 100) {
-                        ctx.strokeStyle = `rgba(0,229,255,${0.08 * (1 - dist / 100)})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
                 particles[i].update();
                 particles[i].draw();
             }
-            requestAnimationFrame(animate);
+            requestAnimationFrame(animateParticles);
         }
 
-        window.addEventListener('resize', resize);
-        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-        window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
-
-        resize();
-        animate();
-    })();
-
-    // ===== 4. 3D CARD TILT =====
-    (function() {
-        const shell = document.getElementById('card-shell');
-        const scene = document.getElementById('profile-scene');
-
-        scene.addEventListener('mousemove', e => {
-            const rect = shell.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const cx = rect.width / 2;
-            const cy = rect.height / 2;
-            const rx = -((y - cy) / cy) * 10;
-            const ry = ((x - cx) / cx) * 10;
-            shell.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.02,1.02,1.02)`;
-            shell.style.transition = 'transform 0.1s ease';
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
         });
 
-        scene.addEventListener('mouseleave', () => {
-            shell.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1,1,1)';
-            shell.style.transition = 'transform 0.5s ease';
-        });
-    })();
+        resizeCanvas();
+        animateParticles();
 
-    // ===== 5. TYPEWRITER BIO =====
-    (function() {
-        const bioEl = document.getElementById('bio');
-        const defaultBio = "💕 | I care for everyone, but those closest to me will never understand the trust they have.";
-        let bioText = defaultBio;
-        let loaded = false;
 
-        function typewrite(text) {
-            bioEl.innerHTML = '';
-            let i = 0;
-            const cursor = document.createElement('span');
-            cursor.className = 'bio-cursor';
-            
-            function type() {
-                if (i < text.length) {
-                    bioEl.textContent = text.slice(0, i + 1);
-                    bioEl.appendChild(cursor);
-                    i++;
-                    setTimeout(type, 25 + Math.random() * 35);
-                } else {
-                    // Keep cursor blinking
-                    bioEl.appendChild(cursor);
-                }
-            }
-            // Start after intro
-            setTimeout(type, 2200);
-        }
-
-        // Fetch live data
+        // --- 3. Discord User Status Data Sync ---
         const userId = '1214048435632603137';
+        const statusColors = {
+            online: '#23a55a',
+            idle: '#f0b232',
+            dnd: '#f23f43',
+            offline: '#747f8d'
+        };
 
+        // Local public API fetch
         fetch(`/api/public/user/${userId}`)
-            .then(r => r.json())
-            .then(u => {
-                if (u && !u.error) {
-                    if (u.avatar) document.querySelector('.avatar').src = u.avatar;
-                    if (u.globalName) document.getElementById('name').textContent = u.globalName;
-                    document.getElementById('handle').textContent = `@${u.username}`;
-                }
-            }).catch(() => {});
-
-        fetch(`https://api.lanyard.rest/v1/users/${userId}`)
-            .then(r => r.json())
-            .then(json => {
-                if (json.success && json.data) {
-                    const data = json.data;
-                    const user = data.discord_user;
-
+            .then(res => res.json())
+            .then(user => {
+                if (user && !user.error) {
                     if (user.avatar) {
-                        const ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
-                        document.querySelector('.avatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=256`;
+                        document.querySelector('.avatar').src = user.avatar;
                     }
-                    if (user.global_name) document.getElementById('name').textContent = user.global_name;
+                    if (user.globalName) {
+                        document.getElementById('name').textContent = user.globalName;
+                    }
                     document.getElementById('handle').textContent = `@${user.username}`;
-
-                    const dot = document.getElementById('status-dot');
-                    const s = data.discord_status;
-                    if (s === 'online' || s === 'idle' || s === 'dnd') dot.classList.add(s);
-
-                    if (data.kv && data.kv.bio) {
-                        bioText = data.kv.bio;
-                    } else if (data.activities) {
-                        const cs = data.activities.find(a => a.type === 4);
-                        if (cs && cs.state) {
-                            bioText = (cs.emoji ? cs.emoji.name + ' ' : '') + cs.state;
-                        }
-                    }
-                    if (!loaded) { loaded = true; typewrite(bioText); }
                 }
             })
             .catch(() => {});
 
-        // Fallback if Lanyard doesn't load
-        setTimeout(() => { if (!loaded) { loaded = true; typewrite(bioText); } }, 3000);
-    })();
+        // Lanyard details fetch
+        fetch(`https://api.lanyard.rest/v1/users/${userId}`)
+            .then(res => res.json())
+            .then(json => {
+                if (json.success && json.data) {
+                    const data = json.data;
+                    const user = data.discord_user;
+                    
+                    if (user.avatar) {
+                        const isAnimated = user.avatar.startsWith('a_');
+                        const img = document.querySelector('.avatar');
+                        img.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`;
+                    }
+                    
+                    if (user.global_name) {
+                        document.getElementById('name').textContent = user.global_name;
+                    }
+                    document.getElementById('handle').textContent = `@${user.username}`;
+
+                    const status = data.discord_status;
+                    const statusDot = document.getElementById('status-dot');
+                    if (statusColors[status]) {
+                        statusDot.style.backgroundColor = statusColors[status];
+                    }
+
+                    if (data.kv && data.kv.bio) {
+                        document.getElementById('bio').textContent = data.kv.bio;
+                    } else if (data.activities && data.activities.length > 0) {
+                        const customStatus = data.activities.find(a => a.type === 4);
+                        if (customStatus && customStatus.state) {
+                            document.getElementById('bio').textContent = (customStatus.emoji ? customStatus.emoji.name + ' ' : '') + customStatus.state;
+                        }
+                    }
+                }
+            })
+            .catch(() => {});
+
+        // 3D Card Tilt Interaction
+        const card = document.querySelector('.profile-card');
+        const wrapper = document.querySelector('.card-wrapper');
+        document.addEventListener('mousemove', e => {
+            const rect = wrapper.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const xc = rect.width / 2;
+            const yc = rect.height / 2;
+            
+            const dx = (x - xc) / xc;
+            const dy = (y - yc) / yc;
+            
+            const maxRotation = 12;
+            const rotateX = -dy * maxRotation;
+            const rotateY = dx * maxRotation;
+            
+            wrapper.style.transition = 'transform 0.1s ease';
+            wrapper.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+        
+        document.addEventListener('mouseleave', () => {
+            wrapper.style.transition = 'transform 0.5s ease';
+            wrapper.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
     </script>
 </body>
 </html>
