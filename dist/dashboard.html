@@ -8203,7 +8203,10 @@
             const sideName = document.getElementById('sidebar-server-name');
             if (sideName) sideName.textContent = g.name;
             
-            // Revert tab state
+            // Revert tab state and reset rendered states for new server
+            document.querySelectorAll('.tab-content').forEach(tc => {
+                delete tc.dataset.rendered;
+            });
             showTab('tab-overview');
 
             applyPremiumLocking();
@@ -8776,8 +8779,17 @@
             }
             
             if (hasStaleCache) {
-                // Render stale data immediately (no spinner)
-                _renderAnalytics(data);
+                // Render stale data immediately (no spinner) if not already rendered
+                const tabOverview = document.getElementById('tab-overview');
+                const tabMembers = document.getElementById('tab-members');
+                const shouldRender = force || 
+                                     (tabOverview && !tabOverview.dataset.rendered) || 
+                                     (tabMembers && !tabMembers.dataset.rendered);
+                if (shouldRender) {
+                    _renderAnalytics(data);
+                    if (tabOverview) tabOverview.dataset.rendered = "true";
+                    if (tabMembers) tabMembers.dataset.rendered = "true";
+                }
                 // Background revalidation if stale
                 const entry = window.dashboardCache.analytics.get(cacheKey);
                 if (force || now - entry.timestamp >= CACHE_TTL) {
@@ -8787,6 +8799,8 @@
                     }).then(res => res.json()).then(freshData => {
                         window.dashboardCache.analytics.set(cacheKey, { timestamp: Date.now(), data: freshData });
                         _renderAnalytics(freshData);
+                        if (tabOverview) tabOverview.dataset.rendered = "true";
+                        if (tabMembers) tabMembers.dataset.rendered = "true";
                     }).catch(e => console.warn('Background analytics refresh failed:', e));
                 }
                 return;
@@ -8812,6 +8826,10 @@
                 toggleLoading(false);
             }
             _renderAnalytics(data);
+            const tabOverview = document.getElementById('tab-overview');
+            const tabMembers = document.getElementById('tab-members');
+            if (tabOverview) tabOverview.dataset.rendered = "true";
+            if (tabMembers) tabMembers.dataset.rendered = "true";
         }
 
         function _renderAnalytics(data) {
@@ -12201,8 +12219,12 @@
             }
 
             if (hasStaleCache) {
-                // Render stale data immediately
-                _renderAutoresponders(rules, container);
+                // Render stale data immediately if not already rendered
+                const tabAR = document.getElementById('tab-autoresponder');
+                if (tabAR && !tabAR.dataset.rendered) {
+                    _renderAutoresponders(rules, container);
+                    tabAR.dataset.rendered = "true";
+                }
                 // Background revalidation if stale
                 const entry = window.dashboardCache.autoresponders.get(cacheKey);
                 if (now - entry.timestamp >= CACHE_TTL) {
@@ -12215,6 +12237,7 @@
                     }).then(freshData => {
                         window.dashboardCache.autoresponders.set(cacheKey, { timestamp: Date.now(), data: freshData });
                         _renderAutoresponders(freshData, container);
+                        if (tabAR) tabAR.dataset.rendered = "true";
                     }).catch(e => console.warn('Background autoresponders refresh failed:', e));
                 }
                 return;
@@ -12237,6 +12260,8 @@
                 return;
             }
             _renderAutoresponders(rules, container);
+            const tabAR = document.getElementById('tab-autoresponder');
+            if (tabAR) tabAR.dataset.rendered = "true";
         }
 
         function _renderAutoresponders(rules, container) {
