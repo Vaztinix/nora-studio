@@ -2219,12 +2219,12 @@
         }
 
         @keyframes viewFadeIn {
-            0% { opacity: 0; transform: translateY(10px) scale(0.99); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
         
         .view-transition {
-            animation: viewFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: viewFadeIn 0.05s ease-out forwards;
         }
 
         .multiselect-tag {
@@ -8297,6 +8297,7 @@
             settings: new Map(),
             feeds: new Map(),
             autoresponders: new Map(),
+            emojis: new Map(),
             sessions: { timestamp: 0, data: null }
         };
 
@@ -12716,30 +12717,56 @@
         let activeEmojiInputId = null;
         let activeEmojiTab = 'server';
 
-        async function fetchServerEmojis() {
-            if (!currentServerId) return;
+        async function fetchServerEmojis(force = false) {
+            const cacheKey = currentServerId;
+            if (!cacheKey) return;
+            const now = Date.now();
+            let emojisData;
+            let hasStaleCache = false;
+
+            if (!force && window.dashboardCache && window.dashboardCache.emojis && window.dashboardCache.emojis.has(cacheKey)) {
+                const entry = window.dashboardCache.emojis.get(cacheKey);
+                emojisData = entry.data;
+                hasStaleCache = true;
+            }
+
+            if (hasStaleCache) {
+                window.serverEmojis = emojisData.serverEmojis || [];
+                window.appEmojis = emojisData.appEmojis || [];
+                const entry = window.dashboardCache.emojis.get(cacheKey);
+                if (now - entry.timestamp >= CACHE_TTL) {
+                    const t = sessionStorage.getItem('discord_token');
+                    Promise.all([
+                        fetch(`/api/guilds/${currentServerId}/emojis`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json().catch(() => [])),
+                        fetch(`/api/guilds/${currentServerId}/app-emojis`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.ok ? r.json().catch(() => []) : [])
+                    ]).then(([serverEmojis, appEmojis]) => {
+                        const freshData = { serverEmojis, appEmojis };
+                        window.dashboardCache.emojis.set(cacheKey, { timestamp: Date.now(), data: freshData });
+                        window.serverEmojis = serverEmojis;
+                        window.appEmojis = appEmojis;
+                        updateRRPreview();
+                    }).catch(e => console.warn('Background emojis refresh failed:', e));
+                }
+                return;
+            }
+
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/emojis`, { headers: { Authorization: `Bearer ${t}` } });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                window.serverEmojis = data || [];
-                console.log(`Loaded ${window.serverEmojis.length} custom server emojis.`);
-            } catch (err) {
-                console.error('Failed to load server emojis:', err);
-                window.serverEmojis = [];
-            }
-            try {
-                const res = await fetch(`/api/guilds/${currentServerId}/app-emojis`, { headers: { Authorization: `Bearer ${t}` } });
-                if (res.ok) {
-                    const data = await res.json();
-                    window.appEmojis = data || [];
-                    console.log(`Loaded ${window.appEmojis.length} app emojis.`);
-                } else {
-                    window.appEmojis = [];
+                const [serverEmojisRes, appEmojisRes] = await Promise.all([
+                    fetch(`/api/guilds/${currentServerId}/emojis`, { headers: { Authorization: `Bearer ${t}` } }),
+                    fetch(`/api/guilds/${currentServerId}/app-emojis`, { headers: { Authorization: `Bearer ${t}` } })
+                ]);
+                const serverEmojis = serverEmojisRes.ok ? await serverEmojisRes.json() : [];
+                const appEmojis = appEmojisRes.ok ? await appEmojisRes.json() : [];
+                const freshData = { serverEmojis, appEmojis };
+                if (window.dashboardCache && window.dashboardCache.emojis) {
+                    window.dashboardCache.emojis.set(cacheKey, { timestamp: now, data: freshData });
                 }
+                window.serverEmojis = serverEmojis;
+                window.appEmojis = appEmojis;
             } catch (err) {
-                console.error('Failed to load app emojis:', err);
+                console.error('Failed to load emojis:', err);
+                window.serverEmojis = [];
                 window.appEmojis = [];
             }
         }
