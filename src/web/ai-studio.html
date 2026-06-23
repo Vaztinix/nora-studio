@@ -8,6 +8,56 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script>
+        // SESSION PERSISTENCE PROXY
+        (function() {
+            const originalSetItem = sessionStorage.setItem;
+            const originalGetItem = sessionStorage.getItem;
+            const originalRemoveItem = sessionStorage.removeItem;
+            const originalClear = sessionStorage.clear;
+            const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+            sessionStorage.setItem = function(key, value) {
+                if (key === 'discord_token') {
+                    localStorage.setItem('discord_token_val', value);
+                    localStorage.setItem('discord_token_time', Date.now().toString());
+                }
+                originalSetItem.call(sessionStorage, key, value);
+            };
+
+            sessionStorage.getItem = function(key) {
+                if (key === 'discord_token') {
+                    const time = localStorage.getItem('discord_token_time');
+                    const val = localStorage.getItem('discord_token_val');
+                    if (time && val) {
+                        if (Date.now() - parseInt(time, 10) < ONE_WEEK_MS) {
+                            if (!originalGetItem.call(sessionStorage, key)) {
+                                originalSetItem.call(sessionStorage, key, val);
+                            }
+                            return val;
+                        } else {
+                            localStorage.removeItem('discord_token_val');
+                            localStorage.removeItem('discord_token_time');
+                        }
+                    }
+                }
+                return originalGetItem.call(sessionStorage, key);
+            };
+
+            sessionStorage.removeItem = function(key) {
+                if (key === 'discord_token') {
+                    localStorage.removeItem('discord_token_val');
+                    localStorage.removeItem('discord_token_time');
+                }
+                originalRemoveItem.call(sessionStorage, key);
+            };
+
+            sessionStorage.clear = function() {
+                localStorage.removeItem('discord_token_val');
+                localStorage.removeItem('discord_token_time');
+                originalClear.call(sessionStorage);
+            };
+        })();
+
         (function() {
             const savedColor = localStorage.getItem('nora_theme_color');
             if (savedColor) {

@@ -42,6 +42,90 @@
             background-attachment: fixed;
         }
 
+        /* ===== HERO PARTICLE CANVAS ===== */
+        #hero-particles {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .hero-section { position: relative; }
+
+        /* ===== HERO GLOW ===== */
+        .hero-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-glow-1 {
+            background: rgba(88, 101, 242, 0.1);
+            top: -100px;
+            left: -100px;
+            animation: glowPulse 8s ease-in-out infinite alternate;
+        }
+        .hero-glow-2 {
+            background: rgba(0, 229, 255, 0.06);
+            bottom: -150px;
+            right: -100px;
+            animation: glowPulse 10s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes glowPulse {
+            0% { transform: scale(1) translate(0, 0); opacity: 0.8; }
+            50% { transform: scale(1.2) translate(20px, -10px); opacity: 1; }
+            100% { transform: scale(0.9) translate(-15px, 15px); opacity: 0.7; }
+        }
+
+        /* ===== ANIMATED HERO TITLE ===== */
+        .hero-info h1 {
+            background: linear-gradient(135deg, #FFFFFF 0%, #CCCCCC 40%, #5865F2 70%, #00e5ff 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: heroShimmer 6s ease-in-out infinite;
+        }
+
+        @keyframes heroShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== FLOATING SIMULATOR ===== */
+        .simulator-wrapper {
+            animation: simFloat 5s ease-in-out infinite;
+        }
+
+        @keyframes simFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        /* ===== SCROLL REVEAL ===== */
+        .reveal-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== CARD HOVER GLOW ===== */
+        .secondary-card {
+            transition: all 0.35s ease;
+        }
+        .secondary-card:hover {
+            box-shadow: 0 0 30px rgba(88, 101, 242, 0.08);
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -171,7 +255,6 @@
             font-weight: 800;
             line-height: 1.1;
             letter-spacing: -1.5px;
-            color: white;
         }
 
         .hero-info p {
@@ -779,7 +862,10 @@
     <main>
         <!-- Hero Section -->
         <section class="container hero-section">
-            <div class="hero-info">
+            <canvas id="hero-particles"></canvas>
+            <div class="hero-glow hero-glow-1"></div>
+            <div class="hero-glow hero-glow-2"></div>
+            <div class="hero-info" style="position: relative; z-index: 1;">
                 <div class="tagline">
                     <i class="fas fa-shield-alt"></i> THE PRIVACY-FIRST, ALL-IN-ONE DISCORD OPERATIONS & AUTOMATION HUB
                 </div>
@@ -855,63 +941,63 @@
                 </div>
 
                 <!-- 12-Grid Features -->
-                <div class="secondary-features-grid">
-                    <div class="secondary-card">
+                <div class="secondary-features-grid" id="features-grid">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-ticket-alt"></i></div>
                         <h4>Support Ticketing Suite</h4>
                         <p>Deploy customizable support panels with custom questions, claim queues, inactivity sweep timers, and permanent HTML transcripts.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-shield-alt"></i></div>
                         <h4>Roblox Integration Desk</h4>
                         <p>Automatically synchronize member server roles with Roblox group ranks and manage verification mapping states dynamically.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-terminal"></i></div>
                         <h4>Custom Commands & Autoresponders</h4>
                         <p>Set trigger phrases to execute auto-replies, incorporating ignore filters for staff/bots and role-specific conditional restrictions.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-users-cog"></i></div>
                         <h4>Invite Tracker Logs</h4>
                         <p>Announce joins, trace active invite links, count inviter stats, and configure welcome templating variables.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-trophy"></i></div>
                         <h4>Advanced Leveling Engine</h4>
                         <p>Earn experience (XP) through chat and voice channels, set multiplier roles, and configure automatic milestone role rewards.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-history"></i></div>
                         <h4>Granular Server Audits</h4>
                         <p>Log 15+ server events (message updates, channel edits, voice swaps, boosting actions) into specific log rooms.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-user-shield"></i></div>
                         <h4>Automated AutoMod Shield</h4>
                         <p>Instantly block server slurs, mass mentions, profanity, scam URLs, and duplicate spam in real-time memory.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-gavel"></i></div>
                         <h4>Moderation Desk</h4>
                         <p>Equip staff with quick-moderation commands for warning thresholds, temporary bans, mutes, deafening, and purging.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-gamepad"></i></div>
                         <h4>Interactive Games & Fun</h4>
                         <p>Engage members with Guess-the-Number, Rock-Paper-Scissors (RPS), and global leaderboard integrations.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-poll"></i></div>
                         <h4>Polls & Announcements</h4>
                         <p>Launch styled server voting grids, query feedback, and broadcast server notifications cleanly.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-language"></i></div>
                         <h4>Translation Engine</h4>
                         <p>Instantly translate text content via slash commands, allowing global members to chat in any language.</p>
                     </div>
-                    <div class="secondary-card">
+                    <div class="secondary-card reveal-item">
                         <div class="secondary-icon"><i class="fas fa-brain"></i></div>
                         <h4>Nora AI Companion</h4>
                         <p>Interact with local and API-driven Artificial Intelligence models to answer questions, analyze statistics, and guide users.</p>
@@ -1215,6 +1301,70 @@
             document.getElementById('showcase-desc').innerText = data.desc;
             document.getElementById('showcase-display').querySelector('.showcase-visual').innerHTML = data.visual;
         }
+        // ===== HERO PARTICLES =====
+        (function() {
+            const c = document.getElementById('hero-particles');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            const hero = c.parentElement;
+            let dots = [], w, h;
+
+            function resize() {
+                const rect = hero.getBoundingClientRect();
+                w = c.width = rect.width;
+                h = c.height = rect.height;
+                dots = [];
+                const count = Math.floor((w * h) / 18000);
+                for (let i = 0; i < count; i++) {
+                    dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 1.5 + 0.5 });
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                for (let i = 0; i < dots.length; i++) {
+                    let d = dots[i];
+                    d.x += d.vx; d.y += d.vy;
+                    if (d.x < 0 || d.x > w) d.vx *= -1;
+                    if (d.y < 0 || d.y > h) d.vy *= -1;
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    ctx.beginPath();
+                    ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    for (let j = i + 1; j < dots.length; j++) {
+                        let dx = d.x - dots[j].x, dy = d.y - dots[j].y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 100) {
+                            ctx.strokeStyle = `rgba(255,255,255,${0.04 * (1 - dist / 100)})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.beginPath();
+                            ctx.moveTo(d.x, d.y);
+                            ctx.lineTo(dots[j].x, dots[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            draw();
+        })();
+
+        // ===== SCROLL REVEAL =====
+        (function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, i) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
+        })();
     </script>
 </body>
 </html>
