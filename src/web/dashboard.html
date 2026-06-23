@@ -9,6 +9,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="/translate.js"></script>
     <script>
+        // SESSION PERSISTENCE PROXY
+        (function() {
+            const originalSetItem = sessionStorage.setItem;
+            const originalGetItem = sessionStorage.getItem;
+            const originalRemoveItem = sessionStorage.removeItem;
+            const originalClear = sessionStorage.clear;
+            const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+            sessionStorage.setItem = function(key, value) {
+                if (key === 'discord_token') {
+                    localStorage.setItem('discord_token_val', value);
+                    localStorage.setItem('discord_token_time', Date.now().toString());
+                }
+                originalSetItem.call(sessionStorage, key, value);
+            };
+
+            sessionStorage.getItem = function(key) {
+                if (key === 'discord_token') {
+                    const time = localStorage.getItem('discord_token_time');
+                    const val = localStorage.getItem('discord_token_val');
+                    if (time && val) {
+                        if (Date.now() - parseInt(time, 10) < ONE_WEEK_MS) {
+                            if (!originalGetItem.call(sessionStorage, key)) {
+                                originalSetItem.call(sessionStorage, key, val);
+                            }
+                            return val;
+                        } else {
+                            localStorage.removeItem('discord_token_val');
+                            localStorage.removeItem('discord_token_time');
+                        }
+                    }
+                }
+                return originalGetItem.call(sessionStorage, key);
+            };
+
+            sessionStorage.removeItem = function(key) {
+                if (key === 'discord_token') {
+                    localStorage.removeItem('discord_token_val');
+                    localStorage.removeItem('discord_token_time');
+                }
+                originalRemoveItem.call(sessionStorage, key);
+            };
+
+            sessionStorage.clear = function() {
+                localStorage.removeItem('discord_token_val');
+                localStorage.removeItem('discord_token_time');
+                originalClear.call(sessionStorage);
+            };
+        })();
+
         // LIQUID GLASS FEATURE - COMPLETED
         (function() {
             const savedColor = localStorage.getItem('nora_theme_color');
@@ -74,7 +124,7 @@
             --row-bg: rgba(255, 255, 255, 0.02);
             --glow-1: rgba(255, 255, 255, 0.03);
             --glow-2: rgba(255, 255, 255, 0.02);
-            --rail-width: 240px;
+            --rail-width: 210px;
         }
 
         /* Ticket King Layout - Sidebar toggling */
@@ -90,7 +140,7 @@
         body:not(.in-config) .app-layout {
             padding-left: 20px !important;
             padding-right: 20px !important;
-            max-width: 1600px !important;
+            max-width: 1850px !important;
             margin: 0 auto !important;
             width: 100% !important;
             display: block !important;
@@ -419,7 +469,7 @@
             .app-layout {
                 display: flex;
                 flex: 1;
-                max-width: 1600px;
+                max-width: 1850px;
                 margin: 0 auto;
                 width: 100%;
                 padding: 40px 20px;
@@ -466,10 +516,10 @@
             .app-layout {
                 display: flex;
                 flex: 1;
-                max-width: 1600px;
+                max-width: 1850px;
                 margin: 0 auto;
                 width: 100%;
-                padding: 40px 40px 40px calc(240px + 60px);
+                padding: 40px 40px 40px calc(var(--rail-width) + 40px);
                 gap: 0;
             }
         }
@@ -684,7 +734,7 @@
         /* New Reactive Config Layout */
         .config-container { display: flex; gap: 30px; margin-top: 20px; align-items: flex-start; }
         .config-sidebar { 
-            width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; 
+            width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; 
             position: sticky; top: 104px;
         }
         .config-main { flex: 1; min-width: 0; }
@@ -697,6 +747,9 @@
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.04);
             color: var(--muted);
+            white-space: normal;
+            line-height: 1.3;
+            text-align: left;
         }
         .config-sidebar .h-tab:hover {
             background: rgba(255, 255, 255, 0.05);
@@ -1380,7 +1433,9 @@
             position: absolute;
             top: calc(100% + 5px);
             left: 0;
-            right: 0;
+            min-width: 100%;
+            width: max-content;
+            max-width: 320px;
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -1505,7 +1560,9 @@
             position: absolute;
             top: calc(100% + 6px);
             left: 0;
-            width: 100%;
+            min-width: 100%;
+            width: max-content;
+            max-width: 320px;
             background: #111424;
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -1996,6 +2053,21 @@
             }
         }
 
+        @media (min-width: 993px) and (max-width: 1400px) {
+            /* Stack settings/forms and live preview columns vertically on mid-sized screens to prevent tightness */
+            .tab-content div[style*="1fr 1.2fr"],
+            .tab-content div[style*="1.2fr 1fr"],
+            .tab-content div[style*="1.2fr 2fr"],
+            .tab-content div[style*="1.2fr 0.8fr"],
+            .tab-content div[style*="1fr 1.8fr"] {
+                grid-template-columns: 1fr !important;
+            }
+            /* Extra breathing room under stacked elements */
+            .tab-content .panel {
+                margin-bottom: 20px;
+            }
+        }
+
         @media (max-width: 600px) {
             .server-grid {
                 grid-template-columns: 1fr !important;
@@ -2096,7 +2168,9 @@
             position: absolute;
             top: calc(100% + 5px);
             left: 0;
-            width: 100%;
+            min-width: 100%;
+            width: max-content;
+            max-width: 320px;
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
@@ -2668,9 +2742,9 @@
                             <div id="premium-center-status" data-no-translate style="padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.88rem; line-height: 1.5; color: #fff; font-weight: 600; margin-bottom: 15px;">Loading subscription details...</div>
                             
                             <div id="premium-center-benefits" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; color: var(--muted);">
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> Faster AI responses & higher limit cap</div>
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> High priority support channels</div>
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> Premium badge across servers</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> Faster AI responses & higher limit cap</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> High priority support channels</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> Premium badge across servers</div>
                             </div>
                             
                             <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
@@ -2832,16 +2906,16 @@
                             <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">System Language</label>
                             <select id="pref-language" onchange="syncAndSaveLanguage(this.value, 'pref-language')" style="width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.88rem; outline: none;">
                                 <option value="en">English (English)</option>
-                                <option value="es">Español (Spanish)</option>
-                                <option value="fr">Français (French)</option>
+                                <option value="es">EspaÃ±ol (Spanish)</option>
+                                <option value="fr">FranÃ§ais (French)</option>
                                 <option value="de">Deutsch (German)</option>
-                                <option value="pt">Português (Portuguese)</option>
+                                <option value="pt">PortuguÃªs (Portuguese)</option>
                                 <option value="it">Italiano (Italian)</option>
-                                <option value="ru">Русский (Russian)</option>
-                                <option value="hi">हिन्दी (Hindi)</option>
-                                <option value="ja">日本語 (Japanese)</option>
-                                <option value="ko">한국어 (Korean)</option>
-                                <option value="zh">中文 (Chinese)</option>
+                                <option value="ru">Ð ÑƒÑÑÐºÐ¸Ð¹ (Russian)</option>
+                                <option value="hi">à¤¹à¤¿à¤¨à¥à¤¦à¥€ (Hindi)</option>
+                                <option value="ja">æ—¥æœ¬èªž (Japanese)</option>
+                                <option value="ko">í•œêµ­ì–´ (Korean)</option>
+                                <option value="zh">ä¸­æ–‡ (Chinese)</option>
                             </select>
                         </div>
 
@@ -2923,7 +2997,7 @@
                                 </h3>
                                 <div id="notification-list-new" data-no-translate style="display: flex; flex-direction: column; gap: 12px;">
                                     <div id="no-notifications-new" style="padding: 50px 20px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px dashed var(--border);">
-                                        <div style="font-size: 2.2rem; margin-bottom: 12px; opacity: 0.4;">✨</div>
+                                        <div style="font-size: 2.2rem; margin-bottom: 12px; opacity: 0.4;">âœ¨</div>
                                         All caught up! No new notifications.
                                     </div>
                                 </div>
@@ -2975,7 +3049,7 @@
             <div id="view-config" style="display: none;">
                 <div class="config-header">
                     <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
-                        <button class="back-link" id="back-to-servers">← Back to Servers</button>
+                        <button class="back-link" id="back-to-servers">â† Back to Servers</button>
                         <div class="config-title">
                             <img id="cfg-icon" src="nora.png" onerror="this.onerror=null; this.src='nora.png';">
                             <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p></div>
@@ -3753,7 +3827,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <input type="text" id="setting-logBoostMessage_booster" class="custom-msg-input" placeholder="Thank you {user} for boosting the server! 🚀" style="width: 100%; box-sizing: border-box;">
+                                        <input type="text" id="setting-logBoostMessage_booster" class="custom-msg-input" placeholder="Thank you {user} for boosting the server! ðŸš€" style="width: 100%; box-sizing: border-box;">
                                     </div>
                                 </div>
                             </div>
@@ -3768,7 +3842,7 @@
                     <div class="panel">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h3>Leveling Engine</h3>
-                            <div class="premium-badge">NORA+ ACTIVATED</div>
+                            <div id="leveling-premium-badge" class="premium-badge" style="display: none;">NORA+ ACTIVATED</div>
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px;">
@@ -3830,7 +3904,7 @@
                             </div>
                             <div class="log-row-compact" style="opacity: 0.6;">
                                 <div style="display: flex; flex-direction: column; gap: 2px;">
-                                    <strong>DM Notifications (🔒 Locked)</strong>
+                                    <strong>DM Notifications (ðŸ”’ Locked)</strong>
                                     <p style="font-size: 0.7rem; color: var(--muted);">Send level up to DMs (Disabled until opt-out mechanism is ready)</p>
                                 </div>
                                 <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled" disabled><span class="slider"></span></label>
@@ -3875,50 +3949,7 @@
                 </div>
 
                 <div id="tab-welcome" class="tab-content">
-                    <div class="panel">
-                        <h3>Global Module Control</h3>
-                        <p>Enable or disable entire command categories for this server.</p>
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Moderation System</h4>
-                                <p>Enable /ban, /kick, /mute, /purge, and protection systems.</p>
-                            </div>
-                            <label class="switch"><input type="checkbox" id="setting-moderationEnabled"><span class="slider"></span></label>
-                        </div>
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Fun & Minigames</h4>
-                                <p>Enable social commands, memes, and community games.</p>
-                            </div>
-                            <label class="switch"><input type="checkbox" id="setting-funEnabled"><span class="slider"></span></label>
-                        </div>
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Utility & Tools</h4>
-                                <p>Enable /info, /help, /ping, and server utility commands.</p>
-                            </div>
-                            <label class="switch"><input type="checkbox" id="setting-utilityEnabled"><span class="slider"></span></label>
-                        </div>
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Server Default Language</h4>
-                                <p>Select the default language for Nora bot interactions in this server.</p>
-                            </div>
-                            <select id="setting-language" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;">
-                                <option value="en">English (English)</option>
-                                <option value="es">Español (Spanish)</option>
-                                <option value="fr">Français (French)</option>
-                                <option value="de">Deutsch (German)</option>
-                                <option value="pt">Português (Portuguese)</option>
-                                <option value="it">Italiano (Italian)</option>
-                                <option value="ru">Русский (Russian)</option>
-                                <option value="hi">हिन्दी (Hindi)</option>
-                                <option value="ja">日本語 (Japanese)</option>
-                                <option value="ko">한국어 (Korean)</option>
-                                <option value="zh">中文 (Chinese)</option>
-                            </select>
-                        </div>
-                    </div>
+
                     <div class="panel">
                         <h3>Server Games</h3>
                         <div class="row">
@@ -4060,7 +4091,7 @@
                     <!-- Rules List Panel -->
                     <div class="panel" style="margin-top: 20px;">
                         <h3>Active Rules</h3>
-                        <div id="autoresponder-rules-container" style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
+                        <div id="autoresponder-rules-container" style="margin-top: 15px; display: flex; flex-direction: column; gap: 18px;">
                             <div id="autoresponder-empty-state" style="text-align: center; padding: 30px; color: var(--muted); border: 1px dashed var(--border); border-radius: 12px;">
                                 <i class="fas fa-reply-all" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
                                 <p style="margin: 0; font-size: 0.9rem;">No autoresponder rules configured for this server.</p>
@@ -4113,7 +4144,7 @@
                     </div>
 
                                         <div id="roblox-advanced-features" class="locked-feature">
-                        <div class="locked-overlay-text">🔒 VERIFICATION REQUIRED</div>
+                        <div class="locked-overlay-text">ðŸ”’ VERIFICATION REQUIRED</div>
                         <div class="panel">
                             <h3>Live Presence Tracker (BETA)</h3>
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Real-time status monitoring for your linked Roblox account.</p>
@@ -4153,7 +4184,7 @@
                         <p style="font-size: 0.85rem; color: var(--muted);">Advanced Roblox features require a premium subscription to Nora. This covers API costs and dedicated processing.</p>
                         <div id="roblox-premium-lock" style="margin-top: 15px; padding: 15px; background: rgba(255, 85, 85, 0.1); border: 1px solid rgba(255, 85, 85, 0.2); border-radius: 12px; color: #ff5555; font-size: 0.85rem; display: none;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 1.2rem;">🔒</span>
+                                <span style="font-size: 1.2rem;">ðŸ”’</span>
                                 <div>
                                     <strong>Premium Locked</strong>
                                     <p style="margin-top: 4px; opacity: 0.8;">Visit our support server to upgrade Nora for this guild.</p>
@@ -4287,7 +4318,7 @@
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                                 <span style="font-weight: 600; color: #f2f3f5; font-size: 1rem;">Nora</span>
-                                                <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">✔ BOT</span>
+                                                <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">âœ” BOT</span>
                                                 <span style="color: #949ba4; font-size: 0.75rem;">Today at 12:00 PM</span>
                                             </div>
                                             
@@ -4311,8 +4342,43 @@
                 </div>
 
                 <div id="tab-tickets" class="tab-content" style="display: none;">
-                    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; align-items: start;">
-                        <!-- Left Column: Controls -->
+                    <div style="display: flex; flex-direction: column; gap: 25px;">
+                        <!-- Top Block: Interactive Live Preview -->
+                        <div class="panel">
+                            <h3>Interactive Ticket Preview</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                Live preview of the ticketing panel in Discord. Click the buttons to test the intake modal form.
+                            </p>
+                            
+                            <div class="discord-preview-container" style="background: #313338; border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); font-family: sans-serif;">
+                                <div class="discord-msg" style="display: flex; gap: 15px;">
+                                    <img class="discord-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0;">
+                                    <div class="discord-content" style="flex: 1;">
+                                        <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
+                                            <span>Nora</span>
+                                            <span class="discord-bot-tag" style="background: #5865F2; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; text-transform: uppercase;">APP</span>
+                                        </div>
+                                        
+                                        <!-- Embed Box -->
+                                        <div id="ticket-preview-embed" class="discord-embed" style="background: #2b2d31; border-left: 4px solid #ffffff; padding: 12px; margin-top: 8px; border-radius: 4px; max-width: 520px; box-sizing: border-box;">
+                                            <div id="ticket-preview-title" class="discord-embed-title" style="color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 6px;">Support Center</div>
+                                            <div id="ticket-preview-desc" class="discord-embed-desc" style="color: #dbdee1; font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap;">Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.</div>
+                                            <div style="font-size: 0.72rem; color: #949ba4; margin-top: 8px;">Support Ticketing System</div>
+                                        </div>
+                                        
+                                        <!-- Buttons Row -->
+                                        <div id="ticket-preview-buttons" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                                            <button id="preview-btn-support" class="discord-btn discord-btn-primary" onclick="showMockTicketModal('Support')">Support</button>
+                                            <button id="preview-btn-reporting" class="discord-btn discord-btn-danger" onclick="showMockTicketModal('Reporting')">Reporting</button>
+                                            <button id="preview-btn-appeals" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Appeals')">Appeals</button>
+                                            <button id="preview-btn-other" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Other')">Other</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Block: Controls -->
                         <div class="panel">
                             <h3>Support Ticket System</h3>
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
@@ -4417,41 +4483,6 @@
                             <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the ticket panel so the bot uses your latest configurations.</p>
                             <div style="margin-top: 20px;">
                                  <button class="config-btn" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
-                            </div>
-                        </div>
-
-                        <!-- Right Column: Interactive Live Preview -->
-                        <div class="panel" style="position: sticky; top: 20px;">
-                            <h3>Interactive Ticket Preview</h3>
-                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
-                                Live preview of the ticketing panel in Discord. Click the buttons to test the intake modal form.
-                            </p>
-                            
-                            <div class="discord-preview-container" style="background: #313338; border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); font-family: sans-serif;">
-                                <div class="discord-msg" style="display: flex; gap: 15px;">
-                                    <img class="discord-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0;">
-                                    <div class="discord-content" style="flex: 1;">
-                                        <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
-                                            <span>Nora</span>
-                                            <span class="discord-bot-tag" style="background: #5865F2; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; text-transform: uppercase;">APP</span>
-                                        </div>
-                                        
-                                        <!-- Embed Box -->
-                                        <div id="ticket-preview-embed" class="discord-embed" style="background: #2b2d31; border-left: 4px solid #ffffff; padding: 12px; margin-top: 8px; border-radius: 4px; max-width: 520px; box-sizing: border-box;">
-                                            <div id="ticket-preview-title" class="discord-embed-title" style="color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 6px;">Support Center</div>
-                                            <div id="ticket-preview-desc" class="discord-embed-desc" style="color: #dbdee1; font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap;">Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.</div>
-                                            <div style="font-size: 0.72rem; color: #949ba4; margin-top: 8px;">Support Ticketing System</div>
-                                        </div>
-                                        
-                                        <!-- Buttons Row -->
-                                        <div id="ticket-preview-buttons" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
-                                            <button id="preview-btn-support" class="discord-btn discord-btn-primary" onclick="showMockTicketModal('Support')">Support</button>
-                                            <button id="preview-btn-reporting" class="discord-btn discord-btn-danger" onclick="showMockTicketModal('Reporting')">Reporting</button>
-                                            <button id="preview-btn-appeals" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Appeals')">Appeals</button>
-                                            <button id="preview-btn-other" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Other')">Other</button>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -4656,7 +4687,7 @@
                                     </div>
 
                                     <div id="perm-helper" style="display: none; margin-top: 20px; padding: 15px; background: rgba(255, 85, 85, 0.1); border: 1px solid rgba(255, 85, 85, 0.2); border-radius: 8px;">
-                                        <h4 style="color: #ff5555; margin-bottom: 8px; font-size: 0.9rem;">⚠️ Missing Permissions</h4>
+                                        <h4 style="color: #ff5555; margin-bottom: 8px; font-size: 0.9rem;">âš ï¸ Missing Permissions</h4>
                                         <p style="font-size: 0.8rem; color: var(--muted); line-height: 1.4;">Nora cannot send webhooks in this channel. To fix this:</p>
                                         <ul style="font-size: 0.8rem; color: var(--muted); margin: 6px 0 10px 18px; padding-left: 0;">
                                             <li>Ensure Nora has <strong>Manage Webhooks</strong> permission.</li>
@@ -4786,7 +4817,7 @@
                                         <h3 style="margin: 0;">Member Directory</h3>
                                         <div id="member-total-count" style="font-size: 0.75rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">... total</div>
                                     </div>
-                                    <div id="member-sync-status" style="font-size: 0.65rem; color: var(--muted); opacity: 0.6;">Relay active • Last synced just now</div>
+                                    <div id="member-sync-status" style="font-size: 0.65rem; color: var(--muted); opacity: 0.6;">Relay active â€¢ Last synced just now</div>
                                 </div>
                                 <div style="display: flex; gap: 12px; align-items: center;">
                                     <input type="hidden" id="member-sort" value="activity">
@@ -4862,19 +4893,19 @@
 
     </div>
 
-    <footer>© 2026 Nora | Privacy-First AI & Moderation</footer>
+    <footer>Â© 2026 Nora | Privacy-First AI & Moderation</footer>
 
     <script>
         let notifications = [];
         let newNotifCount = 0;
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
         // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
-        // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
+        // This is the ONLY source of truth â€” no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
             const host = window.location.hostname;
             const port = window.location.port;
 
-            // Local development overrides — always target local machine if loaded locally
+            // Local development overrides â€” always target local machine if loaded locally
             if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
                 return window.location.origin;
             }
@@ -5171,7 +5202,7 @@
                         if (recovered) {
                             recoveredUrl = 'http://localhost:3000';
                             localStorage.setItem('nora_api_url', 'http://localhost:3000');
-                            console.log('[Offline] Localhost fallback succeeded — saved as API URL');
+                            console.log('[Offline] Localhost fallback succeeded â€” saved as API URL');
                         }
                     }
 
@@ -5183,7 +5214,7 @@
                         if (recovered) {
                             recoveredUrl = CANONICAL_API;
                             localStorage.setItem('nora_api_url', CANONICAL_API);
-                            console.log('[Offline] Canonical fallback succeeded — saved as API URL');
+                            console.log('[Offline] Canonical fallback succeeded â€” saved as API URL');
                         }
                     }
 
@@ -5255,28 +5286,28 @@
         };
 
 
-        // ─── Device icon helper ──────────────────────────────────────────────
+        // â”€â”€â”€ Device icon helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function getDeviceIcon(name, ua) {
             const n = (name || '').toLowerCase();
             const u = (ua || '').toLowerCase();
             // Check name first (user-provided)
-            if (n.includes('phone') || n.includes('mobile')) return '📱';
-            if (n.includes('tablet') || n.includes('ipad')) return '📟';
-            if (n.includes('laptop')) return '💻';
-            if (n.includes('tv') || n.includes('television')) return '📺';
-            if (n.includes('watch')) return '⌚';
-            if (n.includes('desktop') || n.includes('pc') || n.includes('computer')) return '🖥️';
+            if (n.includes('phone') || n.includes('mobile')) return 'ðŸ“±';
+            if (n.includes('tablet') || n.includes('ipad')) return 'ðŸ“Ÿ';
+            if (n.includes('laptop')) return 'ðŸ’»';
+            if (n.includes('tv') || n.includes('television')) return 'ðŸ“º';
+            if (n.includes('watch')) return 'âŒš';
+            if (n.includes('desktop') || n.includes('pc') || n.includes('computer')) return 'ðŸ–¥ï¸';
             // Fallback to UA
-            if (u.includes('iphone')) return '📱';
-            if (u.includes('ipad')) return '📟';
+            if (u.includes('iphone')) return 'ðŸ“±';
+            if (u.includes('ipad')) return 'ðŸ“Ÿ';
             if (u.includes('android')) {
-                if (u.includes('tablet') || u.includes('tab')) return '📟';
-                return '📱';
+                if (u.includes('tablet') || u.includes('tab')) return 'ðŸ“Ÿ';
+                return 'ðŸ“±';
             }
-            return '🖥️'; // Default: desktop
+            return 'ðŸ–¥ï¸'; // Default: desktop
         }
 
-        // ─── Load + render paired devices ───────────────────────────────────
+        // â”€â”€â”€ Load + render paired devices â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         let _pairedDevicesPollInterval = null;
 
         async function loadPairedDevices() {
@@ -5360,7 +5391,7 @@
                     </div>`;
                 }).join('');
             } catch (e) {
-                // Silent fail — devices section just won't update
+                // Silent fail â€” devices section just won't update
             }
         }
 
@@ -5561,14 +5592,14 @@
 
 
 
-        // 🚨 Premium Global Client-Side Error Interceptor
+        // ðŸš¨ Premium Global Client-Side Error Interceptor
         window.addEventListener('error', function(event) {
             const errMsg = event.error ? event.error.message : event.message;
             console.error('Captured Uncaught Client Error:', event.error || event.message);
             if (typeof showToast === 'function') {
-                showToast(`⚠️ [Client Error] ${errMsg}`, 'error');
+                showToast(`âš ï¸ [Client Error] ${errMsg}`, 'error');
             } else {
-                alert(`⚠️ [Client Error] ${errMsg}`);
+                alert(`âš ï¸ [Client Error] ${errMsg}`);
             }
         });
 
@@ -5576,9 +5607,9 @@
             const errMsg = event.reason ? (event.reason.message || event.reason) : 'Unhandled promise rejection';
             console.error('Captured Unhandled Promise Rejection:', event.reason);
             if (typeof showToast === 'function') {
-                showToast(`⚠️ [Promise Error] ${errMsg}`, 'error');
+                showToast(`âš ï¸ [Promise Error] ${errMsg}`, 'error');
             } else {
-                alert(`⚠️ [Promise Error] ${errMsg}`);
+                alert(`âš ï¸ [Promise Error] ${errMsg}`);
             }
         });
 
@@ -6105,7 +6136,7 @@
                 if (status === 403 && d.error === 'SESSION_LOCKED') {
                     document.getElementById('auth-overlay').innerHTML = `
                         <div style="background: rgba(0,0,0,0.8); padding: 40px; border-radius: 12px; border: 1px solid var(--danger); text-align: center; max-width: 400px; backdrop-filter: blur(20px);">
-                            <div style="font-size: 3rem; margin-bottom: 20px;">🔒</div>
+                            <div style="font-size: 3rem; margin-bottom: 20px;">ðŸ”’</div>
                             <h2 style="color: var(--danger); margin-bottom: 10px;">Access Locked</h2>
                             <p style="color: var(--muted); margin-bottom: 20px; font-size: 0.9rem; line-height: 1.5;">Access to this site has been locked to the session hardened IP.</p>
                             <p style="color: var(--muted); font-size: 0.8rem;">If this was not you please contact support at <strong style="color: white;">vaztinixstudios@gmail.com</strong>.</p>
@@ -6159,7 +6190,7 @@
 
                 const prefPremium = document.getElementById('pref-premium-status');
                 if (prefPremium) {
-                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
+                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">â˜… Discord Nitro Active</span>' : 'Standard User';
                     if (d.noraPremium) prefPremium.innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
                 }
 
@@ -6372,7 +6403,7 @@
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="position: relative;">
                                     <img src="/api/user/roblox/avatar?userId=${acc.robloxId}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.src='/api/user/roblox/avatar?userId=1'">
-                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">✓</div>' : ''}
+                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">âœ“</div>' : ''}
                                 </div>
                                 <div>
                                     <div style="font-weight: 700; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px;">
@@ -6381,7 +6412,7 @@
                                     </div>
                                     <div style="font-size: 0.75rem; color: var(--muted); display: flex; gap: 8px;">
                                         <span data-no-translate>ID: ${acc.robloxId}</span>
-                                        <span>•</span>
+                                        <span>â€¢</span>
                                         <span style="color: ${isVerified ? 'var(--success)' : 'var(--warning)'}; font-weight: 600;">${isVerified ? 'Verified' : 'Pending Verification'}</span>
                                     </div>
                                 </div>
@@ -6975,6 +7006,7 @@
                     
                     showToast('Settings saved successfully.', 'success');
                     refreshModuleBadges();
+                    if (window.dashboardCache && window.dashboardCache.settings) window.dashboardCache.settings.delete(currentServerId);
                 } else {
                     const d = await res.json().catch(() => ({}));
                     throw new Error(d.error || 'Save failed');
@@ -8199,7 +8231,7 @@
                     overlay.className = 'premium-lock-overlay';
                     overlay.innerHTML = `
                         <div class="locked-overlay-text" style="background: var(--primary); color: #000; padding: 15px 25px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">
-                            <span style="font-size: 1.5rem;">⭐</span>
+                            <span style="font-size: 1.5rem;">â­</span>
                             <div style="font-weight: 800;">UNLOCK NORA+</div>
                             <div style="font-size: 0.7rem; font-weight: 600; opacity: 0.8;">Click to upgrade this server</div>
                         </div>
@@ -8208,6 +8240,12 @@
                     tab.appendChild(overlay);
                 }
             });
+
+            // Handle Leveling Premium Badge
+            const levelingBadge = document.getElementById('leveling-premium-badge');
+            if (levelingBadge) {
+                levelingBadge.style.display = currentServerIsPremium ? 'inline-flex' : 'none';
+            }
 
             // Handle AI engines (premium models)
             const aiSelect = document.getElementById('setting-aiPreference');
@@ -8241,12 +8279,14 @@
 
         let isFetchingMembers = false;
         window.dashboardMemberCache = new Map();
+        const CACHE_TTL = 300000; // 5 minutes stale-while-revalidate threshold
         window.dashboardCache = {
             analytics: new Map(),
             channels: new Map(),
             roles: new Map(),
             settings: new Map(),
             feeds: new Map(),
+            autoresponders: new Map(),
             sessions: { timestamp: 0, data: null }
         };
 
@@ -8327,7 +8367,7 @@
             const el = document.getElementById('member-sync-status');
             if (!el) return;
             const timeStr = new Date(timestamp).toLocaleTimeString();
-            el.textContent = `Relay ${isPartial ? 'Partial' : 'Active'} • Last synced ${timeStr}`;
+            el.textContent = `Relay ${isPartial ? 'Partial' : 'Active'} â€¢ Last synced ${timeStr}`;
             el.style.color = isPartial ? '#ffcc00' : 'var(--muted)';
         }
 
@@ -8710,34 +8750,61 @@
             if (!cacheKey) return;
             const now = Date.now();
             let data;
+            let hasStaleCache = false;
             
             if (!force && window.dashboardCache && window.dashboardCache.analytics && window.dashboardCache.analytics.has(cacheKey)) {
                 const entry = window.dashboardCache.analytics.get(cacheKey);
-                if (now - entry.timestamp < 30000) {
+                data = entry.data;
+                hasStaleCache = true;
+                if (now - entry.timestamp < CACHE_TTL) {
+                    // Cache is still fresh, skip network fetch entirely
+                } else {
+                    // Stale cache â€” render it now, then revalidate in background
                     data = entry.data;
                 }
             }
             
-            if (!data) {
-                toggleLoading(true);
-                const t = sessionStorage.getItem('discord_token');
-                try {
-                    const res = await fetch(`/api/guilds/${currentServerId}/analytics`, {
+            if (hasStaleCache) {
+                // Render stale data immediately (no spinner)
+                _renderAnalytics(data);
+                // Background revalidation if stale
+                const entry = window.dashboardCache.analytics.get(cacheKey);
+                if (force || now - entry.timestamp >= CACHE_TTL) {
+                    const t = sessionStorage.getItem('discord_token');
+                    fetch(`/api/guilds/${currentServerId}/analytics`, {
                         headers: { 'Authorization': `Bearer ${t}` }
-                    });
-                    data = await res.json();
-                    if (window.dashboardCache && window.dashboardCache.analytics) {
-                        window.dashboardCache.analytics.set(cacheKey, { timestamp: now, data });
-                    }
-                } catch (e) {
-                    console.error('Analytics Error:', e);
-                    logErrorToTerminal(`Analytics Error: ${e.message}`, 'ERROR', { stack: e.stack });
-                    toggleLoading(false);
-                    return;
-                } finally {
-                    toggleLoading(false);
+                    }).then(res => res.json()).then(freshData => {
+                        window.dashboardCache.analytics.set(cacheKey, { timestamp: Date.now(), data: freshData });
+                        _renderAnalytics(freshData);
+                    }).catch(e => console.warn('Background analytics refresh failed:', e));
                 }
+                return;
             }
+            
+            // No cache at all â€” show spinner and fetch
+            toggleLoading(true);
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/analytics`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                data = await res.json();
+                if (window.dashboardCache && window.dashboardCache.analytics) {
+                    window.dashboardCache.analytics.set(cacheKey, { timestamp: now, data });
+                }
+            } catch (e) {
+                console.error('Analytics Error:', e);
+                logErrorToTerminal(`Analytics Error: ${e.message}`, 'ERROR', { stack: e.stack });
+                toggleLoading(false);
+                return;
+            } finally {
+                toggleLoading(false);
+            }
+            _renderAnalytics(data);
+        }
+
+        function _renderAnalytics(data) {
+            if (!data) return;
             try {
                 // Populate Overview tab metrics
                 const ovMembers = document.getElementById('overview-total-members');
@@ -9084,10 +9151,7 @@
                     else summary.textContent = `Server metrics are stable. Total activity: ${totalActivity} points.`;
                 }
             } catch (e) {
-                console.error('Analytics Error:', e);
-                logErrorToTerminal(`Analytics Error: ${e.message}`, 'ERROR', { stack: e.stack });
-            } finally {
-                toggleLoading(false);
+                console.error('Analytics Render Error:', e);
             }
         }
 
@@ -9226,12 +9290,12 @@
             
             const chan = window.guildChannels.find(c => c.id === id);
             if (chan && !chan.canSend) {
-                status.innerHTML = '<span style="color: #ff5555;">⚠️ Missing Permissions</span>';
+                status.innerHTML = '<span style="color: #ff5555;">âš ï¸ Missing Permissions</span>';
                 helper.style.display = 'block';
                 btn.disabled = true;
                 btn.style.opacity = '0.5';
             } else {
-                status.innerHTML = '<span style="color: #2ea043;">✅ Ready to broadcast</span>';
+                status.innerHTML = '<span style="color: #2ea043;">âœ… Ready to broadcast</span>';
                 helper.style.display = 'none';
                 btn.disabled = false;
                 btn.style.opacity = '1';
@@ -9373,7 +9437,7 @@
                     if (b.style === 'PRIMARY') { btn.style.background = '#5865F2'; btn.style.color = '#fff'; }
                     else if (b.style === 'SUCCESS') { btn.style.background = '#2D7D46'; btn.style.color = '#fff'; }
                     else if (b.style === 'DANGER') { btn.style.background = '#ED4245'; btn.style.color = '#fff'; }
-                    else if (b.style === 'LINK') { btn.style.background = '#4F545C'; btn.style.color = '#fff'; btn.innerHTML += ' ↗'; }
+                    else if (b.style === 'LINK') { btn.style.background = '#4F545C'; btn.style.color = '#fff'; btn.innerHTML += ' â†—'; }
                     else { btn.style.background = '#4F545C'; btn.style.color = '#fff'; }
                     
                     btnContainer.appendChild(btn);
@@ -9576,7 +9640,7 @@
             document.getElementById('setting-xpRoleMultipliers').value = JSON.stringify(mults);
         }
 
-        const RANDOM_EMOJIS = ['🎮', '🚀', '🔥', '🎨', '🎵', '🏆', '👾', '👑', '⭐', '🍀', '🍕', '🐱', '🐾', '💻', '💡', '💎', '🎉', '🛡️', '⚔️', '📦'];
+        const RANDOM_EMOJIS = ['ðŸŽ®', 'ðŸš€', 'ðŸ”¥', 'ðŸŽ¨', 'ðŸŽµ', 'ðŸ†', 'ðŸ‘¾', 'ðŸ‘‘', 'â­', 'ðŸ€', 'ðŸ•', 'ðŸ±', 'ðŸ¾', 'ðŸ’»', 'ðŸ’¡', 'ðŸ’Ž', 'ðŸŽ‰', 'ðŸ›¡ï¸', 'âš”ï¸', 'ðŸ“¦'];
 
         function randomizeRREmoji(btn) {
             const input = btn.parentElement.querySelector('.rr-emoji-input');
@@ -9935,7 +9999,7 @@
 
             // Sliders Setup
             const hueContainer = document.createElement('div');
-            hueContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Hue</span><span class="hue-val">0°</span></div>';
+            hueContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Hue</span><span class="hue-val">0Â°</span></div>';
             const hueSlider = document.createElement('input');
             hueSlider.type = 'range';
             hueSlider.min = '0';
@@ -10004,7 +10068,7 @@
             }
 
             function updateSliderLabelsAndBackgrounds(h, s, l) {
-                hueContainer.querySelector('.hue-val').textContent = h + '°';
+                hueContainer.querySelector('.hue-val').textContent = h + 'Â°';
                 satContainer.querySelector('.sat-val').textContent = s + '%';
                 lightContainer.querySelector('.light-val').textContent = l + '%';
                 satSlider.style.background = `linear-gradient(to right, hsl(${h}, 0%, ${l}%), hsl(${h}, 100%, ${l}%))`;
@@ -10283,7 +10347,7 @@
 
                     const timeRow = document.createElement('div');
                     timeRow.style = 'font-size: 0.7rem; color: var(--muted);';
-                    timeRow.innerHTML = `Created: ${new Date(s.createdAt).toLocaleString()} • Expires: ${new Date(s.expiresAt).toLocaleString()}`;
+                    timeRow.innerHTML = `Created: ${new Date(s.createdAt).toLocaleString()} â€¢ Expires: ${new Date(s.expiresAt).toLocaleString()}`;
 
                     const uaRow = document.createElement('div');
                     uaRow.style = 'font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.8;';
@@ -10763,6 +10827,7 @@
                         <option value="none">No Ping</option>
                     `;
                     roles.forEach(r => {
+                        if (r.name.toLowerCase() === 'everyone' || r.name === '@everyone') return;
                         const opt = document.createElement('option');
                         opt.setAttribute('data-no-translate', 'true');
                         opt.value = r.id;
@@ -11373,8 +11438,6 @@
         }
 
         async function fetchSettings(force = false) {
-            toggleLoading(true);
-            
             // Explicitly clear / reset all inputs and command checkboxes to prevent cross-server leaks
             KEYS.forEach(k => {
                 const el = document.getElementById('setting-' + k);
@@ -11391,35 +11454,62 @@
             const cacheKey = currentServerId;
             const now = Date.now();
             let s;
+            let hasStaleCache = false;
 
             if (!force && window.dashboardCache && window.dashboardCache.settings && window.dashboardCache.settings.has(cacheKey)) {
                 const entry = window.dashboardCache.settings.get(cacheKey);
-                if (now - entry.timestamp < 30000) {
-                    s = entry.data;
-                }
+                s = entry.data;
+                hasStaleCache = true;
             }
 
-            if (!s) {
-                const t = sessionStorage.getItem('discord_token');
-                try {
-                    const res = await fetch(`/api/guilds/${currentServerId}/settings`, {
+            if (hasStaleCache) {
+                // Render stale data immediately (no spinner)
+                _applySettings(s);
+                // Background revalidation if stale
+                const entry = window.dashboardCache.settings.get(cacheKey);
+                if (force || now - entry.timestamp >= CACHE_TTL) {
+                    const t = sessionStorage.getItem('discord_token');
+                    fetch(`/api/guilds/${currentServerId}/settings`, {
                         headers: { 'Authorization': `Bearer ${t}` }
-                    });
-                    if (!res.ok) throw new Error(`Server returned ${res.status}: ${res.statusText}`);
-                    
-                    s = await res.json();
-                    logToTerminal(`Received settings for ${currentServerId}`, 'FETCH_SUCCESS', s);
-                    if (window.dashboardCache && window.dashboardCache.settings) {
-                        window.dashboardCache.settings.set(cacheKey, { timestamp: now, data: s });
-                    }
-                } catch (e) {
-                    console.error('[Load Error]:', e);
-                    showToast(`Failed to load settings: ${e.message}`, 'error');
-                    addNotification('Load Error', `Reason: ${e.message}`, 'error');
-                    toggleLoading(false);
-                    return;
+                    }).then(res => {
+                        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+                        return res.json();
+                    }).then(freshData => {
+                        logToTerminal(`Background refresh settings for ${currentServerId}`, 'FETCH_SUCCESS', freshData);
+                        window.dashboardCache.settings.set(cacheKey, { timestamp: Date.now(), data: freshData });
+                        _applySettings(freshData);
+                    }).catch(e => console.warn('Background settings refresh failed:', e));
                 }
+                return;
             }
+
+            // No cache â€” show spinner
+            toggleLoading(true);
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/settings`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+                
+                s = await res.json();
+                logToTerminal(`Received settings for ${currentServerId}`, 'FETCH_SUCCESS', s);
+                if (window.dashboardCache && window.dashboardCache.settings) {
+                    window.dashboardCache.settings.set(cacheKey, { timestamp: now, data: s });
+                }
+            } catch (e) {
+                console.error('[Load Error]:', e);
+                showToast(`Failed to load settings: ${e.message}`, 'error');
+                addNotification('Load Error', `Reason: ${e.message}`, 'error');
+                toggleLoading(false);
+                return;
+            }
+            _applySettings(s);
+            toggleLoading(false);
+        }
+
+        async function _applySettings(s) {
+            if (!s) return;
             try {
 
                 if (s.heartbeat !== undefined) {
@@ -11585,6 +11675,7 @@
                 }
 
                 let d = []; try { d = JSON.parse(s.disabledCommands || '[]'); } catch{}
+                const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say', 'reactionrole', 'autoresponder', 'youtube'];
                 allCmds.forEach(c => { const el = document.getElementById('cmd-'+c); if(el) el.checked = !d.includes(c); });
                 
                 // Store a copy of settings for change tracking
@@ -11886,33 +11977,56 @@
             const cacheKey = currentServerId;
             const now = Date.now();
             let feeds;
+            let hasStaleCache = false;
 
             if (!force && window.dashboardCache && window.dashboardCache.feeds && window.dashboardCache.feeds.has(cacheKey)) {
                 const entry = window.dashboardCache.feeds.get(cacheKey);
-                if (now - entry.timestamp < 30000) {
-                    feeds = entry.data;
-                }
+                feeds = entry.data;
+                hasStaleCache = true;
             }
 
-            if (!feeds) {
-                const t = sessionStorage.getItem('discord_token');
-                try {
-                    const res = await fetch(`/api/guilds/${currentServerId}/feeds`, {
+            if (hasStaleCache) {
+                // Render stale data immediately (no spinner)
+                _renderFeeds(feeds, container);
+                // Background revalidation if stale
+                const entry = window.dashboardCache.feeds.get(cacheKey);
+                if (force || now - entry.timestamp >= CACHE_TTL) {
+                    const t = sessionStorage.getItem('discord_token');
+                    fetch(`/api/guilds/${currentServerId}/feeds`, {
                         headers: { 'Authorization': `Bearer ${t}` }
-                    });
-                    if (!res.ok) throw new Error('Failed to load feeds');
-                    feeds = await res.json();
-                    if (window.dashboardCache && window.dashboardCache.feeds) {
-                        window.dashboardCache.feeds.set(cacheKey, { timestamp: now, data: feeds });
-                    }
-                } catch (e) {
-                    container.innerHTML = `<div style="color: #ff5555; font-size: 0.85rem; padding: 10px;">${e.message}</div>`;
-                    return;
+                    }).then(res => {
+                        if (!res.ok) throw new Error('Failed to load feeds');
+                        return res.json();
+                    }).then(freshData => {
+                        window.dashboardCache.feeds.set(cacheKey, { timestamp: Date.now(), data: freshData });
+                        _renderFeeds(freshData, container);
+                    }).catch(e => console.warn('Background feeds refresh failed:', e));
                 }
+                return;
             }
+
+            // No cache — first load
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/feeds`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) throw new Error('Failed to load feeds');
+                feeds = await res.json();
+                if (window.dashboardCache && window.dashboardCache.feeds) {
+                    window.dashboardCache.feeds.set(cacheKey, { timestamp: now, data: feeds });
+                }
+            } catch (e) {
+                container.innerHTML = `<div style="color: #ff5555; font-size: 0.85rem; padding: 10px;">${e.message}</div>`;
+                return;
+            }
+            _renderFeeds(feeds, container);
+        }
+
+        function _renderFeeds(feeds, container) {
+            if (!feeds || !container) return;
             window.currentFeeds = feeds;
             try {
-                
                 container.innerHTML = '';
                 if (feeds.length === 0) {
                     container.innerHTML = '<div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 20px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">No feeds configured yet.</div>';
@@ -11989,6 +12103,7 @@
                 } else {
                     document.getElementById('new-feed-message-twitch').value = '';
                 }
+                if (window.dashboardCache && window.dashboardCache.feeds) window.dashboardCache.feeds.delete(currentServerId);
                 fetchContentFeeds();
             } catch (e) {
                 showToast(e.message, 'error');
@@ -12005,6 +12120,7 @@
                 });
                 if (!res.ok) throw new Error('Failed to delete feed');
                 showToast('Feed deleted', 'success');
+                if (window.dashboardCache && window.dashboardCache.feeds) window.dashboardCache.feeds.delete(currentServerId);
                 fetchContentFeeds();
             } catch (e) {
                 showToast(e.message, 'error');
@@ -12022,64 +12138,105 @@
             const container = document.getElementById('autoresponder-rules-container');
             if (!container) return;
             
+            const cacheKey = currentServerId;
+            const now = Date.now();
+            let rules;
+            let hasStaleCache = false;
+
+            if (window.dashboardCache && window.dashboardCache.autoresponders && window.dashboardCache.autoresponders.has(cacheKey)) {
+                const entry = window.dashboardCache.autoresponders.get(cacheKey);
+                rules = entry.data;
+                hasStaleCache = true;
+            }
+
+            if (hasStaleCache) {
+                // Render stale data immediately
+                _renderAutoresponders(rules, container);
+                // Background revalidation if stale
+                const entry = window.dashboardCache.autoresponders.get(cacheKey);
+                if (now - entry.timestamp >= CACHE_TTL) {
+                    const t = sessionStorage.getItem('discord_token');
+                    fetch(`/api/guilds/${currentServerId}/autoresponders`, {
+                        headers: { 'Authorization': `Bearer ${t}` }
+                    }).then(res => {
+                        if (!res.ok) throw new Error('Failed to fetch rules');
+                        return res.json();
+                    }).then(freshData => {
+                        window.dashboardCache.autoresponders.set(cacheKey, { timestamp: Date.now(), data: freshData });
+                        _renderAutoresponders(freshData, container);
+                    }).catch(e => console.warn('Background autoresponders refresh failed:', e));
+                }
+                return;
+            }
+
+            // No cache — first load
             const t = sessionStorage.getItem('discord_token');
             try {
                 const res = await fetch(`/api/guilds/${currentServerId}/autoresponders`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch rules');
-                const rules = await res.json();
-                activeAutoresponders = rules;
-                
-                // Clear existing render
-                container.querySelectorAll('.rendered-ar-card').forEach(el => el.remove());
-                
-                const emptyState = document.getElementById('autoresponder-empty-state');
-                if (rules.length === 0) {
-                    if (emptyState) emptyState.style.display = 'block';
-                    return;
+                rules = await res.json();
+                if (window.dashboardCache && window.dashboardCache.autoresponders) {
+                    window.dashboardCache.autoresponders.set(cacheKey, { timestamp: now, data: rules });
                 }
-                
-                if (emptyState) emptyState.style.display = 'none';
-                
-                rules.forEach(r => {
-                    const card = document.createElement('div');
-                    card.className = 'rendered-ar-card';
-                    card.style.padding = '15px';
-                    card.style.background = 'rgba(255,255,255,0.02)';
-                    card.style.border = '1px solid var(--border)';
-                    card.style.borderRadius = '8px';
-                    card.style.display = 'flex';
-                    card.style.justifyContent = 'space-between';
-                    card.style.alignItems = 'center';
-                    card.style.gap = '15px';
-                    
-                    const matchTypeLabels = {
-                        'contains': 'Contains Word',
-                        'exact': 'Exact Match',
-                        'startsWith': 'Starts With'
-                    };
-                    
-                    card.innerHTML = `
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <span style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">Trigger: ${r.trigger}</span>
-                                <span style="font-size: 0.7rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--muted);">${matchTypeLabels[r.matchType] || r.matchType}</span>
-                                ${r.isEmbed ? '<span style="font-size: 0.7rem; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.2); padding: 2px 6px; border-radius: 4px; color: var(--primary);">Embed</span>' : ''}
-                            </div>
-                            <p style="margin: 6px 0 0 0; font-size: 0.8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Response: ${r.response}</p>
-                        </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <button onclick="editAutoresponderRule('${r.id}')" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem;"><i class="fas fa-edit"></i> Edit</button>
-                            <button onclick="deleteAutoresponderRule('${r.id}')" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem; color: var(--danger); border-color: rgba(239,68,68,0.2);"><i class="fas fa-trash"></i> Delete</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
             } catch (e) {
                 console.error(e);
                 showToast(`Failed to load autoresponders: ${e.message}`, 'error');
+                return;
             }
+            _renderAutoresponders(rules, container);
+        }
+
+        function _renderAutoresponders(rules, container) {
+            if (!rules || !container) return;
+            activeAutoresponders = rules;
+            
+            // Clear existing render
+            container.querySelectorAll('.rendered-ar-card').forEach(el => el.remove());
+            
+            const emptyState = document.getElementById('autoresponder-empty-state');
+            if (rules.length === 0) {
+                if (emptyState) emptyState.style.display = 'block';
+                return;
+            }
+            
+            if (emptyState) emptyState.style.display = 'none';
+            
+            rules.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'rendered-ar-card';
+                card.style.padding = '20px 24px';
+                card.style.background = 'rgba(255,255,255,0.02)';
+                card.style.border = '1px solid var(--border)';
+                card.style.borderRadius = '8px';
+                card.style.display = 'flex';
+                card.style.justifyContent = 'space-between';
+                card.style.alignItems = 'center';
+                card.style.gap = '18px';
+                
+                const matchTypeLabels = {
+                    'contains': 'Contains Word',
+                    'exact': 'Exact Match',
+                    'startsWith': 'Starts With'
+                };
+                
+                card.innerHTML = `
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">Trigger: ${r.trigger}</span>
+                            <span style="font-size: 0.7rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--muted);">${matchTypeLabels[r.matchType] || r.matchType}</span>
+                            ${r.isEmbed ? '<span style="font-size: 0.7rem; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.2); padding: 2px 6px; border-radius: 4px; color: var(--primary);">Embed</span>' : ''}
+                        </div>
+                        <p style="margin: 6px 0 0 0; font-size: 0.8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Response: ${r.response}</p>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button onclick="editAutoresponderRule('${r.id}')" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem;"><i class="fas fa-edit"></i> Edit</button>
+                        <button onclick="deleteAutoresponderRule('${r.id}')" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem; color: var(--danger); border-color: rgba(239,68,68,0.2);"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
         }
 
         function populateAutoresponderFormDropdowns() {
@@ -12158,6 +12315,7 @@
                 
                 showToast(editingResponderId ? 'Rule updated successfully' : 'Rule created successfully', 'success');
                 resetAutoresponderForm();
+                if (window.dashboardCache && window.dashboardCache.autoresponders) window.dashboardCache.autoresponders.delete(currentServerId);
                 fetchAutoresponders();
             } catch (e) {
                 console.error(e);
@@ -12213,6 +12371,7 @@
                 });
                 if (!res.ok) throw new Error('Failed to delete rule');
                 showToast('Rule deleted', 'success');
+                if (window.dashboardCache && window.dashboardCache.autoresponders) window.dashboardCache.autoresponders.delete(currentServerId);
                 fetchAutoresponders();
             } catch (e) {
                 console.error(e);
@@ -12285,7 +12444,7 @@
     </script>
     <div id="session-expired-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">⚠️</div>
+            <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">âš ï¸</div>
             <h2 id="session-expired-title" style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Session Expired</h2>
             <p id="session-expired-desc" style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
                 Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.
@@ -12314,7 +12473,7 @@
     <!-- API Rate Limit Overlay -->
     <div id="api-ratelimit-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 22000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: #ffcc00; filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.3));">⏳</div>
+            <div style="font-size: 3rem; margin-bottom: 20px; color: #ffcc00; filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.3));">â³</div>
             <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Rate Limit Hit</h2>
             <p id="ratelimit-message" style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
                 You are making requests too quickly. Please wait a few seconds before trying again.
@@ -12332,7 +12491,7 @@
     <!-- Pairing Approval Modal -->
     <div id="pairing-confirmation-modal" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 25000; align-items: center; justify-content: center; flex-direction: column; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); text-align: left;">
-            <div style="font-size: 3rem; margin-bottom: 20px; text-align: center; color: var(--primary);">📱</div>
+            <div style="font-size: 3rem; margin-bottom: 20px; text-align: center; color: var(--primary);">ðŸ“±</div>
             <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800; text-align: center;">Pairing Request</h2>
             <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; text-align: center;">
                 A secondary device is attempting to pair with your account.
@@ -12391,117 +12550,117 @@
 
     <script>
         const STANDARD_EMOJIS = [
-            { char: '😀', name: 'grinning face happy smile' },
-            { char: '😃', name: 'grinning face big eyes happy smile' },
-            { char: '😄', name: 'grinning face smiling eyes happy smile' },
-            { char: '😁', name: 'beaming face smiling eyes happy smile grin' },
-            { char: '😆', name: 'squinting face happy smile laugh' },
-            { char: '😅', name: 'grinning face sweat happy smile laugh' },
-            { char: '😂', name: 'face tears joy happy laugh cry' },
-            { char: '🤣', name: 'rolling on floor laughing laugh happy' },
-            { char: '😊', name: 'smiling face happy smile blush' },
-            { char: '😇', name: 'smiling face halo angel happy innocent' },
-            { char: '🙂', name: 'slightly smiling face happy smile' },
-            { char: '🙃', name: 'upside down face silly crazy' },
-            { char: '😉', name: 'winking face wink happy' },
-            { char: '😌', name: 'relieved face calm' },
-            { char: '😍', name: 'smiling face heart eyes love like happy' },
-            { char: '🥰', name: 'smiling face hearts love like happy' },
-            { char: '😘', name: 'face blowing kiss love kiss' },
-            { char: '😋', name: 'face savoring food delicious yum hungry' },
-            { char: '😛', name: 'face stuck out tongue silly' },
-            { char: '😜', name: 'winking face tongue silly wink' },
-            { char: '🤪', name: 'zany face crazy silly' },
-            { char: '😎', name: 'smiling face sunglasses cool shades' },
-            { char: '🤩', name: 'star struck star eyes excited' },
-            { char: '🥳', name: 'partying face party celebrate birthday' },
-            { char: '😏', name: 'smirking face smirk sly' },
-            { char: '😒', name: 'unamused face annoyed bored' },
-            { char: '😞', name: 'disappointed face sad' },
-            { char: '😔', name: 'pensive face sad' },
-            { char: '😟', name: 'worried face worry sad' },
-            { char: '😕', name: 'confused face confuse' },
-            { char: '🙁', name: 'slightly frowning face sad' },
-            { char: '☹️', name: 'frowning face sad' },
-            { char: '🥺', name: 'pleading face please beg puppy eyes' },
-            { char: '😢', name: 'crying face cry sad tear' },
-            { char: '😭', name: 'loudly crying face cry sad tears sob' },
-            { char: '😤', name: 'face steam nose angry mad' },
-            { char: '😠', name: 'angry face mad' },
-            { char: '😡', name: 'pouting face angry mad red' },
-            { char: '🤬', name: 'face symbols mouth curse swear angry' },
-            { char: '🤯', name: 'exploding head mind blown shock' },
-            { char: '😳', name: 'flushed face embarrassed shock' },
-            { char: '🥵', name: 'hot face heat sweat' },
-            { char: '🥶', name: 'cold face ice freeze' },
-            { char: '😱', name: 'face screaming fear scared shock' },
-            { char: '🥱', name: 'yawning face yawn tired sleepy' },
-            { char: '😴', name: 'sleeping face sleep tired snore' },
-            { char: '😵', name: 'dizzy face dead' },
-            { char: '🤐', name: 'zipper mouth face quiet secret' },
-            { char: '🤢', name: 'nauseated face sick vomit green' },
-            { char: '🤮', name: 'face vomiting sick vomit' },
-            { char: '😷', name: 'face medical mask sick doctor' },
-            { char: '🤒', name: 'face thermometer sick fever' },
-            { char: '🤕', name: 'face head bandage sick hurt' },
-            { char: '🤑', name: 'money mouth face cash rich' },
-            { char: '🤠', name: 'cowboy hat face cowboy' },
-            { char: '😈', name: 'smiling face horns devil evil purple' },
-            { char: '👿', name: 'angry face horns devil mad evil' },
-            { char: '🤡', name: 'clown face clown silly' },
-            { char: '👻', name: 'ghost spook halloween' },
-            { char: '💀', name: 'skull dead skeleton' },
-            { char: '👽', name: 'alien space extraterrestrial' },
-            { char: '👾', name: 'alien monster game retro' },
-            { char: '🤖', name: 'robot face bot tech' },
-            { char: '🎃', name: 'jack o lantern pumpkin halloween' },
-            { char: '👋', name: 'waving hand wave hello goodbye' },
-            { char: '👍', name: 'thumbs up like good yes' },
-            { char: '👎', name: 'thumbs down dislike bad no' },
-            { char: '✊', name: 'raised fist punch' },
-            { char: '👊', name: 'oncoming fist punch' },
-            { char: '👏', name: 'clapping hands clap' },
-            { char: '🙌', name: 'raising hands celebrate' },
-            { char: '🙏', name: 'folded hands pray please thank you' },
-            { char: '💪', name: 'flexed biceps strong muscle power' },
-            { char: '🧠', name: 'brain smart mind intelligence' },
-            { char: '👀', name: 'eyes look see watch' },
-            { char: '❤️', name: 'red heart love like' },
-            { char: '🧡', name: 'orange heart love' },
-            { char: '💛', name: 'yellow heart love' },
-            { char: '💚', name: 'green heart love' },
-            { char: '💙', name: 'blue heart love' },
-            { char: '💜', name: 'purple heart love' },
-            { char: '🖤', name: 'black heart love' },
-            { char: '🤍', name: 'white heart love' },
-            { char: '🤎', name: 'brown heart love' },
-            { char: '💔', name: 'broken heart sad love' },
-            { char: '🔥', name: 'fire hot lit burn' },
-            { char: '✨', name: 'sparkles shine stars' },
-            { char: '⭐', name: 'star yellow' },
-            { char: '🌟', name: 'glowing star' },
-            { char: '💯', name: 'hundred points score perfect' },
-            { char: '🎉', name: 'party popper celebrate congratulate' },
-            { char: '🎊', name: 'confetti ball celebrate' },
-            { char: '🎈', name: 'balloon party celebrate' },
-            { char: '🎂', name: 'birthday cake celebrate food' },
-            { char: '🎮', name: 'video game controller play games' },
-            { char: '🎲', name: 'game die dice play' },
-            { char: '🎯', name: 'bullseye target hit play' },
-            { char: '⚽', name: 'soccer ball football sports' },
-            { char: '🏀', name: 'basketball sports' },
-            { char: '🏈', name: 'american football sports' },
-            { char: '🏆', name: 'trophy win prize' },
-            { char: '🎨', name: 'artist palette paint art draw' },
-            { char: '🎬', name: 'clapper board movie film' },
-            { char: '🎤', name: 'microphone sing music' },
-            { char: '🎧', name: 'headphone listen music' },
-            { char: '💻', name: 'laptop computer tech' },
-            { char: '📱', name: 'mobile phone cell tech' },
-            { char: '🚀', name: 'rocket space launch' },
-            { char: '🛸', name: 'flying saucer ufo space' },
-            { char: '👑', name: 'crown king queen royal' },
-            { char: '💎', name: 'gem stone diamond premium' }
+            { char: 'ðŸ˜€', name: 'grinning face happy smile' },
+            { char: 'ðŸ˜ƒ', name: 'grinning face big eyes happy smile' },
+            { char: 'ðŸ˜„', name: 'grinning face smiling eyes happy smile' },
+            { char: 'ðŸ˜', name: 'beaming face smiling eyes happy smile grin' },
+            { char: 'ðŸ˜†', name: 'squinting face happy smile laugh' },
+            { char: 'ðŸ˜…', name: 'grinning face sweat happy smile laugh' },
+            { char: 'ðŸ˜‚', name: 'face tears joy happy laugh cry' },
+            { char: 'ðŸ¤£', name: 'rolling on floor laughing laugh happy' },
+            { char: 'ðŸ˜Š', name: 'smiling face happy smile blush' },
+            { char: 'ðŸ˜‡', name: 'smiling face halo angel happy innocent' },
+            { char: 'ðŸ™‚', name: 'slightly smiling face happy smile' },
+            { char: 'ðŸ™ƒ', name: 'upside down face silly crazy' },
+            { char: 'ðŸ˜‰', name: 'winking face wink happy' },
+            { char: 'ðŸ˜Œ', name: 'relieved face calm' },
+            { char: 'ðŸ˜', name: 'smiling face heart eyes love like happy' },
+            { char: 'ðŸ¥°', name: 'smiling face hearts love like happy' },
+            { char: 'ðŸ˜˜', name: 'face blowing kiss love kiss' },
+            { char: 'ðŸ˜‹', name: 'face savoring food delicious yum hungry' },
+            { char: 'ðŸ˜›', name: 'face stuck out tongue silly' },
+            { char: 'ðŸ˜œ', name: 'winking face tongue silly wink' },
+            { char: 'ðŸ¤ª', name: 'zany face crazy silly' },
+            { char: 'ðŸ˜Ž', name: 'smiling face sunglasses cool shades' },
+            { char: 'ðŸ¤©', name: 'star struck star eyes excited' },
+            { char: 'ðŸ¥³', name: 'partying face party celebrate birthday' },
+            { char: 'ðŸ˜', name: 'smirking face smirk sly' },
+            { char: 'ðŸ˜’', name: 'unamused face annoyed bored' },
+            { char: 'ðŸ˜ž', name: 'disappointed face sad' },
+            { char: 'ðŸ˜”', name: 'pensive face sad' },
+            { char: 'ðŸ˜Ÿ', name: 'worried face worry sad' },
+            { char: 'ðŸ˜•', name: 'confused face confuse' },
+            { char: 'ðŸ™', name: 'slightly frowning face sad' },
+            { char: 'â˜¹ï¸', name: 'frowning face sad' },
+            { char: 'ðŸ¥º', name: 'pleading face please beg puppy eyes' },
+            { char: 'ðŸ˜¢', name: 'crying face cry sad tear' },
+            { char: 'ðŸ˜­', name: 'loudly crying face cry sad tears sob' },
+            { char: 'ðŸ˜¤', name: 'face steam nose angry mad' },
+            { char: 'ðŸ˜ ', name: 'angry face mad' },
+            { char: 'ðŸ˜¡', name: 'pouting face angry mad red' },
+            { char: 'ðŸ¤¬', name: 'face symbols mouth curse swear angry' },
+            { char: 'ðŸ¤¯', name: 'exploding head mind blown shock' },
+            { char: 'ðŸ˜³', name: 'flushed face embarrassed shock' },
+            { char: 'ðŸ¥µ', name: 'hot face heat sweat' },
+            { char: 'ðŸ¥¶', name: 'cold face ice freeze' },
+            { char: 'ðŸ˜±', name: 'face screaming fear scared shock' },
+            { char: 'ðŸ¥±', name: 'yawning face yawn tired sleepy' },
+            { char: 'ðŸ˜´', name: 'sleeping face sleep tired snore' },
+            { char: 'ðŸ˜µ', name: 'dizzy face dead' },
+            { char: 'ðŸ¤', name: 'zipper mouth face quiet secret' },
+            { char: 'ðŸ¤¢', name: 'nauseated face sick vomit green' },
+            { char: 'ðŸ¤®', name: 'face vomiting sick vomit' },
+            { char: 'ðŸ˜·', name: 'face medical mask sick doctor' },
+            { char: 'ðŸ¤’', name: 'face thermometer sick fever' },
+            { char: 'ðŸ¤•', name: 'face head bandage sick hurt' },
+            { char: 'ðŸ¤‘', name: 'money mouth face cash rich' },
+            { char: 'ðŸ¤ ', name: 'cowboy hat face cowboy' },
+            { char: 'ðŸ˜ˆ', name: 'smiling face horns devil evil purple' },
+            { char: 'ðŸ‘¿', name: 'angry face horns devil mad evil' },
+            { char: 'ðŸ¤¡', name: 'clown face clown silly' },
+            { char: 'ðŸ‘»', name: 'ghost spook halloween' },
+            { char: 'ðŸ’€', name: 'skull dead skeleton' },
+            { char: 'ðŸ‘½', name: 'alien space extraterrestrial' },
+            { char: 'ðŸ‘¾', name: 'alien monster game retro' },
+            { char: 'ðŸ¤–', name: 'robot face bot tech' },
+            { char: 'ðŸŽƒ', name: 'jack o lantern pumpkin halloween' },
+            { char: 'ðŸ‘‹', name: 'waving hand wave hello goodbye' },
+            { char: 'ðŸ‘', name: 'thumbs up like good yes' },
+            { char: 'ðŸ‘Ž', name: 'thumbs down dislike bad no' },
+            { char: 'âœŠ', name: 'raised fist punch' },
+            { char: 'ðŸ‘Š', name: 'oncoming fist punch' },
+            { char: 'ðŸ‘', name: 'clapping hands clap' },
+            { char: 'ðŸ™Œ', name: 'raising hands celebrate' },
+            { char: 'ðŸ™', name: 'folded hands pray please thank you' },
+            { char: 'ðŸ’ª', name: 'flexed biceps strong muscle power' },
+            { char: 'ðŸ§ ', name: 'brain smart mind intelligence' },
+            { char: 'ðŸ‘€', name: 'eyes look see watch' },
+            { char: 'â¤ï¸', name: 'red heart love like' },
+            { char: 'ðŸ§¡', name: 'orange heart love' },
+            { char: 'ðŸ’›', name: 'yellow heart love' },
+            { char: 'ðŸ’š', name: 'green heart love' },
+            { char: 'ðŸ’™', name: 'blue heart love' },
+            { char: 'ðŸ’œ', name: 'purple heart love' },
+            { char: 'ðŸ–¤', name: 'black heart love' },
+            { char: 'ðŸ¤', name: 'white heart love' },
+            { char: 'ðŸ¤Ž', name: 'brown heart love' },
+            { char: 'ðŸ’”', name: 'broken heart sad love' },
+            { char: 'ðŸ”¥', name: 'fire hot lit burn' },
+            { char: 'âœ¨', name: 'sparkles shine stars' },
+            { char: 'â­', name: 'star yellow' },
+            { char: 'ðŸŒŸ', name: 'glowing star' },
+            { char: 'ðŸ’¯', name: 'hundred points score perfect' },
+            { char: 'ðŸŽ‰', name: 'party popper celebrate congratulate' },
+            { char: 'ðŸŽŠ', name: 'confetti ball celebrate' },
+            { char: 'ðŸŽˆ', name: 'balloon party celebrate' },
+            { char: 'ðŸŽ‚', name: 'birthday cake celebrate food' },
+            { char: 'ðŸŽ®', name: 'video game controller play games' },
+            { char: 'ðŸŽ²', name: 'game die dice play' },
+            { char: 'ðŸŽ¯', name: 'bullseye target hit play' },
+            { char: 'âš½', name: 'soccer ball football sports' },
+            { char: 'ðŸ€', name: 'basketball sports' },
+            { char: 'ðŸˆ', name: 'american football sports' },
+            { char: 'ðŸ†', name: 'trophy win prize' },
+            { char: 'ðŸŽ¨', name: 'artist palette paint art draw' },
+            { char: 'ðŸŽ¬', name: 'clapper board movie film' },
+            { char: 'ðŸŽ¤', name: 'microphone sing music' },
+            { char: 'ðŸŽ§', name: 'headphone listen music' },
+            { char: 'ðŸ’»', name: 'laptop computer tech' },
+            { char: 'ðŸ“±', name: 'mobile phone cell tech' },
+            { char: 'ðŸš€', name: 'rocket space launch' },
+            { char: 'ðŸ›¸', name: 'flying saucer ufo space' },
+            { char: 'ðŸ‘‘', name: 'crown king queen royal' },
+            { char: 'ðŸ’Ž', name: 'gem stone diamond premium' }
         ];
 
         let activeEmojiInputId = null;
