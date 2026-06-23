@@ -8168,6 +8168,13 @@
             });
         }
 
+        function hasConfigCache(guildId) {
+            return window.dashboardCache &&
+                   window.dashboardCache.channels.has(guildId) &&
+                   window.dashboardCache.roles.has(guildId) &&
+                   window.dashboardCache.settings.has(guildId);
+        }
+
         const tabs = document.querySelectorAll('.h-tab');
         tabs.forEach(t => t.onclick = () => { 
             const targetId = t.getAttribute('data-tab');
@@ -8184,7 +8191,7 @@
             document.getElementById('cfg-icon').src = g.icon;
             document.getElementById('cfg-name').innerHTML = `${g.name} <div id="cfg-status" class="status-indicator online" title="Online"></div>`;
             
-                        [viewServers, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
+            [viewServers, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
             viewConfig.style.display = 'block';
             document.body.classList.add('in-config');
             
@@ -8201,7 +8208,10 @@
 
             applyPremiumLocking();
             
-            toggleLoading(true);
+            const isCached = hasConfigCache(g.id);
+            if (!isCached) {
+                toggleLoading(true);
+            }
             try {
                 // Await channels and roles loading first so that fetchSettings() can map the select elements correctly
                 await Promise.all([fetchChannels(), fetchRoles(), fetchAnalytics()]);
@@ -9155,45 +9165,9 @@
             }
         }
 
-        async function fetchChannels(force = false) {
-            const cacheKey = currentServerId;
-            if (!cacheKey) return;
-            const now = Date.now();
-            let channels;
-
-            if (!force && window.dashboardCache && window.dashboardCache.channels && window.dashboardCache.channels.has(cacheKey)) {
-                const entry = window.dashboardCache.channels.get(cacheKey);
-                if (now - entry.timestamp < 30000) {
-                    channels = entry.data;
-                }
-            }
-
-            if (!channels) {
-                try {
-                    const t = sessionStorage.getItem('discord_token');
-                    const res = await fetch(`/api/guilds/${currentServerId}/channels`, {
-                        headers: { 'Authorization': `Bearer ${t}` }
-                    });
-                    if (!res.ok) {
-                        const errData = await res.json().catch(() => ({}));
-                        throw new Error(errData.error || `HTTP ${res.status}`);
-                    }
-                    channels = await res.json();
-                    if (!Array.isArray(channels)) {
-                        throw new Error('Channels response is not an array.');
-                    }
-                    if (window.dashboardCache && window.dashboardCache.channels) {
-                        window.dashboardCache.channels.set(cacheKey, { timestamp: now, data: channels });
-                    }
-                } catch (e) {
-                    console.error('[Channels Load Error]:', e);
-                    showToast(`Failed to load channels: ${e.message}`, 'error');
-                    return;
-                }
-            }
-            window.guildChannels = channels;
+        function _applyChannels(channels) {
+            if (!channels) return;
             try {
-
                 const selects = [
                     'broadcast-channel',
                     'setting-topggVoteChannelId',
@@ -9242,6 +9216,62 @@
                         initCustomDropdown(id);
                     }
                 });
+            } catch (e) {
+                console.error('[Channels Apply Error]:', e);
+            }
+        }
+
+        async function fetchChannels(force = false) {
+            const cacheKey = currentServerId;
+            if (!cacheKey) return;
+            const now = Date.now();
+            let channels;
+            let hasStaleCache = false;
+
+            if (!force && window.dashboardCache && window.dashboardCache.channels && window.dashboardCache.channels.has(cacheKey)) {
+                const entry = window.dashboardCache.channels.get(cacheKey);
+                channels = entry.data;
+                hasStaleCache = true;
+            }
+
+            if (hasStaleCache) {
+                _applyChannels(channels);
+                window.guildChannels = channels;
+                const entry = window.dashboardCache.channels.get(cacheKey);
+                if (now - entry.timestamp >= CACHE_TTL) {
+                    const t = sessionStorage.getItem('discord_token');
+                    fetch(`/api/guilds/${currentServerId}/channels`, {
+                        headers: { 'Authorization': `Bearer ${t}` }
+                    }).then(res => {
+                        if (!res.ok) throw new Error('Failed to fetch channels');
+                        return res.json();
+                    }).then(freshData => {
+                        window.dashboardCache.channels.set(cacheKey, { timestamp: Date.now(), data: freshData });
+                        window.guildChannels = freshData;
+                        _applyChannels(freshData);
+                    }).catch(e => console.warn('Background channels refresh failed:', e));
+                }
+                return;
+            }
+
+            try {
+                const t = sessionStorage.getItem('discord_token');
+                const res = await fetch(`/api/guilds/${currentServerId}/channels`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || `HTTP ${res.status}`);
+                }
+                channels = await res.json();
+                if (!Array.isArray(channels)) {
+                    throw new Error('Channels response is not an array.');
+                }
+                if (window.dashboardCache && window.dashboardCache.channels) {
+                    window.dashboardCache.channels.set(cacheKey, { timestamp: now, data: channels });
+                }
+                window.guildChannels = channels;
+                _applyChannels(channels);
             } catch (e) {
                 console.error('[Channels Load Error]:', e);
                 showToast(`Failed to load channels: ${e.message}`, 'error');
@@ -10749,45 +10779,9 @@
             if (preview) preview.src = val || 'https://cdn.discordapp.com/embed/avatars/0.png';
         }
 
-        async function fetchRoles(force = false) {
-            const cacheKey = currentServerId;
-            if (!cacheKey) return;
-            const now = Date.now();
-            let roles;
-
-            if (!force && window.dashboardCache && window.dashboardCache.roles && window.dashboardCache.roles.has(cacheKey)) {
-                const entry = window.dashboardCache.roles.get(cacheKey);
-                if (now - entry.timestamp < 30000) {
-                    roles = entry.data;
-                }
-            }
-
-            if (!roles) {
-                try {
-                    const t = sessionStorage.getItem('discord_token');
-                    const res = await fetch(`/api/guilds/${currentServerId}/roles`, {
-                        headers: { 'Authorization': `Bearer ${t}` }
-                    });
-                    if (!res.ok) {
-                        const errData = await res.json().catch(() => ({}));
-                        throw new Error(errData.error || `HTTP ${res.status}`);
-                    }
-                    roles = await res.json();
-                    if (!Array.isArray(roles)) {
-                        throw new Error('Roles response is not an array.');
-                    }
-                    if (window.dashboardCache && window.dashboardCache.roles) {
-                        window.dashboardCache.roles.set(cacheKey, { timestamp: now, data: roles });
-                    }
-                } catch (e) {
-                    console.error('[Roles Load Error]:', e);
-                    showToast(`Failed to load roles: ${e.message}`, 'error');
-                    return;
-                }
-            }
-            window.guildRoles = roles;
+        function _applyRoles(roles) {
+            if (!roles) return;
             try {
-                
                 const selects = [
                     'setting-topggRewardRoleId',
                     'setting-boostRewardRoleId',
@@ -10848,6 +10842,62 @@
                 initMultiselect('setting-verifyRoleId', roles);
                 initMultiselect('setting-automodImmuneRoles', roles);
                 initMultiselect('setting-countingWhitelistedRoles', roles);
+            } catch (e) {
+                console.error('[Roles Apply Error]:', e);
+            }
+        }
+
+        async function fetchRoles(force = false) {
+            const cacheKey = currentServerId;
+            if (!cacheKey) return;
+            const now = Date.now();
+            let roles;
+            let hasStaleCache = false;
+
+            if (!force && window.dashboardCache && window.dashboardCache.roles && window.dashboardCache.roles.has(cacheKey)) {
+                const entry = window.dashboardCache.roles.get(cacheKey);
+                roles = entry.data;
+                hasStaleCache = true;
+            }
+
+            if (hasStaleCache) {
+                _applyRoles(roles);
+                window.guildRoles = roles;
+                const entry = window.dashboardCache.roles.get(cacheKey);
+                if (now - entry.timestamp >= CACHE_TTL) {
+                    const t = sessionStorage.getItem('discord_token');
+                    fetch(`/api/guilds/${currentServerId}/roles`, {
+                        headers: { 'Authorization': `Bearer ${t}` }
+                    }).then(res => {
+                        if (!res.ok) throw new Error('Failed to fetch roles');
+                        return res.json();
+                    }).then(freshData => {
+                        window.dashboardCache.roles.set(cacheKey, { timestamp: Date.now(), data: freshData });
+                        window.guildRoles = freshData;
+                        _applyRoles(freshData);
+                    }).catch(e => console.warn('Background roles refresh failed:', e));
+                }
+                return;
+            }
+
+            try {
+                const t = sessionStorage.getItem('discord_token');
+                const res = await fetch(`/api/guilds/${currentServerId}/roles`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || `HTTP ${res.status}`);
+                }
+                roles = await res.json();
+                if (!Array.isArray(roles)) {
+                    throw new Error('Roles response is not an array.');
+                }
+                if (window.dashboardCache && window.dashboardCache.roles) {
+                    window.dashboardCache.roles.set(cacheKey, { timestamp: now, data: roles });
+                }
+                window.guildRoles = roles;
+                _applyRoles(roles);
             } catch (e) {
                 console.error('[Roles Load Error]:', e);
                 showToast(`Failed to load roles: ${e.message}`, 'error');
