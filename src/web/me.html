@@ -6,19 +6,20 @@
     <title>Vaztinix | Founder & Developer</title>
     <meta name="description" content="Official profile of Vaztinix - Founder & Developer of Nora Studio.">
     <link rel="icon" type="image/png" href="/nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #030303;
-            --primary: #ffffff;
-            --primary-glow: rgba(255, 255, 255, 0.1);
-            --card-bg: rgba(17, 17, 17, 0.6);
-            --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.2);
-            --text: #f3f4f6;
-            --muted: #9ca3af;
-            --accent: #5865f2; /* Blurple */
+            --bg: #020205;
+            --primary: #00e5ff; /* Futuristic Cyan */
+            --primary-glow: rgba(0, 229, 255, 0.15);
+            --secondary: #bd00ff; /* Purple Glow */
+            --card-bg: rgba(10, 10, 18, 0.6);
+            --border: rgba(0, 229, 255, 0.15);
+            --border-hover: rgba(0, 229, 255, 0.4);
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --accent: #5865f2;
         }
 
         * {
@@ -35,182 +36,204 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(88, 101, 242, 0.08) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.05) 0px, transparent 50%);
-            background-attachment: fixed;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* Ambient Glow Blobs */
-        .glow-blob {
+        /* Canvas Particle Background */
+        #bg-canvas {
             position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(88, 101, 242, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
-            border-radius: 50%;
-            z-index: -1;
-            filter: blur(50px);
-            animation: float 10s infinite ease-in-out;
-        }
-        .blob-1 { top: 10%; left: 10%; }
-        .blob-2 { bottom: 10%; right: 10%; animation-delay: -5s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-20px) scale(1.05); }
+            inset: 0;
+            z-index: 1;
+            pointer-events: auto;
         }
 
+        /* Holographic grid lines */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Scanlines for CRT feel */
+        .scanlines {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg, 
+                rgba(255, 0, 0, 0.06), 
+                rgba(0, 255, 0, 0.02), 
+                rgba(0, 0, 255, 0.06)
+            );
+            background-size: 100% 4px, 6px 100%;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        /* Cyberpunk Glitch Intro Overlay */
+        .intro-overlay {
+            position: fixed;
+            inset: 0;
+            background: #010103;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            padding: 40px;
+        }
+
+        .terminal-box {
+            width: 100%;
+            max-width: 600px;
+            color: var(--primary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .terminal-line {
+            opacity: 0;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 2px solid transparent;
+        }
+
+        /* Shutter Slide Out Reveal Animation */
+        .intro-overlay.reveal-left {
+            animation: shutterLeft 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        }
+        .intro-overlay.reveal-right {
+            animation: shutterRight 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        }
+
+        @keyframes shutterLeft {
+            0% { clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%); }
+            100% { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); opacity: 0; visibility: hidden; }
+        }
+        @keyframes shutterRight {
+            0% { clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%); }
+            100% { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); opacity: 0; visibility: hidden; }
+        }
+
+        /* Main Profile View Port */
         .profile-container {
+            position: relative;
+            z-index: 10;
             width: 100%;
             max-width: 500px;
             padding: 24px;
             perspective: 1000px;
         }
 
-        /* Intro Animation */
-        .intro-overlay {
-            position: fixed;
-            inset: 0;
-            background: #000;
+        /* Animated border glowing card */
+        .card-wrapper {
+            position: relative;
+            padding: 1px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--primary) 100%);
+            background-size: 300% 300%;
+            border-radius: 24px;
+            animation: gradientMove 6s infinite alternate ease-in-out;
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.1);
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 23px;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* HUD tech lines decoration */
+        .hud-corner {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--primary);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .hud-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .hud-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .hud-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .hud-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+        /* Tech HUD Ring surrounding Avatar */
+        .hud-circle-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
-            animation: fadeOutIntro 1.6s forwards ease-in-out;
         }
 
-        .intro-title {
-            font-size: 3rem;
-            font-weight: 900;
-            color: #fff;
-            letter-spacing: -2px;
-            text-transform: uppercase;
-            background: linear-gradient(to right, #fff, #5865f2, #fff);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: textPulse 1.6s infinite ease-in-out;
+        .hud-ring {
+            position: absolute;
+            inset: 0;
+            border: 2px dashed var(--primary);
+            border-radius: 50%;
+            animation: rotateRing 20s linear infinite;
+            opacity: 0.3;
         }
 
-        @keyframes fadeOutIntro {
-            0% { opacity: 1; visibility: visible; clip-path: circle(100% at 50% 50%); }
-            60% { opacity: 1; clip-path: circle(100% at 50% 50%); }
-            100% { opacity: 0; visibility: hidden; clip-path: circle(0% at 50% 40%); }
+        .hud-ring-outer {
+            position: absolute;
+            inset: -8px;
+            border: 1px solid var(--secondary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+            animation: rotateRingBack 10s linear infinite;
+            opacity: 0.4;
         }
 
-        @keyframes textPulse {
-            0%, 100% { filter: drop-shadow(0 0 10px rgba(255,255,255,0.1)); }
-            50% { filter: drop-shadow(0 0 20px rgba(88, 101, 242, 0.6)); }
+        @keyframes rotateRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes rotateRingBack {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
         }
 
-        /* Profile Card */
-        .profile-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 40px 30px;
-            text-align: center;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
-            transform-style: preserve-3d;
-        }
-
-        .profile-card:hover {
-            border-color: var(--border-hover);
-        }
-
-        /* Entrance Animations */
-        .avatar-container {
-            position: relative;
+        .avatar-box {
             width: 120px;
             height: 120px;
-            margin: 0 auto 24px;
             border-radius: 50%;
             padding: 3px;
-            background: linear-gradient(135deg, #fff 0%, #5865f2 50%, #030303 100%);
-            box-shadow: 0 10px 25px rgba(88, 101, 242, 0.2);
-            opacity: 0;
-            transform: scale(0.1) rotate(-180deg);
-            animation: avatarEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            animation-delay: 1.3s;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            position: relative;
+            z-index: 5;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
         }
 
-        .avatar-container:hover {
-            transform: scale(1.08) rotate(3deg);
-            box-shadow: 0 15px 35px rgba(88, 101, 242, 0.4);
-            background: linear-gradient(135deg, #5865f2 0%, #fff 50%, #5865f2 100%);
-        }
-
-        .name, .handle, .badge-container {
-            opacity: 0;
-            transform: translateY(30px);
-            filter: blur(5px);
-            animation: fadeInUpPremium 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-        .name { animation-delay: 1.6s; }
-        .handle { animation-delay: 1.75s; }
-        .badge-container { animation-delay: 1.9s; }
-
-        .bio-box {
-            opacity: 0;
-            transform: translateY(30px);
-            filter: blur(5px);
-            animation: fadeInUpPremium 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-            animation-delay: 2.05s;
-        }
-
-        .social-link {
-            opacity: 0;
-            transform: translateY(20px);
-            filter: blur(3px);
-            animation: fadeInUpPremium 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-        .social-link:nth-child(1) { animation-delay: 2.1s; }
-        .social-link:nth-child(2) { animation-delay: 2.18s; }
-        .social-link:nth-child(3) { animation-delay: 2.26s; }
-        .social-link:nth-child(4) { animation-delay: 2.34s; }
-        .social-link:nth-child(5) { animation-delay: 2.42s; }
-        .social-link:nth-child(6) { animation-delay: 2.5s; }
-
-        .back-home {
-            opacity: 0;
-            animation: fadeIn 1s ease forwards;
-            animation-delay: 2.8s;
-        }
-
-        @keyframes avatarEntrance {
-            0% {
-                opacity: 0;
-                transform: scale(0.1) rotate(-180deg);
-                box-shadow: 0 0 0 rgba(88, 101, 242, 0);
-            }
-            50% {
-                transform: scale(1.1) rotate(10deg);
-                box-shadow: 0 0 30px rgba(88, 101, 242, 0.6);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(0deg);
-                box-shadow: 0 10px 25px rgba(88, 101, 242, 0.2);
-            }
-        }
-
-        @keyframes fadeInUpPremium {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-                filter: blur(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
+        .avatar-box:hover {
+            transform: scale(1.06) rotate(3deg);
+            box-shadow: 0 0 25px var(--primary-glow);
         }
 
         .avatar {
@@ -218,8 +241,8 @@
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            background: #111;
-            border: 3px solid #111;
+            background: #0c0a15;
+            border: 3px solid #0a0813;
         }
 
         .status-dot {
@@ -229,24 +252,27 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #9ca3af;
-            border: 4px solid #1c1c1e;
-            transition: background-color 0.3s;
+            background: #64748b;
+            border: 4px solid #0d0c15;
+            z-index: 6;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
 
         .name {
-            font-size: 2rem;
-            font-weight: 800;
+            font-size: 2.2rem;
+            font-weight: 900;
             color: #fff;
             letter-spacing: -0.5px;
             margin-bottom: 4px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
         }
 
         .handle {
             font-size: 0.95rem;
-            color: var(--muted);
-            font-weight: 500;
-            margin-bottom: 12px;
+            color: var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
         }
 
         .badge-container {
@@ -257,26 +283,38 @@
         }
 
         .badge {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 229, 255, 0.05);
             border: 1px solid var(--border);
-            padding: 4px 10px;
-            border-radius: 999px;
+            padding: 4px 12px;
+            border-radius: 6px;
             font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--muted);
+            font-weight: 700;
+            color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         .bio-box {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border);
-            padding: 18px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(0, 229, 255, 0.08);
+            padding: 20px;
             border-radius: 16px;
             margin-bottom: 30px;
             font-size: 0.95rem;
             line-height: 1.6;
-            color: #d1d5db;
+            color: #94a3b8;
+            position: relative;
+        }
+
+        .bio-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20px;
+            width: 30px;
+            height: 2px;
+            background: var(--primary);
         }
 
         .social-grid {
@@ -290,8 +328,8 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             padding: 12px;
             border-radius: 12px;
             color: #fff;
@@ -299,19 +337,36 @@
             font-size: 0.9rem;
             font-weight: 600;
             transition: all 0.2s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-link::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.4s;
+        }
+
+        .social-link:hover::after {
+            transform: translateX(100%);
         }
 
         .social-link:hover {
-            background: var(--primary);
-            color: #000;
+            border-color: var(--primary);
+            color: var(--primary);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+            background: rgba(0, 229, 255, 0.04);
+            box-shadow: 0 5px 15px rgba(0, 229, 255, 0.1);
         }
 
         .social-link.discord:hover {
-            background: var(--accent);
+            border-color: var(--accent);
             color: #fff;
-            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.3);
+            background: rgba(88, 101, 242, 0.1);
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.25);
         }
 
         .back-home {
@@ -321,72 +376,228 @@
             color: var(--muted);
             text-decoration: none;
             font-size: 0.85rem;
-            font-weight: 500;
+            font-weight: 600;
             margin-top: 30px;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.2s;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 0.5px;
         }
 
         .back-home:hover {
-            color: #fff;
+            color: var(--primary);
+            transform: translateX(-4px);
         }
     </style>
 </head>
 <body>
-    <div class="glow-blob blob-1"></div>
-    <div class="glow-blob blob-2"></div>
+    <canvas id="bg-canvas"></canvas>
+    <div class="grid-overlay"></div>
+    <div class="scanlines"></div>
 
-    <!-- Cool Intro Animation Overlay -->
-    <div class="intro-overlay">
-        <div class="intro-title">Vaztinix</div>
+    <!-- Entertaining Cyber Boot Intro Overlay -->
+    <div class="intro-overlay" id="intro-screen">
+        <div class="terminal-box" id="terminal-text"></div>
     </div>
 
+    <!-- Hidden right-half screen clip reveal helper -->
+    <div class="intro-overlay" id="intro-screen-right" style="display: none; background: transparent; pointer-events: none;"></div>
+
     <div class="profile-container">
-        <div class="profile-card">
-            <div class="avatar-container">
-                <img class="avatar" src="/ReVaztinix.jpeg" alt="vaztinix" onerror="this.onerror=null; this.src='/nora.png';">
-                <div class="status-dot" id="status-dot"></div>
+        <div class="card-wrapper">
+            <div class="profile-card">
+                <div class="hud-corner hud-tl"></div>
+                <div class="hud-corner hud-tr"></div>
+                <div class="hud-corner hud-bl"></div>
+                <div class="hud-corner hud-br"></div>
+
+                <div class="hud-circle-container">
+                    <div class="hud-ring"></div>
+                    <div class="hud-ring-outer"></div>
+                    <div class="avatar-box">
+                        <img class="avatar" src="/ReVaztinix.jpeg" alt="vaztinix" onerror="this.onerror=null; this.src='/nora.png';">
+                        <div class="status-dot" id="status-dot"></div>
+                    </div>
+                </div>
+
+                <h1 class="name" id="name">Vaz</h1>
+                <div class="handle" id="handle">@vaztinix</div>
+
+                <div class="badge-container">
+                    <span class="badge">Founder</span>
+                    <span class="badge">Developer</span>
+                </div>
+
+                <div class="bio-box">
+                    <p id="bio">💕 | I care for everyone, but those closest to me will never understand the trust they have.</p>
+                </div>
+
+                <div class="social-grid">
+                    <a href="https://github.com/Vaztinix" class="social-link" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://www.youtube.com/@Vaztinix" class="social-link" target="_blank">
+                        <i class="fab fa-youtube"></i> YouTube
+                    </a>
+                    <a href="https://www.twitch.tv/vaztinix" class="social-link" target="_blank">
+                        <i class="fab fa-twitch"></i> Twitch
+                    </a>
+                    <a href="https://guns.lol/vaztinix" class="social-link" target="_blank">
+                        <i class="fas fa-link"></i> guns.lol
+                    </a>
+                    <a href="https://www.roblox.com/users/3089063186/profile" class="social-link" target="_blank">
+                        <i class="fas fa-gamepad"></i> Roblox
+                    </a>
+                    <a href="https://discord.com/users/1214048435632603137" class="social-link discord" target="_blank">
+                        <i class="fab fa-discord"></i> Discord
+                    </a>
+                </div>
+
+                <a href="/" class="back-home">
+                    <i class="fas fa-arrow-left"></i> BACK_TO_NORA
+                </a>
             </div>
-
-            <h1 class="name" id="name">Vaz</h1>
-            <div class="handle" id="handle">@vaztinix</div>
-
-            <div class="badge-container">
-                <span class="badge">Founder</span>
-                <span class="badge">Developer</span>
-            </div>
-
-            <div class="bio-box">
-                <p id="bio">💕 | I care for everyone, but those closest to me will never understand the trust they have.</p>
-            </div>
-
-            <div class="social-grid">
-                <a href="https://github.com/Vaztinix" class="social-link" target="_blank">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
-                <a href="https://www.youtube.com/@Vaztinix" class="social-link" target="_blank">
-                    <i class="fab fa-youtube"></i> YouTube
-                </a>
-                <a href="https://www.twitch.tv/vaztinix" class="social-link" target="_blank">
-                    <i class="fab fa-twitch"></i> Twitch
-                </a>
-                <a href="https://guns.lol/vaztinix" class="social-link" target="_blank">
-                    <i class="fas fa-link"></i> guns.lol
-                </a>
-                <a href="https://www.roblox.com/users/3089063186/profile" class="social-link" target="_blank">
-                    <i class="fas fa-gamepad"></i> Roblox
-                </a>
-                <a href="https://discord.com/users/1214048435632603137" class="social-link discord" target="_blank">
-                    <i class="fab fa-discord"></i> Discord
-                </a>
-            </div>
-
-            <a href="/" class="back-home">
-                <i class="fas fa-arrow-left"></i> Back to Nora Studio
-            </a>
         </div>
     </div>
 
     <script>
+        // --- 1. Cyber Terminal Boot Intro Script ---
+        const logs = [
+            { text: "INITIALIZING NORA BOOTLOADER V2.1...", delay: 50 },
+            { text: "ESTABLISHING SECURE PORT LINK... [CONNECTED]", delay: 150 },
+            { text: "DECRYPTION MATRIX SYNC... [SUCCESS]", delay: 50 },
+            { text: "MOUNTING MODULE PATH: /PUBLIC/DEV/VAZTINIX...", delay: 100 },
+            { text: "PARSING SYSTEM PRIVILEGES... LEVEL: FOUNDER [OK]", delay: 80 },
+            { text: "NORA ENGINE READY. ENJOY THE EXPERIENCE.", delay: 200 }
+        ];
+
+        const term = document.getElementById("terminal-text");
+        let lineIdx = 0;
+
+        function printLogLine() {
+            if (lineIdx < logs.length) {
+                const lineData = logs[lineIdx];
+                const div = document.createElement("div");
+                div.className = "terminal-line";
+                div.style.opacity = 1;
+                div.textContent = "> " + lineData.text;
+                term.appendChild(div);
+                lineIdx++;
+                setTimeout(printLogLine, lineData.delay);
+            } else {
+                // Completed lines, kick off the shutter split reveal
+                setTimeout(startShutterReveal, 400);
+            }
+        }
+
+        function startShutterReveal() {
+            const leftScreen = document.getElementById("intro-screen");
+            const rightScreen = document.getElementById("intro-screen-right");
+
+            // Setup right half clone
+            rightScreen.innerHTML = leftScreen.innerHTML;
+            rightScreen.style.display = "flex";
+
+            // Trigger shutter animations
+            leftScreen.classList.add("reveal-left");
+            rightScreen.classList.add("reveal-right");
+
+            // Clean up elements after completion
+            setTimeout(() => {
+                leftScreen.remove();
+                rightScreen.remove();
+            }, 850);
+        }
+
+        // Start Boot Animation
+        setTimeout(printLogLine, 100);
+
+
+        // --- 2. Interactive Canvas Particles Background ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        let mouse = { x: null, y: null, radius: 100 };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.baseX = x;
+                this.baseY = y;
+                this.size = Math.random() * 2 + 1;
+                this.density = (Math.random() * 30) + 15;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.55)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+            update() {
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    let force = (mouse.radius - distance) / mouse.radius;
+                    let directionX = dx / distance;
+                    let directionY = dy / distance;
+                    this.x -= directionX * force * this.density;
+                    this.y -= directionY * force * this.density;
+                } else {
+                    if (this.x !== this.baseX) {
+                        let dx = this.x - this.baseX;
+                        this.x -= dx / 15;
+                    }
+                    if (this.y !== this.baseY) {
+                        let dy = this.y - this.baseY;
+                        this.y -= dy / 15;
+                    }
+                }
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            let count = Math.floor((canvas.width * canvas.height) / 14000);
+            for (let i = 0; i < count; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                particles.push(new Particle(x, y));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        resizeCanvas();
+        animateParticles();
+
+
+        // --- 3. Discord User Status Data Sync ---
         const userId = '1214048435632603137';
         const statusColors = {
             online: '#23a55a',
@@ -395,7 +606,7 @@
             offline: '#747f8d'
         };
 
-        // 1. Fetch from our local public API (fast and guaranteed fallback/primary for basic info)
+        // Local public API fetch
         fetch(`/api/public/user/${userId}`)
             .then(res => res.json())
             .then(user => {
@@ -411,7 +622,7 @@
             })
             .catch(() => {});
 
-        // 2. Fetch lanyard status details dynamically
+        // Lanyard details fetch
         fetch(`https://api.lanyard.rest/v1/users/${userId}`)
             .then(res => res.json())
             .then(json => {
@@ -419,27 +630,23 @@
                     const data = json.data;
                     const user = data.discord_user;
                     
-                    // Update avatar if lanyard has it
                     if (user.avatar) {
                         const isAnimated = user.avatar.startsWith('a_');
                         const img = document.querySelector('.avatar');
                         img.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`;
                     }
                     
-                    // Update display name
                     if (user.global_name) {
                         document.getElementById('name').textContent = user.global_name;
                     }
                     document.getElementById('handle').textContent = `@${user.username}`;
 
-                    // Update status
                     const status = data.discord_status;
                     const statusDot = document.getElementById('status-dot');
                     if (statusColors[status]) {
                         statusDot.style.backgroundColor = statusColors[status];
                     }
 
-                    // Update bio if available
                     if (data.kv && data.kv.bio) {
                         document.getElementById('bio').textContent = data.kv.bio;
                     } else if (data.activities && data.activities.length > 0) {
@@ -454,8 +661,9 @@
 
         // 3D Card Tilt Interaction
         const card = document.querySelector('.profile-card');
+        const wrapper = document.querySelector('.card-wrapper');
         document.addEventListener('mousemove', e => {
-            const rect = card.getBoundingClientRect();
+            const rect = wrapper.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
@@ -465,17 +673,17 @@
             const dx = (x - xc) / xc;
             const dy = (y - yc) / yc;
             
-            const maxRotation = 10;
+            const maxRotation = 12;
             const rotateX = -dy * maxRotation;
             const rotateY = dx * maxRotation;
             
-            card.style.transition = 'transform 0.1s ease';
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+            wrapper.style.transition = 'transform 0.1s ease';
+            wrapper.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
         });
         
         document.addEventListener('mouseleave', () => {
-            card.style.transition = 'transform 0.5s ease';
-            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            wrapper.style.transition = 'transform 0.5s ease';
+            wrapper.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
         });
     </script>
 </body>
