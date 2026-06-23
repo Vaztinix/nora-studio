@@ -134,6 +134,17 @@ module.exports = {
             }
         }, 900000);
 
+        // Top.gg Auto-Post Scheduler: runs every 2 hours
+        try {
+            const { postToTopgg } = require('../utils/topggPoster');
+            await postToTopgg(client, true);
+            setInterval(async () => {
+                await postToTopgg(client, true);
+            }, 7200000);
+        } catch (err) {
+            console.error('[Top.gg Auto-Post Startup Error]:', err);
+        }
+
         console.log(`[System Check] Keeping an eye on things! Heartbeat active.`);
     },
 };

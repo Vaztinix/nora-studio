@@ -189,6 +189,35 @@ router.get('/emojis', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/guilds/:guildId/app-emojis
+ * Returns all custom application emojis.
+ */
+router.get('/app-emojis', async (req, res) => {
+    try {
+        let appEmojis = [];
+        if (req.client.application) {
+            try {
+                const fetched = await req.client.application.emojis.fetch().catch(() => null);
+                if (fetched) {
+                    appEmojis = fetched.map(e => ({
+                        id: e.id,
+                        name: e.name,
+                        animated: e.animated,
+                        url: e.imageURL({ size: 64 })
+                    }));
+                }
+            } catch (err) {
+                console.error('Failed to fetch app emojis:', err);
+            }
+        }
+        res.json(appEmojis);
+    } catch (e) {
+        console.error('Error fetching app emojis:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 
 router.get('/members', async (req, res) => {
@@ -341,7 +370,10 @@ router.get('/analytics', async (req, res) => {
 
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
-
+        // Warm up members cache if not fully loaded to prevent 0 stats on bot startup
+        if (guild.members.cache.size < guild.memberCount) {
+            await guild.members.fetch().catch(() => null);
+        }
 
         // Prevent browser caching so analytics update properly per server
 
@@ -814,143 +846,77 @@ router.get('/analytics', async (req, res) => {
  * Send a webhook broadcast message to a channel.
 
  */
-
 router.post('/webhook-send', async (req, res) => {
-
     try {
-
         const { guildId } = req.params;
-
-        const { channelId, name, avatar, content, embedTitle, embedDesc, embedColor, embedImage, components } = req.body;
-
+        const { channelId, name, avatar, content, embedTitle, embedDesc, embedColor, embedImage, embedThumbnail, embedFooter, components } = req.body;
         
-
         if (!channelId) return res.status(400).json({ error: 'Target channel is required.' });
-
         if (!content && !embedTitle && !embedDesc) return res.status(400).json({ error: 'Message content or embed is required.' });
-
         
-
         const guild = req.client.guilds.cache.get(guildId);
-
         if (!guild) return res.status(404).json({ error: 'Guild not found.' });
-
         
-
         const channel = guild.channels.cache.get(channelId);
-
         if (!channel) return res.status(404).json({ error: 'Channel not found.' });
-
         
-
         // Check permissions
-
         const me = guild.members.me;
-
         if (!me) return res.status(500).json({ error: 'Bot member not found.' });
-
         
-
         const perms = channel.permissionsFor(me);
-
         if (!perms || !perms.has('ManageWebhooks')) {
-
             return res.status(403).json({ error: 'Nora needs "Manage Webhooks" permission in this channel.' });
-
         }
-
         if (!perms.has('SendMessages')) {
-
             return res.status(403).json({ error: 'Nora needs "Send Messages" permission in this channel.' });
-
         }
-
         
-
         // Create or reuse a webhook in the target channel
-
         let webhook = null;
-
         try {
-
             const webhooks = await channel.fetchWebhooks();
-
             webhook = webhooks.find(wh => wh.owner && wh.owner.id === req.client.user.id);
-
         } catch (e) {
-
             return res.status(403).json({ error: `Failed to fetch webhooks: ${e.message}` });
-
         }
-
         
-
         if (!webhook) {
-
             try {
-
                 webhook = await channel.createWebhook({
-
                     name: name || 'Nora Broadcast',
-
                     avatar: req.client.user.displayAvatarURL({ size: 256 })
-
                 });
-
             } catch (e) {
-
                 return res.status(403).json({ error: `Failed to create webhook: ${e.message}` });
-
             }
-
         }
-
         
-
         const { saveBase64Image } = require('../../utils/imageSaver');
-
         const resolvedAvatar = saveBase64Image(avatar, 'webhook_avatar');
-
         const resolvedEmbedImage = saveBase64Image(embedImage, 'webhook_embed');
-
-
+        const resolvedEmbedThumbnail = saveBase64Image(embedThumbnail, 'webhook_thumb');
 
         // Build the webhook payload
-
         const webhookPayload = {};
-
         
-
         if (name) webhookPayload.username = name;
-
         if (resolvedAvatar) webhookPayload.avatarURL = resolvedAvatar;
-
         if (content) webhookPayload.content = content;
-
         
-
         // Build embed if any embed fields are provided
-
-        if (embedTitle || embedDesc || resolvedEmbedImage) {
-
+        if (embedTitle || embedDesc || resolvedEmbedImage || resolvedEmbedThumbnail || embedFooter) {
             const { EmbedBuilder } = require('discord.js');
-
             const embed = new EmbedBuilder();
-
             if (embedTitle) embed.setTitle(embedTitle);
-
             if (embedDesc) embed.setDescription(embedDesc);
-
             if (embedColor) embed.setColor(embedColor);
-
             if (resolvedEmbedImage) embed.setImage(resolvedEmbedImage);
-
+            if (resolvedEmbedThumbnail) embed.setThumbnail(resolvedEmbedThumbnail);
+            if (embedFooter) embed.setFooter({ text: embedFooter });
             webhookPayload.embeds = [embed];
-
         }
-
         
-
         // Build action row if components (buttons) are provided
 
         if (components && Array.isArray(components) && components.length > 0) {
@@ -1124,29 +1090,26 @@ router.post('/action', async (req, res) => {
 
 
             const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+            const styleMap = {
+                'Primary': ButtonStyle.Primary,
+                'Secondary': ButtonStyle.Secondary,
+                'Success': ButtonStyle.Success,
+                'Danger': ButtonStyle.Danger
+            };
+
+            const embedColor = settings.ticketEmbedColor && settings.ticketEmbedColor.startsWith('#') ? settings.ticketEmbedColor : '#ffffff';
 
             const pEmbed = new EmbedBuilder()
-
-                .setTitle('Support Center')
-
-                .setDescription('Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.')
-
-                .setColor('#ffffff')
-
+                .setTitle(settings.ticketEmbedTitle || 'Support Center')
+                .setDescription(settings.ticketEmbedDesc || 'Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.')
+                .setColor(embedColor)
                 .setFooter({ text: 'Support Ticketing System' });
 
-
-
             const pRow = new ActionRowBuilder().addComponents(
-
-                new ButtonBuilder().setCustomId('ticket_Support').setLabel('Support').setStyle(ButtonStyle.Primary),
-
-                new ButtonBuilder().setCustomId('ticket_Reporting').setLabel('Reporting').setStyle(ButtonStyle.Danger),
-
-                new ButtonBuilder().setCustomId('ticket_Appeals').setLabel('Appeals').setStyle(ButtonStyle.Secondary),
-
-                new ButtonBuilder().setCustomId('ticket_Other').setLabel('Other').setStyle(ButtonStyle.Secondary)
-
+                new ButtonBuilder().setCustomId('ticket_Support').setLabel(settings.ticketBtnLabelSupport || 'Support').setStyle(styleMap[settings.ticketBtnStyleSupport] || ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('ticket_Reporting').setLabel(settings.ticketBtnLabelReporting || 'Reporting').setStyle(styleMap[settings.ticketBtnStyleReporting] || ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId('ticket_Appeals').setLabel(settings.ticketBtnLabelAppeals || 'Appeals').setStyle(styleMap[settings.ticketBtnStyleAppeals] || ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId('ticket_Other').setLabel(settings.ticketBtnLabelOther || 'Other').setStyle(styleMap[settings.ticketBtnStyleOther] || ButtonStyle.Secondary)
             );
 
             await targetChannel.send({ embeds: [pEmbed], components: [pRow] });
@@ -3019,7 +2982,191 @@ router.post('/reaction-roles/publish', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/guilds/:guildId/members/:userId/warn
+ */
+router.post('/members/:userId/warn', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { reason } = req.body;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
 
+        const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+        if (!member) return res.status(404).json({ error: 'Member not found in guild.' });
+
+        if (member.roles.highest.position >= guild.members.me.roles.highest.position) {
+            return res.status(403).json({ error: 'Cannot moderate user: Role position is higher than or equal to bot.' });
+        }
+
+        await Warning.create({
+            guildId,
+            userId,
+            reason: reason || 'Warned from Web Dashboard',
+            moderatorId: req.userGuild.id
+        });
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        const logger = require('../../utils/logger');
+        logger.logDashboardOrCommandAction(
+            guild,
+            'Dashboard Action - Member Warned',
+            [
+                { name: 'Administrator', value: userTag, inline: true },
+                { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                { name: 'Reason', value: reason || 'No reason provided' }
+            ],
+            0xffff00
+        ).catch(() => null);
+
+        return res.json({ success: true, message: `Successfully warned ${member.user.tag}` });
+    } catch (e) {
+        console.error('Warn route error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/members/:userId/unwarn
+ */
+router.post('/members/:userId/unwarn', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { reason } = req.body;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+        if (!member) return res.status(404).json({ error: 'Member not found in guild.' });
+
+        // Find the latest active warning for the user
+        const latestWarning = await Warning.findOne({
+            where: { guildId, userId, active: true },
+            order: [['createdAt', 'DESC']]
+        });
+        if (!latestWarning) {
+            return res.status(404).json({ error: 'No active warnings found for this member.' });
+        }
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        await latestWarning.update({
+            active: false,
+            editedBy: user ? user.id : 'dashboard',
+            editedAt: new Date()
+        });
+
+        const logger = require('../../utils/logger');
+        logger.logDashboardOrCommandAction(
+            guild,
+            'Dashboard Action - Member Warning Removed (Unwarned)',
+            [
+                { name: 'Administrator', value: userTag, inline: true },
+                { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                { name: 'Reason', value: reason || 'No reason provided' },
+                { name: 'Removed Warning ID', value: String(latestWarning.id), inline: true }
+            ],
+            0x00ff00
+        ).catch(() => null);
+
+        return res.json({ success: true, message: `Successfully removed warning for ${member.user.tag}` });
+    } catch (e) {
+        console.error('Unwarn route error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/members/:userId/kick
+ */
+router.post('/members/:userId/kick', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { reason } = req.body;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+        if (!member) return res.status(404).json({ error: 'Member not found in guild.' });
+
+        if (member.roles.highest.position >= guild.members.me.roles.highest.position) {
+            return res.status(403).json({ error: 'Cannot moderate user: Role position is higher than or equal to bot.' });
+        }
+
+        await member.kick(reason || 'Kicked from Web Dashboard');
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        const logger = require('../../utils/logger');
+        logger.logDashboardOrCommandAction(
+            guild,
+            'Dashboard Action - Member Kicked',
+            [
+                { name: 'Administrator', value: userTag, inline: true },
+                { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                { name: 'Reason', value: reason || 'No reason provided' }
+            ],
+            0xffaa00
+        ).catch(() => null);
+
+        return res.json({ success: true, message: `Successfully kicked ${member.user.tag}` });
+    } catch (e) {
+        console.error('Kick route error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/members/:userId/ban
+ */
+router.post('/members/:userId/ban', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { reason } = req.body;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+        if (!member) return res.status(404).json({ error: 'Member not found in guild.' });
+
+        if (member.roles.highest.position >= guild.members.me.roles.highest.position) {
+            return res.status(403).json({ error: 'Cannot moderate user: Role position is higher than or equal to bot.' });
+        }
+
+        await member.ban({ reason: reason || 'Banned from Web Dashboard' });
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        const logger = require('../../utils/logger');
+        logger.logDashboardOrCommandAction(
+            guild,
+            'Dashboard Action - Member Banned',
+            [
+                { name: 'Administrator', value: userTag, inline: true },
+                { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                { name: 'Reason', value: reason || 'No reason provided' }
+            ],
+            0xff0000
+        ).catch(() => null);
+
+        return res.json({ success: true, message: `Successfully banned ${member.user.tag}` });
+    } catch (e) {
+        console.error('Ban route error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
 
 module.exports = router;
-

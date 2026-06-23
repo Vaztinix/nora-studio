@@ -276,6 +276,7 @@
             <button id="discord-login-btn" class="btn-discord">
                 <i class="fab fa-discord"></i> Sign in with Discord
             </button>
+            <div id="login-error-alert" style="display: none; margin-top: 15px; padding: 10px 15px; background: rgba(250, 119, 124, 0.15); border: 1px solid #fa777c; border-radius: 8px; color: #fa777c; font-size: 0.82rem; text-align: left; line-height: 1.4;"></div>
         </div>
     </div>
 
@@ -398,17 +399,23 @@
         let terminatedUsers = [];
 
         async function verifyToken(authToken) {
+            const errAlert = document.getElementById('login-error-alert');
+            if (errAlert) errAlert.style.display = 'none';
+
             try {
                 const apiBase = window.__NORA_API_BASE_URL__ || '';
                 const res = await fetch(`${apiBase}/api/admin/premium`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
-                if (res.status === 401 || res.status === 403) {
-                    throw new Error('Not authorized admin');
+                if (!res.ok) {
+                    let errMsg = `Server error (HTTP ${res.status})`;
+                    try {
+                        const errData = await res.json();
+                        errMsg = errData.error || errData.details || errMsg;
+                    } catch (jsonErr) {}
+                    throw new Error(errMsg);
                 }
-
-                if (!res.ok) throw new Error('Server error');
 
                 // Reveal workspace
                 document.getElementById('lock-screen').style.display = 'none';
@@ -419,8 +426,13 @@
                 // Initial data load
                 loadAdminDeskData();
             } catch (e) {
+                console.error('[Verification Error]:', e);
                 localStorage.removeItem('nora_admin_token');
                 document.getElementById('lock-screen').style.display = 'flex';
+                if (errAlert) {
+                    errAlert.style.display = 'block';
+                    errAlert.textContent = `Access Denied: ${e.message}`;
+                }
             }
         }
 

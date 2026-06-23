@@ -1318,6 +1318,28 @@
         .discord-embed-title { font-weight: 700; font-size: 1rem; color: white; margin-bottom: 5px; }
         .discord-embed-desc { font-size: 0.85rem; color: #dbdee1; line-height: 1.3; }
         .discord-embed-img { margin-top: 10px; border-radius: 4px; max-width: 100%; }
+        .discord-btn {
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 7px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .discord-btn-primary { background: #5865f2; }
+        .discord-btn-primary:hover { background: #4752c4; }
+        .discord-btn-secondary { background: #4e5058; }
+        .discord-btn-secondary:hover { background: #6d6f78; }
+        .discord-btn-success { background: #248046; }
+        .discord-btn-success:hover { background: #1a6535; }
+        .discord-btn-danger { background: #da373c; }
+        .discord-btn-danger:hover { background: #a92b2f; }
         .profile-status-pill {
             background: rgba(255,255,255,0.05);
             padding: 8px 12px;
@@ -1329,6 +1351,66 @@
             border: 1px solid rgba(255,255,255,0.05);
         }
         .profile-status-pill i { font-size: 1rem; opacity: 0.8; }
+
+        /* Custom Dropdown Styling */
+        .custom-select-wrapper {
+            position: relative;
+            width: 100%;
+            user-select: none;
+        }
+        .custom-select-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: all 0.2s ease;
+        }
+        .custom-select-trigger:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+        .custom-select-options {
+            display: none;
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            z-index: 9999;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            flex-direction: column;
+            padding: 4px;
+            gap: 2px;
+            box-sizing: border-box;
+        }
+        .custom-select-option {
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: #dbdee1;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: left;
+        }
+        .custom-select-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+        .custom-select-option.selected {
+            background: var(--primary-glow);
+            color: var(--primary);
+            font-weight: 600;
+        }
 
         /* Toast Notifications */
         /* Stacking containers defined above */
@@ -2771,6 +2853,31 @@
                             </div>
                         </div>
 
+                        <div style="margin-bottom: 25px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
+                            <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 8px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-credit-card" style="color: var(--primary);"></i> Managing Subscription & Cancellations
+                            </h4>
+                            <p style="color: var(--muted); font-size: 0.82rem; margin-bottom: 12px; line-height: 1.5;">
+                                Premium upgrades and subscriptions for Nora Studio are processed and handled directly through the Discord client using App Subscriptions. If you need to modify, upgrade, or cancel your active subscription, please follow these steps:
+                            </p>
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 15px; border-radius: 8px; font-size: 0.8rem; line-height: 1.6; color: rgba(255,255,255,0.85); margin-bottom: 15px;">
+                                <ol style="margin: 0; padding-left: 20px;">
+                                    <li>Open your Discord client and navigate to <strong style="color: #fff;">User Settings</strong> (the gear icon next to your avatar).</li>
+                                    <li>Under the <strong style="color: #fff;">Billing Settings</strong> section on the left sidebar, click on <strong style="color: #fff;">Subscriptions</strong>.</li>
+                                    <li>Find your Nora Studio subscription card and click on <strong style="color: #fff;">Manage</strong> or <strong style="color: #fff;">Cancel Subscription</strong>.</li>
+                                    <li>Follow the prompts to finalize the cancellation or configuration of your plan.</li>
+                                </ol>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <a href="https://support.discord.com/hc/en-us/articles/12303538612119" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                                    <i class="fas fa-question-circle"></i> Discord Billing FAQ
+                                </a>
+                                <a href="https://support.discord.com/" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                                    <i class="fas fa-external-link-alt"></i> Discord Help Center
+                                </a>
+                            </div>
+                        </div>
+
                         <button class="save-btn" style="width: 100%; padding: 13px; background: #ffffff; color: #000000;" onclick="savePersonalPrefs()">Update Personal Details</button>
                         
                         <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
@@ -2899,7 +3006,7 @@
                                 <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted); margin-left: 8px;"></i>
                             </div>
                             <!-- Dropdown Menu of Servers -->
-                            <div id="sidebar-server-dropdown" style="display: none; position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: #1a0c10; border: 1px solid var(--border); border-radius: 12px; z-index: 1000; max-height: 250px; overflow-y: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+                            <div id="sidebar-server-dropdown" style="display: none; position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; z-index: 1000; max-height: 250px; overflow-y: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
                                 <div id="sidebar-server-list" style="padding: 5px; display: flex; flex-direction: column; gap: 4px;">
                                     <!-- Populated dynamically via JS -->
                                 </div>
@@ -2918,6 +3025,7 @@
                         <button class="h-tab" data-tab="tab-logging"><i class="fas fa-file-alt"></i> Server Logging</button>
                         <button class="h-tab" data-tab="tab-autoresponder"><i class="fas fa-reply"></i> Autoresponder</button>
                         <button class="h-tab" data-tab="tab-feeds"><i class="fas fa-broadcast-tower"></i> Content Feeds</button>
+                        <button class="h-tab" data-tab="tab-webhooks"><i class="fas fa-network-wired"></i> Webhooks</button>
                         
                         <div style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
                             <button class="save-btn" style="background: var(--primary); color: #0b0b0a; font-weight: 700; font-size: 0.8rem; text-align: center; justify-content: center; box-shadow: 0 0 10px var(--primary-glow);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown"></i> Get Premium</button>
@@ -4203,29 +4311,148 @@
                 </div>
 
                 <div id="tab-tickets" class="tab-content" style="display: none;">
-                    <div class="panel">
-                        <h3>Support Ticket System</h3>
-                        <p>Configure the system for handling private support tickets.</p>
-                        <div class="input-group" style="margin-top: 15px; margin-bottom: 20px;"><label>Ticket Category ID</label><input type="text" id="setting-ticketCategoryId"></div>
-                        <div class="input-group" style="margin-bottom: 20px;">
-                            <label>Ticket Spawn Channel</label>
-                            <select id="setting-ticketChannelId"><option value="">Select channel...</option></select>
-                        </div>
-                        <div class="input-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" id="setting-ticketAutoArchive" style="width: auto; margin: 0; cursor: pointer;">
-                            <label for="setting-ticketAutoArchive" style="margin: 0; cursor: pointer; font-weight: 550;">Auto-Archive Inactive Tickets (24 Hours)</label>
-                        </div>
-                        <div class="input-group" style="margin-bottom: 20px;">
-                            <label>Ticket Counter (Last Number)</label>
-                            <div style="display: flex; gap: 10px; align-items: center; width: 100%;">
-                                <input type="number" id="setting-ticketLastNumber" min="0" style="flex: 1; box-sizing: border-box;">
-                                <button type="button" class="config-btn" style="width: auto; margin-top: 0; padding: 10px 15px; flex-shrink: 0;" onclick="document.getElementById('setting-ticketLastNumber').value = '0';">Reset to 0</button>
+                    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; align-items: start;">
+                        <!-- Left Column: Controls -->
+                        <div class="panel">
+                            <h3>Support Ticket System</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                Configure the system for handling private support tickets on your Discord server.
+                            </p>
+                            
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Ticket Category ID</label>
+                                <input type="text" id="setting-ticketCategoryId" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
                             </div>
-                            <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">This number increments with each new ticket. Resetting will start numbering from 1 again.</p>
+                            
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Ticket Spawn Channel</label>
+                                <select id="setting-ticketChannelId" style="width: 100%;"><option value="">Select channel...</option></select>
+                            </div>
+                            
+                            <div class="input-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="setting-ticketAutoArchive" style="width: auto; margin: 0; cursor: pointer;">
+                                <label for="setting-ticketAutoArchive" style="margin: 0; cursor: pointer; font-weight: 550;">Auto-Archive Inactive Tickets (24 Hours)</label>
+                            </div>
+                            
+                            <div class="input-group" style="margin-bottom: 25px;">
+                                <label>Ticket Counter (Last Number)</label>
+                                <div style="display: flex; gap: 10px; align-items: center; width: 100%;">
+                                    <input type="number" id="setting-ticketLastNumber" min="0" style="flex: 1; box-sizing: border-box;">
+                                    <button type="button" class="config-btn" style="width: auto; margin-top: 0; padding: 10px 15px; flex-shrink: 0;" onclick="document.getElementById('setting-ticketLastNumber').value = '0'; updateTicketPreview();">Reset to 0</button>
+                                </div>
+                                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">This number increments with each new ticket. Resetting will start numbering from 1 again.</p>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--primary); font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">Panel Embed Customization</h4>
+                            
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Embed Title</label>
+                                <input type="text" id="setting-ticketEmbedTitle" placeholder="Support Center" style="width: 100%; box-sizing: border-box;" oninput="updateTicketPreview()">
+                            </div>
+                            
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Embed Description</label>
+                                <textarea id="setting-ticketEmbedDesc" placeholder="Describe how users can open a ticket..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; width: 100%; min-height: 80px; padding: 12px; border-radius: 8px; box-sizing: border-box;" oninput="updateTicketPreview()"></textarea>
+                            </div>
+                            
+                            <div class="input-group" style="margin-bottom: 25px;">
+                                <label>Embed Accent Color</label>
+                                <input type="color" id="setting-ticketEmbedColor" value="#ffffff" style="height: 40px; padding: 5px; width: 100%; cursor: pointer;" oninput="updateTicketPreview()">
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--primary); font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">Button Styles & Labels</h4>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
+                                <label style="margin: 0; font-size: 0.85rem;">Support Button</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="setting-ticketBtnLabelSupport" placeholder="Support" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
+                                    <select id="setting-ticketBtnStyleSupport" style="width: 105px;" onchange="updateTicketPreview()">
+                                        <option value="Primary">Blurple</option>
+                                        <option value="Secondary">Grey</option>
+                                        <option value="Success">Green</option>
+                                        <option value="Danger">Red</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
+                                <label style="margin: 0; font-size: 0.85rem;">Reporting Button</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="setting-ticketBtnLabelReporting" placeholder="Reporting" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
+                                    <select id="setting-ticketBtnStyleReporting" style="width: 105px;" onchange="updateTicketPreview()">
+                                        <option value="Danger">Red</option>
+                                        <option value="Primary">Blurple</option>
+                                        <option value="Secondary">Grey</option>
+                                        <option value="Success">Green</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
+                                <label style="margin: 0; font-size: 0.85rem;">Appeals Button</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="setting-ticketBtnLabelAppeals" placeholder="Appeals" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
+                                    <select id="setting-ticketBtnStyleAppeals" style="width: 105px;" onchange="updateTicketPreview()">
+                                        <option value="Secondary">Grey</option>
+                                        <option value="Primary">Blurple</option>
+                                        <option value="Success">Green</option>
+                                        <option value="Danger">Red</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 25px; align-items: center;">
+                                <label style="margin: 0; font-size: 0.85rem;">Other Button</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="setting-ticketBtnLabelOther" placeholder="Other" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
+                                    <select id="setting-ticketBtnStyleOther" style="width: 105px;" onchange="updateTicketPreview()">
+                                        <option value="Secondary">Grey</option>
+                                        <option value="Primary">Blurple</option>
+                                        <option value="Success">Green</option>
+                                        <option value="Danger">Red</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the ticket panel so the bot uses your latest configurations.</p>
+                            <div style="margin-top: 20px;">
+                                 <button class="config-btn" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
+                            </div>
                         </div>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the ticket panel so the bot uses your latest configurations.</p>
-                        <div style="margin-top: 20px;">
-                             <button class="config-btn" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
+
+                        <!-- Right Column: Interactive Live Preview -->
+                        <div class="panel" style="position: sticky; top: 20px;">
+                            <h3>Interactive Ticket Preview</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                Live preview of the ticketing panel in Discord. Click the buttons to test the intake modal form.
+                            </p>
+                            
+                            <div class="discord-preview-container" style="background: #313338; border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); font-family: sans-serif;">
+                                <div class="discord-msg" style="display: flex; gap: 15px;">
+                                    <img class="discord-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0;">
+                                    <div class="discord-content" style="flex: 1;">
+                                        <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
+                                            <span>Nora</span>
+                                            <span class="discord-bot-tag" style="background: #5865F2; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; text-transform: uppercase;">APP</span>
+                                        </div>
+                                        
+                                        <!-- Embed Box -->
+                                        <div id="ticket-preview-embed" class="discord-embed" style="background: #2b2d31; border-left: 4px solid #ffffff; padding: 12px; margin-top: 8px; border-radius: 4px; max-width: 520px; box-sizing: border-box;">
+                                            <div id="ticket-preview-title" class="discord-embed-title" style="color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 6px;">Support Center</div>
+                                            <div id="ticket-preview-desc" class="discord-embed-desc" style="color: #dbdee1; font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap;">Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.</div>
+                                            <div style="font-size: 0.72rem; color: #949ba4; margin-top: 8px;">Support Ticketing System</div>
+                                        </div>
+                                        
+                                        <!-- Buttons Row -->
+                                        <div id="ticket-preview-buttons" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                                            <button id="preview-btn-support" class="discord-btn discord-btn-primary" onclick="showMockTicketModal('Support')">Support</button>
+                                            <button id="preview-btn-reporting" class="discord-btn discord-btn-danger" onclick="showMockTicketModal('Reporting')">Reporting</button>
+                                            <button id="preview-btn-appeals" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Appeals')">Appeals</button>
+                                            <button id="preview-btn-other" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Other')">Other</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4310,106 +4537,165 @@
                     </div>
                 </div>
 
-                <div id="tab-broadcast" class="tab-content">
-                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; align-items: start;">
-                        <!-- Builder Column -->
-                        <div style="display: flex; flex-direction: column; gap: 20px;">
-                            <div class="panel">
-                                <h3>Webhook Broadcast Builder</h3>
-                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Configure your custom webhook announcements to send to any text channel.</p>
-                                
-                                <div class="input-group" style="margin-bottom: 20px;">
-                                    <label>Target Channel</label>
-                                    <select id="broadcast-channel" onchange="checkChannelPerms()">
-                                        <option value="">Select a channel...</option>
-                                    </select>
-                                    <div id="channel-perm-status" style="font-size: 0.8rem; margin-top: 5px;"></div>
-                                </div>
+                <div id="tab-webhooks" class="tab-content" style="display: none;">
+                    <!-- Inner Sub-Tabs Navigation -->
+                    <div style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                        <button class="btn-outline active" id="btn-subtab-creator" onclick="switchWebhookSubTab('creator')" style="padding: 8px 16px; font-size: 0.85rem;">Webhook Creator & Sender</button>
+                        <button class="btn-outline" id="btn-subtab-logging" onclick="switchWebhookSubTab('logging')" style="padding: 8px 16px; font-size: 0.85rem;">Webhook Logging Config</button>
+                    </div>
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                                    <div class="input-group">
-                                        <label>Webhook Name</label>
-                                        <input type="text" id="broadcast-name" placeholder="Nora Announcements" oninput="updatePreview()">
+                    <!-- Webhook Creator Sub-Tab -->
+                    <div id="webhook-subtab-creator" style="display: block;">
+                        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; align-items: start;">
+                            <!-- Builder Column -->
+                            <div style="display: flex; flex-direction: column; gap: 20px;">
+                                <div class="panel">
+                                    <h3>Webhook Creator & Sender</h3>
+                                    <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Configure your custom webhook announcements to send to any text channel.</p>
+                                    
+                                    <div class="input-group" style="margin-bottom: 20px;">
+                                        <label>Target Channel</label>
+                                        <select id="broadcast-channel" onchange="checkChannelPerms()">
+                                            <option value="">Select a channel...</option>
+                                        </select>
+                                        <div id="channel-perm-status" style="font-size: 0.8rem; margin-top: 5px;"></div>
                                     </div>
-                                    <div class="input-group">
-                                        <label>Webhook Avatar</label>
-                                        <div style="display: flex; gap: 10px;">
-                                            <input type="text" id="broadcast-avatar" placeholder="https://..." oninput="updatePreview()" style="flex: 1;">
-                                            <button class="btn-outline" style="font-size: 0.75rem; padding: 8px 12px;" onclick="document.getElementById('broadcast-avatar-upload').click()">Upload</button>
-                                            <input type="file" id="broadcast-avatar-upload" style="display: none;" accept="image/*" onchange="handleBroadcastAvatarUpload(this)">
+
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                        <div class="input-group">
+                                            <label>Webhook Username Override</label>
+                                            <input type="text" id="broadcast-name" placeholder="Nora Announcements" oninput="updatePreview()">
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Webhook Avatar URL Override</label>
+                                            <div style="display: flex; gap: 10px;">
+                                                <input type="text" id="broadcast-avatar" placeholder="https://..." oninput="updatePreview()" style="flex: 1;">
+                                                <button class="btn-outline" style="font-size: 0.75rem; padding: 8px 12px;" onclick="document.getElementById('broadcast-avatar-upload').click()">Upload</button>
+                                                <input type="file" id="broadcast-avatar-upload" style="display: none;" accept="image/*" onchange="handleBroadcastAvatarUpload(this)">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group" style="margin-bottom: 20px;">
+                                        <label>Message Content</label>
+                                        <textarea id="broadcast-content" placeholder="Type your main message here..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; width: 100%; min-height: 80px; padding: 12px; border-radius: 8px;" oninput="updatePreview()"></textarea>
+                                    </div>
+
+                                    <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
+                                        <h4 style="margin-bottom: 15px;">Embed Designer</h4>
+                                        <div class="row-inputs" style="gap: 15px; margin-bottom: 15px;">
+                                            <div class="input-group" style="flex: 2;"><label>Embed Title</label><input type="text" id="broadcast-embed-title" placeholder="Announcement" oninput="updatePreview()"></div>
+                                            <div class="input-group" style="flex: 1;"><label>Accent Color</label><input type="color" id="broadcast-embed-color" value="#ffffff" style="height: 45px; padding: 5px;" oninput="updatePreview()"></div>
+                                        </div>
+                                        <div class="input-group" style="margin-bottom: 15px;">
+                                            <label>Embed Description</label>
+                                            <textarea id="broadcast-embed-desc" placeholder="Details about this announcement..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; width: 100%; min-height: 80px; padding: 12px; border-radius: 8px;" oninput="updatePreview()"></textarea>
+                                        </div>
+                                        
+                                        <!-- Thumbnail & Image Row -->
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                            <div class="input-group">
+                                                <label>Embed Thumbnail URL</label>
+                                                <input type="text" id="broadcast-embed-thumbnail" placeholder="https://..." oninput="updatePreview()">
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Embed Image URL</label>
+                                                <div style="display: flex; gap: 10px;">
+                                                    <input type="text" id="broadcast-embed-image" placeholder="https://..." oninput="updatePreview()" style="flex: 1;">
+                                                    <button class="btn-outline" style="font-size: 0.75rem; padding: 8px 12px;" onclick="document.getElementById('broadcast-embed-image-upload').click()">Upload</button>
+                                                    <input type="file" id="broadcast-embed-image-upload" style="display: none;" accept="image/*" onchange="handleBroadcastEmbedImageUpload(this)">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Footer Text -->
+                                        <div class="input-group" style="margin-bottom: 15px;">
+                                            <label>Embed Footer Text</label>
+                                            <input type="text" id="broadcast-embed-footer" placeholder="Footer text..." oninput="updatePreview()">
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="input-group" style="margin-bottom: 20px;">
-                                    <label>Message Content</label>
-                                    <textarea id="broadcast-content" placeholder="Type your main message here..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; width: 100%; min-height: 80px; padding: 12px; border-radius: 8px;" oninput="updatePreview()"></textarea>
-                                </div>
-
-                                <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
-                                    <h4 style="margin-bottom: 15px;">Embed Designer</h4>
-                                    <div class="row-inputs" style="gap: 15px; margin-bottom: 15px;">
-                                        <div class="input-group" style="flex: 2;"><label>Embed Title</label><input type="text" id="broadcast-embed-title" placeholder="Announcement" oninput="updatePreview()"></div>
-                                        <div class="input-group" style="flex: 1;"><label>Accent Color</label><input type="color" id="broadcast-embed-color" value="#ffffff" style="height: 45px; padding: 5px;" oninput="updatePreview()"></div>
+                                <div class="panel">
+                                    <h3>Action Builder</h3>
+                                    <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Add interactive buttons below your broadcast message (max 5).</p>
+                                    <div id="broadcast-components" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                                        <!-- Buttons injected here -->
                                     </div>
-                                    <div class="input-group" style="margin-bottom: 15px;">
-                                        <label>Embed Description</label>
-                                        <textarea id="broadcast-embed-desc" placeholder="Details about this announcement..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; width: 100%; min-height: 80px; padding: 12px; border-radius: 8px;" oninput="updatePreview()"></textarea>
-                                    </div>
-                                    <div class="input-group">
-                                        <label>Embed Image</label>
-                                        <div style="display: flex; gap: 10px;">
-                                            <input type="text" id="broadcast-embed-image" placeholder="https://..." oninput="updatePreview()" style="flex: 1;">
-                                            <button class="btn-outline" style="font-size: 0.75rem; padding: 8px 12px;" onclick="document.getElementById('broadcast-embed-image-upload').click()">Upload</button>
-                                            <input type="file" id="broadcast-embed-image-upload" style="display: none;" accept="image/*" onchange="handleBroadcastEmbedImageUpload(this)">
-                                        </div>
-                                    </div>
+                                    <button class="btn-outline" style="font-size: 0.8rem; width: auto;" onclick="addBroadcastButton()">+ Add Button</button>
                                 </div>
                             </div>
 
-                            <div class="panel">
-                                <h3>Action Builder</h3>
-                                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Add interactive buttons below your broadcast message (max 5).</p>
-                                <div id="broadcast-components" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-                                    <!-- Buttons injected here -->
+                            <!-- Preview Column -->
+                            <div style="position: sticky; top: 20px; display: flex; flex-direction: column; gap: 20px;">
+                                <div class="panel" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.05) 0%, transparent 100%); border-color: rgba(88, 101, 242, 0.15);">
+                                    <h3>Live Message Preview</h3>
+                                    <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">This is how your announcement will render in Discord.</p>
+                                    
+                                    <div class="preview-container" style="background: #313338; border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <div class="discord-msg" style="display: flex; gap: 15px;">
+                                            <img id="preview-avatar" class="discord-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0; object-fit: cover;">
+                                            <div class="discord-content" style="flex: 1; min-width: 0;">
+                                                <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;"><span id="preview-name">Nora</span> <span class="discord-bot-tag" style="background: #5865F2; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; text-transform: uppercase;">APP</span></div>
+                                                <div id="preview-text" class="discord-text" style="color: #dbdee1; font-size: 0.9rem; margin-top: 4px; line-height: 1.4; word-break: break-word;">Message content will appear here...</div>
+                                                
+                                                <div id="preview-embed" class="discord-embed" style="background: #2b2d31; border-left: 4px solid var(--primary); padding: 12px; margin-top: 8px; border-radius: 4px; max-width: 520px; display: flex; flex-direction: column; gap: 8px;">
+                                                    <div style="display: flex; gap: 10px; justify-content: space-between; align-items: flex-start;">
+                                                        <div style="flex: 1; min-width: 0;">
+                                                            <div id="preview-embed-title" class="discord-embed-title" style="color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 4px; word-break: break-word;">Embed Title</div>
+                                                            <div id="preview-embed-desc" class="discord-embed-desc" style="color: #dbdee1; font-size: 0.85rem; line-height: 1.35; word-break: break-word;">Embed description goes here.</div>
+                                                        </div>
+                                                        <img id="preview-embed-thumb" style="display: none; width: 60px; height: 60px; border-radius: 4px; object-fit: cover; flex-shrink: 0;">
+                                                    </div>
+                                                    <img id="preview-embed-img" class="discord-embed-img" style="display: none; border-radius: 4px; max-width: 100%; margin-top: 8px; object-fit: cover;">
+                                                    <div id="preview-embed-foot" style="display: none; color: #9ca3af; font-size: 0.75rem; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;"></div>
+                                                </div>
+                                                <div id="preview-buttons" style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="perm-helper" style="display: none; margin-top: 20px; padding: 15px; background: rgba(255, 85, 85, 0.1); border: 1px solid rgba(255, 85, 85, 0.2); border-radius: 8px;">
+                                        <h4 style="color: #ff5555; margin-bottom: 8px; font-size: 0.9rem;">⚠️ Missing Permissions</h4>
+                                        <p style="font-size: 0.8rem; color: var(--muted); line-height: 1.4;">Nora cannot send webhooks in this channel. To fix this:</p>
+                                        <ul style="font-size: 0.8rem; color: var(--muted); margin: 6px 0 10px 18px; padding-left: 0;">
+                                            <li>Ensure Nora has <strong>Manage Webhooks</strong> permission.</li>
+                                            <li>Check if the channel is locked or restricted.</li>
+                                        </ul>
+                                        <button class="config-btn" style="width: auto; background: #ff5555; border: none; font-size: 0.75rem; padding: 6px 12px;" onclick="window.open(`https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&scope=bot+applications.commands+guilds&guild_id=${currentServerId}`, '_blank')">Update Permissions</button>
+                                    </div>
+
+                                    <button id="broadcast-send-btn" class="save-btn" style="margin-top: 20px; width: 100%; background: #2ea043;" onclick="sendBroadcast()">Send Broadcast</button>
                                 </div>
-                                <button class="btn-outline" style="font-size: 0.8rem; width: auto;" onclick="addBroadcastButton()">+ Add Button</button>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Preview Column -->
-                        <div style="position: sticky; top: 20px; display: flex; flex-direction: column; gap: 20px;">
-                            <div class="panel" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.05) 0%, transparent 100%); border-color: rgba(88, 101, 242, 0.15);">
-                                <h3>Live Message Preview</h3>
-                                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">This is how your announcement will render in Discord.</p>
+                    <!-- Webhook Logging Sub-Tab -->
+                    <div id="webhook-subtab-logging" style="display: none;">
+                        <div style="max-width: 600px;">
+                            <div class="panel">
+                                <h3>Webhook Logging Configuration</h3>
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                    Send real-time server activity logs directly to a Discord Webhook.
+                                </p>
                                 
-                                <div class="preview-container" style="background: #313338; border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <div class="discord-msg" style="display: flex; gap: 15px;">
-                                        <img id="preview-avatar" class="discord-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0;">
-                                        <div class="discord-content" style="flex: 1;">
-                                            <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;"><span id="preview-name">Nora</span> <span class="discord-bot-tag" style="background: #5865F2; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; text-transform: uppercase;">APP</span></div>
-                                            <div id="preview-text" class="discord-text" style="color: #dbdee1; font-size: 0.9rem; margin-top: 4px; line-height: 1.4;">Message content will appear here...</div>
-                                            <div id="preview-embed" class="discord-embed" style="background: #2b2d31; border-left: 4px solid var(--primary); padding: 12px; margin-top: 8px; border-radius: 4px; max-width: 520px;">
-                                                <div id="preview-embed-title" class="discord-embed-title" style="color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 4px;">Embed Title</div>
-                                                <div id="preview-embed-desc" class="discord-embed-desc" style="color: #dbdee1; font-size: 0.85rem; line-height: 1.35;">Embed description goes here.</div>
-                                                <img id="preview-embed-img" class="discord-embed-img" style="display: none; border-radius: 4px; max-width: 100%; margin-top: 8px;">
-                                            </div>
-                                            <div id="preview-buttons" style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;"></div>
-                                        </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">Enable Webhook Logging</h4>
+                                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">Direct all logs to the Discord webhook configured below.</p>
                                     </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-webhookEnabled">
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
-
-                                <div id="perm-helper" style="display: none; margin-top: 20px; padding: 15px; background: rgba(255, 85, 85, 0.1); border: 1px solid rgba(255, 85, 85, 0.2); border-radius: 8px;">
-                                    <h4 style="color: #ff5555; margin-bottom: 8px; font-size: 0.9rem;">⚠️ Missing Permissions</h4>
-                                    <p style="font-size: 0.8rem; color: var(--muted); line-height: 1.4;">Nora cannot send webhooks in this channel. To fix this:</p>
-                                    <ul style="font-size: 0.8rem; color: var(--muted); margin: 6px 0 10px 18px; padding-left: 0;">
-                                        <li>Ensure Nora has <strong>Manage Webhooks</strong> permission.</li>
-                                        <li>Check if the channel is locked or restricted.</li>
-                                    </ul>
-                                    <button class="config-btn" style="width: auto; background: #ff5555; border: none; font-size: 0.75rem; padding: 6px 12px;" onclick="window.open(`https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&scope=bot+applications.commands+guilds&guild_id=${currentServerId}`, '_blank')">Update Permissions</button>
+                                
+                                <div class="input-group" style="margin-top: 20px;">
+                                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 8px;">Discord Webhook URL</label>
+                                    <input type="text" id="setting-webhookUrl" placeholder="https://discord.com/api/webhooks/..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px;">
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">Warning: Keep your webhook URL private. Anyone with access to this URL can send messages to the channel.</p>
                                 </div>
-
-                                <button id="broadcast-send-btn" class="save-btn" style="margin-top: 20px; width: 100%; background: #2ea043;" onclick="sendBroadcast()">Send Broadcast</button>
                             </div>
                         </div>
                     </div>
@@ -5311,7 +5597,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -7226,7 +7512,8 @@
                         'tab-safety': 'Security & Anti-Raid',
                         'tab-automod': 'AutoMod',
                         'tab-autoresponder': 'Autoresponder',
-                        'tab-feeds': 'Content Feeds'
+                        'tab-feeds': 'Content Feeds',
+                        'tab-webhooks': 'Webhooks'
                     };
                     const breadcrumbTab = document.getElementById('breadcrumb-tab-name');
                     if (breadcrumbTab && friendlyTabNames[tabId]) {
@@ -8192,6 +8479,9 @@
                                 <button class="action-btn-pill" title="Warn Member" onclick="event.stopPropagation(); memberAction('${m.userId}', 'warn')" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,142,60,0.15); background: rgba(255,142,60,0.06); color: var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='#000'; this.style.transform='scale(1.15)';" onmouseout="this.style.background='rgba(255,142,60,0.06)'; this.style.color='var(--primary)'; this.style.transform='scale(1)';">
                                     <i class="fas fa-exclamation-triangle"></i>
                                 </button>
+                                <button class="action-btn-pill" title="Unwarn Member" onclick="event.stopPropagation(); memberAction('${m.userId}', 'unwarn')" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(46,204,113,0.15); background: rgba(46,204,113,0.06); color: #2ecc71; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='#2ecc71'; this.style.color='#000'; this.style.transform='scale(1.15)';" onmouseout="this.style.background='rgba(46,204,113,0.06)'; this.style.color='#2ecc71'; this.style.transform='scale(1)';">
+                                    <i class="fas fa-undo"></i>
+                                </button>
                                 <button class="action-btn-pill" title="Adjust Level/XP" onclick="event.stopPropagation(); editMemberLevel('${m.userId}', ${m.level}, ${m.xp})" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='#ffffff'; this.style.color='#000'; this.style.transform='scale(1.15)';" onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.color='#aeefff'; this.style.transform='scale(1)';">
                                     <i class="fas fa-arrow-alt-circle-up"></i>
                                 </button>
@@ -8379,7 +8669,10 @@
             
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/action`, {
+                const url = (action === 'warn' || action === 'unwarn' || action === 'kick' || action === 'ban')
+                    ? `/api/guilds/${currentServerId}/members/${userId}/${action}`
+                    : `/api/guilds/${currentServerId}/action`;
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -8391,12 +8684,20 @@
                 if (res.ok) {
                     showToast(`Action ${action} successful!`, 'success');
                     const memberName = window.guildMembers ? (window.guildMembers.find(m => m.userId === userId)?.displayName || userId) : userId;
+                    let notifType = 'warning';
+                    let notifTitle = 'User Moderated';
+                    if (action === 'warn') { notifTitle = 'User Warned'; notifType = 'warning'; }
+                    else if (action === 'unwarn') { notifTitle = 'Warning Removed'; notifType = 'success'; }
+                    else if (action === 'kick') { notifTitle = 'User Kicked'; notifType = 'error'; }
+                    else if (action === 'ban') { notifTitle = 'User Banned'; notifType = 'error'; }
+                    
                     addNotification(
-                        action === 'warn' ? 'User Warned' : action === 'kick' ? 'User Kicked' : 'User Moderated',
+                        notifTitle,
                         `Member ${memberName} was successfully ${action}ed for reason: "${reason}".`,
-                        action === 'warn' ? 'warning' : 'error',
+                        notifType,
                         currentServerName
                     );
+                    fetchMembers(true);
                 }
                 else showToast(d.error || 'Action failed.', 'error');
             } catch (e) {
@@ -8874,9 +9175,7 @@
                             if (!c.canSend) opt.style.color = '#ff5555';
                             el.appendChild(opt);
                         });
-                        if (typeof el.refreshCustomDropdown === 'function') {
-                            el.refreshCustomDropdown();
-                        }
+                        initCustomDropdown(id);
                     }
                 });
             } catch (e) {
@@ -8939,6 +9238,25 @@
             }
         }
 
+        window.switchWebhookSubTab = function(subtab) {
+            const creatorBtn = document.getElementById('btn-subtab-creator');
+            const loggingBtn = document.getElementById('btn-subtab-logging');
+            const creatorTab = document.getElementById('webhook-subtab-creator');
+            const loggingTab = document.getElementById('webhook-subtab-logging');
+            
+            if (subtab === 'creator') {
+                creatorBtn.classList.add('active');
+                loggingBtn.classList.remove('active');
+                creatorTab.style.display = 'block';
+                loggingTab.style.display = 'none';
+            } else {
+                creatorBtn.classList.remove('active');
+                loggingBtn.classList.add('active');
+                creatorTab.style.display = 'none';
+                loggingTab.style.display = 'block';
+            }
+        };
+
         async function sendBroadcast() {
             const channelId = document.getElementById('broadcast-channel').value;
             if (!channelId) return showToast('Please select a target channel.', 'error');
@@ -8959,6 +9277,8 @@
                 embedDesc: document.getElementById('broadcast-embed-desc').value,
                 embedColor: document.getElementById('broadcast-embed-color').value,
                 embedImage: document.getElementById('broadcast-embed-image').value,
+                embedThumbnail: document.getElementById('broadcast-embed-thumbnail').value,
+                embedFooter: document.getElementById('broadcast-embed-footer').value,
                 components
             };
 
@@ -8990,6 +9310,8 @@
             const embedDesc = document.getElementById('broadcast-embed-desc').value;
             const embedColor = document.getElementById('broadcast-embed-color').value;
             const embedImage = document.getElementById('broadcast-embed-image').value;
+            const embedThumbnail = document.getElementById('broadcast-embed-thumbnail').value;
+            const embedFooter = document.getElementById('broadcast-embed-footer').value;
 
             document.getElementById('preview-name').textContent = name;
             document.getElementById('preview-avatar').src = avatar;
@@ -8999,8 +9321,10 @@
             const titleEl = document.getElementById('preview-embed-title');
             const descEl = document.getElementById('preview-embed-desc');
             const imgEl = document.getElementById('preview-embed-img');
+            const thumbEl = document.getElementById('preview-embed-thumb');
+            const footEl = document.getElementById('preview-embed-foot');
 
-            if (!embedTitle && !embedDesc && !embedImage) {
+            if (!embedTitle && !embedDesc && !embedImage && !embedThumbnail && !embedFooter) {
                 embedEl.style.display = 'none';
             } else {
                 embedEl.style.display = 'block';
@@ -9015,6 +9339,20 @@
                     imgEl.style.display = 'block';
                 } else {
                     imgEl.style.display = 'none';
+                }
+
+                if (embedThumbnail) {
+                    thumbEl.src = embedThumbnail;
+                    thumbEl.style.display = 'block';
+                } else {
+                    thumbEl.style.display = 'none';
+                }
+
+                if (embedFooter) {
+                    footEl.textContent = embedFooter;
+                    footEl.style.display = 'block';
+                } else {
+                    footEl.style.display = 'none';
                 }
             }
 
@@ -9042,6 +9380,109 @@
                 });
             }
         }
+
+        function updateTicketPreview() {
+            const titleInput = document.getElementById('setting-ticketEmbedTitle');
+            const descInput = document.getElementById('setting-ticketEmbedDesc');
+            const colorInput = document.getElementById('setting-ticketEmbedColor');
+
+            const titleVal = titleInput ? titleInput.value : '';
+            const descVal = descInput ? descInput.value : '';
+            const colorVal = colorInput ? colorInput.value : '#ffffff';
+
+            const titleEl = document.getElementById('ticket-preview-title');
+            const descEl = document.getElementById('ticket-preview-desc');
+            const embedEl = document.getElementById('ticket-preview-embed');
+
+            if (titleEl) titleEl.textContent = titleVal || 'Support Center';
+            if (descEl) descEl.textContent = descVal || 'Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.';
+            if (embedEl) embedEl.style.borderLeftColor = colorVal;
+
+            const btnData = [
+                { id: 'Support', defaultLabel: 'Support', defaultClass: 'discord-btn-primary' },
+                { id: 'Reporting', defaultLabel: 'Reporting', defaultClass: 'discord-btn-danger' },
+                { id: 'Appeals', defaultLabel: 'Appeals', defaultClass: 'discord-btn-secondary' },
+                { id: 'Other', defaultLabel: 'Other', defaultClass: 'discord-btn-secondary' }
+            ];
+
+            const styleMap = {
+                'Primary': 'discord-btn-primary',
+                'Secondary': 'discord-btn-secondary',
+                'Success': 'discord-btn-success',
+                'Danger': 'discord-btn-danger'
+            };
+
+            btnData.forEach(btn => {
+                const labelInput = document.getElementById('setting-ticketBtnLabel' + btn.id);
+                const styleSelect = document.getElementById('setting-ticketBtnStyle' + btn.id);
+                const previewBtn = document.getElementById('preview-btn-' + btn.id.toLowerCase());
+
+                if (previewBtn) {
+                    const labelVal = labelInput ? labelInput.value : '';
+                    previewBtn.textContent = labelVal || btn.defaultLabel;
+
+                    previewBtn.className = 'discord-btn';
+                    
+                    const styleVal = styleSelect ? styleSelect.value : '';
+                    const classToAdd = styleMap[styleVal] || btn.defaultClass;
+                    previewBtn.classList.add(classToAdd);
+                }
+            });
+        }
+
+        function showMockTicketModal(category) {
+            const oldModal = document.getElementById('mock-discord-ticket-modal');
+            if (oldModal) oldModal.remove();
+
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'mock-discord-ticket-modal';
+            modalOverlay.style.position = 'fixed';
+            modalOverlay.style.inset = '0';
+            modalOverlay.style.background = 'rgba(0, 0, 0, 0.75)';
+            modalOverlay.style.zIndex = '20000';
+            modalOverlay.style.display = 'flex';
+            modalOverlay.style.alignItems = 'center';
+            modalOverlay.style.justifyContent = 'center';
+            modalOverlay.style.fontFamily = 'sans-serif';
+
+            const modalContent = document.createElement('div');
+            modalContent.style.background = '#313338';
+            modalContent.style.width = '100%';
+            modalContent.style.maxWidth = '460px';
+            modalContent.style.borderRadius = '8px';
+            modalContent.style.padding = '20px';
+            modalContent.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)';
+            modalContent.style.color = '#f2f3f5';
+            modalContent.style.border = '1px solid rgba(255,255,255,0.05)';
+
+            modalContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; font-size: 1rem; color: #fff; font-weight: 600;">Create ${category} Ticket</h3>
+                    <span onclick="document.getElementById('mock-discord-ticket-modal').remove()" style="cursor: pointer; color: #b5bac1; font-size: 1.2rem; line-height: 1;"><i class="fas fa-times"></i></span>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #b5bac1; margin-bottom: 8px;">Reason for Request <span style="color: #fa777c;">*</span></label>
+                    <textarea placeholder="Describe your issue or request here..." style="width: 100%; height: 80px; background: #1e1f22; border: 1px solid #111214; border-radius: 4px; color: #dbdee1; padding: 10px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box; resize: none; outline: none;" required></textarea>
+                </div>
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #b5bac1; margin-bottom: 8px;">Order Identifier (Optional)</label>
+                    <input type="text" placeholder="e.g. Order # or Username" style="width: 100%; height: 40px; background: #1e1f22; border: 1px solid #111214; border-radius: 4px; color: #dbdee1; padding: 10px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box; outline: none;">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button onclick="document.getElementById('mock-discord-ticket-modal').remove()" style="background: none; border: none; color: #fff; font-size: 0.88rem; cursor: pointer; padding: 8px 16px;">Cancel</button>
+                    <button onclick="submitMockTicket()" class="discord-btn discord-btn-primary">Submit</button>
+                </div>
+            `;
+
+            modalOverlay.appendChild(modalContent);
+            document.body.appendChild(modalOverlay);
+        }
+
+        window.submitMockTicket = function() {
+            const overlay = document.getElementById('mock-discord-ticket-modal');
+            if (overlay) overlay.remove();
+            showToast('Intake modal submitted! (Live simulation - no ticket actually created)', 'success');
+        };
 
         function addRoleReward(lvl = '', roleId = '') {
             const currentRewards = document.querySelectorAll('#role-rewards-list .row-inputs').length;
@@ -10309,6 +10750,7 @@
                             if (r.higherThanBot) opt.disabled = true;
                             el.appendChild(opt);
                         });
+                        initCustomDropdown(id);
                     }
                 });
 
@@ -10345,6 +10787,14 @@
                 console.error('[Roles Load Error]:', e);
                 showToast(`Failed to load roles: ${e.message}`, 'error');
             }
+        }
+
+        function initializeAllDropdowns() {
+            const selects = document.querySelectorAll('select[id]');
+            selects.forEach(sel => {
+                if (sel.id === 'sidebar-server-dropdown' || sel.closest('.discord-preview-container')) return;
+                initCustomDropdown(sel.id);
+            });
         }
 
         /* Custom Single-Select Dropdown Logic */
@@ -11259,6 +11709,8 @@
 
                 refreshModuleBadges();
                 updateCountingBanner(document.getElementById('setting-countingChannelId')?.value || '');
+                if (typeof updateTicketPreview === 'function') updateTicketPreview();
+                if (typeof initializeAllDropdowns === 'function') initializeAllDropdowns();
             } catch (e) {
                 console.error('[Load Error]:', e);
                 showToast(`Failed to load settings: ${e.message}`, 'error');
@@ -11913,6 +12365,7 @@
         </div>
         <div style="display: flex; gap: 5px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
             <button type="button" class="h-tab active" id="emoji-tab-server" onclick="switchEmojiPickerTab('server')" style="padding: 6px 12px; font-size: 0.75rem; border: none; cursor: pointer; border-radius: 6px; font-weight: 600;">Server Emojis</button>
+            <button type="button" class="h-tab" id="emoji-tab-app" onclick="switchEmojiPickerTab('app')" style="padding: 6px 12px; font-size: 0.75rem; border: none; cursor: pointer; border-radius: 6px; font-weight: 600;">App Emojis</button>
             <button type="button" class="h-tab" id="emoji-tab-standard" onclick="switchEmojiPickerTab('standard')" style="padding: 6px 12px; font-size: 0.75rem; border: none; cursor: pointer; border-radius: 6px; font-weight: 600;">Standard Emojis</button>
         </div>
         <div id="emoji-picker-list" style="flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 220px; padding: 4px;">
@@ -12067,6 +12520,19 @@
                 console.error('Failed to load server emojis:', err);
                 window.serverEmojis = [];
             }
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/app-emojis`, { headers: { Authorization: `Bearer ${t}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    window.appEmojis = data || [];
+                    console.log(`Loaded ${window.appEmojis.length} app emojis.`);
+                } else {
+                    window.appEmojis = [];
+                }
+            } catch (err) {
+                console.error('Failed to load app emojis:', err);
+                window.appEmojis = [];
+            }
         }
 
         function showEmojiPicker(event, inputId) {
@@ -12103,6 +12569,7 @@
         function switchEmojiPickerTab(tab) {
             activeEmojiTab = tab;
             document.getElementById('emoji-tab-server').classList.toggle('active', tab === 'server');
+            document.getElementById('emoji-tab-app').classList.toggle('active', tab === 'app');
             document.getElementById('emoji-tab-standard').classList.toggle('active', tab === 'standard');
             renderEmojiPickerList();
         }
@@ -12114,12 +12581,12 @@
 
             const searchVal = (document.getElementById('emoji-picker-search').value || '').toLowerCase().trim();
 
-            if (activeEmojiTab === 'server') {
-                const emojis = window.serverEmojis || [];
+            if (activeEmojiTab === 'server' || activeEmojiTab === 'app') {
+                const emojis = activeEmojiTab === 'server' ? (window.serverEmojis || []) : (window.appEmojis || []);
                 const filtered = emojis.filter(e => e.name.toLowerCase().includes(searchVal));
 
                 if (filtered.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--muted); font-size: 0.8rem; padding: 20px 0;">No server emojis found</div>';
+                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--muted); font-size: 0.8rem; padding: 20px 0;">No ${activeEmojiTab === 'server' ? 'server' : 'application'} emojis found</div>`;
                     return;
                 }
 

@@ -7,6 +7,15 @@ const Giveaway = require('../database/models/Giveaway');
 const CustomCommand = require('../database/models/CustomCommand');
 const TopggConnection = require('../database/models/TopggConnection');
 const ActiveTicket = require('../database/models/ActiveTicket');
+const TicketHistory = require('../database/models/TicketHistory');
+const Autoresponder = require('../database/models/Autoresponder');
+const Case = require('../database/models/Case');
+const ContentFeed = require('../database/models/ContentFeed');
+const MemberRolesHistory = require('../database/models/MemberRolesHistory');
+const Note = require('../database/models/Note');
+const ReactionRole = require('../database/models/ReactionRole');
+const TempBan = require('../database/models/TempBan');
+const TempRole = require('../database/models/TempRole');
 const settingsCache = require('./settingsCache');
 
 /**
@@ -39,8 +48,25 @@ async function performCascadingErasure(guildId) {
 
         // 7. Delete all support ticketing records
         await ActiveTicket.destroy({ where: { guildId } });
+        await TicketHistory.destroy({ where: { guildId } });
 
-        // 8. Wipe from the counting JSON database file
+        // 8. Delete all autoresponders
+        await Autoresponder.destroy({ where: { guildId } });
+
+        // 9. Delete all moderation cases and notes
+        await Case.destroy({ where: { guildId } });
+        await Note.destroy({ where: { guildId } });
+
+        // 10. Delete content feeds and reaction roles
+        await ContentFeed.destroy({ where: { guildId } });
+        await ReactionRole.destroy({ where: { guildId } });
+
+        // 11. Delete role and ban timers
+        await TempBan.destroy({ where: { guildId } });
+        await TempRole.destroy({ where: { guildId } });
+        await MemberRolesHistory.destroy({ where: { guildId } });
+
+        // 12. Wipe from the counting JSON database file
         const dataPath = path.join(__dirname, '..', '..', 'countingData.json');
         try {
             const data = await fs.readFile(dataPath, 'utf8');

@@ -575,6 +575,58 @@ const GuildSettings = sequelize.define('GuildSettings', {
     inviteTrackerChannelId: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    webhookUrl: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    webhookEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    ticketEmbedTitle: {
+        type: DataTypes.STRING,
+        defaultValue: 'Support Center'
+    },
+    ticketEmbedDesc: {
+        type: DataTypes.TEXT,
+        defaultValue: 'Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.'
+    },
+    ticketEmbedColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#ffffff'
+    },
+    ticketBtnStyleSupport: {
+        type: DataTypes.STRING,
+        defaultValue: 'Primary'
+    },
+    ticketBtnStyleReporting: {
+        type: DataTypes.STRING,
+        defaultValue: 'Danger'
+    },
+    ticketBtnStyleAppeals: {
+        type: DataTypes.STRING,
+        defaultValue: 'Secondary'
+    },
+    ticketBtnStyleOther: {
+        type: DataTypes.STRING,
+        defaultValue: 'Secondary'
+    },
+    ticketBtnLabelSupport: {
+        type: DataTypes.STRING,
+        defaultValue: 'Support'
+    },
+    ticketBtnLabelReporting: {
+        type: DataTypes.STRING,
+        defaultValue: 'Reporting'
+    },
+    ticketBtnLabelAppeals: {
+        type: DataTypes.STRING,
+        defaultValue: 'Appeals'
+    },
+    ticketBtnLabelOther: {
+        type: DataTypes.STRING,
+        defaultValue: 'Other'
     }
 });
 

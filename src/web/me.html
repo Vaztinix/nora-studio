@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaztinix | Founder & Developer</title>
+    <meta name="description" content="Official profile of Vaztinix - Founder & Developer of Nora Studio.">
+    <link rel="icon" type="image/png" href="/nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #030303;
+            --primary: #ffffff;
+            --primary-glow: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(17, 17, 17, 0.6);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --text: #f3f4f6;
+            --muted: #9ca3af;
+            --accent: #5865f2; /* Blurple */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(88, 101, 242, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Ambient Glow Blobs */
+        .glow-blob {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(88, 101, 242, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(50px);
+            animation: float 10s infinite ease-in-out;
+        }
+        .blob-1 { top: 10%; left: 10%; }
+        .blob-2 { bottom: 10%; right: 10%; animation-delay: -5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        .profile-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 24px;
+            perspective: 1000px;
+        }
+
+        /* Intro Animation */
+        .intro-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeOutIntro 1.6s forwards ease-in-out;
+        }
+
+        .intro-title {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #fff, #5865f2, #fff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textPulse 1.6s infinite ease-in-out;
+        }
+
+        @keyframes fadeOutIntro {
+            0% { opacity: 1; visibility: visible; clip-path: circle(100% at 50% 50%); }
+            60% { opacity: 1; clip-path: circle(100% at 50% 50%); }
+            100% { opacity: 0; visibility: hidden; clip-path: circle(0% at 50% 40%); }
+        }
+
+        @keyframes textPulse {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(255,255,255,0.1)); }
+            50% { filter: drop-shadow(0 0 20px rgba(88, 101, 242, 0.6)); }
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
+            transform-style: preserve-3d;
+        }
+
+        .profile-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        /* Entrance Animations */
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(135deg, #fff 0%, #5865f2 50%, #030303 100%);
+            box-shadow: 0 10px 25px rgba(88, 101, 242, 0.2);
+            opacity: 0;
+            transform: scale(0.1) rotate(-180deg);
+            animation: avatarEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation-delay: 1.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .avatar-container:hover {
+            transform: scale(1.08) rotate(3deg);
+            box-shadow: 0 15px 35px rgba(88, 101, 242, 0.4);
+            background: linear-gradient(135deg, #5865f2 0%, #fff 50%, #5865f2 100%);
+        }
+
+        .name, .handle, .badge-container {
+            opacity: 0;
+            transform: translateY(30px);
+            filter: blur(5px);
+            animation: fadeInUpPremium 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+        .name { animation-delay: 1.6s; }
+        .handle { animation-delay: 1.75s; }
+        .badge-container { animation-delay: 1.9s; }
+
+        .bio-box {
+            opacity: 0;
+            transform: translateY(30px);
+            filter: blur(5px);
+            animation: fadeInUpPremium 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            animation-delay: 2.05s;
+        }
+
+        .social-link {
+            opacity: 0;
+            transform: translateY(20px);
+            filter: blur(3px);
+            animation: fadeInUpPremium 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+        .social-link:nth-child(1) { animation-delay: 2.1s; }
+        .social-link:nth-child(2) { animation-delay: 2.18s; }
+        .social-link:nth-child(3) { animation-delay: 2.26s; }
+        .social-link:nth-child(4) { animation-delay: 2.34s; }
+        .social-link:nth-child(5) { animation-delay: 2.42s; }
+        .social-link:nth-child(6) { animation-delay: 2.5s; }
+
+        .back-home {
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+            animation-delay: 2.8s;
+        }
+
+        @keyframes avatarEntrance {
+            0% {
+                opacity: 0;
+                transform: scale(0.1) rotate(-180deg);
+                box-shadow: 0 0 0 rgba(88, 101, 242, 0);
+            }
+            50% {
+                transform: scale(1.1) rotate(10deg);
+                box-shadow: 0 0 30px rgba(88, 101, 242, 0.6);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+                box-shadow: 0 10px 25px rgba(88, 101, 242, 0.2);
+            }
+        }
+
+        @keyframes fadeInUpPremium {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #111;
+            border: 3px solid #111;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #9ca3af;
+            border: 4px solid #1c1c1e;
+            transition: background-color 0.3s;
+        }
+
+        .name {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .handle {
+            font-size: 0.95rem;
+            color: var(--muted);
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bio-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            padding: 18px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #d1d5db;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 12px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .social-link.discord:hover {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.3);
+        }
+
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 30px;
+            transition: color 0.2s;
+        }
+
+        .back-home:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="glow-blob blob-1"></div>
+    <div class="glow-blob blob-2"></div>
+
+    <!-- Cool Intro Animation Overlay -->
+    <div class="intro-overlay">
+        <div class="intro-title">Vaztinix</div>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="avatar-container">
+                <img class="avatar" src="/ReVaztinix.jpeg" alt="vaztinix" onerror="this.onerror=null; this.src='/nora.png';">
+                <div class="status-dot" id="status-dot"></div>
+            </div>
+
+            <h1 class="name" id="name">Vaz</h1>
+            <div class="handle" id="handle">@vaztinix</div>
+
+            <div class="badge-container">
+                <span class="badge">Founder</span>
+                <span class="badge">Developer</span>
+            </div>
+
+            <div class="bio-box">
+                <p id="bio">💕 | I care for everyone, but those closest to me will never understand the trust they have.</p>
+            </div>
+
+            <div class="social-grid">
+                <a href="https://github.com/Vaztinix" class="social-link" target="_blank">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <a href="https://www.youtube.com/@Vaztinix" class="social-link" target="_blank">
+                    <i class="fab fa-youtube"></i> YouTube
+                </a>
+                <a href="https://www.twitch.tv/vaztinix" class="social-link" target="_blank">
+                    <i class="fab fa-twitch"></i> Twitch
+                </a>
+                <a href="https://guns.lol/vaztinix" class="social-link" target="_blank">
+                    <i class="fas fa-link"></i> guns.lol
+                </a>
+                <a href="https://www.roblox.com/users/3089063186/profile" class="social-link" target="_blank">
+                    <i class="fas fa-gamepad"></i> Roblox
+                </a>
+                <a href="https://discord.com/users/1214048435632603137" class="social-link discord" target="_blank">
+                    <i class="fab fa-discord"></i> Discord
+                </a>
+            </div>
+
+            <a href="/" class="back-home">
+                <i class="fas fa-arrow-left"></i> Back to Nora Studio
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const userId = '1214048435632603137';
+        const statusColors = {
+            online: '#23a55a',
+            idle: '#f0b232',
+            dnd: '#f23f43',
+            offline: '#747f8d'
+        };
+
+        // 1. Fetch from our local public API (fast and guaranteed fallback/primary for basic info)
+        fetch(`/api/public/user/${userId}`)
+            .then(res => res.json())
+            .then(user => {
+                if (user && !user.error) {
+                    if (user.avatar) {
+                        document.querySelector('.avatar').src = user.avatar;
+                    }
+                    if (user.globalName) {
+                        document.getElementById('name').textContent = user.globalName;
+                    }
+                    document.getElementById('handle').textContent = `@${user.username}`;
+                }
+            })
+            .catch(() => {});
+
+        // 2. Fetch lanyard status details dynamically
+        fetch(`https://api.lanyard.rest/v1/users/${userId}`)
+            .then(res => res.json())
+            .then(json => {
+                if (json.success && json.data) {
+                    const data = json.data;
+                    const user = data.discord_user;
+                    
+                    // Update avatar if lanyard has it
+                    if (user.avatar) {
+                        const isAnimated = user.avatar.startsWith('a_');
+                        const img = document.querySelector('.avatar');
+                        img.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`;
+                    }
+                    
+                    // Update display name
+                    if (user.global_name) {
+                        document.getElementById('name').textContent = user.global_name;
+                    }
+                    document.getElementById('handle').textContent = `@${user.username}`;
+
+                    // Update status
+                    const status = data.discord_status;
+                    const statusDot = document.getElementById('status-dot');
+                    if (statusColors[status]) {
+                        statusDot.style.backgroundColor = statusColors[status];
+                    }
+
+                    // Update bio if available
+                    if (data.kv && data.kv.bio) {
+                        document.getElementById('bio').textContent = data.kv.bio;
+                    } else if (data.activities && data.activities.length > 0) {
+                        const customStatus = data.activities.find(a => a.type === 4);
+                        if (customStatus && customStatus.state) {
+                            document.getElementById('bio').textContent = (customStatus.emoji ? customStatus.emoji.name + ' ' : '') + customStatus.state;
+                        }
+                    }
+                }
+            })
+            .catch(() => {});
+
+        // 3D Card Tilt Interaction
+        const card = document.querySelector('.profile-card');
+        document.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const xc = rect.width / 2;
+            const yc = rect.height / 2;
+            
+            const dx = (x - xc) / xc;
+            const dy = (y - yc) / yc;
+            
+            const maxRotation = 10;
+            const rotateX = -dy * maxRotation;
+            const rotateY = dx * maxRotation;
+            
+            card.style.transition = 'transform 0.1s ease';
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+        });
+        
+        document.addEventListener('mouseleave', () => {
+            card.style.transition = 'transform 0.5s ease';
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+    </script>
+</body>
+</html>

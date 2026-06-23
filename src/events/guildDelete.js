@@ -14,5 +14,13 @@ module.exports = {
 
         // Log to Master HQ Logistics Webhook
         await logEvent(guild, 'leave');
+
+        // Post server count to Top.gg
+        try {
+            const { postToTopgg } = require('../utils/topggPoster');
+            await postToTopgg(guild.client);
+        } catch (err) {
+            console.error('[Top.gg Leave Poster Error]:', err);
+        }
     },
 };

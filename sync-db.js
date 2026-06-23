@@ -68,7 +68,9 @@ async function syncDB() {
             { name: 'guessGameMin', type: 'INTEGER DEFAULT 1' },
             { name: 'guessGameMax', type: 'INTEGER DEFAULT 100' },
             { name: 'rpsMinBet', type: 'INTEGER DEFAULT 0' },
-            { name: 'rpsMaxBet', type: 'INTEGER DEFAULT 10000' }
+            { name: 'rpsMaxBet', type: 'INTEGER DEFAULT 10000' },
+            { name: 'webhookUrl', type: 'VARCHAR(512) DEFAULT NULL' },
+            { name: 'webhookEnabled', type: 'TINYINT(1) DEFAULT 0' }
         ];
 
         for (const col of newGuildSettingsColumns) {

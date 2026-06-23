@@ -761,6 +761,27 @@ function serveOwner(req, res) {
 
 app.get(['/owner', '/owner.html'], serveOwner);
 
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web/nora.png'));
+});
+
+app.get(['/me', '/me.html'], (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    const distPath = path.join(__dirname, '../dist/me.html');
+    const webPath  = path.join(__dirname, 'web/me.html');
+    const filePath = fs.existsSync(distPath) ? distPath : webPath;
+    
+    if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('Profile page not found.');
+    }
+});
+
 app.get('/api/public/guilds/:guildId', async (req, res) => {
     try {
         const guild = client.guilds.cache.get(req.params.guildId);
@@ -779,6 +800,24 @@ app.get('/api/public/guilds/:guildId', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
+app.get('/api/public/user/:userId', async (req, res) => {
+    try {
+        const user = await client.users.fetch(req.params.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({
+            id: user.id,
+            username: user.username,
+            globalName: user.globalName || user.username,
+            avatar: user.displayAvatarURL({ size: 256 })
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 // Serve static assets (JS, CSS, images) — dashboard.html itself is handled above
 app.use(express.static(path.join(__dirname, '../dist'), {

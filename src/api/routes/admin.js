@@ -1,24 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
+const axios = require('axios');
 const GuildSettings = require('../../database/models/GuildSettings');
 const UserLevel = require('../../database/models/UserLevel');
 const UserPrefs = require('../../database/models/UserPrefs');
 
-// Owner-only authentication middleware using native fetch
+// Owner-only authentication middleware using axios
 const requireOwner = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
     }
     try {
-        const response = await fetch('https://discord.com/api/v10/users/@me', {
-            headers: { Authorization: authHeader }
-        });
-        if (!response.ok) {
-            return res.status(401).json({ error: 'Unauthorized: Invalid Discord token' });
+        let response;
+        try {
+            response = await axios.get('https://discord.com/api/v10/users/@me', {
+                headers: { Authorization: authHeader }
+            });
+        } catch (axiosErr) {
+            console.error('Discord API token verification failed in requireOwner:', axiosErr.response?.data || axiosErr.message);
+            return res.status(401).json({ 
+                error: 'Unauthorized: Invalid Discord token', 
+                details: axiosErr.response?.data ? JSON.stringify(axiosErr.response.data) : axiosErr.message 
+            });
         }
-        const user = await response.json();
+        const user = response.data;
 
         let isOwner = false;
         try {
@@ -42,7 +49,7 @@ const requireOwner = async (req, res, next) => {
         next();
     } catch (err) {
         console.error('Error verifying owner in admin middleware:', err);
-        return res.status(500).json({ error: 'Internal server error verifying authorization' });
+        return res.status(500).json({ error: 'Internal server error verifying authorization', details: err.message });
     }
 };
 
