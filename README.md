@@ -4,7 +4,7 @@
 
 ### Privacy-First AI & Moderation for Discord
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1200&color=A970FF&center=true&vCenter=true&width=500&lines=Moderation+made+simple;Automation+that+respects+privacy;Built+for+Discord+communities" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1200&color=A970FF&center=true&vCenter=true&width=500&lines=Moderation+made+simple;Automation+that+respects+privacy;Built+for+Discord & Roblo,+communities" />
 
 </div>
 
@@ -51,7 +51,10 @@ GitHub
 https://github.com/Vaztinix
 
 Website  
-https://vaztinix.dev/nora
+https://vaztinix.dev
+
+Developer Page 
+https://vaztinix.dev/me
 
 Discord  
 https://discord.com/users/1214048435632603137
