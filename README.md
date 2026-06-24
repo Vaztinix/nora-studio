@@ -4,7 +4,7 @@
 
 ### Privacy-First AI & Moderation for Discord
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1200&color=A970FF&center=true&vCenter=true&width=500&lines=Moderation+made+simple;Automation+that+respects+privacy;Built+for+Discord+&+Roblox+communities" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1200&color=A970FF&center=true&vCenter=true&width=500&lines=Moderation+made+simple;Automation+that+respects+privacy;Built+for+Discord+and+Roblox+communities" />
 
 </div>
 
