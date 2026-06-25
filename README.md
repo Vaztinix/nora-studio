@@ -53,7 +53,7 @@ https://github.com/Vaztinix
 Website  
 https://vaztinix.dev
 
-Developer Page 
+Developer Page  
 https://vaztinix.dev/me
 
 Discord  
