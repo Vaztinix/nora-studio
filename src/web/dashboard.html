@@ -6092,14 +6092,12 @@
                 
                 const viewConfig = document.getElementById('view-config');
                 if (viewConfig && viewConfig.style.display === 'block') {
-                    const activeTab = Array.from(document.querySelectorAll('.tab-content')).find(tc => tc.style.display === 'block');
-                    const activeTabId = activeTab ? activeTab.id : 'tab-overview';
-                    
-                    if (activeTabId === 'tab-overview') {
-                        await fetchAnalytics(true);
-                    } else if (activeTabId === 'tab-members') {
-                        await Promise.all([fetchMembers(true), fetchAnalytics(true)]);
+                    if (typeof isUserEditing === 'function' && isUserEditing()) {
+                        logToTerminal('Skipping background refresh: user is editing a field.', 'REFRESH_SKIP');
+                        return;
                     }
+                    logToTerminal(`Periodic background refresh for server: ${currentServerId}`, 'REFRESH_START');
+                    await refreshAllDashboardData(true);
                 }
                 
                 const viewPrefs = document.getElementById('view-prefs');
@@ -8335,6 +8333,42 @@
             showTab(targetId);
         });
 
+        function isUserEditing() {
+            const activeEl = document.activeElement;
+            if (!activeEl) return false;
+            const tagName = activeEl.tagName.toLowerCase();
+            if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
+                if (activeEl.id && (activeEl.id.startsWith('setting-') || activeEl.classList.contains('app-q-input') || activeEl.id === 'app-name' || activeEl.id === 'app-desc')) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        async function refreshAllDashboardData(force = false) {
+            if (!currentServerId) return;
+            try {
+                // Fetch channels, roles and emojis first as they are needed for setting dropdown maps
+                await Promise.all([
+                    fetchChannels(),
+                    fetchRoles(),
+                    fetchServerEmojis()
+                ]);
+                
+                // Fetch settings, feeds, autoresponders, applications, members, and analytics in parallel
+                await Promise.all([
+                    fetchSettings(force),
+                    fetchContentFeeds(),
+                    fetchAutoresponders(),
+                    fetchApplications(),
+                    fetchMembers(force),
+                    fetchAnalytics(force)
+                ]);
+            } catch (e) {
+                console.error('[Refresh All Data Error]:', e);
+            }
+        }
+
         async function openConfig(g) {
             logToTerminal(`Opening configuration for server: ${g.name} (${g.id})`, 'SERVER_SELECT');
             currentServerId = g.id; 
@@ -8369,10 +8403,7 @@
                 toggleLoading(true);
             }
             try {
-                // Await channels and roles loading first so that fetchSettings() can map the select elements correctly
-                await Promise.all([fetchChannels(), fetchRoles(), fetchAnalytics()]);
-                await fetchSettings();
-                await fetchContentFeeds();
+                await refreshAllDashboardData(false);
             } catch (err) {
                 console.error('[Open Config Error]:', err);
             } finally {
@@ -8474,16 +8505,47 @@
             
             const cacheKey = currentServerId;
             const now = Date.now();
-            if (!force && window.dashboardMemberCache.has(cacheKey)) {
+            let data;
+            let hasStaleCache = false;
+
+            if (!force && window.dashboardMemberCache && window.dashboardMemberCache.has(cacheKey)) {
                 const entry = window.dashboardMemberCache.get(cacheKey);
-                if (now - entry.timestamp < 300000) { // 5 minute frontend cache
-                    window.guildMembers = entry.data;
-                    filterMembers();
-                    updateSyncStatus(entry.timestamp);
-                    return;
-                }
+                data = entry.data;
+                hasStaleCache = true;
             }
 
+            if (hasStaleCache) {
+                window.guildMembers = data;
+                filterMembers();
+                updateSyncStatus(window.dashboardMemberCache.get(cacheKey).timestamp);
+                
+                // Background revalidate if older than 30 seconds
+                const entry = window.dashboardMemberCache.get(cacheKey);
+                if (force || now - entry.timestamp >= 30000) {
+                    const t = sessionStorage.getItem('discord_token');
+                    isFetchingMembers = true;
+                    fetch(`/api/guilds/${currentServerId}/members`, {
+                        headers: { 'Authorization': `Bearer ${t}` }
+                    }).then(res => {
+                        if (res.status === 429) throw new Error('Rate limit');
+                        return res.json();
+                    }).then(members => {
+                        isFetchingMembers = false;
+                        if (Array.isArray(members)) {
+                            window.guildMembers = members;
+                            window.dashboardMemberCache.set(cacheKey, { timestamp: Date.now(), data: members });
+                            filterMembers();
+                            updateSyncStatus(Date.now());
+                        }
+                    }).catch(e => {
+                        isFetchingMembers = false;
+                        console.warn('Background members refresh failed:', e.message);
+                    });
+                }
+                return;
+            }
+
+            // No cache - foreground load
             isFetchingMembers = true;
             const t = sessionStorage.getItem('discord_token');
             const list = document.getElementById('member-list');
@@ -8506,21 +8568,15 @@
                 if (res.status === 429) {
                     showToast('Discord rate limit reached. Using partial cache.', 'warning');
                     isFetchingMembers = false;
-                    if (window.dashboardMemberCache.has(cacheKey)) {
-                        const entry = window.dashboardMemberCache.get(cacheKey);
-                        window.guildMembers = entry.data;
-                        filterMembers();
-                        updateSyncStatus(entry.timestamp, true);
-                    }
                     return;
                 }
 
                 const members = await res.json();
                 if (Array.isArray(members)) {
                     window.guildMembers = members;
-                    window.dashboardMemberCache.set(cacheKey, { timestamp: now, data: members });
+                    window.dashboardMemberCache.set(cacheKey, { timestamp: Date.now(), data: members });
                     filterMembers();
-                    updateSyncStatus(now);
+                    updateSyncStatus(Date.now());
                 }
             } catch (err) {
                 console.error('Fetch members error:', err);
