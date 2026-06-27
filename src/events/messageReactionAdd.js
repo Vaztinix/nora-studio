@@ -14,16 +14,24 @@ module.exports = {
                 console.error('[Reaction Add] Failed to fetch partial reaction:', error);
                 return;
             }
+        }
         const guild = reaction.message.guild;
         if (!guild) return;
 
         // ---- Starboard Integration ----
-        if (reaction.emoji.name === '⭐') {
-            try {
-                const GuildSettings = require('../database/models/GuildSettings');
-                const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+        try {
+            const GuildSettings = require('../database/models/GuildSettings');
+            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+            
+            if (settings && settings.starboardEnabled && settings.starboardChannelId) {
+                const triggerEmoji = settings.starboardEmoji || '⭐';
+                const emojiName = reaction.emoji.id ? null : reaction.emoji.name;
+                const emojiId = reaction.emoji.id;
                 
-                if (settings && settings.starboardEnabled && settings.starboardChannelId) {
+                const isMatch = (emojiId && triggerEmoji.includes(emojiId)) || 
+                                (emojiName && triggerEmoji === emojiName);
+
+                if (isMatch) {
                     const threshold = settings.starboardThreshold || 3;
                     if (reaction.count >= threshold) {
                         const starboardChannel = guild.channels.cache.get(settings.starboardChannelId) || 
@@ -56,7 +64,7 @@ module.exports = {
 
                             embed.addFields({ name: 'Original', value: `[Jump to message](${reaction.message.url})`, inline: true });
 
-                            const starText = `⭐ **${reaction.count}** | <#${reaction.message.channel.id}>`;
+                            const starText = `${triggerEmoji} **${reaction.count}** | <#${reaction.message.channel.id}>`;
 
                             if (existingMsg) {
                                 await existingMsg.edit({ content: starText, embeds: [embed] }).catch(() => {});
@@ -66,9 +74,9 @@ module.exports = {
                         }
                     }
                 }
-            } catch (e) {
-                console.error('[Starboard Error] messageReactionAdd failed:', e.message);
             }
+        } catch (e) {
+            console.error('[Starboard Error] messageReactionAdd failed:', e.message);
         }
 
         const emojiKey = reaction.emoji.id ? reaction.emoji.id : reaction.emoji.name;

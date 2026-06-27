@@ -19,12 +19,19 @@ module.exports = {
         if (!guild) return;
 
         // ---- Starboard Integration ----
-        if (reaction.emoji.name === '⭐') {
-            try {
-                const GuildSettings = require('../database/models/GuildSettings');
-                const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+        try {
+            const GuildSettings = require('../database/models/GuildSettings');
+            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+            
+            if (settings && settings.starboardEnabled && settings.starboardChannelId) {
+                const triggerEmoji = settings.starboardEmoji || '⭐';
+                const emojiName = reaction.emoji.id ? null : reaction.emoji.name;
+                const emojiId = reaction.emoji.id;
                 
-                if (settings && settings.starboardEnabled && settings.starboardChannelId) {
+                const isMatch = (emojiId && triggerEmoji.includes(emojiId)) || 
+                                (emojiName && triggerEmoji === emojiName);
+
+                if (isMatch) {
                     const starboardChannel = guild.channels.cache.get(settings.starboardChannelId) || 
                                              await guild.channels.fetch(settings.starboardChannelId).catch(() => null);
                     if (starboardChannel) {
@@ -43,15 +50,15 @@ module.exports = {
                                 await existingMsg.delete().catch(() => {});
                             } else {
                                 // Otherwise update count
-                                const starText = `⭐ **${reaction.count}** | <#${reaction.message.channel.id}>`;
+                                const starText = `${triggerEmoji} **${reaction.count}** | <#${reaction.message.channel.id}>`;
                                 await existingMsg.edit({ content: starText }).catch(() => {});
                             }
                         }
                     }
                 }
-            } catch (e) {
-                console.error('[Starboard Error] messageReactionRemove failed:', e.message);
             }
+        } catch (e) {
+            console.error('[Starboard Error] messageReactionRemove failed:', e.message);
         }
     }
 };

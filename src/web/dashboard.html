@@ -2740,9 +2740,9 @@
                             <div id="premium-center-status" data-no-translate style="padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.88rem; line-height: 1.5; color: #fff; font-weight: 600; margin-bottom: 15px;">Loading subscription details...</div>
                             
                             <div id="premium-center-benefits" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; color: var(--muted);">
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> Faster AI responses & higher limit cap</div>
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> High priority support channels</div>
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> Premium badge across servers</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> Faster AI responses & higher limit cap</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> High priority support channels</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> Premium badge across servers</div>
                             </div>
                             
                             <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
@@ -2995,7 +2995,7 @@
                                 </h3>
                                 <div id="notification-list-new" data-no-translate style="display: flex; flex-direction: column; gap: 12px;">
                                     <div id="no-notifications-new" style="padding: 50px 20px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px dashed var(--border);">
-                                        <div style="font-size: 2.2rem; margin-bottom: 12px; opacity: 0.4;">âœ¨</div>
+                                        <div style="font-size: 2.2rem; margin-bottom: 12px; opacity: 0.4;">✨</div>
                                         All caught up! No new notifications.
                                     </div>
                                 </div>
@@ -3047,7 +3047,7 @@
             <div id="view-config" style="display: none;">
                 <div class="config-header">
                     <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
-                        <button class="back-link" id="back-to-servers">â† Back to Servers</button>
+                        <button class="back-link" id="back-to-servers">← Back to Servers</button>
                         <div class="config-title">
                             <img id="cfg-icon" src="nora.png" onerror="this.onerror=null; this.src='nora.png';">
                             <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p></div>
@@ -4318,7 +4318,7 @@
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                                 <span style="font-weight: 600; color: #f2f3f5; font-size: 1rem;">Nora</span>
-                                                <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">âœ” BOT</span>
+                                                <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">✓ BOT</span>
                                                 <span style="color: #949ba4; font-size: 0.75rem;">Today at 12:00 PM</span>
                                             </div>
                                             
@@ -4477,70 +4477,146 @@
                 </div>
 
                 <div id="tab-starboard" class="tab-content" style="display: none;">
-                    <div class="panel">
-                        <h3>⭐ Starboard System</h3>
-                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
-                            Starboard is a community-driven voting system. When members react to messages with ⭐, Nora will automatically repost them to a designated starboard channel.
-                        </p>
-                        
-                        <div class="input-group" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <label style="margin: 0; font-weight: 600;">Enable Starboard</label>
-                                <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Repost starred messages to the starboard channel.</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <!-- Left Panel: Settings -->
+                        <div class="panel" style="margin: 0;">
+                            <h3>⭐ Starboard System</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                Starboard is a community-driven voting system. When members react to messages with the trigger emoji, Nora will automatically repost them to a designated starboard channel.
+                            </p>
+                            
+                            <div class="input-group" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <label style="margin: 0; font-weight: 600;">Enable Starboard</label>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Repost starred messages to the starboard channel.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-starboardEnabled" onchange="updateStarboardPreview()">
+                                    <span class="slider"></span>
+                                </label>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="setting-starboardEnabled">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        
-                        <div class="input-group" style="margin-bottom: 15px;">
-                            <label>Starboard Channel</label>
-                            <select id="setting-starboardChannelId" style="width: 100%; box-sizing: border-box;">
-                                <option value="">Select channel...</option>
-                            </select>
+                            
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Starboard Channel</label>
+                                <select id="setting-starboardChannelId" style="width: 100%; box-sizing: border-box;" onchange="updateStarboardPreview()">
+                                    <option value="">Select channel...</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Required Stars Threshold</label>
+                                <input type="number" id="setting-starboardThreshold" min="1" max="100" placeholder="3" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Trigger Emoji</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="setting-starboardEmoji" placeholder="⭐" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                    <button class="config-btn" style="width: auto; padding: 10px 14px;" onclick="openStarboardEmojiPicker(event)">Picker</button>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="input-group" style="margin-bottom: 15px;">
-                            <label>Required Stars Threshold</label>
-                            <input type="number" id="setting-starboardThreshold" min="1" max="100" placeholder="3" style="width: 100%; box-sizing: border-box;">
+                        <!-- Right Panel: Live Preview -->
+                        <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">Live Discord Preview</h3>
+                            
+                            <div style="background: #313338; border-radius: 8px; padding: 16px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 250px;">
+                                <div id="starboard-preview-empty" style="text-align: center; color: var(--muted); padding: 30px 10px;">
+                                    Starboard is disabled or not configured.
+                                </div>
+                                
+                                <div id="starboard-preview-msg" style="display: none; gap: 16px; align-items: flex-start; text-align: left;">
+                                    <img src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%;" alt="Bot avatar">
+                                    <div style="flex: 1; min-width: 0;">
+                                        <!-- Star Count Header -->
+                                        <div id="starboard-preview-count" style="font-weight: 700; color: #f2f3f5; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                            ⭐ 3 | #starboard
+                                        </div>
+                                        
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                            <span style="font-weight: 600; color: #f2f3f5; font-size: 0.9rem;">Nora</span>
+                                            <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">✓ BOT</span>
+                                            <span style="color: #949ba4; font-size: 0.75rem;">Today at 12:00 PM</span>
+                                        </div>
+                                        
+                                        <!-- Embed Body -->
+                                        <div style="background: #2b2d31; border-left: 4px solid #ffd700; border-radius: 4px; padding: 12px 16px; margin-top: 4px; display: inline-block; width: 100%; box-sizing: border-box;">
+                                            <div style="color: #f2f3f5; font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">DiscordUser</div>
+                                            <div style="font-size: 0.875rem; color: #dbdee1; line-height: 1.375;">This is a preview of a starboard message! Reacting to a message in the server will highlight it here.</div>
+                                            <div style="font-size: 0.8rem; color: var(--primary); margin-top: 8px; font-weight: 500;">Original: <span style="color: #00b0f4; text-decoration: none; cursor: pointer;">[Jump to message]</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-applications" class="tab-content" style="display: none;">
-                    <div class="panel">
-                        <h3>📝 Premium Application Builder</h3>
-                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
-                            Create custom applications/forms for your members. Members can apply using the `/apply` command, and staff can approve or deny submissions directly from Discord.
-                        </p>
-                        
-                        <div id="app-builder-container">
-                            <div class="input-group" style="margin-bottom: 15px;">
-                                <label>Application Name</label>
-                                <input type="text" id="app-name" placeholder="e.g. Staff Application" style="width: 100%; box-sizing: border-box;">
-                            </div>
-                            <div class="input-group" style="margin-bottom: 15px;">
-                                <label>Description</label>
-                                <textarea id="app-desc" placeholder="Brief explanation of the position..." style="width: 100%; box-sizing: border-box; min-height: 80px;"></textarea>
-                            </div>
-                            <div class="input-group" style="margin-bottom: 15px;">
-                                <label>Staff Review Channel</label>
-                                <select id="app-review-channel" style="width: 100%; box-sizing: border-box;">
-                                    <option value="">Select channel...</option>
-                                </select>
-                            </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <!-- Left Panel: Form Settings -->
+                        <div class="panel" style="margin: 0;">
+                            <h3>📝 Premium Application Builder</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                Create custom applications/forms for your members. Members can apply using the `/apply` command, and staff can approve or deny submissions directly from Discord.
+                            </p>
                             
-                            <h4 style="margin-top: 20px; margin-bottom: 10px;">Questions (Max 5)</h4>
-                            <div id="app-questions-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-                                <input type="text" class="app-q-input" placeholder="Question 1 (e.g. Why do you want to join?)" style="width: 100%; box-sizing: border-box;">
-                                <input type="text" class="app-q-input" placeholder="Question 2 (e.g. Tell us about your experience.)" style="width: 100%; box-sizing: border-box;">
-                                <input type="text" class="app-q-input" placeholder="Question 3 (optional)" style="width: 100%; box-sizing: border-box;">
-                                <input type="text" class="app-q-input" placeholder="Question 4 (optional)" style="width: 100%; box-sizing: border-box;">
-                                <input type="text" class="app-q-input" placeholder="Question 5 (optional)" style="width: 100%; box-sizing: border-box;">
-                            </div>
+                            <div id="app-builder-container">
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Application Name</label>
+                                    <input type="text" id="app-name" placeholder="e.g. Staff Application" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Description</label>
+                                    <textarea id="app-desc" placeholder="Brief explanation of the position..." style="width: 100%; box-sizing: border-box; min-height: 80px;" oninput="updateAppBuilderPreview()"></textarea>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Staff Review Channel</label>
+                                    <select id="app-review-channel" style="width: 100%; box-sizing: border-box;">
+                                        <option value="">Select channel...</option>
+                                    </select>
+                                </div>
+                                
+                                <h4 style="margin-top: 20px; margin-bottom: 10px;">Questions (Max 5)</h4>
+                                <div id="app-questions-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                                    <input type="text" class="app-q-input" placeholder="Question 1 (e.g. Why do you want to join?)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                    <input type="text" class="app-q-input" placeholder="Question 2 (e.g. Tell us about your experience.)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                    <input type="text" class="app-q-input" placeholder="Question 3 (optional)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                    <input type="text" class="app-q-input" placeholder="Question 4 (optional)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                    <input type="text" class="app-q-input" placeholder="Question 5 (optional)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                </div>
 
-                            <button class="config-btn" onclick="saveApplicationConfig()">Save & Activate Application</button>
+                                <button class="config-btn" onclick="saveApplicationConfig()">Save & Activate Application</button>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Live Discord Modal Simulator -->
+                        <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">Discord Modal Simulator</h3>
+                            
+                            <div style="background: #313338; border-radius: 8px; padding: 16px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 350px; border: 1px solid #1e1f22;">
+                                <!-- Mock Discord Modal Box -->
+                                <div style="background: #1e1f22; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.8); border: 1px solid #2b2d31; width: 100%; max-width: 440px; margin: auto; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; text-align: left;">
+                                    <!-- Modal Header -->
+                                    <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <div id="mock-modal-title" style="color: #fff; font-weight: 700; font-size: 1rem;">Apply: Staff Application</div>
+                                        <div style="color: #949ba4; font-size: 1.2rem; cursor: pointer;">&times;</div>
+                                    </div>
+                                    <!-- Modal Body -->
+                                    <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px; max-height: 300px; overflow-y: auto;">
+                                        <div id="mock-modal-desc" style="color: #dbdee1; font-size: 0.85rem; line-height: 1.4;">Brief explanation of the position...</div>
+                                        <div id="mock-modal-fields" style="display: flex; flex-direction: column; gap: 12px;">
+                                            <!-- Dynamically generated questions go here -->
+                                        </div>
+                                    </div>
+                                    <!-- Modal Footer -->
+                                    <div style="background: #2b2d31; padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
+                                        <button style="background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 500; padding: 8px 16px; border-radius: 3px;">Cancel</button>
+                                        <button style="background: #5865F2; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 500; padding: 8px 16px; border-radius: 3px; transition: 0.2s;">Submit</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4874,7 +4950,7 @@
                                         <h3 style="margin: 0;">Member Directory</h3>
                                         <div id="member-total-count" style="font-size: 0.75rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">... total</div>
                                     </div>
-                                    <div id="member-sync-status" style="font-size: 0.65rem; color: var(--muted); opacity: 0.6;">Relay active â€¢ Last synced just now</div>
+                                    <div id="member-sync-status" style="font-size: 0.65rem; color: var(--muted); opacity: 0.6;">Relay active • Last synced just now</div>
                                 </div>
                                 <div style="display: flex; gap: 12px; align-items: center;">
                                     <input type="hidden" id="member-sort" value="activity">
@@ -4950,19 +5026,19 @@
 
     </div>
 
-    <footer>Â© 2026 Nora | Privacy-First AI & Moderation</footer>
+    <footer>© 2026 Nora | Privacy-First AI & Moderation</footer>
 
     <script>
         let notifications = [];
         let newNotifCount = 0;
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
         // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
-        // This is the ONLY source of truth â€” no hostname guessing, no localStorage fragility.
+        // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
             const host = window.location.hostname;
             const port = window.location.port;
 
-            // Local development overrides â€” always target local machine if loaded locally
+            // Local development overrides — always target local machine if loaded locally
             if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
                 return window.location.origin;
             }
@@ -5259,7 +5335,7 @@
                         if (recovered) {
                             recoveredUrl = 'http://localhost:3000';
                             localStorage.setItem('nora_api_url', 'http://localhost:3000');
-                            console.log('[Offline] Localhost fallback succeeded â€” saved as API URL');
+                            console.log('[Offline] Localhost fallback succeeded — saved as API URL');
                         }
                     }
 
@@ -5271,7 +5347,7 @@
                         if (recovered) {
                             recoveredUrl = CANONICAL_API;
                             localStorage.setItem('nora_api_url', CANONICAL_API);
-                            console.log('[Offline] Canonical fallback succeeded â€” saved as API URL');
+                            console.log('[Offline] Canonical fallback succeeded — saved as API URL');
                         }
                     }
 
@@ -5352,7 +5428,7 @@
             if (n.includes('tablet') || n.includes('ipad')) return 'ðŸ“Ÿ';
             if (n.includes('laptop')) return 'ðŸ’»';
             if (n.includes('tv') || n.includes('television')) return 'ðŸ“º';
-            if (n.includes('watch')) return 'âŒš';
+            if (n.includes('watch')) return '⌚';
             if (n.includes('desktop') || n.includes('pc') || n.includes('computer')) return 'ðŸ–¥ï¸';
             // Fallback to UA
             if (u.includes('iphone')) return 'ðŸ“±';
@@ -5448,7 +5524,7 @@
                     </div>`;
                 }).join('');
             } catch (e) {
-                // Silent fail â€” devices section just won't update
+                // Silent fail — devices section just won't update
             }
         }
 
@@ -5649,14 +5725,14 @@
 
 
 
-        // ðŸš¨ Premium Global Client-Side Error Interceptor
+        // ⚠️ Premium Global Client-Side Error Interceptor
         window.addEventListener('error', function(event) {
             const errMsg = event.error ? event.error.message : event.message;
             console.error('Captured Uncaught Client Error:', event.error || event.message);
             if (typeof showToast === 'function') {
-                showToast(`âš ï¸ [Client Error] ${errMsg}`, 'error');
+                showToast(`⚠️ [Client Error] ${errMsg}`, 'error');
             } else {
-                alert(`âš ï¸ [Client Error] ${errMsg}`);
+                alert(`⚠️ [Client Error] ${errMsg}`);
             }
         });
 
@@ -5664,9 +5740,9 @@
             const errMsg = event.reason ? (event.reason.message || event.reason) : 'Unhandled promise rejection';
             console.error('Captured Unhandled Promise Rejection:', event.reason);
             if (typeof showToast === 'function') {
-                showToast(`âš ï¸ [Promise Error] ${errMsg}`, 'error');
+                showToast(`⚠️ [Promise Error] ${errMsg}`, 'error');
             } else {
-                alert(`âš ï¸ [Promise Error] ${errMsg}`);
+                alert(`⚠️ [Promise Error] ${errMsg}`);
             }
         });
 
@@ -5685,7 +5761,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -6460,7 +6536,7 @@
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="position: relative;">
                                     <img src="/api/user/roblox/avatar?userId=${acc.robloxId}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.src='/api/user/roblox/avatar?userId=1'">
-                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">âœ“</div>' : ''}
+                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">✓</div>' : ''}
                                 </div>
                                 <div>
                                     <div style="font-weight: 700; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px;">
@@ -6469,7 +6545,7 @@
                                     </div>
                                     <div style="font-size: 0.75rem; color: var(--muted); display: flex; gap: 8px;">
                                         <span data-no-translate>ID: ${acc.robloxId}</span>
-                                        <span>â€¢</span>
+                                        <span>•</span>
                                         <span style="color: ${isVerified ? 'var(--success)' : 'var(--warning)'}; font-weight: 600;">${isVerified ? 'Verified' : 'Pending Verification'}</span>
                                     </div>
                                 </div>
@@ -8301,7 +8377,7 @@
                     overlay.className = 'premium-lock-overlay';
                     overlay.innerHTML = `
                         <div class="locked-overlay-text" style="background: var(--primary); color: #000; padding: 15px 25px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">
-                            <span style="font-size: 1.5rem;">â­</span>
+                            <span style="font-size: 1.5rem;">⭐</span>
                             <div style="font-weight: 800;">UNLOCK NORA+</div>
                             <div style="font-size: 0.7rem; font-weight: 600; opacity: 0.8;">Click to upgrade this server</div>
                         </div>
@@ -8438,7 +8514,7 @@
             const el = document.getElementById('member-sync-status');
             if (!el) return;
             const timeStr = new Date(timestamp).toLocaleTimeString();
-            el.textContent = `Relay ${isPartial ? 'Partial' : 'Active'} â€¢ Last synced ${timeStr}`;
+            el.textContent = `Relay ${isPartial ? 'Partial' : 'Active'} • Last synced ${timeStr}`;
             el.style.color = isPartial ? '#ffcc00' : 'var(--muted)';
         }
 
@@ -8830,7 +8906,7 @@
                 if (now - entry.timestamp < CACHE_TTL) {
                     // Cache is still fresh, skip network fetch entirely
                 } else {
-                    // Stale cache â€” render it now, then revalidate in background
+                    // Stale cache — render it now, then revalidate in background
                     data = entry.data;
                 }
             }
@@ -8863,7 +8939,7 @@
                 return;
             }
             
-            // No cache at all â€” show spinner and fetch
+            // No cache at all — show spinner and fetch
             toggleLoading(true);
             const t = sessionStorage.getItem('discord_token');
             try {
@@ -9545,7 +9621,7 @@
                     if (b.style === 'PRIMARY') { btn.style.background = '#5865F2'; btn.style.color = '#fff'; }
                     else if (b.style === 'SUCCESS') { btn.style.background = '#2D7D46'; btn.style.color = '#fff'; }
                     else if (b.style === 'DANGER') { btn.style.background = '#ED4245'; btn.style.color = '#fff'; }
-                    else if (b.style === 'LINK') { btn.style.background = '#4F545C'; btn.style.color = '#fff'; btn.innerHTML += ' â†—'; }
+                    else if (b.style === 'LINK') { btn.style.background = '#4F545C'; btn.style.color = '#fff'; btn.innerHTML += ' ↗'; }
                     else { btn.style.background = '#4F545C'; btn.style.color = '#fff'; }
                     
                     btnContainer.appendChild(btn);
@@ -9600,6 +9676,142 @@
                     previewBtn.classList.add(classToAdd);
                 }
             });
+        }
+
+        function updateStarboardPreview() {
+            const enabledInput = document.getElementById('setting-starboardEnabled');
+            const channelSelect = document.getElementById('setting-starboardChannelId');
+            const thresholdInput = document.getElementById('setting-starboardThreshold');
+            const emojiInput = document.getElementById('setting-starboardEmoji');
+
+            const isEnabled = enabledInput ? enabledInput.checked : false;
+            const channelId = channelSelect ? channelSelect.value : '';
+            const threshold = thresholdInput ? thresholdInput.value : '3';
+            const emoji = (emojiInput && emojiInput.value) ? emojiInput.value : '⭐';
+
+            const emptyEl = document.getElementById('starboard-preview-empty');
+            const msgEl = document.getElementById('starboard-preview-msg');
+            const countEl = document.getElementById('starboard-preview-count');
+
+            if (isEnabled && channelId) {
+                if (emptyEl) emptyEl.style.display = 'none';
+                if (msgEl) msgEl.style.display = 'flex';
+                
+                let channelName = 'starboard';
+                if (channelSelect && channelSelect.selectedOptions && channelSelect.selectedOptions[0]) {
+                    const txt = channelSelect.selectedOptions[0].textContent;
+                    if (txt && txt !== 'None / Disabled') {
+                        channelName = txt.toLowerCase().replace(/[^a-z0-9-_]/g, '');
+                    }
+                }
+                if (countEl) countEl.innerHTML = `${emoji} **${threshold}** | #${channelName}`;
+            } else {
+                if (emptyEl) emptyEl.style.display = 'block';
+                if (msgEl) msgEl.style.display = 'none';
+            }
+        }
+
+        function openStarboardEmojiPicker(event) {
+            event.stopPropagation();
+            let picker = document.getElementById('starboard-emoji-picker-popover');
+            if (picker) {
+                picker.style.display = picker.style.display === 'none' ? 'grid' : 'none';
+                return;
+            }
+
+            picker = document.createElement('div');
+            picker.id = 'starboard-emoji-picker-popover';
+            picker.style = `
+                position: absolute;
+                background: var(--sidebar-bg);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 10px;
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 6px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+                z-index: 10000;
+                max-width: 250px;
+            `;
+
+            const popularEmojis = ['⭐', '🔥', '✨', '🏆', '🎉', '❤️', '👍', '🐱', '🎮', '🚀', '💡', '👑'];
+            popularEmojis.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.style = 'background: none; border: none; font-size: 1.3rem; padding: 5px; cursor: pointer; transition: 0.2s; border-radius: 6px;';
+                btn.textContent = emoji;
+                btn.onmouseover = () => btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.onmouseout = () => btn.style.background = 'none';
+                btn.onclick = () => {
+                    const input = document.getElementById('setting-starboardEmoji');
+                    if (input) {
+                        input.value = emoji;
+                        updateStarboardPreview();
+                    }
+                    picker.style.display = 'none';
+                };
+                picker.appendChild(btn);
+            });
+
+            const rect = event.target.getBoundingClientRect();
+            picker.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+            picker.style.left = (rect.left + window.scrollX) + 'px';
+
+            document.body.appendChild(picker);
+
+            document.addEventListener('click', function closePicker(e) {
+                if (!picker.contains(e.target) && e.target !== event.target) {
+                    picker.style.display = 'none';
+                    document.removeEventListener('click', closePicker);
+                }
+            });
+        }
+
+        function updateAppBuilderPreview() {
+            const nameInput = document.getElementById('app-name');
+            const descInput = document.getElementById('app-desc');
+            const qInputs = document.querySelectorAll('.app-q-input');
+
+            const nameVal = nameInput ? nameInput.value : '';
+            const descVal = descInput ? descInput.value : '';
+
+            const mockTitle = document.getElementById('mock-modal-title');
+            const mockDesc = document.getElementById('mock-modal-desc');
+            const mockFields = document.getElementById('mock-modal-fields');
+
+            if (mockTitle) mockTitle.textContent = nameVal ? `Apply: ${nameVal}` : 'Apply: Staff Application';
+            if (mockDesc) {
+                mockDesc.textContent = descVal || 'Brief explanation of the position...';
+                mockDesc.style.display = descVal ? 'block' : 'none';
+            }
+
+            if (mockFields) {
+                mockFields.innerHTML = '';
+                qInputs.forEach(input => {
+                    const qText = input.value.trim();
+                    if (qText) {
+                        const field = document.createElement('div');
+                        field.style = 'display: flex; flex-direction: column; gap: 6px; text-align: left;';
+                        field.innerHTML = `
+                            <label style="color: #b5bac1; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: flex; gap: 4px; align-items: center;">
+                                ${qText} <span style="color: #fa777c;">*</span>
+                            </label>
+                            <div style="background: #111214; border-radius: 4px; border: 1px solid #111214; min-height: 40px; padding: 10px; box-sizing: border-box; color: #dbdee1; font-size: 0.875rem;">
+                                ...
+                            </div>
+                        `;
+                        mockFields.appendChild(field);
+                    }
+                });
+
+                if (mockFields.children.length === 0) {
+                    mockFields.innerHTML = `
+                        <div style="color: #949ba4; font-size: 0.85rem; font-style: italic; text-align: center; padding: 10px 0;">
+                            No questions added yet.
+                        </div>
+                    `;
+                }
+            }
         }
 
         function showMockTicketModal(category) {
@@ -9748,7 +9960,7 @@
             document.getElementById('setting-xpRoleMultipliers').value = JSON.stringify(mults);
         }
 
-        const RANDOM_EMOJIS = ['ðŸŽ®', 'ðŸš€', 'ðŸ”¥', 'ðŸŽ¨', 'ðŸŽµ', 'ðŸ†', 'ðŸ‘¾', 'ðŸ‘‘', 'â­', 'ðŸ€', 'ðŸ•', 'ðŸ±', 'ðŸ¾', 'ðŸ’»', 'ðŸ’¡', 'ðŸ’Ž', 'ðŸŽ‰', 'ðŸ›¡ï¸', 'âš”ï¸', 'ðŸ“¦'];
+        const RANDOM_EMOJIS = ['ðŸŽ®', 'ðŸš€', 'ðŸ”¥', 'ðŸŽ¨', 'ðŸŽµ', 'ðŸ†', 'ðŸ‘¾', 'ðŸ‘‘', '⭐', 'ðŸ€', 'ðŸ•', 'ðŸ±', 'ðŸ¾', 'ðŸ’»', 'ðŸ’¡', 'ðŸ’Ž', 'ðŸŽ‰', 'ðŸ›¡ï¸', '⚡️', 'ðŸ“¦'];
 
         function randomizeRREmoji(btn) {
             const input = btn.parentElement.querySelector('.rr-emoji-input');
@@ -10107,7 +10319,7 @@
 
             // Sliders Setup
             const hueContainer = document.createElement('div');
-            hueContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Hue</span><span class="hue-val">0Â°</span></div>';
+            hueContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Hue</span><span class="hue-val">0°</span></div>';
             const hueSlider = document.createElement('input');
             hueSlider.type = 'range';
             hueSlider.min = '0';
@@ -10176,7 +10388,7 @@
             }
 
             function updateSliderLabelsAndBackgrounds(h, s, l) {
-                hueContainer.querySelector('.hue-val').textContent = h + 'Â°';
+                hueContainer.querySelector('.hue-val').textContent = h + '°';
                 satContainer.querySelector('.sat-val').textContent = s + '%';
                 lightContainer.querySelector('.light-val').textContent = l + '%';
                 satSlider.style.background = `linear-gradient(to right, hsl(${h}, 0%, ${l}%), hsl(${h}, 100%, ${l}%))`;
@@ -10455,7 +10667,7 @@
 
                     const timeRow = document.createElement('div');
                     timeRow.style = 'font-size: 0.7rem; color: var(--muted);';
-                    timeRow.innerHTML = `Created: ${new Date(s.createdAt).toLocaleString()} â€¢ Expires: ${new Date(s.expiresAt).toLocaleString()}`;
+                    timeRow.innerHTML = `Created: ${new Date(s.createdAt).toLocaleString()} • Expires: ${new Date(s.expiresAt).toLocaleString()}`;
 
                     const uaRow = document.createElement('div');
                     uaRow.style = 'font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.8;';
@@ -11643,7 +11855,7 @@
                 return;
             }
 
-            // No cache â€” show spinner
+            // No cache — show spinner
             toggleLoading(true);
             const t = sessionStorage.getItem('discord_token');
             try {
@@ -11964,6 +12176,7 @@
                 refreshModuleBadges();
                 updateCountingBanner(document.getElementById('setting-countingChannelId')?.value || '');
                 if (typeof updateTicketPreview === 'function') updateTicketPreview();
+                if (typeof updateStarboardPreview === 'function') updateStarboardPreview();
                 if (typeof initializeAllDropdowns === 'function') initializeAllDropdowns();
             } catch (e) {
                 console.error('[Load Error]:', e);
@@ -12614,7 +12827,7 @@
     </script>
     <div id="session-expired-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">âš ï¸</div>
+            <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">⚠️</div>
             <h2 id="session-expired-title" style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Session Expired</h2>
             <p id="session-expired-desc" style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
                 Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.
@@ -12643,7 +12856,7 @@
     <!-- API Rate Limit Overlay -->
     <div id="api-ratelimit-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 22000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: #ffcc00; filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.3));">â³</div>
+            <div style="font-size: 3rem; margin-bottom: 20px; color: #ffcc00; filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.3));">🚣</div>
             <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Rate Limit Hit</h2>
             <p id="ratelimit-message" style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
                 You are making requests too quickly. Please wait a few seconds before trying again.
@@ -12751,7 +12964,7 @@
             { char: 'ðŸ˜Ÿ', name: 'worried face worry sad' },
             { char: 'ðŸ˜•', name: 'confused face confuse' },
             { char: 'ðŸ™', name: 'slightly frowning face sad' },
-            { char: 'â˜¹ï¸', name: 'frowning face sad' },
+            { char: '☹️', name: 'frowning face sad' },
             { char: 'ðŸ¥º', name: 'pleading face please beg puppy eyes' },
             { char: 'ðŸ˜¢', name: 'crying face cry sad tear' },
             { char: 'ðŸ˜­', name: 'loudly crying face cry sad tears sob' },
@@ -12787,7 +13000,7 @@
             { char: 'ðŸ‘‹', name: 'waving hand wave hello goodbye' },
             { char: 'ðŸ‘', name: 'thumbs up like good yes' },
             { char: 'ðŸ‘Ž', name: 'thumbs down dislike bad no' },
-            { char: 'âœŠ', name: 'raised fist punch' },
+            { char: '✊', name: 'raised fist punch' },
             { char: 'ðŸ‘Š', name: 'oncoming fist punch' },
             { char: 'ðŸ‘', name: 'clapping hands clap' },
             { char: 'ðŸ™Œ', name: 'raising hands celebrate' },
@@ -12795,7 +13008,7 @@
             { char: 'ðŸ’ª', name: 'flexed biceps strong muscle power' },
             { char: 'ðŸ§ ', name: 'brain smart mind intelligence' },
             { char: 'ðŸ‘€', name: 'eyes look see watch' },
-            { char: 'â¤ï¸', name: 'red heart love like' },
+            { char: '❤️', name: 'red heart love like' },
             { char: 'ðŸ§¡', name: 'orange heart love' },
             { char: 'ðŸ’›', name: 'yellow heart love' },
             { char: 'ðŸ’š', name: 'green heart love' },
@@ -12806,8 +13019,8 @@
             { char: 'ðŸ¤Ž', name: 'brown heart love' },
             { char: 'ðŸ’”', name: 'broken heart sad love' },
             { char: 'ðŸ”¥', name: 'fire hot lit burn' },
-            { char: 'âœ¨', name: 'sparkles shine stars' },
-            { char: 'â­', name: 'star yellow' },
+            { char: '✨', name: 'sparkles shine stars' },
+            { char: '⭐', name: 'star yellow' },
             { char: 'ðŸŒŸ', name: 'glowing star' },
             { char: 'ðŸ’¯', name: 'hundred points score perfect' },
             { char: 'ðŸŽ‰', name: 'party popper celebrate congratulate' },
@@ -12817,7 +13030,7 @@
             { char: 'ðŸŽ®', name: 'video game controller play games' },
             { char: 'ðŸŽ²', name: 'game die dice play' },
             { char: 'ðŸŽ¯', name: 'bullseye target hit play' },
-            { char: 'âš½', name: 'soccer ball football sports' },
+            { char: '⚽', name: 'soccer ball football sports' },
             { char: 'ðŸ€', name: 'basketball sports' },
             { char: 'ðŸˆ', name: 'american football sports' },
             { char: 'ðŸ†', name: 'trophy win prize' },
@@ -13049,6 +13262,7 @@
                         refreshCustomDropdown('app-review-channel');
                         document.querySelectorAll('.app-q-input').forEach(input => input.value = '');
                     }
+                    if (typeof updateAppBuilderPreview === 'function') updateAppBuilderPreview();
                 }
             } catch (e) {
                 console.error('Failed to fetch applications:', e);

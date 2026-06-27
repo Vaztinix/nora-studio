@@ -640,6 +640,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
     starboardThreshold: {
         type: DataTypes.INTEGER,
         defaultValue: 3
+    },
+    starboardEmoji: {
+        type: DataTypes.STRING,
+        defaultValue: '⭐'
     }
 });
 
