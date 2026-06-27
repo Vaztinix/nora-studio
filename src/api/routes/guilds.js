@@ -3271,4 +3271,46 @@ router.post('/applications/:appId/toggle', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/guilds/:guildId/applications/:appId/send-panel
+ * Sends the application button panel to a channel.
+ */
+router.post('/applications/:appId/send-panel', async (req, res) => {
+    try {
+        const { guildId, appId } = req.params;
+        const { channelId, embedTitle, embedDescription, buttonLabel } = req.body;
+        const Application = require('../../database/models/Application');
+
+        const app = await Application.findOne({ where: { id: appId, guildId } });
+        if (!app) return res.status(404).json({ error: 'Application set not found.' });
+
+        const client = req.client || require('../../index').client; 
+        const guild = await client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        const channel = await guild.channels.fetch(channelId).catch(() => null);
+        if (!channel) return res.status(404).json({ error: 'Channel not found.' });
+
+        const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+        const embed = new EmbedBuilder()
+            .setTitle(embedTitle || `Apply for ${app.name}`)
+            .setDescription(embedDescription || `Click the button below to start your application form.`)
+            .setColor(0x57acf2)
+            .setTimestamp();
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`app_start_${app.id}`)
+                .setLabel(buttonLabel || 'Apply')
+                .setStyle(ButtonStyle.Primary)
+        );
+
+        await channel.send({ embeds: [embed], components: [row] });
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error sending application panel:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

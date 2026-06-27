@@ -181,10 +181,31 @@ module.exports = {
                 new ButtonBuilder()
                     .setCustomId(`app_deny_${submission.id}`)
                     .setLabel('Deny')
-                    .setStyle(ButtonStyle.Danger)
+                    .setStyle(ButtonStyle.Danger),
+                new ButtonBuilder()
+                    .setCustomId(`app_ask_${submission.id}`)
+                    .setLabel('Ask Questions')
+                    .setStyle(ButtonStyle.Primary)
             );
 
             await reviewChannel.send({ embeds: [reviewEmbed], components: [row] });
+
+            // Send DM confirmation to applicant with copy of application
+            try {
+                const dmEmbed = new EmbedBuilder()
+                    .setTitle(`Application Received: ${app.name}`)
+                    .setDescription(`Thank you for applying! Your application has been successfully received by the staff of **${interaction.guild.name}** and is now **PENDING** review. Below is a copy of your submitted answers:`)
+                    .setColor(0x57acf2)
+                    .setTimestamp();
+
+                Object.entries(answers).forEach(([q, a]) => {
+                    dmEmbed.addFields({ name: q.slice(0, 256), value: a.slice(0, 1024) || '*No answer*', inline: false });
+                });
+
+                await interaction.user.send({ embeds: [dmEmbed] }).catch(() => null);
+            } catch (dmErr) {
+                console.warn(`Could not DM user ${interaction.user.id} their submission receipt:`, dmErr);
+            }
 
             return interaction.reply({
                 content: '✅ Thank you! Your application has been successfully submitted for review.',
@@ -192,8 +213,8 @@ module.exports = {
             });
         }
 
-        // 3. Handle Application Decision Buttons (Accept/Deny)
-        if (interaction.isButton() && (interaction.customId.startsWith('app_accept_') || interaction.customId.startsWith('app_deny_'))) {
+        // 3. Handle Application Decision Buttons (Accept/Deny/Ask)
+        if (interaction.isButton() && (interaction.customId.startsWith('app_accept_') || interaction.customId.startsWith('app_deny_') || interaction.customId.startsWith('app_ask_'))) {
             // Check permissions
             if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator) && 
                 !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
@@ -201,12 +222,33 @@ module.exports = {
             }
 
             const ApplicationSubmission = require('../database/models/ApplicationSubmission');
-            const { EmbedBuilder } = require('discord.js');
+            const { EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 
-            const isAccept = interaction.customId.startsWith('app_accept_');
+            const customId = interaction.customId;
+            
+            if (customId.startsWith('app_ask_')) {
+                const submissionId = customId.replace('app_ask_', '');
+                const modal = new ModalBuilder()
+                    .setCustomId(`app_ask_modal_${submissionId}`)
+                    .setTitle('Ask Applicant a Question');
+
+                const textInput = new TextInputBuilder()
+                    .setCustomId('question_content')
+                    .setLabel('Your Question to the Applicant')
+                    .setPlaceholder('Type the question or feedback you would like to DM to the applicant...')
+                    .setStyle(TextInputStyle.Paragraph)
+                    .setRequired(true)
+                    .setMaxLength(1500);
+
+                modal.addComponents(new ActionRowBuilder().addComponents(textInput));
+                await interaction.showModal(modal);
+                return;
+            }
+
+            const isAccept = customId.startsWith('app_accept_');
             const submissionId = isAccept 
-                ? interaction.customId.replace('app_accept_', '')
-                : interaction.customId.replace('app_deny_', '');
+                ? customId.replace('app_accept_', '')
+                : customId.replace('app_deny_', '');
 
             const submission = await ApplicationSubmission.findByPk(submissionId);
             if (!submission) {
@@ -222,7 +264,7 @@ module.exports = {
 
             // DM user notification
             try {
-                const applicant = await client.users.fetch(submission.userId).catch(() => null);
+                const applicant = await interaction.client.users.fetch(submission.userId).catch(() => null);
                 if (applicant) {
                     const statusMsg = isAccept
                         ? `🎉 Congratulations! Your application for **${submission.appName}** in **${interaction.guild.name}** has been **APPROVED**!`
@@ -243,6 +285,47 @@ module.exports = {
 
             await interaction.update({ embeds: [updatedEmbed], components: [] });
             return;
+        }
+
+        // 4. Handle Application "Ask Questions" Modal Submit
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('app_ask_modal_')) {
+            const submissionId = interaction.customId.replace('app_ask_modal_', '');
+            const ApplicationSubmission = require('../database/models/ApplicationSubmission');
+            const { EmbedBuilder } = require('discord.js');
+
+            const submission = await ApplicationSubmission.findByPk(submissionId);
+            if (!submission) {
+                return interaction.reply({ content: '❌ Could not find this application submission.', ephemeral: true });
+            }
+
+            const question = interaction.fields.getTextInputValue('question_content');
+            
+            // Try to DM the user
+            try {
+                const applicant = await interaction.client.users.fetch(submission.userId).catch(() => null);
+                if (!applicant) throw new Error('Could not fetch applicant');
+
+                const askEmbed = new EmbedBuilder()
+                    .setTitle(`Question regarding your application: ${submission.appName}`)
+                    .setDescription(`The staff of **${interaction.guild.name}** have a follow-up question regarding your application:\n\n**"${question}"**\n\n*Please contact a staff member in the server to answer.*`)
+                    .setColor(0x57acf2)
+                    .setTimestamp();
+
+                await applicant.send({ embeds: [askEmbed] });
+            } catch (e) {
+                return interaction.reply({ content: `❌ Failed to send DM to applicant: ${e.message}`, ephemeral: true });
+            }
+
+            // Update original review message with a note/embed update
+            const originalMessage = interaction.message;
+            if (originalMessage) {
+                const oldEmbed = originalMessage.embeds[0];
+                const updatedEmbed = EmbedBuilder.from(oldEmbed)
+                    .addFields({ name: `Question Asked by ${interaction.user.username}`, value: question.slice(0, 1024) });
+                await originalMessage.edit({ embeds: [updatedEmbed] }).catch(() => null);
+            }
+
+            return interaction.reply({ content: '✅ Your question has been successfully DMed to the applicant.', ephemeral: true });
         }
 
         // Handle Ticket Close Button Action
