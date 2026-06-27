@@ -627,6 +627,19 @@ const GuildSettings = sequelize.define('GuildSettings', {
     ticketBtnLabelOther: {
         type: DataTypes.STRING,
         defaultValue: 'Other'
+    },
+    // ---- Starboard Settings ----
+    starboardEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    starboardChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    starboardThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 3
     }
 });
 

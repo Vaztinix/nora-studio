@@ -2223,7 +2223,7 @@
             100% { opacity: 1; }
         }
         
-        .view-transition {}
+        .view-transition { opacity: 1; }
 
         .multiselect-tag {
             background: rgba(174, 239, 255, 0.15);
@@ -2941,7 +2941,7 @@
                                 </ol>
                             </div>
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <a href="https://support.discord.com/hc/en-us/articles/12303538612119" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                                <a href="/billing" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                                     <i class="fas fa-question-circle"></i> Discord Billing FAQ
                                 </a>
                                 <a href="https://support.discord.com/" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
@@ -3091,6 +3091,8 @@
                         <button class="h-tab" data-tab="tab-automod"><i class="fas fa-user-shield"></i> AutoMod</button>
                         <button class="h-tab" data-tab="tab-verify"><i class="fas fa-user-check"></i> Verification & Onboarding</button>
                         <button class="h-tab" data-tab="tab-tickets"><i class="fas fa-ticket-alt"></i> Support Ticketing</button>
+                        <button class="h-tab" data-tab="tab-starboard"><i class="fas fa-star"></i> Starboard</button>
+                        <button class="h-tab" data-tab="tab-applications"><i class="fas fa-file-signature"></i> Application Builder</button>
                         <button class="h-tab" data-tab="tab-reactionroles"><i class="fas fa-magic"></i> Reaction Roles</button>
                         <button class="h-tab" data-tab="tab-leveling"><i class="fas fa-trophy"></i> Leveling System</button>
                         <button class="h-tab" data-tab="tab-welcome"><i class="fas fa-gamepad"></i> Games & Counting</button>
@@ -3902,7 +3904,7 @@
                             </div>
                             <div class="log-row-compact" style="opacity: 0.6;">
                                 <div style="display: flex; flex-direction: column; gap: 2px;">
-                                    <strong>DM Notifications (ðŸ”’ Locked)</strong>
+                                    <strong>DM Notifications (🔒 Locked)</strong>
                                     <p style="font-size: 0.7rem; color: var(--muted);">Send level up to DMs (Disabled until opt-out mechanism is ready)</p>
                                 </div>
                                 <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled" disabled><span class="slider"></span></label>
@@ -4142,7 +4144,7 @@
                     </div>
 
                                         <div id="roblox-advanced-features" class="locked-feature">
-                        <div class="locked-overlay-text">ðŸ”’ VERIFICATION REQUIRED</div>
+                        <div class="locked-overlay-text">🔒 VERIFICATION REQUIRED</div>
                         <div class="panel">
                             <h3>Live Presence Tracker (BETA)</h3>
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Real-time status monitoring for your linked Roblox account.</p>
@@ -4182,7 +4184,7 @@
                         <p style="font-size: 0.85rem; color: var(--muted);">Advanced Roblox features require a premium subscription to Nora. This covers API costs and dedicated processing.</p>
                         <div id="roblox-premium-lock" style="margin-top: 15px; padding: 15px; background: rgba(255, 85, 85, 0.1); border: 1px solid rgba(255, 85, 85, 0.2); border-radius: 12px; color: #ff5555; font-size: 0.85rem; display: none;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 1.2rem;">ðŸ”’</span>
+                                <span style="font-size: 1.2rem;">🔒</span>
                                 <div>
                                     <strong>Premium Locked</strong>
                                     <p style="margin-top: 4px; opacity: 0.8;">Visit our support server to upgrade Nora for this guild.</p>
@@ -4424,64 +4426,121 @@
                                 <input type="color" id="setting-ticketEmbedColor" value="#ffffff" style="height: 40px; padding: 5px; width: 100%; cursor: pointer;" oninput="updateTicketPreview()">
                             </div>
 
-                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--primary); font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">Button Styles & Labels</h4>
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--primary); font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">Button Styles</h4>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
-                                <label style="margin: 0; font-size: 0.85rem;">Support Button</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="setting-ticketBtnLabelSupport" placeholder="Support" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
-                                    <select id="setting-ticketBtnStyleSupport" style="width: 105px;" onchange="updateTicketPreview()">
-                                        <option value="Primary">Blurple</option>
-                                        <option value="Secondary">Grey</option>
-                                        <option value="Success">Green</option>
-                                        <option value="Danger">Red</option>
-                                    </select>
-                                </div>
+                                <label style="margin: 0; font-size: 0.85rem;">Support Button Style</label>
+                                <select id="setting-ticketBtnStyleSupport" style="width: 100%;" onchange="updateTicketPreview()">
+                                    <option value="Primary">Blurple</option>
+                                    <option value="Secondary">Grey</option>
+                                    <option value="Success">Green</option>
+                                    <option value="Danger">Red</option>
+                                </select>
                             </div>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
-                                <label style="margin: 0; font-size: 0.85rem;">Reporting Button</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="setting-ticketBtnLabelReporting" placeholder="Reporting" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
-                                    <select id="setting-ticketBtnStyleReporting" style="width: 105px;" onchange="updateTicketPreview()">
-                                        <option value="Danger">Red</option>
-                                        <option value="Primary">Blurple</option>
-                                        <option value="Secondary">Grey</option>
-                                        <option value="Success">Green</option>
-                                    </select>
-                                </div>
+                                <label style="margin: 0; font-size: 0.85rem;">Reporting Button Style</label>
+                                <select id="setting-ticketBtnStyleReporting" style="width: 100%;" onchange="updateTicketPreview()">
+                                    <option value="Danger">Red</option>
+                                    <option value="Primary">Blurple</option>
+                                    <option value="Secondary">Grey</option>
+                                    <option value="Success">Green</option>
+                                </select>
                             </div>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
-                                <label style="margin: 0; font-size: 0.85rem;">Appeals Button</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="setting-ticketBtnLabelAppeals" placeholder="Appeals" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
-                                    <select id="setting-ticketBtnStyleAppeals" style="width: 105px;" onchange="updateTicketPreview()">
-                                        <option value="Secondary">Grey</option>
-                                        <option value="Primary">Blurple</option>
-                                        <option value="Success">Green</option>
-                                        <option value="Danger">Red</option>
-                                    </select>
-                                </div>
+                                <label style="margin: 0; font-size: 0.85rem;">Appeals Button Style</label>
+                                <select id="setting-ticketBtnStyleAppeals" style="width: 100%;" onchange="updateTicketPreview()">
+                                    <option value="Secondary">Grey</option>
+                                    <option value="Primary">Blurple</option>
+                                    <option value="Success">Green</option>
+                                    <option value="Danger">Red</option>
+                                </select>
                             </div>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 25px; align-items: center;">
-                                <label style="margin: 0; font-size: 0.85rem;">Other Button</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="setting-ticketBtnLabelOther" placeholder="Other" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
-                                    <select id="setting-ticketBtnStyleOther" style="width: 105px;" onchange="updateTicketPreview()">
-                                        <option value="Secondary">Grey</option>
-                                        <option value="Primary">Blurple</option>
-                                        <option value="Success">Green</option>
-                                        <option value="Danger">Red</option>
-                                    </select>
-                                </div>
+                                <label style="margin: 0; font-size: 0.85rem;">Other Button Style</label>
+                                <select id="setting-ticketBtnStyleOther" style="width: 100%;" onchange="updateTicketPreview()">
+                                    <option value="Secondary">Grey</option>
+                                    <option value="Primary">Blurple</option>
+                                    <option value="Success">Green</option>
+                                    <option value="Danger">Red</option>
+                                </select>
                             </div>
 
                             <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the ticket panel so the bot uses your latest configurations.</p>
                             <div style="margin-top: 20px;">
                                  <button class="config-btn" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-starboard" class="tab-content" style="display: none;">
+                    <div class="panel">
+                        <h3>⭐ Starboard System</h3>
+                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                            Starboard is a community-driven voting system. When members react to messages with ⭐, Nora will automatically repost them to a designated starboard channel.
+                        </p>
+                        
+                        <div class="input-group" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <label style="margin: 0; font-weight: 600;">Enable Starboard</label>
+                                <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Repost starred messages to the starboard channel.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="setting-starboardEnabled">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="input-group" style="margin-bottom: 15px;">
+                            <label>Starboard Channel</label>
+                            <select id="setting-starboardChannelId" style="width: 100%; box-sizing: border-box;">
+                                <option value="">Select channel...</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group" style="margin-bottom: 15px;">
+                            <label>Required Stars Threshold</label>
+                            <input type="number" id="setting-starboardThreshold" min="1" max="100" placeholder="3" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-applications" class="tab-content" style="display: none;">
+                    <div class="panel">
+                        <h3>📝 Premium Application Builder</h3>
+                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                            Create custom applications/forms for your members. Members can apply using the `/apply` command, and staff can approve or deny submissions directly from Discord.
+                        </p>
+                        
+                        <div id="app-builder-container">
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Application Name</label>
+                                <input type="text" id="app-name" placeholder="e.g. Staff Application" style="width: 100%; box-sizing: border-box;">
+                            </div>
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Description</label>
+                                <textarea id="app-desc" placeholder="Brief explanation of the position..." style="width: 100%; box-sizing: border-box; min-height: 80px;"></textarea>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Staff Review Channel</label>
+                                <select id="app-review-channel" style="width: 100%; box-sizing: border-box;">
+                                    <option value="">Select channel...</option>
+                                </select>
+                            </div>
+                            
+                            <h4 style="margin-top: 20px; margin-bottom: 10px;">Questions (Max 5)</h4>
+                            <div id="app-questions-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                                <input type="text" class="app-q-input" placeholder="Question 1 (e.g. Why do you want to join?)" style="width: 100%; box-sizing: border-box;">
+                                <input type="text" class="app-q-input" placeholder="Question 2 (e.g. Tell us about your experience.)" style="width: 100%; box-sizing: border-box;">
+                                <input type="text" class="app-q-input" placeholder="Question 3 (optional)" style="width: 100%; box-sizing: border-box;">
+                                <input type="text" class="app-q-input" placeholder="Question 4 (optional)" style="width: 100%; box-sizing: border-box;">
+                                <input type="text" class="app-q-input" placeholder="Question 5 (optional)" style="width: 100%; box-sizing: border-box;">
+                            </div>
+
+                            <button class="config-btn" onclick="saveApplicationConfig()">Save & Activate Application</button>
                         </div>
                     </div>
                 </div>
@@ -4685,7 +4744,7 @@
                                     </div>
 
                                     <div id="perm-helper" style="display: none; margin-top: 20px; padding: 15px; background: rgba(255, 85, 85, 0.1); border: 1px solid rgba(255, 85, 85, 0.2); border-radius: 8px;">
-                                        <h4 style="color: #ff5555; margin-bottom: 8px; font-size: 0.9rem;">âš ï¸ Missing Permissions</h4>
+                                        <h4 style="color: #ff5555; margin-bottom: 8px; font-size: 0.9rem;">⚠️ Missing Permissions</h4>
                                         <p style="font-size: 0.8rem; color: var(--muted); line-height: 1.4;">Nora cannot send webhooks in this channel. To fix this:</p>
                                         <ul style="font-size: 0.8rem; color: var(--muted); margin: 6px 0 10px 18px; padding-left: 0;">
                                             <li>Ensure Nora has <strong>Manage Webhooks</strong> permission.</li>
@@ -5626,7 +5685,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -6134,7 +6193,7 @@
                 if (status === 403 && d.error === 'SESSION_LOCKED') {
                     document.getElementById('auth-overlay').innerHTML = `
                         <div style="background: rgba(0,0,0,0.8); padding: 40px; border-radius: 12px; border: 1px solid var(--danger); text-align: center; max-width: 400px; backdrop-filter: blur(20px);">
-                            <div style="font-size: 3rem; margin-bottom: 20px;">ðŸ”’</div>
+                            <div style="font-size: 3rem; margin-bottom: 20px;">🔒</div>
                             <h2 style="color: var(--danger); margin-bottom: 10px;">Access Locked</h2>
                             <p style="color: var(--muted); margin-bottom: 20px; font-size: 0.9rem; line-height: 1.5;">Access to this site has been locked to the session hardened IP.</p>
                             <p style="color: var(--muted); font-size: 0.8rem;">If this was not you please contact support at <strong style="color: white;">vaztinixstudios@gmail.com</strong>.</p>
@@ -6188,7 +6247,7 @@
 
                 const prefPremium = document.getElementById('pref-premium-status');
                 if (prefPremium) {
-                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">â˜… Discord Nitro Active</span>' : 'Standard User';
+                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
                     if (d.noraPremium) prefPremium.innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
                 }
 
@@ -9190,6 +9249,8 @@
                     'setting-topggVoteChannelId',
                     'setting-welcomeChannelId',
                     'setting-loggingChannelId',
+                    'setting-starboardChannelId',
+                    'app-review-channel',
                     'setting-split-memberJoins',
                     'setting-split-memberLeaves',
                     'setting-split-messageEdits',
@@ -9337,12 +9398,12 @@
             
             const chan = window.guildChannels.find(c => c.id === id);
             if (chan && !chan.canSend) {
-                status.innerHTML = '<span style="color: #ff5555;">âš ï¸ Missing Permissions</span>';
+                status.innerHTML = '<span style="color: #ff5555;">⚠️ Missing Permissions</span>';
                 helper.style.display = 'block';
                 btn.disabled = true;
                 btn.style.opacity = '0.5';
             } else {
-                status.innerHTML = '<span style="color: #2ea043;">âœ… Ready to broadcast</span>';
+                status.innerHTML = '<span style="color: #2ea043;">✅ Ready to broadcast</span>';
                 helper.style.display = 'none';
                 btn.disabled = false;
                 btn.style.opacity = '1';
@@ -10928,6 +10989,37 @@
                 initCustomDropdown(sel.id);
             });
         }
+        function refreshCustomDropdown(selectId) {
+            const selectEl = document.getElementById(selectId);
+            if (!selectEl) return;
+            const container = document.getElementById('custom-dropdown-container-' + selectId);
+            if (!container) return;
+            const menu = document.getElementById('custom-dropdown-menu-' + selectId);
+            const trigger = document.getElementById('custom-dropdown-trigger-' + selectId);
+            if (!menu || !trigger) return;
+
+            let selectedText = '';
+            let hasActiveSelection = false;
+
+            Array.from(menu.children).forEach(item => {
+                const itemVal = item.getAttribute('data-value');
+                if (itemVal === selectEl.value) {
+                    selectedText = item.textContent;
+                    hasActiveSelection = true;
+                    item.style.color = 'var(--primary)';
+                    item.style.fontWeight = '700';
+                } else {
+                    item.style.color = '';
+                    item.style.fontWeight = '';
+                }
+            });
+
+            if (!hasActiveSelection && selectEl.options.length > 0) {
+                const selectedOpt = Array.from(selectEl.options).find(opt => opt.value === selectEl.value) || selectEl.options[0];
+                selectedText = selectedOpt.textContent;
+            }
+            trigger.innerHTML = `${selectedText} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
+        }
 
         /* Custom Single-Select Dropdown Logic */
         function initCustomDropdown(selectId) {
@@ -11532,6 +11624,7 @@
             if (hasStaleCache) {
                 // Render stale data immediately (no spinner)
                 _applySettings(s);
+                fetchApplications();
                 // Background revalidation if stale
                 const entry = window.dashboardCache.settings.get(cacheKey);
                 if (force || now - entry.timestamp >= CACHE_TTL) {
@@ -11572,6 +11665,7 @@
                 return;
             }
             _applySettings(s);
+            fetchApplications();
             toggleLoading(false);
         }
 
@@ -11615,6 +11709,7 @@
                         const val = (s[k] !== null && s[k] !== undefined) ? String(s[k]) : '';
                         const hasOption = Array.from(el.options).some(opt => opt.value === val);
                         el.value = hasOption ? val : '';
+                        refreshCustomDropdown('setting-' + k);
                     } else if (el.type === 'number') {
                         let val = s[k];
                         if (k === 'spamInterval' && val) val = Math.round(val / 1000);
@@ -11657,6 +11752,7 @@
                     const val = loggingChannelsObj && loggingChannelsObj[category] ? String(loggingChannelsObj[category]) : '';
                     const hasOption = Array.from(select.options).some(opt => opt.value === val);
                     select.value = hasOption ? val : '';
+                    refreshCustomDropdown(select.id);
                 });
 
             const welcomerMsgEl = document.getElementById('setting-logJoinMessage_welcomer');
@@ -12918,6 +13014,95 @@
             closeEmojiPicker();
         }
 
+        async function fetchApplications() {
+            if (!currentServerId) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    const apps = await res.json();
+                    if (apps && apps.length > 0) {
+                        const app = apps[0];
+                        document.getElementById('app-name').value = app.name || '';
+                        document.getElementById('app-desc').value = app.description || '';
+                        document.getElementById('app-review-channel').value = app.reviewChannelId || '';
+                        refreshCustomDropdown('app-review-channel');
+
+                        let questions = [];
+                        try {
+                            questions = JSON.parse(app.questions || '[]');
+                        } catch (e) {
+                            questions = [];
+                        }
+
+                        const qInputs = document.querySelectorAll('.app-q-input');
+                        qInputs.forEach((input, idx) => {
+                            input.value = questions[idx] || '';
+                        });
+                    } else {
+                        // Reset
+                        document.getElementById('app-name').value = '';
+                        document.getElementById('app-desc').value = '';
+                        document.getElementById('app-review-channel').value = '';
+                        refreshCustomDropdown('app-review-channel');
+                        document.querySelectorAll('.app-q-input').forEach(input => input.value = '');
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch applications:', e);
+            }
+        }
+
+        async function saveApplicationConfig() {
+            if (!currentServerId) return showToast('Please select a server first.', 'error');
+            const name = document.getElementById('app-name').value.trim();
+            if (!name) return showToast('Application Name is required.', 'error');
+
+            const desc = document.getElementById('app-desc').value.trim();
+            const reviewChannelId = document.getElementById('app-review-channel').value;
+            
+            const questions = [];
+            document.querySelectorAll('.app-q-input').forEach(input => {
+                const q = input.value.trim();
+                if (q) questions.push(q);
+            });
+
+            if (questions.length === 0) {
+                return showToast('At least one question is required.', 'error');
+            }
+
+            const t = sessionStorage.getItem('discord_token');
+            showToast('Saving application config...', 'info');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description: desc,
+                        reviewChannelId,
+                        questions: JSON.stringify(questions),
+                        isActive: true
+                    })
+                });
+
+                if (res.ok) {
+                    showToast('Application configuration saved successfully!', 'success');
+                    fetchApplications();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || 'Failed to save application.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while saving application.', 'error');
+            }
+        }
+
         // Close picker when clicking outside and setup search listener
         document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('click', (e) => {
@@ -12934,6 +13119,7 @@
                 searchInput.addEventListener('input', renderEmojiPickerList);
             }
         });
+        // Nora Dashboard Initialization Complete
     </script>
 </body>
 </html>

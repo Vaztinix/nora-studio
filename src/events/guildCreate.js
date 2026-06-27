@@ -40,6 +40,31 @@ module.exports = {
             console.error(`[Privacy Boundary Error] Failed to write installedAt for ${guild.id}:`, e.message);
         }
 
+        // Send a thank you DM to the guild owner with setup details
+        try {
+            const owner = await guild.members.fetch(guild.ownerId).catch(() => null);
+            if (owner) {
+                const { EmbedBuilder } = require('discord.js');
+                const welcomeEmbed = new EmbedBuilder()
+                    .setTitle('💜 Thanks for using Nora!')
+                    .setDescription(`Hi **${owner.user.username}**,\n\nThanks for adding **Nora** to your server **${guild.name}**! Here is some important setup information to get you started:`)
+                    .addFields(
+                        { name: '🌐 Web Dashboard', value: 'Configure all features, moderation, leveling, and logs at:\n[https://vaztinix.dev/dashboard](https://vaztinix.dev/dashboard)', inline: false },
+                        { name: '🛠️ Server Setup Command', value: 'Run `/setup` in your server to let Nora help you configure channels, roles, and basic automod rules.', inline: false },
+                        { name: '📖 Documentation', value: 'Check out the detailed guides and documentation at:\n[https://vaztinix.dev/docs](https://vaztinix.dev/docs)', inline: false },
+                        { name: '💬 Need Help?', value: 'Join our official Support Server to get assistance from the team:\n[https://discord.gg/nora](https://discord.gg/nora)', inline: false }
+                    )
+                    .setColor(0x57acf2)
+                    .setFooter({ text: 'Nora Assistant • Premium Automation' })
+                    .setTimestamp();
+                await owner.send({ embeds: [welcomeEmbed] }).catch(() => {
+                    console.log(`[Welcome Message] Could not DM owner of guild ${guild.name} (DMs might be disabled).`);
+                });
+            }
+        } catch (e) {
+            console.error('[Welcome Message Error] Failed to send welcome DM:', e.message);
+        }
+
         // Log to Master HQ Logistics Webhook
         await logEvent(guild, 'join');
 

@@ -5,7 +5,33 @@ const xml2js = require('xml2js');
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 // Setup Redis instance (expects REDIS_URL in env, defaults to localhost)
-const redis = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379');
+// Safe options to prevent startup crash on offline local Redis
+const redis = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379', {
+    maxRetriesPerRequest: 1,
+    enableOfflineQueue: true,
+    connectTimeout: 5000
+});
+
+let redisAvailable = false;
+redis.on('connect', () => {
+    redisAvailable = true;
+    console.log('[YouTube Engine] Connected to Redis successfully.');
+});
+redis.on('error', (err) => {
+    redisAvailable = false;
+    // Log once to prevent spam
+    if (!global.redisWarningLogged) {
+        console.warn('[YouTube Engine] Redis connection failed, falling back to in-memory deduplication:', err.message);
+        global.redisWarningLogged = true;
+    }
+});
+
+const memoryDeduplicationSet = new Set();
+// Periodically clean up memory Set to prevent leak (daily)
+setInterval(() => {
+    memoryDeduplicationSet.clear();
+}, 24 * 60 * 60 * 1000);
+
 
 // Setup YouTube Data API v3
 const youtube = google.youtube({
@@ -132,16 +158,35 @@ function createWebSubRouter(client, getGuildSubscriptions) {
 
             if (!videoId || !channelId) return;
 
-            // Deduplication Check via Redis (24-hour expiration)
+            // Deduplication Check via Redis or Memory Fallback (24-hour expiration)
             const redisKey = `yt:video:${videoId}`;
-            const isDuplicate = await redis.get(redisKey);
+            let isDuplicate = false;
+            if (redisAvailable) {
+                try {
+                    const res = await redis.get(redisKey).catch(() => null);
+                    isDuplicate = !!res;
+                } catch (e) {
+                    isDuplicate = memoryDeduplicationSet.has(videoId);
+                }
+            } else {
+                isDuplicate = memoryDeduplicationSet.has(videoId);
+            }
+
             if (isDuplicate) {
                 console.log(`[YouTube Engine] Duplicate alert dropped for videoId: ${videoId} (${title})`);
                 return;
             }
 
-            // Store in Redis to prevent duplicates (expires in 24 hours / 86400 seconds)
-            await redis.set(redisKey, 'alerted', 'EX', 86400);
+            // Store to prevent duplicates (expires in 24 hours / 86400 seconds)
+            if (redisAvailable) {
+                try {
+                    await redis.set(redisKey, 'alerted', 'EX', 86400).catch(() => {});
+                } catch (e) {
+                    memoryDeduplicationSet.add(videoId);
+                }
+            } else {
+                memoryDeduplicationSet.add(videoId);
+            }
 
             console.log(`[YouTube Engine] Dispatching alert for videoId: ${videoId} | Channel: ${author} (${channelId})`);
 

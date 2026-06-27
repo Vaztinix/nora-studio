@@ -298,15 +298,22 @@ module.exports = {
                         let inviteInfo = `joined using a vanity link or unknown invite.`;
                         if (usedInvite) {
                             const inviter = usedInvite.inviter;
-                            inviteInfo = `was invited by ${inviter ? `<@${inviter.id}> (\`${inviter.username}\`)` : 'Unknown'} (Invite: \`${usedInvite.code}\`, Uses: **${usedInvite.uses}**).`;
+                            inviteInfo = `Invited by: ${inviter ? `<@${inviter.id}> (\`${inviter.username}\`, ID: \`${inviter.id}\`)` : 'Unknown'}\nInvite Link: [${usedInvite.code}](https://discord.gg/${usedInvite.code})\nUses: **${usedInvite.uses}**`;
                         }
+
+                        const accountAgeDays = Math.floor((Date.now() - member.user.createdTimestamp) / (1000 * 60 * 60 * 24));
+                        const accountAgeStr = accountAgeDays === 0 ? 'Today (New Account!)' : `${accountAgeDays} days ago (${new Date(member.user.createdTimestamp).toLocaleDateString()})`;
 
                         const inviteEmbed = new EmbedBuilder()
                             .setTitle('📥 Member Join Invite Tracker')
                             .setColor(0x57acf2)
-                            .setDescription(`<@${member.id}> (\`${member.user.username}\`) ${inviteInfo}`)
+                            .setDescription(`**User:** <@${member.id}> (\`${member.user.username}\`, ID: \`${member.id}\`)\n\n**Invite Details:**\n${inviteInfo}`)
+                            .addFields(
+                                { name: 'Account Age', value: accountAgeStr, inline: true },
+                                { name: 'Join Position', value: `Member #${member.guild.memberCount}`, inline: true }
+                            )
                             .setTimestamp()
-                            .setFooter({ text: `Member ID: ${member.id}` });
+                            .setFooter({ text: `Member ID: ${member.id}`, iconURL: member.user.displayAvatarURL() });
                         await trackingChannel.send({ embeds: [inviteEmbed] }).catch(() => {});
                     }
                 } catch (inviteTrackErr) {

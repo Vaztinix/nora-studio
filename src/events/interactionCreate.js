@@ -29,7 +29,194 @@ module.exports = {
                     { where: { userId: interaction.user.id } }
                 ).catch(() => {}); // Silent fail if database is busy
             }
-        }        // Handle Ticket Close Button Action
+        }
+
+        // ---- Application Builder Interaction Handlers ----
+        // 1. Handle Application Start button or Select menu selection
+        if ((interaction.isButton() && interaction.customId.startsWith('app_start_')) || 
+            (interaction.isStringSelectMenu() && interaction.customId === 'app_select')) {
+            const Application = require('../database/models/Application');
+            const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+            
+            const appId = interaction.isButton() 
+                ? interaction.customId.replace('app_start_', '')
+                : interaction.values[0];
+            
+            const app = await Application.findByPk(appId);
+            if (!app || !app.isActive) {
+                return interaction.reply({ content: '❌ This application is no longer active or could not be found.', ephemeral: true });
+            }
+
+            let questions = [];
+            try {
+                questions = JSON.parse(app.questions || '[]');
+            } catch (e) {
+                questions = [];
+            }
+
+            if (questions.length === 0) {
+                return interaction.reply({ content: '❌ This application has no questions configured.', ephemeral: true });
+            }
+
+            const modal = new ModalBuilder()
+                .setCustomId(`app_submit_${app.id}`)
+                .setTitle(`Apply: ${app.name.slice(0, 45)}`);
+
+            // Discord modals only support up to 5 text inputs
+            const rows = [];
+            questions.slice(0, 5).forEach((q, idx) => {
+                const textInput = new TextInputBuilder()
+                    .setCustomId(`q_${idx}`)
+                    .setLabel(q.slice(0, 45))
+                    .setStyle(TextInputStyle.Paragraph)
+                    .setRequired(true)
+                    .setMaxLength(1000);
+                rows.push(new ActionRowBuilder().addComponents(textInput));
+            });
+
+            modal.addComponents(rows);
+            await interaction.showModal(modal);
+            return;
+        }
+
+        // 2. Handle Application Modal Submission
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('app_submit_')) {
+            const Application = require('../database/models/Application');
+            const ApplicationSubmission = require('../database/models/ApplicationSubmission');
+            const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+
+            const appId = interaction.customId.replace('app_submit_', '');
+            const app = await Application.findByPk(appId);
+            if (!app) {
+                return interaction.reply({ content: '❌ Could not find the associated application configuration.', ephemeral: true });
+            }
+
+            let questions = [];
+            try {
+                questions = JSON.parse(app.questions || '[]');
+            } catch (e) {
+                questions = [];
+            }
+
+            const answers = {};
+            questions.slice(0, 5).forEach((q, idx) => {
+                const val = interaction.fields.getTextInputValue(`q_${idx}`);
+                answers[q] = val;
+            });
+
+            // Save submission to DB
+            const submission = await ApplicationSubmission.create({
+                guildId: interaction.guildId,
+                userId: interaction.user.id,
+                username: interaction.user.username,
+                appName: app.name,
+                answers: JSON.stringify(answers),
+                status: 'PENDING'
+            });
+
+            // Find review channel
+            let reviewChannel = null;
+            if (app.reviewChannelId) {
+                reviewChannel = interaction.guild.channels.cache.get(app.reviewChannelId) ||
+                                await interaction.guild.channels.fetch(app.reviewChannelId).catch(() => null);
+            }
+            // Fallback to system channel if none specified
+            if (!reviewChannel) {
+                reviewChannel = interaction.guild.systemChannel;
+            }
+
+            if (!reviewChannel) {
+                return interaction.reply({
+                    content: '✅ Your application has been submitted, but no review channel is configured in this server. Please contact an admin.',
+                    ephemeral: true
+                });
+            }
+
+            // Build submission embed for staff review
+            const reviewEmbed = new EmbedBuilder()
+                .setTitle(`New Application: ${app.name}`)
+                .setDescription(`Submitted by <@${interaction.user.id}> (\`${interaction.user.username}\`, ID: \`${interaction.user.id}\`)`)
+                .setColor(0x57acf2)
+                .setTimestamp()
+                .setFooter({ text: `Submission ID: ${submission.id}` });
+
+            Object.entries(answers).forEach(([q, a]) => {
+                reviewEmbed.addFields({ name: q.slice(0, 256), value: a.slice(0, 1024) || '*No answer*', inline: false });
+            });
+
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`app_accept_${submission.id}`)
+                    .setLabel('Accept')
+                    .setStyle(ButtonStyle.Success),
+                new ButtonBuilder()
+                    .setCustomId(`app_deny_${submission.id}`)
+                    .setLabel('Deny')
+                    .setStyle(ButtonStyle.Danger)
+            );
+
+            await reviewChannel.send({ embeds: [reviewEmbed], components: [row] });
+
+            return interaction.reply({
+                content: '✅ Thank you! Your application has been successfully submitted for review.',
+                ephemeral: true
+            });
+        }
+
+        // 3. Handle Application Decision Buttons (Accept/Deny)
+        if (interaction.isButton() && (interaction.customId.startsWith('app_accept_') || interaction.customId.startsWith('app_deny_'))) {
+            // Check permissions
+            if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator) && 
+                !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+                return interaction.reply({ content: '❌ You must have Administrator or Manage Server permissions to review applications.', ephemeral: true });
+            }
+
+            const ApplicationSubmission = require('../database/models/ApplicationSubmission');
+            const { EmbedBuilder } = require('discord.js');
+
+            const isAccept = interaction.customId.startsWith('app_accept_');
+            const submissionId = isAccept 
+                ? interaction.customId.replace('app_accept_', '')
+                : interaction.customId.replace('app_deny_', '');
+
+            const submission = await ApplicationSubmission.findByPk(submissionId);
+            if (!submission) {
+                return interaction.reply({ content: '❌ Could not find this application submission.', ephemeral: true });
+            }
+
+            if (submission.status !== 'PENDING') {
+                return interaction.reply({ content: `❌ This application has already been processed (Status: **${submission.status}**).`, ephemeral: true });
+            }
+
+            const status = isAccept ? 'APPROVED' : 'REJECTED';
+            await submission.update({ status, reviewerId: interaction.user.id });
+
+            // DM user notification
+            try {
+                const applicant = await client.users.fetch(submission.userId).catch(() => null);
+                if (applicant) {
+                    const statusMsg = isAccept
+                        ? `🎉 Congratulations! Your application for **${submission.appName}** in **${interaction.guild.name}** has been **APPROVED**!`
+                        : `Thank you for applying. Unfortunately, your application for **${submission.appName}** in **${interaction.guild.name}** has been **REJECTED** at this time.`;
+                    await applicant.send({ content: statusMsg }).catch(() => {});
+                }
+            } catch (dmErr) {}
+
+            // Update review message embed to show decision
+            const oldEmbed = interaction.message.embeds[0];
+            const updatedEmbed = EmbedBuilder.from(oldEmbed)
+                .setColor(isAccept ? 0x2ec4b6 : 0xe71d36)
+                .addFields({
+                    name: 'Decision Details',
+                    value: `Status: **${status}**\nReviewed by: <@${interaction.user.id}>\nTimestamp: <t:${Math.floor(Date.now() / 1000)}:R>`,
+                    inline: false
+                });
+
+            await interaction.update({ embeds: [updatedEmbed], components: [] });
+            return;
+        }
+
+        // Handle Ticket Close Button Action
         if (interaction.isButton() && (interaction.customId.startsWith('ticket_close_') || interaction.customId.startsWith('ticket_close_btn_'))) {
             const ticketsEngine = require('../bot/engines/tickets');
             const settings = await settingsCache.get(interaction.guildId);

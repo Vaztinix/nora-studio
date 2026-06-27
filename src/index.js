@@ -244,6 +244,16 @@ sequelize.sync().then(async () => {
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `welcomeRoleId` VARCHAR(255) DEFAULT NULL;");
     } catch (e) {}
+    // ---- Starboard Migrations ----
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardEnabled` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardChannelId` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardThreshold` INTEGER DEFAULT 3;");
+    } catch (e) {}
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
@@ -782,6 +792,23 @@ app.get(['/me', '/me.html'], (req, res) => {
     }
 });
 
+app.get(['/billing', '/billing-faq', '/billing-faq.html'], (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    const distPath = path.join(__dirname, '../dist/billing-faq.html');
+    const webPath  = path.join(__dirname, 'web/billing-faq.html');
+    const filePath = fs.existsSync(distPath) ? distPath : webPath;
+    
+    if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('Billing FAQ page not found.');
+    }
+});
+
 app.get('/api/public/guilds/:guildId', async (req, res) => {
     try {
         const guild = client.guilds.cache.get(req.params.guildId);
@@ -1131,36 +1158,56 @@ app.get('/api/user/me', async (req, res) => {
                 return res.status(403).json({ error: 'Session Hardening: IP mismatch. Session terminated.' });
             }
             
-            // Check if Discord token is still valid
-            const discordToken = session.discordToken || token;
-            const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${discordToken}` }
-            }).catch(() => null);
-            if (!userRes) {
-                await session.destroy();
-                return res.status(401).json({ error: 'Unauthorized' });
+            // Check if Discord token is still valid (using cache if possible)
+            const cacheKey = tokenHash;
+            const cachedUser = discordUserCache.get(cacheKey);
+            if (cachedUser && (Date.now() - cachedUser.timestamp < USER_CACHE_TTL)) {
+                user = cachedUser.user;
+            } else {
+                const discordToken = session.discordToken || token;
+                const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
+                    headers: { Authorization: `Bearer ${discordToken}` }
+                }).catch(() => null);
+                if (!userRes) {
+                    await session.destroy();
+                    return res.status(401).json({ error: 'Unauthorized' });
+                }
+                user = userRes.data;
+                discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
             }
-            user = userRes.data;
         } else {
             // If the token is a custom session format but not found/expired, reject immediately
             if (token.startsWith('nora_sess_')) {
                 return res.status(401).json({ error: 'Unauthorized' });
             }
-            // Fetch user info from Discord using axios
-            const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${token}` }
-            }).catch(() => null);
-            if (!userRes) return res.status(401).json({ error: 'Unauthorized' });
-            user = userRes.data;
             
-            // GeoIP lookup
+            // Fetch user info from Discord using axios (with cache check)
+            const cacheKey = tokenHash;
+            const cachedUser = discordUserCache.get(cacheKey);
+            if (cachedUser && (Date.now() - cachedUser.timestamp < USER_CACHE_TTL)) {
+                user = cachedUser.user;
+            } else {
+                const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }).catch(() => null);
+                if (!userRes) return res.status(401).json({ error: 'Unauthorized' });
+                user = userRes.data;
+                discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
+            }
+            
+            // GeoIP lookup (skipped for local loopbacks)
             let location = 'Unknown Location';
-            try {
-                const geo = await axios.get(`http://ip-api.com/json/${clientIp}`, { timeout: 3000 });
-                if (geo.data && geo.data.status === 'success') {
-                    location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
-                }
-            } catch (e) {}
+            const isLocalIp = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === 'localhost' || clientIp.startsWith('192.168.') || clientIp.startsWith('10.') || clientIp.startsWith('::ffff:127.0.0.1');
+            if (!isLocalIp) {
+                try {
+                    const geo = await axios.get(`http://ip-api.com/json/${clientIp}`, { timeout: 3000 });
+                    if (geo.data && geo.data.status === 'success') {
+                        location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
+                    }
+                } catch (e) {}
+            } else {
+                location = 'Localhost Development';
+            }
             
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             if (!prefs.sessionGenerationMarker) {
