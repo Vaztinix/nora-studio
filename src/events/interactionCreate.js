@@ -65,12 +65,40 @@ module.exports = {
             // Discord modals only support up to 5 text inputs
             const rows = [];
             questions.slice(0, 5).forEach((q, idx) => {
+                let label = '';
+                let style = TextInputStyle.Paragraph;
+                let required = true;
+                let placeholder = '';
+                let minLength = null;
+                let maxLength = 1000;
+
+                if (q && typeof q === 'object') {
+                    label = q.label || `Question ${idx + 1}`;
+                    style = q.type === 'short' ? TextInputStyle.Short : TextInputStyle.Paragraph;
+                    required = q.required !== false;
+                    placeholder = q.placeholder || '';
+                    if (q.minLength !== undefined && q.minLength !== null) minLength = parseInt(q.minLength, 10);
+                    if (q.maxLength !== undefined && q.maxLength !== null) maxLength = parseInt(q.maxLength, 10);
+                } else if (typeof q === 'string') {
+                    label = q;
+                }
+
                 const textInput = new TextInputBuilder()
                     .setCustomId(`q_${idx}`)
-                    .setLabel(q.slice(0, 45))
-                    .setStyle(TextInputStyle.Paragraph)
-                    .setRequired(true)
-                    .setMaxLength(1000);
+                    .setLabel(label.slice(0, 45))
+                    .setStyle(style)
+                    .setRequired(required);
+
+                if (placeholder) {
+                    textInput.setPlaceholder(placeholder.slice(0, 100));
+                }
+                if (minLength !== null && !isNaN(minLength)) {
+                    textInput.setMinLength(minLength);
+                }
+                if (maxLength !== null && !isNaN(maxLength) && maxLength > 0) {
+                    textInput.setMaxLength(maxLength);
+                }
+
                 rows.push(new ActionRowBuilder().addComponents(textInput));
             });
 
@@ -100,8 +128,9 @@ module.exports = {
 
             const answers = {};
             questions.slice(0, 5).forEach((q, idx) => {
+                const label = (q && typeof q === 'object') ? (q.label || `Question ${idx + 1}`) : q;
                 const val = interaction.fields.getTextInputValue(`q_${idx}`);
-                answers[q] = val;
+                answers[label] = val;
             });
 
             // Save submission to DB

@@ -4597,13 +4597,12 @@
                                     </select>
                                 </div>
                                 
-                                <h4 style="margin-top: 15px; margin-bottom: 10px;">Questions (Max 5)</h4>
-                                <div id="app-questions-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-                                    <input type="text" class="app-q-input" placeholder="Question 1 (e.g. Why do you want to join?)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
-                                    <input type="text" class="app-q-input" placeholder="Question 2 (e.g. Tell us about your experience.)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
-                                    <input type="text" class="app-q-input" placeholder="Question 3 (optional)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
-                                    <input type="text" class="app-q-input" placeholder="Question 4 (optional)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
-                                    <input type="text" class="app-q-input" placeholder="Question 5 (optional)" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 10px;">
+                                    <h4 style="margin: 0;">Questions (Max 5)</h4>
+                                    <button type="button" class="config-btn" style="width: auto; margin: 0; padding: 4px 10px; font-size: 0.75rem; background: var(--border); border-color: rgba(255,255,255,0.1); color: #fff;" onclick="addBuilderQuestion()">+ Add Question</button>
+                                </div>
+                                <div id="app-questions-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+                                    <!-- Injected dynamic question editors -->
                                 </div>
 
                                 <button class="config-btn" style="background: var(--primary); color: #0f111a; font-weight: 700; width: 100%;" onclick="saveApplicationConfig()">Save Configuration</button>
@@ -9846,7 +9845,6 @@
         function updateAppBuilderPreview() {
             const nameInput = document.getElementById('app-name');
             const descInput = document.getElementById('app-desc');
-            const qInputs = document.querySelectorAll('.app-q-input');
 
             const nameVal = nameInput ? nameInput.value : '';
             const descVal = descInput ? descInput.value : '';
@@ -9863,22 +9861,34 @@
 
             if (mockFields) {
                 mockFields.innerHTML = '';
-                qInputs.forEach(input => {
-                    const qText = input.value.trim();
-                    if (qText) {
-                        const field = document.createElement('div');
-                        field.style = 'display: flex; flex-direction: column; gap: 6px; text-align: left;';
-                        field.innerHTML = `
-                            <label style="color: #b5bac1; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: flex; gap: 4px; align-items: center;">
-                                ${qText} <span style="color: #fa777c;">*</span>
-                            </label>
-                            <div style="background: #111214; border-radius: 4px; border: 1px solid #111214; min-height: 40px; padding: 10px; box-sizing: border-box; color: #dbdee1; font-size: 0.875rem;">
-                                ...
-                            </div>
-                        `;
-                        mockFields.appendChild(field);
-                    }
-                });
+                if (typeof currentQuestions !== 'undefined' && Array.isArray(currentQuestions)) {
+                    currentQuestions.forEach((q, idx) => {
+                        const qLabel = q.label ? q.label.trim() : '';
+                        if (qLabel) {
+                            const field = document.createElement('div');
+                            field.style = 'display: flex; flex-direction: column; gap: 6px; text-align: left;';
+                            
+                            const requiredAsterisk = q.required ? '<span style="color: #fa777c; margin-left: 2px;">*</span>' : '';
+                            const minMaxInfo = ((q.minLength && q.minLength !== '') || (q.maxLength && q.maxLength !== '')) 
+                                ? `<span style="font-size: 0.65rem; color: var(--muted); text-transform: none; margin-left: auto;">(${q.minLength || 0}-${q.maxLength || '1000'} chars)</span>`
+                                : '';
+                            
+                            const boxHeight = q.type === 'short' ? '40px' : '80px';
+                            const textPlaceholder = q.placeholder || (q.type === 'short' ? 'Enter a short response...' : 'Enter a paragraph response...');
+
+                            field.innerHTML = `
+                                <label style="color: #b5bac1; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: flex; align-items: center; width: 100%;">
+                                    ${qLabel} ${requiredAsterisk}
+                                    ${minMaxInfo}
+                                </label>
+                                <div style="background: #111214; border-radius: 4px; border: 1px solid #111214; min-height: ${boxHeight}; padding: 10px; box-sizing: border-box; color: #949ba4; font-size: 0.875rem; display: flex; align-items: flex-start; justify-content: flex-start;">
+                                    <span style="opacity: 0.45; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">${textPlaceholder}</span>
+                                </div>
+                            `;
+                            mockFields.appendChild(field);
+                        }
+                    });
+                }
 
                 if (mockFields.children.length === 0) {
                     mockFields.innerHTML = `
@@ -13311,6 +13321,139 @@
 
         let savedApplications = [];
 
+        let currentQuestions = [];
+
+        function addBuilderQuestion() {
+            if (currentQuestions.length >= 5) {
+                return showToast('You can add a maximum of 5 questions to an application.', 'warning');
+            }
+            currentQuestions.push({
+                label: '',
+                type: 'paragraph',
+                required: true,
+                placeholder: '',
+                minLength: '',
+                maxLength: 1000
+            });
+            renderQuestionsBuilder();
+            updateAppBuilderPreview();
+        }
+
+        function deleteBuilderQuestion(idx) {
+            currentQuestions.splice(idx, 1);
+            renderQuestionsBuilder();
+            updateAppBuilderPreview();
+        }
+
+        function updateQuestionField(idx, field, value) {
+            if (currentQuestions[idx]) {
+                currentQuestions[idx][field] = value;
+                updateAppBuilderPreview();
+            }
+        }
+
+        function toggleAdvancedOptions(idx) {
+            const el = document.getElementById(`q-advanced-${idx}`);
+            if (el) {
+                const isOpen = el.style.display === 'flex' || el.style.display === 'block';
+                el.style.display = isOpen ? 'none' : 'flex';
+                const btn = document.getElementById(`q-adv-btn-${idx}`);
+                if (btn) btn.innerHTML = isOpen ? '<i class="fas fa-cog"></i> Advanced Options' : '<i class="fas fa-chevron-up"></i> Hide Advanced';
+            }
+        }
+
+        function renderQuestionsBuilder() {
+            const container = document.getElementById('app-questions-list');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            currentQuestions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = 'panel';
+                card.style = 'background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; margin-bottom: 0; display: flex; flex-direction: column; gap: 10px; position: relative;';
+                
+                card.innerHTML = `
+                    <!-- Row 1: Question text and Delete -->
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary); min-width: 24px;">#${idx + 1}</span>
+                        <input type="text" placeholder="Question Label (e.g. Why do you want to join?)" 
+                            value="${q.label || ''}" 
+                            style="flex: 1; box-sizing: border-box; font-size: 0.85rem;" 
+                            oninput="updateQuestionField(${idx}, 'label', this.value)">
+                        
+                        <button type="button" class="btn-outline" 
+                            style="padding: 6px 8px; border: none; background: transparent; color: var(--danger); cursor: pointer;" 
+                            onclick="deleteBuilderQuestion(${idx})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+
+                    <!-- Row 2: Type, Required, Advanced toggle -->
+                    <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-top: 1px dashed rgba(255,255,255,0.04); padding-top: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="font-size: 0.75rem; color: var(--muted);">Type:</label>
+                            <select style="padding: 4px 8px; font-size: 0.75rem; width: auto; min-width: 110px;" 
+                                onchange="updateQuestionField(${idx}, 'type', this.value)">
+                                <option value="paragraph" ${q.type === 'paragraph' ? 'selected' : ''}>Paragraph</option>
+                                <option value="short" ${q.type === 'short' ? 'selected' : ''}>Short Answer</option>
+                            </select>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label style="font-size: 0.75rem; color: var(--muted);">Required:</label>
+                            <label class="switch" style="width: 32px; height: 18px;">
+                                <input type="checkbox" ${q.required ? 'checked' : ''} 
+                                    onchange="updateQuestionField(${idx}, 'required', this.checked)">
+                                <span class="slider" style="border-radius: 18px;"></span>
+                            </label>
+                        </div>
+
+                        <button type="button" id="q-adv-btn-${idx}" class="config-btn" 
+                            style="width: auto; margin: 0; padding: 4px 8px; font-size: 0.7rem; background: transparent; border-color: rgba(255,255,255,0.1); color: var(--muted);" 
+                            onclick="toggleAdvancedOptions(${idx})">
+                            <i class="fas fa-cog"></i> Advanced Options
+                        </button>
+                    </div>
+
+                    <!-- Row 3: Advanced Panel (hidden by default) -->
+                    <div id="q-advanced-${idx}" style="display: none; flex-direction: column; gap: 8px; border-top: 1px dashed rgba(255,255,255,0.04); padding-top: 10px;">
+                        <div class="input-group" style="margin: 0;">
+                            <label style="font-size: 0.7rem;">Placeholder text (optional)</label>
+                            <input type="text" placeholder="e.g. Type your response here..." 
+                                value="${q.placeholder || ''}" 
+                                style="font-size: 0.8rem; padding: 6px 10px;" 
+                                oninput="updateQuestionField(${idx}, 'placeholder', this.value)">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="input-group" style="flex: 1; margin: 0;">
+                                <label style="font-size: 0.7rem;">Min Length</label>
+                                <input type="number" placeholder="0" 
+                                    value="${q.minLength || ''}" 
+                                    style="font-size: 0.8rem; padding: 6px 10px;" 
+                                    oninput="updateQuestionField(${idx}, 'minLength', this.value)">
+                            </div>
+                            <div class="input-group" style="flex: 1; margin: 0;">
+                                <label style="font-size: 0.7rem;">Max Length</label>
+                                <input type="number" placeholder="1000" 
+                                    value="${q.maxLength || ''}" 
+                                    style="font-size: 0.8rem; padding: 6px 10px;" 
+                                    oninput="updateQuestionField(${idx}, 'maxLength', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            if (currentQuestions.length === 0) {
+                container.innerHTML = `
+                    <div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 20px; border: 1px dashed rgba(255,255,255,0.05); border-radius: 8px;">
+                        No questions added yet. Click "+ Add Question" to start building.
+                    </div>
+                `;
+            }
+        }
+
         function showAppSetEditor(appId) {
             const editorView = document.getElementById('app-set-editor-view');
             const listView = document.getElementById('app-sets-list-view');
@@ -13331,9 +13474,18 @@
                     } catch (e) {
                         questions = [];
                     }
-                    const qInputs = document.querySelectorAll('.app-q-input');
-                    qInputs.forEach((input, idx) => {
-                        input.value = questions[idx] || '';
+                    currentQuestions = questions.map(q => {
+                        if (typeof q === 'string') {
+                            return { label: q, type: 'paragraph', required: true, placeholder: '', minLength: '', maxLength: 1000 };
+                        }
+                        return {
+                            label: q.label || '',
+                            type: q.type || 'paragraph',
+                            required: q.required !== false,
+                            placeholder: q.placeholder || '',
+                            minLength: q.minLength || '',
+                            maxLength: q.maxLength || 1000
+                        };
                     });
                     titleEl.textContent = 'Edit Application Set';
                 }
@@ -13343,10 +13495,13 @@
                 document.getElementById('app-desc').value = '';
                 document.getElementById('app-review-channel').value = '';
                 refreshCustomDropdown('app-review-channel');
-                document.querySelectorAll('.app-q-input').forEach(input => input.value = '');
+                currentQuestions = [
+                    { label: '', type: 'paragraph', required: true, placeholder: '', minLength: '', maxLength: 1000 }
+                ];
                 titleEl.textContent = 'Create Application Set';
             }
             
+            renderQuestionsBuilder();
             listView.style.display = 'none';
             editorView.style.display = 'flex';
             updateAppBuilderPreview();
@@ -13466,14 +13621,10 @@
             const desc = document.getElementById('app-desc').value.trim();
             const reviewChannelId = document.getElementById('app-review-channel').value;
             
-            const questions = [];
-            document.querySelectorAll('.app-q-input').forEach(input => {
-                const q = input.value.trim();
-                if (q) questions.push(q);
-            });
+            const validQuestions = currentQuestions.filter(q => q.label && q.label.trim() !== '');
 
-            if (questions.length === 0) {
-                return showToast('At least one question is required.', 'error');
+            if (validQuestions.length === 0) {
+                return showToast('At least one question with a non-empty label is required.', 'error');
             }
 
             const t = sessionStorage.getItem('discord_token');
@@ -13490,7 +13641,7 @@
                         name,
                         description: desc,
                         reviewChannelId,
-                        questions: JSON.stringify(questions)
+                        questions: JSON.stringify(validQuestions)
                     })
                 });
 
