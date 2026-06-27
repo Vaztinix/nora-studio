@@ -938,12 +938,7 @@ try {
     const { createWebSubRouter } = require('./services/youtube_engine');
     const ContentFeed = require('./database/models/ContentFeed');
     const webSubRouter = createWebSubRouter(client, async (channelId) => {
-        const feeds = await ContentFeed.findAll({ where: { channelId, platform: 'YOUTUBE' } });
-        return feeds.map(f => ({
-            guildId: f.guildId,
-            targetChannelId: f.targetChannelId,
-            customMessage: f.alertTemplate
-        }));
+        return await ContentFeed.findAll({ where: { channelId, platform: 'YOUTUBE' } });
     });
     app.use('/api/websub', webSubRouter);
     console.log('[System] WebSub Webhook Router mounted at /api/websub/youtube/webhook');

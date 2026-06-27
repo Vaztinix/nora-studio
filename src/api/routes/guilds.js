@@ -3169,4 +3169,106 @@ router.post('/members/:userId/ban', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/guilds/:guildId/applications
+ * Returns all application configurations for this guild.
+ */
+router.get('/applications', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const Application = require('../../database/models/Application');
+        const apps = await Application.findAll({
+            where: { guildId },
+            order: [['createdAt', 'DESC']]
+        });
+        res.json(apps);
+    } catch (e) {
+        console.error('Error fetching applications:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/applications
+ * Creates or updates an application configuration.
+ */
+router.post('/applications', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { id, name, description, reviewChannelId, questions, isActive } = req.body;
+        const Application = require('../../database/models/Application');
+
+        if (!name) return res.status(400).json({ error: 'Application Name is required.' });
+
+        let app;
+        if (id) {
+            app = await Application.findOne({ where: { id, guildId } });
+            if (!app) return res.status(404).json({ error: 'Application set not found.' });
+            
+            await app.update({
+                name,
+                description,
+                reviewChannelId,
+                questions: questions || '[]',
+                isActive: isActive !== undefined ? isActive : app.isActive
+            });
+        } else {
+            // If active and we want single active, handle it, but wait: multiple active are supported
+            app = await Application.create({
+                guildId,
+                name,
+                description,
+                reviewChannelId,
+                questions: questions || '[]',
+                isActive: isActive !== undefined ? isActive : true
+            });
+        }
+
+        res.json({ success: true, app });
+    } catch (e) {
+        console.error('Error saving application:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * DELETE /api/guilds/:guildId/applications/:appId
+ * Deletes an application configuration.
+ */
+router.delete('/applications/:appId', async (req, res) => {
+    try {
+        const { guildId, appId } = req.params;
+        const Application = require('../../database/models/Application');
+
+        const deleted = await Application.destroy({ where: { id: appId, guildId } });
+        if (!deleted) return res.status(404).json({ error: 'Application set not found.' });
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error deleting application:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/applications/:appId/toggle
+ * Toggles or sets the active state of an application.
+ */
+router.post('/applications/:appId/toggle', async (req, res) => {
+    try {
+        const { guildId, appId } = req.params;
+        const { isActive } = req.body;
+        const Application = require('../../database/models/Application');
+
+        const app = await Application.findOne({ where: { id: appId, guildId } });
+        if (!app) return res.status(404).json({ error: 'Application set not found.' });
+
+        await app.update({ isActive: !!isActive });
+        res.json({ success: true, app });
+    } catch (e) {
+        console.error('Error toggling application status:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

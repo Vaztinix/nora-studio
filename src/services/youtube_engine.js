@@ -197,6 +197,25 @@ function createWebSubRouter(client, getGuildSubscriptions) {
             // Dispatch alert to each subscribed Discord server
             for (const sub of subscriptions) {
                 try {
+                    // Check if this video is already known/alerted for this feed
+                    let lastIds = { video: null, short: null, live: null };
+                    if (sub.lastVideoId) {
+                        try {
+                            lastIds = JSON.parse(sub.lastVideoId);
+                        } catch (e) {
+                            lastIds = { video: sub.lastVideoId, short: null, live: null };
+                        }
+                    }
+
+                    if (videoId === lastIds.video || videoId === lastIds.short || videoId === lastIds.live) {
+                        console.log(`[YouTube Engine] Skipping already alerted/known video ID ${videoId} for feed ${sub.id}`);
+                        continue;
+                    }
+
+                    // Save video ID to feed's lastVideoId to prevent future spam
+                    lastIds.video = videoId;
+                    await sub.update({ lastVideoId: JSON.stringify(lastIds) });
+
                     const guild = client.guilds.cache.get(sub.guildId);
                     if (!guild) continue;
 
@@ -218,7 +237,21 @@ function createWebSubRouter(client, getGuildSubscriptions) {
 
                     // Format message payload
                     const videoLink = `https://youtube.com/watch?v=${videoId}`;
-                    let content = sub.customMessage || `**${author}** just uploaded a new video!\n${videoLink}`;
+                    
+                    // Parse alert templates
+                    let templates = { video: '', short: '', live: '' };
+                    if (sub.alertTemplate) {
+                        try {
+                            const parsed = JSON.parse(sub.alertTemplate);
+                            templates.video = parsed.video || '';
+                            templates.short = parsed.short || '';
+                            templates.live = parsed.live || '';
+                        } catch (e) {
+                            templates.video = sub.alertTemplate;
+                        }
+                    }
+                    
+                    let content = templates.video || `**${author}** just uploaded a new video!\n${videoLink}`;
                     
                     // Support replacement parameters
                     content = content
