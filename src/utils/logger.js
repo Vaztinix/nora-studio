@@ -30,9 +30,20 @@ class Logger {
         //  escalation
         if (this.webhookUrl) {
             try {
+                const { WebhookClient, EmbedBuilder } = require('discord.js');
                 const webhook = new WebhookClient({ url: this.webhookUrl });
+                const embed = new EmbedBuilder()
+                    .setTitle('🚨 Command Error Alert')
+                    .addFields(
+                        { name: 'Command', value: `\`/${cmdName}\``, inline: true },
+                        { name: 'User', value: user, inline: true },
+                        { name: 'Guild', value: guild, inline: false },
+                        { name: 'Error Message', value: `\`${error.message}\``, inline: false }
+                    )
+                    .setColor(0xff3333)
+                    .setTimestamp();
                 await webhook.send({
-                    content: `🚨 **Command Error Alert**\n**Command:** \`/${cmdName}\`\n**User:** ${user}\n**Error:** \`${error.message}\`\n**Mode:** Priority 1 Fallback\n<t:${Math.floor(Date.now()/1000)}:R>`,
+                    embeds: [embed],
                     username: 'Nora Internal Logs'
                 });
             } catch (e) {

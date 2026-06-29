@@ -313,4 +313,94 @@ async function manageWebSubSubscriptions(callbackUrl, channelIds) {
     }
 }
 
-module.exports = { resolveChannelId, createWebSubRouter, manageWebSubSubscriptions };
+function startPollingFallback(client, ContentFeed) {
+    console.log('[YouTube Engine] Initialized fallback background polling scheduler.');
+    // Run every 15 minutes
+    setInterval(async () => {
+        try {
+            const feeds = await ContentFeed.findAll({ where: { platform: 'YOUTUBE' } });
+            if (!feeds || feeds.length === 0) return;
+
+            const grouped = {};
+            feeds.forEach(f => {
+                if (!grouped[f.channelId]) {
+                    grouped[f.channelId] = [];
+                }
+                grouped[f.channelId].push(f);
+            });
+
+            for (const channelId in grouped) {
+                if (!process.env.YOUTUBE_API_KEY) continue;
+                const response = await youtube.search.list({
+                    part: 'snippet',
+                    channelId: channelId,
+                    order: 'date',
+                    type: 'video',
+                    maxResults: 3
+                }).catch(() => null);
+
+                if (!response || !response.data || !response.data.items) continue;
+
+                for (const item of response.data.items) {
+                    const videoId = item.id?.videoId;
+                    if (!videoId) continue;
+                    const title = item.snippet?.title || 'New Video';
+                    const author = item.snippet?.channelTitle || 'A Creator';
+
+                    const redisKey = `yt:video:${videoId}`;
+                    let isDuplicate = false;
+                    if (redisAvailable) {
+                        isDuplicate = !!(await redis.get(redisKey).catch(() => null));
+                    } else {
+                        isDuplicate = memoryDeduplicationSet.has(videoId);
+                    }
+
+                    if (isDuplicate) continue;
+
+                    if (redisAvailable) {
+                        await redis.set(redisKey, 'alerted', 'EX', 86400).catch(() => {});
+                    } else {
+                        memoryDeduplicationSet.add(videoId);
+                    }
+
+                    for (const sub of grouped[channelId]) {
+                        try {
+                            let lastIds = { video: null, short: null, live: null };
+                            if (sub.lastVideoId) {
+                                try {
+                                    lastIds = JSON.parse(sub.lastVideoId);
+                                } catch (e) {
+                                    lastIds = { video: sub.lastVideoId, short: null, live: null };
+                                }
+                            }
+
+                            if (videoId === lastIds.video || videoId === lastIds.short || videoId === lastIds.live) {
+                                continue;
+                            }
+
+                            lastIds.video = videoId;
+                            await sub.update({ lastVideoId: JSON.stringify(lastIds) });
+
+                            const guild = client.guilds.cache.get(sub.guildId);
+                            if (!guild) continue;
+
+                            const channel = guild.channels.cache.get(sub.targetChannelId);
+                            if (!channel) continue;
+
+                            const videoLink = `https://youtube.com/watch?v=${videoId}`;
+                            const content = `**${author}** just uploaded a new video!\n${videoLink}`;
+                            
+                            await channel.send({ content });
+                        } catch (err) {
+                            console.error(`[YouTube Poller Dispatcher Error]:`, err.message);
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('[YouTube Fallback Poller Error]:', e.message);
+        }
+    }, 900000);
+}
+
+module.exports = { resolveChannelId, createWebSubRouter, manageWebSubSubscriptions, startPollingFallback };

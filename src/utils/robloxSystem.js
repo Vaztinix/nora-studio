@@ -12,9 +12,13 @@ module.exports = {
         
         // Loop every 5 minutes to avoid hitting Roblox rate limits too hard
         setInterval(() => syncAllGuilds(client), 300000);
+
+        // Polling check for in-game presence every 60 seconds
+        setInterval(() => checkAllPresences(client), 60000);
         
         // Initial sync after 30 seconds
         setTimeout(() => syncAllGuilds(client), 30000);
+        setTimeout(() => checkAllPresences(client), 45000);
     },
 
     syncGuild: async (client, guildId) => {
@@ -119,3 +123,115 @@ async function syncRobloxRolesWithBackoff(member, robloxId, bindings, attempts =
         }
     }
 }
+
+const lastSeenSession = new Map();
+global.liveRobloxSessions = new Map();
+
+async function checkAllPresences(client) {
+    try {
+        const GuildSettings = require('../database/models/GuildSettings');
+        const activeGuilds = await GuildSettings.findAll({ where: { robloxJoinGameEnabled: true } });
+        if (activeGuilds.length === 0) return;
+
+        const activeGuildIds = activeGuilds.map(g => g.guildId);
+
+        // Fetch verified active accounts
+        const verified = await RobloxVerify.findAll({ where: { status: 'VERIFIED', isActive: true } });
+        if (verified.length === 0) return;
+
+        // Group by user's mutual guilds that have presence enabled
+        const trackingUsers = [];
+        for (const record of verified) {
+            let shouldTrack = false;
+            for (const guildId of activeGuildIds) {
+                const guild = client.guilds.cache.get(guildId);
+                if (guild && guild.members.cache.has(record.userId)) {
+                    shouldTrack = true;
+                    break;
+                }
+            }
+            if (shouldTrack) {
+                trackingUsers.push(record);
+            }
+        }
+
+        if (trackingUsers.length === 0) return;
+
+        const robloxIds = trackingUsers.map(u => parseInt(u.robloxId, 10)).filter(id => !isNaN(id));
+        if (robloxIds.length === 0) return;
+
+        const response = await axios.post('https://presence.roblox.com/v1/presence/users', {
+            userIds: robloxIds
+        }, {
+            headers: { 'Content-Type': 'application/json' }
+        }).catch(() => null);
+
+        if (!response || !response.data || !response.data.userPresences) return;
+
+        const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
+        for (const presence of response.data.userPresences) {
+            const robloxId = presence.userId.toString();
+            const record = trackingUsers.find(u => u.robloxId === robloxId);
+            if (!record) continue;
+
+            if (presence.userPresenceType === 2 && presence.gameId && presence.placeId) {
+                const gameId = presence.gameId;
+                const placeId = presence.placeId;
+                const username = presence.lastUserName || `User_${robloxId}`;
+
+                const sessionInfo = {
+                    userId: record.userId,
+                    robloxId,
+                    username,
+                    placeId,
+                    gameId,
+                    lastSeen: Date.now()
+                };
+                global.liveRobloxSessions.set(robloxId, sessionInfo);
+
+                if (lastSeenSession.get(robloxId) === gameId) continue;
+                lastSeenSession.set(robloxId, gameId);
+
+                for (const guildId of activeGuildIds) {
+                    const guild = client.guilds.cache.get(guildId);
+                    if (!guild || !guild.members.cache.has(record.userId)) continue;
+
+                    const settings = activeGuilds.find(g => g.guildId === guildId);
+                    if (!settings) continue;
+
+                    let channel = guild.systemChannel || guild.channels.cache.find(c => c.name.includes('general') || c.name.includes('chat'));
+                    if (!channel) continue;
+
+                    const embed = new EmbedBuilder()
+                        .setTitle('🎮 Roblox Join Alert!')
+                        .setDescription(`**${username}** is now in-game! Click below to join their session instantly.`)
+                        .addFields(
+                            { name: 'Game ID', value: `\`${placeId}\``, inline: true },
+                            { name: 'Discord User', value: `<@${record.userId}>`, inline: true }
+                        )
+                        .setColor(0x00b4d8)
+                        .setTimestamp();
+
+                    const row = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setLabel('Join via Web')
+                            .setURL(`https://www.roblox.com/games/start?placeId=${placeId}&mainPlaceId=${placeId}&gameInstanceId=${gameId}`)
+                            .setStyle(ButtonStyle.Link),
+                        new ButtonBuilder()
+                            .setLabel('Join via App (Deep-link)')
+                            .setURL(`https://roblox.com/navigation/game?placeId=${placeId}&gameId=${gameId}`)
+                            .setStyle(ButtonStyle.Link)
+                    );
+
+                    await channel.send({ embeds: [embed], components: [row] }).catch(() => {});
+                }
+            } else {
+                global.liveRobloxSessions.delete(robloxId);
+            }
+        }
+    } catch (err) {
+        console.error('[Roblox System] Presence tracking error:', err.message);
+    }
+}
+

@@ -113,11 +113,18 @@ module.exports = {
 
                 // 🔥 Master Red Alert Webhook
                 const MASTER_WEBHOOK_URL = 'https://discord.com/api/webhooks/1446358991075676172/zlAPHTkqBdjw-8ilFOjGXvgVf3PgKLkWbVK8gYZcNibhTGGsXAH6aVGXnrh29PzsgBUP';
-                const { WebhookClient } = require('discord.js');
+                const { WebhookClient, EmbedBuilder } = require('discord.js');
                 const masterWebhook = new WebhookClient({ url: MASTER_WEBHOOK_URL });
 
+                const embed = new EmbedBuilder()
+                    .setTitle('⚠️ System Safeguard Alert')
+                    .setDescription("Nora's database heartbeat has detected a lock state. Initiating emergency recovery pulse.")
+                    .addFields({ name: 'Error / Reason', value: `\`${e.message}\`` })
+                    .setColor(0xffaa00)
+                    .setTimestamp();
+
                 await masterWebhook.send({
-                    content: `👋 **Quick Heads-up**\nNora's feeling a bit stuck (Database hang) on her end.\nProblem: \`${e.message}\`\nCaught it: <t:${Math.floor(Date.now() / 1000)}:R>`,
+                    embeds: [embed],
                     username: 'Nora Alert',
                     avatarURL: client.user.displayAvatarURL()
                 }).catch(() => { });

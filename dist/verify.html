@@ -418,44 +418,31 @@
                 </div>
             </div>
 
-            <!-- Stage A: Input Roblox Username -->
-            <div id="stage-input">
-                <div class="input-group">
-                    <label for="roblox-username">Roblox Username</label>
-                    <input type="text" id="roblox-username" class="input-field" placeholder="Enter Roblox Username">
+            <!-- CAPTCHA Section -->
+            <div id="captcha-container" style="margin-bottom: 25px; display: none;">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: #fff;">Security Verification</h3>
+                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Drag the slider to fit the puzzle piece into place.</p>
+                
+                <div id="puzzle-box" style="position: relative; width: 100%; height: 160px; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid var(--border);">
+                    <div id="puzzle-bg" style="width: 100%; height: 100%; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);"></div>
+                    <div id="puzzle-slot" style="position: absolute; top: 50px; width: 40px; height: 40px; background: rgba(0,0,0,0.6); border: 2px dashed rgba(255,255,255,0.4); border-radius: 6px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); left: 150px;"></div>
+                    <div id="puzzle-piece" style="position: absolute; top: 50px; left: 10px; width: 40px; height: 40px; background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%); border: 2px solid #fff; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: grab; z-index: 10;"></div>
                 </div>
-                <button onclick="linkRoblox()" class="btn btn-primary">Connect Account</button>
+
+                <div style="position: relative; width: 100%; height: 40px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; margin-top: 15px; overflow: hidden; display: flex; align-items: center;">
+                    <div style="position: absolute; left: 20px; font-size: 0.8rem; color: var(--muted); pointer-events: none; width: calc(100% - 40px); text-align: center;">Slide to verify</div>
+                    <input type="range" id="captcha-slider" min="0" max="100" value="0" style="width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;">
+                    <div id="slider-track" style="position: absolute; left: 0; top: 0; height: 100%; background: rgba(0, 180, 216, 0.15); width: 0%;"></div>
+                    <div id="slider-thumb" style="position: absolute; left: 0; top: 0; width: 40px; height: 40px; background: #fff; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3); pointer-events: none;"><i class="fas fa-arrow-right"></i></div>
+                </div>
             </div>
 
-            <!-- Stage B: Complete description verification -->
-            <div id="stage-verify" style="display: none;">
-                <div class="steps">
-                    <div class="step-item">
-                        <div class="step-num">1</div>
-                        <div class="step-text">Copy the verification code shown below.</div>
-                    </div>
-                </div>
-
-                <div class="code-container">
-                    <span id="verify-code-text">CODE-HERE</span>
-                    <button class="copy-btn" onclick="copyVerifyCode()"><i class="far fa-copy"></i></button>
-                </div>
-
-                <div class="steps">
-                    <div class="step-item">
-                        <div class="step-num">2</div>
-                        <div class="step-text">Go to your **Roblox Profile Settings** and paste the code into your **About** (Description) section.</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-num">3</div>
-                        <div class="step-text">Once updated, click the **Check Verification** button below to complete.</div>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="checkVerification()" class="btn btn-primary" style="flex: 2;">Check Verification</button>
-                    <button onclick="cancelVerification()" class="btn btn-secondary" style="flex: 1;">Cancel</button>
-                </div>
+            <!-- Stage A: Connect Roblox Account -->
+            <div id="stage-input">
+                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
+                    Verify your Roblox identity securely using our deep-linking OAuth2 authentication flow. No password or bio editing required.
+                </p>
+                <button onclick="startOAuthVerification()" class="btn btn-primary">Connect Roblox Account</button>
             </div>
 
             <!-- Linked accounts list -->
@@ -647,6 +634,9 @@
                 }
 
                 loadLinkedAccounts();
+                if (!captchaVerified) {
+                    initCaptcha();
+                }
             } catch (err) {
                 console.error(err);
                 showToast(`Authentication failed: ${err.message || err}`, 'error');
@@ -676,26 +666,21 @@
                 const container = document.getElementById('accounts-list-container');
                 container.innerHTML = '';
 
-                currentUserActiveAccount = accounts.find(acc => acc.isActive && acc.status === 'VERIFIED');
-                if (currentUserActiveAccount) {
-                    document.getElementById('confirm-roblox-username').textContent = currentUserActiveAccount.robloxUsername || currentUserActiveAccount.robloxId;
-                    document.getElementById('confirm-verification-section').style.display = 'block';
-                } else {
-                    document.getElementById('confirm-verification-section').style.display = 'none';
-                }
-
                 if (accounts.length > 0) {
                     document.getElementById('linked-accounts-section').style.display = 'block';
                     accounts.forEach(acc => {
                         const card = document.createElement('div');
-                        card.className = `account-card ${acc.isActive ? 'active' : ''}`;
-
-                        const activeText = acc.isActive ? 'Active' : 'Inactive';
-                        const activeClass = acc.isActive ? 'tag-active' : 'tag-inactive';
-
+                        card.className = 'account-card';
                         card.innerHTML = `
-                            <span class="account-name">${acc.robloxUsername || acc.robloxId}</span>
-                            <span class="account-tag ${activeClass}">${activeText}</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 10px; height: 10px; border-radius: 50%; background: ${acc.isActive ? '#2ea043' : '#555'}"></div>
+                                <span style="font-weight: 700;">@${acc.robloxUsername || acc.robloxId}</span>
+                                ${acc.isActive ? '<span class="tag tag-active">Active</span>' : ''}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                ${!acc.isActive ? `<button onclick="toggleAccountActive('${acc.robloxId}')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; width: auto;">Set Active</button>` : ''}
+                                <button onclick="unlinkAccount('${acc.robloxId}')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; width: auto; color: var(--danger); border-color: rgba(248,81,73,0.2)">Unlink</button>
+                            </div>
                         `;
                         container.appendChild(card);
                     });
@@ -742,90 +727,96 @@
             }
         }
 
-        async function linkRoblox() {
-            const username = document.getElementById('roblox-username').value.trim();
-            if (!username) {
-                showToast('Please enter your Roblox username.', 'error');
-                return;
-            }
+        let oauthWindow = null;
+        let pollInterval = null;
 
+        async function startOAuthVerification() {
             toggleLoading(true);
             const token = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/link', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ username })
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/oauth-link', {
+                    headers: { Authorization: `Bearer ${token}` }
                 });
-
                 const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.error || 'Failed to initialize link');
-                }
+                if (!res.ok) throw new Error(data.error || 'Failed to generate link');
+                
+                const width = 500;
+                const height = 650;
+                const left = (window.innerWidth / 2) - (width / 2);
+                const top = (window.innerHeight / 2) - (height / 2);
+                
+                oauthWindow = window.open(data.url, 'RobloxAuth', `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`);
+                
+                if (pollInterval) clearInterval(pollInterval);
+                pollInterval = setInterval(() => {
+                    if (oauthWindow && oauthWindow.closed) {
+                        clearInterval(pollInterval);
+                        toggleLoading(false);
+                    }
+                    loadLinkedAccounts();
+                }, 3000);
 
-                pendingRobloxId = data.robloxId;
-                document.getElementById('verify-code-text').textContent = data.verifyCode;
-                document.getElementById('stage-input').style.display = 'none';
-                document.getElementById('stage-verify').style.display = 'block';
-                document.getElementById('portal-description').textContent = 'Please update your Roblox description with the verification code.';
-                showToast('Link initialized. Please complete verification steps.');
+                showToast('Verification flow opened. Please follow the instructions to connect.');
             } catch (err) {
                 showToast(err.message, 'error');
-            } finally {
                 toggleLoading(false);
             }
         }
 
-        function cancelVerification() {
-            pendingRobloxId = null;
-            document.getElementById('stage-input').style.display = 'block';
-            document.getElementById('stage-verify').style.display = 'none';
-            document.getElementById('portal-description').textContent = 'Link and verify your Roblox profile with your Discord identity.';
-        }
+        let captchaVerified = false;
+        let slotX = 0;
 
-        function copyVerifyCode() {
-            const code = document.getElementById('verify-code-text').textContent;
-            navigator.clipboard.writeText(code);
-            showToast('Verification code copied to clipboard!');
-        }
+        function initCaptcha() {
+            captchaVerified = false;
+            const container = document.getElementById('captcha-container');
+            const slider = document.getElementById('captcha-slider');
+            const track = document.getElementById('slider-track');
+            const thumb = document.getElementById('slider-thumb');
+            const piece = document.getElementById('puzzle-piece');
+            const slot = document.getElementById('puzzle-slot');
+            const stageInput = document.getElementById('stage-input');
 
-        async function checkVerification() {
-            toggleLoading(true);
-            const token = sessionStorage.getItem('discord_token');
-            const guildId = sessionStorage.getItem('verify_guild_id');
-            try {
-                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/check', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ 
-                        robloxId: pendingRobloxId,
-                        guildId: guildId || undefined
-                    })
-                });
+            stageInput.style.display = 'none';
+            container.style.display = 'block';
 
-                const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.error || 'Verification failed');
-                }
+            slider.value = 0;
+            track.style.width = '0%';
+            thumb.style.left = '0px';
+            piece.style.left = '10px';
 
-                if (data.syncError) {
-                    showToast(`Verified, but: ${data.syncError}`, 'warning');
+            const puzzleBoxWidth = document.getElementById('puzzle-box').clientWidth || 400;
+            const minX = Math.round(puzzleBoxWidth * 0.3);
+            const maxX = Math.round(puzzleBoxWidth * 0.85);
+            slotX = Math.floor(Math.random() * (maxX - minX)) + minX;
+            slot.style.left = slotX + 'px';
+
+            const puzzleBg = document.getElementById('puzzle-bg');
+            puzzleBg.style.background = `radial-gradient(circle at ${slotX}px 70px, rgba(255,255,255,0.15) 0%, transparent 70%), linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)`;
+
+            slider.oninput = function() {
+                const val = parseFloat(slider.value);
+                const maxSlider = puzzleBoxWidth - 50;
+                const currentX = 10 + (val / 100) * (maxSlider - 10);
+                piece.style.left = currentX + 'px';
+                track.style.width = val + '%';
+                thumb.style.left = `calc(${val}% - ${val * 0.4}px)`;
+            };
+
+            slider.onchange = function() {
+                const val = parseFloat(slider.value);
+                const maxSlider = puzzleBoxWidth - 50;
+                const currentX = 10 + (val / 100) * (maxSlider - 10);
+
+                if (Math.abs(currentX - slotX) <= 8) {
+                    captchaVerified = true;
+                    showToast('Security check passed!', 'success');
+                    container.style.display = 'none';
+                    stageInput.style.display = 'block';
                 } else {
-                    showToast('Verification successful! Account verified and roles granted.', 'success');
+                    showToast('Incorrect position. Try again.', 'error');
+                    initCaptcha();
                 }
-                cancelVerification();
-                loadLinkedAccounts();
-            } catch (err) {
-                showToast(err.message, 'error');
-            } finally {
-                toggleLoading(false);
-            }
+            };
         }
     </script>
 </body>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox | Authorize Nora</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --site-bg: #070706;
+            --primary: #ffffff;
+            --primary-hover: #eeeeec;
+            --border: #191918;
+            --muted: #9d9d9d;
+            --card-bg: #111110;
+            --text: #eeeeec;
+            --radius: 16px;
+            --success: #2ea043;
+            --danger: #f85149;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 35px 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            text-align: center;
+        }
+
+        .roblox-logo {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            color: var(--muted);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+        }
+
+        .profile-preview {
+            display: none;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-preview img {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .profile-username {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .profile-meta {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #070706;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-search {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        .btn-search:hover {
+            background: rgba(255,255,255,0.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="roblox-logo"><i class="fa-solid fa-cube"></i></div>
+        <h1>Authorize Nora</h1>
+        <p class="subtitle">Grant permission to link your Roblox identity with Discord</p>
+
+        <form id="auth-form" action="/api/auth/roblox/mock-authorize-submit" method="POST">
+            <input type="hidden" name="state" id="state-input">
+            <input type="hidden" name="robloxId" id="roblox-id-input">
+            <input type="hidden" name="robloxUsername" id="roblox-username-input">
+            
+            <div id="search-section">
+                <div class="input-group">
+                    <label for="username-input">Roblox Username</label>
+                    <input type="text" id="username-input" class="input-field" placeholder="Enter username (e.g. Builderman)" required>
+                </div>
+                <button type="button" class="btn btn-search" onclick="searchRobloxUser()">Find Account</button>
+            </div>
+
+            <div class="profile-preview" id="profile-preview">
+                <img id="profile-avatar" src="" alt="Avatar">
+                <div class="profile-info">
+                    <span class="profile-name" id="profile-display-name">DisplayName</span>
+                    <span class="profile-username" id="profile-user-handle">@username</span>
+                    <span class="profile-meta" id="profile-age">Account Age: --</span>
+                </div>
+            </div>
+
+            <div id="auth-section" style="display: none;">
+                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; text-align: left; line-height: 1.4;">
+                    By clicking Authorize, you grant <strong>Nora</strong> permission to view your Roblox username, ID, group memberships, and public profile data.
+                </p>
+                <button type="submit" class="btn btn-primary">Authorize & Connect</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Populate state from URL
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById('state-input').value = params.get('state') || '';
+
+        async function searchRobloxUser() {
+            const username = document.getElementById('username-input').value.trim();
+            if (!username) return;
+
+            const preview = document.getElementById('profile-preview');
+            const authSection = document.getElementById('auth-section');
+            preview.style.display = 'none';
+            authSection.style.display = 'none';
+
+            try {
+                // Fetch public search endpoint
+                const res = await fetch('/api/public/roblox/search?username=' + encodeURIComponent(username));
+                if (!res.ok) {
+                    alert('Roblox user not found. Check spelling.');
+                    return;
+                }
+                const data = await res.json();
+                
+                document.getElementById('roblox-id-input').value = data.id;
+                document.getElementById('roblox-username-input').value = data.name;
+
+                document.getElementById('profile-display-name').textContent = data.displayName;
+                document.getElementById('profile-user-handle').textContent = '@' + data.name;
+                
+                // Account age / created date
+                const createdDate = new Date(data.created);
+                const diffTime = Math.abs(new Date() - createdDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const ageText = diffDays > 365 
+                    ? `${(diffDays/365).toFixed(1)} years ago` 
+                    : `${diffDays} days ago`;
+                document.getElementById('profile-age').textContent = `Created: ${createdDate.toLocaleDateString()} (${ageText})`;
+
+                // Set avatar thumbnail
+                document.getElementById('profile-avatar').src = data.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+                preview.style.display = 'flex';
+                authSection.style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                alert('Error looking up user from Roblox API.');
+            }
+        }
+    </script>
+</body>
+</html>

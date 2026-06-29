@@ -2223,7 +2223,7 @@
             100% { opacity: 1; }
         }
         
-        .view-transition {}
+        .view-transition { opacity: 1; }
 
         .multiselect-tag {
             background: rgba(174, 239, 255, 0.15);
@@ -2740,9 +2740,9 @@
                             <div id="premium-center-status" data-no-translate style="padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.88rem; line-height: 1.5; color: #fff; font-weight: 600; margin-bottom: 15px;">Loading subscription details...</div>
                             
                             <div id="premium-center-benefits" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; color: var(--muted);">
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> Faster AI responses & higher limit cap</div>
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> High priority support channels</div>
-                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">âœ¦</span> Premium badge across servers</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> Faster AI responses & higher limit cap</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> High priority support channels</div>
+                                <div style="padding: 10px 12px; border-radius: 8px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); display: flex; gap: 8px; align-items: flex-start;"><span style="color: var(--primary);">✦</span> Premium badge across servers</div>
                             </div>
                             
                             <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
@@ -2941,7 +2941,7 @@
                                 </ol>
                             </div>
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <a href="https://support.discord.com/hc/en-us/articles/12303538612119" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                                <a href="/billing" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                                     <i class="fas fa-question-circle"></i> Discord Billing FAQ
                                 </a>
                                 <a href="https://support.discord.com/" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
@@ -2995,7 +2995,7 @@
                                 </h3>
                                 <div id="notification-list-new" data-no-translate style="display: flex; flex-direction: column; gap: 12px;">
                                     <div id="no-notifications-new" style="padding: 50px 20px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px dashed var(--border);">
-                                        <div style="font-size: 2.2rem; margin-bottom: 12px; opacity: 0.4;">âœ¨</div>
+                                        <div style="font-size: 2.2rem; margin-bottom: 12px; opacity: 0.4;">✨</div>
                                         All caught up! No new notifications.
                                     </div>
                                 </div>
@@ -3047,7 +3047,7 @@
             <div id="view-config" style="display: none;">
                 <div class="config-header">
                     <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
-                        <button class="back-link" id="back-to-servers">â† Back to Servers</button>
+                        <button class="back-link" id="back-to-servers">← Back to Servers</button>
                         <div class="config-title">
                             <img id="cfg-icon" src="nora.png" onerror="this.onerror=null; this.src='nora.png';">
                             <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p></div>
@@ -3091,6 +3091,8 @@
                         <button class="h-tab" data-tab="tab-automod"><i class="fas fa-user-shield"></i> AutoMod</button>
                         <button class="h-tab" data-tab="tab-verify"><i class="fas fa-user-check"></i> Verification & Onboarding</button>
                         <button class="h-tab" data-tab="tab-tickets"><i class="fas fa-ticket-alt"></i> Support Ticketing</button>
+                        <button class="h-tab" data-tab="tab-starboard"><i class="fas fa-star"></i> Starboard</button>
+                        <button class="h-tab" data-tab="tab-applications"><i class="fas fa-file-signature"></i> Application Builder</button>
                         <button class="h-tab" data-tab="tab-reactionroles"><i class="fas fa-magic"></i> Reaction Roles</button>
                         <button class="h-tab" data-tab="tab-leveling"><i class="fas fa-trophy"></i> Leveling System</button>
                         <button class="h-tab" data-tab="tab-welcome"><i class="fas fa-gamepad"></i> Games & Counting</button>
@@ -3139,28 +3141,28 @@
                                 <span>Total Members</span>
                                 <i class="fas fa-users" style="color: var(--primary);"></i>
                             </div>
-                            <h2 id="overview-total-members" style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
+                            <h2 id="overview-total-members" data-no-translate style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
                         </div>
                         <div class="panel" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04);">
                             <div style="display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
                                 <span>Weekly Messages</span>
                                 <i class="fas fa-comments" style="color: var(--primary);"></i>
                             </div>
-                            <h2 id="overview-weekly-messages" style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
+                            <h2 id="overview-weekly-messages" data-no-translate style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
                         </div>
                         <div class="panel" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04);">
                             <div style="display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
                                 <span>Active Voice Members</span>
                                 <i class="fas fa-microphone" style="color: var(--primary);"></i>
                             </div>
-                            <h2 id="overview-voice-users" style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
+                            <h2 id="overview-voice-users" data-no-translate style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
                         </div>
                         <div class="panel" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04);">
                             <div style="display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
                                 <span>AutoMod Actions</span>
                                 <i class="fas fa-shield-alt" style="color: var(--primary);"></i>
                             </div>
-                            <h2 id="overview-automod-actions" style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
+                            <h2 id="overview-automod-actions" data-no-translate style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
                         </div>
                     </div>
 
@@ -3188,7 +3190,7 @@
                                 </svg>
                                 <div style="position: absolute; text-align: center; display: flex; flex-direction: column;">
                                     <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">Total</span>
-                                    <span id="ticket-total-count" style="font-size: 1.4rem; font-weight: 800; color: white;">0</span>
+                                    <span id="ticket-total-count" data-no-translate style="font-size: 1.4rem; font-weight: 800; color: white;">0</span>
                                 </div>
                             </div>
                             <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px; font-size: 0.75rem;">
@@ -3328,15 +3330,15 @@
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                                 <div style="background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
                                     <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Daily Votes</span>
-                                    <h2 id="topgg-stat-daily" style="font-size: 1.8rem; margin-top: 5px; color: var(--primary);">0</h2>
+                                    <h2 id="topgg-stat-daily" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--primary);">0</h2>
                                 </div>
                                 <div style="background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
                                     <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Weekly Votes</span>
-                                    <h2 id="topgg-stat-weekly" style="font-size: 1.8rem; margin-top: 5px; color: var(--primary);">0</h2>
+                                    <h2 id="topgg-stat-weekly" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--primary);">0</h2>
                                 </div>
                                 <div style="background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
                                     <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Monthly Votes</span>
-                                    <h2 id="topgg-stat-monthly" style="font-size: 1.8rem; margin-top: 5px; color: var(--primary);">0</h2>
+                                    <h2 id="topgg-stat-monthly" data-no-translate style="font-size: 1.8rem; margin-top: 5px; color: var(--primary);">0</h2>
                                 </div>
                             </div>
                         </div>
@@ -3902,7 +3904,7 @@
                             </div>
                             <div class="log-row-compact" style="opacity: 0.6;">
                                 <div style="display: flex; flex-direction: column; gap: 2px;">
-                                    <strong>DM Notifications (ðŸ”’ Locked)</strong>
+                                    <strong>DM Notifications (🔒 Locked)</strong>
                                     <p style="font-size: 0.7rem; color: var(--muted);">Send level up to DMs (Disabled until opt-out mechanism is ready)</p>
                                 </div>
                                 <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled" disabled><span class="slider"></span></label>
@@ -4099,6 +4101,79 @@
                 </div>
 
                 <div id="tab-verify" class="tab-content" style="display: none;">
+                    <!-- Progressive Onboarding Hub -->
+                    <div class="panel" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); border: 1px solid rgba(174, 239, 255, 0.15); margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);">
+                        <h3 style="color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fas fa-magic"></i> Progressive Onboarding Setup Wizard</h3>
+                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Looking for this? Let us guide you through setting up Nora for your server.</p>
+                        
+                        <!-- Progress Tracker -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; position: relative;">
+                            <div style="position: absolute; top: 15px; left: 10%; right: 10%; height: 2px; background: rgba(255,255,255,0.05); z-index: 1;">
+                                <div id="wizard-progress-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
+                            </div>
+                            <div class="wizard-step" onclick="goToWizardStep(0)" style="z-index: 2; text-align: center; cursor: pointer;">
+                                <div class="wizard-step-node" id="wstep-node-0" style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #0b0b0a; display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--primary);">1</div>
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #fff;">Modules</span>
+                            </div>
+                            <div class="wizard-step" onclick="goToWizardStep(1)" style="z-index: 2; text-align: center; cursor: pointer;">
+                                <div class="wizard-step-node" id="wstep-node-1" style="width: 32px; height: 32px; border-radius: 50%; background: #111110; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--border);">2</div>
+                                <span style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Verification</span>
+                            </div>
+                            <div class="wizard-step" onclick="goToWizardStep(2)" style="z-index: 2; text-align: center; cursor: pointer;">
+                                <div class="wizard-step-node" id="wstep-node-2" style="width: 32px; height: 32px; border-radius: 50%; background: #111110; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--border);">3</div>
+                                <span style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Log Channels</span>
+                            </div>
+                        </div>
+
+                        <!-- Step Contents -->
+                        <div id="wstep-content-0" class="wstep-content">
+                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 1: Module Activation</h4>
+                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Enable or disable Nora's core systems to fit your server's needs.</p>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Leveling System</span>
+                                    <label class="switch"><input type="checkbox" id="wstep-leveling" onchange="syncWizardCheckbox(this, 'setting-levelingEnabled')"><span class="slider"></span></label>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Moderation System</span>
+                                    <label class="switch"><input type="checkbox" id="wstep-moderation" onchange="syncWizardCheckbox(this, 'setting-moderationEnabled')"><span class="slider"></span></label>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Welcomer System</span>
+                                    <label class="switch"><input type="checkbox" id="wstep-welcomer" onchange="syncWizardCheckbox(this, 'setting-welcomerEnabled')"><span class="slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="wstep-content-1" class="wstep-content" style="display: none;">
+                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 2: Member Verification Gate</h4>
+                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Configure the verification channel and verified roles for new members.</p>
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label style="font-size: 0.75rem;">Verification Channel</label>
+                                <select onchange="syncWizardSelect(this, 'setting-verifyChannelId')" class="wizard-channel-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
+                            </div>
+                            <div class="input-group">
+                                <label style="font-size: 0.75rem;">Verified Role</label>
+                                <select onchange="syncWizardSelect(this, 'setting-verifyRoleId')" class="wizard-role-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
+                            </div>
+                        </div>
+
+                        <div id="wstep-content-2" class="wstep-content" style="display: none;">
+                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 3: Logging Channels Setup</h4>
+                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Select a master log channel to route audit log events.</p>
+                            <div class="input-group">
+                                <label style="font-size: 0.75rem;">Master Log Channel</label>
+                                <select onchange="syncWizardSelect(this, 'setting-loggingChannelId')" class="wizard-channel-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Footer -->
+                        <div style="display: flex; justify-content: space-between; margin-top: 25px; border-top: 1px solid var(--border); padding-top: 15px;">
+                            <button class="config-btn" id="wizard-prev-btn" style="width: auto; padding: 6px 15px; opacity: 0.5; pointer-events: none;" onclick="navigateWizard(-1)">Back</button>
+                            <button class="config-btn" id="wizard-next-btn" style="width: auto; padding: 6px 15px; background: var(--primary); color: #0b0b0a;" onclick="navigateWizard(1)">Next</button>
+                        </div>
+                    </div>
+
                     <div class="panel">
                         <h3>Verification System</h3>
                         <p>Configure Nora's member verification gate.</p>
@@ -4142,7 +4217,7 @@
                     </div>
 
                                         <div id="roblox-advanced-features" class="locked-feature">
-                        <div class="locked-overlay-text">ðŸ”’ VERIFICATION REQUIRED</div>
+                        <div class="locked-overlay-text">🔒 VERIFICATION REQUIRED</div>
                         <div class="panel">
                             <h3>Live Presence Tracker (BETA)</h3>
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Real-time status monitoring for your linked Roblox account.</p>
@@ -4173,22 +4248,6 @@
                         </div>
                         <button class="btn-outline" style="width: auto; font-size: 0.8rem;" onclick="addRobloxGroupBinding()">+ Add Group Binding</button>
                         <input type="hidden" id="setting-robloxGroupBindings">
-                    </div>
-                    <div class="panel">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h3>Nora Premium Integration</h3>
-                            <span id="roblox-premium-badge" class="badge-user nora" style="display: none;">PREMIUM ACTIVE</span>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--muted);">Advanced Roblox features require a premium subscription to Nora. This covers API costs and dedicated processing.</p>
-                        <div id="roblox-premium-lock" style="margin-top: 15px; padding: 15px; background: rgba(255, 85, 85, 0.1); border: 1px solid rgba(255, 85, 85, 0.2); border-radius: 12px; color: #ff5555; font-size: 0.85rem; display: none;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 1.2rem;">ðŸ”’</span>
-                                <div>
-                                    <strong>Premium Locked</strong>
-                                    <p style="margin-top: 4px; opacity: 0.8;">Visit our support server to upgrade Nora for this guild.</p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -4316,7 +4375,7 @@
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                                 <span style="font-weight: 600; color: #f2f3f5; font-size: 1rem;">Nora</span>
-                                                <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">âœ” BOT</span>
+                                                <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">✓ BOT</span>
                                                 <span style="color: #949ba4; font-size: 0.75rem;">Today at 12:00 PM</span>
                                             </div>
                                             
@@ -4424,63 +4483,223 @@
                                 <input type="color" id="setting-ticketEmbedColor" value="#ffffff" style="height: 40px; padding: 5px; width: 100%; cursor: pointer;" oninput="updateTicketPreview()">
                             </div>
 
-                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--primary); font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">Button Styles & Labels</h4>
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--primary); font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">Button Styles</h4>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
-                                <label style="margin: 0; font-size: 0.85rem;">Support Button</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="setting-ticketBtnLabelSupport" placeholder="Support" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
-                                    <select id="setting-ticketBtnStyleSupport" style="width: 105px;" onchange="updateTicketPreview()">
-                                        <option value="Primary">Blurple</option>
-                                        <option value="Secondary">Grey</option>
-                                        <option value="Success">Green</option>
-                                        <option value="Danger">Red</option>
-                                    </select>
-                                </div>
+                                <label style="margin: 0; font-size: 0.85rem;">Support Button Style</label>
+                                <select id="setting-ticketBtnStyleSupport" style="width: 100%;" onchange="updateTicketPreview()">
+                                    <option value="Primary">Blurple</option>
+                                    <option value="Secondary">Grey</option>
+                                    <option value="Success">Green</option>
+                                    <option value="Danger">Red</option>
+                                </select>
                             </div>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
-                                <label style="margin: 0; font-size: 0.85rem;">Reporting Button</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="setting-ticketBtnLabelReporting" placeholder="Reporting" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
-                                    <select id="setting-ticketBtnStyleReporting" style="width: 105px;" onchange="updateTicketPreview()">
-                                        <option value="Danger">Red</option>
-                                        <option value="Primary">Blurple</option>
-                                        <option value="Secondary">Grey</option>
-                                        <option value="Success">Green</option>
-                                    </select>
-                                </div>
+                                <label style="margin: 0; font-size: 0.85rem;">Reporting Button Style</label>
+                                <select id="setting-ticketBtnStyleReporting" style="width: 100%;" onchange="updateTicketPreview()">
+                                    <option value="Danger">Red</option>
+                                    <option value="Primary">Blurple</option>
+                                    <option value="Secondary">Grey</option>
+                                    <option value="Success">Green</option>
+                                </select>
                             </div>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 12px; align-items: center;">
-                                <label style="margin: 0; font-size: 0.85rem;">Appeals Button</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="setting-ticketBtnLabelAppeals" placeholder="Appeals" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
-                                    <select id="setting-ticketBtnStyleAppeals" style="width: 105px;" onchange="updateTicketPreview()">
-                                        <option value="Secondary">Grey</option>
-                                        <option value="Primary">Blurple</option>
-                                        <option value="Success">Green</option>
-                                        <option value="Danger">Red</option>
-                                    </select>
-                                </div>
+                                <label style="margin: 0; font-size: 0.85rem;">Appeals Button Style</label>
+                                <select id="setting-ticketBtnStyleAppeals" style="width: 100%;" onchange="updateTicketPreview()">
+                                    <option value="Secondary">Grey</option>
+                                    <option value="Primary">Blurple</option>
+                                    <option value="Success">Green</option>
+                                    <option value="Danger">Red</option>
+                                </select>
                             </div>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-bottom: 25px; align-items: center;">
-                                <label style="margin: 0; font-size: 0.85rem;">Other Button</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="setting-ticketBtnLabelOther" placeholder="Other" style="flex: 1; min-width: 0;" oninput="updateTicketPreview()">
-                                    <select id="setting-ticketBtnStyleOther" style="width: 105px;" onchange="updateTicketPreview()">
-                                        <option value="Secondary">Grey</option>
-                                        <option value="Primary">Blurple</option>
-                                        <option value="Success">Green</option>
-                                        <option value="Danger">Red</option>
-                                    </select>
-                                </div>
+                                <label style="margin: 0; font-size: 0.85rem;">Other Button Style</label>
+                                <select id="setting-ticketBtnStyleOther" style="width: 100%;" onchange="updateTicketPreview()">
+                                    <option value="Secondary">Grey</option>
+                                    <option value="Primary">Blurple</option>
+                                    <option value="Success">Green</option>
+                                    <option value="Danger">Red</option>
+                                </select>
                             </div>
 
                             <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the ticket panel so the bot uses your latest configurations.</p>
                             <div style="margin-top: 20px;">
                                  <button class="config-btn" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-starboard" class="tab-content" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <!-- Left Panel: Settings -->
+                        <div class="panel" style="margin: 0;">
+                            <h3>⭐ Starboard System</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                Starboard is a community-driven voting system. When members react to messages with the trigger emoji, Nora will automatically repost them to a designated starboard channel.
+                            </p>
+                            
+                            <div class="input-group" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <label style="margin: 0; font-weight: 600;">Enable Starboard</label>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Repost starred messages to the starboard channel.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-starboardEnabled" onchange="updateStarboardPreview()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Starboard Channel</label>
+                                <select id="setting-starboardChannelId" style="width: 100%; box-sizing: border-box;" onchange="updateStarboardPreview()">
+                                    <option value="">Select channel...</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Required Stars Threshold</label>
+                                <input type="number" id="setting-starboardThreshold" min="1" max="100" placeholder="3" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Trigger Emoji</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="setting-starboardEmoji" placeholder="⭐" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                    <button class="config-btn" style="width: auto; padding: 10px 14px;" onclick="openStarboardEmojiPicker(event)">Picker</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Live Preview -->
+                        <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">Live Discord Preview</h3>
+                            
+                            <div style="background: #313338; border-radius: 8px; padding: 16px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 250px;">
+                                <div id="starboard-preview-empty" style="text-align: center; color: var(--muted); padding: 30px 10px;">
+                                    Starboard is disabled or not configured.
+                                </div>
+                                
+                                <div id="starboard-preview-msg" style="display: none; gap: 16px; align-items: flex-start; text-align: left;">
+                                    <img src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%;" alt="Bot avatar">
+                                    <div style="flex: 1; min-width: 0;">
+                                        <!-- Star Count Header -->
+                                        <div id="starboard-preview-count" style="font-weight: 700; color: #f2f3f5; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                            ⭐ 3 | #starboard
+                                        </div>
+                                        
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                            <span style="font-weight: 600; color: #f2f3f5; font-size: 0.9rem;">Nora</span>
+                                            <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">✓ BOT</span>
+                                            <span style="color: #949ba4; font-size: 0.75rem;">Today at 12:00 PM</span>
+                                        </div>
+                                        
+                                        <!-- Embed Body -->
+                                        <div style="background: #2b2d31; border-left: 4px solid #ffd700; border-radius: 4px; padding: 12px 16px; margin-top: 4px; display: inline-block; width: 100%; box-sizing: border-box;">
+                                            <div style="color: #f2f3f5; font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">DiscordUser</div>
+                                            <div style="font-size: 0.875rem; color: #dbdee1; line-height: 1.375;">This is a preview of a starboard message! Reacting to a message in the server will highlight it here.</div>
+                                            <div style="font-size: 0.8rem; color: var(--primary); margin-top: 8px; font-weight: 500;">Original: <span style="color: #00b0f4; text-decoration: none; cursor: pointer;">[Jump to message]</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-applications" class="tab-content" style="display: none;">
+                    <div style="display: flex; flex-direction: column; gap: 25px;">
+                        
+                        <!-- Top Panel: Saved Sets & Form Editor -->
+                        <div class="panel" style="margin: 0; display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0;">📝 Application Builder</h3>
+                                <button id="btn-create-app-set" class="config-btn" style="width: auto; margin: 0; padding: 8px 14px; font-size: 0.8rem; background: var(--primary); color: #0f111a;" onclick="showAppSetEditor(null)">+ Create New Set</button>
+                            </div>
+                            
+                            <!-- 1. Saved Sets List View -->
+                            <div id="app-sets-list-view" style="display: block; flex: 1;">
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                    Manage multiple application sets. Active sets are available for members via the `/apply` command.
+                                </p>
+                                <div id="app-sets-container" style="display: flex; flex-direction: column; gap: 12px;">
+                                    <!-- Saved sets injected here dynamically -->
+                                </div>
+                            </div>
+                            
+                            <!-- 2. Form Editor View (Hidden by default) -->
+                            <div id="app-set-editor-view" style="display: none; flex: 1; flex-direction: column;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                    <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.75rem; margin: 0;" onclick="hideAppSetEditor()">&larr; Back to Sets</button>
+                                    <h4 id="app-editor-title" style="margin: 0;">Create Application Set</h4>
+                                </div>
+                                
+                                <input type="hidden" id="app-set-id" value="">
+                                
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Application Name</label>
+                                    <input type="text" id="app-name" placeholder="e.g. Staff Application" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Description</label>
+                                    <textarea id="app-desc" placeholder="Brief explanation of the position..." style="width: 100%; box-sizing: border-box; min-height: 80px;" oninput="updateAppBuilderPreview(); checkTextareaLimit(this, 500)" maxlength="500"></textarea>
+                                    <span id="app-desc-counter" style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block; text-align: right;">0/500</span>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 15px;">
+                                    <label>Staff Review Channel</label>
+                                    <select id="app-review-channel" style="width: 100%; box-sizing: border-box;">
+                                        <option value="">Select channel...</option>
+                                    </select>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 10px;">
+                                    <h4 style="margin: 0;">Questions (Max 5)</h4>
+                                    <button type="button" class="config-btn" style="width: auto; margin: 0; padding: 4px 10px; font-size: 0.75rem; background: var(--border); border-color: rgba(255,255,255,0.1); color: #fff;" onclick="addBuilderQuestion()">+ Add Question</button>
+                                </div>
+                                <div id="app-questions-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+                                    <!-- Injected dynamic question editors -->
+                                </div>
+ 
+                                <button class="config-btn" style="background: var(--primary); color: #0f111a; font-weight: 700; width: 100%;" onclick="saveApplicationConfig()">Save Configuration</button>
+                            </div>
+                        </div>
+ 
+                        <!-- Bottom Panel: Live Discord Modal Simulator -->
+                        <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">Discord Modal Simulator</h3>
+                            
+                            <div style="background: #313338; border-radius: 12px; padding: 25px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 440px; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4); position: relative; overflow: hidden;">
+                                <!-- Window Frame Accent (OS style) -->
+                                <div style="position: absolute; top: 12px; left: 16px; display: flex; gap: 6px;">
+                                    <span style="width: 8px; height: 8px; background: #ff5f56; border-radius: 50%;"></span>
+                                    <span style="width: 8px; height: 8px; background: #ffbd2e; border-radius: 50%;"></span>
+                                    <span style="width: 8px; height: 8px; background: #27c93f; border-radius: 50%;"></span>
+                                </div>
+                                <div style="position: absolute; top: 8px; font-size: 0.65rem; color: rgba(255,255,255,0.15); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">Preview Window</div>
+ 
+                                <!-- Mock Discord Modal Box -->
+                                <div style="background: #1e1f22; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); border: 1px solid #2b2d31; width: 100%; max-width: 440px; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; text-align: left;">
+                                    <!-- Modal Header -->
+                                    <div style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                        <div id="mock-modal-title" style="color: #fff; font-weight: 700; font-size: 1rem;">Apply: Staff Application</div>
+                                        <div style="color: #949ba4; font-size: 1.25rem; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#949ba4'">&times;</div>
+                                    </div>
+                                    <!-- Modal Body -->
+                                    <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #1a1b1e transparent;">
+                                        <div id="mock-modal-desc" style="color: #b5bac1; font-size: 0.85rem; line-height: 1.4; background: rgba(255,255,255,0.02); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03);">Brief explanation of the position...</div>
+                                        <div id="mock-modal-fields" style="display: flex; flex-direction: column; gap: 16px;">
+                                            <!-- Dynamically generated questions go here -->
+                                        </div>
+                                    </div>
+                                    <!-- Modal Footer -->
+                                    <div style="background: #2b2d31; padding: 14px 20px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255,255,255,0.02);">
+                                        <button style="background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 600; padding: 8px 16px; border-radius: 3px; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Cancel</button>
+                                        <button style="background: #5865F2; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 600; padding: 8px 20px; border-radius: 3px; transition: background 0.2s;" onmouseover="this.style.background='#4752c4'" onmouseout="this.style.background='#5865F2'">Submit</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4685,7 +4904,7 @@
                                     </div>
 
                                     <div id="perm-helper" style="display: none; margin-top: 20px; padding: 15px; background: rgba(255, 85, 85, 0.1); border: 1px solid rgba(255, 85, 85, 0.2); border-radius: 8px;">
-                                        <h4 style="color: #ff5555; margin-bottom: 8px; font-size: 0.9rem;">âš ï¸ Missing Permissions</h4>
+                                        <h4 style="color: #ff5555; margin-bottom: 8px; font-size: 0.9rem;">⚠️ Missing Permissions</h4>
                                         <p style="font-size: 0.8rem; color: var(--muted); line-height: 1.4;">Nora cannot send webhooks in this channel. To fix this:</p>
                                         <ul style="font-size: 0.8rem; color: var(--muted); margin: 6px 0 10px 18px; padding-left: 0;">
                                             <li>Ensure Nora has <strong>Manage Webhooks</strong> permission.</li>
@@ -4750,7 +4969,7 @@
                                     <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'; this.style.borderColor='rgba(174,239,255,0.2)';" onmouseout="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.03)';">
                                         <div style="display: flex; flex-direction: column; gap: 4px;">
                                             <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Messages Sent (7D)</span>
-                                            <h2 id="analytics-text-count" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
+                                            <h2 id="analytics-text-count" data-no-translate style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
                                         </div>
                                         <span id="analytics-text-trend" style="font-size: 0.75rem; color: #2ecc71; font-weight: 700; background: rgba(46, 204, 113, 0.15); padding: 6px 10px; border-radius: 8px;">--%</span>
                                     </div>
@@ -4758,7 +4977,7 @@
                                     <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'; this.style.borderColor='rgba(255,142,60,0.2)';" onmouseout="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.03)';">
                                         <div style="display: flex; flex-direction: column; gap: 4px;">
                                             <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Voice Activity (7D)</span>
-                                            <h2 id="analytics-voice-count" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
+                                            <h2 id="analytics-voice-count" data-no-translate style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
                                         </div>
                                         <span id="analytics-voice-status" style="font-size: 0.75rem; color: #ff8e3c; font-weight: 700; background: rgba(255, 142, 60, 0.15); padding: 6px 10px; border-radius: 8px;">-- active</span>
                                     </div>
@@ -4766,7 +4985,7 @@
                                     <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'; this.style.borderColor='rgba(155,93,229,0.2)';" onmouseout="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.03)';">
                                         <div style="display: flex; flex-direction: column; gap: 4px;">
                                             <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Active Users (7D)</span>
-                                            <h2 id="analytics-active-communicators" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
+                                            <h2 id="analytics-active-communicators" data-no-translate style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
                                         </div>
                                         <span style="font-size: 0.75rem; color: #9b5de5; font-weight: 700; background: rgba(155, 93, 229, 0.15); padding: 6px 10px; border-radius: 8px;">Unique</span>
                                     </div>
@@ -4774,19 +4993,19 @@
                                      <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 15px;">
                                          <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);">
                                              <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Hour</span>
-                                             <div id="analytics-peak-hour" style="font-size: 1.1rem; font-weight: 700; margin-top: 2px; color: #fff;">...</div>
+                                             <div id="analytics-peak-hour" data-no-translate style="font-size: 1.1rem; font-weight: 700; margin-top: 2px; color: #fff;">...</div>
                                          </div>
                                          <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);">
                                              <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Top Channel</span>
-                                             <div id="analytics-top-channel" style="font-size: 1.1rem; font-weight: 700; margin-top: 2px; color: var(--primary);">...</div>
+                                             <div id="analytics-top-channel" data-no-translate style="font-size: 1.1rem; font-weight: 700; margin-top: 2px; color: var(--primary);">...</div>
                                          </div>
                                          <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);">
                                              <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Peak Active</span>
-                                             <div id="analytics-peak-active" style="font-size: 0.95rem; font-weight: 700; margin-top: 2px; color: var(--success); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">...</div>
+                                             <div id="analytics-peak-active" data-no-translate style="font-size: 0.95rem; font-weight: 700; margin-top: 2px; color: var(--success); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">...</div>
                                          </div>
                                          <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);">
                                              <span style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Least Active</span>
-                                             <div id="analytics-least-active" style="font-size: 0.95rem; font-weight: 700; margin-top: 2px; color: var(--warning); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">...</div>
+                                             <div id="analytics-least-active" data-no-translate style="font-size: 0.95rem; font-weight: 700; margin-top: 2px; color: var(--warning); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">...</div>
                                          </div>
                                      </div>
                                 </div>
@@ -4813,9 +5032,9 @@
                                 <div style="display: flex; flex-direction: column; gap: 4px;">
                                     <div style="display: flex; align-items: center; gap: 15px;">
                                         <h3 style="margin: 0;">Member Directory</h3>
-                                        <div id="member-total-count" style="font-size: 0.75rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">... total</div>
+                                        <div id="member-total-count" data-no-translate style="font-size: 0.75rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">... total</div>
                                     </div>
-                                    <div id="member-sync-status" style="font-size: 0.65rem; color: var(--muted); opacity: 0.6;">Relay active â€¢ Last synced just now</div>
+                                    <div id="member-sync-status" style="font-size: 0.65rem; color: var(--muted); opacity: 0.6;">Relay active • Last synced just now</div>
                                 </div>
                                 <div style="display: flex; gap: 12px; align-items: center;">
                                     <input type="hidden" id="member-sort" value="activity">
@@ -4891,19 +5110,19 @@
 
     </div>
 
-    <footer>Â© 2026 Nora | Privacy-First AI & Moderation</footer>
+    <footer>© 2026 Nora | Privacy-First AI & Moderation</footer>
 
     <script>
         let notifications = [];
         let newNotifCount = 0;
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
         // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
-        // This is the ONLY source of truth â€” no hostname guessing, no localStorage fragility.
+        // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
             const host = window.location.hostname;
             const port = window.location.port;
 
-            // Local development overrides â€” always target local machine if loaded locally
+            // Local development overrides — always target local machine if loaded locally
             if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
                 return window.location.origin;
             }
@@ -5200,7 +5419,7 @@
                         if (recovered) {
                             recoveredUrl = 'http://localhost:3000';
                             localStorage.setItem('nora_api_url', 'http://localhost:3000');
-                            console.log('[Offline] Localhost fallback succeeded â€” saved as API URL');
+                            console.log('[Offline] Localhost fallback succeeded — saved as API URL');
                         }
                     }
 
@@ -5212,7 +5431,7 @@
                         if (recovered) {
                             recoveredUrl = CANONICAL_API;
                             localStorage.setItem('nora_api_url', CANONICAL_API);
-                            console.log('[Offline] Canonical fallback succeeded â€” saved as API URL');
+                            console.log('[Offline] Canonical fallback succeeded — saved as API URL');
                         }
                     }
 
@@ -5293,7 +5512,7 @@
             if (n.includes('tablet') || n.includes('ipad')) return 'ðŸ“Ÿ';
             if (n.includes('laptop')) return 'ðŸ’»';
             if (n.includes('tv') || n.includes('television')) return 'ðŸ“º';
-            if (n.includes('watch')) return 'âŒš';
+            if (n.includes('watch')) return '⌚';
             if (n.includes('desktop') || n.includes('pc') || n.includes('computer')) return 'ðŸ–¥ï¸';
             // Fallback to UA
             if (u.includes('iphone')) return 'ðŸ“±';
@@ -5389,7 +5608,7 @@
                     </div>`;
                 }).join('');
             } catch (e) {
-                // Silent fail â€” devices section just won't update
+                // Silent fail — devices section just won't update
             }
         }
 
@@ -5590,14 +5809,14 @@
 
 
 
-        // ðŸš¨ Premium Global Client-Side Error Interceptor
+        // ⚠️ Premium Global Client-Side Error Interceptor
         window.addEventListener('error', function(event) {
             const errMsg = event.error ? event.error.message : event.message;
             console.error('Captured Uncaught Client Error:', event.error || event.message);
             if (typeof showToast === 'function') {
-                showToast(`âš ï¸ [Client Error] ${errMsg}`, 'error');
+                showToast(`⚠️ [Client Error] ${errMsg}`, 'error');
             } else {
-                alert(`âš ï¸ [Client Error] ${errMsg}`);
+                alert(`⚠️ [Client Error] ${errMsg}`);
             }
         });
 
@@ -5605,9 +5824,9 @@
             const errMsg = event.reason ? (event.reason.message || event.reason) : 'Unhandled promise rejection';
             console.error('Captured Unhandled Promise Rejection:', event.reason);
             if (typeof showToast === 'function') {
-                showToast(`âš ï¸ [Promise Error] ${errMsg}`, 'error');
+                showToast(`⚠️ [Promise Error] ${errMsg}`, 'error');
             } else {
-                alert(`âš ï¸ [Promise Error] ${errMsg}`);
+                alert(`⚠️ [Promise Error] ${errMsg}`);
             }
         });
 
@@ -5626,7 +5845,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -5938,14 +6157,12 @@
                 
                 const viewConfig = document.getElementById('view-config');
                 if (viewConfig && viewConfig.style.display === 'block') {
-                    const activeTab = Array.from(document.querySelectorAll('.tab-content')).find(tc => tc.style.display === 'block');
-                    const activeTabId = activeTab ? activeTab.id : 'tab-overview';
-                    
-                    if (activeTabId === 'tab-overview') {
-                        await fetchAnalytics(true);
-                    } else if (activeTabId === 'tab-members') {
-                        await Promise.all([fetchMembers(true), fetchAnalytics(true)]);
+                    if (typeof isUserEditing === 'function' && isUserEditing()) {
+                        logToTerminal('Skipping background refresh: user is editing a field.', 'REFRESH_SKIP');
+                        return;
                     }
+                    logToTerminal(`Periodic background refresh for server: ${currentServerId}`, 'REFRESH_START');
+                    await refreshAllDashboardData(true);
                 }
                 
                 const viewPrefs = document.getElementById('view-prefs');
@@ -6134,7 +6351,7 @@
                 if (status === 403 && d.error === 'SESSION_LOCKED') {
                     document.getElementById('auth-overlay').innerHTML = `
                         <div style="background: rgba(0,0,0,0.8); padding: 40px; border-radius: 12px; border: 1px solid var(--danger); text-align: center; max-width: 400px; backdrop-filter: blur(20px);">
-                            <div style="font-size: 3rem; margin-bottom: 20px;">ðŸ”’</div>
+                            <div style="font-size: 3rem; margin-bottom: 20px;">🔒</div>
                             <h2 style="color: var(--danger); margin-bottom: 10px;">Access Locked</h2>
                             <p style="color: var(--muted); margin-bottom: 20px; font-size: 0.9rem; line-height: 1.5;">Access to this site has been locked to the session hardened IP.</p>
                             <p style="color: var(--muted); font-size: 0.8rem;">If this was not you please contact support at <strong style="color: white;">vaztinixstudios@gmail.com</strong>.</p>
@@ -6188,7 +6405,7 @@
 
                 const prefPremium = document.getElementById('pref-premium-status');
                 if (prefPremium) {
-                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">â˜… Discord Nitro Active</span>' : 'Standard User';
+                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
                     if (d.noraPremium) prefPremium.innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
                 }
 
@@ -6401,7 +6618,7 @@
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="position: relative;">
                                     <img src="/api/user/roblox/avatar?userId=${acc.robloxId}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.src='/api/user/roblox/avatar?userId=1'">
-                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">âœ“</div>' : ''}
+                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">✓</div>' : ''}
                                 </div>
                                 <div>
                                     <div style="font-weight: 700; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px;">
@@ -6410,7 +6627,7 @@
                                     </div>
                                     <div style="font-size: 0.75rem; color: var(--muted); display: flex; gap: 8px;">
                                         <span data-no-translate>ID: ${acc.robloxId}</span>
-                                        <span>â€¢</span>
+                                        <span>•</span>
                                         <span style="color: ${isVerified ? 'var(--success)' : 'var(--warning)'}; font-weight: 600;">${isVerified ? 'Verified' : 'Pending Verification'}</span>
                                     </div>
                                 </div>
@@ -6846,6 +7063,7 @@
         let pendingSavePayload = null;
 
         async function saveSettings() {
+            if (!checkThrottling()) return;
             const payload = {};
             KEYS.forEach(k => {
                 const el = document.getElementById('setting-' + k);
@@ -6903,6 +7121,19 @@
                 const diffLines = [];
 
                 Object.keys(payload).forEach(k => {
+                    if (k === 'loggingChannels') {
+                        const oldLC = oldState.loggingChannels || {};
+                        const newLC = payload.loggingChannels || {};
+                        const categories = ['memberJoins', 'memberLeaves', 'messageEdits', 'messageDeletes', 'channelCreates', 'channelEdits', 'channelDeletes', 'voiceJoins', 'voiceLeaves', 'voiceMoves', 'automod', 'dashboardActions', 'boosts'];
+                        categories.forEach(cat => {
+                            const oldVal = oldLC[cat] || '';
+                            const newVal = newLC[cat] || '';
+                            if (oldVal !== newVal) {
+                                diffLines.push(`Log Category ${cat}: "${oldVal || 'Master'}" -> "${newVal || 'Master'}"`);
+                            }
+                        });
+                        return;
+                    }
                     if (k === 'disabledCommands') {
                         const oldDisabled = oldState.disabledCommands ? JSON.parse(oldState.disabledCommands) : [];
                         const newDisabled = d;
@@ -7400,8 +7631,26 @@
                 list.appendChild(item);
             });
         }
+        let lastSubmissionTime = 0;
+        function checkThrottling() {
+            const now = Date.now();
+            if (now - lastSubmissionTime < 1000) {
+                alert('⚠️ Anti-Spam Safeguard:\nYou are saving too quickly! Please wait a moment before trying again.');
+                return false;
+            }
+            lastSubmissionTime = now;
+            return true;
+        }
 
-
+        window.checkTextareaLimit = function(el, limit) {
+            if (el.value.length > limit) {
+                el.value = el.value.substring(0, limit);
+            }
+            const counter = document.getElementById(el.id + '-counter');
+            if (counter) {
+                counter.textContent = `${el.value.length}/${limit}`;
+            }
+        };
                 function addNotification(title, content, type = 'info', server = "") {
             const normalizedTitle = String(title || '').trim();
             const normalizedContent = String(content || '').trim();
@@ -7517,6 +7766,7 @@
 
                 function showTab(tabId) {
             try {
+                if (typeof closeAllEmojiPickers === 'function') closeAllEmojiPickers();
                 logToTerminal(`Switching to tab: ${tabId}`, 'TAB_CHANGE');
                 
                 const sidebarEl = document.querySelector('.sidebar');
@@ -8180,6 +8430,42 @@
             showTab(targetId);
         });
 
+        function isUserEditing() {
+            const activeEl = document.activeElement;
+            if (!activeEl) return false;
+            const tagName = activeEl.tagName.toLowerCase();
+            if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
+                if (activeEl.id && (activeEl.id.startsWith('setting-') || activeEl.classList.contains('app-q-input') || activeEl.id === 'app-name' || activeEl.id === 'app-desc')) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        async function refreshAllDashboardData(force = false) {
+            if (!currentServerId) return;
+            try {
+                // Fetch channels, roles and emojis first as they are needed for setting dropdown maps
+                await Promise.all([
+                    fetchChannels(),
+                    fetchRoles(),
+                    fetchServerEmojis()
+                ]);
+                
+                // Fetch settings, feeds, autoresponders, applications, members, and analytics in parallel
+                await Promise.all([
+                    fetchSettings(force),
+                    fetchContentFeeds(),
+                    fetchAutoresponders(),
+                    fetchApplications(),
+                    fetchMembers(force),
+                    fetchAnalytics(force)
+                ]);
+            } catch (e) {
+                console.error('[Refresh All Data Error]:', e);
+            }
+        }
+
         async function openConfig(g) {
             logToTerminal(`Opening configuration for server: ${g.name} (${g.id})`, 'SERVER_SELECT');
             currentServerId = g.id; 
@@ -8214,10 +8500,7 @@
                 toggleLoading(true);
             }
             try {
-                // Await channels and roles loading first so that fetchSettings() can map the select elements correctly
-                await Promise.all([fetchChannels(), fetchRoles(), fetchAnalytics()]);
-                await fetchSettings();
-                await fetchContentFeeds();
+                await refreshAllDashboardData(false);
             } catch (err) {
                 console.error('[Open Config Error]:', err);
             } finally {
@@ -8242,7 +8525,7 @@
                     overlay.className = 'premium-lock-overlay';
                     overlay.innerHTML = `
                         <div class="locked-overlay-text" style="background: var(--primary); color: #000; padding: 15px 25px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">
-                            <span style="font-size: 1.5rem;">â­</span>
+                            <span style="font-size: 1.5rem;">⭐</span>
                             <div style="font-weight: 800;">UNLOCK NORA+</div>
                             <div style="font-size: 0.7rem; font-weight: 600; opacity: 0.8;">Click to upgrade this server</div>
                         </div>
@@ -8319,16 +8602,47 @@
             
             const cacheKey = currentServerId;
             const now = Date.now();
-            if (!force && window.dashboardMemberCache.has(cacheKey)) {
+            let data;
+            let hasStaleCache = false;
+
+            if (!force && window.dashboardMemberCache && window.dashboardMemberCache.has(cacheKey)) {
                 const entry = window.dashboardMemberCache.get(cacheKey);
-                if (now - entry.timestamp < 300000) { // 5 minute frontend cache
-                    window.guildMembers = entry.data;
-                    filterMembers();
-                    updateSyncStatus(entry.timestamp);
-                    return;
-                }
+                data = entry.data;
+                hasStaleCache = true;
             }
 
+            if (hasStaleCache) {
+                window.guildMembers = data;
+                filterMembers();
+                updateSyncStatus(window.dashboardMemberCache.get(cacheKey).timestamp);
+                
+                // Background revalidate if older than 30 seconds
+                const entry = window.dashboardMemberCache.get(cacheKey);
+                if (force || now - entry.timestamp >= 30000) {
+                    const t = sessionStorage.getItem('discord_token');
+                    isFetchingMembers = true;
+                    fetch(`/api/guilds/${currentServerId}/members`, {
+                        headers: { 'Authorization': `Bearer ${t}` }
+                    }).then(res => {
+                        if (res.status === 429) throw new Error('Rate limit');
+                        return res.json();
+                    }).then(members => {
+                        isFetchingMembers = false;
+                        if (Array.isArray(members)) {
+                            window.guildMembers = members;
+                            window.dashboardMemberCache.set(cacheKey, { timestamp: Date.now(), data: members });
+                            filterMembers();
+                            updateSyncStatus(Date.now());
+                        }
+                    }).catch(e => {
+                        isFetchingMembers = false;
+                        console.warn('Background members refresh failed:', e.message);
+                    });
+                }
+                return;
+            }
+
+            // No cache - foreground load
             isFetchingMembers = true;
             const t = sessionStorage.getItem('discord_token');
             const list = document.getElementById('member-list');
@@ -8351,21 +8665,15 @@
                 if (res.status === 429) {
                     showToast('Discord rate limit reached. Using partial cache.', 'warning');
                     isFetchingMembers = false;
-                    if (window.dashboardMemberCache.has(cacheKey)) {
-                        const entry = window.dashboardMemberCache.get(cacheKey);
-                        window.guildMembers = entry.data;
-                        filterMembers();
-                        updateSyncStatus(entry.timestamp, true);
-                    }
                     return;
                 }
 
                 const members = await res.json();
                 if (Array.isArray(members)) {
                     window.guildMembers = members;
-                    window.dashboardMemberCache.set(cacheKey, { timestamp: now, data: members });
+                    window.dashboardMemberCache.set(cacheKey, { timestamp: Date.now(), data: members });
                     filterMembers();
-                    updateSyncStatus(now);
+                    updateSyncStatus(Date.now());
                 }
             } catch (err) {
                 console.error('Fetch members error:', err);
@@ -8379,7 +8687,7 @@
             const el = document.getElementById('member-sync-status');
             if (!el) return;
             const timeStr = new Date(timestamp).toLocaleTimeString();
-            el.textContent = `Relay ${isPartial ? 'Partial' : 'Active'} â€¢ Last synced ${timeStr}`;
+            el.textContent = `Relay ${isPartial ? 'Partial' : 'Active'} • Last synced ${timeStr}`;
             el.style.color = isPartial ? '#ffcc00' : 'var(--muted)';
         }
 
@@ -8771,7 +9079,7 @@
                 if (now - entry.timestamp < CACHE_TTL) {
                     // Cache is still fresh, skip network fetch entirely
                 } else {
-                    // Stale cache â€” render it now, then revalidate in background
+                    // Stale cache — render it now, then revalidate in background
                     data = entry.data;
                 }
             }
@@ -8804,7 +9112,7 @@
                 return;
             }
             
-            // No cache at all â€” show spinner and fetch
+            // No cache at all — show spinner and fetch
             toggleLoading(true);
             const t = sessionStorage.getItem('discord_token');
             try {
@@ -9190,6 +9498,8 @@
                     'setting-topggVoteChannelId',
                     'setting-welcomeChannelId',
                     'setting-loggingChannelId',
+                    'setting-starboardChannelId',
+                    'app-review-channel',
                     'setting-split-memberJoins',
                     'setting-split-memberLeaves',
                     'setting-split-messageEdits',
@@ -9211,7 +9521,8 @@
                     'setting-robloxVerifyChannelId',
                     'setting-inviteTrackerChannelId',
                     'rr-channelId',
-                    'new-feed-channel'
+                    'new-feed-channel',
+                    'send-app-channel-select'
                 ];
 
                 selects.forEach(id => {
@@ -9232,6 +9543,19 @@
                         });
                         initCustomDropdown(id);
                     }
+                });
+
+                // Populate Wizard channel select dropdowns
+                document.querySelectorAll('.wizard-channel-select').forEach(el => {
+                    el.innerHTML = '<option value="">None / Disabled</option>';
+                    channels.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.setAttribute('data-no-translate', 'true');
+                        opt.value = c.id;
+                        opt.textContent = `#${c.name}${c.canSend ? '' : ' (No Permission)'}`;
+                        if (!c.canSend) opt.style.color = '#ff5555';
+                        el.appendChild(opt);
+                    });
                 });
             } catch (e) {
                 console.error('[Channels Apply Error]:', e);
@@ -9337,12 +9661,12 @@
             
             const chan = window.guildChannels.find(c => c.id === id);
             if (chan && !chan.canSend) {
-                status.innerHTML = '<span style="color: #ff5555;">âš ï¸ Missing Permissions</span>';
+                status.innerHTML = '<span style="color: #ff5555;">⚠️ Missing Permissions</span>';
                 helper.style.display = 'block';
                 btn.disabled = true;
                 btn.style.opacity = '0.5';
             } else {
-                status.innerHTML = '<span style="color: #2ea043;">âœ… Ready to broadcast</span>';
+                status.innerHTML = '<span style="color: #2ea043;">✅ Ready to broadcast</span>';
                 helper.style.display = 'none';
                 btn.disabled = false;
                 btn.style.opacity = '1';
@@ -9484,7 +9808,7 @@
                     if (b.style === 'PRIMARY') { btn.style.background = '#5865F2'; btn.style.color = '#fff'; }
                     else if (b.style === 'SUCCESS') { btn.style.background = '#2D7D46'; btn.style.color = '#fff'; }
                     else if (b.style === 'DANGER') { btn.style.background = '#ED4245'; btn.style.color = '#fff'; }
-                    else if (b.style === 'LINK') { btn.style.background = '#4F545C'; btn.style.color = '#fff'; btn.innerHTML += ' â†—'; }
+                    else if (b.style === 'LINK') { btn.style.background = '#4F545C'; btn.style.color = '#fff'; btn.innerHTML += ' ↗'; }
                     else { btn.style.background = '#4F545C'; btn.style.color = '#fff'; }
                     
                     btnContainer.appendChild(btn);
@@ -9539,6 +9863,153 @@
                     previewBtn.classList.add(classToAdd);
                 }
             });
+        }
+
+        function updateStarboardPreview() {
+            const enabledInput = document.getElementById('setting-starboardEnabled');
+            const channelSelect = document.getElementById('setting-starboardChannelId');
+            const thresholdInput = document.getElementById('setting-starboardThreshold');
+            const emojiInput = document.getElementById('setting-starboardEmoji');
+
+            const isEnabled = enabledInput ? enabledInput.checked : false;
+            const channelId = channelSelect ? channelSelect.value : '';
+            const threshold = thresholdInput ? thresholdInput.value : '3';
+            const emoji = (emojiInput && emojiInput.value) ? emojiInput.value : '⭐';
+
+            const emptyEl = document.getElementById('starboard-preview-empty');
+            const msgEl = document.getElementById('starboard-preview-msg');
+            const countEl = document.getElementById('starboard-preview-count');
+
+            if (isEnabled && channelId) {
+                if (emptyEl) emptyEl.style.display = 'none';
+                if (msgEl) msgEl.style.display = 'flex';
+                
+                let channelName = 'starboard';
+                if (channelSelect && channelSelect.selectedOptions && channelSelect.selectedOptions[0]) {
+                    const txt = channelSelect.selectedOptions[0].textContent;
+                    if (txt && txt !== 'None / Disabled') {
+                        channelName = txt.toLowerCase().replace(/[^a-z0-9-_]/g, '');
+                    }
+                }
+                if (countEl) countEl.innerHTML = `${emoji} **${threshold}** | #${channelName}`;
+            } else {
+                if (emptyEl) emptyEl.style.display = 'block';
+                if (msgEl) msgEl.style.display = 'none';
+            }
+        }
+
+        function openStarboardEmojiPicker(event) {
+            event.stopPropagation();
+            let picker = document.getElementById('starboard-emoji-picker-popover');
+            if (picker) {
+                picker.style.display = picker.style.display === 'none' ? 'grid' : 'none';
+                return;
+            }
+
+            picker = document.createElement('div');
+            picker.id = 'starboard-emoji-picker-popover';
+            picker.style = `
+                position: absolute;
+                background: var(--sidebar-bg);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 10px;
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 6px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+                z-index: 10000;
+                max-width: 250px;
+            `;
+
+            const popularEmojis = ['⭐', '🔥', '✨', '🏆', '🎉', '❤️', '👍', '🐱', '🎮', '🚀', '💡', '👑'];
+            popularEmojis.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.style = 'background: none; border: none; font-size: 1.3rem; padding: 5px; cursor: pointer; transition: 0.2s; border-radius: 6px;';
+                btn.textContent = emoji;
+                btn.onmouseover = () => btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.onmouseout = () => btn.style.background = 'none';
+                btn.onclick = () => {
+                    const input = document.getElementById('setting-starboardEmoji');
+                    if (input) {
+                        input.value = emoji;
+                        updateStarboardPreview();
+                    }
+                    picker.style.display = 'none';
+                };
+                picker.appendChild(btn);
+            });
+
+            const rect = event.target.getBoundingClientRect();
+            picker.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+            picker.style.left = (rect.left + window.scrollX) + 'px';
+
+            document.body.appendChild(picker);
+
+            document.addEventListener('click', function closePicker(e) {
+                if (!picker.contains(e.target) && e.target !== event.target) {
+                    picker.style.display = 'none';
+                    document.removeEventListener('click', closePicker);
+                }
+            });
+        }
+
+        function updateAppBuilderPreview() {
+            const nameInput = document.getElementById('app-name');
+            const descInput = document.getElementById('app-desc');
+
+            const nameVal = nameInput ? nameInput.value : '';
+            const descVal = descInput ? descInput.value : '';
+
+            const mockTitle = document.getElementById('mock-modal-title');
+            const mockDesc = document.getElementById('mock-modal-desc');
+            const mockFields = document.getElementById('mock-modal-fields');
+
+            if (mockTitle) mockTitle.textContent = nameVal ? `Apply: ${nameVal}` : 'Apply: Staff Application';
+            if (mockDesc) {
+                mockDesc.textContent = descVal || 'Brief explanation of the position...';
+                mockDesc.style.display = descVal ? 'block' : 'none';
+            }
+
+            if (mockFields) {
+                mockFields.innerHTML = '';
+                if (typeof currentQuestions !== 'undefined' && Array.isArray(currentQuestions)) {
+                    currentQuestions.forEach((q, idx) => {
+                        const qLabel = q.label ? q.label.trim() : '';
+                        if (qLabel) {
+                            const field = document.createElement('div');
+                            field.style = 'display: flex; flex-direction: column; gap: 6px; text-align: left;';
+                            
+                            const requiredAsterisk = q.required ? '<span style="color: #fa777c; margin-left: 2px;">*</span>' : '';
+                            const minMaxInfo = ((q.minLength && q.minLength !== '') || (q.maxLength && q.maxLength !== '')) 
+                                ? `<span style="font-size: 0.65rem; color: var(--muted); text-transform: none; margin-left: auto;">(${q.minLength || 0}-${q.maxLength || '1000'} chars)</span>`
+                                : '';
+                            
+                            const boxHeight = q.type === 'short' ? '40px' : '80px';
+                            const textPlaceholder = q.placeholder || (q.type === 'short' ? 'Enter a short response...' : 'Enter a paragraph response...');
+
+                            field.innerHTML = `
+                                <label style="color: #b5bac1; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: flex; align-items: center; width: 100%;">
+                                    ${qLabel} ${requiredAsterisk}
+                                    ${minMaxInfo}
+                                </label>
+                                <div style="background: #111214; border-radius: 4px; border: 1px solid #111214; min-height: ${boxHeight}; padding: 10px; box-sizing: border-box; color: #949ba4; font-size: 0.875rem; display: flex; align-items: flex-start; justify-content: flex-start;">
+                                    <span style="opacity: 0.45; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">${textPlaceholder}</span>
+                                </div>
+                            `;
+                            mockFields.appendChild(field);
+                        }
+                    });
+                }
+
+                if (mockFields.children.length === 0) {
+                    mockFields.innerHTML = `
+                        <div style="color: #949ba4; font-size: 0.85rem; font-style: italic; text-align: center; padding: 10px 0;">
+                            No questions added yet.
+                        </div>
+                    `;
+                }
+            }
         }
 
         function showMockTicketModal(category) {
@@ -9687,7 +10158,7 @@
             document.getElementById('setting-xpRoleMultipliers').value = JSON.stringify(mults);
         }
 
-        const RANDOM_EMOJIS = ['ðŸŽ®', 'ðŸš€', 'ðŸ”¥', 'ðŸŽ¨', 'ðŸŽµ', 'ðŸ†', 'ðŸ‘¾', 'ðŸ‘‘', 'â­', 'ðŸ€', 'ðŸ•', 'ðŸ±', 'ðŸ¾', 'ðŸ’»', 'ðŸ’¡', 'ðŸ’Ž', 'ðŸŽ‰', 'ðŸ›¡ï¸', 'âš”ï¸', 'ðŸ“¦'];
+        const RANDOM_EMOJIS = ['ðŸŽ®', 'ðŸš€', 'ðŸ”¥', 'ðŸŽ¨', 'ðŸŽµ', 'ðŸ†', 'ðŸ‘¾', 'ðŸ‘‘', '⭐', 'ðŸ€', 'ðŸ•', 'ðŸ±', 'ðŸ¾', 'ðŸ’»', 'ðŸ’¡', 'ðŸ’Ž', 'ðŸŽ‰', 'ðŸ›¡ï¸', '⚡️', 'ðŸ“¦'];
 
         function randomizeRREmoji(btn) {
             const input = btn.parentElement.querySelector('.rr-emoji-input');
@@ -10046,7 +10517,7 @@
 
             // Sliders Setup
             const hueContainer = document.createElement('div');
-            hueContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Hue</span><span class="hue-val">0Â°</span></div>';
+            hueContainer.innerHTML = '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px;"><span>Hue</span><span class="hue-val">0°</span></div>';
             const hueSlider = document.createElement('input');
             hueSlider.type = 'range';
             hueSlider.min = '0';
@@ -10115,7 +10586,7 @@
             }
 
             function updateSliderLabelsAndBackgrounds(h, s, l) {
-                hueContainer.querySelector('.hue-val').textContent = h + 'Â°';
+                hueContainer.querySelector('.hue-val').textContent = h + '°';
                 satContainer.querySelector('.sat-val').textContent = s + '%';
                 lightContainer.querySelector('.light-val').textContent = l + '%';
                 satSlider.style.background = `linear-gradient(to right, hsl(${h}, 0%, ${l}%), hsl(${h}, 100%, ${l}%))`;
@@ -10394,7 +10865,7 @@
 
                     const timeRow = document.createElement('div');
                     timeRow.style = 'font-size: 0.7rem; color: var(--muted);';
-                    timeRow.innerHTML = `Created: ${new Date(s.createdAt).toLocaleString()} â€¢ Expires: ${new Date(s.expiresAt).toLocaleString()}`;
+                    timeRow.innerHTML = `Created: ${new Date(s.createdAt).toLocaleString()} • Expires: ${new Date(s.expiresAt).toLocaleString()}`;
 
                     const uaRow = document.createElement('div');
                     uaRow.style = 'font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.8;';
@@ -10829,6 +11300,20 @@
                     }
                 });
 
+                // Populate Wizard role select dropdowns
+                document.querySelectorAll('.wizard-role-select').forEach(el => {
+                    el.innerHTML = '<option value="">No role selected</option>';
+                    roles.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.setAttribute('data-no-translate', 'true');
+                        opt.value = r.id;
+                        opt.textContent = `${r.name}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}`;
+                        opt.style.color = r.color;
+                        if (r.higherThanBot) opt.disabled = true;
+                        el.appendChild(opt);
+                    });
+                });
+
                 // Populate Feed Announcement Ping dropdown
                 const feedPing = document.getElementById('new-feed-ping');
                 if (feedPing) {
@@ -10927,6 +11412,37 @@
                 if (sel.id === 'sidebar-server-dropdown' || sel.closest('.discord-preview-container')) return;
                 initCustomDropdown(sel.id);
             });
+        }
+        function refreshCustomDropdown(selectId) {
+            const selectEl = document.getElementById(selectId);
+            if (!selectEl) return;
+            const container = document.getElementById('custom-dropdown-container-' + selectId);
+            if (!container) return;
+            const menu = document.getElementById('custom-dropdown-menu-' + selectId);
+            const trigger = document.getElementById('custom-dropdown-trigger-' + selectId);
+            if (!menu || !trigger) return;
+
+            let selectedText = '';
+            let hasActiveSelection = false;
+
+            Array.from(menu.children).forEach(item => {
+                const itemVal = item.getAttribute('data-value');
+                if (itemVal === selectEl.value) {
+                    selectedText = item.textContent;
+                    hasActiveSelection = true;
+                    item.style.color = 'var(--primary)';
+                    item.style.fontWeight = '700';
+                } else {
+                    item.style.color = '';
+                    item.style.fontWeight = '';
+                }
+            });
+
+            if (!hasActiveSelection && selectEl.options.length > 0) {
+                const selectedOpt = Array.from(selectEl.options).find(opt => opt.value === selectEl.value) || selectEl.options[0];
+                selectedText = selectedOpt.textContent;
+            }
+            trigger.innerHTML = `${selectedText} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
         }
 
         /* Custom Single-Select Dropdown Logic */
@@ -11405,6 +11921,77 @@
             showToast('Copied to clipboard!', 'success');
         }
 
+        let currentWizardStep = 0;
+        window.goToWizardStep = function(step) {
+            currentWizardStep = step;
+            document.querySelectorAll('.wstep-content').forEach(el => el.style.display = 'none');
+            document.getElementById(`wstep-content-${step}`).style.display = 'block';
+            
+            for (let i = 0; i <= 2; i++) {
+                const node = document.getElementById(`wstep-node-${i}`);
+                if (!node) continue;
+                if (i < step) {
+                    node.style.background = 'var(--primary)';
+                    node.style.borderColor = 'var(--primary)';
+                    node.style.color = '#0b0b0a';
+                    node.innerHTML = '<i class="fas fa-check"></i>';
+                } else if (i === step) {
+                    node.style.background = 'var(--primary)';
+                    node.style.borderColor = 'var(--primary)';
+                    node.style.color = '#0b0b0a';
+                    node.innerHTML = i + 1;
+                } else {
+                    node.style.background = '#111110';
+                    node.style.borderColor = 'var(--border)';
+                    node.style.color = 'var(--muted)';
+                    node.innerHTML = i + 1;
+                }
+            }
+
+            const pb = document.getElementById('wizard-progress-bar');
+            if (pb) pb.style.width = `${(step / 2) * 80 + 10}%`;
+
+            const prevBtn = document.getElementById('wizard-prev-btn');
+            const nextBtn = document.getElementById('wizard-next-btn');
+
+            if (prevBtn) {
+                prevBtn.style.opacity = step === 0 ? '0.5' : '1';
+                prevBtn.style.pointerEvents = step === 0 ? 'none' : 'auto';
+            }
+            if (nextBtn) {
+                nextBtn.textContent = step === 2 ? 'Finish Setup' : 'Next';
+            }
+        };
+
+        window.navigateWizard = function(dir) {
+            if (dir === 1 && currentWizardStep < 2) {
+                goToWizardStep(currentWizardStep + 1);
+            } else if (dir === -1 && currentWizardStep > 0) {
+                goToWizardStep(currentWizardStep - 1);
+            } else if (dir === 1 && currentWizardStep === 2) {
+                showToast('Onboarding Wizard complete! Remember to click save in the top right.', 'success');
+            }
+        };
+
+        window.syncWizardCheckbox = function(el, targetId) {
+            const target = document.getElementById(targetId);
+            if (target) {
+                target.checked = el.checked;
+                target.dispatchEvent(new Event('change'));
+            }
+        };
+
+        window.syncWizardSelect = function(el, targetId) {
+            const target = document.getElementById(targetId);
+            if (target) {
+                target.value = el.value;
+                target.dispatchEvent(new Event('change'));
+                if (typeof refreshCustomDropdown === 'function') {
+                    refreshCustomDropdown(targetId);
+                }
+            }
+        };
+
         async function fetchRobloxPresence() {
             const t = sessionStorage.getItem('discord_token');
             const dot = document.getElementById('roblox-presence-dot');
@@ -11532,6 +12119,7 @@
             if (hasStaleCache) {
                 // Render stale data immediately (no spinner)
                 _applySettings(s);
+                fetchApplications();
                 // Background revalidation if stale
                 const entry = window.dashboardCache.settings.get(cacheKey);
                 if (force || now - entry.timestamp >= CACHE_TTL) {
@@ -11550,7 +12138,7 @@
                 return;
             }
 
-            // No cache â€” show spinner
+            // No cache — show spinner
             toggleLoading(true);
             const t = sessionStorage.getItem('discord_token');
             try {
@@ -11572,6 +12160,7 @@
                 return;
             }
             _applySettings(s);
+            fetchApplications();
             toggleLoading(false);
         }
 
@@ -11615,6 +12204,7 @@
                         const val = (s[k] !== null && s[k] !== undefined) ? String(s[k]) : '';
                         const hasOption = Array.from(el.options).some(opt => opt.value === val);
                         el.value = hasOption ? val : '';
+                        refreshCustomDropdown('setting-' + k);
                     } else if (el.type === 'number') {
                         let val = s[k];
                         if (k === 'spamInterval' && val) val = Math.round(val / 1000);
@@ -11657,6 +12247,7 @@
                     const val = loggingChannelsObj && loggingChannelsObj[category] ? String(loggingChannelsObj[category]) : '';
                     const hasOption = Array.from(select.options).some(opt => opt.value === val);
                     select.value = hasOption ? val : '';
+                    refreshCustomDropdown(select.id);
                 });
 
             const welcomerMsgEl = document.getElementById('setting-logJoinMessage_welcomer');
@@ -11761,6 +12352,9 @@
                     const val = loggingChannelsVal[category] || '';
                     const hasOption = Array.from(select.options).some(opt => opt.value === val);
                     select.value = hasOption ? val : '';
+                    if (typeof refreshCustomDropdown === 'function') {
+                        refreshCustomDropdown(select.id);
+                    }
                 });
 
                 // Load Premium Boost State
@@ -11868,6 +12462,7 @@
                 refreshModuleBadges();
                 updateCountingBanner(document.getElementById('setting-countingChannelId')?.value || '');
                 if (typeof updateTicketPreview === 'function') updateTicketPreview();
+                if (typeof updateStarboardPreview === 'function') updateStarboardPreview();
                 if (typeof initializeAllDropdowns === 'function') initializeAllDropdowns();
             } catch (e) {
                 console.error('[Load Error]:', e);
@@ -12292,19 +12887,30 @@
                 const matchTypeLabels = {
                     'contains': 'Contains Word',
                     'exact': 'Exact Match',
-                    'startsWith': 'Starts With'
+                    'startsWith': 'Starts With',
+                    'regex': 'Regex Match'
                 };
                 
                 card.innerHTML = `
-                    <div style="flex: 1; min-width: 0;">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <span style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">Trigger: ${r.trigger}</span>
-                            <span style="font-size: 0.7rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--muted);">${matchTypeLabels[r.matchType] || r.matchType}</span>
-                            ${r.isEmbed ? '<span style="font-size: 0.7rem; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.2); padding: 2px 6px; border-radius: 4px; color: var(--primary);">Embed</span>' : ''}
+                    <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <div style="background: rgba(0, 180, 216, 0.08); border: 1px solid rgba(0, 180, 216, 0.2); border-radius: 8px; padding: 8px 12px; min-width: 150px; text-align: left;">
+                            <div style="font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Trigger</div>
+                            <span style="font-weight: 700; color: #fff; font-size: 0.85rem; word-break: break-all;">${r.trigger}</span>
                         </div>
-                        <p style="margin: 6px 0 0 0; font-size: 0.8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Response: ${r.response}</p>
+                        
+                        <div style="color: var(--muted); font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-long-arrow-alt-right"></i>
+                        </div>
+
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; flex: 1; min-width: 200px; text-align: left;">
+                            <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; display: flex; justify-content: space-between;">
+                                <span>Action / Response</span>
+                                <span style="font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 0px 4px; border-radius: 3px;">${matchTypeLabels[r.matchType] || r.matchType}</span>
+                            </div>
+                            <p style="margin: 0; font-size: 0.8rem; color: #dbdee1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.response}</p>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
                         <button onclick="editAutoresponderRule('${r.id}')" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem;"><i class="fas fa-edit"></i> Edit</button>
                         <button onclick="deleteAutoresponderRule('${r.id}')" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem; color: var(--danger); border-color: rgba(239,68,68,0.2);"><i class="fas fa-trash"></i> Delete</button>
                     </div>
@@ -12518,7 +13124,7 @@
     </script>
     <div id="session-expired-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">âš ï¸</div>
+            <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">⚠️</div>
             <h2 id="session-expired-title" style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Session Expired</h2>
             <p id="session-expired-desc" style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
                 Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.
@@ -12547,7 +13153,7 @@
     <!-- API Rate Limit Overlay -->
     <div id="api-ratelimit-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 22000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: #ffcc00; filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.3));">â³</div>
+            <div style="font-size: 3rem; margin-bottom: 20px; color: #ffcc00; filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.3));">🚣</div>
             <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Rate Limit Hit</h2>
             <p id="ratelimit-message" style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
                 You are making requests too quickly. Please wait a few seconds before trying again.
@@ -12591,7 +13197,7 @@
 
 
     <!-- Searchable Emoji Picker Popover -->
-    <div id="nora-emoji-picker" class="nora-emoji-picker-popover" style="display: none; position: absolute; z-index: 99999; width: 300px; max-height: 380px; background: rgba(20, 24, 40, 0.98); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); padding: 12px; flex-direction: column; gap: 10px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-family: 'Inter', sans-serif;">
+    <div id="nora-emoji-picker" class="nora-emoji-picker-popover" style="display: none; position: absolute; z-index: 99999; width: 345px; max-height: 380px; background: rgba(20, 24, 40, 0.98); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); padding: 12px; flex-direction: column; gap: 10px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-family: 'Inter', sans-serif;">
         <div style="display: flex; gap: 8px; align-items: center;">
             <input type="text" id="emoji-picker-search" placeholder="Search emojis..." style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 0.85rem; outline: none; border-color: var(--border);">
             <button type="button" class="btn-outline" style="padding: 6px 8px; border: none; background: transparent; color: var(--muted); cursor: pointer;" onclick="closeEmojiPicker()"><i class="fas fa-times"></i></button>
@@ -12601,7 +13207,7 @@
             <button type="button" class="h-tab" id="emoji-tab-app" onclick="switchEmojiPickerTab('app')" style="padding: 6px 12px; font-size: 0.75rem; border: none; cursor: pointer; border-radius: 6px; font-weight: 600;">App Emojis</button>
             <button type="button" class="h-tab" id="emoji-tab-standard" onclick="switchEmojiPickerTab('standard')" style="padding: 6px 12px; font-size: 0.75rem; border: none; cursor: pointer; border-radius: 6px; font-weight: 600;">Standard Emojis</button>
         </div>
-        <div id="emoji-picker-list" style="flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 220px; padding: 4px;">
+        <div id="emoji-picker-list" style="flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; max-height: 220px; padding: 4px;">
             <!-- Emojis loaded here -->
         </div>
     </div>
@@ -12624,117 +13230,118 @@
 
     <script>
         const STANDARD_EMOJIS = [
-            { char: 'ðŸ˜€', name: 'grinning face happy smile' },
-            { char: 'ðŸ˜ƒ', name: 'grinning face big eyes happy smile' },
-            { char: 'ðŸ˜„', name: 'grinning face smiling eyes happy smile' },
-            { char: 'ðŸ˜', name: 'beaming face smiling eyes happy smile grin' },
-            { char: 'ðŸ˜†', name: 'squinting face happy smile laugh' },
-            { char: 'ðŸ˜…', name: 'grinning face sweat happy smile laugh' },
-            { char: 'ðŸ˜‚', name: 'face tears joy happy laugh cry' },
-            { char: 'ðŸ¤£', name: 'rolling on floor laughing laugh happy' },
-            { char: 'ðŸ˜Š', name: 'smiling face happy smile blush' },
-            { char: 'ðŸ˜‡', name: 'smiling face halo angel happy innocent' },
-            { char: 'ðŸ™‚', name: 'slightly smiling face happy smile' },
-            { char: 'ðŸ™ƒ', name: 'upside down face silly crazy' },
-            { char: 'ðŸ˜‰', name: 'winking face wink happy' },
-            { char: 'ðŸ˜Œ', name: 'relieved face calm' },
-            { char: 'ðŸ˜', name: 'smiling face heart eyes love like happy' },
-            { char: 'ðŸ¥°', name: 'smiling face hearts love like happy' },
-            { char: 'ðŸ˜˜', name: 'face blowing kiss love kiss' },
-            { char: 'ðŸ˜‹', name: 'face savoring food delicious yum hungry' },
-            { char: 'ðŸ˜›', name: 'face stuck out tongue silly' },
-            { char: 'ðŸ˜œ', name: 'winking face tongue silly wink' },
-            { char: 'ðŸ¤ª', name: 'zany face crazy silly' },
-            { char: 'ðŸ˜Ž', name: 'smiling face sunglasses cool shades' },
-            { char: 'ðŸ¤©', name: 'star struck star eyes excited' },
-            { char: 'ðŸ¥³', name: 'partying face party celebrate birthday' },
-            { char: 'ðŸ˜', name: 'smirking face smirk sly' },
-            { char: 'ðŸ˜’', name: 'unamused face annoyed bored' },
-            { char: 'ðŸ˜ž', name: 'disappointed face sad' },
-            { char: 'ðŸ˜”', name: 'pensive face sad' },
-            { char: 'ðŸ˜Ÿ', name: 'worried face worry sad' },
-            { char: 'ðŸ˜•', name: 'confused face confuse' },
-            { char: 'ðŸ™', name: 'slightly frowning face sad' },
-            { char: 'â˜¹ï¸', name: 'frowning face sad' },
-            { char: 'ðŸ¥º', name: 'pleading face please beg puppy eyes' },
-            { char: 'ðŸ˜¢', name: 'crying face cry sad tear' },
-            { char: 'ðŸ˜­', name: 'loudly crying face cry sad tears sob' },
-            { char: 'ðŸ˜¤', name: 'face steam nose angry mad' },
-            { char: 'ðŸ˜ ', name: 'angry face mad' },
-            { char: 'ðŸ˜¡', name: 'pouting face angry mad red' },
-            { char: 'ðŸ¤¬', name: 'face symbols mouth curse swear angry' },
-            { char: 'ðŸ¤¯', name: 'exploding head mind blown shock' },
-            { char: 'ðŸ˜³', name: 'flushed face embarrassed shock' },
-            { char: 'ðŸ¥µ', name: 'hot face heat sweat' },
-            { char: 'ðŸ¥¶', name: 'cold face ice freeze' },
-            { char: 'ðŸ˜±', name: 'face screaming fear scared shock' },
-            { char: 'ðŸ¥±', name: 'yawning face yawn tired sleepy' },
-            { char: 'ðŸ˜´', name: 'sleeping face sleep tired snore' },
-            { char: 'ðŸ˜µ', name: 'dizzy face dead' },
-            { char: 'ðŸ¤', name: 'zipper mouth face quiet secret' },
-            { char: 'ðŸ¤¢', name: 'nauseated face sick vomit green' },
-            { char: 'ðŸ¤®', name: 'face vomiting sick vomit' },
-            { char: 'ðŸ˜·', name: 'face medical mask sick doctor' },
-            { char: 'ðŸ¤’', name: 'face thermometer sick fever' },
-            { char: 'ðŸ¤•', name: 'face head bandage sick hurt' },
-            { char: 'ðŸ¤‘', name: 'money mouth face cash rich' },
-            { char: 'ðŸ¤ ', name: 'cowboy hat face cowboy' },
-            { char: 'ðŸ˜ˆ', name: 'smiling face horns devil evil purple' },
-            { char: 'ðŸ‘¿', name: 'angry face horns devil mad evil' },
-            { char: 'ðŸ¤¡', name: 'clown face clown silly' },
-            { char: 'ðŸ‘»', name: 'ghost spook halloween' },
-            { char: 'ðŸ’€', name: 'skull dead skeleton' },
-            { char: 'ðŸ‘½', name: 'alien space extraterrestrial' },
-            { char: 'ðŸ‘¾', name: 'alien monster game retro' },
-            { char: 'ðŸ¤–', name: 'robot face bot tech' },
-            { char: 'ðŸŽƒ', name: 'jack o lantern pumpkin halloween' },
-            { char: 'ðŸ‘‹', name: 'waving hand wave hello goodbye' },
-            { char: 'ðŸ‘', name: 'thumbs up like good yes' },
-            { char: 'ðŸ‘Ž', name: 'thumbs down dislike bad no' },
-            { char: 'âœŠ', name: 'raised fist punch' },
-            { char: 'ðŸ‘Š', name: 'oncoming fist punch' },
-            { char: 'ðŸ‘', name: 'clapping hands clap' },
-            { char: 'ðŸ™Œ', name: 'raising hands celebrate' },
-            { char: 'ðŸ™', name: 'folded hands pray please thank you' },
-            { char: 'ðŸ’ª', name: 'flexed biceps strong muscle power' },
-            { char: 'ðŸ§ ', name: 'brain smart mind intelligence' },
-            { char: 'ðŸ‘€', name: 'eyes look see watch' },
-            { char: 'â¤ï¸', name: 'red heart love like' },
-            { char: 'ðŸ§¡', name: 'orange heart love' },
-            { char: 'ðŸ’›', name: 'yellow heart love' },
-            { char: 'ðŸ’š', name: 'green heart love' },
-            { char: 'ðŸ’™', name: 'blue heart love' },
-            { char: 'ðŸ’œ', name: 'purple heart love' },
-            { char: 'ðŸ–¤', name: 'black heart love' },
-            { char: 'ðŸ¤', name: 'white heart love' },
-            { char: 'ðŸ¤Ž', name: 'brown heart love' },
-            { char: 'ðŸ’”', name: 'broken heart sad love' },
-            { char: 'ðŸ”¥', name: 'fire hot lit burn' },
-            { char: 'âœ¨', name: 'sparkles shine stars' },
-            { char: 'â­', name: 'star yellow' },
-            { char: 'ðŸŒŸ', name: 'glowing star' },
-            { char: 'ðŸ’¯', name: 'hundred points score perfect' },
-            { char: 'ðŸŽ‰', name: 'party popper celebrate congratulate' },
-            { char: 'ðŸŽŠ', name: 'confetti ball celebrate' },
-            { char: 'ðŸŽˆ', name: 'balloon party celebrate' },
-            { char: 'ðŸŽ‚', name: 'birthday cake celebrate food' },
-            { char: 'ðŸŽ®', name: 'video game controller play games' },
-            { char: 'ðŸŽ²', name: 'game die dice play' },
-            { char: 'ðŸŽ¯', name: 'bullseye target hit play' },
-            { char: 'âš½', name: 'soccer ball football sports' },
-            { char: 'ðŸ€', name: 'basketball sports' },
-            { char: 'ðŸˆ', name: 'american football sports' },
-            { char: 'ðŸ†', name: 'trophy win prize' },
-            { char: 'ðŸŽ¨', name: 'artist palette paint art draw' },
-            { char: 'ðŸŽ¬', name: 'clapper board movie film' },
-            { char: 'ðŸŽ¤', name: 'microphone sing music' },
-            { char: 'ðŸŽ§', name: 'headphone listen music' },
-            { char: 'ðŸ’»', name: 'laptop computer tech' },
-            { char: 'ðŸ“±', name: 'mobile phone cell tech' },
-            { char: 'ðŸš€', name: 'rocket space launch' },
-            { char: 'ðŸ›¸', name: 'flying saucer ufo space' },
-            { char: 'ðŸ‘‘', name: 'crown king queen royal' },
-            { char: 'ðŸ’Ž', name: 'gem stone diamond premium' }
+            { char: '😀', name: 'grinning face happy smile' },
+            { char: '😃', name: 'grinning face big eyes happy smile' },
+            { char: '😄', name: 'grinning face smiling eyes happy smile' },
+            { char: '😁', name: 'beaming face smiling eyes happy smile grin' },
+            { char: '😆', name: 'squinting face happy smile laugh' },
+            { char: '😅', name: 'grinning face sweat happy smile laugh' },
+            { char: '😂', name: 'face tears joy happy laugh cry' },
+            { char: '🤣', name: 'rolling on floor laughing laugh happy' },
+            { char: '😊', name: 'smiling face happy smile blush' },
+            { char: '😇', name: 'smiling face halo angel happy innocent' },
+            { char: '🙂', name: 'slightly smiling face happy smile' },
+            { char: '🙃', name: 'upside down face silly crazy' },
+            { char: '😉', name: 'winking face wink happy' },
+            { char: '😌', name: 'relieved face calm' },
+            { char: '😍', name: 'smiling face heart eyes love like happy' },
+            { char: '🥰', name: 'smiling face hearts love like happy' },
+            { char: '😘', name: 'face blowing kiss love kiss' },
+            { char: '😋', name: 'face savoring food delicious yum hungry' },
+            { char: '😛', name: 'face stuck out tongue silly' },
+            { char: '😜', name: 'winking face tongue silly wink' },
+            { char: '🤪', name: 'zany face crazy silly' },
+            { char: '😎', name: 'smiling face sunglasses cool shades' },
+            { char: '🤩', name: 'star struck star eyes excited' },
+            { char: '🤔', name: 'thinking face think hmm' },
+            { char: '🤨', name: 'face raised eyebrow suspicious' },
+            { char: '😐', name: 'neutral face blank meh' },
+            { char: '😑', name: 'expressionless face blank' },
+            { char: '😶', name: 'face without mouth silent quiet' },
+            { char: '🙄', name: 'face rolling eyes annoyed' },
+            { char: '😏', name: 'smirking face smirk smug' },
+            { char: '😣', name: 'persevering face struggle frustrated' },
+            { char: '😥', name: 'sad but relieved face disappointed' },
+            { char: '😮', name: 'face open mouth surprised wow' },
+            { char: '🤐', name: 'zipper mouth face quiet secret' },
+            { char: '😯', name: 'hushed face surprised quiet' },
+            { char: '😲', name: 'astonished face surprised shocked wow' },
+            { char: '😳', name: 'flushed face embarrassed shy blush' },
+            { char: '🥺', name: 'pleading face puppy eyes please' },
+            { char: '😦', name: 'frowning face open mouth sad' },
+            { char: '😧', name: 'anguished face pain sad' },
+            { char: '😨', name: 'fearful face scared afraid' },
+            { char: '😰', name: 'anxious face sweat nervous' },
+            { char: '😢', name: 'crying face sad tear' },
+            { char: '😭', name: 'loudly crying face sad sob bawl' },
+            { char: '😱', name: 'face screaming fear scared shock' },
+            { char: '😤', name: 'face steam nose angry frustrated' },
+            { char: '😡', name: 'pouting face angry mad rage' },
+            { char: '😠', name: 'angry face mad rage' },
+            { char: '🤬', name: 'face symbols mouth swearing cursing' },
+            { char: '😈', name: 'smiling face horns devil evil purple' },
+            { char: '👿', name: 'angry face horns devil mad evil' },
+            { char: '💀', name: 'skull dead skeleton' },
+            { char: '☠️', name: 'skull crossbones dead danger poison' },
+            { char: '💩', name: 'poop pile poo funny' },
+            { char: '🤡', name: 'clown face clown silly' },
+            { char: '👻', name: 'ghost spook halloween' },
+            { char: '👽', name: 'alien space extraterrestrial' },
+            { char: '👾', name: 'alien monster game retro' },
+            { char: '🤖', name: 'robot face bot tech' },
+            { char: '🎃', name: 'jack o lantern pumpkin halloween' },
+            { char: '👋', name: 'waving hand wave hello goodbye' },
+            { char: '👍', name: 'thumbs up like good yes' },
+            { char: '👎', name: 'thumbs down dislike bad no' },
+            { char: '✊', name: 'raised fist punch' },
+            { char: '👊', name: 'oncoming fist punch' },
+            { char: '👏', name: 'clapping hands clap' },
+            { char: '🙌', name: 'raising hands celebrate' },
+            { char: '🙏', name: 'folded hands pray please thank you' },
+            { char: '💪', name: 'flexed biceps strong muscle power' },
+            { char: '🧠', name: 'brain smart mind intelligence' },
+            { char: '👀', name: 'eyes look see watch' },
+            { char: '❤️', name: 'red heart love like' },
+            { char: '🧡', name: 'orange heart love' },
+            { char: '💛', name: 'yellow heart love' },
+            { char: '💚', name: 'green heart love' },
+            { char: '💙', name: 'blue heart love' },
+            { char: '💜', name: 'purple heart love' },
+            { char: '🖤', name: 'black heart love' },
+            { char: '🤍', name: 'white heart love' },
+            { char: '🤎', name: 'brown heart love' },
+            { char: '💔', name: 'broken heart sad love' },
+            { char: '🔥', name: 'fire hot lit burn' },
+            { char: '⭐', name: 'star yellow gold' },
+            { char: '🌟', name: 'glowing star sparkle shine' },
+            { char: '⚡', name: 'lightning bolt zap electric' },
+            { char: '🎉', name: 'party popper celebration confetti' },
+            { char: '🎊', name: 'confetti ball celebration party' },
+            { char: '🏆', name: 'trophy winner award champion' },
+            { char: '🏅', name: 'sports medal winner award' },
+            { char: '🥇', name: 'first place medal gold winner' },
+            { char: '🥈', name: 'second place medal silver' },
+            { char: '🥉', name: 'third place medal bronze' },
+            { char: '💰', name: 'money bag cash dollar rich' },
+            { char: '💡', name: 'light bulb idea smart' },
+            { char: '💬', name: 'speech bubble chat talk message' },
+            { char: '💭', name: 'thought balloon think dream' },
+            { char: '📢', name: 'loudspeaker announcement megaphone' },
+            { char: '🔔', name: 'bell notification ring alert' },
+            { char: '🎵', name: 'musical note music song' },
+            { char: '🎶', name: 'musical notes music song melody' },
+            { char: '🎮', name: 'video game controller gaming play' },
+            { char: '✅', name: 'check mark yes done complete' },
+            { char: '❌', name: 'cross mark no wrong x' },
+            { char: '❗', name: 'exclamation mark important alert' },
+            { char: '❓', name: 'question mark help confused' },
+            { char: '🚨', name: 'police light emergency siren alert' },
+            { char: '🚫', name: 'prohibited forbidden no entry' },
+            { char: '🔄', name: 'counterclockwise arrows button refresh' },
+            { char: '🚀', name: 'rocket launch space fast' },
+            { char: '🛸', name: 'flying saucer ufo space' },
+            { char: '👑', name: 'crown king queen royal' },
+            { char: '💎', name: 'gem stone diamond premium' }
         ];
 
         let activeEmojiInputId = null;
@@ -12817,6 +13424,12 @@
             setTimeout(() => {
                 if (searchInput) searchInput.focus();
             }, 50);
+        }
+
+        function closeAllEmojiPickers() {
+            closeEmojiPicker();
+            const sbPicker = document.getElementById('starboard-emoji-picker-popover');
+            if (sbPicker) sbPicker.style.display = 'none';
         }
 
         function closeEmojiPicker() {
@@ -12918,6 +13531,394 @@
             closeEmojiPicker();
         }
 
+        let savedApplications = [];
+
+        let currentQuestions = [];
+
+        function addBuilderQuestion() {
+            if (currentQuestions.length >= 5) {
+                return showToast('You can add a maximum of 5 questions to an application.', 'warning');
+            }
+            currentQuestions.push({
+                label: '',
+                type: 'paragraph',
+                required: true,
+                placeholder: '',
+                minLength: '',
+                maxLength: 1000
+            });
+            renderQuestionsBuilder();
+            updateAppBuilderPreview();
+        }
+
+        function deleteBuilderQuestion(idx) {
+            currentQuestions.splice(idx, 1);
+            renderQuestionsBuilder();
+            updateAppBuilderPreview();
+        }
+
+        function updateQuestionField(idx, field, value) {
+            if (currentQuestions[idx]) {
+                currentQuestions[idx][field] = value;
+                updateAppBuilderPreview();
+            }
+        }
+
+        function toggleAdvancedOptions(idx) {
+            const el = document.getElementById(`q-advanced-${idx}`);
+            if (el) {
+                const isOpen = el.style.display === 'flex' || el.style.display === 'block';
+                el.style.display = isOpen ? 'none' : 'flex';
+                const btn = document.getElementById(`q-adv-btn-${idx}`);
+                if (btn) btn.innerHTML = isOpen ? '<i class="fas fa-cog"></i> Advanced Options' : '<i class="fas fa-chevron-up"></i> Hide Advanced';
+            }
+        }
+
+        function renderQuestionsBuilder() {
+            const container = document.getElementById('app-questions-list');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            currentQuestions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = 'panel';
+                card.style = 'background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; margin-bottom: 0; display: flex; flex-direction: column; gap: 10px; position: relative;';
+                
+                card.innerHTML = `
+                    <!-- Row 1: Question text and Delete -->
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary); min-width: 24px;">#${idx + 1}</span>
+                        <input type="text" placeholder="Question Label (e.g. Why do you want to join?)" 
+                            value="${q.label || ''}" 
+                            style="flex: 1; box-sizing: border-box; font-size: 0.85rem;" 
+                            oninput="updateQuestionField(${idx}, 'label', this.value)">
+                        
+                        <button type="button" class="btn-outline" 
+                            style="padding: 6px 8px; border: none; background: transparent; color: var(--danger); cursor: pointer;" 
+                            onclick="deleteBuilderQuestion(${idx})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+
+                    <!-- Row 2: Type Switcher, Required, Advanced toggle -->
+                    <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-top: 1px dashed rgba(255,255,255,0.04); padding-top: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="font-size: 0.75rem; color: var(--muted); margin-right: 4px;">Type:</label>
+                            <div style="display: flex; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 2px;">
+                                <button type="button" class="type-switch-btn" 
+                                    style="padding: 4px 12px; font-size: 0.7rem; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; background: ${q.type === 'paragraph' ? 'var(--primary)' : 'transparent'}; color: ${q.type === 'paragraph' ? '#000' : 'var(--muted)'}; font-weight: ${q.type === 'paragraph' ? '700' : '500'};" 
+                                    onclick="updateQuestionField(${idx}, 'type', 'paragraph'); renderQuestionsBuilder();">
+                                    Paragraph
+                                </button>
+                                <button type="button" class="type-switch-btn" 
+                                    style="padding: 4px 12px; font-size: 0.7rem; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; background: ${q.type === 'short' ? 'var(--primary)' : 'transparent'}; color: ${q.type === 'short' ? '#000' : 'var(--muted)'}; font-weight: ${q.type === 'short' ? '700' : '500'};" 
+                                    onclick="updateQuestionField(${idx}, 'type', 'short'); renderQuestionsBuilder();">
+                                    Short Answer
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label style="font-size: 0.75rem; color: var(--muted);">Required:</label>
+                            <label class="switch" style="width: 32px; height: 18px;">
+                                <input type="checkbox" ${q.required ? 'checked' : ''} 
+                                    onchange="updateQuestionField(${idx}, 'required', this.checked)">
+                                <span class="slider" style="border-radius: 18px;"></span>
+                            </label>
+                        </div>
+
+                        <button type="button" id="q-adv-btn-${idx}" class="config-btn" 
+                            style="width: auto; margin: 0; padding: 4px 8px; font-size: 0.7rem; background: transparent; border-color: rgba(255,255,255,0.1); color: var(--muted);" 
+                            onclick="toggleAdvancedOptions(${idx})">
+                            <i class="fas fa-cog"></i> Advanced Options
+                        </button>
+                    </div>
+
+                    <!-- Row 3: Advanced Panel (hidden by default) -->
+                    <div id="q-advanced-${idx}" style="display: none; flex-direction: column; gap: 8px; border-top: 1px dashed rgba(255,255,255,0.04); padding-top: 10px;">
+                        <div class="input-group" style="margin: 0;">
+                            <label style="font-size: 0.7rem;">Placeholder text (optional)</label>
+                            <input type="text" placeholder="e.g. Type your response here..." 
+                                value="${q.placeholder || ''}" 
+                                style="font-size: 0.8rem; padding: 6px 10px;" 
+                                oninput="updateQuestionField(${idx}, 'placeholder', this.value)">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="input-group" style="flex: 1; margin: 0;">
+                                <label style="font-size: 0.7rem;">Min Length</label>
+                                <input type="number" placeholder="0" 
+                                    value="${q.minLength || ''}" 
+                                    style="font-size: 0.8rem; padding: 6px 10px;" 
+                                    oninput="updateQuestionField(${idx}, 'minLength', this.value)">
+                            </div>
+                            <div class="input-group" style="flex: 1; margin: 0;">
+                                <label style="font-size: 0.7rem;">Max Length</label>
+                                <input type="number" placeholder="1000" 
+                                    value="${q.maxLength || ''}" 
+                                    style="font-size: 0.8rem; padding: 6px 10px;" 
+                                    oninput="updateQuestionField(${idx}, 'maxLength', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            if (currentQuestions.length === 0) {
+                container.innerHTML = `
+                    <div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 20px; border: 1px dashed rgba(255,255,255,0.05); border-radius: 8px;">
+                        No questions added yet. Click "+ Add Question" to start building.
+                    </div>
+                `;
+            }
+        }
+
+        function showAppSetEditor(appId) {
+            const editorView = document.getElementById('app-set-editor-view');
+            const listView = document.getElementById('app-sets-list-view');
+            const titleEl = document.getElementById('app-editor-title');
+            
+            if (appId) {
+                const app = savedApplications.find(a => a.id === appId);
+                if (app) {
+                    document.getElementById('app-set-id').value = app.id;
+                    document.getElementById('app-name').value = app.name || '';
+                    document.getElementById('app-desc').value = app.description || '';
+                    document.getElementById('app-review-channel').value = app.reviewChannelId || '';
+                    refreshCustomDropdown('app-review-channel');
+                    
+                    let questions = [];
+                    try {
+                        questions = JSON.parse(app.questions || '[]');
+                    } catch (e) {
+                        questions = [];
+                    }
+                    currentQuestions = questions.map(q => {
+                        if (typeof q === 'string') {
+                            return { label: q, type: 'paragraph', required: true, placeholder: '', minLength: '', maxLength: 1000 };
+                        }
+                        return {
+                            label: q.label || '',
+                            type: q.type || 'paragraph',
+                            required: q.required !== false,
+                            placeholder: q.placeholder || '',
+                            minLength: q.minLength || '',
+                            maxLength: q.maxLength || 1000
+                        };
+                    });
+                    titleEl.textContent = 'Edit Application Set';
+                }
+            } else {
+                document.getElementById('app-set-id').value = '';
+                document.getElementById('app-name').value = '';
+                document.getElementById('app-desc').value = '';
+                document.getElementById('app-review-channel').value = '';
+                refreshCustomDropdown('app-review-channel');
+                currentQuestions = [
+                    { label: '', type: 'paragraph', required: true, placeholder: '', minLength: '', maxLength: 1000 }
+                ];
+                titleEl.textContent = 'Create Application Set';
+            }
+            
+            renderQuestionsBuilder();
+            listView.style.display = 'none';
+            editorView.style.display = 'flex';
+            updateAppBuilderPreview();
+        }
+
+        function hideAppSetEditor() {
+            document.getElementById('app-set-editor-view').style.display = 'none';
+            document.getElementById('app-sets-list-view').style.display = 'block';
+        }
+
+        async function toggleApplicationActive(appId, currentActive) {
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications/${appId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify({ isActive: !currentActive })
+                });
+                if (res.ok) {
+                    showToast(`Application set ${!currentActive ? 'activated' : 'deactivated'} successfully!`, 'success');
+                    fetchApplications();
+                } else {
+                    const d = await res.json();
+                    showToast(d.error || 'Failed to toggle application status.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while toggling application status.', 'error');
+            }
+        }
+
+        async function deleteApplicationConfig(appId) {
+            if (!confirm('Are you sure you want to delete this application set?')) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications/${appId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Application set deleted successfully!', 'success');
+                    fetchApplications();
+                } else {
+                    showToast('Failed to delete application set.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while deleting application set.', 'error');
+            }
+        }
+
+        async function fetchApplications() {
+            if (!currentServerId) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    const apps = await res.json();
+                    savedApplications = apps || [];
+                    const container = document.getElementById('app-sets-container');
+                    if (container) {
+                        container.innerHTML = '';
+                        if (savedApplications.length === 0) {
+                            container.innerHTML = `
+                                <div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 30px; border: 1px dashed rgba(255,255,255,0.08); border-radius: 12px;">
+                                    No application sets created yet. Click "+ Create New Set" to get started.
+                                </div>
+                            `;
+                        } else {
+                            savedApplications.forEach(app => {
+                                const row = document.createElement('div');
+                                row.className = 'panel';
+                                row.style = 'background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 12px; padding: 15px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; position: relative;';
+                                
+                                const statusTag = app.isActive 
+                                    ? `<span style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Active</span>`
+                                    : `<span style="background: rgba(255, 255, 255, 0.08); color: var(--muted); font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Draft</span>`;
+                                
+                                row.innerHTML = `
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                                        <div>
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff;">${app.name}</h4>
+                                                ${statusTag}
+                                            </div>
+                                            <p style="margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${app.description || 'No description provided.'}</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px; flex-wrap: wrap;">
+                                        <button class="config-btn" style="width: auto; margin: 0; padding: 6px 12px; font-size: 0.75rem;" onclick="showAppSetEditor('${app.id}')">Edit Set</button>
+                                        <button class="config-btn" style="width: auto; margin: 0; padding: 6px 12px; font-size: 0.75rem; background: transparent; border-color: rgba(255,255,255,0.15); color: #fff;" onclick="toggleApplicationActive('${app.id}', ${app.isActive})">
+                                            ${app.isActive ? 'Deactivate' : 'Activate'}
+                                        </button>
+                                        <button class="config-btn" style="width: auto; margin: 0; padding: 6px 12px; font-size: 0.75rem; background: var(--primary); color: #000; font-weight: 700; border: none;" onclick="promptSendAppToChannel('${app.id}')" ${app.isActive ? '' : 'disabled'}>Send to Channel</button>
+                                        <button class="config-btn" style="width: auto; margin: 0; padding: 6px 12px; font-size: 0.75rem; color: var(--danger); border-color: rgba(255,85,85,0.2); margin-left: auto;" onclick="deleteApplicationConfig('${app.id}')">Delete</button>
+                                    </div>
+                                `;
+                                container.appendChild(row);
+                            });
+                        }
+                    }
+                    if (typeof updateAppBuilderPreview === 'function') updateAppBuilderPreview();
+                }
+            } catch (e) {
+                console.error('Failed to fetch applications:', e);
+            }
+        }
+
+        async function saveApplicationConfig() {
+            if (!checkThrottling()) return;
+            if (!currentServerId) return showToast('Please select a server first.', 'error');
+            const name = document.getElementById('app-name').value.trim();
+            if (!name) return showToast('Application Name is required.', 'error');
+
+            const id = document.getElementById('app-set-id').value;
+            const desc = document.getElementById('app-desc').value.trim();
+            const reviewChannelId = document.getElementById('app-review-channel').value;
+            
+            const validQuestions = currentQuestions.filter(q => q.label && q.label.trim() !== '');
+
+            if (validQuestions.length === 0) {
+                return showToast('At least one question with a non-empty label is required.', 'error');
+            }
+
+            const t = sessionStorage.getItem('discord_token');
+            showToast('Saving application set...', 'info');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify({
+                        id: id || undefined,
+                        name,
+                        description: desc,
+                        reviewChannelId,
+                        questions: JSON.stringify(validQuestions)
+                    })
+                });
+
+                if (res.ok) {
+                    showToast('Application set saved successfully!', 'success');
+                    hideAppSetEditor();
+                    fetchApplications();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || 'Failed to save application.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while saving application.', 'error');
+            }
+        }
+
+        function promptSendAppToChannel(appId) {
+            const app = savedApplications.find(a => a.id === appId);
+            if (!app) return;
+            document.getElementById('send-app-id').value = appId;
+            document.getElementById('send-app-embed-title').value = `Apply for ${app.name}`;
+            document.getElementById('send-app-embed-desc').value = `Click the button below to start your application for **${app.name}**.`;
+            document.getElementById('send-app-button-label').value = 'Apply Now';
+            const channelSelect = document.getElementById('send-app-channel-select');
+            if (channelSelect) { channelSelect.selectedIndex = 0; refreshCustomDropdown('send-app-channel-select'); }
+            const modal = document.getElementById('send-app-modal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        async function submitSendAppToChannel() {
+            const appId = document.getElementById('send-app-id').value;
+            const channelId = document.getElementById('send-app-channel-select').value;
+            const embedTitle = document.getElementById('send-app-embed-title').value.trim();
+            const embedDescription = document.getElementById('send-app-embed-desc').value.trim();
+            const buttonLabel = document.getElementById('send-app-button-label').value.trim();
+            if (!channelId) return showToast('Please select a target channel.', 'error');
+            const t = sessionStorage.getItem('discord_token');
+            showToast('Sending application panel to channel...', 'info');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications/${appId}/send-panel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` },
+                    body: JSON.stringify({ channelId, embedTitle, embedDescription, buttonLabel })
+                });
+                if (res.ok) {
+                    showToast('Application panel sent to channel!', 'success');
+                    document.getElementById('send-app-modal').style.display = 'none';
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || 'Failed to send panel.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while sending application panel.', 'error');
+            }
+        }
+
         // Close picker when clicking outside and setup search listener
         document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('click', (e) => {
@@ -12934,6 +13935,39 @@
                 searchInput.addEventListener('input', renderEmojiPickerList);
             }
         });
+        // Nora Dashboard Initialization Complete
     </script>
+
+<!-- Send Application Panel Modal -->
+<div id="send-app-modal" style="display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); align-items: center; justify-content: center;">
+    <div class="panel" style="background: var(--surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 30px; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;">Send Application Panel</h3>
+            <button onclick="document.getElementById('send-app-modal').style.display='none'" style="background: none; border: none; color: var(--muted); font-size: 1.3rem; cursor: pointer; padding: 4px;">&times;</button>
+        </div>
+        <input type="hidden" id="send-app-id">
+        <div class="input-group" style="margin-bottom: 14px;">
+            <label>Target Channel</label>
+            <select id="send-app-channel-select" style="width: 100%;"></select>
+        </div>
+        <div class="input-group" style="margin-bottom: 14px;">
+            <label>Embed Title</label>
+            <input type="text" id="send-app-embed-title" placeholder="Apply for Staff" style="width: 100%; box-sizing: border-box;">
+        </div>
+        <div class="input-group" style="margin-bottom: 14px;">
+            <label>Embed Description</label>
+            <textarea id="send-app-embed-desc" rows="3" placeholder="Click the button below to apply..." style="width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+        </div>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <label>Button Label</label>
+            <input type="text" id="send-app-button-label" placeholder="Apply Now" style="width: 100%; box-sizing: border-box;">
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button class="config-btn" style="width: auto; margin: 0; background: transparent; border-color: rgba(255,255,255,0.15); color: #fff;" onclick="document.getElementById('send-app-modal').style.display='none'">Cancel</button>
+            <button class="config-btn" style="width: auto; margin: 0; background: var(--primary); color: #000; font-weight: 700;" onclick="submitSendAppToChannel()">Send Panel</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
