@@ -1,6 +1,6 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 generator client {
@@ -87,4 +87,34 @@ model ActivityLog {
   actionType  String   // e.g. "CONFIG_CHANGE", "CHANNEL_REPAIR"
   description String
   createdAt   DateTime @default(now())
+}
+
+model EventLog {
+  id        String   @id @default(uuid())
+  guildId   String
+  userId    String
+  type      String   // e.g. "command_used", "member_joined", "member_left", "verification_success", "moderation_action", "rank_sync"
+  timestamp DateTime @default(now())
+  metadata  String   // JSON stringified metadata
+}
+
+model GuildAnalyticsDaily {
+  id      String   @id @default(uuid())
+  date    String   // e.g. "2026-06-30"
+  guildId String
+  type    String   // "command", "verify", "member", "mod"
+  count   Int      @default(0)
+
+  @@unique([date, guildId, type])
+}
+
+model RobloxCache {
+  id             String   @id @default(uuid())
+  username       String   @unique
+  robloxId       String
+  displayName    String
+  avatarUrl      String
+  rankName       String
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
 }

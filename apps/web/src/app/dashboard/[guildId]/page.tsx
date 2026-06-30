@@ -742,7 +742,7 @@ export default function GuildConfig() {
                 <label className="text-[10px] text-zinc-400 font-bold uppercase">Welcome Message Rule</label>
                 <textarea
                   rows={3}
-                  value={settings.welcomeMessage}
+                  value={settings?.welcomeMessage || ""}
                   onChange={(e) => handleChange("welcomeMessage", e.target.value)}
                   className="bg-black border border-zinc-800 p-4 rounded-xl text-xs focus:outline-none focus:border-zinc-700 resize-none font-mono"
                 />
@@ -754,7 +754,7 @@ export default function GuildConfig() {
                 <div className="border-l-4 border-white pl-4 py-2 bg-neutral-900/20 rounded-r-md">
                   <div className="text-[11px] text-zinc-400">Nora Bot Welcome</div>
                   <p className="text-xs text-white mt-1">
-                    {settings.welcomeMessage
+                    {(settings?.welcomeMessage || "")
                       .replace(/{user}/g, "@Vaztinix")
                       .replace(/{server_name}/g, "Developers Arena")
                       .replace(/{member_count}/g, "1,530")}
@@ -775,7 +775,7 @@ export default function GuildConfig() {
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={settings.levelingEnabled}
+                      checked={settings?.levelingEnabled || false}
                       onChange={(e) => handleToggleOptimistic("levelingEnabled", e.target.checked)}
                       className="sr-only peer"
                     />
@@ -791,7 +791,7 @@ export default function GuildConfig() {
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={settings.moderationEnabled}
+                      checked={settings?.moderationEnabled || false}
                       onChange={(e) => handleToggleOptimistic("moderationEnabled", e.target.checked)}
                       className="sr-only peer"
                     />
