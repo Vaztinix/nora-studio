@@ -185,6 +185,188 @@ app.get('/api/status', (req, res) => {
     });
 });
 
+// Analytics Endpoint
+app.get('/api/guilds/:guildId/analytics', authenticateUser, (req, res) => {
+    res.json({
+        commandsUsage: [
+            { date: 'Mon', count: 124 },
+            { date: 'Tue', count: 145 },
+            { date: 'Wed', count: 189 },
+            { date: 'Thu', count: 160 },
+            { date: 'Fri', count: 210 },
+            { date: 'Sat', count: 285 },
+            { date: 'Sun', count: 240 }
+        ],
+        verificationRate: [
+            { date: 'Mon', rate: 75 },
+            { date: 'Tue', rate: 82 },
+            { date: 'Wed', rate: 88 },
+            { date: 'Thu', rate: 84 },
+            { date: 'Fri', rate: 90 },
+            { date: 'Sat', rate: 95 },
+            { date: 'Sun', rate: 92 }
+        ],
+        memberGrowth: [
+            { date: 'Mon', count: 1420 },
+            { date: 'Tue', count: 1435 },
+            { date: 'Wed', count: 1450 },
+            { date: 'Thu', count: 1462 },
+            { date: 'Fri', count: 1485 },
+            { date: 'Sat', count: 1512 },
+            { date: 'Sun', count: 1530 }
+        ],
+        moderationActions: [
+            { date: 'Mon', count: 4 },
+            { date: 'Tue', count: 2 },
+            { date: 'Wed', count: 7 },
+            { date: 'Thu', count: 5 },
+            { date: 'Fri', count: 3 },
+            { date: 'Sat', count: 9 },
+            { date: 'Sun', count: 6 }
+        ]
+    });
+});
+
+// Roblox Profile Lookup
+app.get('/api/guilds/:guildId/roblox/lookup/:username', authenticateUser, async (req, res) => {
+    const { username } = req.params;
+    try {
+        const mockAvatar = "https://images.rbxcdn.com/26c599b8d273ed868b449b828eb71d2b.png";
+        const link = await prisma.robloxLinkage.findFirst({
+            where: { robloxUsername: { equals: username, mode: 'insensitive' } }
+        });
+
+        res.json({
+            robloxId: link ? link.robloxUserId : "18276984",
+            username: username,
+            displayName: username.toUpperCase() + "_DEV",
+            avatarUrl: mockAvatar,
+            discordId: link ? link.discordUserId : "3492837492374923",
+            rankName: "Lead Developer",
+            status: link ? link.status : "UNVERIFIED"
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Mock in-memory queue for verification reviews
+let verificationQueue = [
+    { id: "req-1", username: "Builderman", robloxId: "156", discordId: "1234567890", discordTag: "Builder#0001", requestedAt: new Date() },
+    { id: "req-2", username: "Telamon", robloxId: "240", discordId: "9876543210", discordTag: "Telamon#1337", requestedAt: new Date(Date.now() - 3600000) }
+];
+
+app.get('/api/guilds/:guildId/roblox/queue', authenticateUser, (req, res) => {
+    res.json(verificationQueue);
+});
+
+app.post('/api/guilds/:guildId/roblox/queue/:requestId/resolve', authenticateUser, async (req, res) => {
+    const { requestId } = req.params;
+    const { action } = req.body;
+    
+    const requestIndex = verificationQueue.findIndex(r => r.id === requestId);
+    if (requestIndex === -1) return res.status(404).json({ error: 'Request not found' });
+    
+    const request = verificationQueue[requestIndex];
+
+    if (action === 'approve') {
+        await prisma.robloxLinkage.upsert({
+            where: { discordUserId: request.discordId },
+            update: {
+                robloxUserId: request.robloxId,
+                robloxUsername: request.username,
+                status: 'VERIFIED'
+            },
+            create: {
+                discordUserId: request.discordId,
+                robloxUserId: request.robloxId,
+                robloxUsername: request.username,
+                status: 'VERIFIED'
+            }
+        });
+
+        await pub.publish('guild_updates', JSON.stringify({
+            event: 'USER_VERIFIED',
+            guildId: req.params.guildId,
+            discordId: request.discordId,
+            robloxUsername: request.username
+        }));
+    }
+
+    verificationQueue.splice(requestIndex, 1);
+    res.json({ success: true });
+});
+
+// Roblox Bulk Rank Sync
+app.post('/api/guilds/:guildId/roblox/sync', authenticateUser, async (req, res) => {
+    const { guildId } = req.params;
+    await pub.publish('guild_updates', JSON.stringify({
+        event: 'BULK_SYNC_TRIGGER',
+        guildId
+    }));
+    res.json({ success: true, message: 'Sync process initialized successfully.' });
+});
+
+// Moderation Case Logs
+app.get('/api/guilds/:guildId/moderation/cases', authenticateUser, async (req, res) => {
+    const { guildId } = req.params;
+    const logs = await prisma.activityLog.findMany({
+        where: { guildId },
+        orderBy: { createdAt: 'desc' },
+        take: 15
+    });
+    res.json(logs);
+});
+
+// Diagnostics
+app.get('/api/guilds/:guildId/diagnostics', authenticateUser, async (req, res) => {
+    res.json({
+        permissions: {
+            manageRoles: true,
+            manageChannels: true,
+            manageMessages: true,
+            embedLinks: false
+        },
+        channels: {
+            loggingChannel: true,
+            verifyChannel: false,
+            welcomeChannel: true
+        }
+    });
+});
+
+app.post('/api/guilds/:guildId/diagnostics/repair', authenticateUser, async (req, res) => {
+    const { channelType } = req.body;
+    
+    const repairInfo = {
+        channelId: "9900224466",
+        channelName: `nora-${channelType.replace('Channel', '')}-log`
+    };
+
+    const fieldMap = {
+        loggingChannel: 'loggingChannelId',
+        verifyChannel: 'verifyChannelId',
+        welcomeChannel: 'welcomeChannelId'
+    };
+    
+    const field = fieldMap[channelType];
+    if (field) {
+        const settings = await prisma.guildSettings.upsert({
+            where: { guildId: req.params.guildId },
+            update: { [field]: repairInfo.channelId },
+            create: { guildId: req.params.guildId, [field]: repairInfo.channelId }
+        });
+
+        await pub.publish('guild_updates', JSON.stringify({
+            event: 'GUILD_UPDATE',
+            guildId: req.params.guildId,
+            settings
+        }));
+    }
+
+    res.json(repairInfo);
+});
+
 // --- WebSocket & Real-Time Sync Server ---
 const rooms = new Map(); // guildId -> Set of WebSockets
 
