@@ -146,9 +146,17 @@ app.get('/api/guilds', authenticateUser, async (req, res) => {
     }
 });
 
+const guildSettingsCache = new Map();
+
 app.get('/api/guilds/:guildId/settings', authenticateUser, async (req, res) => {
     const { guildId } = req.params;
+    if (guildSettingsCache.has(guildId)) {
+        return res.json(guildSettingsCache.get(guildId));
+    }
     const settings = await prisma.guildSettings.findUnique({ where: { guildId } });
+    if (settings) {
+        guildSettingsCache.set(guildId, settings);
+    }
     res.json(settings || {});
 });
 
@@ -164,6 +172,8 @@ app.patch('/api/guilds/:guildId/settings', authenticateUser, async (req, res) =>
             ...updateData
         }
     });
+
+    guildSettingsCache.set(guildId, settings);
 
     // Publish update event to Redis Pub/Sub
     await pub.publish('guild_updates', JSON.stringify({
