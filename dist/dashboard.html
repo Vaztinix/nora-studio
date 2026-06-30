@@ -3949,66 +3949,115 @@
                 </div>
 
                 <div id="tab-welcome" class="tab-content">
-
-                    <div class="panel">
-                        <h3>Server Games</h3>
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Number Guessing Game</h4>
-                                <p>Allow users to play a number guessing game.</p>
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; align-items: start;">
+                        <!-- Left Column: Utility Configuration -->
+                        <div style="display: flex; flex-direction: column; gap: 25px;">
+                            <div class="panel" style="margin: 0;">
+                                <h3>Server Games</h3>
+                                <div class="row">
+                                    <div class="row-info">
+                                        <h4>Number Guessing Game</h4>
+                                        <p>Allow users to play a number guessing game.</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="setting-guessGameEnabled"><span class="slider"></span></label>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+                                    <div class="input-group"><label>Min Number</label><input type="number" id="setting-guessGameMin" placeholder="1"></div>
+                                    <div class="input-group"><label>Max Number</label><input type="number" id="setting-guessGameMax" placeholder="100"></div>
+                                    <div class="input-group"><label>Win XP Reward</label><input type="number" id="setting-guessGameXpReward" placeholder="100"></div>
+                                </div>
+                                
+                                <div class="row" style="margin-top: 25px;">
+                                    <div class="row-info">
+                                        <h4>Rock Paper Scissors</h4>
+                                        <p>Allow users to play RPS with the bot.</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="setting-rpsGameEnabled"><span class="slider"></span></label>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+                                    <div class="input-group"><label>Min Bet XP</label><input type="number" id="setting-rpsMinBet" min="0" max="10000" placeholder="0"></div>
+                                    <div class="input-group"><label>Max Bet XP</label><input type="number" id="setting-rpsMaxBet" min="0" max="10000" placeholder="10000"></div>
+                                    <div class="input-group"><label>Win XP Reward</label><input type="number" id="setting-rpsGameXpReward" placeholder="50"></div>
+                                </div>
                             </div>
-                            <label class="switch"><input type="checkbox" id="setting-guessGameEnabled"><span class="slider"></span></label>
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
-                            <div class="input-group"><label>Min Number</label><input type="number" id="setting-guessGameMin" placeholder="1"></div>
-                            <div class="input-group"><label>Max Number</label><input type="number" id="setting-guessGameMax" placeholder="100"></div>
-                            <div class="input-group"><label>Win XP Reward</label><input type="number" id="setting-guessGameXpReward" placeholder="100"></div>
-                        </div>
-                        
-                        <div class="row" style="margin-top: 25px;">
-                            <div class="row-info">
-                                <h4>Rock Paper Scissors</h4>
-                                <p>Allow users to play RPS with the bot.</p>
-                            </div>
-                            <label class="switch"><input type="checkbox" id="setting-rpsGameEnabled"><span class="slider"></span></label>
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
-                            <div class="input-group"><label>Min Bet XP</label><input type="number" id="setting-rpsMinBet" min="0" max="10000" placeholder="0"></div>
-                            <div class="input-group"><label>Max Bet XP</label><input type="number" id="setting-rpsMaxBet" min="0" max="10000" placeholder="10000"></div>
-                            <div class="input-group"><label>Win XP Reward</label><input type="number" id="setting-rpsGameXpReward" placeholder="50"></div>
-                        </div>
-                    </div>
 
-                    <div class="panel">
-                        <h3>Counting Engine</h3>
-                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
-                            Allow members to count sequentially (1, 2, 3...) in a channel to earn XP rewards. Nora automatically tracks counts, validates order, and logs high scores.
-                        </p>
-                        
-                        <div id="counting-disabled-banner" style="background: rgba(255,85,85,0.06); border: 1px dashed rgba(255,85,85,0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: none; align-items: center; gap: 12px; color: #ff8585; font-size: 0.85rem;">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem; flex-shrink: 0;"></i>
-                            <div>
-                                <strong style="display: block; margin-bottom: 3px; font-weight: 700; color: #ff5555;">Counting Engine is Disabled</strong>
-                                Select a counting channel below to activate the counting game.
+                            <div class="panel" style="margin: 0;">
+                                <h3>Counting Engine</h3>
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
+                                    Allow members to count sequentially (1, 2, 3...) in a channel to earn XP rewards. Nora automatically tracks counts, validates order, and logs high scores.
+                                </p>
+                                
+                                <div id="counting-disabled-banner" style="background: rgba(255,85,85,0.06); border: 1px dashed rgba(255,85,85,0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: none; align-items: center; gap: 12px; color: #ff8585; font-size: 0.85rem;">
+                                    <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem; flex-shrink: 0;"></i>
+                                    <div>
+                                        <strong style="display: block; margin-bottom: 3px; font-weight: 700; color: #ff5555;">Counting Engine is Disabled</strong>
+                                        Select a counting channel below to activate the counting game.
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="row-info">
+                                        <h4>Counting Channel</h4>
+                                        <p>Select the channel where the counting game happens.</p>
+                                    </div>
+                                    <select id="setting-countingChannelId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;" onchange="updateCountingBanner(this.value)"><option value="">Select channel...</option></select>
+                                </div>
+                                <div class="input-group" style="margin-top: 15px;"><label>XP Reward Per Count</label><input type="number" id="setting-countingChannelXpReward" placeholder="5"></div>
+
+                                <div class="input-group" style="margin-top: 15px;">
+                                    <label>Counting Whitelisted Roles</label>
+                                    <input type="hidden" id="setting-countingWhitelistedRoles">
+                                </div>
+                                <div class="input-group" style="margin-top: 15px;">
+                                    <label>Counting Blacklisted Users (Comma-separated IDs)</label>
+                                    <input type="text" id="setting-countingBlacklistedUsers" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Counting Channel</h4>
-                                <p>Select the channel where the counting game happens.</p>
+                        <!-- Right Column: Interactive Engagement Preview Panels -->
+                        <div style="display: flex; flex-direction: column; gap: 25px;">
+                            <div class="panel" style="margin: 0; background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; color: #fff; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i class="fas fa-satellite-dish" style="color: var(--primary);"></i> Live Match Tracking</h4>
+                                    <span style="font-size: 0.65rem; background: rgba(0, 229, 255, 0.15); color: var(--primary); padding: 2px 6px; border-radius: 10px; font-weight: 800; animation: pulse 2s infinite;">LIVE TRACKING</span>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.25); border-radius: 12px; border: 1px solid var(--border); padding: 15px; display: flex; align-items: center; gap: 15px;">
+                                    <div style="background: #18191e; width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05);"><i class="fas fa-gamepad" style="font-size: 1.4rem; color: #fff;"></i></div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Roblox: BedWars Hub</div>
+                                        <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Active Session • Place ID: 128919283</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-weight: 800; font-size: 0.9rem; color: var(--primary);">42 players</div>
+                                        <div style="font-size: 0.7rem; color: var(--muted);">Average Level: 14</div>
+                                    </div>
+                                </div>
                             </div>
-                            <select id="setting-countingChannelId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;" onchange="updateCountingBanner(this.value)"><option value="">Select channel...</option></select>
-                        </div>
-                        <div class="input-group" style="margin-top: 15px;"><label>XP Reward Per Count</label><input type="number" id="setting-countingChannelXpReward" placeholder="5"></div>
 
-                        <div class="input-group" style="margin-top: 15px;">
-                            <label>Counting Whitelisted Roles</label>
-                            <input type="hidden" id="setting-countingWhitelistedRoles">
-                        </div>
-                        <div class="input-group" style="margin-top: 15px;">
-                            <label>Counting Blacklisted Users (Comma-separated IDs)</label>
-                            <input type="text" id="setting-countingBlacklistedUsers" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
+                            <div class="panel" style="margin: 0; border-radius: 20px; padding: 20px;">
+                                <h4 style="margin: 0 0 15px 0; font-size: 0.95rem; color: #fff; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i class="fas fa-trophy" style="color: #ffd700;"></i> Server Leaderboard</h4>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); padding: 10px 15px; border-radius: 10px; border: 1px solid var(--border);">
+                                        <span style="font-weight: 800; color: #ffd700; font-size: 0.9rem;">🥇 1</span>
+                                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #222; border: 1px solid #ffd700; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff;">V</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: 700; font-size: 0.8rem; color: #fff;">Vaztinix</div>
+                                            <div style="font-size: 0.7rem; color: var(--muted);">14,290 XP</div>
+                                        </div>
+                                        <span style="font-size: 0.75rem; font-weight: 700; color: #ffd700;">Level 48</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); padding: 10px 15px; border-radius: 10px; border: 1px solid var(--border);">
+                                        <span style="font-weight: 800; color: #c0c0c0; font-size: 0.9rem;">🥈 2</span>
+                                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #222; border: 1px solid #c0c0c0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff;">N</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: 700; font-size: 0.8rem; color: #fff;">Nora-Fan</div>
+                                            <div style="font-size: 0.7rem; color: var(--muted);">9,820 XP</div>
+                                        </div>
+                                        <span style="font-size: 0.75rem; font-weight: 700; color: #c0c0c0;">Level 32</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -5613,27 +5662,31 @@
         }
 
         window.disconnectSingleDevice = async function(sessionId) {
-            if (!confirm('Are you sure you want to disconnect this device?')) return;
-            const token = sessionStorage.getItem('discord_token');
-            if (!token) return;
-            try {
-                const apiBase = window.getApiBaseUrl();
-                const res = await originalFetch(`${apiBase}/api/auth/paired-devices/disconnect`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ sessionId })
-                });
-                if (res.ok) {
-                    showToast('Device disconnected successfully.', 'success');
-                    loadPairedDevices();
-                } else {
-                    const d = await res.json().catch(() => ({}));
-                    showToast(`Disconnect failed: ${d.error || res.status}`, 'error');
+            showConfirm('Are you sure you want to disconnect this device?', async () => {
+                const token = sessionStorage.getItem('discord_token');
+                if (!token) return;
+                try {
+                    const apiBase = window.getApiBaseUrl();
+                    const res = await originalFetch(`${apiBase}/api/auth/paired-devices/disconnect`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ sessionId })
+                    });
+                    if (res.ok) {
+                        showToast('Device disconnected successfully.', 'success');
+                        loadPairedDevices();
+                    } else {
+                        const d = await res.json().catch(() => ({}));
+                        showToast(`Disconnect failed: ${d.error || res.status}`, 'error');
+                    }
+                } catch (e) {
+                    showToast('Network error during disconnect.', 'error');
                 }
-            } catch (e) {
+            });
+        }
                 showToast(`Disconnect error: ${e.message}`, 'error');
             }
         };
@@ -6692,6 +6745,10 @@
             if (userNameEl) {
                 userNameEl.textContent = displayName;
             }
+            const prevName = document.getElementById('profile-preview-name');
+            if (prevName) {
+                prevName.textContent = displayName;
+            }
 
             const notifVotesEl = document.getElementById('pref-notif-votes');
             const notifLevelsEl = document.getElementById('pref-notif-levels');
@@ -6745,27 +6802,28 @@
 
         async function activatePremiumBoost() {
             if (!window.currentUser || !window.currentUser.noraPremium) {
-                if (confirm('Nora Premium is required for server XP boosts. Would you like to upgrade now?')) {
+                showConfirm('Nora Premium is required for server XP boosts. Would you like to upgrade now?', () => {
                     window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank');
-                }
+                });
                 return;
             }
-            if (!confirm('Activate 3-day server XP boost? This has a 24-hour cooldown once finished.')) return;
-            const t = sessionStorage.getItem('discord_token');
-            const res = await fetch(`/api/guilds/${currentServerId}/premium-boost`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${t}` }
+            showConfirm('Activate 3-day server XP boost? This has a 24-hour cooldown once finished.', async () => {
+                const t = sessionStorage.getItem('discord_token');
+                const res = await fetch(`/api/guilds/${currentServerId}/premium-boost`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${t}` }
+                });
+                const d = await res.json();
+                if (res.ok) {
+                    showToast('Premium Boost Activated!', 'success');
+                    addNotification('Premium Boost Activated', `3-day XP boost has been activated for ${currentServerName}.`, 'success');
+                    document.getElementById('boost-status-text').textContent = 'Boost is active until ' + new Date(d.activeUntil).toLocaleString();
+                    document.getElementById('premium-boost-status').style.display = 'block';
+                    document.getElementById('activate-boost-btn').style.display = 'none';
+                } else {
+                    showToast(d.error || 'Failed to activate boost.', 'error');
+                }
             });
-            const d = await res.json();
-            if (res.ok) {
-                showToast('Premium Boost Activated!', 'success');
-                addNotification('Premium Boost Activated', `3-day XP boost has been activated for ${currentServerName}.`, 'success');
-                document.getElementById('boost-status-text').textContent = 'Boost is active until ' + new Date(d.activeUntil).toLocaleString();
-                document.getElementById('premium-boost-status').style.display = 'block';
-                document.getElementById('activate-boost-btn').style.display = 'none';
-            } else {
-                alert(d.error || 'Failed to activate boost.');
-            }
         }
 
         async function linkRoblox() {
@@ -6833,26 +6891,27 @@
         }
 
         async function unlinkRobloxSpecific(robloxId, username) {
-            if (!confirm(`Are you sure you want to unlink the Roblox account "${username}"?`)) return;
-            logToTerminal(`Unlinking Roblox account ID: ${robloxId}`, 'ROBLOX_UNLINK');
-            const t = sessionStorage.getItem('discord_token');
-            try {
-                const res = await fetch('/api/user/roblox/unlink', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
-                    body: JSON.stringify({ robloxId })
-                });
-                if (res.ok) {
-                    showToast('Roblox account unlinked.', 'info');
-                    fetchRobloxStatus(t);
-                } else {
-                    const d = await res.json().catch(() => ({}));
-                    alert(d.error || 'Failed to unlink account.');
+            showConfirm(`Are you sure you want to unlink the Roblox account "${username}"?`, async () => {
+                logToTerminal(`Unlinking Roblox account ID: ${robloxId}`, 'ROBLOX_UNLINK');
+                const t = sessionStorage.getItem('discord_token');
+                try {
+                    const res = await fetch('/api/user/roblox/unlink', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                        body: JSON.stringify({ robloxId })
+                    });
+                    if (res.ok) {
+                        showToast('Roblox account unlinked.', 'info');
+                        fetchRobloxStatus(t);
+                    } else {
+                        const d = await res.json().catch(() => ({}));
+                        showToast(d.error || 'Failed to unlink account.', 'error');
+                    }
+                } catch (e) {
+                    console.error('[Roblox Unlink Error]:', e);
+                    showToast(`Error: ${e.message}`, 'error');
                 }
-            } catch (e) {
-                console.error('[Roblox Unlink Error]:', e);
-                showToast(`Error: ${e.message}`, 'error');
-            }
+            });
         }
 
         window.userGuilds = [];
@@ -7651,7 +7710,38 @@
                 counter.textContent = `${el.value.length}/${limit}`;
             }
         };
-                function addNotification(title, content, type = 'info', server = "") {
+
+        window.alert = function(msg) {
+            showToast(msg, 'warning');
+            addNotification('System Alert', msg, 'warning', 'System');
+        };
+
+        window.showConfirm = function(message, onConfirm) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const msgEl = document.getElementById('custom-confirm-message');
+            const okBtn = document.getElementById('custom-confirm-ok');
+            const cancelBtn = document.getElementById('custom-confirm-cancel');
+            if (!modal || !msgEl || !okBtn || !cancelBtn) return;
+            
+            msgEl.textContent = message;
+            modal.style.display = 'flex';
+            
+            const close = () => {
+                modal.style.display = 'none';
+                okBtn.onclick = null;
+                cancelBtn.onclick = null;
+            };
+            
+            okBtn.onclick = () => {
+                close();
+                if (onConfirm) onConfirm();
+            };
+            cancelBtn.onclick = () => {
+                close();
+            };
+        };
+
+        function addNotification(title, content, type = 'info', server = "") {
             const normalizedTitle = String(title || '').trim();
             const normalizedContent = String(content || '').trim();
             const targetServer = server || currentServerName || 'System';
@@ -7689,11 +7779,12 @@
         }
 
         function clearNotifications() {
-            if (!confirm('Clear all notifications?')) return;
-            logToTerminal('Clearing notifications.', 'SYSTEM_ACTION');
-            notifications = [];
-            saveNotifications();
-            renderNotifications();
+            showConfirm('Clear all notifications?', () => {
+                logToTerminal('Clearing notifications.', 'SYSTEM_ACTION');
+                notifications = [];
+                saveNotifications();
+                renderNotifications();
+            });
         }
 
         function markAllRead() {
@@ -8270,12 +8361,17 @@
         };
 
         async function clearGlobalData() {
-            if (!confirm('CRITICAL WARNING: This will permanently delete your XP, levels, memory, Roblox connections, and warnings across ALL Nora-connected servers. This is irreversible. Proceed?')) return;
-            logToTerminal('Executing global data purge.', 'USER_PURGE');
-            const t = sessionStorage.getItem('discord_token');
-            const res = await fetch('/api/user/clear-data', { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
-            if (res.ok) alert('Global data purge complete.');
-            else alert('Failed to purge data.');
+            showConfirm('CRITICAL WARNING: This will permanently delete your XP, levels, memory, Roblox connections, and warnings across ALL Nora-connected servers. This is irreversible. Proceed?', async () => {
+                logToTerminal('Executing global data purge.', 'USER_PURGE');
+                const t = sessionStorage.getItem('discord_token');
+                const res = await fetch('/api/user/privacy/purge', { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
+                if (res.ok) {
+                    showToast('Global data purge complete.', 'success');
+                    addNotification('Data Purged', 'All personal data record successfully purged.', 'success', 'System');
+                } else {
+                    showToast('Failed to purge data.', 'error');
+                }
+            });
         }
 
         async function restartBot() {
@@ -13965,6 +14061,18 @@
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
             <button class="config-btn" style="width: auto; margin: 0; background: transparent; border-color: rgba(255,255,255,0.15); color: #fff;" onclick="document.getElementById('send-app-modal').style.display='none'">Cancel</button>
             <button class="config-btn" style="width: auto; margin: 0; background: var(--primary); color: #000; font-weight: 700;" onclick="submitSendAppToChannel()">Send Panel</button>
+        </div>
+    </div>
+</div>
+
+<div id="custom-confirm-modal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 99999;">
+    <div class="panel" style="max-width: 400px; padding: 25px; border-radius: 16px; border: 1px solid var(--border); background: #0b0b0a; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <div style="font-size: 2rem; color: #ff9f43; margin-bottom: 5px;"><i class="fas fa-exclamation-triangle"></i></div>
+        <h4 style="margin: 0; color: #fff; font-size: 1.1rem; font-weight: 700;">Please Confirm</h4>
+        <p id="custom-confirm-message" style="font-size: 0.88rem; color: var(--muted); margin: 0 0 15px 0; line-height: 1.4;"></p>
+        <div style="display: flex; gap: 12px; justify-content: center; width: 100%;">
+            <button class="config-btn" id="custom-confirm-cancel" style="width: auto; margin: 0; padding: 8px 20px; background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.1);">Cancel</button>
+            <button class="config-btn" id="custom-confirm-ok" style="width: auto; margin: 0; padding: 8px 20px; background: #fff; color: #000; font-weight: 700;">Confirm</button>
         </div>
     </div>
 </div>

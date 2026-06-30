@@ -185,6 +185,8 @@ require('./database/models/MemberRolesHistory');
 
 
 const client = new Client({
+    shards: Array.from({ length: 10 }, (_, i) => i),
+    shardCount: 10,
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
@@ -842,6 +844,34 @@ app.get('/api/public/user/:userId', async (req, res) => {
             username: user.username,
             globalName: user.globalName || user.username,
             avatar: user.displayAvatarURL({ size: 256 })
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/api/public/user/:userId/metrics', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const UserLevel = require('./database/models/UserLevel');
+        const RobloxVerify = require('./database/models/RobloxVerify');
+        const Warning = require('./database/models/Warning');
+
+        const levels = await UserLevel.findAll({ where: { userId } });
+        const totalXp = levels.reduce((acc, l) => acc + (l.totalXp || 0), 0);
+        const serversJoined = levels.length;
+        const maxLevel = levels.reduce((acc, l) => Math.max(acc, l.level || 0), 0);
+
+        const roblox = await RobloxVerify.findOne({ where: { userId, isActive: true, status: 'VERIFIED' } });
+        const warningsCount = await Warning.count({ where: { userId } });
+
+        res.json({
+            totalXp,
+            serversJoined,
+            maxLevel,
+            robloxLinked: !!roblox,
+            robloxUsername: roblox ? roblox.robloxId : null,
+            warningsCount
         });
     } catch (e) {
         res.status(500).json({ error: e.message });

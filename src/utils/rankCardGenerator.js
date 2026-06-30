@@ -19,7 +19,7 @@ async function generateRankCard({ username, level, currentXp, nextLevelXp, rank,
         try {
             const response = await axios.get(avatarUrl, { responseType: 'arraybuffer', timeout: 5000 });
             const pngBuffer = await sharp(response.data)
-                .resize(120, 120)
+                .resize(130, 130)
                 .png()
                 .toBuffer();
             avatarBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
@@ -29,55 +29,41 @@ async function generateRankCard({ username, level, currentXp, nextLevelXp, rank,
     }
 
     const progressPercent = Math.min(100, Math.max(0, (currentXp / nextLevelXp) * 100));
-    const barWidth = Math.round((progressPercent / 100) * 440);
+    const barWidthPercent = Math.round((progressPercent / 100) * 565);
 
     const svgString = `
     <svg width="800" height="220" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <!-- Premium Dark Indigo Gradient for Progress Bar -->
-            <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#7c3aed" />
-                <stop offset="100%" stop-color="#4f46e5" />
-            </linearGradient>
-            
-            <!-- Circular Avatar Clip -->
             <clipPath id="avatarClip">
-                <circle cx="100" cy="110" r="60" />
+                <rect x="40" y="45" width="130" height="130" rx="20" />
             </clipPath>
+            <linearGradient id="minimalGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#a1a1aa" />
+            </linearGradient>
         </defs>
 
-        <!-- Background base (Solid rich obsidian/slate) -->
-        <rect width="800" height="220" rx="16" fill="#111217" />
-        
-        <!-- Subtle clean card border -->
-        <rect x="0.75" y="0.75" width="798.5" height="218.5" rx="15.25" fill="none" stroke="#23252e" stroke-width="1.5" />
+        <!-- Dark base card -->
+        <rect width="800" height="220" rx="24" fill="#09090b" />
+        <rect x="1" y="1" width="798" height="218" rx="23" fill="none" stroke="#27272a" stroke-width="2" />
 
-        <!-- Avatar border & image -->
-        <circle cx="100" cy="110" r="64" fill="none" stroke="#2d3039" stroke-width="2" />
+        <!-- Avatar -->
         ${avatarBase64 ? `
-        <image href="${avatarBase64}" x="40" y="50" width="120" height="120" clip-path="url(#avatarClip)" />
+        <image href="${avatarBase64}" x="40" y="45" width="130" height="130" clip-path="url(#avatarClip)" />
         ` : `
-        <circle cx="100" cy="110" r="60" fill="#18191e" />
-        <text x="100" y="122" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="bold" fill="#7c3aed" text-anchor="middle">@</text>
+        <rect x="40" y="45" width="130" height="130" rx="20" fill="#18181b" />
+        <text x="105" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="48" font-weight="600" fill="#a1a1aa" text-anchor="middle">@</text>
         `}
+        <rect x="40" y="45" width="130" height="130" rx="20" fill="none" stroke="#27272a" stroke-width="1.5" />
 
-        <!-- Rank Badge (top right pill) -->
-        <rect x="640" y="35" width="120" height="36" rx="18" fill="#18191e" stroke="#2d3039" stroke-width="1.5" />
-        <text x="700" y="59" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#e4e4e7" text-anchor="middle">RANK #${rank}</text>
+        <!-- Metadata Info -->
+        <text x="195" y="80" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="34" font-weight="800" fill="#ffffff" letter-spacing="-0.03em">@${username}</text>
+        <text x="195" y="120" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#a1a1aa" letter-spacing="0.05em">LEVEL ${level}   •   RANK #${rank}</text>
+        <text x="760" y="120" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="end">${currentXp.toLocaleString()} <tspan fill="#71717a">/ ${nextLevelXp.toLocaleString()} XP</tspan></text>
 
-        <!-- Username -->
-        <text x="190" y="75" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="900" fill="#ffffff" letter-spacing="-0.5">@${username}</text>
-
-        <!-- Level indicator -->
-        <text x="190" y="125" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#a78bfa">LEVEL ${level}</text>
-
-        <!-- XP info -->
-        <text x="630" y="125" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="#a1a1aa" text-anchor="end">${currentXp.toLocaleString()} <tspan fill="#52525b">/ ${nextLevelXp.toLocaleString()} XP</tspan></text>
-
-        <!-- Progress Bar container -->
-        <rect x="190" y="145" width="440" height="24" rx="12" fill="#18191e" stroke="#23252e" stroke-width="1" />
-        <!-- Progress fill -->
-        ${barWidth > 0 ? `<rect x="190" y="145" width="${barWidth}" height="24" rx="12" fill="url(#progressGrad)" />` : ''}
+        <!-- Ultra-sleek minimalist Progress Bar -->
+        <rect x="195" y="145" width="565" height="8" rx="4" fill="#18181b" />
+        ${barWidthPercent > 0 ? `<rect x="195" y="145" width="${barWidthPercent}" height="8" rx="4" fill="url(#minimalGrad)" />` : ''}
     </svg>
     `.trim();
 
