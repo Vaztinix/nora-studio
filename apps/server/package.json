@@ -1,0 +1,19 @@
+{
+  "name": "@nora/server",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@nora/database": "file:../../packages/database",
+    "express": "^4.19.2",
+    "ws": "^8.16.0",
+    "ioredis": "^5.3.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "axios": "^1.6.8"
+  }
+}

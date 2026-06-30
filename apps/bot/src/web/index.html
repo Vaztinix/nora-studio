@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Studio | Privacy-First, All-in-One Discord Automation Bot</title>
+    <meta name="description" content="Nora Studio is a privacy-first, all-in-one Discord bot designed to keep your server secure, automated, and running smoothly. From robust Roblox integrations and leveling systems to secure verification and custom autoresponders, Nora handles all your server tasks while keeping your community's data safe and private.">
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
+            --discord-blurple: #5865F2;
+            --discord-blurple-hover: #4752C4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* ===== HERO PARTICLE CANVAS ===== */
+        #hero-particles {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .hero-section { position: relative; }
+
+        /* ===== HERO GLOW ===== */
+        .hero-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-glow-1 {
+            background: rgba(88, 101, 242, 0.1);
+            top: -100px;
+            left: -100px;
+            animation: glowPulse 8s ease-in-out infinite alternate;
+        }
+        .hero-glow-2 {
+            background: rgba(0, 229, 255, 0.06);
+            bottom: -150px;
+            right: -100px;
+            animation: glowPulse 10s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes glowPulse {
+            0% { transform: scale(1) translate(0, 0); opacity: 0.8; }
+            50% { transform: scale(1.2) translate(20px, -10px); opacity: 1; }
+            100% { transform: scale(0.9) translate(-15px, 15px); opacity: 0.7; }
+        }
+
+        /* ===== ANIMATED HERO TITLE ===== */
+        .hero-info h1 {
+            background: linear-gradient(135deg, #FFFFFF 0%, #CCCCCC 40%, #5865F2 70%, #00e5ff 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: heroShimmer 6s ease-in-out infinite;
+        }
+
+        @keyframes heroShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== FLOATING SIMULATOR ===== */
+        .simulator-wrapper {
+            animation: simFloat 5s ease-in-out infinite;
+        }
+
+        @keyframes simFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        /* ===== SCROLL REVEAL ===== */
+        .reveal-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== CARD HOVER GLOW ===== */
+        .secondary-card {
+            transition: all 0.35s ease;
+        }
+        .secondary-card:hover {
+            box-shadow: 0 0 30px rgba(88, 101, 242, 0.08);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            background: rgba(7, 7, 6, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .btn-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-header:hover {
+            background: var(--border-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
+            align-items: center;
+            padding: 80px 0;
+            position: relative;
+        }
+
+        @media (max-width: 900px) {
+            .hero-section {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+            .hero-info {
+                align-items: center;
+            }
+            .hero-buttons {
+                justify-content: center;
+            }
+        }
+
+        .hero-info {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: left;
+        }
+
+        @media (max-width: 900px) {
+            .hero-info {
+                text-align: center;
+            }
+        }
+
+        .tagline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-info h1 {
+            font-size: clamp(2.2rem, 4vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+        }
+
+        .hero-info p {
+            color: var(--muted);
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn-main {
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .btn-main-primary {
+            background: var(--primary);
+            color: #0b0b0a;
+            border: none;
+        }
+
+        .btn-main-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-main-secondary {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: white;
+        }
+
+        .btn-main-secondary:hover {
+            background: var(--border-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Interactive Simulator Card */
+        .simulator-wrapper {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        .simulator-card {
+            background: #252523;
+            border: 1px solid #3E3E3B;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .simulator-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+
+        .bot-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bot-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-weight: 800;
+            font-size: 0.8rem;
+            position: relative;
+        }
+
+        .bot-status {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #23a55a;
+            border: 2px solid #252523;
+        }
+
+        .bot-name {
+            font-weight: 600;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .bot-badge {
+            background: #5865F2;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .simulator-body {
+            background: var(--card-bg);
+            border: 1px solid #3C3B38;
+            border-radius: 8px;
+            padding: 16px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .discord-embed {
+            border-left: 4px solid var(--primary);
+            background: #191918;
+            padding: 12px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .embed-title {
+            font-weight: 600;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .embed-description {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .discord-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .discord-btn {
+            background: #2a2a28;
+            border: 1px solid #3b3a37;
+            color: #b5b3ad;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .discord-btn:hover {
+            background: #3b3a37;
+        }
+
+        .discord-btn-primary {
+            background: #4e3cfb;
+            border-color: #6e5ffc;
+            color: white;
+        }
+
+        .discord-btn-primary:hover {
+            background: #5b4bff;
+        }
+
+        .discord-btn-success {
+            background: #23a55a;
+            border-color: #24b662;
+            color: white;
+        }
+
+        /* Features Showcase Section */
+        .features-showcase {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .section-header {
+            max-width: 600px;
+            margin: 0 auto 50px auto;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        .showcase-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .showcase-tab {
+            padding: 10px 20px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .showcase-tab:hover {
+            color: white;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .showcase-tab.active {
+            background: var(--primary);
+            color: #070706;
+            border-color: var(--primary);
+        }
+
+        .showcase-display {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+            text-align: left;
+            align-items: center;
+            min-height: 380px;
+        }
+
+        @media (max-width: 768px) {
+            .showcase-display {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+        }
+
+        .showcase-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .showcase-content h3 {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .showcase-content p {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .showcase-visual {
+            background: #191918;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* 12 Grid Secondary Features */
+        .secondary-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 60px;
+        }
+
+        .secondary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .secondary-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .secondary-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.15rem;
+            margin-bottom: 16px;
+        }
+
+        .secondary-card h4 {
+            font-size: 1.1rem;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .secondary-card p {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        /* Pricing Plan Matrix */
+        .pricing-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .pricing-table-container {
+            overflow-x: auto;
+            margin-top: 40px;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 600px;
+        }
+
+        .pricing-table th, .pricing-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pricing-table th {
+            font-weight: 600;
+            color: white;
+            background: var(--card-bg);
+        }
+
+        .pricing-table td {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .pricing-table tr:hover td {
+            color: white;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .pricing-table td:nth-child(2), .pricing-table td:nth-child(3) {
+            text-align: center;
+        }
+
+        .pricing-table th:nth-child(2), .pricing-table th:nth-child(3) {
+            text-align: center;
+        }
+
+        .check-icon {
+            color: var(--primary);
+        }
+
+        .cross-icon {
+            color: #ff4d4d;
+        }
+
+        /* Benefits Showcase */
+        .benefits-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .benefit-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            margin-bottom: 80px;
+        }
+
+        .benefit-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .benefit-row.reversed {
+            direction: rtl;
+        }
+
+        .benefit-row.reversed .benefit-info {
+            direction: ltr;
+        }
+
+        @media (max-width: 768px) {
+            .benefit-row, .benefit-row.reversed {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                direction: ltr;
+            }
+        }
+
+        .benefit-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .benefit-info h3 {
+            font-size: 1.8rem;
+            color: white;
+            font-weight: 700;
+        }
+
+        .benefit-info p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .benefit-visual {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Call To Action */
+        .cta-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            background: linear-gradient(180deg, var(--site-bg) 0%, #111110 100%);
+        }
+
+        .cta-card {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 50px 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: rgba(17, 17, 16, 0.5);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .cta-card h2 {
+            font-size: 2.2rem;
+            color: white;
+            font-weight: 800;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            background: #0b0b0a;
+            padding: 60px 0 30px 0;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr repeat(3, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+            .footer-brand-col {
+                grid-column: span 2;
+            }
+        }
+
+        .footer-brand-col {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .footer-brand-col p {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .footer-col h5 {
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-col ul a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(35, 165, 90, 0.1);
+            color: #23a55a;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.78rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #23a55a;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/install">Invite</a>
+                <a href="/docs">Docs</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/team">Team</a>
+                <a href="/legal">Legal</a>
+            </nav>
+            <a href="/dashboard" class="btn-header">Open Console</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="container hero-section">
+            <canvas id="hero-particles"></canvas>
+            <div class="hero-glow hero-glow-1"></div>
+            <div class="hero-glow hero-glow-2"></div>
+            <div class="hero-info" style="position: relative; z-index: 1;">
+                <div class="tagline">
+                    <i class="fas fa-shield-alt"></i> THE PRIVACY-FIRST, ALL-IN-ONE DISCORD OPERATIONS & AUTOMATION HUB
+                </div>
+                <h1>The ultimate privacy-first and all-in-one workspace for Discord</h1>
+                <p>Nora Studio is a privacy-first, all-in-one Discord bot designed to keep your server secure, automated, and running smoothly. From robust Roblox integrations and leveling systems to secure verification and custom autoresponders, Nora handles all your server tasks while keeping your community's data safe and private.</p>
+                <div class="hero-buttons">
+                    <a href="/install" class="btn-main btn-main-primary">Invite Nora</a>
+                    <a href="/dashboard" class="btn-main btn-main-secondary">Open Dashboard <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+                </div>
+            </div>
+
+            <div class="simulator-wrapper">
+                <div class="simulator-card">
+                    <div class="simulator-header">
+                        <div class="bot-profile">
+                            <div class="bot-avatar">
+                                N
+                                <div class="bot-status"></div>
+                            </div>
+                            <span class="bot-name">Nora</span>
+                            <span class="bot-badge">Bot</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--muted);">Live Interactive Demo</span>
+                    </div>
+                    <div class="simulator-body" id="demo-body">
+                        <div class="discord-embed" id="demo-embed">
+                            <span class="embed-title" id="demo-title">Nora Privacy-First Guard</span>
+                            <span class="embed-description" id="demo-desc">
+                                Protect your server with Nora. We use local database storage, zero third-party data tracking, and end-to-end telemetry controls to ensure your guild records, verification states, and moderator actions remain completely secure and private.
+                            </span>
+                        </div>
+                        <div class="discord-buttons" id="demo-buttons">
+                            <button class="discord-btn discord-btn-primary" onclick="triggerDemo('security')">Security Shield</button>
+                            <button class="discord-btn" onclick="triggerDemo('privacy')">Privacy Status</button>
+                            <button class="discord-btn" onclick="triggerDemo('moderation')">All-in-One Dashboard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Showcase Section -->
+        <section class="features-showcase">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Powerful Features for All Discord Communities</h2>
+                    <p>Everything you need to manage automations, roles, logs, and community safety under a privacy-first model.</p>
+                </div>
+
+                <div class="showcase-tabs">
+                    <div class="showcase-tab active" onclick="switchShowcase(0, this)">Support Tickets</div>
+                    <div class="showcase-tab" onclick="switchShowcase(1, this)">Roblox Verification</div>
+                    <div class="showcase-tab" onclick="switchShowcase(2, this)">Custom Commands</div>
+                    <div class="showcase-tab" onclick="switchShowcase(3, this)">Invite Tracker</div>
+                    <div class="showcase-tab" onclick="switchShowcase(4, this)">Leveling Engine</div>
+                </div>
+
+                <div class="showcase-display" id="showcase-display">
+                    <div class="showcase-content">
+                        <h3 id="showcase-title">Instant Support Ticket Creation</h3>
+                        <p id="showcase-desc">Allow members to spawn private support channels instantly at the click of a button. Nora handles permissions, staff mentions, and setups automatically behind the scenes.</p>
+                    </div>
+                    <div class="showcase-visual">
+                        <div class="discord-embed" style="border-color:#5865F2;">
+                            <strong style="color:white; font-size:0.9rem;"># ticket-0042</strong>
+                            <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Ticket created by @Member. Staff will be with you shortly.</p>
+                            <div class="discord-buttons" style="margin-top:10px;">
+                                <button class="discord-btn" style="background:#ff4d4d; color:white; border:none;"><i class="fas fa-lock"></i> Close Ticket</button>
+                                <button class="discord-btn"><i class="fas fa-download"></i> Transcript</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 12-Grid Features -->
+                <div class="secondary-features-grid" id="features-grid">
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-ticket-alt"></i></div>
+                        <h4>Support Ticketing Suite</h4>
+                        <p>Deploy customizable support panels with custom questions, claim queues, inactivity sweep timers, and permanent HTML transcripts.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h4>Roblox Integration Desk</h4>
+                        <p>Automatically synchronize member server roles with Roblox group ranks and manage verification mapping states dynamically.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-terminal"></i></div>
+                        <h4>Custom Commands & Autoresponders</h4>
+                        <p>Set trigger phrases to execute auto-replies, incorporating ignore filters for staff/bots and role-specific conditional restrictions.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-users-cog"></i></div>
+                        <h4>Invite Tracker Logs</h4>
+                        <p>Announce joins, trace active invite links, count inviter stats, and configure welcome templating variables.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-trophy"></i></div>
+                        <h4>Advanced Leveling Engine</h4>
+                        <p>Earn experience (XP) through chat and voice channels, set multiplier roles, and configure automatic milestone role rewards.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-history"></i></div>
+                        <h4>Granular Server Audits</h4>
+                        <p>Log 15+ server events (message updates, channel edits, voice swaps, boosting actions) into specific log rooms.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-user-shield"></i></div>
+                        <h4>Automated AutoMod Shield</h4>
+                        <p>Instantly block server slurs, mass mentions, profanity, scam URLs, and duplicate spam in real-time memory.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-gavel"></i></div>
+                        <h4>Moderation Desk</h4>
+                        <p>Equip staff with quick-moderation commands for warning thresholds, temporary bans, mutes, deafening, and purging.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-gamepad"></i></div>
+                        <h4>Interactive Games & Fun</h4>
+                        <p>Engage members with Guess-the-Number, Rock-Paper-Scissors (RPS), and global leaderboard integrations.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-poll"></i></div>
+                        <h4>Polls & Announcements</h4>
+                        <p>Launch styled server voting grids, query feedback, and broadcast server notifications cleanly.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-language"></i></div>
+                        <h4>Translation Engine</h4>
+                        <p>Instantly translate text content via slash commands, allowing global members to chat in any language.</p>
+                    </div>
+                    <div class="secondary-card reveal-item">
+                        <div class="secondary-icon"><i class="fas fa-brain"></i></div>
+                        <h4>Nora AI Companion</h4>
+                        <p>Interact with local and API-driven Artificial Intelligence models to answer questions, analyze statistics, and guide users.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Plan Matrix -->
+        <section class="pricing-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Choose the Right Plan for Your Community</h2>
+                    <p>Compare Nora Studio Free and Premium tiers to unlock advanced community tools.</p>
+                </div>
+
+                <div class="pricing-table-container">
+                    <table class="pricing-table">
+                        <thead>
+                            <tr>
+                                <th>Feature Area</th>
+                                <th>Nora Free</th>
+                                <th>Nora Premium</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>All-in-One Setup Guild Limit</td>
+                                <td>2 active servers</td>
+                                <td>Unlimited servers</td>
+                            </tr>
+                            <tr>
+                                <td>Custom Commands & Autoresponders</td>
+                                <td>Up to 5 triggers</td>
+                                <td>Unlimited triggers</td>
+                            </tr>
+                            <tr>
+                                <td>Autoresponder Ignored/Allowed Role Filters</td>
+                                <td><i class="fas fa-times cross-icon"></i> Standard only</td>
+                                <td><i class="fas fa-check check-icon"></i> Full role controls</td>
+                            </tr>
+                            <tr>
+                                <td>Roblox Verification & Rank Sync</td>
+                                <td>Standard polling</td>
+                                <td>Instant real-time sync</td>
+                            </tr>
+                            <tr>
+                                <td>Leveling System Rank Card Colors</td>
+                                <td>Default styles</td>
+                                <td>Custom HEX color builder</td>
+                            </tr>
+                            <tr>
+                                <td>Voice & Chat XP Multipliers</td>
+                                <td><i class="fas fa-times cross-icon"></i> Disabled</td>
+                                <td><i class="fas fa-check check-icon"></i> Unlimited role boosters</td>
+                            </tr>
+                            <tr>
+                                <td>Granular Logging Audit Streams</td>
+                                <td>3 active channels</td>
+                                <td>All 15+ event streams</td>
+                            </tr>
+                            <tr>
+                                <td>AI Engine Integrations (Gemini / GPT)</td>
+                                <td><i class="fas fa-times cross-icon"></i> Disabled</td>
+                                <td><i class="fas fa-check check-icon"></i> Advanced LLM access</td>
+                            </tr>
+                            <tr>
+                                <td>Custom Command Ignore Staff & Bots Toggle</td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                                <td><i class="fas fa-check check-icon"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Member Color Picker Roles Desk</td>
+                                <td><i class="fas fa-times cross-icon"></i> Disabled</td>
+                                <td><i class="fas fa-check check-icon"></i> Unlimited color roles</td>
+                            </tr>
+                            <tr>
+                                <td>Interactive Games & Fun</td>
+                                <td>Basic games</td>
+                                <td>Full game suite & global boards</td>
+                            </tr>
+                            <tr>
+                                <td>Data Protection & Priority SLA</td>
+                                <td><i class="fas fa-times cross-icon"></i> Standard</td>
+                                <td><i class="fas fa-check check-icon"></i> 24/7 Priority SLA</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Showcase -->
+        <section class="benefits-section">
+            <div class="container">
+                <div class="benefit-row">
+                    <div class="benefit-info">
+                        <h3>All-in-One Community Operations</h3>
+                        <p>Replace multiple single-purpose bots with one unified command deck. Nora Studio handles Roblox group verification, leveling engines, custom commands, logging, and autoresponders simultaneously under a singular framework.</p>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="discord-embed" style="width:100%;">
+                            <span style="color:#FFFFFF; font-size:0.8rem; font-weight:700;"><i class="fas fa-cubes"></i> NORA MULTI-TASK SUITE</span>
+                            <p style="color:white; font-size:0.9rem; margin-top:8px;">Active Modules: Leveling, Anti-Raid, Verification, Autoresponder.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="benefit-row reversed">
+                    <div class="benefit-info">
+                        <h3>Privacy-First Telemetry Control</h3>
+                        <p>Your server data belongs to you. Nora does not store message contents, track user habits, or share telemetry. All configurations are securely isolated and databases are fully encrypted.</p>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="discord-embed" style="width:100%; border-color:#23a55a;">
+                            <span style="color:#23a55a; font-size:0.8rem; font-weight:700;"><i class="fas fa-shield-alt"></i> ZERO TELEMETRY LOGGING</span>
+                            <p style="color:white; font-size:0.9rem; margin-top:8px;">Encryption: AES-256 Active. Telemetry state: Restricted.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="benefit-row">
+                    <div class="benefit-info">
+                        <h3>Tailored Layout and Themes</h3>
+                        <p>Match your community's style with custom aesthetics. Toggle between color accents, custom backdrops, and compact layouts directly from the Nora Studio control panel.</p>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="discord-embed" style="border-color:#5865F2; width:100%;">
+                            <strong style="color:white; font-size:1rem;">Aesthetics & Branding Control</strong>
+                            <p style="color:#B5B3AD; font-size:0.82rem; margin-top:5px;">Custom accents, background images, and layout options.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-card">
+                    <h2>Ready to Elevate Your Server Operations?</h2>
+                    <p>Set up Nora Studio in under five minutes. Privacy-first, zero configurations required.</p>
+                    <div class="hero-buttons">
+                        <a href="/install" class="btn-main btn-main-primary">Invite Nora Bot</a>
+                        <a href="/dashboard" class="btn-main btn-main-secondary">Open Console</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand-col">
+                    <a href="/" class="brand">
+                        <img src="nora.png" alt="Nora Logo">
+                        <span>Nora Studio</span>
+                    </a>
+                    <p>The ultimate privacy-first, all-in-one operations and automation solution for Discord servers. Enhance workflows, enforce security, and keep communities safe.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Resources</h5>
+                    <ul>
+                        <li><a href="/dashboard">Dashboard</a></li>
+                        <li><a href="/install">Invite Bot</a></li>
+                        <li><a href="/team">Our Team</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Learn</h5>
+                    <ul>
+                        <li><a href="/docs">Documentation</a></li>
+                        <li><a href="/docs#panels">Ticket Panels</a></li>
+                        <li><a href="/docs#automations">Automations</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Support & Legal</h5>
+                    <ul>
+                        <li><a href="/support">Discord Support</a></li>
+                        <li><a href="/legal">Terms & Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>&copy; 2026 Nora Studio. All rights reserved.</span>
+                <span class="status-badge">
+                    <span class="status-dot"></span> All Systems Operational
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Logic Script -->
+    <script>
+        // Interactive Live Demo Simulator
+        function triggerDemo(type) {
+            const embed = document.getElementById('demo-embed');
+            const title = document.getElementById('demo-title');
+            const desc = document.getElementById('demo-desc');
+            const buttons = document.getElementById('demo-buttons');
+
+            if (type === 'security') {
+                title.innerText = "Nora Security Shield Active";
+                desc.innerHTML = "Anti-Raid, Profile Picture checks, and Account Age verification gates are actively protecting your server. Intrusion attempts blocked: <strong>0</strong>.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
+            } else if (type === 'privacy') {
+                title.innerText = "Nora Privacy Status: Secure";
+                desc.innerHTML = "Telemetry data: <strong>Disabled</strong>. Database storage: <strong>Encrypted</strong>. Third-party data selling: <strong>Zero</strong>. Your community's privacy is fully guaranteed.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
+            } else if (type === 'moderation') {
+                title.innerText = "All-in-One Task Management";
+                desc.innerHTML = "Managing leveling systems, Roblox verification, autoresponders, tickets, and custom commands. All features run locally on the Nora node.";
+                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
+            }
+        }
+
+        function resetDemo() {
+            const title = document.getElementById('demo-title');
+            const desc = document.getElementById('demo-desc');
+            const buttons = document.getElementById('demo-buttons');
+
+            title.innerText = "Nora Privacy-First Guard";
+            desc.innerHTML = "Protect your server with Nora. We use local database storage, zero third-party data tracking, and end-to-end telemetry controls to ensure your guild records, verification states, and moderator actions remain completely secure and private.";
+            buttons.innerHTML = `
+                <button class="discord-btn discord-btn-primary" onclick="triggerDemo('security')">Security Shield</button>
+                <button class="discord-btn" onclick="triggerDemo('privacy')">Privacy Status</button>
+                <button class="discord-btn" onclick="triggerDemo('moderation')">All-in-One Dashboard</button>
+            `;
+        }
+
+        // Showcase switch
+        const showcaseData = [
+            {
+                title: "Support Ticket Center",
+                desc: "Allow members to spawn private support channels instantly at the click of a button. Nora handles permissions, staff mentions, categories routing, and transcript logging automatically.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#5865F2;">
+                        <strong style="color:white; font-size:0.9rem;"># ticket-0042</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Support ticket created by @Member. Staff will assist you shortly.</p>
+                        <div class="discord-buttons" style="margin-top:10px;">
+                            <button class="discord-btn" style="background:#ff4d4d; color:white; border:none;"><i class="fas fa-lock"></i> Close Ticket</button>
+                            <button class="discord-btn"><i class="fas fa-download"></i> Transcript</button>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Roblox Group Verification & Role Binding",
+                desc: "Securely bind and synchronize your community roles with Roblox group ranks. Automatically verify Roblox account mappings and assign corresponding roles when members join the Discord.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#23a55a;">
+                        <strong style="color:white; font-size:0.9rem;">Roblox Verification Status</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Roblox User: <strong>BuildBoy</strong> (Rank: Captain)<br>Roles Assigned: <span style="background:rgba(35,165,90,0.1); color:#23a55a; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Verified</span> <span style="background:rgba(35,165,90,0.1); color:#23a55a; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Captain Role</span></p>
+                    </div>
+                `
+            },
+            {
+                title: "Custom Commands & Autoresponders",
+                desc: "Create dynamic workflows and customized commands. Includes an ignore filter for server staff and bots, channel exclusions, and button-triggered reactions.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#eb459e;">
+                        <strong style="color:white; font-size:0.9rem;">Autoresponder Triggered</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Trigger: <code>!emergency</code><br>Action: Pings emergency staff, ignores other bots, and posts safety guidelines.</p>
+                    </div>
+                `
+            },
+            {
+                title: "Invite Tracker Logs",
+                desc: "Track referral links and keep logs of precisely which invite code was utilized and who invited the new member, counting referral totals automatically.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#FFFFFF;">
+                        <strong style="color:white; font-size:0.9rem;">Invite Tracker Notification</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">📥 @NewUser joined the server using invite link <code>nora-dev</code> (Created by @Inviter - Total Invites: 42).</p>
+                    </div>
+                `
+            },
+            {
+                title: "Advanced Leveling & XP Multipliers",
+                desc: "Build community engagement with automated experience (XP) systems. Set promoter roles, adjust voice/text XP cooldown intervals, and define role-based multipliers.",
+                visual: `
+                    <div class="discord-embed" style="border-color:#faa61a;">
+                        <strong style="color:white; font-size:0.9rem;">🎉 Level Up!</strong>
+                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Congratulations @Member! You have reached <strong>Level 15</strong> and unlocked the <span style="color:#faa61a;">Silver Elite Role</span>.</p>
+                    </div>
+                `
+            }
+        ];
+
+        function switchShowcase(index, tabEl) {
+            // Remove active classes
+            const tabs = document.querySelectorAll('.showcase-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabEl.classList.add('active');
+
+            // Update content
+            const data = showcaseData[index];
+            document.getElementById('showcase-title').innerText = data.title;
+            document.getElementById('showcase-desc').innerText = data.desc;
+            document.getElementById('showcase-display').querySelector('.showcase-visual').innerHTML = data.visual;
+        }
+        // ===== HERO PARTICLES =====
+        (function() {
+            const c = document.getElementById('hero-particles');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            const hero = c.parentElement;
+            let dots = [], w, h;
+
+            function resize() {
+                const rect = hero.getBoundingClientRect();
+                w = c.width = rect.width;
+                h = c.height = rect.height;
+                dots = [];
+                const count = Math.floor((w * h) / 18000);
+                for (let i = 0; i < count; i++) {
+                    dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 1.5 + 0.5 });
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                for (let i = 0; i < dots.length; i++) {
+                    let d = dots[i];
+                    d.x += d.vx; d.y += d.vy;
+                    if (d.x < 0 || d.x > w) d.vx *= -1;
+                    if (d.y < 0 || d.y > h) d.vy *= -1;
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    ctx.beginPath();
+                    ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    for (let j = i + 1; j < dots.length; j++) {
+                        let dx = d.x - dots[j].x, dy = d.y - dots[j].y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 100) {
+                            ctx.strokeStyle = `rgba(255,255,255,${0.04 * (1 - dist / 100)})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.beginPath();
+                            ctx.moveTo(d.x, d.y);
+                            ctx.lineTo(dots[j].x, dots[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            draw();
+        })();
+
+        // ===== SCROLL REVEAL =====
+        (function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, i) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
+        })();
+    </script>
+</body>
+</html>

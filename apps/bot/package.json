@@ -1,0 +1,17 @@
+{
+  "name": "@nora/bot",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.26.2",
+    "ws": "^8.16.0",
+    "dotenv": "^17.4.0",
+    "ioredis": "^5.11.1",
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.14.0"
+  }
+}

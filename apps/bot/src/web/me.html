@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaztinix | Founder & Developer</title>
+    <meta name="description" content="Official profile of Vaztinix - Founder & Developer of Nora Studio.">
+    <link rel="icon" type="image/png" href="/nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #050505;
+            --card-bg: rgba(10, 10, 10, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --text: #ffffff;
+            --muted: #a1a1aa;
+            --primary: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Wave Canvas Background */
+        #wave-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Subtle Grid Overlay */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: center;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Main Profile View Port */
+        .profile-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            padding: 35px 30px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+        }
+
+        /* Avatar Container */
+        .avatar-container {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 20px;
+        }
+
+        .avatar-box {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            padding: 2px;
+            background: var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 18px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #71717a;
+            border: 3px solid #0a0a0a;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .name {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.03em;
+            margin-bottom: 2px;
+        }
+
+        .handle {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 15px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .bio-box {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--muted);
+            text-align: left;
+        }
+
+        /* Expanded Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 6px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .metric-label {
+            font-size: 0.65rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-top: 4px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        /* Social Links Grid */
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 10px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .social-link:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-1px);
+        }
+
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-top: 25px;
+            transition: color 0.2s, transform 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .back-home:hover {
+            color: #fff;
+            transform: translateX(-2px);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="wave-canvas"></canvas>
+    <div class="grid-overlay"></div>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="avatar-container">
+                <div class="avatar-box">
+                    <img class="avatar" src="/ReVaztinix.jpeg" alt="vaztinix" onerror="this.onerror=null; this.src='/nora.png';">
+                </div>
+                <div class="status-dot" id="status-dot"></div>
+            </div>
+
+            <h1 class="name" id="name">Vaz</h1>
+            <div class="handle" id="handle">@vaztinix</div>
+
+            <div class="badge-container">
+                <span class="badge">Founder</span>
+                <span class="badge">Developer</span>
+            </div>
+
+            <div class="bio-box">
+                <p id="bio">💕 | I care for everyone, but those closest to me will never understand the trust they have.</p>
+            </div>
+
+            <!-- Rich Metrics Section -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="val-servers">0</div>
+                    <div class="metric-label">Servers</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="val-level">0</div>
+                    <div class="metric-label">Max Level</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="val-xp">0</div>
+                    <div class="metric-label">Total XP</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="val-roblox">No</div>
+                    <div class="metric-label">Roblox</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="val-warnings">0</div>
+                    <div class="metric-label">Warnings</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="val-status">Online</div>
+                    <div class="metric-label">Status</div>
+                </div>
+            </div>
+
+            <div class="social-grid">
+                <a href="https://github.com/Vaztinix" class="social-link" target="_blank">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <a href="https://www.youtube.com/@Vaztinix" class="social-link" target="_blank">
+                    <i class="fab fa-youtube"></i> YouTube
+                </a>
+                <a href="https://www.twitch.tv/vaztinix" class="social-link" target="_blank">
+                    <i class="fab fa-twitch"></i> Twitch
+                </a>
+                <a href="https://guns.lol/vaztinix" class="social-link" target="_blank">
+                    <i class="fas fa-link"></i> guns.lol
+                </a>
+                <a href="https://www.roblox.com/users/3089063186/profile" class="social-link" target="_blank">
+                    <i class="fas fa-gamepad"></i> Roblox
+                </a>
+                <a href="https://discord.com/users/1214048435632603137" class="social-link" target="_blank">
+                    <i class="fab fa-discord"></i> Discord
+                </a>
+            </div>
+
+            <a href="/" class="back-home">
+                <i class="fas fa-arrow-left"></i> BACK_TO_NORA
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const userId = '1214048435632603137';
+        const statusColors = {
+            online: '#ffffff',
+            idle: '#71717a',
+            dnd: '#a1a1aa',
+            offline: '#27272a'
+        };
+
+        // --- 1. Load User General Info & Custom Rich Metrics ---
+        fetch(`/api/public/user/${userId}`)
+            .then(res => res.json())
+            .then(user => {
+                if (user && !user.error) {
+                    if (user.avatar) {
+                        document.querySelector('.avatar').src = user.avatar;
+                    }
+                    if (user.globalName) {
+                        document.getElementById('name').textContent = user.globalName;
+                    }
+                    document.getElementById('handle').textContent = `@${user.username}`;
+                }
+            })
+            .catch(() => {});
+
+        // Fetch Rich User Metrics
+        fetch(`/api/public/user/${userId}/metrics`)
+            .then(res => res.json())
+            .then(metrics => {
+                if (metrics && !metrics.error) {
+                    document.getElementById('val-servers').textContent = metrics.serversJoined || 0;
+                    document.getElementById('val-level').textContent = metrics.maxLevel || 0;
+                    document.getElementById('val-xp').textContent = (metrics.totalXp || 0).toLocaleString();
+                    document.getElementById('val-roblox').textContent = metrics.robloxLinked ? 'Linked' : 'No';
+                    document.getElementById('val-warnings').textContent = metrics.warningsCount || 0;
+                }
+            })
+            .catch(() => {});
+
+        // Fetch status from Lanyard
+        fetch(`https://api.lanyard.rest/v1/users/${userId}`)
+            .then(res => res.json())
+            .then(json => {
+                if (json.success && json.data) {
+                    const data = json.data;
+                    const status = data.discord_status;
+                    const statusDot = document.getElementById('status-dot');
+                    const statusLabel = document.getElementById('val-status');
+                    
+                    if (statusColors[status]) {
+                        statusDot.style.backgroundColor = statusColors[status];
+                    }
+                    statusLabel.textContent = status.toUpperCase();
+
+                    if (data.kv && data.kv.bio) {
+                        document.getElementById('bio').textContent = data.kv.bio;
+                    }
+                }
+            })
+            .catch(() => {});
+
+        // --- 2. Fluid Wave Canvas Animation ---
+        const canvas = document.getElementById('wave-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let offset = 0;
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Multiple layered waves at the bottom of the viewport
+            const waves = [
+                { y: canvas.height * 0.85, length: 0.003, amplitude: 35, speed: 0.02, color: 'rgba(255, 255, 255, 0.04)' },
+                { y: canvas.height * 0.87, length: 0.005, amplitude: 20, speed: 0.03, color: 'rgba(255, 255, 255, 0.02)' },
+                { y: canvas.height * 0.83, length: 0.002, amplitude: 15, speed: 0.015, color: 'rgba(255, 255, 255, 0.01)' }
+            ];
+
+            waves.forEach(w => {
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height);
+                for (let x = 0; x < canvas.width; x++) {
+                    const y = w.y + Math.sin(x * w.length + offset * w.speed) * w.amplitude;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.fillStyle = w.color;
+                ctx.fill();
+            });
+
+            offset++;
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

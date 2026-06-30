@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Studio | Support Center</title>
+    <meta name="description" content="Get support, join the official community, read documentation, or report issues for Nora Studio.">
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
+            --radius: 12px;
+            --discord-blurple: #5865F2;
+            --discord-blurple-hover: #4752C4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            background: rgba(7, 7, 6, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .btn-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-header:hover {
+            background: var(--border-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Support Wrapper */
+        .support-wrapper {
+            margin: 6rem auto;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .page-hero {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .page-hero p {
+            color: var(--muted);
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 4rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-hover);
+        }
+
+        .card-icon {
+            font-size: 2.2rem;
+            color: var(--primary);
+        }
+
+        .card h3 {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .card p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #070706;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-discord {
+            background: var(--discord-blurple);
+            color: white;
+        }
+
+        .btn-discord:hover {
+            background: var(--discord-blurple-hover);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-hover);
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            margin-top: 5rem;
+        }
+
+        .faq-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .faq-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+
+        .faq-item h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .faq-item p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            background: #0b0b0a;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/install">Invite</a>
+                <a href="/docs">Docs</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/team">Team</a>
+            </nav>
+            <a href="/dashboard" class="btn-header">Open Console</a>
+        </div>
+    </header>
+
+    <main class="support-wrapper">
+        <div class="container">
+            <section class="page-hero">
+                <h1>Nora Support Center</h1>
+                <p>Welcome to our support operations center. Get help configuring features, resolving sync errors, or joining our developer community.</p>
+            </section>
+
+            <div class="grid">
+                <!-- Discord Support Card -->
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-discord"></i></div>
+                    <h3>Join Official Discord</h3>
+                    <p>Connect directly with the development team and community moderators. Open private tickets on our server for direct guild debugging.</p>
+                    <a href="https://discord.gg/He2Q76H4qP" class="btn btn-discord" target="_blank">
+                        <i class="fab fa-discord"></i> Join Server
+                    </a>
+                </div>
+
+                <!-- Documentation Card -->
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-book"></i></div>
+                    <h3>Read Documentation</h3>
+                    <p>Review standard configurations, custom commands template variables, warn subcommands setup, and active guild parameters.</p>
+                    <a href="/docs" class="btn btn-primary">
+                        <i class="fas fa-file-alt"></i> Browse Docs
+                    </a>
+                </div>
+
+                <!-- GitHub Issues Card -->
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-github"></i></div>
+                    <h3>Report a Bug</h3>
+                    <p>Encountered an issue with level XP rewards, Roblox sync pools, or dashboard updates? Open an issue directly on GitHub.</p>
+                    <a href="https://github.com/Vaztinix/nora-studio/issues" class="btn btn-secondary" target="_blank">
+                        <i class="fab fa-github"></i> Open Issue
+                    </a>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <section class="faq-section">
+                <h2 class="faq-title">Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h4>How fast do Roblox verification updates sync?</h4>
+                        <p>For standard users, Roblox ranks and profile connections verify instantly via our custom validation codes. Rank synchronizations are executed on periodic checks. Premium guilds enjoy direct instant rank bindings.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Why isn't my custom autoresponder firing?</h4>
+                        <p>Check if the command card has "Ignore Server Staff & Bots" toggled on, or if you have configured allowed/ignored role filters that exclude your profile. Administrators can verify active rules in the dashboard settings panel.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Can I delete all my stored community data?</h4>
+                        <p>Yes. In the interest of total data sovereignty and privacy, users can execute the `/mycard` command in Discord at any time and click the "Erase Data" button to instantly wipe their warnings, leveling stats, and verification mappings.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            &copy; 2026 Nora Studio. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora | Roblox Verification Portal</title>
+    <meta name="description" content="Securely verify and link your Roblox account with Nora.">
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
+            --radius: 12px;
+            --success: #2ea043;
+            --danger: #f85149;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Inter", system-ui, sans-serif;
+            background-color: var(--site-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* iOS-like Liquid Blobs - Disabled/Hidden for uniform minimal theme */
+        .liquid-blob {
+            display: none;
+        }
+
+        .portal-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: .2s ease-in-out;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .btn-discord {
+            background: #5865F2;
+            color: white;
+        }
+        .btn-discord:hover {
+            background: #4752c4;
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #070706;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Input Styles */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            color: var(--muted);
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            border-color: var(--primary);
+        }
+
+        /* User badge */
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .user-badge img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .user-badge div {
+            display: flex;
+            flex-direction: column;
+        }
+        .user-badge .username {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: white;
+        }
+        .user-badge .logout-link {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .user-badge .logout-link:hover {
+            color: var(--danger);
+        }
+
+        /* Copy code container */
+        .code-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px dashed var(--primary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: color 0.2s;
+        }
+        .copy-btn:hover {
+            color: white;
+        }
+
+        /* Steps */
+        .steps {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+        .step-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .step-num {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        .step-text {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+        .step-text strong {
+            color: white;
+        }
+
+        /* Accounts list */
+        .accounts-title {
+            text-align: left;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+            margin-top: 30px;
+        }
+        .accounts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .account-card {
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .account-card.active {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .account-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .account-tag {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .tag-active {
+            background: rgba(46, 160, 67, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(46, 160, 67, 0.3);
+        }
+        .tag-inactive {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(10, 15, 25, 0.95);
+            border: 1px solid var(--border);
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 10000;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast-success {
+            border-color: var(--success);
+            color: #fff;
+        }
+        .toast-error {
+            border-color: var(--danger);
+            color: #fff;
+        }
+        .toast-warning {
+            border-color: #f1c40f;
+            color: #fff;
+        }
+
+        #loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(7, 7, 6, 0.85);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        #loading-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px dashed var(--primary);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="liquid-blob liquid-blob-1"></div>
+    <div class="liquid-blob liquid-blob-2"></div>
+
+    <div class="portal-container">
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+        </div>
+
+        <img src="nora.png" class="logo" alt="Nora Logo" onerror="this.onerror=null; this.src='nora.png'">
+        <h1>Roblox Verification</h1>
+        <p id="portal-description">Link and verify your Roblox profile with your Discord identity.</p>
+
+        <!-- Guild Target Badge -->
+        <div id="guild-info" style="display: none; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <img id="guild-icon" src="" style="width: 32px; height: 32px; border-radius: 50%; display: none;" onerror="this.style.display='none'">
+            <span id="guild-name" style="font-weight: 500; font-size: 0.95rem; color: #fff;"></span>
+        </div>
+
+        <!-- View 1: Auth Required -->
+        <div id="view-auth" style="display: none;">
+            <button id="discord-login-btn" class="btn btn-discord">
+                <i class="fab fa-discord"></i> Login with Discord
+            </button>
+        </div>
+
+        <!-- View 2: Main Flow -->
+        <div id="view-main" style="display: none;">
+            <div class="user-badge">
+                <img id="discord-avatar" src="" alt="">
+                <div>
+                    <span id="discord-name" class="username">username</span>
+                    <span class="logout-link" onclick="logout()">Logout</span>
+                </div>
+            </div>
+
+            <!-- Already Verified Confirmation Section -->
+            <div id="confirm-verification-section" style="display: none; margin-bottom: 25px;">
+                <div style="background: rgba(0, 180, 216, 0.08); border: 1px solid var(--primary); padding: 15px; border-radius: 12px; text-align: center;">
+                    <p style="margin-top: 0; margin-bottom: 12px; font-size: 0.95rem; color: #fff; line-height: 1.4;">
+                        You are logged in and already verified as <strong id="confirm-roblox-username" style="color: var(--primary);">Username</strong>.
+                    </p>
+                    <button onclick="confirmExistingVerification()" class="btn btn-primary" style="width: auto; padding: 8px 20px;">Confirm & Sync Roles</button>
+                </div>
+            </div>
+
+            <!-- CAPTCHA Section -->
+            <div id="captcha-container" style="margin-bottom: 25px; display: none;">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: #fff;">Security Verification</h3>
+                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Drag the slider to fit the puzzle piece into place.</p>
+                
+                <div id="puzzle-box" style="position: relative; width: 100%; height: 160px; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid var(--border);">
+                    <div id="puzzle-bg" style="width: 100%; height: 100%; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);"></div>
+                    <div id="puzzle-slot" style="position: absolute; top: 50px; width: 40px; height: 40px; background: rgba(0,0,0,0.6); border: 2px dashed rgba(255,255,255,0.4); border-radius: 6px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); left: 150px;"></div>
+                    <div id="puzzle-piece" style="position: absolute; top: 50px; left: 10px; width: 40px; height: 40px; background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%); border: 2px solid #fff; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: grab; z-index: 10;"></div>
+                </div>
+
+                <div style="position: relative; width: 100%; height: 40px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; margin-top: 15px; overflow: hidden; display: flex; align-items: center;">
+                    <div style="position: absolute; left: 20px; font-size: 0.8rem; color: var(--muted); pointer-events: none; width: calc(100% - 40px); text-align: center;">Slide to verify</div>
+                    <input type="range" id="captcha-slider" min="0" max="100" value="0" style="width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;">
+                    <div id="slider-track" style="position: absolute; left: 0; top: 0; height: 100%; background: rgba(0, 180, 216, 0.15); width: 0%;"></div>
+                    <div id="slider-thumb" style="position: absolute; left: 0; top: 0; width: 40px; height: 40px; background: #fff; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3); pointer-events: none;"><i class="fas fa-arrow-right"></i></div>
+                </div>
+            </div>
+
+            <!-- Stage A: Connect Roblox Account -->
+            <div id="stage-input">
+                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
+                    Verify your Roblox identity securely using our deep-linking OAuth2 authentication flow. No password or bio editing required.
+                </p>
+                <button onclick="startOAuthVerification()" class="btn btn-primary">Connect Roblox Account</button>
+            </div>
+
+            <!-- Linked accounts list -->
+            <div id="linked-accounts-section" style="display: none;">
+                <div class="accounts-title">Connected Accounts</div>
+                <div id="accounts-list-container" class="accounts-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // SESSION PERSISTENCE PROXY
+        (function() {
+            const originalSetItem = sessionStorage.setItem;
+            const originalGetItem = sessionStorage.getItem;
+            const originalRemoveItem = sessionStorage.removeItem;
+            const originalClear = sessionStorage.clear;
+            const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+            sessionStorage.setItem = function(key, value) {
+                if (key === 'discord_token') {
+                    localStorage.setItem('discord_token_val', value);
+                    localStorage.setItem('discord_token_time', Date.now().toString());
+                }
+                originalSetItem.call(sessionStorage, key, value);
+            };
+
+            sessionStorage.getItem = function(key) {
+                if (key === 'discord_token') {
+                    const time = localStorage.getItem('discord_token_time');
+                    const val = localStorage.getItem('discord_token_val');
+                    if (time && val) {
+                        if (Date.now() - parseInt(time, 10) < ONE_WEEK_MS) {
+                            if (!originalGetItem.call(sessionStorage, key)) {
+                                originalSetItem.call(sessionStorage, key, val);
+                            }
+                            return val;
+                        } else {
+                            localStorage.removeItem('discord_token_val');
+                            localStorage.removeItem('discord_token_time');
+                        }
+                    }
+                }
+                return originalGetItem.call(sessionStorage, key);
+            };
+
+            sessionStorage.removeItem = function(key) {
+                if (key === 'discord_token') {
+                    localStorage.removeItem('discord_token_val');
+                    localStorage.removeItem('discord_token_time');
+                }
+                originalRemoveItem.call(sessionStorage, key);
+            };
+
+            sessionStorage.clear = function() {
+                localStorage.removeItem('discord_token_val');
+                localStorage.removeItem('discord_token_time');
+                originalClear.call(sessionStorage);
+            };
+        })();
+
+        const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
+        const REDIRECT_URI = encodeURIComponent(
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
+            ? window.location.origin + '/verify'
+            : 'https://vaztinix.dev/verify'
+        );
+        const discordLoginURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify`;
+
+        window.getApiBaseUrl = function() {
+            const host = window.location.hostname;
+            const port = window.location.port;
+
+            if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
+                return window.location.origin;
+            }
+
+            const localOverride = localStorage.getItem('nora_api_url');
+            if (localOverride) {
+                if (localOverride.includes('vaztinix.dev') && !localOverride.includes('api.vaztinix.dev')) {
+                    // fall through
+                } else {
+                    return localOverride;
+                }
+            }
+
+            if (window.__NORA_API_BASE_URL__) {
+                return window.__NORA_API_BASE_URL__;
+            }
+
+            return 'https://api.vaztinix.dev';
+        };
+
+        let currentUser = null;
+        let pendingRobloxId = null;
+        let currentUserActiveAccount = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleLoading(show) {
+            document.getElementById('loading-overlay').className = show ? 'show' : '';
+        }
+
+        function logout() {
+            sessionStorage.removeItem('discord_token');
+            window.location.href = '/verify';
+        }
+
+        async function loadGuildInfo(guildId) {
+            try {
+                const res = await fetch(getApiBaseUrl() + '/api/public/guilds/' + guildId);
+                if (res.ok) {
+                    const guild = await res.json();
+                    document.getElementById('guild-name').textContent = `Verifying for: ${guild.name}`;
+                    if (guild.icon) {
+                        document.getElementById('guild-icon').src = guild.icon;
+                        document.getElementById('guild-icon').style.display = 'block';
+                    } else {
+                        document.getElementById('guild-icon').style.display = 'none';
+                    }
+                    document.getElementById('guild-info').style.display = 'flex';
+                }
+            } catch (e) {
+                console.error('Failed to load guild info:', e);
+            }
+        }
+
+        // Initialize Authentication
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('discord-login-btn').onclick = () => {
+                window.location.href = discordLoginURL;
+            };
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild');
+            if (guildId) {
+                sessionStorage.setItem('verify_guild_id', guildId);
+            }
+
+            const savedGuildId = sessionStorage.getItem('verify_guild_id');
+            if (savedGuildId) {
+                loadGuildInfo(savedGuildId);
+            }
+
+            const fragment = new URLSearchParams(window.location.hash.slice(1));
+            const accessToken = fragment.get('access_token');
+
+            if (accessToken) {
+                sessionStorage.setItem('discord_token', accessToken);
+                window.history.replaceState(null, null, window.location.pathname);
+                verifyToken(accessToken);
+            } else {
+                const token = sessionStorage.getItem('discord_token');
+                if (token) {
+                    verifyToken(token);
+                } else {
+                    document.getElementById('view-auth').style.display = 'block';
+                }
+            }
+        });
+
+        async function verifyToken(token) {
+            toggleLoading(true);
+            try {
+                const res = await fetch(getApiBaseUrl() + '/api/user/me', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || `HTTP ${res.status}`);
+                }
+                const user = await res.json();
+                currentUser = user;
+
+                // Load view
+                document.getElementById('view-auth').style.display = 'none';
+                document.getElementById('view-main').style.display = 'block';
+                document.getElementById('discord-name').textContent = `${user.global_name || user.username}`;
+                document.getElementById('discord-avatar').src = user.avatar || 'nora.png';
+                if (user.avatar && user.avatar.startsWith('a_')) {
+                    document.getElementById('discord-avatar').src += '.gif';
+                }
+
+                loadLinkedAccounts();
+                if (!captchaVerified) {
+                    initCaptcha();
+                }
+            } catch (err) {
+                console.error(err);
+                showToast(`Authentication failed: ${err.message || err}`, 'error');
+
+                if (window.location.protocol === 'https:' && getApiBaseUrl().startsWith('http://')) {
+                    setTimeout(() => {
+                        showToast('Mixed Content: Secure site (https) cannot query local API (http). Please use http://localhost:3000/verify for local testing.', 'error');
+                    }, 1500);
+                }
+
+                sessionStorage.removeItem('discord_token');
+                document.getElementById('view-auth').style.display = 'block';
+                document.getElementById('view-main').style.display = 'none';
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        async function loadLinkedAccounts() {
+            const token = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/accounts', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!res.ok) return;
+                const accounts = await res.json();
+                const container = document.getElementById('accounts-list-container');
+                container.innerHTML = '';
+
+                if (accounts.length > 0) {
+                    document.getElementById('linked-accounts-section').style.display = 'block';
+                    accounts.forEach(acc => {
+                        const card = document.createElement('div');
+                        card.className = 'account-card';
+                        card.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 10px; height: 10px; border-radius: 50%; background: ${acc.isActive ? '#2ea043' : '#555'}"></div>
+                                <span style="font-weight: 700;">@${acc.robloxUsername || acc.robloxId}</span>
+                                ${acc.isActive ? '<span class="tag tag-active">Active</span>' : ''}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                ${!acc.isActive ? `<button onclick="toggleAccountActive('${acc.robloxId}')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; width: auto;">Set Active</button>` : ''}
+                                <button onclick="unlinkAccount('${acc.robloxId}')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; width: auto; color: var(--danger); border-color: rgba(248,81,73,0.2)">Unlink</button>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                } else {
+                    document.getElementById('linked-accounts-section').style.display = 'none';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function confirmExistingVerification() {
+            if (!currentUserActiveAccount) return;
+            toggleLoading(true);
+            const token = sessionStorage.getItem('discord_token');
+            const guildId = sessionStorage.getItem('verify_guild_id');
+            try {
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        robloxId: currentUserActiveAccount.robloxId,
+                        guildId: guildId || undefined
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Verification failed');
+                }
+
+                if (data.syncError) {
+                    showToast(`Verified, but: ${data.syncError}`, 'warning');
+                } else {
+                    showToast('Verification confirmed! Roles have been synced on the server.', 'success');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        let oauthWindow = null;
+        let pollInterval = null;
+
+        async function startOAuthVerification() {
+            toggleLoading(true);
+            const token = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/oauth-link', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to generate link');
+                
+                const width = 500;
+                const height = 650;
+                const left = (window.innerWidth / 2) - (width / 2);
+                const top = (window.innerHeight / 2) - (height / 2);
+                
+                oauthWindow = window.open(data.url, 'RobloxAuth', `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`);
+                
+                if (pollInterval) clearInterval(pollInterval);
+                pollInterval = setInterval(() => {
+                    if (oauthWindow && oauthWindow.closed) {
+                        clearInterval(pollInterval);
+                        toggleLoading(false);
+                    }
+                    loadLinkedAccounts();
+                }, 3000);
+
+                showToast('Verification flow opened. Please follow the instructions to connect.');
+            } catch (err) {
+                showToast(err.message, 'error');
+                toggleLoading(false);
+            }
+        }
+
+        let captchaVerified = false;
+        let slotX = 0;
+
+        function initCaptcha() {
+            captchaVerified = false;
+            const container = document.getElementById('captcha-container');
+            const slider = document.getElementById('captcha-slider');
+            const track = document.getElementById('slider-track');
+            const thumb = document.getElementById('slider-thumb');
+            const piece = document.getElementById('puzzle-piece');
+            const slot = document.getElementById('puzzle-slot');
+            const stageInput = document.getElementById('stage-input');
+
+            stageInput.style.display = 'none';
+            container.style.display = 'block';
+
+            slider.value = 0;
+            track.style.width = '0%';
+            thumb.style.left = '0px';
+            piece.style.left = '10px';
+
+            const puzzleBoxWidth = document.getElementById('puzzle-box').clientWidth || 400;
+            const minX = Math.round(puzzleBoxWidth * 0.3);
+            const maxX = Math.round(puzzleBoxWidth * 0.85);
+            slotX = Math.floor(Math.random() * (maxX - minX)) + minX;
+            slot.style.left = slotX + 'px';
+
+            const puzzleBg = document.getElementById('puzzle-bg');
+            puzzleBg.style.background = `radial-gradient(circle at ${slotX}px 70px, rgba(255,255,255,0.15) 0%, transparent 70%), linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)`;
+
+            slider.oninput = function() {
+                const val = parseFloat(slider.value);
+                const maxSlider = puzzleBoxWidth - 50;
+                const currentX = 10 + (val / 100) * (maxSlider - 10);
+                piece.style.left = currentX + 'px';
+                track.style.width = val + '%';
+                thumb.style.left = `calc(${val}% - ${val * 0.4}px)`;
+            };
+
+            slider.onchange = function() {
+                const val = parseFloat(slider.value);
+                const maxSlider = puzzleBoxWidth - 50;
+                const currentX = 10 + (val / 100) * (maxSlider - 10);
+
+                if (Math.abs(currentX - slotX) <= 8) {
+                    captchaVerified = true;
+                    showToast('Security check passed!', 'success');
+                    container.style.display = 'none';
+                    stageInput.style.display = 'block';
+                } else {
+                    showToast('Incorrect position. Try again.', 'error');
+                    initCaptcha();
+                }
+            };
+        }
+    </script>
+</body>
+</html>

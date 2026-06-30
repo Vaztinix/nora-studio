@@ -1,0 +1,90 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  discordId     String    @unique
+  username      String
+  globalName    String?
+  avatar        String?
+  accessToken   String
+  refreshToken  String
+  tokenExpires  DateTime
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+}
+
+model Guild {
+  id           String         @id
+  name         String
+  icon         String?
+  isPremium    Boolean        @default(false)
+  settings     GuildSettings?
+  bindings     GroupBinding[]
+  logs         ActivityLog[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model GuildSettings {
+  id                      String   @id @default(uuid())
+  guildId                 String   @unique
+  guild                   Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  levelingEnabled         Boolean  @default(false)
+  moderationEnabled       Boolean  @default(false)
+  loggingChannelId        String?
+  verifyChannelId         String?
+  welcomeChannelId        String?
+  welcomeMessage          String?  @default("Welcome to {server_name}, {user}!")
+  robloxVerifyEnabled     Boolean  @default(false)
+  robloxVerifyRoleId      String?
+  robloxVerifyChannelId   String?
+  reactionRoleNotifyDm    Boolean  @default(false)
+  updatedAt               DateTime @updatedAt
+}
+
+model RobloxLinkage {
+  id             String   @id @default(uuid())
+  discordUserId  String   @unique
+  robloxUserId   String   @unique
+  robloxUsername String
+  status         String   @default("VERIFIED") // VERIFIED, PENDING
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model GroupBinding {
+  id            String   @id @default(uuid())
+  guildId       String
+  guild         Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  robloxGroupId String
+  robloxRankId  Int
+  discordRoleId String
+  createdAt     DateTime @default(now())
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId      String   // Admin Discord ID
+  username    String
+  actionType  String   // e.g. "CONFIG_CHANGE", "CHANNEL_REPAIR"
+  description String
+  createdAt   DateTime @default(now())
+}
