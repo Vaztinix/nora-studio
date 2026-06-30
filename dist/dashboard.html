@@ -4151,152 +4151,179 @@
 
                 <div id="tab-verify" class="tab-content" style="display: none;">
                     <!-- Progressive Onboarding Hub -->
-                    <div class="panel" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); border: 1px solid rgba(174, 239, 255, 0.15); margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);">
-                        <h3 style="color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fas fa-magic"></i> Progressive Onboarding Setup Wizard</h3>
-                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Looking for this? Let us guide you through setting up Nora for your server.</p>
+                    <div class="panel" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 24px; padding: 30px; margin-bottom: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);">
+                        <h3 style="font-size: 1.4rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 12px; margin-bottom: 5px;"><i class="fas fa-magic" style="color: var(--primary);"></i> Progressive Onboarding Setup Wizard</h3>
+                        <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 25px;">Follow this step-by-step assistant to quickly configure Nora's core functions for your community.</p>
                         
-                        <!-- Progress Tracker -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; position: relative;">
-                            <div style="position: absolute; top: 15px; left: 10%; right: 10%; height: 2px; background: rgba(255,255,255,0.05); z-index: 1;">
-                                <div id="wizard-progress-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
+                        <!-- Progress Tracker Timeline -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; position: relative;">
+                            <div style="position: absolute; top: 16px; left: 8%; right: 8%; height: 3px; background: rgba(255,255,255,0.05); z-index: 1;">
+                                <div id="wizard-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); box-shadow: 0 0 12px rgba(0, 242, 254, 0.4); transition: width 0.3s ease;"></div>
                             </div>
                             <div class="wizard-step" onclick="goToWizardStep(0)" style="z-index: 2; text-align: center; cursor: pointer;">
-                                <div class="wizard-step-node" id="wstep-node-0" style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #0b0b0a; display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--primary);">1</div>
-                                <span style="font-size: 0.75rem; font-weight: 600; color: #fff;">Modules</span>
+                                <div class="wizard-step-node" id="wstep-node-0" style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #00f2fe, #4facfe); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; margin: 0 auto 8px auto; border: 2px solid #00f2fe; box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); transition: 0.3s;">1</div>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: #fff;">Modules</span>
                             </div>
                             <div class="wizard-step" onclick="goToWizardStep(1)" style="z-index: 2; text-align: center; cursor: pointer;">
-                                <div class="wizard-step-node" id="wstep-node-1" style="width: 32px; height: 32px; border-radius: 50%; background: #111110; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--border);">2</div>
-                                <span style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Verification</span>
+                                <div class="wizard-step-node" id="wstep-node-1" style="width: 36px; height: 36px; border-radius: 50%; background: #0c0c0d; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 800; margin: 0 auto 8px auto; border: 2px solid rgba(255,255,255,0.08); transition: 0.3s;">2</div>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--muted);">Verification</span>
                             </div>
                             <div class="wizard-step" onclick="goToWizardStep(2)" style="z-index: 2; text-align: center; cursor: pointer;">
-                                <div class="wizard-step-node" id="wstep-node-2" style="width: 32px; height: 32px; border-radius: 50%; background: #111110; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--border);">3</div>
-                                <span style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Log Channels</span>
+                                <div class="wizard-step-node" id="wstep-node-2" style="width: 36px; height: 36px; border-radius: 50%; background: #0c0c0d; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 800; margin: 0 auto 8px auto; border: 2px solid rgba(255,255,255,0.08); transition: 0.3s;">3</div>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--muted);">Log Channels</span>
                             </div>
                         </div>
 
                         <!-- Step Contents -->
                         <div id="wstep-content-0" class="wstep-content">
-                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 1: Module Activation</h4>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Enable or disable Nora's core systems to fit your server's needs.</p>
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
-                                    <span style="font-size: 0.85rem; font-weight: 600;">Leveling System</span>
+                            <h4 style="font-size: 1rem; margin-bottom: 8px; color: #fff; font-weight: 700;">Step 1: Module Activation</h4>
+                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Toggle core systems active or inactive based on your server's needs.</p>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.01); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border);">
+                                    <span style="font-size: 0.88rem; font-weight: 600; color: #fff;">Leveling System</span>
                                     <label class="switch"><input type="checkbox" id="wstep-leveling" onchange="syncWizardCheckbox(this, 'setting-levelingEnabled')"><span class="slider"></span></label>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
-                                    <span style="font-size: 0.85rem; font-weight: 600;">Moderation System</span>
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.01); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border);">
+                                    <span style="font-size: 0.88rem; font-weight: 600; color: #fff;">Moderation System</span>
                                     <label class="switch"><input type="checkbox" id="wstep-moderation" onchange="syncWizardCheckbox(this, 'setting-moderationEnabled')"><span class="slider"></span></label>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
-                                    <span style="font-size: 0.85rem; font-weight: 600;">Welcomer System</span>
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.01); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border);">
+                                    <span style="font-size: 0.88rem; font-weight: 600; color: #fff;">Welcomer System</span>
                                     <label class="switch"><input type="checkbox" id="wstep-welcomer" onchange="syncWizardCheckbox(this, 'setting-welcomerEnabled')"><span class="slider"></span></label>
                                 </div>
                             </div>
                         </div>
 
                         <div id="wstep-content-1" class="wstep-content" style="display: none;">
-                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 2: Member Verification Gate</h4>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Configure the verification channel and verified roles for new members.</p>
-                            <div class="input-group" style="margin-bottom: 15px;">
-                                <label style="font-size: 0.75rem;">Verification Channel</label>
-                                <select onchange="syncWizardSelect(this, 'setting-verifyChannelId')" class="wizard-channel-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
+                            <h4 style="font-size: 1rem; margin-bottom: 8px; color: #fff; font-weight: 700;">Step 2: Member Verification Gate</h4>
+                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Configure the target verification channel and verified roles assigned to users.</p>
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px; display: block;">Verification Channel</label>
+                                <select onchange="syncWizardSelect(this, 'setting-verifyChannelId')" class="wizard-channel-select" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 0.88rem; outline: none; transition: 0.2s;"><option value="">None</option></select>
                             </div>
                             <div class="input-group">
-                                <label style="font-size: 0.75rem;">Verified Role</label>
-                                <select onchange="syncWizardSelect(this, 'setting-verifyRoleId')" class="wizard-role-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
+                                <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px; display: block;">Verified Role</label>
+                                <select onchange="syncWizardSelect(this, 'setting-verifyRoleId')" class="wizard-role-select" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 0.88rem; outline: none; transition: 0.2s;"><option value="">None</option></select>
                             </div>
                         </div>
 
                         <div id="wstep-content-2" class="wstep-content" style="display: none;">
-                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 3: Logging Channels Setup</h4>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Select a master log channel to route audit log events.</p>
+                            <h4 style="font-size: 1rem; margin-bottom: 8px; color: #fff; font-weight: 700;">Step 3: Logging Channels Setup</h4>
+                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Route system activities, join/leave feeds, and moderation events to an audit channel.</p>
                             <div class="input-group">
-                                <label style="font-size: 0.75rem;">Master Log Channel</label>
-                                <select onchange="syncWizardSelect(this, 'setting-loggingChannelId')" class="wizard-channel-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
+                                <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px; display: block;">Master Log Channel</label>
+                                <select onchange="syncWizardSelect(this, 'setting-loggingChannelId')" class="wizard-channel-select" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 0.88rem; outline: none; transition: 0.2s;"><option value="">None</option></select>
                             </div>
                         </div>
 
                         <!-- Navigation Footer -->
-                        <div style="display: flex; justify-content: space-between; margin-top: 25px; border-top: 1px solid var(--border); padding-top: 15px;">
-                            <button class="config-btn" id="wizard-prev-btn" style="width: auto; padding: 6px 15px; opacity: 0.5; pointer-events: none;" onclick="navigateWizard(-1)">Back</button>
-                            <button class="config-btn" id="wizard-next-btn" style="width: auto; padding: 6px 15px; background: var(--primary); color: #0b0b0a;" onclick="navigateWizard(1)">Next</button>
+                        <div style="display: flex; justify-content: space-between; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+                            <button class="config-btn" id="wizard-prev-btn" style="width: auto; padding: 10px 24px; border-radius: 12px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.15); color: #fff; font-weight: 600; opacity: 0.5; pointer-events: none;" onclick="navigateWizard(-1)">Back</button>
+                            <button class="config-btn" id="wizard-next-btn" style="width: auto; padding: 10px 24px; border-radius: 12px; background: linear-gradient(135deg, #00f2fe, #4facfe); color: #000; font-weight: 700; border: none; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2);" onclick="navigateWizard(1)">Next</button>
                         </div>
                     </div>
 
-                    <div class="panel">
-                        <h3>Verification System</h3>
-                        <p>Configure Nora's member verification gate.</p>
-                        <div class="input-group" style="margin-top: 15px; margin-bottom: 20px;">
-                            <label>Verify Channel</label>
-                            <select id="setting-verifyChannelId"><option value="">Select channel...</option></select>
-                        </div>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Verify Roles</label><input type="hidden" id="setting-verifyRoleId"></div>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the verification panel so the bot uses your latest configurations.</p>
-                        <div style="margin-top: 20px;">
-                             <button class="config-btn" onclick="triggerAction('spawn_verify', this)">Spawn Verify Panel</button>
-                        </div>
-                    </div>
-
-                    <div class="panel">
-                        <h3>Roblox Identity Core</h3>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Verified Role</label><select id="setting-robloxVerifyRoleId"><option value="">No role selected</option></select></div>
-                        <div class="input-group" style="margin-bottom: 20px;">
-                            <label>Spawn Channel</label>
-                            <select id="setting-robloxVerifyChannelId"><option value="">Select channel...</option></select>
-                        </div>
-                        <div class="row"><h4>Enable Verification Module</h4><label class="switch"><input type="checkbox" id="setting-robloxVerifyEnabled"><span class="slider"></span></label></div>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the verification panel so the bot uses your latest Roblox configurations.</p>
-                        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                             <button class="config-btn" onclick="triggerAction('spawn_verify_roblox', this)">Spawn Verify Panel</button>
-                             <button class="config-btn" onclick="triggerAction('check_group_ranks', this)">Check Group Ranks</button>
-                        </div>
-                    </div>
-
-                    <div class="panel">
-                        <h3>Reaction Role Settings</h3>
-                        <p>Configure how reaction role events behave on your server.</p>
-                        <div class="row">
-                            <h4>Direct Message Notifications</h4>
-                            <label class="switch">
-                                <input type="checkbox" id="setting-reactionRoleNotifyDm">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--muted); margin-top: 10px;">If enabled, users will receive a direct message confirmation when they add or remove a reaction role.</p>
-                    </div>
-
-                                        <div id="roblox-advanced-features" class="locked-feature">
-                        <div class="locked-overlay-text">🔒 VERIFICATION REQUIRED</div>
-                        <div class="panel">
-                            <h3>Live Presence Tracker (BETA)</h3>
-                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Real-time status monitoring for your linked Roblox account.</p>
-                            <div class="row" style="align-items: center; gap: 20px; background: rgba(0,0,0,0.1); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
-                                <div style="position: relative;">
-                                    <img id="roblox-presence-avatar" src="nora.png" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border); background: #000;" onerror="this.src='nora.png'">
-                                    <div id="roblox-presence-dot" style="position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; background: #555; border: 2px solid #1a1b1e;"></div>
-                                </div>
-                                <div style="flex: 1;">
-                                    <div id="roblox-presence-names" style="font-weight: 700; font-size: 1rem;">Roblox User</div>
-                                    <div id="roblox-presence-status" style="font-size: 0.85rem; color: var(--muted);">Click check status below...</div>
-                                    <button id="roblox-join-btn" class="config-btn" style="display: none; background: #2ea043; color: white; margin-top: 8px; border: none; width: auto; padding: 5px 12px; font-size: 0.8rem;"><i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Join Game</button>
-                                </div>
-                                <button class="config-btn" id="roblox-presence-btn" style="width: auto; padding: 8px 15px;" onclick="fetchRobloxPresence()">Check Status</button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start; margin-bottom: 25px;">
+                        <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Verification System</h3>
+                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Configure member gates requiring CAPTCHA verification before server roles are assigned.</p>
+                            <div class="input-group" style="margin-bottom: 20px;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Verify Channel</label>
+                                <select id="setting-verifyChannelId" style="width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px;"><option value="">Select channel...</option></select>
                             </div>
-                            <div class="row" style="margin-top: 15px;">
-                                <h4>Join User in Game (BETA)</h4>
-                                <label class="switch"><input type="checkbox" id="setting-robloxJoinGameEnabled"><span class="slider"></span></label>
+                            <div class="input-group" style="margin-bottom: 20px;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Verify Roles</label>
+                                <input type="hidden" id="setting-verifyRoleId">
+                            </div>
+                            <p style="font-size: 0.78rem; color: #ff9f43; margin-bottom: 20px; line-height: 1.4; display: flex; align-items: flex-start; gap: 8px;">
+                                <i class="fas fa-exclamation-triangle" style="margin-top: 2px;"></i> 
+                                <span>Save configurations in the top-right menu prior to deploying the verification portal.</span>
+                            </p>
+                            <div>
+                                 <button class="config-btn" style="width: 100%; padding: 12px; border-radius: 12px; background: linear-gradient(135deg, #00f2fe, #4facfe); color: #000; font-weight: 700; border: none;" onclick="triggerAction('spawn_verify', this)">Spawn Verify Panel</button>
+                            </div>
+                        </div>
+
+                        <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Roblox Identity Core</h3>
+                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Require OAuth2 verification linking Roblox avatars to Discord handles.</p>
+                            <div class="input-group" style="margin-bottom: 20px;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Verified Role</label>
+                                <select id="setting-robloxVerifyRoleId" style="width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px;"><option value="">No role selected</option></select>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 20px;">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Spawn Channel</label>
+                                <select id="setting-robloxVerifyChannelId" style="width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px;"><option value="">Select channel...</option></select>
+                            </div>
+                            <div class="row" style="margin-bottom: 20px;">
+                                <h4>Enable Verification Module</h4>
+                                <label class="switch"><input type="checkbox" id="setting-robloxVerifyEnabled"><span class="slider"></span></label>
+                            </div>
+                            <p style="font-size: 0.78rem; color: #ff9f43; margin-bottom: 20px; line-height: 1.4; display: flex; align-items: flex-start; gap: 8px;">
+                                <i class="fas fa-exclamation-triangle" style="margin-top: 2px;"></i>
+                                <span>Save configurations prior to deploying the Roblox verification portal.</span>
+                            </p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                 <button class="config-btn" style="padding: 12px; border-radius: 12px; background: linear-gradient(135deg, #00f2fe, #4facfe); color: #000; font-weight: 700; border: none;" onclick="triggerAction('spawn_verify_roblox', this)">Spawn Verify Panel</button>
+                                 <button class="config-btn" style="padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.15); color: #fff; font-weight: 600;" onclick="triggerAction('check_group_ranks', this)">Check Group Ranks</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="panel">
-                        <h3>Roblox Group Bindings</h3>
-                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Automatically assign roles based on a user's rank in a specific Roblox group.</p>
-                        <div id="roblox-group-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-                            <!-- Group rows injected here -->
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; align-items: start; margin-bottom: 25px;">
+                        <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                            <h3>Roblox Group Bindings</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Automatically assign roles based on a user's rank in a specific Roblox group.</p>
+                            <div id="roblox-group-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                                <!-- Group rows injected here -->
+                            </div>
+                            <button class="btn-outline" style="width: auto; font-size: 0.8rem; padding: 10px 18px; border-radius: 10px;" onclick="addRobloxGroupBinding()">+ Add Group Binding</button>
+                            <input type="hidden" id="setting-robloxGroupBindings">
                         </div>
-                        <button class="btn-outline" style="width: auto; font-size: 0.8rem;" onclick="addRobloxGroupBinding()">+ Add Group Binding</button>
-                        <input type="hidden" id="setting-robloxGroupBindings">
+
+                        <div style="display: flex; flex-direction: column; gap: 25px;">
+                            <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                                <h3>Reaction Role Settings</h3>
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Configure how reaction role events behave on your server.</p>
+                                <div class="row" style="margin-bottom: 0;">
+                                    <div class="row-info">
+                                        <h4>Direct Message Notifications</h4>
+                                        <p style="font-size: 0.72rem; color: var(--muted); margin-top: 4px;">Confirm role updates in user DMs.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-reactionRoleNotifyDm">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="roblox-advanced-features" class="locked-feature" style="border-radius: 20px; overflow: hidden;">
+                                <div class="locked-overlay-text" style="font-weight: 800; font-size: 0.9rem; letter-spacing: 1px;">🔒 VERIFICATION REQUIRED</div>
+                                <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                                    <h3>Live Presence Tracker (BETA)</h3>
+                                    <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Real-time status monitoring for your linked Roblox account.</p>
+                                    <div style="display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.25); padding: 15px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 20px;">
+                                        <div style="position: relative; flex-shrink: 0;">
+                                            <img id="roblox-presence-avatar" src="nora.png" style="width: 50px; height: 50px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1); background: #000;" onerror="this.src='nora.png'">
+                                            <div id="roblox-presence-dot" style="position: absolute; bottom: -3px; right: -3px; width: 14px; height: 14px; border-radius: 50%; background: #555; border: 2.5px solid #000;"></div>
+                                        </div>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div id="roblox-presence-names" style="font-weight: 700; font-size: 0.92rem; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Roblox User</div>
+                                            <div id="roblox-presence-status" style="font-size: 0.78rem; color: var(--muted); margin-top: 3px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Click check status below...</div>
+                                            <button id="roblox-join-btn" class="config-btn" style="display: none; background: #2ea043; color: white; margin-top: 8px; border: none; width: auto; padding: 5px 12px; font-size: 0.8rem;"><i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Join Game</button>
+                                        </div>
+                                        <button class="config-btn" id="roblox-presence-btn" style="width: auto; padding: 8px 16px; border-radius: 10px; font-size: 0.78rem;" onclick="fetchRobloxPresence()">Check Status</button>
+                                    </div>
+                                    <div class="row" style="margin-top: 15px; margin-bottom: 0;">
+                                        <div class="row-info">
+                                            <h4>Join User in Game (BETA)</h4>
+                                            <p style="font-size: 0.72rem; color: var(--muted); margin-top: 4px;">Launch dynamic session invites.</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-robloxJoinGameEnabled"><span class="slider"></span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
