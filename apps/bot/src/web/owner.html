@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Admin Desk | Security</title>
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
+            --danger: #f85149;
+            --success: #2ea043;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 40px 0;
+        }
+
+        /* Lock Screen Blur State */
+        .lock-container {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(17, 17, 16, 0.9) 0%, rgba(7, 7, 6, 0.98) 100%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .lock-card {
+            background: rgba(17, 17, 16, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 48px 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 460px;
+            width: 90%;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 100px rgba(248, 81, 73, 0.03);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .lock-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(248, 81, 73, 0.2);
+        }
+
+        .lock-icon-container {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(248, 81, 73, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .lock-icon-container i {
+            font-size: 2.2rem;
+            color: var(--danger);
+            animation: pulse-lock 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-lock {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        .lock-card h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .lock-card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .btn-discord {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #5865F2;
+            color: white;
+            padding: 14px 32px;
+            border-radius: var(--radius);
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(88, 101, 242, 0.15);
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn-discord:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(88, 101, 242, 0.25);
+            background: #4752c4;
+        }
+
+        /* Admin Console UI (hidden initially) */
+        .admin-layout {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            padding: 40px 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        .admin-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-header h2 span {
+            color: var(--muted);
+            font-weight: 400;
+            font-size: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-action {
+            width: 100%;
+            background: var(--primary);
+            color: #070706;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-action:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff5e6c;
+        }
+
+        .logout {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 8px 16px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        .logout:hover {
+            color: white;
+            border-color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Blurred Lock Overlay -->
+    <div id="lock-screen" class="lock-container">
+        <div class="lock-card">
+            <div class="lock-icon-container">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h1>Security Access Required</h1>
+            <p>You must authenticate as a primary system administrator (`1214048435632603137` / `1366229304257544213`) to access the Nora Admin Desk.</p>
+            <button id="discord-login-btn" class="btn-discord">
+                <i class="fab fa-discord"></i> Sign in with Discord
+            </button>
+            <div id="login-error-alert" style="display: none; margin-top: 15px; padding: 10px 15px; background: rgba(250, 119, 124, 0.15); border: 1px solid #fa777c; border-radius: 8px; color: #fa777c; font-size: 0.82rem; text-align: left; line-height: 1.4;"></div>
+        </div>
+    </div>
+
+    <!-- Protected Workspace UI -->
+    <div id="admin-workspace" class="admin-layout">
+        <div class="admin-header">
+            <h2>Nora Admin Desk <span>Security Control Panel</span></h2>
+            <button class="logout" onclick="logoutAdmin()">Logout</button>
+        </div>
+
+        <div class="grid" style="margin-bottom: 30px;">
+            <!-- Premium Manager Card -->
+            <div class="card">
+                <h3><i class="fas fa-gem" style="color: #ffd700;"></i> Manual Premium Provision</h3>
+                <div class="form-group">
+                    <label>Target Type</label>
+                    <select id="premium-type">
+                        <option value="server">Server (Guild)</option>
+                        <option value="user">User Account</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target Discord ID</label>
+                    <input type="text" id="premium-id" placeholder="e.g. 1351304498185900184">
+                </div>
+                <div class="form-group">
+                    <label>Action</label>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-action" onclick="managePremium('grant')">Grant Lifetime</button>
+                        <button class="btn-action btn-danger" onclick="managePremium('revoke')">Revoke</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Bans Manager Card -->
+            <div class="card">
+                <h3><i class="fas fa-ban" style="color: var(--danger);"></i> Global Mitigation Desk</h3>
+                <div class="form-group">
+                    <label>Action</label>
+                    <select id="ban-action">
+                        <option value="ban">Permanent Blacklist</option>
+                        <option value="unban">Revoke Blacklist</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target User ID</label>
+                    <input type="text" id="ban-user-id" placeholder="e.g. 1214048435632603137">
+                </div>
+                <div class="form-group" id="ban-reason-group">
+                    <label>Reason for Suspension</label>
+                    <input type="text" id="ban-reason" placeholder="e.g. Exploiting or API abuse">
+                </div>
+                <button class="btn-action btn-danger" onclick="executeGlobalBan()">Execute Security Action</button>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div style="margin: 30px 0 20px 0; position: relative;">
+            <input type="text" id="search-input" placeholder="Search premium servers, users, or terminated accounts..." oninput="filterLists()" style="width: 100%; padding: 14px 16px 14px 44px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: white; outline: none; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+            <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1rem;"></i>
+        </div>
+
+        <!-- Lists Grid -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px; align-items: start;">
+            <!-- Premium Servers List -->
+            <div class="card" style="padding: 24px; min-height: 250px;">
+                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-server" style="color: #ffd700;"></i> Premium Servers (<span id="server-count">0</span>)</h3>
+                <div id="servers-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
+                    <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
+                </div>
+            </div>
+            <!-- Premium Users List -->
+            <div class="card" style="padding: 24px; min-height: 250px;">
+                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-user-shield" style="color: #ffd700;"></i> Premium Users (<span id="user-count">0</span>)</h3>
+                <div id="users-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
+                    <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
+                </div>
+            </div>
+            <!-- Terminated Users List -->
+            <div class="card" style="padding: 24px; min-height: 250px;">
+                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-user-times" style="color: var(--danger);"></i> Terminated Users (<span id="terminated-count">0</span>)</h3>
+                <div id="terminated-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
+                    <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check OAuth Implicit Token
+        const fragment = new URLSearchParams(window.location.hash.slice(1));
+        const accessToken = fragment.get('access_token');
+        
+        let token = localStorage.getItem('nora_admin_token');
+
+        if (accessToken) {
+            localStorage.setItem('nora_admin_token', accessToken);
+            window.history.replaceState(null, null, window.location.pathname);
+            verifyToken(accessToken);
+        } else if (token) {
+            verifyToken(token);
+        }
+
+        document.getElementById('discord-login-btn').addEventListener('click', () => {
+            const client_id = window.__NORA_CLIENT_ID__ || '1375943730951098549';
+            const redirect_uri = encodeURIComponent(window.location.origin + window.location.pathname);
+            window.location.href = `https://discord.com/oauth2/authorize?client_id=${client_id}&response_type=token&redirect_uri=${redirect_uri}&scope=identify`;
+        });
+
+        // Toggle reason visibility based on selected ban action
+        document.getElementById('ban-action').addEventListener('change', (e) => {
+            const grp = document.getElementById('ban-reason-group');
+            if (grp) {
+                grp.style.display = e.target.value === 'ban' ? 'block' : 'none';
+            }
+        });
+
+        let premiumServers = [];
+        let premiumUsers = [];
+        let terminatedUsers = [];
+
+        async function verifyToken(authToken) {
+            const errAlert = document.getElementById('login-error-alert');
+            if (errAlert) errAlert.style.display = 'none';
+
+            try {
+                const apiBase = window.__NORA_API_BASE_URL__ || '';
+                const res = await fetch(`${apiBase}/api/admin/premium`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!res.ok) {
+                    let errMsg = `Server error (HTTP ${res.status})`;
+                    try {
+                        const errData = await res.json();
+                        errMsg = errData.error || errData.details || errMsg;
+                    } catch (jsonErr) {}
+                    throw new Error(errMsg);
+                }
+
+                // Reveal workspace
+                document.getElementById('lock-screen').style.display = 'none';
+                const workspace = document.getElementById('admin-workspace');
+                workspace.style.display = 'block';
+                setTimeout(() => workspace.style.opacity = 1, 50);
+
+                // Initial data load
+                loadAdminDeskData();
+            } catch (e) {
+                console.error('[Verification Error]:', e);
+                localStorage.removeItem('nora_admin_token');
+                document.getElementById('lock-screen').style.display = 'flex';
+                if (errAlert) {
+                    errAlert.style.display = 'block';
+                    errAlert.textContent = `Access Denied: ${e.message}`;
+                }
+            }
+        }
+
+        async function loadAdminDeskData() {
+            const authToken = localStorage.getItem('nora_admin_token');
+            const apiBase = window.__NORA_API_BASE_URL__ || '';
+            try {
+                // Fetch premium servers & users
+                const res1 = await fetch(`${apiBase}/api/admin/premium`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (res1.ok) {
+                    const data = await res1.json();
+                    premiumServers = data.servers || [];
+                    premiumUsers = data.users || [];
+                }
+
+                // Fetch terminated users
+                const res2 = await fetch(`${apiBase}/api/admin/terminated`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (res2.ok) {
+                    const data = await res2.json();
+                    terminatedUsers = data.terminated || [];
+                }
+
+                renderLists();
+            } catch (e) {
+                console.error("Failed to load admin desk data:", e);
+            }
+        }
+
+        function renderLists() {
+            const searchTerm = (document.getElementById('search-input')?.value || '').toLowerCase();
+            
+            // Filter servers
+            const filteredServers = premiumServers.filter(s => 
+                s.guildId.includes(searchTerm) || 
+                s.name.toLowerCase().includes(searchTerm)
+            );
+            
+            // Filter users
+            const filteredUsers = premiumUsers.filter(u => 
+                u.userId.includes(searchTerm) || 
+                u.username.toLowerCase().includes(searchTerm)
+            );
+            
+            // Filter terminated
+            const filteredTerminated = terminatedUsers.filter(t => 
+                t.userId.includes(searchTerm) || 
+                t.username.toLowerCase().includes(searchTerm) ||
+                (t.terminationReason || '').toLowerCase().includes(searchTerm)
+            );
+
+            // Render counts
+            document.getElementById('server-count').textContent = filteredServers.length;
+            document.getElementById('user-count').textContent = filteredUsers.length;
+            document.getElementById('terminated-count').textContent = filteredTerminated.length;
+
+            // Render servers
+            const serversContainer = document.getElementById('servers-list-container');
+            if (serversContainer) {
+                if (filteredServers.length === 0) {
+                    serversContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No servers match search.</div>';
+                } else {
+                    serversContainer.innerHTML = filteredServers.map(s => `
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border); gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='nora.png'">
+                                <div style="min-width: 0;">
+                                    <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</div>
+                                    <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${s.guildId}</div>
+                                </div>
+                            </div>
+                            <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'server', '${s.guildId}')">Revoke</button>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Render users
+            const usersContainer = document.getElementById('users-list-container');
+            if (usersContainer) {
+                if (filteredUsers.length === 0) {
+                    usersContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No users match search.</div>';
+                } else {
+                    usersContainer.innerHTML = filteredUsers.map(u => `
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border); gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
+                                <div style="min-width: 0;">
+                                    <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${u.username}</div>
+                                    <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${u.userId}</div>
+                                </div>
+                            </div>
+                            <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'user', '${u.userId}')">Revoke</button>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Render terminated
+            const terminatedContainer = document.getElementById('terminated-list-container');
+            if (terminatedContainer) {
+                if (filteredTerminated.length === 0) {
+                    terminatedContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No terminated users.</div>';
+                } else {
+                    terminatedContainer.innerHTML = filteredTerminated.map(t => `
+                        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(248,81,73,0.15);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; min-width: 0; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                    <img src="${t.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
+                                    <div style="min-width: 0;">
+                                        <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.username}</div>
+                                        <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${t.userId}</div>
+                                    </div>
+                                </div>
+                                <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(46,160,67,0.3); color: var(--success); flex-shrink: 0;" onclick="manageTermination('unban', '${t.userId}')">Restore</button>
+                            </div>
+                            <div style="font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 4px; color: #ff9e9e; border-left: 2px solid var(--danger); word-break: break-all;">
+                                <strong>Reason:</strong> ${t.terminationReason}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        function filterLists() {
+            renderLists();
+        }
+
+        async function managePremium(action) {
+            const type = document.getElementById('premium-type').value;
+            const id = document.getElementById('premium-id').value;
+            if (!id) return alert('Please enter a target ID');
+
+            await managePremiumEx(action, type, id);
+        }
+
+        async function managePremiumEx(action, type, id) {
+            try {
+                const apiBase = window.__NORA_API_BASE_URL__ || '';
+                const res = await fetch(`${apiBase}/api/admin/premium/${action}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                    },
+                    body: JSON.stringify({ type, id })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Request failed');
+                alert(data.message || 'Operation successful');
+                loadAdminDeskData();
+            } catch (e) {
+                alert('Premium Config Error: ' + e.message);
+            }
+        }
+
+        async function executeGlobalBan() {
+            const action = document.getElementById('ban-action').value;
+            const userId = document.getElementById('ban-user-id').value;
+            const reason = document.getElementById('ban-reason').value;
+            if (!userId) return alert('Please enter a target User ID');
+            if (action === 'ban' && !reason) return alert('Please enter a suspension reason');
+
+            await manageTermination(action, userId, reason);
+        }
+
+        async function manageTermination(action, userId, reason = '') {
+            try {
+                const apiBase = window.__NORA_API_BASE_URL__ || '';
+                const res = await fetch(`${apiBase}/api/admin/global-ban`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                    },
+                    body: JSON.stringify({ action, userId, reason })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Request failed');
+                alert(data.message || 'Operation successful');
+                loadAdminDeskData();
+            } catch (e) {
+                alert('Termination Execution Error: ' + e.message);
+            }
+        }
+
+        function logoutAdmin() {
+            localStorage.removeItem('nora_admin_token');
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>

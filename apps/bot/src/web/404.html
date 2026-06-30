@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora - Page Not Found</title>
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 24px;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .error-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 50px 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes floatUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .code {
+            font-size: 7rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--primary);
+            margin-bottom: 20px;
+            letter-spacing: -3px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            color: white;
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 999px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: .2s;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-block;
+            background: var(--primary);
+            color: #0b0b0a;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .countdown {
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .countdown span {
+            color: white;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <div class="code">404</div>
+        <h1>Off the Grid</h1>
+        <p>It seems you've wandered into uncharted territory. The coordinates you requested do not exist in Nora's mainframe.</p>
+        <a href="/" class="btn">Return Home</a>
+        <div class="countdown">Redirecting in <span id="secs">10</span> seconds...</div>
+    </div>
+
+    <script>
+        let seconds = 10;
+        const countdownEl = document.getElementById('secs');
+        const interval = setInterval(() => {
+            seconds--;
+            countdownEl.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = "/";
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

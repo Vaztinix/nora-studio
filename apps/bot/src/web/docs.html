@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Studio | Architectural Overview & Docs</title>
+    <meta name="description" content="Comprehensive documentation and inside look into Nora Studio's architecture.">
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            background: rgba(7, 7, 6, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .btn-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-header:hover {
+            background: var(--border-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Docs Wrapper */
+        .doc-wrapper {
+            padding: 60px 0;
+            flex-grow: 1;
+        }
+
+        .doc-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            color: white;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: white;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p {
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        section {
+            margin-bottom: 35px;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            background: #0b0b0a;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/install">Invite</a>
+                <a href="/docs" class="active">Docs</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/team">Team</a>
+                <a href="/legal">Legal</a>
+            </nav>
+            <a href="/dashboard" class="btn-header">Open Console</a>
+        </div>
+    </header>
+
+    <main class="doc-wrapper">
+        <div class="container">
+            <div class="doc-card">
+                <h1>Architectural Overview & Documentation</h1>
+                <p class="subtitle">An inside look into Nora Studio's privacy-first Discord ecosystem</p>
+
+                <section>
+                    <p><strong>Nora Studio</strong> is a professional-grade Discord ecosystem engineered to provide elite AI-driven moderation, ticket workflows, and community engagement while maintaining an absolute commitment to user privacy. Following the <strong>v2.0 rebuild</strong>, the bot has been re-architected to support high-scale servers, cross-origin web sync configurations, and the <strong>Nora Studio</strong> web management dashboard.</p>
+                </section>
+
+                <section>
+                    <h2>1. Multi-Engine AI Architecture</h2>
+                    <p>Nora separates itself from standard moderation bots by offering a modular AI brain. This allows administrators to select the specific intelligence model that balances their server's needs for speed versus complex reasoning.</p>
+                    <ul>
+                        <li><strong>Dual-AI Switching:</strong> Via the centralized settings hub, servers can alternate between ChatGPT and Gemini engines.</li>
+                        <li><strong>Aura AI (Native Engine):</strong> A custom-developed, lightweight model designed for "utility-first" responses. Aura handles mathematical calculations, simple queries, and rapid-fire interactions with low latency.</li>
+                        <li><strong>Contextual Auto-Moderation:</strong> Unlike legacy bots that use simple keyword filters, Nora’s AI analyzes the surrounding conversation context.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>2. The Consolidated /setup Control Hub</h2>
+                    <p>To improve security and reduce command clutter, Nora utilizes a unified, single-command setup console.</p>
+                    <ul>
+                        <li><strong>Single /setup Slash Command:</strong> Typing `/setup dashboard` immediately opens a secure interactive Discord select dashboard menu. Administrators can quickly manage all module options without typing complex flags.</li>
+                        <li><strong>Owner-Only Premium Portal:</strong> Premium overrides (enabling, disabling, or removing guild premium status manually) are handled entirely within the setup menu.</li>
+                        <li><strong>Local Safety Settings:</strong> Change Safety & Anti-Raid sensitivity, configure Discord AutoMod rules, set spam detection windows, or specify log channels all inside a single UI message.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>3. Dynamic Engagement & Leveling Logic</h2>
+                    <p>Nora utilizes a sophisticated Experience (XP) algorithm designed to encourage genuine interaction rather than chat spamming.</p>
+                    <ul>
+                        <li><strong>Voice Activity XP:</strong> Users earn XP for time spent in voice channels. To prevent farming, this system requires at least two users to be present in the channel.</li>
+                        <li><strong>Refined Leveling Logic:</strong> Optimized background processes allow Nora to track rankings in large servers without impacting bot response times or Discord’s API limits.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>4. Privacy-First Data Protocol: "My Card"</h2>
+                    <p>Privacy is not a feature of Nora; it is the foundation. Nora is built on a "Zero-Access" architecture, meaning server data is isolated and protected.</p>
+                    <ul>
+                        <li><strong>User Transparency:</strong> The `/mycard` command provides a real-time window into the bot's database. Users can see their server display name, roles, current level, and accumulated XP.</li>
+                        <li><strong>Permanent Deletion (The Kill Switch):</strong> Users have the sovereign right to their data. The "Erase Data" button on the user card performs an immediate, irreversible wipe of that user's leveling profile.</li>
+                        <li><strong>Data Isolation:</strong> Nora is designed so that the bot developers have no backend access to view private server content, logs, or user messages.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>5. Consolidated Moderation & Roblox Verification</h2>
+                    <p>To reduce Discord command bloat and simplify server administration, Nora features consolidated warning and verification workflows, gated by strict permission checking.</p>
+                    <ul>
+                        <li><strong>Command Hiding:</strong> All moderation, administration, and configuration commands natively utilize Discord's Application Command Permission framework, which physically hides commands from users who lack the required permission levels (e.g. Moderate Members, Ban Members, Manage Guild, etc.).</li>
+                        <li><strong>Dynamic Help Menu:</strong> The `/help` command checks the user's active permissions in real-time, completely filtering out moderator-only categories and commands from non-moderators to maintain a clean, secure chat environment.</li>
+                    </ul>
+                    <ul>
+                        <li><strong>Unified Warning Management (/warn):</strong> Server moderators can manage warning actions through a single `/warn` command using subcommands to add, edit, list, delete, or clear warnings.</li>
+                        <li><strong>Case Management System (/case):</strong> Track, inspect, and manage server moderation actions dynamically.</li>
+                        <li><strong>One-Step Roblox Link (/verify):</strong> The legacy multi-command verification flow is replaced by the singular <code>/verify</code> command. Users link Roblox accounts and receive roles in a single fluid interaction.</li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            &copy; 2026 Nora Studio. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

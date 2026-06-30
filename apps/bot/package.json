@@ -1,0 +1,24 @@
+{
+  "name": "@nora/bot",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.14.0",
+    "discord-rpc": "^4.0.1",
+    "discord.js": "^14.26.2",
+    "dotenv": "^17.4.0",
+    "express": "^5.2.1",
+    "ioredis": "^5.11.1",
+    "levenshtein-edit-distance": "^3.0.1",
+    "openai": "^6.45.0",
+    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1",
+    "ws": "^8.16.0",
+    "xml2js": "^0.6.2"
+  }
+}
