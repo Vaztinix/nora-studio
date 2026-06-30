@@ -1,44 +1,15 @@
 {
   "pages": {
-    "/_not-found/page": [
-      "static/chunks/webpack-afeac7786a03131c.js",
-      "static/chunks/1dd3208c-528ef6f7e16d856e.js",
-      "static/chunks/528-a9d4fe11cce2daea.js",
-      "static/chunks/main-app-b0e9c56b0c1bb80a.js",
-      "static/chunks/app/_not-found/page-1ebe63641cf97c37.js"
-    ],
     "/layout": [
-      "static/chunks/webpack-afeac7786a03131c.js",
-      "static/chunks/1dd3208c-528ef6f7e16d856e.js",
-      "static/chunks/528-a9d4fe11cce2daea.js",
-      "static/chunks/main-app-b0e9c56b0c1bb80a.js",
-      "static/css/86433d17bec62e01.css",
-      "static/chunks/app/layout-fb047a121b264162.js"
-    ],
-    "/dashboard/[guildId]/page": [
-      "static/chunks/webpack-afeac7786a03131c.js",
-      "static/chunks/1dd3208c-528ef6f7e16d856e.js",
-      "static/chunks/528-a9d4fe11cce2daea.js",
-      "static/chunks/main-app-b0e9c56b0c1bb80a.js",
-      "static/chunks/791-7f6c64312d1fad5c.js",
-      "static/chunks/app/dashboard/[guildId]/page-9bd4f84d4c143750.js"
-    ],
-    "/dashboard/page": [
-      "static/chunks/webpack-afeac7786a03131c.js",
-      "static/chunks/1dd3208c-528ef6f7e16d856e.js",
-      "static/chunks/528-a9d4fe11cce2daea.js",
-      "static/chunks/main-app-b0e9c56b0c1bb80a.js",
-      "static/chunks/791-7f6c64312d1fad5c.js",
-      "static/chunks/372-6965e10a35930868.js",
-      "static/chunks/app/dashboard/page-71f5b71ccf4c2f86.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
     ],
     "/page": [
-      "static/chunks/webpack-afeac7786a03131c.js",
-      "static/chunks/1dd3208c-528ef6f7e16d856e.js",
-      "static/chunks/528-a9d4fe11cce2daea.js",
-      "static/chunks/main-app-b0e9c56b0c1bb80a.js",
-      "static/chunks/791-7f6c64312d1fad5c.js",
-      "static/chunks/app/page-f523940801a98ac9.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
     ]
   }
 }

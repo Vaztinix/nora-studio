@@ -483,7 +483,7 @@ if (sub && typeof sub.subscribe === 'function') {
     });
 }
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.API_PORT || 4000;
 server.listen(PORT, () => {
     console.log(`[SaaS Core Server] Live and listening on port ${PORT}`);
 });

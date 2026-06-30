@@ -27,7 +27,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Function to start the API Server
-const startApiServer = (port = process.env.API_PORT || 3000) => {
+const startApiServer = (port = process.env.API_PORT || 5000) => {
     app.listen(port, () => {
         console.log(`[API] Express Server listening on port ${port}`);
         console.log(`[API] CORS restricted to https://vaztinix.github.io`);
