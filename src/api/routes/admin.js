@@ -439,4 +439,63 @@ router.post('/global-ban', requireOwner, async (req, res) => {
     }
 });
 
+// GET /api/admin/all-servers
+router.get('/all-servers', requireOwner, async (req, res) => {
+    try {
+        const premiumGuilds = await GuildSettings.findAll({
+            where: {
+                [Op.or]: [
+                    { isPremium: true },
+                    { isManualPremium: true }
+                ]
+            },
+            attributes: ['guildId']
+        });
+        const premiumSet = new Set(premiumGuilds.map(g => g.guildId));
+
+        const guilds = Array.from(req.client.guilds.cache.values());
+        const list = guilds.map(g => ({
+            id: g.id,
+            name: g.name,
+            icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
+            memberCount: g.memberCount,
+            joinedAt: g.joinedAt,
+            ownerId: g.ownerId,
+            isPremium: premiumSet.has(g.id)
+        })).sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
+
+        res.json({ guilds: list });
+    } catch (e) {
+        console.error('Error fetching all servers:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// GET /api/admin/all-users
+router.get('/all-users', requireOwner, async (req, res) => {
+    try {
+        const allPrefs = await UserPrefs.findAll({
+            order: [['createdAt', 'DESC']]
+        });
+
+        const list = allPrefs.map(prefs => {
+            const userObj = req.client.users.cache.get(prefs.userId);
+            return {
+                userId: prefs.userId,
+                username: userObj ? userObj.username : `ID: ${prefs.userId}`,
+                avatar: userObj ? userObj.displayAvatarURL() : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                authedAt: prefs.createdAt,
+                language: prefs.language,
+                bio: prefs.bio || '',
+                isPremium: !!prefs.isPremium || !!prefs.isManualPremium
+            };
+        });
+
+        res.json({ users: list });
+    } catch (e) {
+        console.error('Error fetching all users:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

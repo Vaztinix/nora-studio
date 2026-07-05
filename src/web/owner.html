@@ -341,16 +341,16 @@
 
         <!-- Lists Grid -->
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px; align-items: start;">
-            <!-- Premium Servers List -->
+            <!-- Active Servers List -->
             <div class="card" style="padding: 24px; min-height: 250px;">
-                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-server" style="color: #ffd700;"></i> Premium Servers (<span id="server-count">0</span>)</h3>
+                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-server" style="color: #5865F2;"></i> Active Servers (<span id="server-count">0</span>)</h3>
                 <div id="servers-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
                     <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
                 </div>
             </div>
-            <!-- Premium Users List -->
+            <!-- Authenticated Users List -->
             <div class="card" style="padding: 24px; min-height: 250px;">
-                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-user-shield" style="color: #ffd700;"></i> Premium Users (<span id="user-count">0</span>)</h3>
+                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-user-check" style="color: #10b981;"></i> Authenticated Users (<span id="user-count">0</span>)</h3>
                 <div id="users-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
                     <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
                 </div>
@@ -405,8 +405,8 @@
             }
         });
 
-        let premiumServers = [];
-        let premiumUsers = [];
+        let activeServers = [];
+        let authedUsers = [];
         let terminatedUsers = [];
 
         async function verifyToken(authToken) {
@@ -415,7 +415,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const res = await fetch(`${apiBase}/api/admin/premium`, {
+                const res = await fetch(`${apiBase}/api/admin/all-servers`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
@@ -451,22 +451,30 @@
             const authToken = localStorage.getItem('nora_admin_token');
             const apiBase = window.getApiBaseUrl();
             try {
-                // Fetch premium servers & users
-                const res1 = await fetch(`${apiBase}/api/admin/premium`, {
+                // Fetch active servers
+                const resServers = await fetch(`${apiBase}/api/admin/all-servers`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
-                if (res1.ok) {
-                    const data = await res1.json();
-                    premiumServers = data.servers || [];
-                    premiumUsers = data.users || [];
+                if (resServers.ok) {
+                    const data = await resServers.json();
+                    activeServers = data.guilds || [];
+                }
+
+                // Fetch authenticated users
+                const resUsers = await fetch(`${apiBase}/api/admin/all-users`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (resUsers.ok) {
+                    const data = await resUsers.json();
+                    authedUsers = data.users || [];
                 }
 
                 // Fetch terminated users
-                const res2 = await fetch(`${apiBase}/api/admin/terminated`, {
+                const resTerm = await fetch(`${apiBase}/api/admin/terminated`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
-                if (res2.ok) {
-                    const data = await res2.json();
+                if (resTerm.ok) {
+                    const data = await resTerm.json();
                     terminatedUsers = data.terminated || [];
                 }
 
@@ -480,13 +488,13 @@
             const searchTerm = (document.getElementById('search-input')?.value || '').toLowerCase();
             
             // Filter servers
-            const filteredServers = premiumServers.filter(s => 
-                s.guildId.includes(searchTerm) || 
+            const filteredServers = activeServers.filter(s => 
+                s.id.includes(searchTerm) || 
                 s.name.toLowerCase().includes(searchTerm)
             );
             
             // Filter users
-            const filteredUsers = premiumUsers.filter(u => 
+            const filteredUsers = authedUsers.filter(u => 
                 u.userId.includes(searchTerm) || 
                 u.username.toLowerCase().includes(searchTerm)
             );
@@ -510,15 +518,27 @@
                     serversContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No servers match search.</div>';
                 } else {
                     serversContainer.innerHTML = filteredServers.map(s => `
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border); gap: 10px;">
-                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='nora.png'">
-                                <div style="min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</div>
-                                    <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${s.guildId}</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                    <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='nora.png'">
+                                    <div style="min-width: 0;">
+                                        <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
+                                            ${s.name} ${s.isPremium ? `<span style="color: #ffd700; font-size: 0.75rem;" title="Premium"><i class="fas fa-gem"></i></span>` : ''}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${s.id}</div>
+                                    </div>
                                 </div>
+                                ${s.isPremium ? `
+                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'server', '${s.id}')">Revoke</button>
+                                ` : `
+                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(16,185,129,0.3); color: var(--success); flex-shrink: 0;" onclick="managePremiumEx('grant', 'server', '${s.id}')">Grant</button>
+                                `}
                             </div>
-                            <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'server', '${s.guildId}')">Revoke</button>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;">
+                                <span>👥 ${s.memberCount.toLocaleString()} members</span>
+                                <span>📅 Added: ${new Date(s.joinedAt).toLocaleDateString()}</span>
+                            </div>
                         </div>
                     `).join('');
                 }
@@ -531,15 +551,27 @@
                     usersContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No users match search.</div>';
                 } else {
                     usersContainer.innerHTML = filteredUsers.map(u => `
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border); gap: 10px;">
-                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
-                                <div style="min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${u.username}</div>
-                                    <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${u.userId}</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                    <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
+                                    <div style="min-width: 0;">
+                                        <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
+                                            ${u.username} ${u.isPremium ? `<span style="color: #ffd700; font-size: 0.75rem;" title="Premium"><i class="fas fa-gem"></i></span>` : ''}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${u.userId}</div>
+                                    </div>
                                 </div>
+                                ${u.isPremium ? `
+                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'user', '${u.userId}')">Revoke</button>
+                                ` : `
+                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(16,185,129,0.3); color: var(--success); flex-shrink: 0;" onclick="managePremiumEx('grant', 'user', '${u.userId}')">Grant</button>
+                                `}
                             </div>
-                            <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'user', '${u.userId}')">Revoke</button>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;">
+                                <span>🌐 Lang: ${u.language.toUpperCase()}</span>
+                                <span>📅 Authed: ${new Date(u.authedAt).toLocaleDateString()}</span>
+                            </div>
                         </div>
                     `).join('');
                 }
