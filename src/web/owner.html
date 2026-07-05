@@ -9,16 +9,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
-            --site-bg: #070706;
+            --site-bg: #09090b;
             --primary: #FFFFFF;
-            --primary-hover: #EEEEEC;
-            --border: #191918;
-            --border-hover: #222221;
-            --muted: #9D9D9D;
-            --card-bg: #111110;
-            --text: #EEEEEC;
-            --danger: #f85149;
-            --success: #2ea043;
+            --primary-hover: #f4f4f5;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --muted: #71717a;
+            --card-bg: #0f0f11;
+            --text: #f4f4f5;
+            --danger: #f43f5e;
+            --success: #10b981;
             --radius: 12px;
         }
 
@@ -366,6 +366,17 @@
     </div>
 
     <script>
+        window.getApiBaseUrl = function() {
+            const host = window.location.hostname;
+            const port = window.location.port;
+            if (host === 'localhost' || host === '127.0.0.1' || port === '3000' || port === '4000') {
+                return 'http://localhost:4000';
+            }
+            const localOverride = localStorage.getItem('nora_api_url');
+            if (localOverride) return localOverride;
+            return 'https://api.vaztinix.dev';
+        };
+
         // Check OAuth Implicit Token
         const fragment = new URLSearchParams(window.location.hash.slice(1));
         const accessToken = fragment.get('access_token');
@@ -403,7 +414,7 @@
             if (errAlert) errAlert.style.display = 'none';
 
             try {
-                const apiBase = window.__NORA_API_BASE_URL__ || '';
+                const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/premium`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
@@ -438,7 +449,7 @@
 
         async function loadAdminDeskData() {
             const authToken = localStorage.getItem('nora_admin_token');
-            const apiBase = window.__NORA_API_BASE_URL__ || '';
+            const apiBase = window.getApiBaseUrl();
             try {
                 // Fetch premium servers & users
                 const res1 = await fetch(`${apiBase}/api/admin/premium`, {
@@ -575,7 +586,7 @@
 
         async function managePremiumEx(action, type, id) {
             try {
-                const apiBase = window.__NORA_API_BASE_URL__ || '';
+                const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/premium/${action}`, {
                     method: 'POST',
                     headers: { 
@@ -606,7 +617,7 @@
 
         async function manageTermination(action, userId, reason = '') {
             try {
-                const apiBase = window.__NORA_API_BASE_URL__ || '';
+                const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/global-ban`, {
                     method: 'POST',
                     headers: { 

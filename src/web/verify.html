@@ -10,17 +10,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --site-bg: #070706;
+            --site-bg: #09090b;
             --primary: #FFFFFF;
-            --primary-hover: #EEEEEC;
-            --border: #191918;
-            --border-hover: #222221;
-            --muted: #9D9D9D;
-            --card-bg: #111110;
-            --text: #EEEEEC;
+            --primary-hover: #f4f4f5;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --muted: #71717a;
+            --card-bg: #0f0f11;
+            --text: #f4f4f5;
             --radius: 12px;
-            --success: #2ea043;
-            --danger: #f85149;
+            --success: #10b981;
+            --danger: #f43f5e;
         }
 
         * {
@@ -518,8 +518,8 @@
             const host = window.location.hostname;
             const port = window.location.port;
 
-            if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
-                return window.location.origin;
+            if (host === 'localhost' || host === '127.0.0.1' || port === '3000' || port === '4000') {
+                return 'http://localhost:4000';
             }
 
             const localOverride = localStorage.getItem('nora_api_url');

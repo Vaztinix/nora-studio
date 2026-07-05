@@ -53,7 +53,7 @@ module.exports = {
                      .addFields(
                           { name: '`/rank`', value: 'Check your current level progress and XP.' },
                           { name: '`/leaderboard`', value: 'Compare server XP ranking charts with other users.' },
-                          { name: '`/mycard`', value: 'Display your cross-server interactive profile badge, custom bio, linked integrations, and earned awards.' }
+                          { name: '`/mycard`', value: 'Display your cross-server interactive profile badge, custom bio, linked integrations, and earned awards. `[v2.3 Stable]`' }
                      );
                 if (interaction.member && interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
                     embed.addFields({ name: '`/setlevel`', value: 'Manage user levels manually (Administrators).' });
@@ -67,18 +67,18 @@ module.exports = {
                 embed.addFields(
                     { name: '`/info` & `/invite`', value: 'Review bot uptime, status telemetry, and invite links.' },
                     { name: '`/language`', value: 'Change local command languages.' },
-                    { name: '`/verify`', value: 'Verify and link Roblox account to gain server roles.' },
-                    { name: '`/roblox`', value: 'Search profile and group structures on Roblox.' }
+                    { name: '`/verify`', value: 'Verify and link Roblox account to gain server roles. `[v2.4 Stable]`' },
+                    { name: '`/roblox`', value: 'Search profile and group structures on Roblox. `[v2.4 Stable]`' }
                 );
             } else if (category === 'fun') {
                 embed.setTitle('🎮 Fun & Games Commands')
                      .setDescription('Interactive tools and engagement systems.')
                      .addFields(
-                          { name: '`/ask`', value: 'Chat with Nora\'s cognitive framework.' },
+                          { name: '`/ask`', value: 'Chat with Nora\'s cognitive framework. `[v2.6 Beta]`' },
                           { name: '`/guess`', value: 'Play the numbers guess game for bonus XP.' },
                           { name: '`/rps`', value: 'Play rock paper scissors against Nora.' },
                           { name: '`/announce`', value: 'Broadcast styled announcement cards.' },
-                          { name: '`/setjoinlink`', value: 'Configure your active join link for playing Roblox experiences.' }
+                          { name: '`/setjoinlink`', value: 'Configure your active join link for playing Roblox experiences. `[v2.0 Stable]`' }
                      );
             }
             return embed;

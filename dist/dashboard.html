@@ -743,13 +743,43 @@
             width: 100%;
             border-radius: 12px;
             padding: 12px 16px;
-            justify-content: flex-start;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.04);
             color: var(--muted);
             white-space: normal;
             line-height: 1.3;
             text-align: left;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.58rem;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+        .badge.stable {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.15);
+        }
+        .badge.beta {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .badge.dev {
+            background: rgba(99, 102, 241, 0.15);
+            color: #6366f1;
+            border: 1px solid rgba(99, 102, 241, 0.2);
         }
         .config-sidebar .h-tab:hover {
             background: rgba(255, 255, 255, 0.05);
@@ -3086,20 +3116,20 @@
                         </div>
 
                         <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 10px 14px; font-weight: 700;">Main Menu</div>
-                        <button class="h-tab active" data-tab="tab-overview"><i class="fas fa-chart-line"></i> Overview</button>
-                        <button class="h-tab" data-tab="tab-safety"><i class="fas fa-shield-alt"></i> Security & Anti-Raid</button>
-                        <button class="h-tab" data-tab="tab-automod"><i class="fas fa-user-shield"></i> AutoMod</button>
-                        <button class="h-tab" data-tab="tab-verify"><i class="fas fa-user-check"></i> Verification & Onboarding</button>
-                        <button class="h-tab" data-tab="tab-tickets"><i class="fas fa-ticket-alt"></i> Support Ticketing</button>
-                        <button class="h-tab" data-tab="tab-starboard"><i class="fas fa-star"></i> Starboard</button>
-                        <button class="h-tab" data-tab="tab-applications"><i class="fas fa-file-signature"></i> Application Builder</button>
-                        <button class="h-tab" data-tab="tab-reactionroles"><i class="fas fa-magic"></i> Reaction Roles</button>
-                        <button class="h-tab" data-tab="tab-leveling"><i class="fas fa-trophy"></i> Leveling System</button>
-                        <button class="h-tab" data-tab="tab-welcome"><i class="fas fa-gamepad"></i> Games & Counting</button>
-                        <button class="h-tab" data-tab="tab-logging"><i class="fas fa-file-alt"></i> Server Logging</button>
-                        <button class="h-tab" data-tab="tab-autoresponder"><i class="fas fa-reply"></i> Autoresponder</button>
-                        <button class="h-tab" data-tab="tab-feeds"><i class="fas fa-broadcast-tower"></i> Content Feeds</button>
-                        <button class="h-tab" data-tab="tab-webhooks"><i class="fas fa-network-wired"></i> Webhooks</button>
+                        <button class="h-tab active" data-tab="tab-overview"><span><i class="fas fa-chart-line"></i> Overview</span></button>
+                        <button class="h-tab" data-tab="tab-safety"><span><i class="fas fa-shield-alt"></i> Security & Anti-Raid</span><span class="badge stable">v2.1</span></button>
+                        <button class="h-tab" data-tab="tab-automod"><span><i class="fas fa-user-shield"></i> AutoMod</span><span class="badge stable">v2.0</span></button>
+                        <button class="h-tab" data-tab="tab-verify"><span><i class="fas fa-user-check"></i> Roblox Verification</span><span class="badge stable">v2.4</span></button>
+                        <button class="h-tab" data-tab="tab-tickets"><span><i class="fas fa-ticket-alt"></i> Support Ticketing</span><span class="badge beta">Beta</span></button>
+                        <button class="h-tab" data-tab="tab-starboard"><span><i class="fas fa-star"></i> Starboard</span><span class="badge beta">Beta</span></button>
+                        <button class="h-tab" data-tab="tab-applications"><span><i class="fas fa-file-signature"></i> Apps Builder</span><span class="badge dev">Dev</span></button>
+                        <button class="h-tab" data-tab="tab-reactionroles"><span><i class="fas fa-magic"></i> Reaction Roles</span><span class="badge stable">v2.0</span></button>
+                        <button class="h-tab" data-tab="tab-leveling"><span><i class="fas fa-trophy"></i> Leveling System</span><span class="badge stable">v2.2</span></button>
+                        <button class="h-tab" data-tab="tab-welcome"><span><i class="fas fa-gamepad"></i> Games & Counting</span><span class="badge stable">v2.0</span></button>
+                        <button class="h-tab" data-tab="tab-logging"><span><i class="fas fa-file-alt"></i> Server Logging</span><span class="badge stable">v2.0</span></button>
+                        <button class="h-tab" data-tab="tab-autoresponder"><span><i class="fas fa-reply"></i> Autoresponder</span><span class="badge stable">v2.1</span></button>
+                        <button class="h-tab" data-tab="tab-feeds"><span><i class="fas fa-broadcast-tower"></i> Content Feeds</span><span class="badge beta">Beta</span></button>
+                        <button class="h-tab" data-tab="tab-webhooks"><span><i class="fas fa-network-wired"></i> Webhooks</span><span class="badge stable">v2.0</span></button>
                         
                         <div style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
                             <button class="save-btn" style="background: var(--primary); color: #0b0b0a; font-weight: 700; font-size: 0.8rem; text-align: center; justify-content: center; box-shadow: 0 0 10px var(--primary-glow);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown"></i> Get Premium</button>
@@ -3456,6 +3486,19 @@
                 </div>
 
                 <div id="tab-logging" class="tab-content">
+                    <!-- Privacy Compliance Alert -->
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 16px; padding: 20px; margin-bottom: 25px; display: flex; align-items: flex-start; gap: 15px;">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; color: #fff; font-weight: 700;">Local Privacy Control</h4>
+                            <p style="margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.5;">
+                                Audit log data is physically contained within your local database cluster and is never sent to third-party endpoints. In compliance with privacy guidelines, you can configure automatic logs expiration in your general settings.
+                            </p>
+                        </div>
+                    </div>
+
                     <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 30px; margin-bottom: 30px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                             <div>
@@ -5123,8 +5166,8 @@
             const port = window.location.port;
 
             // Local development overrides — always target local machine if loaded locally
-            if (host === 'localhost' || host === '127.0.0.1' || port === '3000') {
-                return window.location.origin;
+            if (host === 'localhost' || host === '127.0.0.1' || port === '3000' || port === '4000') {
+                return 'http://localhost:4000';
             }
 
             // User-configured or offline-recovered override
