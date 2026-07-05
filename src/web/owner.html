@@ -581,30 +581,43 @@
                 if (filteredServers.length === 0) {
                     serversContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No servers match search.</div>';
                 } else {
-                    serversContainer.innerHTML = filteredServers.map(s => `
+                    serversContainer.innerHTML = filteredServers.map(s => {
+                        const premiumStatus = s.isManualPremium 
+                            ? `<span style="color: #ffd700; font-size: 0.75rem;" title="Manual Premium"><i class="fas fa-gem"></i> Lifetime</span>`
+                            : s.isPremium 
+                                ? `<span style="color: #10b981; font-size: 0.75rem;" title="Automatic Premium"><i class="fas fa-credit-card"></i> Auto</span>`
+                                : '';
+                        const expiryInfo = s.paidExpiresAt 
+                            ? `<div style="font-size: 0.7rem; color: var(--muted); margin-top: 4px;">⌛ Subscription: Expires ${new Date(s.paidExpiresAt).toLocaleDateString()}</div>`
+                            : '';
+                        const hasAnyPremium = s.isPremium || s.isManualPremium || s.paidExpiresAt;
+                        
+                        return `
                         <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                                     <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='nora.png'">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
-                                            ${s.name} ${s.isPremium ? `<span style="color: #ffd700; font-size: 0.75rem;" title="Premium"><i class="fas fa-gem"></i></span>` : ''}
+                                            ${s.name} ${premiumStatus}
                                         </div>
                                         <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${s.id}</div>
                                     </div>
                                 </div>
-                                ${s.isPremium ? `
+                                ${hasAnyPremium ? `
                                     <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'server', '${s.id}')">Revoke</button>
                                 ` : `
                                     <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(16,185,129,0.3); color: var(--success); flex-shrink: 0;" onclick="managePremiumEx('grant', 'server', '${s.id}')">Grant</button>
                                 `}
                             </div>
+                            ${expiryInfo}
                             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;">
                                 <span>👥 ${s.memberCount.toLocaleString()} members</span>
                                 <span>📅 Added: ${new Date(s.joinedAt).toLocaleDateString()}</span>
                             </div>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
             }
 
@@ -614,30 +627,43 @@
                 if (filteredUsers.length === 0) {
                     usersContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No users match search.</div>';
                 } else {
-                    usersContainer.innerHTML = filteredUsers.map(u => `
+                    usersContainer.innerHTML = filteredUsers.map(u => {
+                        const premiumStatus = u.isManualPremium 
+                            ? `<span style="color: #ffd700; font-size: 0.75rem;" title="Manual Premium"><i class="fas fa-gem"></i> Lifetime</span>`
+                            : u.isPremium 
+                                ? `<span style="color: #10b981; font-size: 0.75rem;" title="Automatic Premium"><i class="fas fa-credit-card"></i> Auto</span>`
+                                : '';
+                        const expiryInfo = u.paidExpiresAt 
+                            ? `<div style="font-size: 0.7rem; color: var(--muted); margin-top: 4px;">⌛ Subscription: Expires ${new Date(u.paidExpiresAt).toLocaleDateString()}</div>`
+                            : '';
+                        const hasAnyPremium = u.isPremium || u.isManualPremium || u.paidExpiresAt;
+
+                        return `
                         <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                                     <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
-                                            ${u.username} ${u.isPremium ? `<span style="color: #ffd700; font-size: 0.75rem;" title="Premium"><i class="fas fa-gem"></i></span>` : ''}
+                                            ${u.username} ${premiumStatus}
                                         </div>
                                         <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${u.userId}</div>
                                     </div>
                                 </div>
-                                ${u.isPremium ? `
+                                ${hasAnyPremium ? `
                                     <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'user', '${u.userId}')">Revoke</button>
                                 ` : `
                                     <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(16,185,129,0.3); color: var(--success); flex-shrink: 0;" onclick="managePremiumEx('grant', 'user', '${u.userId}')">Grant</button>
                                 `}
                             </div>
+                            ${expiryInfo}
                             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;">
                                 <span>🌐 Lang: ${u.language.toUpperCase()}</span>
                                 <span>📅 Authed: ${new Date(u.authedAt).toLocaleDateString()}</span>
                             </div>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
             }
 

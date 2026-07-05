@@ -446,22 +446,28 @@ router.get('/all-servers', requireOwner, async (req, res) => {
             where: {
                 [Op.or]: [
                     { isPremium: true },
-                    { isManualPremium: true }
+                    { isManualPremium: true },
+                    { paidExpiresAt: { [Op.ne]: null } }
                 ]
             },
-            attributes: ['guildId']
+            attributes: ['guildId', 'isPremium', 'isManualPremium', 'paidExpiresAt']
         });
-        const premiumSet = new Set(premiumGuilds.map(g => g.guildId));
+        const premiumMap = new Map(premiumGuilds.map(g => [g.guildId, g]));
 
         const guilds = Array.from(req.client.guilds.cache.values());
-        const list = guilds.map(g => ({
-            id: g.id,
-            name: g.name,
-            icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
-            memberCount: g.memberCount,
-            joinedAt: g.joinedAt,
-            ownerId: g.ownerId,
-            isPremium: premiumSet.has(g.id)
+        const list = guilds.map(g => {
+            const gs = premiumMap.get(g.id);
+            return {
+                id: g.id,
+                name: g.name,
+                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                memberCount: g.memberCount,
+                joinedAt: g.joinedAt,
+                ownerId: g.ownerId,
+                isPremium: gs ? !!gs.isPremium : false,
+                isManualPremium: gs ? !!gs.isManualPremium : false,
+                paidExpiresAt: gs ? gs.paidExpiresAt : null
+            };
         })).sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
 
         res.json({ guilds: list });
@@ -487,7 +493,9 @@ router.get('/all-users', requireOwner, async (req, res) => {
                 authedAt: prefs.createdAt,
                 language: prefs.language,
                 bio: prefs.bio || '',
-                isPremium: !!prefs.isPremium || !!prefs.isManualPremium
+                isPremium: !!prefs.isPremium,
+                isManualPremium: !!prefs.isManualPremium,
+                paidExpiresAt: prefs.paidExpiresAt
             };
         });
 
