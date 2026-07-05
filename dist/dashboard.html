@@ -7323,17 +7323,49 @@
             return 'nora_notifs_' + (window.currentUser ? window.currentUser.id : 'guest');
         }
 
-        function loadNotifications() {
+        async function loadNotifications() {
+            let localNotifs = [];
             const saved = localStorage.getItem(getNotifKey());
             if (saved) {
-                try {
-                    notifications = JSON.parse(saved);
-                    renderNotifications();
-                } catch(e) { notifications = []; }
-            } else {
-                notifications = [];
-                renderNotifications();
+                try { localNotifs = JSON.parse(saved); } catch(e) {}
             }
+
+            let dbNotifs = [];
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const res = await fetch(`${apiBase}/api/notifications`, {
+                    headers: { 'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_token')}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    dbNotifs = (data.notifications || []).map(n => ({
+                        id: 'db_' + n.id,
+                        dbId: n.id,
+                        title: n.title,
+                        content: n.content,
+                        type: n.type || 'info',
+                        read: !!n.read,
+                        timestamp: n.createdAt,
+                        isSpecial: !!n.isSpecial,
+                        isOwnerAction: !!n.isOwnerAction,
+                        server: n.serverName || ''
+                    }));
+                }
+            } catch (e) {
+                console.error("Failed to fetch database notifications:", e);
+            }
+
+            const mergedMap = new Map();
+            localNotifs.forEach(n => {
+                if (!n.id) n.id = Math.random().toString(36).substring(2, 9);
+                mergedMap.set(n.id, n);
+            });
+            dbNotifs.forEach(n => {
+                mergedMap.set(n.id, n);
+            });
+
+            notifications = Array.from(mergedMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            renderNotifications();
         }
 
         function saveNotifications() {
@@ -7453,10 +7485,17 @@
                 'info': { color: '#ffffff', bg: 'rgba(255, 255, 255, 0.1)', text: 'INFO' },
                 'success': { color: '#2ea043', bg: 'rgba(46, 160, 67, 0.1)', text: 'SUCCESS' },
                 'warning': { color: '#ffcc00', bg: 'rgba(255, 204, 0, 0.1)', text: 'WARN' },
-                'error': { color: '#ff5555', bg: 'rgba(255, 85, 85, 0.1)', text: 'ERROR' }
+                'error': { color: '#ff5555', bg: 'rgba(255, 85, 85, 0.1)', text: 'ERROR' },
+                'special': { color: '#ffd700', bg: 'rgba(255, 215, 0, 0.1)', text: 'ALERT' }
             };
             const style = typeStyles[n.type] || typeStyles.info;
             const typeTag = `<span style="font-size: 0.6rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: ${style.bg}; color: ${style.color}; border: 1px solid ${style.color}33;">${translateText(style.text)}</span>`;
+            const ownerBadge = n.isOwnerAction ? `<span style="font-size: 0.6rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid #ffd700; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-crown" style="font-size: 0.55rem;"></i> OWNER ACTION</span>` : '';
+
+            if (n.isOwnerAction) {
+                item.style.borderLeft = '4px solid #ffd700';
+                item.style.background = 'rgba(255, 215, 0, 0.02)';
+            }
 
             const displayTitle = translateText(n.title);
             const displayContent = translateText(n.content);
@@ -7465,13 +7504,13 @@
                 : '';
 
             const readBtn = !n.read ? `
-                <button class="config-btn notif-action-btn" style="padding: 4px 10px; font-size: 0.75rem; width: auto; color: var(--primary); border-color: rgba(255,255,255,0.15); display: flex; align-items: center; gap: 6px;" onclick="markNotificationRead(${n.id}, event)" title="Mark as Read">
+                <button class="config-btn notif-action-btn" style="padding: 4px 10px; font-size: 0.75rem; width: auto; color: var(--primary); border-color: rgba(255,255,255,0.15); display: flex; align-items: center; gap: 6px;" onclick="markNotificationRead('${n.id}', event)" title="Mark as Read">
                     <i class="fas fa-bell-slash"></i> Mark Read
                 </button>
             ` : '';
 
             const trashBtn = `
-                <button class="config-btn notif-action-btn" style="padding: 4px 10px; font-size: 0.75rem; width: auto; color: var(--danger); border-color: rgba(255,85,85,0.15); display: flex; align-items: center; gap: 6px;" onclick="deleteNotification(${n.id}, event)" title="Clear Notification">
+                <button class="config-btn notif-action-btn" style="padding: 4px 10px; font-size: 0.75rem; width: auto; color: var(--danger); border-color: rgba(255,85,85,0.15); display: flex; align-items: center; gap: 6px;" onclick="deleteNotification('${n.id}', event)" title="Clear Notification">
                     <i class="fas fa-trash-alt"></i> Clear
                 </button>
             `;
@@ -7481,8 +7520,9 @@
                     <div style="width: 10px; height: 10px; border-radius: 50%; background: ${n.read ? 'transparent' : style.color}; box-shadow: ${n.read ? 'none' : '0 0 8px ' + style.color}; margin-top: 6px; flex-shrink: 0; border: 1px solid ${n.read ? 'rgba(255,255,255,0.1)' : 'transparent'};"></div>
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                 ${typeTag}
+                                ${ownerBadge}
                                 <strong style="font-size: 1rem; color: #fff; font-weight: 700;">${displayTitle}</strong>
                             </div>
                             <span style="font-size: 0.7rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 10px;">${time}</span>
@@ -7749,21 +7789,46 @@
             renderNotifications();
         }
 
-        function clearNotifications() {
+        async function clearNotifications() {
             if (!confirm('Clear all notifications?')) return;
             logToTerminal('Clearing notifications.', 'SYSTEM_ACTION');
             notifications = [];
             saveNotifications();
             renderNotifications();
+
+            try {
+                const apiBase = window.getApiBaseUrl();
+                await fetch(`${apiBase}/api/notifications/clear`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_token')}`
+                    },
+                    body: JSON.stringify({ all: true })
+                });
+            } catch (e) { console.error(e); }
         }
 
-        function markAllRead() {
+        async function markAllRead() {
             logToTerminal('Marking all notifications as read.', 'SYSTEM_ACTION');
             notifications.forEach(n => n.read = true);
             saveNotifications();
             renderNotifications();
+
+            try {
+                const apiBase = window.getApiBaseUrl();
+                await fetch(`${apiBase}/api/notifications/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_token')}`
+                    },
+                    body: JSON.stringify({ all: true })
+                });
+            } catch (e) { console.error(e); }
         }
-        function deleteNotification(id, event) {
+
+        async function deleteNotification(id, event) {
             if (event) event.stopPropagation();
             notifications = notifications.filter(n => n.id !== id);
             saveNotifications();
@@ -7941,13 +8006,33 @@
 
         function updateNotifBadge() {
             const badge = document.getElementById('notif-badge');
-            const unreadCount = notifications.filter(n => !n.read).length;
-            if (unreadCount > 0) {
-                badge.textContent = unreadCount;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
-            }
+            const topbarBadge = document.getElementById('topbar-notif-badge');
+            const unread = notifications.filter(n => !n.read);
+            const unreadCount = unread.length;
+            
+            const updateBadgeEl = (el) => {
+                if (!el) return;
+                if (unreadCount > 0) {
+                    el.textContent = unreadCount;
+                    el.style.display = 'inline-block';
+                    
+                    const hasSpecial = unread.some(n => n.isSpecial || n.isOwnerAction || n.type === 'special');
+                    if (hasSpecial) {
+                        el.style.background = '#ffd700';
+                        el.style.color = '#000000';
+                        el.style.boxShadow = '0 0 10px #ffd700';
+                    } else {
+                        el.style.background = '';
+                        el.style.color = '';
+                        el.style.boxShadow = '';
+                    }
+                } else {
+                    el.style.display = 'none';
+                }
+            };
+            
+            updateBadgeEl(badge);
+            updateBadgeEl(topbarBadge);
         }
 
         // Theme & Preferences Logic

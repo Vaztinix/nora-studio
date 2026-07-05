@@ -604,11 +604,14 @@
                                         <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${s.id}</div>
                                     </div>
                                 </div>
-                                ${hasAnyPremium ? `
-                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'server', '${s.id}')">Revoke</button>
-                                ` : `
-                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(16,185,129,0.3); color: var(--success); flex-shrink: 0;" onclick="managePremiumEx('grant', 'server', '${s.id}')">Grant</button>
-                                `}
+                                <div style="display: flex; gap: 6px;">
+                                    ${hasAnyPremium ? `
+                                        <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="managePremiumEx('revoke', 'server', '${s.id}')">Revoke</button>
+                                    ` : `
+                                        <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(16,185,129,0.3); color: var(--success); flex-shrink: 0;" onclick="managePremiumEx('grant', 'server', '${s.id}')">Grant</button>
+                                    `}
+                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.5); color: #ff5555; background: rgba(248,81,73,0.05); flex-shrink: 0;" onclick="leaveServerEx('${s.id}', '${s.name.replace(/'/g, "\\'")}')">Leave</button>
+                                </div>
                             </div>
                             ${expiryInfo}
                             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;">
@@ -724,6 +727,39 @@
                 loadAdminDeskData();
             } catch (e) {
                 alert('Premium Config Error: ' + e.message);
+            }
+        }
+
+        async function leaveServerEx(guildId, guildName) {
+            const reason = prompt(`Enter the reason for removing Nora from "${guildName}":`);
+            if (reason === null) return;
+            if (!reason.trim()) return alert('A reason is required to notify the server owner.');
+            
+            const confirmLeave = confirm(`Are you sure you want Nora to leave "${guildName}"?`);
+            if (!confirmLeave) return;
+
+            const authToken = localStorage.getItem('nora_admin_token');
+            const apiBase = window.getApiBaseUrl();
+            try {
+                const res = await fetch(`${apiBase}/api/admin/leave-server`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ guildId, reason })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || `Successfully left server ${guildName}`);
+                    loadAdminDeskData();
+                } else {
+                    alert(`Error: ${data.error || 'Failed to leave server'}`);
+                }
+            } catch (e) {
+                console.error("Failed to leave server:", e);
+                alert(`Network error: ${e.message}`);
             }
         }
 

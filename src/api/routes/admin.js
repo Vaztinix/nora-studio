@@ -468,7 +468,7 @@ router.get('/all-servers', requireOwner, async (req, res) => {
                 isManualPremium: gs ? !!gs.isManualPremium : false,
                 paidExpiresAt: gs ? gs.paidExpiresAt : null
             };
-        })).sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
+        }).sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
 
         res.json({ guilds: list });
     } catch (e) {
@@ -484,8 +484,13 @@ router.get('/all-users', requireOwner, async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
-        const list = allPrefs.map(prefs => {
-            const userObj = req.client.users.cache.get(prefs.userId);
+        const list = await Promise.all(allPrefs.map(async prefs => {
+            let userObj = req.client.users.cache.get(prefs.userId);
+            if (!userObj) {
+                try {
+                    userObj = await req.client.users.fetch(prefs.userId);
+                } catch (e) {}
+            }
             return {
                 userId: prefs.userId,
                 username: userObj ? userObj.username : `ID: ${prefs.userId}`,
@@ -497,11 +502,51 @@ router.get('/all-users', requireOwner, async (req, res) => {
                 isManualPremium: !!prefs.isManualPremium,
                 paidExpiresAt: prefs.paidExpiresAt
             };
-        });
+        }));
 
         res.json({ users: list });
     } catch (e) {
         console.error('Error fetching all users:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/leave-server
+router.post('/leave-server', requireOwner, async (req, res) => {
+    try {
+        const { guildId, reason } = req.body;
+        if (!guildId) {
+            return res.status(400).json({ error: 'Missing guildId' });
+        }
+
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Server not found or bot not in server' });
+        }
+
+        const cleanReason = reason || 'Unspecified administrative decision by the bot owner.';
+        const guildName = guild.name;
+        const ownerId = guild.ownerId;
+
+        // Leave the guild
+        await guild.leave();
+        console.log(`[Developer Panel] Bot left guild ${guildName} (${guildId}). Reason: ${cleanReason}`);
+
+        // Write a persistent notification to the server owner
+        const Notification = require('../../database/models/Notification');
+        await Notification.create({
+            userId: ownerId,
+            title: `Nora Bot Deactivated from ${guildName}`,
+            content: `Nora Bot has been removed from your server "${guildName}" by the Bot Owner.\n\nReason: "${cleanReason}"`,
+            type: 'special',
+            isSpecial: true,
+            isOwnerAction: true,
+            serverName: guildName
+        });
+
+        res.json({ success: true, message: `Successfully removed bot from ${guildName} and notified owner.` });
+    } catch (e) {
+        console.error('Error leaving server:', e);
         res.status(500).json({ error: e.message });
     }
 });

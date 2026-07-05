@@ -182,6 +182,7 @@ require('./database/models/ReactionRole');
 require('./database/models/Autoresponder');
 require('./database/models/TicketHistory');
 require('./database/models/MemberRolesHistory');
+require('./database/models/Notification');
 
 
 const client = new Client({
@@ -951,6 +952,89 @@ app.use('/api/system', studioRouter);
 // Developer / Owner-Only admin router
 const adminRouter = require('./api/routes/admin');
 app.use('/api/admin', adminRouter);
+
+// User Notifications Router
+
+app.get('/api/notifications', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token).catch(() => null);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        const Notification = require('./database/models/Notification');
+        const notifs = await Notification.findAll({
+            where: { userId: user.id },
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.json({ notifications: notifs });
+    } catch (e) {
+        console.error('Error fetching notifications:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/notifications/read', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token).catch(() => null);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        const { id, all } = req.body;
+        const Notification = require('./database/models/Notification');
+
+        if (all) {
+            await Notification.update({ read: true }, { where: { userId: user.id } });
+        } else if (id) {
+            await Notification.update({ read: true }, { where: { id, userId: user.id } });
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error marking notifications read:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/notifications/clear', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token).catch(() => null);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        const { id, all } = req.body;
+        const Notification = require('./database/models/Notification');
+
+        if (all) {
+            await Notification.destroy({ where: { userId: user.id } });
+        } else if (id) {
+            await Notification.destroy({ where: { id, userId: user.id } });
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error clearing notifications:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
