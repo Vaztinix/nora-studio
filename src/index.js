@@ -273,6 +273,15 @@ sequelize.sync().then(async () => {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardMessageTemplate` VARCHAR(255) DEFAULT '{emoji} **{count}** | {channel}';");
     } catch (e) {}
     try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBgColor` VARCHAR(255) DEFAULT '#111217';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardAccentColor` VARCHAR(255) DEFAULT '#7c3aed';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBorderColor` VARCHAR(255) DEFAULT '#23252e';");
+    } catch (e) {}
+    try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
     try {

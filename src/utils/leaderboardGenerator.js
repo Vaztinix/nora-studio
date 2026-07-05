@@ -11,7 +11,7 @@ const { getTotalXPForLevel } = require('./noraLeveling');
  * @param {Array<Object>} options.users List of resolved user objects
  * @returns {Promise<Buffer>} PNG Image buffer
  */
-async function generateLeaderboard({ guildName, page, totalPages, users }) {
+async function generateLeaderboard({ guildName, page, totalPages, users, bgColor = '#111217', accentColor = '#7c3aed', borderColor = '#23252e' }) {
     // Fetch and process all avatars in parallel
     const avatarPromises = users.map(async (u) => {
         if (u.avatarUrl) {
@@ -60,7 +60,7 @@ async function generateLeaderboard({ guildName, page, totalPages, users }) {
 
         svgRows += `
         <!-- Row Divider -->
-        ${index > 0 ? `<line x1="40" y1="${yOffset}" x2="760" y2="${yOffset}" stroke="#23252e" stroke-width="1" />` : ''}
+        ${index > 0 ? `<line x1="40" y1="${yOffset}" x2="760" y2="${yOffset}" stroke="${borderColor}" stroke-width="1" />` : ''}
 
         <!-- Avatar clip path for this row -->
         <clipPath id="clip-${u.userId}">
@@ -71,10 +71,10 @@ async function generateLeaderboard({ guildName, page, totalPages, users }) {
         ${avatarBase64 ? `
         <image href="${avatarBase64}" x="56" y="${yOffset + 16}" width="48" height="48" clip-path="url(#clip-${u.userId})" />
         ` : `
-        <circle cx="80" cy="${yOffset + 40}" r="24" fill="#18191e" />
-        <text x="80" y="${yOffset + 47}" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="#7c3aed" text-anchor="middle">@</text>
+        <circle cx="80" cy="${yOffset + 40}" r="24" fill="${bgColor}" />
+        <text x="80" y="${yOffset + 47}" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="${accentColor}" text-anchor="middle">@</text>
         `}
-        <circle cx="80" cy="${yOffset + 40}" r="25" fill="none" stroke="#2d3039" stroke-width="1.5" />
+        <circle cx="80" cy="${yOffset + 40}" r="25" fill="none" stroke="${borderColor}" stroke-width="1.5" />
 
         <!-- Rank & Username -->
         <text x="130" y="${yOffset + 42}" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="${rankColor}">#${u.rank}</text>
@@ -82,11 +82,11 @@ async function generateLeaderboard({ guildName, page, totalPages, users }) {
 
         <!-- Level & XP -->
         <text x="760" y="${yOffset + 42}" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#a1a1aa" text-anchor="end">
-            <tspan fill="#7c3aed">LVL</tspan> ${u.level}  <tspan fill="#52525b">•</tspan>  ${u.totalXp.toLocaleString()} <tspan fill="#52525b">XP</tspan>
+            <tspan fill="${accentColor}">LVL</tspan> ${u.level}  <tspan fill="#52525b">•</tspan>  ${u.totalXp.toLocaleString()} <tspan fill="#52525b">XP</tspan>
         </text>
 
         <!-- Row Progress Bar track -->
-        <rect x="190" y="${yOffset + 54}" width="570" height="4" rx="2" fill="#18191e" />
+        <rect x="190" y="${yOffset + 54}" width="570" height="4" rx="2" fill="${bgColor}" stroke="${borderColor}" stroke-width="0.5" />
         <!-- Row Progress Bar fill -->
         ${barWidth > 0 ? `<rect x="190" y="${yOffset + 54}" width="${barWidth}" height="4" rx="2" fill="url(#progressGrad)" />` : ''}
         `;
@@ -97,25 +97,25 @@ async function generateLeaderboard({ guildName, page, totalPages, users }) {
         <defs>
             <!-- Progress Bar Gradient -->
             <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#7c3aed" />
-                <stop offset="100%" stop-color="#4f46e5" />
+                <stop offset="0%" stop-color="${accentColor}" />
+                <stop offset="100%" stop-color="${accentColor}88" />
             </linearGradient>
         </defs>
 
         <!-- Background base -->
-        <rect width="800" height="${totalHeight}" rx="16" fill="#111217" />
+        <rect width="800" height="${totalHeight}" rx="16" fill="${bgColor}" />
         
         <!-- Subtle clean card border -->
-        <rect x="0.75" y="0.75" width="798.5" height="${totalHeight - 1.5}" rx="15.25" fill="none" stroke="#23252e" stroke-width="1.5" />
+        <rect x="0.75" y="0.75" width="798.5" height="${totalHeight - 1.5}" rx="15.25" fill="none" stroke="${borderColor}" stroke-width="1.5" />
 
         <!-- Header -->
         <text x="40" y="38" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="900" fill="#ffffff" letter-spacing="-0.5">LEADERBOARD</text>
-        <text x="40" y="58" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#7c3aed">${guildName.toUpperCase()}</text>
+        <text x="40" y="58" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="${accentColor}">${guildName.toUpperCase()}</text>
         
         <text x="760" y="48" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#52525b" text-anchor="end">PAGE ${page} OF ${totalPages}</text>
 
         <!-- Divider below header -->
-        <line x1="40" y1="78" x2="760" y2="78" stroke="#2d3039" stroke-width="2" />
+        <line x1="40" y1="78" x2="760" y2="78" stroke="${borderColor}" stroke-width="2" />
 
         <!-- User Rows -->
         ${svgRows}

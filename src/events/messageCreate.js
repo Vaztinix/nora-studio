@@ -192,7 +192,10 @@ module.exports = {
                             oldLevel: level - 1,
                             newLevel: level,
                             avatarUrl: message.author.displayAvatarURL({ extension: 'png', size: 128 }),
-                            showPfp: showPfp
+                            showPfp: showPfp,
+                            bgColor: settings?.levelingCardBgColor || '#111217',
+                            accentColor: settings?.levelingCardAccentColor || '#7c3aed',
+                            borderColor: settings?.levelingCardBorderColor || '#23252e'
                         });
 
                         const attachment = new AttachmentBuilder(imageBuffer, { name: 'level-up.png' });
@@ -203,8 +206,12 @@ module.exports = {
                     }
                 }
 
-                // Send DM notification if user opted in
-                if (userPrefs && userPrefs.dmNotificationsEnabled && userPrefs.dmNotifLevels) {
+                // Send DM notification if user opted in, or if server default is enabled and user didn't opt out
+                const isUserOptedOut = userPrefs && (userPrefs.dmNotificationsEnabled === false || userPrefs.dmNotifLevels === false);
+                const isUserOptedIn = userPrefs && userPrefs.dmNotificationsEnabled && userPrefs.dmNotifLevels;
+                const shouldSendDm = isUserOptedIn || (settings?.levelUpDmEnabled && !isUserOptedOut);
+
+                if (shouldSendDm) {
                     try {
                         const dmDesc = `🎉 **Congratulations!** You leveled up in **${message.guild.name}**!\n${desc}`;
                         const { generateLevelUpCard } = require('../utils/levelUpGenerator');
@@ -212,7 +219,10 @@ module.exports = {
                             oldLevel: level - 1,
                             newLevel: level,
                             avatarUrl: message.author.displayAvatarURL({ extension: 'png', size: 128 }),
-                            showPfp: showPfp
+                            showPfp: showPfp,
+                            bgColor: settings?.levelingCardBgColor || '#111217',
+                            accentColor: settings?.levelingCardAccentColor || '#7c3aed',
+                            borderColor: settings?.levelingCardBorderColor || '#23252e'
                         }).catch(() => null);
 
                         const payload = { content: dmDesc };

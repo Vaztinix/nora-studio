@@ -664,6 +664,18 @@ const GuildSettings = sequelize.define('GuildSettings', {
     starboardMessageTemplate: {
         type: DataTypes.STRING,
         defaultValue: '{emoji} **{count}** | {channel}'
+    },
+    levelingCardBgColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#111217'
+    },
+    levelingCardAccentColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#7c3aed'
+    },
+    levelingCardBorderColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#23252e'
     }
 });
 

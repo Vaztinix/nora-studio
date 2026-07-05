@@ -118,7 +118,10 @@ module.exports = {
                 nextLevelXp: xpStepForLevelIncrement,
                 rank: rankIndex,
                 avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
-                showPfp: showPfp
+                showPfp: showPfp,
+                bgColor: settings?.levelingCardBgColor || '#111217',
+                accentColor: settings?.levelingCardAccentColor || '#7c3aed',
+                borderColor: settings?.levelingCardBorderColor || '#23252e'
             });
 
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'rank-card.png' });

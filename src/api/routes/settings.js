@@ -150,8 +150,7 @@ router.post('/', async (req, res) => {
             payload.starboardWebhookAvatar = saveBase64Image(payload.starboardWebhookAvatar, 'starboard_avatar');
         }
 
-        // Force levelUpDmEnabled to false/disabled until a robust opt-out mechanism is implemented
-        payload.levelUpDmEnabled = false;
+
 
         // Update the settings model with the payload provided by the dashboard
         await settings.update(payload);

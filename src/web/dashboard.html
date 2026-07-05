@@ -3124,7 +3124,7 @@
                         <button class="h-tab" data-tab="tab-starboard"><span><i class="fas fa-star"></i> Starboard</span><span class="badge stable">v2.5</span></button>
                         <button class="h-tab" data-tab="tab-applications"><span><i class="fas fa-file-signature"></i> Apps Builder</span><span class="badge dev">Dev</span></button>
                         <button class="h-tab" data-tab="tab-reactionroles"><span><i class="fas fa-magic"></i> Reaction Roles</span><span class="badge stable">v2.0</span></button>
-                        <button class="h-tab" data-tab="tab-leveling"><span><i class="fas fa-trophy"></i> Leveling System</span><span class="badge stable">v2.2</span></button>
+                        <button class="h-tab" data-tab="tab-leveling"><span><i class="fas fa-trophy"></i> Leveling System</span><span class="badge stable">v2.3</span></button>
                         <button class="h-tab" data-tab="tab-welcome"><span><i class="fas fa-gamepad"></i> Games & Counting</span><span class="badge stable">v2.0</span></button>
                         <button class="h-tab" data-tab="tab-logging"><span><i class="fas fa-file-alt"></i> Server Logging</span><span class="badge stable">v2.0</span></button>
                         <button class="h-tab" data-tab="tab-autoresponder"><span><i class="fas fa-reply"></i> Autoresponder</span><span class="badge stable">v2.1</span></button>
@@ -3945,12 +3945,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="log-row-compact" style="opacity: 0.6;">
+                            <div class="log-row-compact">
                                 <div style="display: flex; flex-direction: column; gap: 2px;">
-                                    <strong>DM Notifications (🔒 Locked)</strong>
-                                    <p style="font-size: 0.7rem; color: var(--muted);">Send level up to DMs (Disabled until opt-out mechanism is ready)</p>
+                                    <strong>DM Notifications</strong>
+                                    <p style="font-size: 0.7rem; color: var(--muted);">Send level up alerts to users' DMs (users can opt out individually with <code>/levelupdms</code>)</p>
                                 </div>
-                                <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled" disabled><span class="slider"></span></label>
+                                <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled"><span class="slider"></span></label>
                             </div>
                         </div>
                         
@@ -3975,6 +3975,62 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="panel" style="margin-top: 20px;">
+                        <h3>Generated Cards Appearance</h3>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px;">
+                            Customize the color theme of rank cards, level up cards, and leaderboard cards generated for all users on this server.
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                            <div class="input-group">
+                                <label>Background Color</label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="color" id="setting-levelingCardBgColor" style="width: 42px; height: 38px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
+                                    <input type="text" class="custom-msg-input" style="font-family: monospace;" oninput="document.getElementById('setting-levelingCardBgColor').value = this.value" placeholder="#111217" value="#111217" id="setting-levelingCardBgColor-text">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Accent Color</label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="color" id="setting-levelingCardAccentColor" style="width: 42px; height: 38px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
+                                    <input type="text" class="custom-msg-input" style="font-family: monospace;" oninput="document.getElementById('setting-levelingCardAccentColor').value = this.value" placeholder="#7c3aed" value="#7c3aed" id="setting-levelingCardAccentColor-text">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Border Color</label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="color" id="setting-levelingCardBorderColor" style="width: 42px; height: 38px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
+                                    <input type="text" class="custom-msg-input" style="font-family: monospace;" oninput="document.getElementById('setting-levelingCardBorderColor').value = this.value" placeholder="#23252e" value="#23252e" id="setting-levelingCardBorderColor-text">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        // Keep text input and color picker synced
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const bgPicker = document.getElementById('setting-levelingCardBgColor');
+                            const bgText = document.getElementById('setting-levelingCardBgColor-text');
+                            const accentPicker = document.getElementById('setting-levelingCardAccentColor');
+                            const accentText = document.getElementById('setting-levelingCardAccentColor-text');
+                            const borderPicker = document.getElementById('setting-levelingCardBorderColor');
+                            const borderText = document.getElementById('setting-levelingCardBorderColor-text');
+
+                            if (bgPicker && bgText) {
+                                bgPicker.addEventListener('input', () => { bgText.value = bgPicker.value.toUpperCase(); });
+                                bgText.addEventListener('input', () => { if (/^#[0-9A-F]{6}$/i.test(bgText.value)) bgPicker.value = bgText.value; });
+                            }
+                            if (accentPicker && accentText) {
+                                accentPicker.addEventListener('input', () => { accentText.value = accentPicker.value.toUpperCase(); });
+                                accentText.addEventListener('input', () => { if (/^#[0-9A-F]{6}$/i.test(accentText.value)) accentPicker.value = accentText.value; });
+                            }
+                            if (borderPicker && borderText) {
+                                borderPicker.addEventListener('input', () => { borderText.value = borderPicker.value.toUpperCase(); });
+                                borderText.addEventListener('input', () => { if (/^#[0-9A-F]{6}$/i.test(borderText.value)) borderPicker.value = borderText.value; });
+                            }
+                        });
+                    </script>
 
                     <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <button class="config-btn" onclick="openRoleRewards()"><i class="fas fa-trophy"></i> Role Rewards</button>
@@ -5850,7 +5906,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();

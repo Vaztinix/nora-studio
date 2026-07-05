@@ -28,6 +28,22 @@ module.exports = {
                 console.error('[Role Recovery Error] Failed to save roles on leave:', roleSaveErr.message);
             }
 
+            // ─── Leveling/XP Privacy Reset logic ───
+            try {
+                const UserLevel = require('../database/models/UserLevel');
+                const deletedCount = await UserLevel.destroy({
+                    where: {
+                        userId: member.id,
+                        guildId: member.guild.id
+                    }
+                });
+                if (deletedCount > 0) {
+                    console.log(`[Privacy Reset] Successfully deleted level/XP data for user ${member.id} who left guild ${member.guild.id}.`);
+                }
+            } catch (xpResetErr) {
+                console.error('[Privacy Reset Error] Failed to reset user leveling data:', xpResetErr.message);
+            }
+
             // 1. Leave Announcement (Welcomer Module)
             if (settings.welcomerEnabled && settings.welcomeChannelId) {
                 let welcomeChannel = member.guild.channels.cache.get(settings.welcomeChannelId);
