@@ -46,13 +46,16 @@ module.exports = {
                             ) : null;
 
                             const { EmbedBuilder } = require('discord.js');
+                            const embedColor = settings.starboardEmbedColor || '#ffac33';
+                            const finalColor = parseInt(embedColor.replace('#', ''), 16) || 0xffac33;
+
                             const embed = new EmbedBuilder()
                                 .setAuthor({ 
                                     name: reaction.message.author.tag, 
                                     iconURL: reaction.message.author.displayAvatarURL({ dynamic: true }) 
                                 })
                                 .setDescription(reaction.message.content || '*No content*')
-                                .setColor(0xffac33)
+                                .setColor(finalColor)
                                 .setTimestamp(reaction.message.createdAt)
                                 .setFooter({ text: `Message ID: ${reaction.message.id}` });
 
@@ -64,12 +67,47 @@ module.exports = {
 
                             embed.addFields({ name: 'Original', value: `[Jump to message](${reaction.message.url})`, inline: true });
 
-                            const starText = `${triggerEmoji} **${reaction.count}** | <#${reaction.message.channel.id}>`;
+                            let starText = settings.starboardMessageTemplate || '{emoji} **{count}** | {channel}';
+                            starText = starText
+                                .replace(/{emoji}/g, triggerEmoji)
+                                .replace(/{count}/g, reaction.count)
+                                .replace(/{channel}/g, `<#${reaction.message.channel.id}>`);
+
+                            let webhook;
+                            if (settings.starboardWebhookEnabled) {
+                                const webhooks = await starboardChannel.fetchWebhooks().catch(() => null);
+                                webhook = webhooks ? webhooks.find(wh => wh.name.toLowerCase().includes('nora')) : null;
+                                if (!webhook) {
+                                    webhook = await starboardChannel.createWebhook({
+                                        name: settings.starboardWebhookName || 'Nora Starboard',
+                                        avatar: settings.starboardWebhookAvatar || null,
+                                        reason: 'Nora Starboard Integration'
+                                    }).catch(() => null);
+                                }
+                            }
 
                             if (existingMsg) {
-                                await existingMsg.edit({ content: starText, embeds: [embed] }).catch(() => {});
+                                if (existingMsg.webhookId && webhook) {
+                                    await webhook.editMessage(existingMsg.id, {
+                                        content: starText,
+                                        embeds: [embed],
+                                        username: settings.starboardWebhookName || 'Nora Starboard',
+                                        avatarURL: settings.starboardWebhookAvatar || null
+                                    }).catch(() => {});
+                                } else {
+                                    await existingMsg.edit({ content: starText, embeds: [embed] }).catch(() => {});
+                                }
                             } else {
-                                await starboardChannel.send({ content: starText, embeds: [embed] }).catch(() => {});
+                                if (webhook) {
+                                    await webhook.send({
+                                        content: starText,
+                                        embeds: [embed],
+                                        username: settings.starboardWebhookName || 'Nora Starboard',
+                                        avatarURL: settings.starboardWebhookAvatar || null
+                                    }).catch(() => {});
+                                } else {
+                                    await starboardChannel.send({ content: starText, embeds: [embed] }).catch(() => {});
+                                }
                             }
                         }
                     }

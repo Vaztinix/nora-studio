@@ -50,8 +50,27 @@ module.exports = {
                                 await existingMsg.delete().catch(() => {});
                             } else {
                                 // Otherwise update count
-                                const starText = `${triggerEmoji} **${reaction.count}** | <#${reaction.message.channel.id}>`;
-                                await existingMsg.edit({ content: starText }).catch(() => {});
+                                let starText = settings.starboardMessageTemplate || '{emoji} **{count}** | {channel}';
+                                starText = starText
+                                    .replace(/{emoji}/g, triggerEmoji)
+                                    .replace(/{count}/g, reaction.count)
+                                    .replace(/{channel}/g, `<#${reaction.message.channel.id}>`);
+
+                                if (existingMsg.webhookId) {
+                                    const webhooks = await starboardChannel.fetchWebhooks().catch(() => null);
+                                    const webhook = webhooks ? webhooks.find(wh => wh.name.toLowerCase().includes('nora')) : null;
+                                    if (webhook) {
+                                        await webhook.editMessage(existingMsg.id, {
+                                            content: starText,
+                                            username: settings.starboardWebhookName || 'Nora Starboard',
+                                            avatarURL: settings.starboardWebhookAvatar || null
+                                        }).catch(() => {});
+                                    } else {
+                                        await existingMsg.edit({ content: starText }).catch(() => {});
+                                    }
+                                } else {
+                                    await existingMsg.edit({ content: starText }).catch(() => {});
+                                }
                             }
                         }
                     }

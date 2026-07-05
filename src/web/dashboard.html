@@ -3121,7 +3121,7 @@
                         <button class="h-tab" data-tab="tab-automod"><span><i class="fas fa-user-shield"></i> AutoMod</span><span class="badge stable">v2.0</span></button>
                         <button class="h-tab" data-tab="tab-verify"><span><i class="fas fa-user-check"></i> Roblox Verification</span><span class="badge stable">v2.4</span></button>
                         <button class="h-tab" data-tab="tab-tickets"><span><i class="fas fa-ticket-alt"></i> Support Ticketing</span><span class="badge beta">Beta</span></button>
-                        <button class="h-tab" data-tab="tab-starboard"><span><i class="fas fa-star"></i> Starboard</span><span class="badge beta">Beta</span></button>
+                        <button class="h-tab" data-tab="tab-starboard"><span><i class="fas fa-star"></i> Starboard</span><span class="badge stable">v2.5</span></button>
                         <button class="h-tab" data-tab="tab-applications"><span><i class="fas fa-file-signature"></i> Apps Builder</span><span class="badge dev">Dev</span></button>
                         <button class="h-tab" data-tab="tab-reactionroles"><span><i class="fas fa-magic"></i> Reaction Roles</span><span class="badge stable">v2.0</span></button>
                         <button class="h-tab" data-tab="tab-leveling"><span><i class="fas fa-trophy"></i> Leveling System</span><span class="badge stable">v2.2</span></button>
@@ -4544,6 +4544,39 @@
                                     <button class="config-btn" style="width: auto; padding: 10px 14px;" onclick="openStarboardEmojiPicker(event)">Picker</button>
                                 </div>
                             </div>
+
+                            <div class="input-group" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <label style="margin: 0; font-weight: 600;">Custom Webhook Profile</label>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Override the bot name and profile picture in Starboard posts.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-starboardWebhookEnabled" onchange="toggleStarboardWebhookFields(); updateStarboardPreview()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div id="starboard-webhook-fields" style="display: none; border-left: 2px solid var(--border); padding-left: 15px; margin-bottom: 15px;">
+                                <div class="input-group" style="margin-bottom: 12px;">
+                                    <label>Webhook Name Override</label>
+                                    <input type="text" id="setting-starboardWebhookName" placeholder="Nora Starboard" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 12px;">
+                                    <label>Webhook Avatar URL</label>
+                                    <input type="text" id="setting-starboardWebhookAvatar" placeholder="https://..." style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Starboard Embed Color (Hex)</label>
+                                <input type="text" id="setting-starboardEmbedColor" placeholder="#ffac33" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <label>Message Text Template</label>
+                                <input type="text" id="setting-starboardMessageTemplate" placeholder="{emoji} **{count}** | {channel}" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                <p style="font-size: 0.7rem; color: var(--muted); margin-top: 4px;">Supported placeholders: <code>{emoji}</code>, <code>{count}</code>, <code>{channel}</code></p>
+                            </div>
                         </div>
 
                         <!-- Right Panel: Live Preview -->
@@ -4556,7 +4589,7 @@
                                 </div>
                                 
                                 <div id="starboard-preview-msg" style="display: none; gap: 16px; align-items: flex-start; text-align: left;">
-                                    <img src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%;" alt="Bot avatar">
+                                    <img id="starboard-preview-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%;" alt="Bot avatar">
                                     <div style="flex: 1; min-width: 0;">
                                         <!-- Star Count Header -->
                                         <div id="starboard-preview-count" style="font-weight: 700; color: #f2f3f5; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
@@ -4564,13 +4597,13 @@
                                         </div>
                                         
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                            <span style="font-weight: 600; color: #f2f3f5; font-size: 0.9rem;">Nora</span>
+                                            <span id="starboard-preview-botname" style="font-weight: 600; color: #f2f3f5; font-size: 0.9rem;">Nora</span>
                                             <span style="background: #5865F2; color: #ffffff; font-size: 0.625rem; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">✓ BOT</span>
                                             <span style="color: #949ba4; font-size: 0.75rem;">Today at 12:00 PM</span>
                                         </div>
                                         
                                         <!-- Embed Body -->
-                                        <div style="background: #2b2d31; border-left: 4px solid #ffd700; border-radius: 4px; padding: 12px 16px; margin-top: 4px; display: inline-block; width: 100%; box-sizing: border-box;">
+                                        <div id="starboard-preview-embed" style="background: #2b2d31; border-left: 4px solid #ffd700; border-radius: 4px; padding: 12px 16px; margin-top: 4px; display: inline-block; width: 100%; box-sizing: border-box;">
                                             <div style="color: #f2f3f5; font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">DiscordUser</div>
                                             <div style="font-size: 0.875rem; color: #dbdee1; line-height: 1.375;">This is a preview of a starboard message! Reacting to a message in the server will highlight it here.</div>
                                             <div style="font-size: 0.8rem; color: var(--primary); margin-top: 8px; font-weight: 500;">Original: <span style="color: #00b0f4; text-decoration: none; cursor: pointer;">[Jump to message]</span></div>
@@ -5817,7 +5850,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -9837,11 +9870,25 @@
             });
         }
 
+        window.toggleStarboardWebhookFields = function() {
+            const webhookEnabled = document.getElementById('setting-starboardWebhookEnabled');
+            const fieldsDiv = document.getElementById('starboard-webhook-fields');
+            if (webhookEnabled && fieldsDiv) {
+                fieldsDiv.style.display = webhookEnabled.checked ? 'block' : 'none';
+            }
+        };
+
         function updateStarboardPreview() {
             const enabledInput = document.getElementById('setting-starboardEnabled');
             const channelSelect = document.getElementById('setting-starboardChannelId');
             const thresholdInput = document.getElementById('setting-starboardThreshold');
             const emojiInput = document.getElementById('setting-starboardEmoji');
+
+            const webhookEnabled = document.getElementById('setting-starboardWebhookEnabled');
+            const webhookName = document.getElementById('setting-starboardWebhookName');
+            const webhookAvatar = document.getElementById('setting-starboardWebhookAvatar');
+            const embedColor = document.getElementById('setting-starboardEmbedColor');
+            const msgTemplate = document.getElementById('setting-starboardMessageTemplate');
 
             const isEnabled = enabledInput ? enabledInput.checked : false;
             const channelId = channelSelect ? channelSelect.value : '';
@@ -9851,6 +9898,9 @@
             const emptyEl = document.getElementById('starboard-preview-empty');
             const msgEl = document.getElementById('starboard-preview-msg');
             const countEl = document.getElementById('starboard-preview-count');
+            const avatarEl = document.getElementById('starboard-preview-avatar');
+            const botnameEl = document.getElementById('starboard-preview-botname');
+            const embedEl = document.getElementById('starboard-preview-embed');
 
             if (isEnabled && channelId) {
                 if (emptyEl) emptyEl.style.display = 'none';
@@ -9863,7 +9913,28 @@
                         channelName = txt.toLowerCase().replace(/[^a-z0-9-_]/g, '');
                     }
                 }
-                if (countEl) countEl.innerHTML = `${emoji} **${threshold}** | #${channelName}`;
+                
+                let templateText = (msgTemplate && msgTemplate.value) ? msgTemplate.value : '{emoji} **{count}** | {channel}';
+                templateText = templateText
+                    .replace(/{emoji}/g, emoji)
+                    .replace(/{count}/g, threshold)
+                    .replace(/{channel}/g, `#${channelName}`);
+
+                if (countEl) countEl.innerHTML = templateText;
+
+                // Webhook overrides
+                const isWebhook = webhookEnabled ? webhookEnabled.checked : false;
+                if (isWebhook) {
+                    if (botnameEl) botnameEl.textContent = (webhookName && webhookName.value) ? webhookName.value : 'Nora Starboard';
+                    if (avatarEl) avatarEl.src = (webhookAvatar && webhookAvatar.value) ? webhookAvatar.value : 'nora.png';
+                } else {
+                    if (botnameEl) botnameEl.textContent = 'Nora';
+                    if (avatarEl) avatarEl.src = 'nora.png';
+                }
+
+                // Embed color override
+                const colorValue = (embedColor && embedColor.value) ? embedColor.value : '#ffd700';
+                if (embedEl) embedEl.style.borderLeft = `4px solid ${colorValue}`;
             } else {
                 if (emptyEl) emptyEl.style.display = 'block';
                 if (msgEl) msgEl.style.display = 'none';
@@ -12434,6 +12505,7 @@
                 refreshModuleBadges();
                 updateCountingBanner(document.getElementById('setting-countingChannelId')?.value || '');
                 if (typeof updateTicketPreview === 'function') updateTicketPreview();
+                if (typeof toggleStarboardWebhookFields === 'function') toggleStarboardWebhookFields();
                 if (typeof updateStarboardPreview === 'function') updateStarboardPreview();
                 if (typeof initializeAllDropdowns === 'function') initializeAllDropdowns();
             } catch (e) {

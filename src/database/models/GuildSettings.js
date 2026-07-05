@@ -644,6 +644,26 @@ const GuildSettings = sequelize.define('GuildSettings', {
     starboardEmoji: {
         type: DataTypes.STRING,
         defaultValue: '⭐'
+    },
+    starboardWebhookEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    starboardWebhookName: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    starboardWebhookAvatar: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    starboardEmbedColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#ffac33'
+    },
+    starboardMessageTemplate: {
+        type: DataTypes.STRING,
+        defaultValue: '{emoji} **{count}** | {channel}'
     }
 });
 
