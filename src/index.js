@@ -182,7 +182,8 @@ require('./database/models/ReactionRole');
 require('./database/models/Autoresponder');
 require('./database/models/TicketHistory');
 require('./database/models/MemberRolesHistory');
-
+require('./database/models/Notification');
+require('./database/models/IpBan');
 
 const client = new Client({
     intents: [
@@ -242,11 +243,94 @@ sequelize.sync().then(async () => {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `reactionRoleNotifyDm` TINYINT(1) DEFAULT 1;");
     } catch (e) {}
     try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `welcomeRoleId` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    // ---- Starboard Migrations ----
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardEnabled` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardChannelId` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardThreshold` INTEGER DEFAULT 3;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardEmoji` VARCHAR(255) DEFAULT '⭐';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardWebhookEnabled` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardWebhookName` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardWebhookAvatar` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardEmbedColor` VARCHAR(255) DEFAULT '#ffac33';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardMessageTemplate` VARCHAR(255) DEFAULT '{emoji} **{count}** | {channel}';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBgColor` VARCHAR(255) DEFAULT '#111217';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardAccentColor` VARCHAR(255) DEFAULT '#7c3aed';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBorderColor` VARCHAR(255) DEFAULT '#23252e';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketLastNumber` INTEGER DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessGameMin` INTEGER DEFAULT 1;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessGameMax` INTEGER DEFAULT 100;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `rpsMinBet` INTEGER DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `rpsMaxBet` INTEGER DEFAULT 10000;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `webhookLogFilters` TEXT DEFAULT '[\"messageDelete\",\"messageUpdate\",\"memberJoin\",\"memberLeave\",\"channelCreate\",\"channelDelete\",\"voiceJoin\",\"voiceLeave\"]';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `webhookLogColor` VARCHAR(255) DEFAULT '#ff5555';");
+    } catch (e) {}
+    try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `isTerminated` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `terminationReason` TEXT DEFAULT NULL;");
     } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotificationsEnabled` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifLevels` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifModeration` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifBroadcasts` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `displayName` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `tempBlacklistExpiresAt` DATETIME DEFAULT NULL;");
+    } catch (e) {}
+
 
     // 🛡️ Nora System Persistence (System Backup) - V17.2
     const { systemBackup } = require('./utils/persistence');
@@ -430,6 +514,28 @@ app.use((req, res, next) => {
     const entry = fail2banMap.get(ip);
     if (entry && entry.bannedUntil && Date.now() < entry.bannedUntil) {
         return res.status(429).end();
+    }
+    next();
+});
+
+// Database IP Ban Check Middleware
+app.use(async (req, res, next) => {
+    const ip = getRealIP(req);
+    if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') {
+        return next();
+    }
+    try {
+        const IpBan = require('./database/models/IpBan');
+        const isBanned = await IpBan.findByPk(ip);
+        if (isBanned) {
+            console.warn(`[IP_BLOCK] Banned IP address blocked: ${ip}`);
+            return res.status(403).json({
+                error: 'IP_BANNED',
+                message: 'This IP address has been permanently or temporarily banned due to association with a restricted account.'
+            });
+        }
+    } catch (e) {
+        console.error('Error in IP ban middleware:', e);
     }
     next();
 });
@@ -728,6 +834,44 @@ function serveOwner(req, res) {
 
 app.get(['/owner', '/owner.html'], serveOwner);
 
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web/nora.png'));
+});
+
+app.get(['/me', '/me.html'], (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    const distPath = path.join(__dirname, '../dist/me.html');
+    const webPath  = path.join(__dirname, 'web/me.html');
+    const filePath = fs.existsSync(distPath) ? distPath : webPath;
+    
+    if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('Profile page not found.');
+    }
+});
+
+app.get(['/billing', '/billing-faq', '/billing-faq.html'], (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    const distPath = path.join(__dirname, '../dist/billing-faq.html');
+    const webPath  = path.join(__dirname, 'web/billing-faq.html');
+    const filePath = fs.existsSync(distPath) ? distPath : webPath;
+    
+    if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('Billing FAQ page not found.');
+    }
+});
+
 app.get('/api/public/guilds/:guildId', async (req, res) => {
     try {
         const guild = client.guilds.cache.get(req.params.guildId);
@@ -746,6 +890,24 @@ app.get('/api/public/guilds/:guildId', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
+app.get('/api/public/user/:userId', async (req, res) => {
+    try {
+        const user = await client.users.fetch(req.params.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({
+            id: user.id,
+            username: user.username,
+            globalName: user.globalName || user.username,
+            avatar: user.displayAvatarURL({ size: 256 })
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 // Serve static assets (JS, CSS, images) — dashboard.html itself is handled above
 app.use(express.static(path.join(__dirname, '../dist'), {
@@ -826,6 +988,89 @@ app.use('/api/system', studioRouter);
 const adminRouter = require('./api/routes/admin');
 app.use('/api/admin', adminRouter);
 
+// User Notifications Router
+
+app.get('/api/notifications', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token).catch(() => null);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        const Notification = require('./database/models/Notification');
+        const notifs = await Notification.findAll({
+            where: { userId: user.id },
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.json({ notifications: notifs });
+    } catch (e) {
+        console.error('Error fetching notifications:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/notifications/read', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token).catch(() => null);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        const { id, all } = req.body;
+        const Notification = require('./database/models/Notification');
+
+        if (all) {
+            await Notification.update({ read: true }, { where: { userId: user.id } });
+        } else if (id) {
+            await Notification.update({ read: true }, { where: { id, userId: user.id } });
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error marking notifications read:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/notifications/clear', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token).catch(() => null);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        const { id, all } = req.body;
+        const Notification = require('./database/models/Notification');
+
+        if (all) {
+            await Notification.destroy({ where: { userId: user.id } });
+        } else if (id) {
+            await Notification.destroy({ where: { id, userId: user.id } });
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error clearing notifications:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Nora API is running.' });
@@ -833,18 +1078,14 @@ app.get('/api/health', (req, res) => {
 
 // YouTube WebSub Webhook Router
 try {
-    const { createWebSubRouter } = require('./services/youtube_engine');
+    const { createWebSubRouter, startPollingFallback } = require('./services/youtube_engine');
     const ContentFeed = require('./database/models/ContentFeed');
     const webSubRouter = createWebSubRouter(client, async (channelId) => {
-        const feeds = await ContentFeed.findAll({ where: { channelId, platform: 'YOUTUBE' } });
-        return feeds.map(f => ({
-            guildId: f.guildId,
-            targetChannelId: f.targetChannelId,
-            customMessage: f.alertTemplate
-        }));
+        return await ContentFeed.findAll({ where: { channelId, platform: 'YOUTUBE' } });
     });
     app.use('/api/websub', webSubRouter);
     console.log('[System] WebSub Webhook Router mounted at /api/websub/youtube/webhook');
+    startPollingFallback(client, ContentFeed);
 } catch (e) {
     console.error('Failed to initialize YouTube WebSub Router:', e.message);
 }
@@ -1059,36 +1300,56 @@ app.get('/api/user/me', async (req, res) => {
                 return res.status(403).json({ error: 'Session Hardening: IP mismatch. Session terminated.' });
             }
             
-            // Check if Discord token is still valid
-            const discordToken = session.discordToken || token;
-            const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${discordToken}` }
-            }).catch(() => null);
-            if (!userRes) {
-                await session.destroy();
-                return res.status(401).json({ error: 'Unauthorized' });
+            // Check if Discord token is still valid (using cache if possible)
+            const cacheKey = tokenHash;
+            const cachedUser = discordUserCache.get(cacheKey);
+            if (cachedUser && (Date.now() - cachedUser.timestamp < USER_CACHE_TTL)) {
+                user = cachedUser.user;
+            } else {
+                const discordToken = session.discordToken || token;
+                const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
+                    headers: { Authorization: `Bearer ${discordToken}` }
+                }).catch(() => null);
+                if (!userRes) {
+                    await session.destroy();
+                    return res.status(401).json({ error: 'Unauthorized' });
+                }
+                user = userRes.data;
+                discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
             }
-            user = userRes.data;
         } else {
             // If the token is a custom session format but not found/expired, reject immediately
             if (token.startsWith('nora_sess_')) {
                 return res.status(401).json({ error: 'Unauthorized' });
             }
-            // Fetch user info from Discord using axios
-            const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${token}` }
-            }).catch(() => null);
-            if (!userRes) return res.status(401).json({ error: 'Unauthorized' });
-            user = userRes.data;
             
-            // GeoIP lookup
+            // Fetch user info from Discord using axios (with cache check)
+            const cacheKey = tokenHash;
+            const cachedUser = discordUserCache.get(cacheKey);
+            if (cachedUser && (Date.now() - cachedUser.timestamp < USER_CACHE_TTL)) {
+                user = cachedUser.user;
+            } else {
+                const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }).catch(() => null);
+                if (!userRes) return res.status(401).json({ error: 'Unauthorized' });
+                user = userRes.data;
+                discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
+            }
+            
+            // GeoIP lookup (skipped for local loopbacks)
             let location = 'Unknown Location';
-            try {
-                const geo = await axios.get(`http://ip-api.com/json/${clientIp}`, { timeout: 3000 });
-                if (geo.data && geo.data.status === 'success') {
-                    location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
-                }
-            } catch (e) {}
+            const isLocalIp = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === 'localhost' || clientIp.startsWith('192.168.') || clientIp.startsWith('10.') || clientIp.startsWith('::ffff:127.0.0.1');
+            if (!isLocalIp) {
+                try {
+                    const geo = await axios.get(`http://ip-api.com/json/${clientIp}`, { timeout: 3000 });
+                    if (geo.data && geo.data.status === 'success') {
+                        location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
+                    }
+                } catch (e) {}
+            } else {
+                location = 'Localhost Development';
+            }
             
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             if (!prefs.sessionGenerationMarker) {
@@ -1134,6 +1395,23 @@ app.get('/api/user/me', async (req, res) => {
 
         // Fetch user preferences/badges from DB
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+        
+        const isTerminated = prefs.isTerminated || (prefs.tempBlacklistExpiresAt && new Date() < new Date(prefs.tempBlacklistExpiresAt));
+        if (isTerminated) {
+            try {
+                const IpBan = require('./database/models/IpBan');
+                await IpBan.findOrCreate({
+                    where: { ipAddress: clientIp },
+                    defaults: {
+                        associatedUserId: user.id,
+                        reason: prefs.terminationReason || 'Associated with terminated/blacklisted account'
+                    }
+                });
+            } catch (e) {
+                console.error('Error auto-banning IP in /api/user/me:', e);
+            }
+        }
+
         user.prefs = prefs;
         user.sessionHardened = !!prefs.sessionHardened;
 
@@ -1165,10 +1443,15 @@ app.post('/api/user/profile', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
         
-        const { robloxPublic, profilePublic, bio, language, dashboardSettings } = req.body;
+        const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts, displayName } = req.body;
         if (robloxPublic !== undefined) prefs.robloxPublic = robloxPublic;
         if (profilePublic !== undefined) prefs.profilePublic = profilePublic;
         if (bio !== undefined) prefs.bio = bio;
+        if (displayName !== undefined) prefs.displayName = displayName || null;
+        if (dmNotificationsEnabled !== undefined) prefs.dmNotificationsEnabled = dmNotificationsEnabled;
+        if (dmNotifLevels !== undefined) prefs.dmNotifLevels = dmNotifLevels;
+        if (dmNotifModeration !== undefined) prefs.dmNotifModeration = dmNotifModeration;
+        if (dmNotifBroadcasts !== undefined) prefs.dmNotifBroadcasts = dmNotifBroadcasts;
         if (language !== undefined) {
             prefs.language = language;
             prefs.customTheme = language;
@@ -1296,6 +1579,8 @@ app.post('/api/user/privacy/purge', async (req, res) => {
         const CustomCommand = require('./database/models/CustomCommand');
         const Warning = require('./database/models/Warning');
         const Case = require('./database/models/Case');
+        const RobloxVerify = require('./database/models/RobloxVerify');
+        const UserMemory = require('./database/models/UserMemory');
 
         const bots = await HostedBot.findAll({ where: { ownerId: userId } });
         const botIds = bots.map(b => b.id);
@@ -1313,7 +1598,9 @@ app.post('/api/user/privacy/purge', async (req, res) => {
             HostedBot.destroy({ where: { ownerId: userId } }),
             Warning.destroy({ where: { userId } }),
             Case.destroy({ where: { userId } }),
-            Session.destroy({ where: { userId } })
+            Session.destroy({ where: { userId } }),
+            RobloxVerify.destroy({ where: { userId } }),
+            UserMemory.destroy({ where: { userId } })
         ]);
 
         res.json({ success: true, message: 'Global personal data record successfully purged from all Nora nodes.' });
@@ -1587,6 +1874,12 @@ app.get('/api/user/guilds', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
+        const UserPrefs = require('./database/models/UserPrefs');
+        const prefs = await UserPrefs.findOne({ where: { userId: user.id } });
+        if (prefs && prefs.isTerminated) {
+            return res.status(403).json({ error: 'Terminated', reason: prefs.terminationReason || 'Violation of terms of service.' });
+        }
+
         const { getCachedUserGuilds } = require('./api/middleware/auth');
         const guilds = await getCachedUserGuilds(token);
         
@@ -1813,188 +2106,291 @@ app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
     }
 });
 
-app.post('/api/user/roblox/link', async (req, res) => {
+// State mapping for Roblox OAuth2 handshake
+const robloxStateMap = new Map(); // state -> { userId, token }
+const robloxMockCodes = new Map(); // code -> { robloxId, robloxUsername }
+
+// Profile Telemetry Cache
+const robloxTelemetryCache = new Map(); // robloxId -> { data, timestamp }
+
+// GET /api/user/roblox/oauth-link
+app.get('/api/user/roblox/oauth-link', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ error: 'Missing username' });
     try {
         const user = await getDiscordUser(token);
+        const state = Math.random().toString(36).substring(2, 18);
+        robloxStateMap.set(state, { userId: user.id, token });
         
-        // Search Roblox API for ID
+        // Timeout to clean up state after 15 minutes
+        setTimeout(() => robloxStateMap.delete(state), 15 * 60 * 1000);
+
+        let oauthUrl;
+        if (process.env.ROBLOX_CLIENT_ID) {
+            const redirectUri = encodeURIComponent(process.env.ROBLOX_REDIRECT_URI || `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/user/roblox/callback`);
+            oauthUrl = `https://apis.roblox.com/oauth/v1/authorize?client_id=${process.env.ROBLOX_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid+profile&state=${state}`;
+        } else {
+            oauthUrl = `/api/auth/roblox/mock-authorize?state=${state}`;
+        }
+
+        res.json({ success: true, url: oauthUrl });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/oauth-link');
+    }
+});
+
+// GET /api/auth/roblox/mock-authorize
+app.get('/api/auth/roblox/mock-authorize', (req, res) => {
+    res.sendFile(require('path').join(__dirname, 'web', 'roblox_mock_auth.html'));
+});
+
+// POST /api/auth/roblox/mock-authorize-submit
+app.post('/api/auth/roblox/mock-authorize-submit', express.urlencoded({ extended: true }), async (req, res) => {
+    const { state, robloxId, robloxUsername } = req.body;
+    if (!state || !robloxId || !robloxUsername) {
+        return res.status(400).send('Missing required fields');
+    }
+    const code = 'mock_code_' + Math.random().toString(36).substring(2, 10);
+    robloxMockCodes.set(code, { robloxId, robloxUsername });
+    
+    // Timeout mock code after 5 minutes
+    setTimeout(() => robloxMockCodes.delete(code), 5 * 60 * 1000);
+
+    res.redirect(`/api/user/roblox/callback?code=${code}&state=${state}`);
+});
+
+// GET /api/public/roblox/search
+app.get('/api/public/roblox/search', async (req, res) => {
+    const { username } = req.query;
+    if (!username) return res.status(400).json({ error: 'Missing username' });
+    try {
         const searchRes = await fetchRoblox('https://users.roblox.com/v1/usernames/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
         });
-        if (!searchRes.ok) {
-            return res.status(500).json({ error: 'Failed to contact Roblox API' });
-        }
+        if (!searchRes.ok) return res.status(500).json({ error: 'Roblox API error' });
         const searchData = await searchRes.json();
-        if (!searchData.data || searchData.data.length === 0) {
-            return res.status(404).json({ error: 'Roblox user not found. Check the username spelling.' });
-        }
-        const robloxUser = searchData.data[0];
-        const code = `Nora-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        if (!searchData.data || searchData.data.length === 0) return res.status(404).json({ error: 'User not found' });
+        const userObj = searchData.data[0];
 
-        const [record] = await RobloxVerify.findOrCreate({ 
-            where: { userId: user.id, robloxId: robloxUser.id.toString() }, 
-            defaults: { 
-                verifyCode: code, 
-                status: 'PENDING',
-                isActive: false
-            } 
+        // Fetch extra profile info for telemetry/age
+        const profileRes = await fetchRoblox(`https://users.roblox.com/v1/users/${userObj.id}`);
+        const profileData = profileRes.ok ? await profileRes.json() : {};
+
+        // Fetch avatar thumbnail
+        const thumbRes = await fetchRoblox(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userObj.id}&size=150x150&format=Png&isCircular=false`);
+        const thumbData = thumbRes.ok ? await thumbRes.json() : {};
+        const avatarUrl = thumbData.data?.[0]?.imageUrl || 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+        res.json({
+            id: userObj.id,
+            name: userObj.name,
+            displayName: userObj.displayName,
+            created: profileData.created || new Date().toISOString(),
+            avatarUrl
         });
-
-        if (record.status !== 'VERIFIED') {
-            record.verifyCode = code;
-            record.status = 'PENDING';
-            await record.save();
-        }
-
-        res.json({ success: true, verifyCode: record.verifyCode, status: record.status, linked: true, robloxId: record.robloxId });
     } catch (e) {
-        handleRouteError(res, e, '/api/user/roblox/link');
+        console.error(e);
+        res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/api/user/roblox/check', async (req, res) => {
+// GET /api/user/roblox/callback
+app.get('/api/user/roblox/callback', async (req, res) => {
+    const { code, state } = req.query;
+    if (!state) return res.status(400).send('Missing state parameter');
+    
+    const session = robloxStateMap.get(state);
+    if (!session) return res.status(400).send('Invalid or expired verification session');
+    
+    try {
+        let robloxId, robloxUsername;
+
+        if (code && code.startsWith('mock_code_')) {
+            const mockData = robloxMockCodes.get(code);
+            if (!mockData) return res.status(400).send('Invalid or expired authentication code');
+            robloxId = mockData.robloxId;
+            robloxUsername = mockData.robloxUsername;
+            robloxMockCodes.delete(code);
+        } else {
+            // Real OAuth2 token exchange and userinfo call
+            if (!process.env.ROBLOX_CLIENT_ID) {
+                return res.status(400).send('Roblox Client ID is not configured on this server');
+            }
+            const tokenResponse = await fetch('https://apis.roblox.com/oauth/v1/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    client_id: process.env.ROBLOX_CLIENT_ID,
+                    client_secret: process.env.ROBLOX_CLIENT_SECRET,
+                    grant_type: 'authorization_code',
+                    code,
+                    redirect_uri: process.env.ROBLOX_REDIRECT_URI || `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/user/roblox/callback`
+                })
+            });
+            if (!tokenResponse.ok) {
+                const errText = await tokenResponse.text();
+                throw new Error(`Token exchange failed: ${errText}`);
+            }
+            const tokenData = await tokenResponse.json();
+
+            const userInfoResponse = await fetch('https://apis.roblox.com/oauth/v1/userinfo', {
+                headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
+            });
+            if (!userInfoResponse.ok) throw new Error('Failed to retrieve Roblox user information');
+            const userInfo = await userInfoResponse.json();
+            
+            robloxId = userInfo.sub;
+            robloxUsername = userInfo.preferred_username || userInfo.nickname || `RobloxUser_${robloxId}`;
+        }
+
+        robloxStateMap.delete(state);
+
+        // Bind Roblox Account
+        const [record] = await RobloxVerify.findOrCreate({
+            where: { userId: session.userId, robloxId: robloxId.toString() },
+            defaults: {
+                verifyCode: 'OAUTH',
+                status: 'VERIFIED',
+                isActive: true
+            }
+        });
+
+        if (record.status !== 'VERIFIED') {
+            record.status = 'VERIFIED';
+            await record.save();
+        }
+
+        // Deactivate other linked accounts
+        await RobloxVerify.update({ isActive: false }, {
+            where: {
+                userId: session.userId,
+                robloxId: { [require('sequelize').Op.ne]: robloxId.toString() }
+            }
+        });
+        
+        record.isActive = true;
+        await record.save();
+
+        // Add to UserPrefs.auxiliaryRobloxHandles
+        const UserPrefs = require('./database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: session.userId } });
+        let handles = [];
+        try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) {}
+        if (!handles.includes(record.robloxId)) {
+            handles.push(record.robloxId);
+            await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
+        }
+
+        // Sync roles for all guilds in background
+        const robloxSystem = require('./utils/robloxSystem');
+        const settingsCache = require('./utils/settingsCache');
+        let syncError = null;
+
+        for (const guild of client.guilds.cache.values()) {
+            try {
+                const member = await guild.members.fetch(session.userId).catch(() => null);
+                if (member) {
+                    const settings = await settingsCache.get(guild.id);
+                    if (settings && settings.robloxVerifyEnabled) {
+                        if (settings.robloxVerifyRoleId) {
+                            const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
+                            if (role) await member.roles.add(role).catch(() => {});
+                        }
+                        let groupBindings = [];
+                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
+                        if (groupBindings.length > 0) {
+                            await robloxSystem.syncRobloxRolesWithBackoff(member, record.robloxId, groupBindings);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(`[Roblox API Sync] Callback roles sync failed for guild ${guild.id}:`, err.message);
+            }
+        }
+
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Success</title>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Inter', sans-serif; background: #070706; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+                    .container { background: #111110; padding: 40px; border-radius: 12px; border: 1px solid #191918; max-width: 400px; }
+                    h1 { color: #2ea043; margin-top: 0; }
+                    p { color: #9d9d9d; line-height: 1.5; font-size: 0.95rem; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Verification Complete!</h1>
+                    <p>Your Roblox account <strong>@${robloxUsername}</strong> has been successfully verified and connected to your profile.</p>
+                    <p>You may now close this browser window and return to Nora.</p>
+                </div>
+            </body>
+            </html>
+        `);
+    } catch (e) {
+        console.error('Error in Roblox OAuth callback:', e);
+        res.status(500).send(`Verification failed: ${e.message}`);
+    }
+});
+
+// Fetch detailed Roblox profile telemetry (caching to prevent rate limits)
+app.get('/api/user/roblox/profile/:robloxId', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-    const token = authHeader.split(' ')[1];
-    const { robloxId, guildId } = req.body || {};
+    const { robloxId } = req.params;
+    
+    // Check cache (1 hour TTL)
+    const cached = robloxTelemetryCache.get(robloxId);
+    if (cached && (Date.now() - cached.timestamp < 60 * 60 * 1000)) {
+        return res.json(cached.data);
+    }
+
     try {
-        const user = await getDiscordUser(token);
-        let record;
-        if (robloxId) {
-            record = await RobloxVerify.findOne({ where: { userId: user.id, robloxId } });
-        } else {
-            record = await RobloxVerify.findOne({ where: { userId: user.id, status: 'PENDING' } });
-        }
-        if (!record) return res.status(404).json({ error: 'Link not initialized' });
+        const userRes = await fetchRoblox(`https://users.roblox.com/v1/users/${robloxId}`);
+        if (!userRes.ok) return res.status(userRes.status).json({ error: 'Failed to fetch Roblox user details' });
+        const userData = await userRes.json();
 
-        // If robloxId is not numeric, it's a legacy username string. Let's resolve it first.
-        if (!/^\d+$/.test(record.robloxId)) {
-            const searchRes = await fetchRoblox('https://users.roblox.com/v1/usernames/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usernames: [record.robloxId], excludeBannedUsers: true })
-            });
-            if (searchRes.ok) {
-                const searchData = await searchRes.json();
-                if (searchData.data && searchData.data.length > 0) {
-                    record.robloxId = searchData.data[0].id.toString();
-                    await record.save();
-                }
-            }
-        }
+        const groupsRes = await fetchRoblox(`https://groups.roblox.com/v2/users/${robloxId}/groups/roles`);
+        const groupsData = groupsRes.ok ? await groupsRes.json() : { data: [] };
 
-        // Fetch Roblox profile to verify description code
-        const profileRes = await fetchRoblox(`https://users.roblox.com/v1/users/${record.robloxId}`);
-        if (!profileRes.ok) {
-            return res.status(400).json({ error: 'Failed to fetch Roblox profile for verification. Check that the ID is valid.' });
-        }
-        const profileData = await profileRes.json();
-        const description = profileData.description || '';
+        const badgesRes = await fetchRoblox(`https://badges.roblox.com/v1/users/${robloxId}/badges?limit=10&sortOrder=Desc`);
+        const badgesData = badgesRes.ok ? await badgesRes.json() : { data: [] };
 
-        const isAlreadyVerified = record.status === 'VERIFIED';
-        if (isAlreadyVerified || description.includes(record.verifyCode)) {
-            if (!isAlreadyVerified) {
-                record.status = 'VERIFIED';
-                
-                // Check if user has an active verified account. If not, make this active.
-                const hasActive = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true, status: 'VERIFIED' } });
-                if (!hasActive) {
-                    record.isActive = true;
-                }
-                await record.save();
-            }
+        const thumbRes = await fetchRoblox(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`);
+        const thumbData = thumbRes.ok ? await thumbRes.json() : {};
+        const avatarUrl = thumbData.data?.[0]?.imageUrl || 'https://cdn.discordapp.com/embed/avatars/0.png';
 
-            // Add to UserPrefs.auxiliaryRobloxHandles
-            const UserPrefs = require('./database/models/UserPrefs');
-            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
-            let handles = [];
-            try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) {}
-            if (!handles.includes(record.robloxId)) {
-                handles.push(record.robloxId);
-                await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
-            }
+        const telemetry = {
+            id: userData.id,
+            name: userData.name,
+            displayName: userData.displayName,
+            created: userData.created,
+            groupsCount: groupsData.data?.length || 0,
+            groups: groupsData.data?.map(g => ({
+                id: g.group.id,
+                name: g.group.name,
+                role: g.role.name,
+                rank: g.role.rank
+            })) || [],
+            badgesCount: badgesData.data?.length || 0,
+            avatarUrl
+        };
 
-            let syncError = null;
-            // Sync Roblox roles with backoff
-            if (record.isActive) {
-                const robloxSystem = require('./utils/robloxSystem');
-                const settingsCache = require('./utils/settingsCache');
+        robloxTelemetryCache.set(robloxId, {
+            data: telemetry,
+            timestamp: Date.now()
+        });
 
-                // If guildId is provided, fetch and process it first to ensure immediate execution and feedback
-                if (guildId) {
-                    const guild = client.guilds.cache.get(guildId);
-                    if (guild) {
-                        try {
-                            const member = await guild.members.fetch(user.id);
-                            const settings = await settingsCache.get(guild.id);
-                            if (settings && settings.robloxVerifyEnabled) {
-                                if (settings.robloxVerifyRoleId) {
-                                    const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
-                                    if (role) {
-                                        await member.roles.add(role);
-                                    } else {
-                                        syncError = 'Verified role configured on server no longer exists.';
-                                    }
-                                }
-                                let groupBindings = [];
-                                try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
-                                if (groupBindings.length > 0) {
-                                    await robloxSystem.syncRobloxRolesWithBackoff(member, record.robloxId, groupBindings);
-                                }
-                            } else {
-                                syncError = 'Roblox verification is not enabled on this server.';
-                            }
-                        } catch (err) {
-                            console.error(`[Roblox API Sync] Explicit guild roles sync failed for guild ${guildId}:`, err);
-                            syncError = `Failed to assign roles: ${err.message || err}`;
-                        }
-                    } else {
-                        syncError = 'Server not found by the bot.';
-                    }
-                }
-
-                // Process remaining mutual guilds
-                for (const guild of client.guilds.cache.values()) {
-                    if (guild.id === guildId) continue;
-                    try {
-                        const member = await guild.members.fetch(user.id).catch(() => null);
-                        if (member) {
-                            const settings = await settingsCache.get(guild.id);
-                            if (settings && settings.robloxVerifyEnabled) {
-                                // Grant base verification role
-                                if (settings.robloxVerifyRoleId) {
-                                    const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
-                                    if (role) {
-                                        await member.roles.add(role).catch(e => console.error(`Failed to grant base Roblox role in guild ${guild.id}:`, e));
-                                    }
-                                }
-
-                                let groupBindings = [];
-                                try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
-                                if (groupBindings.length > 0) {
-                                    await robloxSystem.syncRobloxRolesWithBackoff(member, record.robloxId, groupBindings);
-                                }
-                            }
-                        }
-                    } catch (err) {
-                        console.error(`[Roblox API Sync] Guild roles sync failed for guild ${guild.id}:`, err.message);
-                    }
-                }
-            }
-
-            res.json({ success: true, status: 'VERIFIED', robloxId: record.robloxId, robloxUsername: profileData.name, syncError });
-        } else {
-            res.status(400).json({ error: `Verification code "${record.verifyCode}" was not found in your Roblox description.` });
-        }
+        res.json(telemetry);
     } catch (e) {
-        handleRouteError(res, e, '/api/user/roblox/check');
+        console.error(`Error in Roblox telemetry fetch:`, e);
+        res.status(500).json({ error: e.message });
     }
 });
 

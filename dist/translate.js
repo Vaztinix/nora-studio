@@ -2157,8 +2157,8 @@
                     }
                     .nora-lang-trigger:hover {
                         background: rgba(255, 255, 255, 0.1);
-                        border-color: var(--primary, #aeefff);
-                        box-shadow: 0 0 15px rgba(174, 239, 255, 0.2);
+                        border-color: var(--primary, #ffffff);
+                        box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
                     }
                     .nora-lang-trigger .arrow {
                         font-size: 0.6rem;
@@ -2200,12 +2200,12 @@
                     }
                     .nora-lang-option:hover {
                         background: rgba(255, 255, 255, 0.08);
-                        color: var(--primary, #aeefff);
+                        color: var(--primary, #ffffff);
                         transform: translateX(3px);
                     }
                     .nora-lang-option.active {
-                        background: rgba(174, 239, 255, 0.1);
-                        color: var(--primary, #aeefff);
+                        background: rgba(255, 255, 255, 0.1);
+                        color: var(--primary, #ffffff);
                         font-weight: 700;
                     }
                 `;

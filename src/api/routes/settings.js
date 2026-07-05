@@ -144,8 +144,13 @@ router.post('/', async (req, res) => {
             payload.topggWebhookAvatar = saveBase64Image(payload.topggWebhookAvatar, 'topgg_avatar');
         }
 
-        // Force levelUpDmEnabled to false/disabled until a robust opt-out mechanism is implemented
-        payload.levelUpDmEnabled = false;
+        // Decode starboardWebhookAvatar base64 image if present
+        if (payload.starboardWebhookAvatar && payload.starboardWebhookAvatar.startsWith('data:image/')) {
+            const { saveBase64Image } = require('../../utils/imageSaver');
+            payload.starboardWebhookAvatar = saveBase64Image(payload.starboardWebhookAvatar, 'starboard_avatar');
+        }
+
+
 
         // Update the settings model with the payload provided by the dashboard
         await settings.update(payload);

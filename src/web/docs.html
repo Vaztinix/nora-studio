@@ -275,7 +275,11 @@
 
                 <section>
                     <h2>5. Consolidated Moderation & Roblox Verification</h2>
-                    <p>To reduce Discord command bloat and simplify server administration, Nora features consolidated warning and verification workflows.</p>
+                    <p>To reduce Discord command bloat and simplify server administration, Nora features consolidated warning and verification workflows, gated by strict permission checking.</p>
+                    <ul>
+                        <li><strong>Command Hiding:</strong> All moderation, administration, and configuration commands natively utilize Discord's Application Command Permission framework, which physically hides commands from users who lack the required permission levels (e.g. Moderate Members, Ban Members, Manage Guild, etc.).</li>
+                        <li><strong>Dynamic Help Menu:</strong> The `/help` command checks the user's active permissions in real-time, completely filtering out moderator-only categories and commands from non-moderators to maintain a clean, secure chat environment.</li>
+                    </ul>
                     <ul>
                         <li><strong>Unified Warning Management (/warn):</strong> Server moderators can manage warning actions through a single `/warn` command using subcommands to add, edit, list, delete, or clear warnings.</li>
                         <li><strong>Case Management System (/case):</strong> Track, inspect, and manage server moderation actions dynamically.</li>

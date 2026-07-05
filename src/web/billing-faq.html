@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Studio | Premium Billing FAQ</title>
+    <meta name="description" content="Frequently asked questions about Premium upgrades, subscriptions, and billing for Nora.">
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --site-bg: #070706;
+            --primary: #FFFFFF;
+            --primary-hover: #EEEEEC;
+            --border: #191918;
+            --border-hover: #222221;
+            --muted: #9D9D9D;
+            --card-bg: #111110;
+            --text: #EEEEEC;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            background: rgba(7, 7, 6, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+            color: white;
+        }
+
+        /* Content / Main Layout */
+        main {
+            flex: 1;
+            padding: 60px 0;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        /* FAQ Accordion Styling */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .faq-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .faq-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+
+        .faq-card.active {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .faq-question h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .faq-toggle-icon {
+            font-size: 1rem;
+            color: var(--muted);
+            transition: transform 0.2s ease;
+        }
+
+        .faq-card.active .faq-toggle-icon {
+            transform: rotate(180deg);
+            color: white;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease-out, margin-top 0.25s ease;
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .faq-card.active .faq-answer {
+            max-height: 1000px;
+            margin-top: 16px;
+        }
+
+        .faq-answer strong {
+            color: white;
+        }
+
+        .faq-answer ul, .faq-answer ol {
+            margin: 10px 0 10px 20px;
+        }
+
+        .faq-answer li {
+            margin-bottom: 6px;
+        }
+
+        /* Support CTA Section */
+        .cta-section {
+            text-align: center;
+            margin-top: 60px;
+            padding: 40px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border);
+        }
+
+        .cta-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .cta-text {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 30px 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/support">Support</a>
+                <a href="/docs">Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-gem" style="color: #ffd700; margin-right: 8px;"></i>Premium Billing FAQ</h1>
+                <p class="page-subtitle">Frequently asked questions about managing your Nora Premium subscription, billing operations, and settings.</p>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <h3>How do I purchase a Nora Premium subscription?</h3>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Nora uses Discord's official **App Subscriptions** system. To upgrade:
+                        <ol>
+                            <li>Open the server where you want to apply premium.</li>
+                            <li>Go to the **Nora bot profile** (click on Nora in the member list or user popout).</li>
+                            <li>Click the **Upgrade** or **View Premium** button on the profile.</li>
+                            <li>Complete the checkout flow powered securely by Discord.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <h3>How do I check if my server has Premium activated?</h3>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        You can easily check your premium entitlement status by opening the **Nora Studio Dashboard**, selecting your server, and looking at the **Nora Premium** section at the top of any configurations page. If active, you will see a badge indicating **PREMIUM ACTIVE**. You can also run the `/premium` slash command in your server to view details.
+                    </div>
+                </div>
+
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <h3>How do I manage, change, or cancel my subscription?</h3>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        All payments and recurring subscriptions are handled securely through the Discord client:
+                        <ol>
+                            <li>Open your Discord app and click the **Settings Gear** next to your avatar.</li>
+                            <li>In the left-hand sidebar, select **Subscriptions** under the **Billing Settings** section.</li>
+                            <li>Locate your **Nora Studio** subscription card.</li>
+                            <li>Click **Manage** to upgrade, downgrade, edit payment methods, or click **Cancel Subscription** to stop recurring billing.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <h3>Can I transfer my Premium subscription to another server?</h3>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Yes, if you purchased a user-level premium tier, your entitlements follow you! You can assign your premium boost slot to any server you own or manage. Simply open the **Nora Dashboard**, head to **Personal Settings**, select your active subscription details, and use the **Transfer Slot** dropdown to bind it to a new server.
+                    </div>
+                </div>
+
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <h3>What happens to my settings if my Premium expires?</h3>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        If your premium status expires, your configuration data is not deleted immediately. However, premium-locked features (such as advanced logging, regex custom filtering, live presence tracking, or large-volume application configurations) will be disabled until a premium slot is re-activated or provisioned.
+                    </div>
+                </div>
+
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <h3>Who do I contact for billing issues or refund requests?</h3>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Because all billing and transaction processing is handled exclusively by Discord, Nora developers do not have direct access to your credit card data, bank information, or transaction records. For any refund requests, billing errors, or subscription invoice issues, please contact **Discord Support** directly at **https://support.discord.com/**. For non-billing technical issues, join our support server!
+                    </div>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <h2 class="cta-title">Still have questions?</h2>
+                <p class="cta-text">Join the Nora Support Server to chat with our staff and get help with custom setup.</p>
+                <a href="/support" class="btn-primary">
+                    <i class="fab fa-discord"></i> Join Support Server
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Nora Studio. All rights reserved. Discord app monetization is governed by Discord's Terms of Service.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleFaq(card) {
+            // Toggle active class
+            card.classList.toggle('active');
+            
+            // Close other cards (optional accordion effect)
+            const allCards = document.querySelectorAll('.faq-card');
+            allCards.forEach(c => {
+                if (c !== card) {
+                    c.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

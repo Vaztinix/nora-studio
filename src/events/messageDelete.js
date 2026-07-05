@@ -15,25 +15,9 @@ module.exports = {
 
         try {
             const settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } });
-            // console.log(`[Logger DEBUG] MsgDelete event in ${message.guild.name}. ChannelSet: ${!!settings?.loggingChannelId}, Toggle: ${settings?.logMessageDeletes}`);
-            if (!settings || !settings.logMessageDeletes) return;
+            if (!settings) return;
             const loggerUtil = require('../utils/logger');
-            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'messageLogs');
-            if (!logChannelId) return;
-
-            let logChannel = message.guild.channels.cache.get(logChannelId);
-            if (!logChannel) logChannel = await message.guild.channels.fetch(logChannelId).catch(() => null);
             
-            if (!logChannel) {
-                console.error(`[Logger ERROR] Target channel ${settings.loggingChannelId} not found in ${message.guild.name}.`);
-                return;
-            }
-            
-            const perms = logChannel.permissionsFor(message.guild.members.me);
-            // console.log(`[Logger DEBUG] Nora Perms in ${logChannel.name}: View:${perms.has('ViewChannel')}, Send:${perms.has('SendMessages')}, Embed:${perms.has('EmbedLinks')}`);
-            
-            // console.log(`[Logger DEBUG] Found channel ${logChannel.name} (${logChannel.id}). Sending log...`);
-
             const author = message.author;
             const embed = new EmbedBuilder()
                 .setTitle('Message Deleted')
@@ -50,9 +34,7 @@ module.exports = {
                 .setFooter({ text: `Message ID: ${message.id}` })
                 .setTimestamp();
 
-            await logChannel.send({ embeds: [embed] }).catch((err) => { 
-                console.error(`[Logger ERROR] Failed to send MsgDelete to ${logChannel.name}:`, err.message);
-            });
+            await loggerUtil.sendEventLog(message.guild, 'messageDelete', embed, settings);
         } catch (error) {
             console.error('[Logger] Error in MessageDelete:', error);
         }

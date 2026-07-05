@@ -18,4 +18,7 @@ By physically accessing or hosting this codebase, you agree to:
 ### WARNING
 Any detected breach of system integrity, unauthorized modification of core handlers, or attempts to bypass Nora's security firewalls will result in an immediate **Permanent Nora Blacklist** across all server nodes.
 
+### Command Visibility & Permissions Hiding
+Nora integrates natively with Discord's Application Command Permission framework. All moderation, administrative, and configuration commands are physically hidden at the client level from members who do not possess the required moderator permissions.
+
 **Nora System Core • Secure • Professional • Proprietary**

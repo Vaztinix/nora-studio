@@ -5,7 +5,33 @@ const xml2js = require('xml2js');
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 // Setup Redis instance (expects REDIS_URL in env, defaults to localhost)
-const redis = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379');
+// Safe options to prevent startup crash on offline local Redis
+const redis = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379', {
+    maxRetriesPerRequest: 1,
+    enableOfflineQueue: true,
+    connectTimeout: 5000
+});
+
+let redisAvailable = false;
+redis.on('connect', () => {
+    redisAvailable = true;
+    console.log('[YouTube Engine] Connected to Redis successfully.');
+});
+redis.on('error', (err) => {
+    redisAvailable = false;
+    // Log once to prevent spam
+    if (!global.redisWarningLogged) {
+        console.warn('[YouTube Engine] Redis connection failed, falling back to in-memory deduplication:', err.message);
+        global.redisWarningLogged = true;
+    }
+});
+
+const memoryDeduplicationSet = new Set();
+// Periodically clean up memory Set to prevent leak (daily)
+setInterval(() => {
+    memoryDeduplicationSet.clear();
+}, 24 * 60 * 60 * 1000);
+
 
 // Setup YouTube Data API v3
 const youtube = google.youtube({
@@ -132,16 +158,35 @@ function createWebSubRouter(client, getGuildSubscriptions) {
 
             if (!videoId || !channelId) return;
 
-            // Deduplication Check via Redis (24-hour expiration)
+            // Deduplication Check via Redis or Memory Fallback (24-hour expiration)
             const redisKey = `yt:video:${videoId}`;
-            const isDuplicate = await redis.get(redisKey);
+            let isDuplicate = false;
+            if (redisAvailable) {
+                try {
+                    const res = await redis.get(redisKey).catch(() => null);
+                    isDuplicate = !!res;
+                } catch (e) {
+                    isDuplicate = memoryDeduplicationSet.has(videoId);
+                }
+            } else {
+                isDuplicate = memoryDeduplicationSet.has(videoId);
+            }
+
             if (isDuplicate) {
                 console.log(`[YouTube Engine] Duplicate alert dropped for videoId: ${videoId} (${title})`);
                 return;
             }
 
-            // Store in Redis to prevent duplicates (expires in 24 hours / 86400 seconds)
-            await redis.set(redisKey, 'alerted', 'EX', 86400);
+            // Store to prevent duplicates (expires in 24 hours / 86400 seconds)
+            if (redisAvailable) {
+                try {
+                    await redis.set(redisKey, 'alerted', 'EX', 86400).catch(() => {});
+                } catch (e) {
+                    memoryDeduplicationSet.add(videoId);
+                }
+            } else {
+                memoryDeduplicationSet.add(videoId);
+            }
 
             console.log(`[YouTube Engine] Dispatching alert for videoId: ${videoId} | Channel: ${author} (${channelId})`);
 
@@ -152,6 +197,25 @@ function createWebSubRouter(client, getGuildSubscriptions) {
             // Dispatch alert to each subscribed Discord server
             for (const sub of subscriptions) {
                 try {
+                    // Check if this video is already known/alerted for this feed
+                    let lastIds = { video: null, short: null, live: null };
+                    if (sub.lastVideoId) {
+                        try {
+                            lastIds = JSON.parse(sub.lastVideoId);
+                        } catch (e) {
+                            lastIds = { video: sub.lastVideoId, short: null, live: null };
+                        }
+                    }
+
+                    if (videoId === lastIds.video || videoId === lastIds.short || videoId === lastIds.live) {
+                        console.log(`[YouTube Engine] Skipping already alerted/known video ID ${videoId} for feed ${sub.id}`);
+                        continue;
+                    }
+
+                    // Save video ID to feed's lastVideoId to prevent future spam
+                    lastIds.video = videoId;
+                    await sub.update({ lastVideoId: JSON.stringify(lastIds) });
+
                     const guild = client.guilds.cache.get(sub.guildId);
                     if (!guild) continue;
 
@@ -173,7 +237,21 @@ function createWebSubRouter(client, getGuildSubscriptions) {
 
                     // Format message payload
                     const videoLink = `https://youtube.com/watch?v=${videoId}`;
-                    let content = sub.customMessage || `**${author}** just uploaded a new video!\n${videoLink}`;
+                    
+                    // Parse alert templates
+                    let templates = { video: '', short: '', live: '' };
+                    if (sub.alertTemplate) {
+                        try {
+                            const parsed = JSON.parse(sub.alertTemplate);
+                            templates.video = parsed.video || '';
+                            templates.short = parsed.short || '';
+                            templates.live = parsed.live || '';
+                        } catch (e) {
+                            templates.video = sub.alertTemplate;
+                        }
+                    }
+                    
+                    let content = templates.video || `**${author}** just uploaded a new video!\n${videoLink}`;
                     
                     // Support replacement parameters
                     content = content
@@ -235,4 +313,94 @@ async function manageWebSubSubscriptions(callbackUrl, channelIds) {
     }
 }
 
-module.exports = { resolveChannelId, createWebSubRouter, manageWebSubSubscriptions };
+function startPollingFallback(client, ContentFeed) {
+    console.log('[YouTube Engine] Initialized fallback background polling scheduler.');
+    // Run every 15 minutes
+    setInterval(async () => {
+        try {
+            const feeds = await ContentFeed.findAll({ where: { platform: 'YOUTUBE' } });
+            if (!feeds || feeds.length === 0) return;
+
+            const grouped = {};
+            feeds.forEach(f => {
+                if (!grouped[f.channelId]) {
+                    grouped[f.channelId] = [];
+                }
+                grouped[f.channelId].push(f);
+            });
+
+            for (const channelId in grouped) {
+                if (!process.env.YOUTUBE_API_KEY) continue;
+                const response = await youtube.search.list({
+                    part: 'snippet',
+                    channelId: channelId,
+                    order: 'date',
+                    type: 'video',
+                    maxResults: 3
+                }).catch(() => null);
+
+                if (!response || !response.data || !response.data.items) continue;
+
+                for (const item of response.data.items) {
+                    const videoId = item.id?.videoId;
+                    if (!videoId) continue;
+                    const title = item.snippet?.title || 'New Video';
+                    const author = item.snippet?.channelTitle || 'A Creator';
+
+                    const redisKey = `yt:video:${videoId}`;
+                    let isDuplicate = false;
+                    if (redisAvailable) {
+                        isDuplicate = !!(await redis.get(redisKey).catch(() => null));
+                    } else {
+                        isDuplicate = memoryDeduplicationSet.has(videoId);
+                    }
+
+                    if (isDuplicate) continue;
+
+                    if (redisAvailable) {
+                        await redis.set(redisKey, 'alerted', 'EX', 86400).catch(() => {});
+                    } else {
+                        memoryDeduplicationSet.add(videoId);
+                    }
+
+                    for (const sub of grouped[channelId]) {
+                        try {
+                            let lastIds = { video: null, short: null, live: null };
+                            if (sub.lastVideoId) {
+                                try {
+                                    lastIds = JSON.parse(sub.lastVideoId);
+                                } catch (e) {
+                                    lastIds = { video: sub.lastVideoId, short: null, live: null };
+                                }
+                            }
+
+                            if (videoId === lastIds.video || videoId === lastIds.short || videoId === lastIds.live) {
+                                continue;
+                            }
+
+                            lastIds.video = videoId;
+                            await sub.update({ lastVideoId: JSON.stringify(lastIds) });
+
+                            const guild = client.guilds.cache.get(sub.guildId);
+                            if (!guild) continue;
+
+                            const channel = guild.channels.cache.get(sub.targetChannelId);
+                            if (!channel) continue;
+
+                            const videoLink = `https://youtube.com/watch?v=${videoId}`;
+                            const content = `**${author}** just uploaded a new video!\n${videoLink}`;
+                            
+                            await channel.send({ content });
+                        } catch (err) {
+                            console.error(`[YouTube Poller Dispatcher Error]:`, err.message);
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('[YouTube Fallback Poller Error]:', e.message);
+        }
+    }, 900000);
+}
+
+module.exports = { resolveChannelId, createWebSubRouter, manageWebSubSubscriptions, startPollingFallback };

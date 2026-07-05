@@ -88,12 +88,18 @@ module.exports = {
 
             const totalPages = Math.ceil(count / usersPerPage);
 
+            const GuildSettings = require('../../database/models/GuildSettings');
+            const settings = await GuildSettings.findOne({ where: { guildId: interaction.guild.id } });
+
             const { generateLeaderboard } = require('../../utils/leaderboardGenerator');
             const imageBuffer = await generateLeaderboard({
                 guildName: interaction.guild.name,
                 page: page,
                 totalPages: totalPages,
-                users: resolvedUsers
+                users: resolvedUsers,
+                bgColor: settings?.levelingCardBgColor || '#111217',
+                accentColor: settings?.levelingCardAccentColor || '#7c3aed',
+                borderColor: settings?.levelingCardBorderColor || '#23252e'
             });
 
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'leaderboard.png' });

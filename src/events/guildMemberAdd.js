@@ -196,7 +196,7 @@ module.exports = {
                         }
                         
                         const loggerUtil = require('../utils/logger');
-                        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
+                        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberJoins');
                         if (logChannelId) {
                             const logChannel = member.guild.channels.cache.get(logChannelId) ||
                                                await member.guild.channels.fetch(logChannelId).catch(() => null);
@@ -220,26 +220,26 @@ module.exports = {
             }
 
             // 2. --- Join Logging (Audit Logs) ---
-            if (settings.logMemberJoins) {
-                const loggerUtil = require('../utils/logger');
-                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
-                if (logChannelId) {
-                    let logChannel = member.guild.channels.cache.get(logChannelId);
-                    if (!logChannel) logChannel = await member.guild.channels.fetch(logChannelId).catch(() => null);
+            const loggerUtil = require('../utils/logger');
+            const logEmbed = new EmbedBuilder()
+                .setTitle('Member Joined')
+                .setColor(0x43b581) // Green for joins
+                .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
+                .addFields(
+                    { name: 'User', value: `<@${member.id}>`, inline: true },
+                    { name: 'ID', value: `\`${member.id}\``, inline: true },
+                    { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true }
+                )
+                .setTimestamp();
+            await loggerUtil.sendEventLog(member.guild, 'memberJoin', logEmbed, settings);
 
-                    if (logChannel) {
-                        const logEmbed = new EmbedBuilder()
-                            .setTitle('Member Joined')
-                            .setColor(0x43b581) // Green for joins
-                            .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
-                            .addFields(
-                                { name: 'User', value: `<@${member.id}>`, inline: true },
-                                { name: 'ID', value: `\`${member.id}\``, inline: true },
-                                { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true }
-                            )
-                            .setTimestamp();
-                        await logChannel.send({ embeds: [logEmbed] }).catch(() => { });
-                    }
+            // 2.5. --- Add Welcome Role on Join ---
+            if (settings.welcomeRoleId) {
+                const role = member.guild.roles.cache.get(settings.welcomeRoleId);
+                if (role) {
+                    await member.roles.add(role, 'Nora: Welcome Role assigned on join').catch(err => {
+                        console.error(`[Welcome Role] Failed to assign role ${role.name} for ${member.user.tag}:`, err.message);
+                    });
                 }
             }
 
@@ -288,15 +288,22 @@ module.exports = {
                         let inviteInfo = `joined using a vanity link or unknown invite.`;
                         if (usedInvite) {
                             const inviter = usedInvite.inviter;
-                            inviteInfo = `was invited by ${inviter ? `<@${inviter.id}> (\`${inviter.username}\`)` : 'Unknown'} (Invite: \`${usedInvite.code}\`, Uses: **${usedInvite.uses}**).`;
+                            inviteInfo = `Invited by: ${inviter ? `<@${inviter.id}> (\`${inviter.username}\`, ID: \`${inviter.id}\`)` : 'Unknown'}\nInvite Link: [${usedInvite.code}](https://discord.gg/${usedInvite.code})\nUses: **${usedInvite.uses}**`;
                         }
+
+                        const accountAgeDays = Math.floor((Date.now() - member.user.createdTimestamp) / (1000 * 60 * 60 * 24));
+                        const accountAgeStr = accountAgeDays === 0 ? 'Today (New Account!)' : `${accountAgeDays} days ago (${new Date(member.user.createdTimestamp).toLocaleDateString()})`;
 
                         const inviteEmbed = new EmbedBuilder()
                             .setTitle('📥 Member Join Invite Tracker')
                             .setColor(0x57acf2)
-                            .setDescription(`<@${member.id}> (\`${member.user.username}\`) ${inviteInfo}`)
+                            .setDescription(`**User:** <@${member.id}> (\`${member.user.username}\`, ID: \`${member.id}\`)\n\n**Invite Details:**\n${inviteInfo}`)
+                            .addFields(
+                                { name: 'Account Age', value: accountAgeStr, inline: true },
+                                { name: 'Join Position', value: `Member #${member.guild.memberCount}`, inline: true }
+                            )
                             .setTimestamp()
-                            .setFooter({ text: `Member ID: ${member.id}` });
+                            .setFooter({ text: `Member ID: ${member.id}`, iconURL: member.user.displayAvatarURL() });
                         await trackingChannel.send({ embeds: [inviteEmbed] }).catch(() => {});
                     }
                 } catch (inviteTrackErr) {

@@ -9,7 +9,7 @@ module.exports = {
         const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
         if (!settings || !settings.logAutomod) return;
         const loggerUtil = require('../utils/logger');
-        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'moderation');
+        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'automod');
         if (!logChannelId) return;
 
         const logChannel = guild.channels.cache.get(logChannelId) || await guild.channels.fetch(logChannelId).catch(() => null);

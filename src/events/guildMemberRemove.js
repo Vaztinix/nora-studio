@@ -28,6 +28,22 @@ module.exports = {
                 console.error('[Role Recovery Error] Failed to save roles on leave:', roleSaveErr.message);
             }
 
+            // ─── Leveling/XP Privacy Reset logic ───
+            try {
+                const UserLevel = require('../database/models/UserLevel');
+                const deletedCount = await UserLevel.destroy({
+                    where: {
+                        userId: member.id,
+                        guildId: member.guild.id
+                    }
+                });
+                if (deletedCount > 0) {
+                    console.log(`[Privacy Reset] Successfully deleted level/XP data for user ${member.id} who left guild ${member.guild.id}.`);
+                }
+            } catch (xpResetErr) {
+                console.error('[Privacy Reset Error] Failed to reset user leveling data:', xpResetErr.message);
+            }
+
             // 1. Leave Announcement (Welcomer Module)
             if (settings.welcomerEnabled && settings.welcomeChannelId) {
                 let welcomeChannel = member.guild.channels.cache.get(settings.welcomeChannelId);
@@ -49,28 +65,18 @@ module.exports = {
             }
 
             // 2. Logging Module (Audit Logs)
-            if (settings.logMemberLeaves) {
-                const loggerUtil = require('../utils/logger');
-                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberFlow');
-                if (logChannelId) {
-                    let logChannel = member.guild.channels.cache.get(logChannelId);
-                    if (!logChannel) logChannel = await member.guild.channels.fetch(logChannelId).catch(() => null);
-                
-                    if (logChannel) {
-                        const logEmbed = new EmbedBuilder()
-                            .setTitle('Member Left')
-                            .setColor(0xff4b4b)
-                            .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
-                            .addFields(
-                                { name: 'User', value: `<@${member.id}>`, inline: true },
-                                { name: 'ID', value: `\`${member.id}\``, inline: true }
-                            )
-                            .setTimestamp();
+            const loggerUtil = require('../utils/logger');
+            const logEmbed = new EmbedBuilder()
+                .setTitle('Member Left')
+                .setColor(0xff4b4b)
+                .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
+                .addFields(
+                    { name: 'User', value: `<@${member.id}>`, inline: true },
+                    { name: 'ID', value: `\`${member.id}\``, inline: true }
+                )
+                .setTimestamp();
 
-                        await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
-                    }
-                }
-            }
+            await loggerUtil.sendEventLog(member.guild, 'memberLeave', logEmbed, settings);
         } catch (error) {
             console.error('[Logger] Error in MemberLeave:', error);
         }

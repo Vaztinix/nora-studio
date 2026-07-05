@@ -1,24 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
+const axios = require('axios');
 const GuildSettings = require('../../database/models/GuildSettings');
 const UserLevel = require('../../database/models/UserLevel');
 const UserPrefs = require('../../database/models/UserPrefs');
 
-// Owner-only authentication middleware using native fetch
+// Owner-only authentication middleware using axios
 const requireOwner = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
     }
     try {
-        const response = await fetch('https://discord.com/api/v10/users/@me', {
-            headers: { Authorization: authHeader }
-        });
-        if (!response.ok) {
-            return res.status(401).json({ error: 'Unauthorized: Invalid Discord token' });
+        let response;
+        try {
+            response = await axios.get('https://discord.com/api/v10/users/@me', {
+                headers: { Authorization: authHeader }
+            });
+        } catch (axiosErr) {
+            console.error('Discord API token verification failed in requireOwner:', axiosErr.response?.data || axiosErr.message);
+            return res.status(401).json({ 
+                error: 'Unauthorized: Invalid Discord token', 
+                details: axiosErr.response?.data ? JSON.stringify(axiosErr.response.data) : axiosErr.message 
+            });
         }
-        const user = await response.json();
+        const user = response.data;
 
         let isOwner = false;
         try {
@@ -42,7 +49,7 @@ const requireOwner = async (req, res, next) => {
         next();
     } catch (err) {
         console.error('Error verifying owner in admin middleware:', err);
-        return res.status(500).json({ error: 'Internal server error verifying authorization' });
+        return res.status(500).json({ error: 'Internal server error verifying authorization', details: err.message });
     }
 };
 
@@ -371,7 +378,12 @@ router.post('/oauth-exchange', async (req, res) => {
 router.get('/terminated', requireOwner, async (req, res) => {
     try {
         const terminatedPrefs = await UserPrefs.findAll({
-            where: { isTerminated: true }
+            where: {
+                [Op.or]: [
+                    { isTerminated: true },
+                    { tempBlacklistExpiresAt: { [Op.gt]: new Date() } }
+                ]
+            }
         });
         const list = [];
         for (const up of terminatedPrefs) {
@@ -381,13 +393,17 @@ router.get('/terminated', requireOwner, async (req, res) => {
                     userObj = await req.client.users.fetch(up.userId);
                 } catch (e) {}
             }
+            const isTemp = up.tempBlacklistExpiresAt && new Date(up.tempBlacklistExpiresAt) > new Date();
             list.push({
                 userId: up.userId,
                 username: userObj ? userObj.username : 'Unknown User',
                 avatar: userObj && userObj.avatar 
                     ? `https://cdn.discordapp.com/avatars/${up.userId}/${userObj.avatar}.png?size=128` 
                     : `https://cdn.discordapp.com/embed/avatars/${(BigInt(up.userId) % 5n) + 1n}.png`,
-                terminationReason: up.terminationReason || 'No reason specified.'
+                terminationReason: up.terminationReason || 'No reason specified.',
+                isTerminated: !!up.isTerminated,
+                isTempBanned: isTemp,
+                tempBlacklistExpiresAt: up.tempBlacklistExpiresAt
             });
         }
         res.json({ terminated: list });
@@ -397,37 +413,252 @@ router.get('/terminated', requireOwner, async (req, res) => {
     }
 });
 
+// GET /api/admin/ip-bans
+router.get('/ip-bans', requireOwner, async (req, res) => {
+    try {
+        const IpBan = require('../../database/models/IpBan');
+        const bans = await IpBan.findAll({ order: [['createdAt', 'DESC']] });
+        const list = [];
+        for (const b of bans) {
+            let userObj = null;
+            if (b.associatedUserId) {
+                userObj = req.client.users.cache.get(b.associatedUserId);
+                if (!userObj) {
+                    try {
+                        userObj = await req.client.users.fetch(b.associatedUserId);
+                    } catch (e) {}
+                }
+            }
+            list.push({
+                ipAddress: b.ipAddress,
+                associatedUserId: b.associatedUserId,
+                reason: b.reason,
+                createdAt: b.createdAt,
+                user: userObj ? {
+                    username: userObj.username,
+                    avatar: userObj.avatar 
+                        ? `https://cdn.discordapp.com/avatars/${b.associatedUserId}/${userObj.avatar}.png?size=128` 
+                        : `https://cdn.discordapp.com/embed/avatars/${(BigInt(b.associatedUserId) % 5n) + 1n}.png`
+                } : null
+            });
+        }
+        res.json({ ipBans: list });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ip-bans/revoke
+router.post('/ip-bans/revoke', requireOwner, async (req, res) => {
+    try {
+        const { ipAddress } = req.body;
+        if (!ipAddress) return res.status(400).json({ error: 'Missing ipAddress' });
+        const IpBan = require('../../database/models/IpBan');
+        await IpBan.destroy({ where: { ipAddress } });
+        res.json({ success: true, message: `IP ban revoked for ${ipAddress}` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // POST /api/admin/global-ban
 router.post('/global-ban', requireOwner, async (req, res) => {
     try {
-        const { action, userId, reason } = req.body;
+        const { action, userId, reason, tempDurationHours } = req.body;
         if (!userId || !action) {
             return res.status(400).json({ error: 'Missing userId or action' });
         }
 
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId } });
+        const IpBan = require('../../database/models/IpBan');
+        const Session = require('../../database/models/Session');
 
         if (action === 'ban') {
             const banReason = reason || 'Violation of terms of service.';
+            let tempExpires = null;
+            if (tempDurationHours && !isNaN(tempDurationHours)) {
+                tempExpires = new Date(Date.now() + Number(tempDurationHours) * 60 * 60 * 1000);
+            }
+
             await prefs.update({ 
-                isTerminated: true, 
+                isTerminated: tempExpires ? false : true,
+                tempBlacklistExpiresAt: tempExpires,
                 terminationReason: banReason, 
                 profilePublic: false, 
                 robloxPublic: false 
-            }); // Disable visibility and block logins
-            console.log(`[GLOBAL MITIGATION] Suspended user ${userId} for: ${banReason}`);
+            });
+
+            // Harvest IPs from user's active/past sessions
+            const userSessions = await Session.findAll({ where: { userId } });
+            const ips = [...new Set(userSessions.map(s => s.ipAddress).filter(Boolean))];
+            
+            for (const ip of ips) {
+                if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') continue;
+                await IpBan.findOrCreate({
+                    where: { ipAddress: ip },
+                    defaults: {
+                        associatedUserId: userId,
+                        reason: `Associated with banned user ${userId}: ${banReason}`
+                    }
+                });
+            }
+
+            // Revoke current session
+            await Session.destroy({ where: { userId } });
+
+            console.log(`[GLOBAL MITIGATION] Suspended user ${userId} (Temp: ${!!tempExpires}) for: ${banReason}`);
             return res.json({ success: true, message: `Successfully suspended user ${userId}` });
         } else if (action === 'unban') {
             await prefs.update({
                 isTerminated: false,
+                tempBlacklistExpiresAt: null,
                 terminationReason: null
             });
+
+            // Automatically clean up associated IP bans
+            await IpBan.destroy({ where: { associatedUserId: userId } });
+
             console.log(`[GLOBAL MITIGATION] Restored user ${userId}`);
             return res.json({ success: true, message: `Successfully removed user ${userId} from suspension` });
         } else {
             return res.status(400).json({ error: 'Invalid action' });
         }
     } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// GET /api/admin/all-servers
+router.get('/all-servers', requireOwner, async (req, res) => {
+    try {
+        const premiumGuilds = await GuildSettings.findAll({
+            where: {
+                [Op.or]: [
+                    { isPremium: true },
+                    { isManualPremium: true },
+                    { paidExpiresAt: { [Op.ne]: null } }
+                ]
+            },
+            attributes: ['guildId', 'isPremium', 'isManualPremium', 'paidExpiresAt']
+        });
+        const premiumMap = new Map(premiumGuilds.map(g => [g.guildId, g]));
+
+        const guilds = Array.from(req.client.guilds.cache.values());
+        const list = guilds.map(g => {
+            const gs = premiumMap.get(g.id);
+            return {
+                id: g.id,
+                name: g.name,
+                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                memberCount: g.memberCount,
+                joinedAt: g.joinedAt,
+                ownerId: g.ownerId,
+                isPremium: gs ? !!gs.isPremium : false,
+                isManualPremium: gs ? !!gs.isManualPremium : false,
+                paidExpiresAt: gs ? gs.paidExpiresAt : null
+            };
+        });
+
+        const sort = req.query.sort || 'newest';
+        if (sort === 'newest') {
+            list.sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
+        } else if (sort === 'oldest') {
+            list.sort((a, b) => new Date(a.joinedAt) - new Date(b.joinedAt));
+        } else if (sort === 'members_desc') {
+            list.sort((a, b) => b.memberCount - a.memberCount);
+        } else if (sort === 'members_asc') {
+            list.sort((a, b) => a.memberCount - b.memberCount);
+        } else if (sort === 'alphabetical') {
+            list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        }
+
+        res.json({ guilds: list });
+    } catch (e) {
+        console.error('Error fetching all servers:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// GET /api/admin/all-users
+router.get('/all-users', requireOwner, async (req, res) => {
+    try {
+        const allPrefs = await UserPrefs.findAll();
+
+        const list = await Promise.all(allPrefs.map(async prefs => {
+            let userObj = req.client.users.cache.get(prefs.userId);
+            if (!userObj) {
+                try {
+                    userObj = await req.client.users.fetch(prefs.userId);
+                } catch (e) {}
+            }
+            return {
+                userId: prefs.userId,
+                username: userObj ? userObj.username : `ID: ${prefs.userId}`,
+                displayName: prefs.displayName || (userObj ? (userObj.globalName || userObj.username) : `ID: ${prefs.userId}`),
+                avatar: userObj ? userObj.displayAvatarURL() : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                authedAt: prefs.createdAt,
+                language: prefs.language,
+                bio: prefs.bio || '',
+                isPremium: !!prefs.isPremium,
+                isManualPremium: !!prefs.isManualPremium,
+                paidExpiresAt: prefs.paidExpiresAt
+            };
+        }));
+
+        const sort = req.query.sort || 'newest';
+        if (sort === 'newest') {
+            list.sort((a, b) => new Date(b.authedAt) - new Date(a.authedAt));
+        } else if (sort === 'oldest') {
+            list.sort((a, b) => new Date(a.authedAt) - new Date(b.authedAt));
+        } else if (sort === 'alphabetical_username') {
+            list.sort((a, b) => (a.username || '').localeCompare(b.username || ''));
+        } else if (sort === 'alphabetical_display') {
+            list.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
+        }
+
+        res.json({ users: list });
+    } catch (e) {
+        console.error('Error fetching all users:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/leave-server
+router.post('/leave-server', requireOwner, async (req, res) => {
+    try {
+        const { guildId, reason } = req.body;
+        if (!guildId) {
+            return res.status(400).json({ error: 'Missing guildId' });
+        }
+
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ error: 'Server not found or bot not in server' });
+        }
+
+        const cleanReason = reason || 'Unspecified administrative decision by the bot owner.';
+        const guildName = guild.name;
+        const ownerId = guild.ownerId;
+
+        // Leave the guild
+        await guild.leave();
+        console.log(`[Developer Panel] Bot left guild ${guildName} (${guildId}). Reason: ${cleanReason}`);
+
+        // Write a persistent notification to the server owner
+        const Notification = require('../../database/models/Notification');
+        await Notification.create({
+            userId: ownerId,
+            title: `Nora Bot Deactivated from ${guildName}`,
+            content: `Nora Bot has been removed from your server "${guildName}" by the Bot Owner.\n\nReason: "${cleanReason}"`,
+            type: 'special',
+            isSpecial: true,
+            isOwnerAction: true,
+            serverName: guildName
+        });
+
+        res.json({ success: true, message: `Successfully removed bot from ${guildName} and notified owner.` });
+    } catch (e) {
+        console.error('Error leaving server:', e);
         res.status(500).json({ error: e.message });
     }
 });

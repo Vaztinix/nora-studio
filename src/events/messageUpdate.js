@@ -12,25 +12,9 @@ module.exports = {
 
         try {
             const settings = await GuildSettings.findOne({ where: { guildId: oldMessage.guild.id } });
-            // console.log(`[Logger DEBUG] MsgUpdate event in ${oldMessage.guild.name}. ChannelSet: ${!!settings?.loggingChannelId}, Toggle: ${settings?.logMessageEdits}`);
-            if (!settings || !settings.logMessageEdits) return;
+            if (!settings) return;
             const loggerUtil = require('../utils/logger');
-            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'messageLogs');
-            if (!logChannelId) return;
-
-            let logChannel = oldMessage.guild.channels.cache.get(logChannelId);
-            if (!logChannel) logChannel = await oldMessage.guild.channels.fetch(logChannelId).catch(() => null);
             
-            if (!logChannel) {
-                console.error(`[Logger ERROR] Target channel ${settings.loggingChannelId} not found in ${oldMessage.guild.name}.`);
-                return;
-            }
-            
-            const perms = logChannel.permissionsFor(oldMessage.guild.members.me);
-            // console.log(`[Logger DEBUG] Nora Perms in ${logChannel.name}: View:${perms.has('ViewChannel')}, Send:${perms.has('SendMessages')}, Embed:${perms.has('EmbedLinks')}`);
-            
-            // console.log(`[Logger DEBUG] Found channel ${logChannel.name} (${logChannel.id}). Sending log...`);
-
             const author = oldMessage.author || newMessage.author;
             const embed = new EmbedBuilder()
                 .setTitle('Message Edited')
@@ -49,9 +33,7 @@ module.exports = {
                 .setFooter({ text: `Message ID: ${newMessage.id}` })
                 .setTimestamp();
 
-            await logChannel.send({ embeds: [embed] }).catch((err) => { 
-                console.error(`[Logger ERROR] Failed to send MsgUpdate to ${logChannel.name}:`, err.message);
-            });
+            await loggerUtil.sendEventLog(oldMessage.guild, 'messageUpdate', embed, settings);
         } catch (error) {
             console.error('[Logger] Error in MessageUpdate:', error);
         }

@@ -8,10 +8,14 @@ module.exports = {
 
         try {
             const settings = await GuildSettings.findOne({ where: { guildId: oldChannel.guild.id } });
-            if (!settings || !settings.loggingChannelId || !settings.logChannelEdits) return;
+            if (!settings || !settings.logChannelEdits) return;
 
-            let logChannel = oldChannel.guild.channels.cache.get(settings.loggingChannelId);
-            if (!logChannel) logChannel = await oldChannel.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+            const loggerUtil = require('../utils/logger');
+            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'channelEdits');
+            if (!logChannelId) return;
+
+            let logChannel = oldChannel.guild.channels.cache.get(logChannelId);
+            if (!logChannel) logChannel = await oldChannel.guild.channels.fetch(logChannelId).catch(() => null);
             if (!logChannel) return;
 
             const channelType = oldChannel.type === 4 ? 'Category' : (oldChannel.type === 2 ? 'Voice Channel' : 'Text Channel');

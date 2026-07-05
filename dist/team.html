@@ -169,13 +169,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+            transition: border-color 0.25s, box-shadow 0.25s, transform 0.5s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
 
         .card:hover {
             border-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.03);
         }
 
         .avatar {
@@ -291,6 +291,7 @@
                 <span>Nora Studio</span>
             </a>
             <nav class="nav-links">
+                <a href="/">Home</a>
                 <a href="/install">Invite</a>
                 <a href="/docs">Docs</a>
                 <a href="/dashboard">Dashboard</a>
@@ -311,7 +312,7 @@
 
             <div class="grid">
                 <div class="card" data-user="1214048435632603137">
-                    <img class="avatar" src="ReVaztinix.jpeg" alt="vaztinix" />
+                    <img class="avatar" src="ReVaztinix.jpeg" alt="vaztinix" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Founder & Developer</div>
                     <h2 class="display-name">Vaz</h2>
                     <h5 class="handle">vaztinix</h5>
@@ -329,7 +330,7 @@
                 </div>
 
                 <div class="card" data-user="1366229304257544213">
-                    <img class="avatar" src="waffles.png" alt="sillywillywood" />
+                    <img class="avatar" src="waffles.png" alt="sillywillywood" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Co-Owner</div>
                     <h2 class="display-name">HALLUCINOGENIC™</h2>
                     <h5 class="handle">sillywillywood</h5>
@@ -344,7 +345,7 @@
                 </div>
 
                 <div class="card" data-user="914530504718561351">
-                    <img class="avatar" src="nora.png" alt="charlieisme" />
+                    <img class="avatar" src="nora.png" alt="charlieisme" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Administrator</div>
                     <h2 class="display-name">TheCasualEnderman/ EnderVarium</h2>
                     <h5 class="handle">charlieisme</h5>
@@ -357,7 +358,7 @@
                 </div>
 
                 <div class="card" data-user="1375943730951098549">
-                    <img class="avatar" src="nora.png" alt="Nora" />
+                    <img class="avatar" src="nora.png" alt="Nora" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Privacy-First App</div>
                     <h2 class="display-name">Nora</h2>
                     <h5 class="handle">nora</h5>
@@ -371,7 +372,7 @@
                 </div>
 
                 <div class="card" data-user="941084096673755188">
-                    <img class="avatar" src="solorads_pfp.png" alt="solorads" />
+                    <img class="avatar" src="solorads_pfp.png" alt="solorads" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Tester and Friend</div>
                     <h2 class="display-name">solorads</h2>
                     <h5 class="handle">solorads</h5>
@@ -387,7 +388,7 @@
 
 
                 <div class="card" data-user="1301949827701149697">
-                    <img class="avatar" src="beecet.png" alt="discounted_chaos" />
+                    <img class="avatar" src="beecet.png" alt="discounted_chaos" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Administrator</div>
                     <h2 class="display-name">discounted_chaos</h2>
                     <h5 class="handle">discounted_chaos</h5>
@@ -400,7 +401,7 @@
                 </div>
 
                 <div class="card" data-user="1364634555977564230">
-                    <img class="avatar" src="aryarec.jpg" alt="poppys.ang3l" />
+                    <img class="avatar" src="aryarec.jpg" alt="poppys.ang3l" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Administrator</div>
                     <h2 class="display-name">✦Arya/Vixen┆She/Fae/It✦</h2>
                     <h5 class="handle">poppys.ang3l</h5>
@@ -415,7 +416,7 @@
                 </div>
 
                 <div class="card" data-user="734113955986931734">
-                    <img class="avatar" src="sanedish.png" alt="sanedish" />
+                    <img class="avatar" src="sanedish.png" alt="sanedish" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Tester</div>
                     <h2 class="display-name">sanedish</h2>
                     <h5 class="handle">sanedish</h5>
@@ -428,7 +429,7 @@
                 </div>
 
                 <div class="card" data-user="1387499169870254230">
-                    <img class="avatar" src="boris.png" alt="boris10106" />
+                    <img class="avatar" src="boris.png" alt="boris10106" onerror="this.onerror=null; this.src='nora.png';" />
                     <div class="role">Friend</div>
                     <h2 class="display-name">boris10106</h2>
                     <h5 class="handle">boris10106</h5>
@@ -512,11 +513,12 @@
                         const isAnimated = user.avatar && user.avatar.startsWith('a_');
                         const liveUrl = user.avatar
                             ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`
-                            : img.src;
+                            : 'nora.png';
 
                         const temp = new Image();
                         temp.src = liveUrl;
                         temp.onload = () => { img.src = liveUrl; };
+                        temp.onerror = () => { img.src = 'nora.png'; };
 
                         if (user.global_name) {
                             nameHeading.textContent = user.global_name;
@@ -541,7 +543,39 @@
                         }
                     }
                 })
-                .catch(err => console.error("Lanyard update failed for " + userId));
+                .catch(err => {
+                    console.error("Lanyard update failed for " + userId);
+                    img.src = 'nora.png';
+                });
+        });
+
+        // 3D Tilt Card Interaction
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const xc = rect.width / 2;
+                const yc = rect.height / 2;
+                
+                const dx = (x - xc) / xc;
+                const dy = (y - yc) / yc;
+                
+                const maxRotation = 12;
+                const rotateX = -dy * maxRotation;
+                const rotateY = dx * maxRotation;
+                
+                card.style.transition = 'transform 0.1s ease, border-color 0.25s, box-shadow 0.25s';
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                card.style.boxShadow = `0 15px 35px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 255, 255, 0.03)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transition = 'transform 0.5s ease, border-color 0.25s, box-shadow 0.25s';
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+                card.style.boxShadow = '';
+            });
         });
     </script>
 </body>

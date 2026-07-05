@@ -181,19 +181,21 @@ module.exports = {
                 const notifyChannelId = settings?.levelUpChannelId || message.channel.id;
                 const notifyChannel = message.guild.channels.cache.get(notifyChannelId) || message.channel;
 
+                const template = settings?.levelUpMessage;
+                const desc = template ? formatMessage(template, message.member || message.author, level) : `<@${message.author.id}> has reached level **${level}**. GG!`;
+                const showPfp = settings?.levelingPfpEnabled !== false;
+
                 if (settings?.levelUpNotificationsEnabled !== false) {
-                    const template = settings?.levelUpMessage;
-                    const desc = template ? formatMessage(template, message.member || message.author, level) : `<@${message.author.id}> has reached level **${level}**. GG!`;
-
-                    const showPfp = settings?.levelingPfpEnabled !== false;
-
                     try {
                         const { generateLevelUpCard } = require('../utils/levelUpGenerator');
                         const imageBuffer = await generateLevelUpCard({
                             oldLevel: level - 1,
                             newLevel: level,
                             avatarUrl: message.author.displayAvatarURL({ extension: 'png', size: 128 }),
-                            showPfp: showPfp
+                            showPfp: showPfp,
+                            bgColor: settings?.levelingCardBgColor || '#111217',
+                            accentColor: settings?.levelingCardAccentColor || '#7c3aed',
+                            borderColor: settings?.levelingCardBorderColor || '#23252e'
                         });
 
                         const attachment = new AttachmentBuilder(imageBuffer, { name: 'level-up.png' });
@@ -201,6 +203,35 @@ module.exports = {
                     } catch (err) {
                         console.error('Error generating level-up card:', err);
                         await notifyChannel.send({ content: desc }).catch(() => { });
+                    }
+                }
+
+                // Send DM notification if user opted in, or if server default is enabled and user didn't opt out
+                const isUserOptedOut = userPrefs && (userPrefs.dmNotificationsEnabled === false || userPrefs.dmNotifLevels === false);
+                const isUserOptedIn = userPrefs && userPrefs.dmNotificationsEnabled && userPrefs.dmNotifLevels;
+                const shouldSendDm = isUserOptedIn || (settings?.levelUpDmEnabled && !isUserOptedOut);
+
+                if (shouldSendDm) {
+                    try {
+                        const dmDesc = `🎉 **Congratulations!** You leveled up in **${message.guild.name}**!\n${desc}`;
+                        const { generateLevelUpCard } = require('../utils/levelUpGenerator');
+                        const imageBuffer = await generateLevelUpCard({
+                            oldLevel: level - 1,
+                            newLevel: level,
+                            avatarUrl: message.author.displayAvatarURL({ extension: 'png', size: 128 }),
+                            showPfp: showPfp,
+                            bgColor: settings?.levelingCardBgColor || '#111217',
+                            accentColor: settings?.levelingCardAccentColor || '#7c3aed',
+                            borderColor: settings?.levelingCardBorderColor || '#23252e'
+                        }).catch(() => null);
+
+                        const payload = { content: dmDesc };
+                        if (imageBuffer) {
+                            payload.files = [new AttachmentBuilder(imageBuffer, { name: 'level-up.png' })];
+                        }
+                        await message.author.send(payload).catch(() => {});
+                    } catch (dmErr) {
+                        console.error('Failed to send level-up DM:', dmErr.message);
                     }
                 }
             }

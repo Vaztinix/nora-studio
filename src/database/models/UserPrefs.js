@@ -83,12 +83,38 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.TEXT,
         defaultValue: '[]'
     },
+    dmNotificationsEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    dmNotifLevels: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    dmNotifModeration: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    dmNotifBroadcasts: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     isTerminated: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
     terminationReason: {
         type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    displayName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    tempBlacklistExpiresAt: {
+        type: DataTypes.DATE,
         allowNull: true,
         defaultValue: null
     }

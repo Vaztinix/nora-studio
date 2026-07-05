@@ -19,6 +19,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    welcomeRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     moderationEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -132,6 +136,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
     ticketCategoryId: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    ticketAutoArchive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    ticketLastNumber: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     },
     // ---- AutoMod Integration ----
     automodProfanity: {
@@ -342,7 +354,7 @@ const GuildSettings = sequelize.define('GuildSettings', {
     },
     topggVoteEmbedColor: {
         type: DataTypes.STRING,
-        defaultValue: '#aeefff'
+        defaultValue: '#ffffff'
     },
     topggRewardRoleId: {
         type: DataTypes.STRING,
@@ -425,6 +437,22 @@ const GuildSettings = sequelize.define('GuildSettings', {
     rpsGameXpReward: {
         type: DataTypes.INTEGER,
         defaultValue: 25
+    },
+    guessGameMin: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1
+    },
+    guessGameMax: {
+        type: DataTypes.INTEGER,
+        defaultValue: 100
+    },
+    rpsMinBet: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    rpsMaxBet: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10000
     },
     // ---- Language ----
     language: {
@@ -547,6 +575,115 @@ const GuildSettings = sequelize.define('GuildSettings', {
     inviteTrackerChannelId: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    webhookUrl: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    webhookEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    webhookLogFilters: {
+        type: DataTypes.JSON,
+        defaultValue: ['messageDelete', 'messageUpdate', 'memberJoin', 'memberLeave', 'channelCreate', 'channelDelete', 'voiceJoin', 'voiceLeave']
+    },
+    webhookLogColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#ff5555'
+    },
+    ticketEmbedTitle: {
+        type: DataTypes.STRING,
+        defaultValue: 'Support Center'
+    },
+    ticketEmbedDesc: {
+        type: DataTypes.TEXT,
+        defaultValue: 'Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.'
+    },
+    ticketEmbedColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#ffffff'
+    },
+    ticketBtnStyleSupport: {
+        type: DataTypes.STRING,
+        defaultValue: 'Primary'
+    },
+    ticketBtnStyleReporting: {
+        type: DataTypes.STRING,
+        defaultValue: 'Danger'
+    },
+    ticketBtnStyleAppeals: {
+        type: DataTypes.STRING,
+        defaultValue: 'Secondary'
+    },
+    ticketBtnStyleOther: {
+        type: DataTypes.STRING,
+        defaultValue: 'Secondary'
+    },
+    ticketBtnLabelSupport: {
+        type: DataTypes.STRING,
+        defaultValue: 'Support'
+    },
+    ticketBtnLabelReporting: {
+        type: DataTypes.STRING,
+        defaultValue: 'Reporting'
+    },
+    ticketBtnLabelAppeals: {
+        type: DataTypes.STRING,
+        defaultValue: 'Appeals'
+    },
+    ticketBtnLabelOther: {
+        type: DataTypes.STRING,
+        defaultValue: 'Other'
+    },
+    // ---- Starboard Settings ----
+    starboardEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    starboardChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    starboardThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 3
+    },
+    starboardEmoji: {
+        type: DataTypes.STRING,
+        defaultValue: '⭐'
+    },
+    starboardWebhookEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    starboardWebhookName: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    starboardWebhookAvatar: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    starboardEmbedColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#ffac33'
+    },
+    starboardMessageTemplate: {
+        type: DataTypes.STRING,
+        defaultValue: '{emoji} **{count}** | {channel}'
+    },
+    levelingCardBgColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#111217'
+    },
+    levelingCardAccentColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#7c3aed'
+    },
+    levelingCardBorderColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#23252e'
     }
 });
 
