@@ -4144,78 +4144,7 @@
                 </div>
 
                 <div id="tab-verify" class="tab-content" style="display: none;">
-                    <!-- Progressive Onboarding Hub -->
-                    <div class="panel" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); border: 1px solid rgba(174, 239, 255, 0.15); margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);">
-                        <h3 style="color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fas fa-magic"></i> Progressive Onboarding Setup Wizard</h3>
-                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Looking for this? Let us guide you through setting up Nora for your server.</p>
-                        
-                        <!-- Progress Tracker -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; position: relative;">
-                            <div style="position: absolute; top: 15px; left: 10%; right: 10%; height: 2px; background: rgba(255,255,255,0.05); z-index: 1;">
-                                <div id="wizard-progress-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
-                            </div>
-                            <div class="wizard-step" onclick="goToWizardStep(0)" style="z-index: 2; text-align: center; cursor: pointer;">
-                                <div class="wizard-step-node" id="wstep-node-0" style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #0b0b0a; display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--primary);">1</div>
-                                <span style="font-size: 0.75rem; font-weight: 600; color: #fff;">Modules</span>
-                            </div>
-                            <div class="wizard-step" onclick="goToWizardStep(1)" style="z-index: 2; text-align: center; cursor: pointer;">
-                                <div class="wizard-step-node" id="wstep-node-1" style="width: 32px; height: 32px; border-radius: 50%; background: #111110; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--border);">2</div>
-                                <span style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Verification</span>
-                            </div>
-                            <div class="wizard-step" onclick="goToWizardStep(2)" style="z-index: 2; text-align: center; cursor: pointer;">
-                                <div class="wizard-step-node" id="wstep-node-2" style="width: 32px; height: 32px; border-radius: 50%; background: #111110; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 5px auto; border: 2px solid var(--border);">3</div>
-                                <span style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Log Channels</span>
-                            </div>
-                        </div>
 
-                        <!-- Step Contents -->
-                        <div id="wstep-content-0" class="wstep-content">
-                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 1: Module Activation</h4>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Enable or disable Nora's core systems to fit your server's needs.</p>
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
-                                    <span style="font-size: 0.85rem; font-weight: 600;">Leveling System</span>
-                                    <label class="switch"><input type="checkbox" id="wstep-leveling" onchange="syncWizardCheckbox(this, 'setting-levelingEnabled')"><span class="slider"></span></label>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
-                                    <span style="font-size: 0.85rem; font-weight: 600;">Moderation System</span>
-                                    <label class="switch"><input type="checkbox" id="wstep-moderation" onchange="syncWizardCheckbox(this, 'setting-moderationEnabled')"><span class="slider"></span></label>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
-                                    <span style="font-size: 0.85rem; font-weight: 600;">Welcomer System</span>
-                                    <label class="switch"><input type="checkbox" id="wstep-welcomer" onchange="syncWizardCheckbox(this, 'setting-welcomerEnabled')"><span class="slider"></span></label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="wstep-content-1" class="wstep-content" style="display: none;">
-                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 2: Member Verification Gate</h4>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Configure the verification channel and verified roles for new members.</p>
-                            <div class="input-group" style="margin-bottom: 15px;">
-                                <label style="font-size: 0.75rem;">Verification Channel</label>
-                                <select onchange="syncWizardSelect(this, 'setting-verifyChannelId')" class="wizard-channel-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
-                            </div>
-                            <div class="input-group">
-                                <label style="font-size: 0.75rem;">Verified Role</label>
-                                <select onchange="syncWizardSelect(this, 'setting-verifyRoleId')" class="wizard-role-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
-                            </div>
-                        </div>
-
-                        <div id="wstep-content-2" class="wstep-content" style="display: none;">
-                            <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: #fff;">Step 3: Logging Channels Setup</h4>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Select a master log channel to route audit log events.</p>
-                            <div class="input-group">
-                                <label style="font-size: 0.75rem;">Master Log Channel</label>
-                                <select onchange="syncWizardSelect(this, 'setting-loggingChannelId')" class="wizard-channel-select" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px;"><option value="">None</option></select>
-                            </div>
-                        </div>
-
-                        <!-- Navigation Footer -->
-                        <div style="display: flex; justify-content: space-between; margin-top: 25px; border-top: 1px solid var(--border); padding-top: 15px;">
-                            <button class="config-btn" id="wizard-prev-btn" style="width: auto; padding: 6px 15px; opacity: 0.5; pointer-events: none;" onclick="navigateWizard(-1)">Back</button>
-                            <button class="config-btn" id="wizard-next-btn" style="width: auto; padding: 6px 15px; background: var(--primary); color: #0b0b0a;" onclick="navigateWizard(1)">Next</button>
-                        </div>
-                    </div>
 
                     <div class="panel">
                         <h3>Verification System</h3>
