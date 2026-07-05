@@ -378,7 +378,12 @@ router.post('/oauth-exchange', async (req, res) => {
 router.get('/terminated', requireOwner, async (req, res) => {
     try {
         const terminatedPrefs = await UserPrefs.findAll({
-            where: { isTerminated: true }
+            where: {
+                [Op.or]: [
+                    { isTerminated: true },
+                    { tempBlacklistExpiresAt: { [Op.gt]: new Date() } }
+                ]
+            }
         });
         const list = [];
         for (const up of terminatedPrefs) {
@@ -388,13 +393,17 @@ router.get('/terminated', requireOwner, async (req, res) => {
                     userObj = await req.client.users.fetch(up.userId);
                 } catch (e) {}
             }
+            const isTemp = up.tempBlacklistExpiresAt && new Date(up.tempBlacklistExpiresAt) > new Date();
             list.push({
                 userId: up.userId,
                 username: userObj ? userObj.username : 'Unknown User',
                 avatar: userObj && userObj.avatar 
                     ? `https://cdn.discordapp.com/avatars/${up.userId}/${userObj.avatar}.png?size=128` 
                     : `https://cdn.discordapp.com/embed/avatars/${(BigInt(up.userId) % 5n) + 1n}.png`,
-                terminationReason: up.terminationReason || 'No reason specified.'
+                terminationReason: up.terminationReason || 'No reason specified.',
+                isTerminated: !!up.isTerminated,
+                isTempBanned: isTemp,
+                tempBlacklistExpiresAt: up.tempBlacklistExpiresAt
             });
         }
         res.json({ terminated: list });
@@ -404,31 +413,111 @@ router.get('/terminated', requireOwner, async (req, res) => {
     }
 });
 
+// GET /api/admin/ip-bans
+router.get('/ip-bans', requireOwner, async (req, res) => {
+    try {
+        const IpBan = require('../../database/models/IpBan');
+        const bans = await IpBan.findAll({ order: [['createdAt', 'DESC']] });
+        const list = [];
+        for (const b of bans) {
+            let userObj = null;
+            if (b.associatedUserId) {
+                userObj = req.client.users.cache.get(b.associatedUserId);
+                if (!userObj) {
+                    try {
+                        userObj = await req.client.users.fetch(b.associatedUserId);
+                    } catch (e) {}
+                }
+            }
+            list.push({
+                ipAddress: b.ipAddress,
+                associatedUserId: b.associatedUserId,
+                reason: b.reason,
+                createdAt: b.createdAt,
+                user: userObj ? {
+                    username: userObj.username,
+                    avatar: userObj.avatar 
+                        ? `https://cdn.discordapp.com/avatars/${b.associatedUserId}/${userObj.avatar}.png?size=128` 
+                        : `https://cdn.discordapp.com/embed/avatars/${(BigInt(b.associatedUserId) % 5n) + 1n}.png`
+                } : null
+            });
+        }
+        res.json({ ipBans: list });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ip-bans/revoke
+router.post('/ip-bans/revoke', requireOwner, async (req, res) => {
+    try {
+        const { ipAddress } = req.body;
+        if (!ipAddress) return res.status(400).json({ error: 'Missing ipAddress' });
+        const IpBan = require('../../database/models/IpBan');
+        await IpBan.destroy({ where: { ipAddress } });
+        res.json({ success: true, message: `IP ban revoked for ${ipAddress}` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // POST /api/admin/global-ban
 router.post('/global-ban', requireOwner, async (req, res) => {
     try {
-        const { action, userId, reason } = req.body;
+        const { action, userId, reason, tempDurationHours } = req.body;
         if (!userId || !action) {
             return res.status(400).json({ error: 'Missing userId or action' });
         }
 
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId } });
+        const IpBan = require('../../database/models/IpBan');
+        const Session = require('../../database/models/Session');
 
         if (action === 'ban') {
             const banReason = reason || 'Violation of terms of service.';
+            let tempExpires = null;
+            if (tempDurationHours && !isNaN(tempDurationHours)) {
+                tempExpires = new Date(Date.now() + Number(tempDurationHours) * 60 * 60 * 1000);
+            }
+
             await prefs.update({ 
-                isTerminated: true, 
+                isTerminated: tempExpires ? false : true,
+                tempBlacklistExpiresAt: tempExpires,
                 terminationReason: banReason, 
                 profilePublic: false, 
                 robloxPublic: false 
-            }); // Disable visibility and block logins
-            console.log(`[GLOBAL MITIGATION] Suspended user ${userId} for: ${banReason}`);
+            });
+
+            // Harvest IPs from user's active/past sessions
+            const userSessions = await Session.findAll({ where: { userId } });
+            const ips = [...new Set(userSessions.map(s => s.ipAddress).filter(Boolean))];
+            
+            for (const ip of ips) {
+                if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') continue;
+                await IpBan.findOrCreate({
+                    where: { ipAddress: ip },
+                    defaults: {
+                        associatedUserId: userId,
+                        reason: `Associated with banned user ${userId}: ${banReason}`
+                    }
+                });
+            }
+
+            // Revoke current session
+            await Session.destroy({ where: { userId } });
+
+            console.log(`[GLOBAL MITIGATION] Suspended user ${userId} (Temp: ${!!tempExpires}) for: ${banReason}`);
             return res.json({ success: true, message: `Successfully suspended user ${userId}` });
         } else if (action === 'unban') {
             await prefs.update({
                 isTerminated: false,
+                tempBlacklistExpiresAt: null,
                 terminationReason: null
             });
+
+            // Automatically clean up associated IP bans
+            await IpBan.destroy({ where: { associatedUserId: userId } });
+
             console.log(`[GLOBAL MITIGATION] Restored user ${userId}`);
             return res.json({ success: true, message: `Successfully removed user ${userId} from suspension` });
         } else {
@@ -468,7 +557,20 @@ router.get('/all-servers', requireOwner, async (req, res) => {
                 isManualPremium: gs ? !!gs.isManualPremium : false,
                 paidExpiresAt: gs ? gs.paidExpiresAt : null
             };
-        }).sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
+        });
+
+        const sort = req.query.sort || 'newest';
+        if (sort === 'newest') {
+            list.sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
+        } else if (sort === 'oldest') {
+            list.sort((a, b) => new Date(a.joinedAt) - new Date(b.joinedAt));
+        } else if (sort === 'members_desc') {
+            list.sort((a, b) => b.memberCount - a.memberCount);
+        } else if (sort === 'members_asc') {
+            list.sort((a, b) => a.memberCount - b.memberCount);
+        } else if (sort === 'alphabetical') {
+            list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        }
 
         res.json({ guilds: list });
     } catch (e) {
@@ -480,9 +582,7 @@ router.get('/all-servers', requireOwner, async (req, res) => {
 // GET /api/admin/all-users
 router.get('/all-users', requireOwner, async (req, res) => {
     try {
-        const allPrefs = await UserPrefs.findAll({
-            order: [['createdAt', 'DESC']]
-        });
+        const allPrefs = await UserPrefs.findAll();
 
         const list = await Promise.all(allPrefs.map(async prefs => {
             let userObj = req.client.users.cache.get(prefs.userId);
@@ -494,6 +594,7 @@ router.get('/all-users', requireOwner, async (req, res) => {
             return {
                 userId: prefs.userId,
                 username: userObj ? userObj.username : `ID: ${prefs.userId}`,
+                displayName: prefs.displayName || (userObj ? (userObj.globalName || userObj.username) : `ID: ${prefs.userId}`),
                 avatar: userObj ? userObj.displayAvatarURL() : 'https://cdn.discordapp.com/embed/avatars/0.png',
                 authedAt: prefs.createdAt,
                 language: prefs.language,
@@ -503,6 +604,17 @@ router.get('/all-users', requireOwner, async (req, res) => {
                 paidExpiresAt: prefs.paidExpiresAt
             };
         }));
+
+        const sort = req.query.sort || 'newest';
+        if (sort === 'newest') {
+            list.sort((a, b) => new Date(b.authedAt) - new Date(a.authedAt));
+        } else if (sort === 'oldest') {
+            list.sort((a, b) => new Date(a.authedAt) - new Date(b.authedAt));
+        } else if (sort === 'alphabetical_username') {
+            list.sort((a, b) => (a.username || '').localeCompare(b.username || ''));
+        } else if (sort === 'alphabetical_display') {
+            list.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
+        }
 
         res.json({ users: list });
     } catch (e) {

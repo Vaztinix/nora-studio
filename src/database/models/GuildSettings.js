@@ -584,6 +584,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    webhookLogFilters: {
+        type: DataTypes.JSON,
+        defaultValue: ['messageDelete', 'messageUpdate', 'memberJoin', 'memberLeave', 'channelCreate', 'channelDelete', 'voiceJoin', 'voiceLeave']
+    },
+    webhookLogColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#ff5555'
+    },
     ticketEmbedTitle: {
         type: DataTypes.STRING,
         defaultValue: 'Support Center'

@@ -183,7 +183,7 @@ require('./database/models/Autoresponder');
 require('./database/models/TicketHistory');
 require('./database/models/MemberRolesHistory');
 require('./database/models/Notification');
-
+require('./database/models/IpBan');
 
 const client = new Client({
     intents: [
@@ -301,6 +301,12 @@ sequelize.sync().then(async () => {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `rpsMaxBet` INTEGER DEFAULT 10000;");
     } catch (e) {}
     try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `webhookLogFilters` TEXT DEFAULT '[\"messageDelete\",\"messageUpdate\",\"memberJoin\",\"memberLeave\",\"channelCreate\",\"channelDelete\",\"voiceJoin\",\"voiceLeave\"]';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `webhookLogColor` VARCHAR(255) DEFAULT '#ff5555';");
+    } catch (e) {}
+    try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `isTerminated` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
     try {
@@ -318,6 +324,13 @@ sequelize.sync().then(async () => {
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifBroadcasts` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `displayName` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `tempBlacklistExpiresAt` DATETIME DEFAULT NULL;");
+    } catch (e) {}
+
 
     // 🛡️ Nora System Persistence (System Backup) - V17.2
     const { systemBackup } = require('./utils/persistence');
@@ -501,6 +514,28 @@ app.use((req, res, next) => {
     const entry = fail2banMap.get(ip);
     if (entry && entry.bannedUntil && Date.now() < entry.bannedUntil) {
         return res.status(429).end();
+    }
+    next();
+});
+
+// Database IP Ban Check Middleware
+app.use(async (req, res, next) => {
+    const ip = getRealIP(req);
+    if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') {
+        return next();
+    }
+    try {
+        const IpBan = require('./database/models/IpBan');
+        const isBanned = await IpBan.findByPk(ip);
+        if (isBanned) {
+            console.warn(`[IP_BLOCK] Banned IP address blocked: ${ip}`);
+            return res.status(403).json({
+                error: 'IP_BANNED',
+                message: 'This IP address has been permanently or temporarily banned due to association with a restricted account.'
+            });
+        }
+    } catch (e) {
+        console.error('Error in IP ban middleware:', e);
     }
     next();
 });
@@ -1360,6 +1395,23 @@ app.get('/api/user/me', async (req, res) => {
 
         // Fetch user preferences/badges from DB
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+        
+        const isTerminated = prefs.isTerminated || (prefs.tempBlacklistExpiresAt && new Date() < new Date(prefs.tempBlacklistExpiresAt));
+        if (isTerminated) {
+            try {
+                const IpBan = require('./database/models/IpBan');
+                await IpBan.findOrCreate({
+                    where: { ipAddress: clientIp },
+                    defaults: {
+                        associatedUserId: user.id,
+                        reason: prefs.terminationReason || 'Associated with terminated/blacklisted account'
+                    }
+                });
+            } catch (e) {
+                console.error('Error auto-banning IP in /api/user/me:', e);
+            }
+        }
+
         user.prefs = prefs;
         user.sessionHardened = !!prefs.sessionHardened;
 
@@ -1391,10 +1443,11 @@ app.post('/api/user/profile', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
         
-        const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts } = req.body;
+        const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts, displayName } = req.body;
         if (robloxPublic !== undefined) prefs.robloxPublic = robloxPublic;
         if (profilePublic !== undefined) prefs.profilePublic = profilePublic;
         if (bio !== undefined) prefs.bio = bio;
+        if (displayName !== undefined) prefs.displayName = displayName || null;
         if (dmNotificationsEnabled !== undefined) prefs.dmNotificationsEnabled = dmNotificationsEnabled;
         if (dmNotifLevels !== undefined) prefs.dmNotifLevels = dmNotifLevels;
         if (dmNotifModeration !== undefined) prefs.dmNotifModeration = dmNotifModeration;
@@ -1821,6 +1874,12 @@ app.get('/api/user/guilds', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
+        const UserPrefs = require('./database/models/UserPrefs');
+        const prefs = await UserPrefs.findOne({ where: { userId: user.id } });
+        if (prefs && prefs.isTerminated) {
+            return res.status(403).json({ error: 'Terminated', reason: prefs.terminationReason || 'Violation of terms of service.' });
+        }
+
         const { getCachedUserGuilds } = require('./api/middleware/auth');
         const guilds = await getCachedUserGuilds(token);
         

@@ -122,6 +122,90 @@ class Logger {
             console.error('[Logger] Error sending dashboard or command log:', e);
         }
     }
+
+    async sendEventLog(guild, eventKey, embed, settings = null) {
+        if (!guild) return;
+        try {
+            const GuildSettings = require('../database/models/GuildSettings');
+            if (!settings) {
+                settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+            }
+            if (!settings) return;
+
+            // 1. Send to standard Logging Channel if configured and toggled
+            const channelToggleMap = {
+                'messageDelete': 'logMessageDeletes',
+                'messageUpdate': 'logMessageEdits',
+                'memberJoin': 'logMemberJoins',
+                'memberLeave': 'logMemberLeaves',
+                'channelCreate': 'logChannelCreates',
+                'channelDelete': 'logChannelDeletes',
+                'voiceJoin': 'logVoiceJoins',
+                'voiceLeave': 'logVoiceLeaves',
+                'automod': 'logAutomod'
+            };
+            const toggleField = channelToggleMap[eventKey];
+            if (toggleField && settings[toggleField]) {
+                const categoryMap = {
+                    'messageDelete': 'messageDeletes',
+                    'messageUpdate': 'messageEdits',
+                    'memberJoin': 'memberJoins',
+                    'memberLeave': 'memberLeaves',
+                    'channelCreate': 'channelCreates',
+                    'channelDelete': 'channelDeletes',
+                    'voiceJoin': 'voiceJoins',
+                    'voiceLeave': 'voiceLeaves',
+                    'automod': 'automod'
+                };
+                const category = categoryMap[eventKey] || 'general';
+                const logChannelId = this.resolveLogChannelId(settings, category);
+                if (logChannelId) {
+                    let logChannel = guild.channels.cache.get(logChannelId);
+                    if (!logChannel) logChannel = await guild.channels.fetch(logChannelId).catch(() => null);
+                    if (logChannel) {
+                        const perms = logChannel.permissionsFor(guild.members.me);
+                        if (perms && perms.has('SendMessages') && perms.has('EmbedLinks')) {
+                            await logChannel.send({ embeds: [embed] }).catch(() => null);
+                        }
+                    }
+                }
+            }
+
+            // 2. Send to Webhook Logging if enabled
+            if (settings.webhookEnabled && settings.webhookUrl) {
+                let filters = settings.webhookLogFilters;
+                if (typeof filters === 'string') {
+                    try { filters = JSON.parse(filters); } catch (e) { filters = []; }
+                }
+                if (!Array.isArray(filters)) {
+                    filters = ['messageDelete', 'messageUpdate', 'memberJoin', 'memberLeave', 'channelCreate', 'channelDelete', 'voiceJoin', 'voiceLeave'];
+                }
+
+                if (filters.includes(eventKey)) {
+                    const { WebhookClient, EmbedBuilder } = require('discord.js');
+                    const webhook = new WebhookClient({ url: settings.webhookUrl });
+                    
+                    // Clone/Create Webhook specific Embed
+                    const webhookEmbed = EmbedBuilder.from(embed);
+                    if (settings.webhookLogColor) {
+                        try {
+                            webhookEmbed.setColor(settings.webhookLogColor);
+                        } catch (e) {}
+                    }
+                    
+                    await webhook.send({
+                        embeds: [webhookEmbed],
+                        username: 'Nora Server Logs',
+                        avatarURL: guild.client.user.displayAvatarURL()
+                    }).catch(err => {
+                        console.error(`[Webhook Logger ERROR] Failed to send webhook log:`, err.message);
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('[Logger] Error in sendEventLog:', e);
+        }
+    }
 }
 
 module.exports = new Logger();

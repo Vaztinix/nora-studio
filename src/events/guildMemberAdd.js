@@ -220,28 +220,18 @@ module.exports = {
             }
 
             // 2. --- Join Logging (Audit Logs) ---
-            if (settings.logMemberJoins) {
-                const loggerUtil = require('../utils/logger');
-                const logChannelId = loggerUtil.resolveLogChannelId(settings, 'memberJoins');
-                if (logChannelId) {
-                    let logChannel = member.guild.channels.cache.get(logChannelId);
-                    if (!logChannel) logChannel = await member.guild.channels.fetch(logChannelId).catch(() => null);
-
-                    if (logChannel) {
-                        const logEmbed = new EmbedBuilder()
-                            .setTitle('Member Joined')
-                            .setColor(0x43b581) // Green for joins
-                            .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
-                            .addFields(
-                                { name: 'User', value: `<@${member.id}>`, inline: true },
-                                { name: 'ID', value: `\`${member.id}\``, inline: true },
-                                { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true }
-                            )
-                            .setTimestamp();
-                        await logChannel.send({ embeds: [logEmbed] }).catch(() => { });
-                    }
-                }
-            }
+            const loggerUtil = require('../utils/logger');
+            const logEmbed = new EmbedBuilder()
+                .setTitle('Member Joined')
+                .setColor(0x43b581) // Green for joins
+                .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
+                .addFields(
+                    { name: 'User', value: `<@${member.id}>`, inline: true },
+                    { name: 'ID', value: `\`${member.id}\``, inline: true },
+                    { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true }
+                )
+                .setTimestamp();
+            await loggerUtil.sendEventLog(member.guild, 'memberJoin', logEmbed, settings);
 
             // 2.5. --- Add Welcome Role on Join ---
             if (settings.welcomeRoleId) {

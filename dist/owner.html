@@ -380,10 +380,22 @@
                 <h3><i class="fas fa-ban" style="color: var(--danger);"></i> Global Mitigation Desk</h3>
                 <div class="form-group">
                     <label>Action</label>
-                    <select id="ban-action">
+                    <select id="ban-action" onchange="toggleBanDuration()">
                         <option value="ban">Permanent Blacklist</option>
+                        <option value="temp_ban">Temporary Blacklist</option>
                         <option value="unban">Revoke Blacklist</option>
                     </select>
+                </div>
+                <div class="form-group" id="ban-duration-group" style="display: none;">
+                    <label>Blacklist Duration (Hours)</label>
+                    <select id="ban-duration" onchange="toggleBanDurationCustom()" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: white;">
+                        <option value="1">1 Hour</option>
+                        <option value="24">24 Hours</option>
+                        <option value="168">7 Days (168 Hours)</option>
+                        <option value="720">30 Days (720 Hours)</option>
+                        <option value="custom">Custom Hours</option>
+                    </select>
+                    <input type="number" id="ban-duration-custom" placeholder="Enter custom hours..." style="display: none; margin-top: 8px; width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: white;">
                 </div>
                 <div class="form-group">
                     <label>Target User ID</label>
@@ -402,19 +414,37 @@
             <input type="text" id="search-input" placeholder="Search premium servers, users, or terminated accounts..." oninput="filterLists()" style="width: 100%; padding: 14px 16px 14px 44px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: white; outline: none; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
             <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1rem;"></i>
         </div>
-
         <!-- Lists Grid -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px; align-items: start;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; align-items: start;">
             <!-- Active Servers List -->
             <div class="card" style="padding: 24px; min-height: 250px;">
-                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-server" style="color: #5865F2;"></i> Active Servers (<span id="server-count">0</span>)</h3>
+                <h3 style="font-size: 1.05rem; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-server" style="color: #5865F2;"></i> Active Servers (<span id="server-count">0</span>)</h3>
+                <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Sort By:</span>
+                    <select id="servers-sort" onchange="loadAdminDeskData()" style="padding: 4px 8px; font-size: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: white; cursor: pointer; outline: none;">
+                        <option value="newest">Newest Joined</option>
+                        <option value="oldest">Oldest Joined</option>
+                        <option value="members_desc">Most Members</option>
+                        <option value="members_asc">Least Members</option>
+                        <option value="alphabetical">Alphabetical</option>
+                    </select>
+                </div>
                 <div id="servers-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
                     <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
                 </div>
             </div>
             <!-- Authenticated Users List -->
             <div class="card" style="padding: 24px; min-height: 250px;">
-                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-user-check" style="color: #10b981;"></i> Authenticated Users (<span id="user-count">0</span>)</h3>
+                <h3 style="font-size: 1.05rem; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-user-check" style="color: #10b981;"></i> Authenticated Users (<span id="user-count">0</span>)</h3>
+                <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Sort By:</span>
+                    <select id="users-sort" onchange="loadAdminDeskData()" style="padding: 4px 8px; font-size: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: white; cursor: pointer; outline: none;">
+                        <option value="newest">Newest Joined</option>
+                        <option value="oldest">Oldest Joined</option>
+                        <option value="alphabetical_username">Alphabetical (Username)</option>
+                        <option value="alphabetical_display">Alphabetical (Display Name)</option>
+                    </select>
+                </div>
                 <div id="users-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
                     <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
                 </div>
@@ -422,7 +452,20 @@
             <!-- Terminated Users List -->
             <div class="card" style="padding: 24px; min-height: 250px;">
                 <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-user-times" style="color: var(--danger);"></i> Terminated Users (<span id="terminated-count">0</span>)</h3>
-                <div id="terminated-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
+                <div id="terminated-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto;">
+                    <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IP Bans Grid -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 30px; margin-bottom: 40px; align-items: start;">
+            <!-- Banned IPs List -->
+            <div class="card" style="padding: 24px; min-height: 250px;">
+                <h3 style="font-size: 1.05rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                    <i class="fas fa-network-wired" style="color: #ff9f43;"></i> IP Blacklist Registry (<span id="ip-ban-count">0</span>)
+                </h3>
+                <div id="ip-bans-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
                     <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
                 </div>
             </div>
@@ -461,17 +504,34 @@
             window.location.href = `https://discord.com/oauth2/authorize?client_id=${client_id}&response_type=token&redirect_uri=${redirect_uri}&scope=identify`;
         });
 
-        // Toggle reason visibility based on selected ban action
-        document.getElementById('ban-action').addEventListener('change', (e) => {
-            const grp = document.getElementById('ban-reason-group');
-            if (grp) {
-                grp.style.display = e.target.value === 'ban' ? 'block' : 'none';
+        function toggleBanDuration() {
+            const action = document.getElementById('ban-action').value;
+            const durGroup = document.getElementById('ban-duration-group');
+            const reasonGroup = document.getElementById('ban-reason-group');
+            if (action === 'temp_ban') {
+                if (durGroup) durGroup.style.display = 'block';
+                if (reasonGroup) reasonGroup.style.display = 'block';
+            } else if (action === 'ban') {
+                if (durGroup) durGroup.style.display = 'none';
+                if (reasonGroup) reasonGroup.style.display = 'block';
+            } else {
+                if (durGroup) durGroup.style.display = 'none';
+                if (reasonGroup) reasonGroup.style.display = 'none';
             }
-        });
+        }
+
+        function toggleBanDurationCustom() {
+            const val = document.getElementById('ban-duration').value;
+            const customInput = document.getElementById('ban-duration-custom');
+            if (customInput) {
+                customInput.style.display = val === 'custom' ? 'block' : 'none';
+            }
+        }
 
         let activeServers = [];
         let authedUsers = [];
         let terminatedUsers = [];
+        let ipBans = [];
 
         async function verifyToken(authToken) {
             const errAlert = document.getElementById('login-error-alert');
@@ -515,8 +575,8 @@
             const authToken = localStorage.getItem('nora_admin_token');
             const apiBase = window.getApiBaseUrl();
             try {
-                // Fetch active servers
-                const resServers = await fetch(`${apiBase}/api/admin/all-servers`, {
+                const serversSortVal = document.getElementById('servers-sort')?.value || 'newest';
+                const resServers = await fetch(`${apiBase}/api/admin/all-servers?sort=${serversSortVal}`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (resServers.ok) {
@@ -524,8 +584,8 @@
                     activeServers = data.guilds || [];
                 }
 
-                // Fetch authenticated users
-                const resUsers = await fetch(`${apiBase}/api/admin/all-users`, {
+                const usersSortVal = document.getElementById('users-sort')?.value || 'newest';
+                const resUsers = await fetch(`${apiBase}/api/admin/all-users?sort=${usersSortVal}`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (resUsers.ok) {
@@ -533,13 +593,20 @@
                     authedUsers = data.users || [];
                 }
 
-                // Fetch terminated users
                 const resTerm = await fetch(`${apiBase}/api/admin/terminated`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (resTerm.ok) {
                     const data = await resTerm.json();
                     terminatedUsers = data.terminated || [];
+                }
+
+                const resIpBans = await fetch(`${apiBase}/api/admin/ip-bans`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (resIpBans.ok) {
+                    const data = await resIpBans.json();
+                    ipBans = data.ipBans || [];
                 }
 
                 renderLists();
@@ -676,13 +743,24 @@
                 if (filteredTerminated.length === 0) {
                     terminatedContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No terminated users.</div>';
                 } else {
-                    terminatedContainer.innerHTML = filteredTerminated.map(t => `
+                    terminatedContainer.innerHTML = filteredTerminated.map(t => {
+                        const statusBadge = t.isTempBanned 
+                            ? `<span style="background: rgba(255, 165, 0, 0.1); border: 1px solid rgba(255, 165, 0, 0.2); color: orange; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Temp Block</span>`
+                            : `<span style="background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.2); color: #ff5555; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Perm Ban</span>`;
+                        
+                        const expiryText = t.isTempBanned && t.tempBlacklistExpiresAt
+                            ? `<div style="font-size: 0.7rem; color: orange; margin-top: 4px;">⌛ Expires: ${new Date(t.tempBlacklistExpiresAt).toLocaleString()}</div>`
+                            : '';
+
+                        return `
                         <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(248,81,73,0.15);">
                             <div style="display: flex; align-items: center; justify-content: space-between; min-width: 0; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                                     <img src="${t.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
                                     <div style="min-width: 0;">
-                                        <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.username}</div>
+                                        <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
+                                            ${t.username} ${statusBadge}
+                                        </div>
                                         <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${t.userId}</div>
                                     </div>
                                 </div>
@@ -691,8 +769,57 @@
                             <div style="font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 4px; color: #ff9e9e; border-left: 2px solid var(--danger); word-break: break-all;">
                                 <strong>Reason:</strong> ${t.terminationReason}
                             </div>
+                            ${expiryText}
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Filter IP Bans
+            const filteredIpBans = ipBans.filter(b => 
+                b.ipAddress.includes(searchTerm) || 
+                (b.associatedUserId && b.associatedUserId.includes(searchTerm)) ||
+                (b.reason || '').toLowerCase().includes(searchTerm) ||
+                (b.user && b.user.username.toLowerCase().includes(searchTerm))
+            );
+
+            document.getElementById('ip-ban-count').textContent = filteredIpBans.length;
+
+            const ipBansContainer = document.getElementById('ip-bans-list-container');
+            if (ipBansContainer) {
+                if (filteredIpBans.length === 0) {
+                    ipBansContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No banned IPs.</div>';
+                } else {
+                    ipBansContainer.innerHTML = filteredIpBans.map(b => {
+                        const userMark = b.user 
+                            ? `
+                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; background: rgba(255,255,255,0.01); padding: 4px; border-radius: 4px;">
+                                <img src="${b.user.avatar}" style="width: 18px; height: 18px; border-radius: 50%;" onerror="this.onerror=null; this.src='nora.png'">
+                                <span style="font-size: 0.75rem; color: #ff5555; font-weight: 600;">${b.user.username}</span>
+                                <span style="font-size: 0.7rem; color: var(--muted);">(${b.associatedUserId})</span>
+                            </div>
+                            `
+                            : `<div style="font-size: 0.7rem; color: var(--muted); margin-top: 4px;">No associated Discord user.</div>`;
+                        
+                        return `
+                        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                <div style="min-width: 0;">
+                                    <div style="font-weight: 600; font-size: 0.85rem; color: #fff; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        ${b.ipAddress}
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: var(--muted);">Banned: ${new Date(b.createdAt).toLocaleString()}</div>
+                                </div>
+                                <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.3); color: var(--danger); flex-shrink: 0;" onclick="revokeIpBan('${b.ipAddress}')">Revoke IP Ban</button>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--muted); background: rgba(0,0,0,0.2); padding: 6px; border-radius: 4px;">
+                                <strong>Reason:</strong> ${b.reason || 'Unspecified'}
+                            </div>
+                            ${userMark}
+                        </div>
+                        `;
+                    }).join('');
                 }
             }
         }
@@ -768,12 +895,25 @@
             const userId = document.getElementById('ban-user-id').value;
             const reason = document.getElementById('ban-reason').value;
             if (!userId) return alert('Please enter a target User ID');
-            if (action === 'ban' && !reason) return alert('Please enter a suspension reason');
+            if (action !== 'unban' && !reason) return alert('Please enter a suspension reason');
 
-            await manageTermination(action, userId, reason);
+            let tempDurationHours = null;
+            if (action === 'temp_ban') {
+                const durationType = document.getElementById('ban-duration').value;
+                if (durationType === 'custom') {
+                    tempDurationHours = Number(document.getElementById('ban-duration-custom').value);
+                } else {
+                    tempDurationHours = Number(durationType);
+                }
+                if (isNaN(tempDurationHours) || tempDurationHours <= 0) {
+                    return alert('Please enter a valid duration in hours.');
+                }
+            }
+
+            await manageTermination(action === 'unban' ? 'unban' : 'ban', userId, reason, tempDurationHours);
         }
 
-        async function manageTermination(action, userId, reason = '') {
+        async function manageTermination(action, userId, reason = '', tempDurationHours = null) {
             try {
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/global-ban`, {
@@ -782,7 +922,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
                     },
-                    body: JSON.stringify({ action, userId, reason })
+                    body: JSON.stringify({ action, userId, reason, tempDurationHours })
                 });
 
                 const data = await res.json();
@@ -791,6 +931,27 @@
                 loadAdminDeskData();
             } catch (e) {
                 alert('Termination Execution Error: ' + e.message);
+            }
+        }
+
+        async function revokeIpBan(ipAddress) {
+            if (!confirm(`Are you sure you want to revoke the IP ban for ${ipAddress}?`)) return;
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const res = await fetch(`${apiBase}/api/admin/ip-bans/revoke`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                    },
+                    body: JSON.stringify({ ipAddress })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to revoke IP ban');
+                alert(data.message || 'IP ban revoked successfully');
+                loadAdminDeskData();
+            } catch (e) {
+                alert('Error revoking IP ban: ' + e.message);
             }
         }
 

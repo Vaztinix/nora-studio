@@ -844,15 +844,21 @@ router.get('/analytics', async (req, res) => {
  * POST /api/guilds/:guildId/webhook-send
 
  * Send a webhook broadcast message to a channel.
-
  */
 router.post('/webhook-send', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { channelId, name, avatar, content, embedTitle, embedDesc, embedColor, embedImage, embedThumbnail, embedFooter, components } = req.body;
+        const { 
+            channelId, name, avatar, content, 
+            embedTitle, embedDesc, embedColor, embedImage, embedThumbnail, embedFooter,
+            embedAuthorName, embedAuthorIcon, embedAuthorUrl, embedFields,
+            tts, pings, embedTimestamp, components 
+        } = req.body;
         
         if (!channelId) return res.status(400).json({ error: 'Target channel is required.' });
-        if (!content && !embedTitle && !embedDesc) return res.status(400).json({ error: 'Message content or embed is required.' });
+        if (!content && !embedTitle && !embedDesc && !embedAuthorName && (!embedFields || embedFields.length === 0)) {
+            return res.status(400).json({ error: 'Message content or embed details are required.' });
+        }
         
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found.' });
@@ -896,16 +902,28 @@ router.post('/webhook-send', async (req, res) => {
         const resolvedAvatar = saveBase64Image(avatar, 'webhook_avatar');
         const resolvedEmbedImage = saveBase64Image(embedImage, 'webhook_embed');
         const resolvedEmbedThumbnail = saveBase64Image(embedThumbnail, 'webhook_thumb');
-
+ 
         // Build the webhook payload
         const webhookPayload = {};
         
         if (name) webhookPayload.username = name;
         if (resolvedAvatar) webhookPayload.avatarURL = resolvedAvatar;
-        if (content) webhookPayload.content = content;
+        
+        let finalContent = content || '';
+        if (pings === 'everyone') {
+            finalContent = `@everyone\n` + finalContent;
+        } else if (pings === 'here') {
+            finalContent = `@here\n` + finalContent;
+        }
+        if (finalContent.trim()) {
+            webhookPayload.content = finalContent;
+        }
+        if (tts) {
+            webhookPayload.tts = true;
+        }
         
         // Build embed if any embed fields are provided
-        if (embedTitle || embedDesc || resolvedEmbedImage || resolvedEmbedThumbnail || embedFooter) {
+        if (embedTitle || embedDesc || resolvedEmbedImage || resolvedEmbedThumbnail || embedFooter || embedAuthorName || (embedFields && embedFields.length > 0)) {
             const { EmbedBuilder } = require('discord.js');
             const embed = new EmbedBuilder();
             if (embedTitle) embed.setTitle(embedTitle);
@@ -914,6 +932,26 @@ router.post('/webhook-send', async (req, res) => {
             if (resolvedEmbedImage) embed.setImage(resolvedEmbedImage);
             if (resolvedEmbedThumbnail) embed.setThumbnail(resolvedEmbedThumbnail);
             if (embedFooter) embed.setFooter({ text: embedFooter });
+            
+            if (embedAuthorName) {
+                embed.setAuthor({
+                    name: embedAuthorName,
+                    iconURL: embedAuthorIcon || undefined,
+                    url: embedAuthorUrl || undefined
+                });
+            }
+            
+            if (embedFields && Array.isArray(embedFields)) {
+                const validFields = embedFields.filter(f => f.name && f.name.trim() !== '' && f.value && f.value.trim() !== '');
+                validFields.forEach(f => {
+                    embed.addFields({ name: f.name, value: f.value, inline: !!f.inline });
+                });
+            }
+            
+            if (embedTimestamp) {
+                embed.setTimestamp();
+            }
+            
             webhookPayload.embeds = [embed];
         }
         

@@ -107,6 +107,16 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: null
+    },
+    displayName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    tempBlacklistExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null
     }
 });
 

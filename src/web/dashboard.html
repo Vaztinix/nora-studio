@@ -2558,13 +2558,27 @@
             </button>
 
             <!-- Premium Ad in Sidebar -->
-            <div class="premium-ad" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')" style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(108, 92, 231, 0.05) 100%); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 12px; padding: 12px; width: 100%; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='rgba(0, 212, 255, 0.4)';" onmouseout="this.style.borderColor='rgba(0, 212, 255, 0.2)';">
+            <div id="sidebar-premium-ad" class="premium-ad" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')" style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(108, 92, 231, 0.05) 100%); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 12px; padding: 12px; width: 100%; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='rgba(0, 212, 255, 0.4)'; " onmouseout="this.style.borderColor='rgba(0, 212, 255, 0.2)';">
                 <h4 style="font-size: 0.8rem; font-weight: 800; color: var(--primary); margin: 0;">NORA PREMIUM</h4>
                 <p style="font-size: 0.7rem; color: var(--muted); margin: 4px 0 0 0; line-height: 1.3;">Unlock Leveling Boosts, Advanced Verification & More</p>
             </div>
         </aside>
 
         <main class="main-content">
+            <div id="termination-banner" style="display: none; background: linear-gradient(135deg, rgba(255, 85, 85, 0.15) 0%, rgba(255, 85, 85, 0.05) 100%); border: 1px solid rgba(255, 85, 85, 0.25); border-radius: 16px; padding: 20px; margin-bottom: 25px; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(255, 85, 85, 0.1);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 45px; height: 45px; border-radius: 10px; background: rgba(255, 85, 85, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #ff5555; border: 1px solid rgba(255, 85, 85, 0.3);">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1.05rem; color: #ff5555; font-weight: 700;">Account Terminated / Locked</h4>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.4;">
+                            Reason: <span id="termination-reason-text" style="font-weight: 600; color: #fff;">Violation of terms of service.</span>
+                        </p>
+                    </div>
+                </div>
+                <button class="config-btn" style="width: auto; background: rgba(255,85,85,0.2); border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 8px 16px;" onclick="window.open('https://discord.gg/nora', '_blank')">Appeal Suspension</button>
+            </div>
             <div id="view-greeting" class="tab-content active">
                 <div class="hero-banner" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);">
                     <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: var(--primary); filter: blur(90px); opacity: 0.1; border-radius: 50%;"></div>
@@ -2763,7 +2777,7 @@
                             </div>
                         </div>
 
-                        <div class="panel" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                        <div id="profile-premium-center" class="panel" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                             <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffd700; display: flex; align-items: center; gap: 8px; margin: 0 0 10px 0;"><i class="fas fa-crown"></i> Nora Premium Center</h3>
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; line-height: 1.4;">Unlock priority AI limits, faster automation speeds, and exclusive profile styles.</p>
                             
@@ -2971,7 +2985,7 @@
                                 </ol>
                             </div>
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <a href="/billing" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                                <a href="https://support.discord.com/hc/articles/12664687593239" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                                     <i class="fas fa-question-circle"></i> Discord Billing FAQ
                                 </a>
                                 <a href="https://support.discord.com/" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
@@ -3129,7 +3143,7 @@
                         <button class="h-tab" data-tab="tab-logging"><span><i class="fas fa-file-alt"></i> Server Logging</span><span class="badge stable">v2.0</span></button>
                         <button class="h-tab" data-tab="tab-autoresponder"><span><i class="fas fa-reply"></i> Autoresponder</span><span class="badge stable">v2.1</span></button>
                         <button class="h-tab" data-tab="tab-feeds"><span><i class="fas fa-broadcast-tower"></i> Content Feeds</span><span class="badge beta">Beta</span></button>
-                        <button class="h-tab" data-tab="tab-webhooks"><span><i class="fas fa-network-wired"></i> Webhooks</span><span class="badge stable">v2.0</span></button>
+                        <button class="h-tab" data-tab="tab-webhooks"><span><i class="fas fa-network-wired"></i> Webhooks</span><span class="badge stable">v2.1</span></button>
                         
                         <div style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
                             <button class="save-btn" style="background: var(--primary); color: #0b0b0a; font-weight: 700; font-size: 0.8rem; text-align: center; justify-content: center; box-shadow: 0 0 10px var(--primary-glow);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown"></i> Get Premium</button>
@@ -4862,12 +4876,29 @@
                                     <h3>Webhook Creator & Sender</h3>
                                     <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Configure your custom webhook announcements to send to any text channel.</p>
                                     
-                                    <div class="input-group" style="margin-bottom: 20px;">
-                                        <label>Target Channel</label>
-                                        <select id="broadcast-channel" onchange="checkChannelPerms()">
-                                            <option value="">Select a channel...</option>
-                                        </select>
-                                        <div id="channel-perm-status" style="font-size: 0.8rem; margin-top: 5px;"></div>
+                                    <div style="display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                        <div class="input-group">
+                                            <label>Target Channel</label>
+                                            <select id="broadcast-channel" onchange="checkChannelPerms()">
+                                                <option value="">Select a channel...</option>
+                                            </select>
+                                            <div id="channel-perm-status" style="font-size: 0.8rem; margin-top: 5px;"></div>
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Mention Option</label>
+                                            <select id="broadcast-pings" onchange="updatePreview()">
+                                                <option value="">None</option>
+                                                <option value="everyone">@everyone</option>
+                                                <option value="here">@here</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group">
+                                            <label>TTS</label>
+                                            <label class="switch" style="margin-top: 8px;">
+                                                <input type="checkbox" id="broadcast-tts" onchange="updatePreview()">
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
                                     </div>
 
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -4892,13 +4923,48 @@
 
                                     <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
                                         <h4 style="margin-bottom: 15px;">Embed Designer</h4>
-                                        <div class="row-inputs" style="gap: 15px; margin-bottom: 15px;">
-                                            <div class="input-group" style="flex: 2;"><label>Embed Title</label><input type="text" id="broadcast-embed-title" placeholder="Announcement" oninput="updatePreview()"></div>
-                                            <div class="input-group" style="flex: 1;"><label>Accent Color</label><input type="color" id="broadcast-embed-color" value="#ffffff" style="height: 45px; padding: 5px;" oninput="updatePreview()"></div>
+                                        
+                                        <!-- Author Row -->
+                                        <div style="display: grid; grid-template-columns: 1.2fr 1.5fr 1.5fr; gap: 15px; margin-bottom: 15px;">
+                                            <div class="input-group">
+                                                <label>Author Name</label>
+                                                <input type="text" id="broadcast-embed-author-name" placeholder="Author name" oninput="updatePreview()">
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Author Icon URL</label>
+                                                <input type="text" id="broadcast-embed-author-icon" placeholder="https://..." oninput="updatePreview()">
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Author URL</label>
+                                                <input type="text" id="broadcast-embed-author-url" placeholder="https://..." oninput="updatePreview()">
+                                            </div>
+                                        </div>
+
+                                        <div class="row-inputs" style="gap: 15px; margin-bottom: 15px; display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center;">
+                                            <div class="input-group"><label>Embed Title</label><input type="text" id="broadcast-embed-title" placeholder="Announcement" oninput="updatePreview()"></div>
+                                            <div class="input-group"><label>Accent Color</label><input type="color" id="broadcast-embed-color" value="#ffffff" style="height: 45px; padding: 5px;" oninput="updatePreview()"></div>
+                                            <div class="input-group">
+                                                <label>Timestamp</label>
+                                                <label class="switch" style="margin-top: 8px;">
+                                                    <input type="checkbox" id="broadcast-embed-timestamp" onchange="updatePreview()">
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
                                         </div>
                                         <div class="input-group" style="margin-bottom: 15px;">
                                             <label>Embed Description</label>
                                             <textarea id="broadcast-embed-desc" placeholder="Details about this announcement..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; width: 100%; min-height: 80px; padding: 12px; border-radius: 8px;" oninput="updatePreview()"></textarea>
+                                        </div>
+
+                                        <!-- Custom Fields Container -->
+                                        <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 15px; border-radius: 8px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                                <h5 style="margin: 0; font-size: 0.85rem; color: #fff;">Embed Fields (Max 10)</h5>
+                                                <button class="btn-outline" style="font-size: 0.75rem; padding: 4px 8px; width: auto;" onclick="addBroadcastEmbedField()">+ Add Field</button>
+                                            </div>
+                                            <div id="broadcast-embed-fields-container" style="display: flex; flex-direction: column; gap: 8px;">
+                                                <!-- Fields will be added here dynamically -->
+                                            </div>
                                         </div>
                                         
                                         <!-- Thumbnail & Image Row -->
@@ -4916,7 +4982,7 @@
                                                 </div>
                                             </div>
                                         </div>
-
+ 
                                         <!-- Footer Text -->
                                         <div class="input-group" style="margin-bottom: 15px;">
                                             <label>Embed Footer Text</label>
@@ -5004,6 +5070,45 @@
                                     <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 8px;">Discord Webhook URL</label>
                                     <input type="text" id="setting-webhookUrl" placeholder="https://discord.com/api/webhooks/..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px;">
                                     <p style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;">Warning: Keep your webhook URL private. Anyone with access to this URL can send messages to the channel.</p>
+                                </div>
+
+                                <div class="input-group" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+                                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 12px;">Webhook Log Filters</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                            <input type="checkbox" class="webhook-filter-chk" value="messageDelete" onchange="updateWebhookFiltersFromUI()"> Message Deletions
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                            <input type="checkbox" class="webhook-filter-chk" value="messageUpdate" onchange="updateWebhookFiltersFromUI()"> Message Edits
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                            <input type="checkbox" class="webhook-filter-chk" value="memberJoin" onchange="updateWebhookFiltersFromUI()"> Member Joins
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                            <input type="checkbox" class="webhook-filter-chk" value="memberLeave" onchange="updateWebhookFiltersFromUI()"> Member Leaves
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                            <input type="checkbox" class="webhook-filter-chk" value="channelCreate" onchange="updateWebhookFiltersFromUI()"> Channel Creation
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                            <input type="checkbox" class="webhook-filter-chk" value="channelDelete" onchange="updateWebhookFiltersFromUI()"> Channel Deletion
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                            <input type="checkbox" class="webhook-filter-chk" value="voiceJoin" onchange="updateWebhookFiltersFromUI()"> Voice Session Start
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                            <input type="checkbox" class="webhook-filter-chk" value="voiceLeave" onchange="updateWebhookFiltersFromUI()"> Voice Session End
+                                        </label>
+                                    </div>
+                                    <input type="hidden" id="setting-webhookLogFilters" value="[]">
+                                </div>
+
+                                <div class="input-group" style="margin-top: 20px;">
+                                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 8px;">Webhook Log Embed Color</label>
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <input type="color" id="setting-webhookLogColor" value="#ff5555" style="width: 50px; height: 40px; padding: 4px; background: transparent; border: 1px solid var(--border); border-radius: 6px; cursor: pointer;">
+                                        <span style="font-size: 0.8rem; color: var(--muted);">Choose a custom border accent color for logs dispatched to this Webhook.</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -5299,19 +5404,32 @@
                             const clone = response.clone();
                             const errJson = await clone.json().catch(() => null);
                             if (errJson && errJson.error === 'Terminated') {
-                                const expiredOverlay = document.getElementById('session-expired-overlay');
-                                const titleEl = document.getElementById('session-expired-title');
-                                const descEl = document.getElementById('session-expired-desc');
-                                const btnEl = document.getElementById('session-expired-btn');
-                                if (titleEl) titleEl.textContent = 'Account Terminated';
-                                if (descEl) descEl.innerHTML = `<strong>Reason:</strong> ${errJson.reason || 'Violation of terms of service.'}<br><br>Your access to Nora Studio has been suspended.`;
-                                if (btnEl) {
-                                    btnEl.textContent = 'Contact Support';
-                                    btnEl.onclick = () => { window.open('https://discord.gg/nora', '_blank'); };
+                                const banner = document.getElementById('termination-banner');
+                                if (banner) banner.style.display = 'flex';
+                                const reasonText = document.getElementById('termination-reason-text');
+                                if (reasonText) reasonText.textContent = errJson.reason || 'Violation of terms of service.';
+                                
+                                const serversTabBtn = document.querySelector('.v-tab[data-tab="servers"]');
+                                if (serversTabBtn) serversTabBtn.style.display = 'none';
+                                const topbarServersBtn = document.querySelector('.global-nav-btn[data-tab="servers"]');
+                                if (topbarServersBtn) topbarServersBtn.style.display = 'none';
+                                const sidebarPremiumAd = document.getElementById('sidebar-premium-ad');
+                                if (sidebarPremiumAd) sidebarPremiumAd.style.display = 'none';
+                                
+                                const premiumCenterEl = document.getElementById('profile-premium-center');
+                                if (premiumCenterEl) {
+                                    premiumCenterEl.style.border = '1px dashed rgba(255, 85, 85, 0.4)';
+                                    premiumCenterEl.innerHTML = `
+                                        <h3 style="font-size: 1.15rem; font-weight: 700; color: #ff5555; display: flex; align-items: center; gap: 8px; margin: 0 0 10px 0;"><i class="fas fa-ban"></i> Premium Locked</h3>
+                                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; line-height: 1.4;">Premium purchases and Nitro benefits are permanently locked for terminated accounts.</p>
+                                        <div style="padding: 12px; border-radius: 8px; background: rgba(255, 85, 85, 0.05); border: 1px solid rgba(255, 85, 85, 0.15); color: #ff5555; font-size: 0.8rem; font-weight: 600;">
+                                            Account Status: Suspended / Terminated
+                                        </div>
+                                    `;
                                 }
-                                if (expiredOverlay) {
-                                    expiredOverlay.style.display = 'flex';
-                                }
+                                
+                                showToast('Access restricted: Account is terminated.', 'error');
+                                showTab('profile');
                             }
                         } catch (e) {}
                     }
@@ -5906,7 +6024,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor'];
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
@@ -6424,6 +6542,40 @@
                 if (d.error) throw new Error(d.error);
                 window.currentUser = d;
                 localStorage.setItem('nora_last_user_id', d.id);
+                
+                if (d.prefs && d.prefs.isTerminated) {
+                    const banner = document.getElementById('termination-banner');
+                    if (banner) {
+                        banner.style.display = 'flex';
+                    }
+                    const reasonText = document.getElementById('termination-reason-text');
+                    if (reasonText) {
+                        reasonText.textContent = d.prefs.terminationReason || 'Violation of terms of service.';
+                    }
+
+                    const serversTabBtn = document.querySelector('.v-tab[data-tab="servers"]');
+                    if (serversTabBtn) serversTabBtn.style.display = 'none';
+
+                    const topbarServersBtn = document.querySelector('.global-nav-btn[data-tab="servers"]');
+                    if (topbarServersBtn) topbarServersBtn.style.display = 'none';
+
+                    const sidebarPremiumAd = document.getElementById('sidebar-premium-ad');
+                    if (sidebarPremiumAd) sidebarPremiumAd.style.display = 'none';
+
+                    const premiumCenterEl = document.getElementById('profile-premium-center');
+                    if (premiumCenterEl) {
+                        premiumCenterEl.style.border = '1px dashed rgba(255, 85, 85, 0.4)';
+                        premiumCenterEl.innerHTML = `
+                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #ff5555; display: flex; align-items: center; gap: 8px; margin: 0 0 10px 0;"><i class="fas fa-ban"></i> Premium Locked</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; line-height: 1.4;">Premium purchases and Nitro benefits are permanently locked for terminated accounts.</p>
+                            <div style="padding: 12px; border-radius: 8px; background: rgba(255, 85, 85, 0.05); border: 1px solid rgba(255, 85, 85, 0.15); color: #ff5555; font-size: 0.8rem; font-weight: 600;">
+                                Account Status: Suspended / Terminated
+                            </div>
+                        `;
+                    }
+                    setTimeout(() => showTab('profile'), 100);
+                }
+
                 loadNotifications();
 
                 const prefSecureSession = document.getElementById('pref-secure-session');
@@ -6439,7 +6591,7 @@
                 
                 const userNameEl = document.getElementById('user-name-top');
                 if (userNameEl) {
-                    userNameEl.textContent = localStorage.getItem('nora_display_name') || d.global_name || d.username;
+                    userNameEl.textContent = (d.prefs && d.prefs.displayName) || d.username;
                 }
                 
                 // Populate Settings
@@ -6450,7 +6602,7 @@
                 }
                 const userNameElSidebar = document.getElementById('user-name');
                 if (userNameElSidebar) {
-                    userNameElSidebar.textContent = localStorage.getItem('nora_display_name') || d.global_name || d.username;
+                    userNameElSidebar.textContent = (d.prefs && d.prefs.displayName) || d.username;
                 }
                 const userHandleElSidebar = document.getElementById('user-handle');
                 if (userHandleElSidebar) {
@@ -6462,7 +6614,7 @@
                 if (prefUser) prefUser.value = d.username;
 
                 const prefDisplay = document.getElementById('pref-display-name');
-                if (prefDisplay) prefDisplay.value = localStorage.getItem('nora_display_name') || d.global_name || d.username;
+                if (prefDisplay) prefDisplay.value = (d.prefs && d.prefs.displayName) || d.username;
 
                 const prefPremium = document.getElementById('pref-premium-status');
                 if (prefPremium) {
@@ -6745,13 +6897,15 @@
 
         async function savePersonalPrefs() {
             const displayNameEl = document.getElementById('pref-display-name');
-            const displayName = displayNameEl ? displayNameEl.value : (localStorage.getItem('nora_display_name') || '');
-            localStorage.setItem('nora_display_name', displayName);
-            currentDashboardSettings['nora_display_name'] = displayName;
+            const displayName = displayNameEl ? displayNameEl.value : ((window.currentUser && window.currentUser.prefs && window.currentUser.prefs.displayName) || '');
             
             const userNameEl = document.getElementById('user-name');
             if (userNameEl) {
                 userNameEl.textContent = displayName;
+            }
+            const userNameTop = document.getElementById('user-name-top');
+            if (userNameTop) {
+                userNameTop.textContent = displayName;
             }
 
             const notifVotesEl = document.getElementById('pref-notif-votes');
@@ -6787,7 +6941,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({
-                        dashboardSettings: JSON.stringify(currentDashboardSettings)
+                        dashboardSettings: JSON.stringify(currentDashboardSettings),
+                        displayName: displayName
                     })
                 });
 
@@ -6796,6 +6951,10 @@
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ sessionHardened })
                 });
+
+                if (window.currentUser && window.currentUser.prefs) {
+                    window.currentUser.prefs.displayName = displayName;
+                }
                 
                 showToast('Personal preferences updated!', 'success');
             } catch (e) {
@@ -7892,6 +8051,12 @@
 
                 function showTab(tabId) {
             try {
+                if (window.currentUser && window.currentUser.prefs && window.currentUser.prefs.isTerminated) {
+                    if (tabId === 'servers' || tabId.startsWith('tab-') || tabId === 'members') {
+                        showToast('Access to servers is restricted for terminated accounts.', 'error');
+                        tabId = 'profile';
+                    }
+                }
                 if (typeof closeAllEmojiPickers === 'function') closeAllEmojiPickers();
                 logToTerminal(`Switching to tab: ${tabId}`, 'TAB_CHANGE');
                 
