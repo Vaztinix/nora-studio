@@ -7489,11 +7489,18 @@
                 try { localNotifs = JSON.parse(saved); } catch(e) {}
             }
 
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) {
+                notifications = localNotifs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderNotifications();
+                return;
+            }
+
             let dbNotifs = [];
             try {
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/notifications`, {
-                    headers: { 'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_token')}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
                     const data = await res.json();
