@@ -31,7 +31,8 @@ const requireAuth = async (req, res, next) => {
         if (session) {
             // Generational Session UUID Lock validation
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: session.userId } });
-            if (prefs.isTerminated) {
+            const isTerminated = prefs.isTerminated || (prefs.tempBlacklistExpiresAt && new Date() < new Date(prefs.tempBlacklistExpiresAt));
+            if (isTerminated) {
                 await session.destroy();
                 return res.status(403).json({ error: 'Terminated', reason: prefs.terminationReason || 'Violation of terms of service.' });
             }
@@ -58,7 +59,8 @@ const requireAuth = async (req, res, next) => {
             user = userRes.data;
             
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
-            if (prefs.isTerminated) {
+            const isTerminated = prefs.isTerminated || (prefs.tempBlacklistExpiresAt && new Date() < new Date(prefs.tempBlacklistExpiresAt));
+            if (isTerminated) {
                 return res.status(403).json({ error: 'Terminated', reason: prefs.terminationReason || 'Violation of terms of service.' });
             }
 

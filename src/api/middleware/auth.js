@@ -127,7 +127,8 @@ const requireGuildPermission = async (req, res, next) => {
             if (user) {
                 const UserPrefs = require('../../database/models/UserPrefs');
                 const prefs = await UserPrefs.findOne({ where: { userId: user.id } });
-                if (prefs && prefs.isTerminated) {
+                const isTerminated = prefs && (prefs.isTerminated || (prefs.tempBlacklistExpiresAt && new Date() < new Date(prefs.tempBlacklistExpiresAt)));
+                if (isTerminated) {
                     return res.status(403).json({ error: 'Terminated', reason: prefs.terminationReason || 'Violation of terms of service.' });
                 }
             }

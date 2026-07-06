@@ -6543,7 +6543,8 @@
                 window.currentUser = d;
                 localStorage.setItem('nora_last_user_id', d.id);
                 
-                if (d.prefs && d.prefs.isTerminated) {
+                const isTerminated = d.prefs && (d.prefs.isTerminated || (d.prefs.tempBlacklistExpiresAt && new Date() < new Date(d.prefs.tempBlacklistExpiresAt)));
+                if (isTerminated) {
                     const banner = document.getElementById('termination-banner');
                     if (banner) {
                         banner.style.display = 'flex';
@@ -8058,7 +8059,8 @@
 
                 function showTab(tabId) {
             try {
-                if (window.currentUser && window.currentUser.prefs && window.currentUser.prefs.isTerminated) {
+                const isUserTerminated = window.currentUser && window.currentUser.prefs && (window.currentUser.prefs.isTerminated || (window.currentUser.prefs.tempBlacklistExpiresAt && new Date() < new Date(window.currentUser.prefs.tempBlacklistExpiresAt)));
+                if (isUserTerminated) {
                     if (tabId === 'servers' || tabId.startsWith('tab-') || tabId === 'members') {
                         showToast('Access to servers is restricted for terminated accounts.', 'error');
                         tabId = 'profile';
