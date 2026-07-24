@@ -4591,21 +4591,21 @@
                             </div>
 
                             <div class="input-group" style="margin-bottom: 15px;">
-                                <label>Required Stars Threshold</label>
-                                <input type="number" id="setting-starboardThreshold" min="1" max="100" placeholder="3" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                <label style="font-weight: 600; color: #fff;">Required Stars Threshold</label>
+                                <input type="number" id="setting-starboardThreshold" min="1" max="100" value="3" placeholder="3" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
                             </div>
 
                             <div class="input-group" style="margin-bottom: 15px;">
-                                <label>Trigger Emoji</label>
+                                <label style="font-weight: 600; color: #fff;">Trigger Emoji</label>
                                 <div style="display: flex; gap: 8px;">
-                                    <input type="text" id="setting-starboardEmoji" placeholder="⭐" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
-                                    <button class="config-btn" style="width: auto; padding: 10px 14px;" onclick="openStarboardEmojiPicker(event)">Picker</button>
+                                    <input type="text" id="setting-starboardEmoji" value="⭐" placeholder="⭐" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                    <button class="save-btn" style="width: auto; padding: 8px 16px; font-size: 0.8rem; background: #ffffff !important; color: #000000 !important; font-weight: 800; border-radius: 999px;" onclick="openStarboardEmojiPicker(event)">Picker</button>
                                 </div>
                             </div>
 
                             <div class="input-group" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
                                 <div>
-                                    <label style="margin: 0; font-weight: 600;">Custom Webhook Profile</label>
+                                    <label style="margin: 0; font-weight: 600; color: #fff;">Custom Webhook Profile</label>
                                     <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Override the bot name and profile picture in Starboard posts.</p>
                                 </div>
                                 <label class="switch">
@@ -4614,25 +4614,34 @@
                                 </label>
                             </div>
 
-                            <div id="starboard-webhook-fields" style="display: none; border-left: 2px solid var(--border); padding-left: 15px; margin-bottom: 15px;">
+                            <div id="starboard-webhook-fields" style="display: none; border-left: 2px solid rgba(255,255,255,0.15); padding-left: 15px; margin-bottom: 15px;">
                                 <div class="input-group" style="margin-bottom: 12px;">
-                                    <label>Webhook Name Override</label>
+                                    <label style="font-weight: 600; color: #fff;">Webhook Name Override</label>
                                     <input type="text" id="setting-starboardWebhookName" placeholder="Nora Starboard" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
                                 </div>
                                 <div class="input-group" style="margin-bottom: 12px;">
-                                    <label>Webhook Avatar URL</label>
+                                    <label style="font-weight: 600; color: #fff;">Webhook Avatar URL</label>
                                     <input type="text" id="setting-starboardWebhookAvatar" placeholder="https://..." style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
                                 </div>
                             </div>
 
                             <div class="input-group" style="margin-bottom: 15px;">
-                                <label>Starboard Embed Color (Hex)</label>
-                                <input type="text" id="setting-starboardEmbedColor" placeholder="#ffac33" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                <label style="font-weight: 600; color: #fff;">Starboard Embed Color (Hex)</label>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <input type="text" id="setting-starboardEmbedColor" value="#FFD700" placeholder="#FFD700" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                        <button type="button" class="btn-outline" style="font-size: 0.7rem; padding: 4px 8px; border-color: rgba(255,215,0,0.4); color: #FFD700;" onclick="document.getElementById('setting-starboardEmbedColor').value='#FFD700'; updateStarboardPreview();">⭐ Gold (#FFD700)</button>
+                                        <button type="button" class="btn-outline" style="font-size: 0.7rem; padding: 4px 8px; border-color: rgba(0,229,255,0.4); color: #00E5FF;" onclick="document.getElementById('setting-starboardEmbedColor').value='#00E5FF'; updateStarboardPreview();">💎 Cyan (#00E5FF)</button>
+                                        <button type="button" class="btn-outline" style="font-size: 0.7rem; padding: 4px 8px; border-color: rgba(0,230,118,0.4); color: #00E676;" onclick="document.getElementById('setting-starboardEmbedColor').value='#00E676'; updateStarboardPreview();">💚 Emerald (#00E676)</button>
+                                        <button type="button" class="btn-outline" style="font-size: 0.7rem; padding: 4px 8px; border-color: rgba(255,23,68,0.4); color: #FF1744;" onclick="document.getElementById('setting-starboardEmbedColor').value='#FF1744'; updateStarboardPreview();">🔴 Ruby (#FF1744)</button>
+                                        <button type="button" class="btn-outline" style="font-size: 0.7rem; padding: 4px 8px; border-color: rgba(255,255,255,0.4); color: #FFFFFF;" onclick="document.getElementById('setting-starboardEmbedColor').value='#FFFFFF'; updateStarboardPreview();">🤍 Pure White (#FFFFFF)</button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="input-group" style="margin-bottom: 15px;">
-                                <label>Message Text Template</label>
-                                <input type="text" id="setting-starboardMessageTemplate" placeholder="{emoji} **{count}** | {channel}" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
+                                <label style="font-weight: 600; color: #fff;">Message Text Template</label>
+                                <input type="text" id="setting-starboardMessageTemplate" value="{emoji} **{count}** | {channel}" placeholder="{emoji} **{count}** | {channel}" style="width: 100%; box-sizing: border-box;" oninput="updateStarboardPreview()">
                                 <p style="font-size: 0.7rem; color: var(--muted); margin-top: 4px;">Supported placeholders: <code>{emoji}</code>, <code>{count}</code>, <code>{channel}</code></p>
                             </div>
                         </div>
@@ -4641,9 +4650,9 @@
                         <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column;">
                             <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">Live Discord Preview</h3>
                             
-                            <div style="background: #313338; border-radius: 8px; padding: 16px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 250px;">
-                                <div id="starboard-preview-empty" style="text-align: center; color: var(--muted); padding: 30px 10px;">
-                                    Starboard is disabled or not configured.
+                            <div style="background: #313338; border-radius: 12px; padding: 22px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 280px; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);">
+                                <div id="starboard-preview-empty" style="text-align: center; color: var(--muted); padding: 30px 10px; font-size: 0.85rem;">
+                                    Starboard is currently disabled. Toggle <strong>"Enable Starboard"</strong> above to activate preview.
                                 </div>
                                 
                                 <div id="starboard-preview-msg" style="display: none; gap: 16px; align-items: flex-start; text-align: left;">
@@ -4651,7 +4660,7 @@
                                     <div style="flex: 1; min-width: 0;">
                                         <!-- Star Count Header -->
                                         <div id="starboard-preview-count" style="font-weight: 700; color: #f2f3f5; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                                            ⭐ 3 | #starboard
+                                            ⭐ 3 | #general
                                         </div>
                                         
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -4661,10 +4670,10 @@
                                         </div>
                                         
                                         <!-- Embed Body -->
-                                        <div id="starboard-preview-embed" style="background: #2b2d31; border-left: 4px solid #ffd700; border-radius: 4px; padding: 12px 16px; margin-top: 4px; display: inline-block; width: 100%; box-sizing: border-box;">
+                                        <div id="starboard-preview-embed" style="background: #2b2d31; border-left: 4px solid #FFD700; border-radius: 4px; padding: 12px 16px; margin-top: 4px; display: inline-block; width: 100%; box-sizing: border-box;">
                                             <div style="color: #f2f3f5; font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">DiscordUser</div>
                                             <div style="font-size: 0.875rem; color: #dbdee1; line-height: 1.375;">This is a preview of a starboard message! Reacting to a message in the server will highlight it here.</div>
-                                            <div style="font-size: 0.8rem; color: var(--primary); margin-top: 8px; font-weight: 500;">Original: <span style="color: #00b0f4; text-decoration: none; cursor: pointer;">[Jump to message]</span></div>
+                                            <div style="font-size: 0.8rem; color: #ffffff; margin-top: 8px; font-weight: 500;">Original: <span style="color: #00b0f4; text-decoration: none; cursor: pointer;">[Jump to message]</span></div>
                                         </div>
                                     </div>
                                 </div>
@@ -13436,8 +13445,56 @@
                     </div>
                 `;
                 container.appendChild(card);
-            });
-        }
+        window.toggleStarboardWebhookFields = function() {
+            const isChecked = document.getElementById('setting-starboardWebhookEnabled')?.checked;
+            const fields = document.getElementById('starboard-webhook-fields');
+            if (fields) fields.style.display = isChecked ? 'block' : 'none';
+        };
+
+        window.updateStarboardPreview = function() {
+            const isEnabled = document.getElementById('setting-starboardEnabled')?.checked !== false;
+            const emptyEl = document.getElementById('starboard-preview-empty');
+            const msgEl = document.getElementById('starboard-preview-msg');
+
+            if (!isEnabled) {
+                if (emptyEl) emptyEl.style.display = 'block';
+                if (msgEl) msgEl.style.display = 'none';
+                return;
+            }
+
+            if (emptyEl) emptyEl.style.display = 'none';
+            if (msgEl) msgEl.style.display = 'flex';
+
+            const threshold = document.getElementById('setting-starboardThreshold')?.value || '3';
+            const emoji = document.getElementById('setting-starboardEmoji')?.value || '⭐';
+            const embedColor = document.getElementById('setting-starboardEmbedColor')?.value || '#FFD700';
+            
+            const webhookEnabled = document.getElementById('setting-starboardWebhookEnabled')?.checked;
+            const webhookName = document.getElementById('setting-starboardWebhookName')?.value || 'Nora';
+            const webhookAvatar = document.getElementById('setting-starboardWebhookAvatar')?.value;
+
+            // Render Header Count
+            const countEl = document.getElementById('starboard-preview-count');
+            if (countEl) {
+                countEl.innerHTML = `${emoji} ${threshold} | #general`;
+            }
+
+            // Render Bot Name & Avatar
+            const nameEl = document.getElementById('starboard-preview-botname');
+            const avatarEl = document.getElementById('starboard-preview-avatar');
+            if (nameEl) nameEl.textContent = webhookEnabled && webhookName ? webhookName : 'Nora';
+            if (avatarEl && webhookEnabled && webhookAvatar) {
+                avatarEl.src = webhookAvatar;
+            } else if (avatarEl) {
+                avatarEl.src = 'nora.png';
+            }
+
+            // Render Embed Color
+            const embedEl = document.getElementById('starboard-preview-embed');
+            if (embedEl) {
+                embedEl.style.borderLeftColor = embedColor.startsWith('#') ? embedColor : `#${embedColor}`;
+            }
+        };
 
         // Apps Builder Pro Sub-Navigation & Dynamic Live Simulator Sync
         window.switchAppsSubtab = function(sub) {
