@@ -3352,3 +3352,50 @@ router.post('/applications/:appId/send-panel', async (req, res) => {
 });
 
 module.exports = router;
+
+
+/**
+ * GET /api/guilds/:guildId/security-logs
+ * Returns audit records of blocked content, AutoMod actions, anti-raid triggers.
+ */
+router.get('/security-logs', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const cases = await Case.findAll({
+            where: { guildId },
+            order: [['createdAt', 'DESC']],
+            limit: 50
+        });
+
+        const guild = req.client.guilds.cache.get(guildId);
+
+        const logs = await Promise.all(cases.map(async (c) => {
+            let userName = `User (${c.userId})`;
+            let userAvatar = `https://cdn.discordapp.com/embed/avatars/${parseInt(c.userId || '0') % 5}.png`;
+
+            if (guild) {
+                const member = guild.members.cache.get(c.userId) || await guild.members.fetch(c.userId).catch(() => null);
+                if (member) {
+                    userName = member.user.tag || member.user.username;
+                    userAvatar = member.user.displayAvatarURL({ dynamic: true, size: 64 }) || userAvatar;
+                }
+            }
+
+            return {
+                id: c.id,
+                timestamp: c.createdAt,
+                userId: c.userId,
+                username: userName,
+                avatar: userAvatar,
+                action: c.type || 'AUTOMOD_BLOCK',
+                reason: c.reason || 'AutoMod Enforcement',
+                moderatorId: c.moderatorId || 'System'
+            };
+        }));
+
+        res.json({ logs, total: logs.length });
+    } catch (e) {
+        console.error('Error fetching security logs:', e);
+        res.status(500).json({ error: e.message, logs: [] });
+    }
+});
