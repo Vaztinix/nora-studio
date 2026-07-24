@@ -7174,41 +7174,89 @@
             }
         }
 
+        async function saveUserProfile() {
+            const bioBox = document.getElementById('user-pref-bio');
+            const roBox = document.getElementById('user-pref-robloxPublic');
+            const pubBox = document.getElementById('user-pref-profilePublic');
+            const dmNotifBox = document.getElementById('user-pref-dmNotificationsEnabled');
+            const dmLevelsBox = document.getElementById('user-pref-dmNotifLevels');
+            const dmModBox = document.getElementById('user-pref-dmNotifModeration');
+            const dmBroadBox = document.getElementById('user-pref-dmNotifBroadcasts');
+            const langBox = document.getElementById('pref-language');
+
+            const bio = bioBox ? bioBox.value : '';
+            const robloxPublic = roBox ? roBox.checked : true;
+            const profilePublic = pubBox ? pubBox.checked : true;
+            const dmNotificationsEnabled = dmNotifBox ? dmNotifBox.checked : false;
+            const dmNotifLevels = dmLevelsBox ? dmLevelsBox.checked : false;
+            const dmNotifModeration = dmModBox ? dmModBox.checked : false;
+            const dmNotifBroadcasts = dmBroadBox ? dmBroadBox.checked : false;
+            const language = langBox ? langBox.value : 'en';
+
+            const t = sessionStorage.getItem('discord_token');
+            if (typeof toggleLoading === 'function') toggleLoading(true);
+            try {
+                await safeFetch('/api/user/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({
+                        bio,
+                        robloxPublic,
+                        profilePublic,
+                        dmNotificationsEnabled,
+                        dmNotifLevels,
+                        dmNotifModeration,
+                        dmNotifBroadcasts,
+                        language
+                    })
+                });
+                showToast('Profile changes saved successfully!', 'success');
+            } catch (e) {
+                console.error('[Save Profile Error]:', e);
+                showToast(`Failed to save profile: ${e.message}`, 'error');
+            } finally {
+                if (typeof toggleLoading === 'function') toggleLoading(false);
+            }
+        }
+        window.saveUserProfile = saveUserProfile;
+
         async function linkRoblox() {
-            const username = document.getElementById('roblox-link-username').value;
-            if (!username) return alert('Please enter a Roblox username.');
+            const usernameInput = document.getElementById('roblox-link-username');
+            const username = usernameInput ? usernameInput.value.trim() : '';
+            if (!username) return showToast('Please enter a Roblox username.', 'warning');
             
             const t = sessionStorage.getItem('discord_token');
-            const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/link', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
-                body: JSON.stringify({ username })
-            });
-            const d = await res.json();
-            if (res.ok) {
-                addNotification('Roblox Link Started', `Link initiated for user: ${username}. Please verify in-game.`, 'info', 'System');
+            if (typeof toggleLoading === 'function') toggleLoading(true);
+            try {
+                const { data: d } = await safeFetch('/api/user/roblox/link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({ username })
+                });
+                showToast(`Roblox link initiated for @${username}!`, 'success');
+                addNotification('Roblox Link Started', `Link initiated for user: ${username}. Please verify.`, 'info', 'System');
                 fetchRobloxStatus(t);
-                document.getElementById('roblox-link-username').value = '';
+                if (usernameInput) usernameInput.value = '';
+            } catch (e) {
+                console.error('[Roblox Link Error]:', e);
+                showToast(`Failed to link account: ${e.message}`, 'error');
+            } finally {
+                if (typeof toggleLoading === 'function') toggleLoading(false);
             }
-            else alert(d.error || 'Failed to link account.');
         }
+        window.linkRoblox = linkRoblox;
 
         async function toggleRobloxActive(robloxId) {
             logToTerminal(`Toggling active Roblox profile to: ${robloxId}`, 'ROBLOX_ACTIVATE');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/accounts/toggle', {
+                const { data: d } = await safeFetch('/api/user/roblox/accounts/toggle', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ robloxId })
                 });
-                const d = await res.json();
-                if (res.ok) {
-                    showToast('Active Roblox profile updated!', 'success');
-                    fetchRobloxStatus(t);
-                } else {
-                    alert(d.error || 'Failed to toggle active profile.');
-                }
+                showToast('Active Roblox profile updated!', 'success');
+                fetchRobloxStatus(t);
             } catch (e) {
                 console.error('[Roblox Active Toggle Error]:', e);
                 showToast(`Error: ${e.message}`, 'error');
@@ -7219,19 +7267,14 @@
             logToTerminal(`Verifying Roblox account ID: ${robloxId}`, 'ROBLOX_VERIFY');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/check', {
+                const { data: d } = await safeFetch('/api/user/roblox/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ robloxId })
                 });
-                const d = await res.json();
-                if (res.ok) {
-                    showToast('Account successfully verified!', 'success');
-                    addNotification('Roblox Verified', `Your Roblox account "${d.robloxUsername}" has been successfully linked and verified.`, 'success', 'System');
-                    fetchRobloxStatus(t);
-                } else {
-                    alert(d.error || 'Verification failed. Make sure the code is in your Roblox description.');
-                }
+                showToast('Account successfully verified!', 'success');
+                addNotification('Roblox Verified', `Your Roblox account "${d.robloxUsername || robloxId}" has been successfully linked and verified.`, 'success', 'System');
+                fetchRobloxStatus(t);
             } catch (e) {
                 console.error('[Roblox Check Error]:', e);
                 showToast(`Error: ${e.message}`, 'error');
@@ -7243,18 +7286,13 @@
             logToTerminal(`Unlinking Roblox account ID: ${robloxId}`, 'ROBLOX_UNLINK');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/unlink', {
+                await safeFetch('/api/user/roblox/unlink', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ robloxId })
                 });
-                if (res.ok) {
-                    showToast('Roblox account unlinked.', 'info');
-                    fetchRobloxStatus(t);
-                } else {
-                    const d = await res.json().catch(() => ({}));
-                    alert(d.error || 'Failed to unlink account.');
-                }
+                showToast('Roblox account unlinked.', 'info');
+                fetchRobloxStatus(t);
             } catch (e) {
                 console.error('[Roblox Unlink Error]:', e);
                 showToast(`Error: ${e.message}`, 'error');
