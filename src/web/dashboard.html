@@ -6335,6 +6335,7 @@
             const pairCode = fragment.get('pair');
             if (accessToken) { 
                 sessionStorage.setItem('discord_token', accessToken); 
+                localStorage.setItem('nora_discord_token', accessToken);
                 window.history.replaceState(null, null, window.location.pathname); 
                 authenticateWithToken(accessToken); 
             } else if (pairCode) {
@@ -6345,18 +6346,22 @@
                 document.getElementById('pairing-code-input').value = pairCode;
                 submitPairingCode();
             } else { 
-                const tok = sessionStorage.getItem('discord_token'); 
-                if (tok) authenticateWithToken(tok); 
-                else {
+                const tok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token'); 
+                if (tok) {
+                    sessionStorage.setItem('discord_token', tok);
+                    authenticateWithToken(tok); 
+                } else {
                     authOverlay.style.display = 'flex';
                     authOverlay.style.opacity = '1';
+                    const userProfileBtn = document.getElementById('user-profile-btn');
+                    if (userProfileBtn) userProfileBtn.onclick = () => window.location.href = discordLoginURL;
                 }
             }
 
             const loginBtn = document.getElementById('login-btn');
             if (loginBtn) loginBtn.onclick = () => window.location.href = discordLoginURL;
             const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) logoutBtn.onclick = () => { sessionStorage.clear(); localStorage.removeItem('nora_last_user_id'); window.location.reload(); };
+            if (logoutBtn) logoutBtn.onclick = () => { sessionStorage.clear(); localStorage.removeItem('nora_discord_token'); localStorage.removeItem('nora_last_user_id'); window.location.reload(); };
             const backToServersBtn = document.getElementById('back-to-servers');
             if (backToServersBtn) backToServersBtn.onclick = () => showTab('servers');
         });
