@@ -119,6 +119,23 @@ const UserPrefs = sequelize.define('UserPrefs', {
         defaultValue: null
     },
     // ---- Member Card & Image Customization ----
+    showAvatarInRankCard: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    rankCardThemeMode: {
+        type: DataTypes.STRING,
+        defaultValue: 'preset' // 'preset', 'custom', 'image'
+    },
+    rankCardCustomColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#4f46e5'
+    },
+    rankCardBackgroundImage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
     customRankCardBg: {
         type: DataTypes.TEXT,
         allowNull: true,

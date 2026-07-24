@@ -1443,7 +1443,7 @@ app.post('/api/user/profile', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
         
-        const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts, displayName } = req.body;
+        const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts, displayName, showAvatarInRankCard, rankCardThemeMode, rankCardCustomColor, rankCardBackgroundImage } = req.body;
         if (robloxPublic !== undefined) prefs.robloxPublic = robloxPublic;
         if (profilePublic !== undefined) prefs.profilePublic = profilePublic;
         if (bio !== undefined) prefs.bio = bio;
@@ -1452,6 +1452,10 @@ app.post('/api/user/profile', async (req, res) => {
         if (dmNotifLevels !== undefined) prefs.dmNotifLevels = dmNotifLevels;
         if (dmNotifModeration !== undefined) prefs.dmNotifModeration = dmNotifModeration;
         if (dmNotifBroadcasts !== undefined) prefs.dmNotifBroadcasts = dmNotifBroadcasts;
+        if (showAvatarInRankCard !== undefined) prefs.showAvatarInRankCard = showAvatarInRankCard;
+        if (rankCardThemeMode !== undefined) prefs.rankCardThemeMode = rankCardThemeMode;
+        if (rankCardCustomColor !== undefined) prefs.rankCardCustomColor = rankCardCustomColor;
+        if (rankCardBackgroundImage !== undefined) prefs.rankCardBackgroundImage = rankCardBackgroundImage;
         if (language !== undefined) {
             prefs.language = language;
             prefs.customTheme = language;

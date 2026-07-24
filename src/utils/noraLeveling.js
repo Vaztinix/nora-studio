@@ -6,9 +6,9 @@ const UserLevel = require('../database/models/UserLevel');
 
 const NORA_CONFIG = {
     COOLDOWN: 15000, // 15s cooldown for text
-    XP_RANGE: [15, 25], // XP reward range
-    VOICE_TICK: 300000, // 5 minute tick
-    VOICE_XP: 150, 
+    XP_RANGE: [15, 25], // XP reward range per text message
+    VOICE_TICK: 300000, // 300 seconds (5 minute interval)
+    VOICE_XP: 50, // 50 Voice XP default per 300s interval
     // Nora Standard Curve: 15*L^2 + 100*L + 100
     getXPNeeded: (lvl) => 15 * Math.pow(lvl, 2) + 100 * lvl + 100,
     getTotalXP: (lvl) => {
