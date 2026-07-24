@@ -123,9 +123,7 @@
         }
 
         /* Ticket King Layout - Sidebar toggling */
-        body:not(.in-config) .sidebar {
-            display: none !important;
-        }
+        body .sidebar { display: none !important; }
         body:not(.in-config) .sidebar-backdrop {
             display: none !important;
         }
@@ -150,12 +148,7 @@
         }
 
         /* Show global nav links only when not in config view */
-        body:not(.in-config) #global-nav-links {
-            display: flex !important;
-        }
-        body.in-config #global-nav-links {
-            display: none !important;
-        }
+        #global-nav-links { display: flex !important; align-items: center; gap: 10px; }
 
         /* Global Nav Button styling */
         .global-nav-btn {
@@ -2495,7 +2488,7 @@
                 <span id="breadcrumb-tab-name" style="color: #fff; font-weight: 600;">Dashboard</span>
             </div>
             <!-- Global Nav Links (Ticket King Layout) -->
-            <div id="global-nav-links" style="display: none; align-items: center; gap: 10px;">
+            <div id="global-nav-links" style="display: flex; align-items: center; gap: 10px;">
                 <button onclick="showTab('servers')" class="global-nav-btn active" data-tab="servers"><i class="fas fa-server"></i> Servers</button>
                 <button onclick="showTab('profile')" class="global-nav-btn" data-tab="profile"><i class="fas fa-user-circle"></i> Profile</button>
                 <button onclick="showTab('notifications')" class="global-nav-btn" data-tab="notifications">
