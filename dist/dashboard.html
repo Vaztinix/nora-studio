@@ -3547,6 +3547,13 @@
                         </div>
 
                     </div>
+
+                    <div id="overview-topgg-analytics" style="display: none; margin-top: 25px;">
+                        <div class="panel">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3>Vote Tracker Analytics</h3>
+                                <span class="badge-user" style="background: var(--primary); color: #000; margin: 0;">TOP.GG</span>
+                            </div>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                                 <div style="background: rgba(174, 239, 255, 0.05); border: 1px solid rgba(174, 239, 255, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
                                     <span style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Daily Votes</span>
@@ -4616,123 +4623,41 @@
                     </div>
                 </div>
 
-                
                 <div id="tab-tickets" class="tab-content" style="display: none;">
-                    <div class="hero-banner" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(79, 70, 229, 0.1) 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 24px; padding: 35px; margin-bottom: 30px; position: relative; overflow: hidden; backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between;">
-                        <div style="position: relative; z-index: 2; max-width: 600px;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                <span class="badge beta" style="background: rgba(168, 85, 247, 0.2); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3);">Support Ticketing v2.5</span>
-                            </div>
-                            <h1 style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 10px; letter-spacing: -0.02em;">Support Ticket System</h1>
-                            <p style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; line-height: 1.5;">Configure private support ticket desks, automated staff routing, auto-archiving, and embed button panels.</p>
-                        </div>
-                        <i class="fas fa-ticket-alt" style="font-size: 5.5rem; position: absolute; right: 35px; top: 50%; transform: translateY(-50%) rotate(10deg); opacity: 0.12; color: #fff;"></i>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 30px; align-items: start;">
-                        <!-- Left Column: Settings & Customization -->
-                        <div style="display: flex; flex-direction: column; gap: 24px;">
-                            <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                                <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-cog" style="color: #a855f7;"></i> Core Setup & Routing</h3>
-                                
-                                <div class="input-group" style="margin-bottom: 18px;">
-                                    <label style="font-weight: 600; color: #fff; display: flex; justify-content: space-between; margin-bottom: 6px;">
-                                        <span>Ticket Category (Where tickets are created)</span>
-                                        <span style="font-size: 0.72rem; color: var(--muted);">Select Category</span>
-                                    </label>
-                                    <select id="setting-ticketCategoryId" style="width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; border-radius: 10px;">
-                                        <option value="">Select category...</option>
-                                    </select>
-                                </div>
-
-                                <div class="input-group" style="margin-bottom: 18px;">
-                                    <label style="font-weight: 600; color: #fff; margin-bottom: 6px;">Ticket Panel Channel</label>
-                                    <select id="setting-ticketChannelId" style="width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; border-radius: 10px;">
-                                        <option value="">Select channel...</option>
-                                    </select>
-                                </div>
-
-                                <div style="background: rgba(0,0,0,0.15); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                                    <div style="display: flex; align-items: center; gap: 12px;">
-                                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
-                                            <i class="fas fa-history"></i>
-                                        </div>
-                                        <div>
-                                            <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">Auto-Archive Inactive Tickets</div>
-                                            <div style="font-size: 0.78rem; color: var(--muted);">Automatically close ticket channels after 24 hours of inactivity.</div>
-                                        </div>
-                                    </div>
-                                    <label class="switch"><input type="checkbox" id="setting-ticketAutoArchive"><span class="slider"></span></label>
-                                </div>
-
-                                <div class="input-group" style="margin-bottom: 20px;">
-                                    <label style="font-weight: 600; color: #fff; margin-bottom: 6px;">Ticket Counter (Last Number)</label>
-                                    <div style="display: flex; gap: 10px; align-items: center;">
-                                        <input type="number" id="setting-ticketLastNumber" value="0" min="0" style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; border-radius: 8px;">
-                                        <button type="button" class="config-btn" style="width: auto; padding: 10px 16px; font-size: 0.8rem;" onclick="document.getElementById('setting-ticketLastNumber').value = '0'; updateTicketPreview();">Reset to 0</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                                <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-palette" style="color: #a855f7;"></i> Panel Embed Customization</h3>
-                                
-                                <div class="input-group" style="margin-bottom: 16px;">
-                                    <label style="font-weight: 600; color: #fff;">Embed Title</label>
-                                    <input type="text" id="setting-ticketEmbedTitle" value="Support Center" placeholder="Support Center" style="width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; border-radius: 10px;" oninput="updateTicketPreview()">
-                                </div>
-                                
-                                <div class="input-group" style="margin-bottom: 16px;">
-                                    <label style="font-weight: 600; color: #fff;">Embed Description</label>
-                                    <textarea id="setting-ticketEmbedDesc" placeholder="Need assistance? Select a topic below..." style="width: 100%; box-sizing: border-box; min-height: 90px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; border-radius: 10px;" oninput="updateTicketPreview()">Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.</textarea>
-                                </div>
-
-                                <div class="input-group" style="margin-bottom: 20px;">
-                                    <label style="font-weight: 600; color: #fff;">Embed Accent Color</label>
-                                    <div style="display: flex; gap: 10px; align-items: center;">
-                                        <input type="color" id="setting-ticketEmbedColor" value="#a855f7" style="height: 40px; width: 50px; background: none; border: none; cursor: pointer;" onchange="updateTicketPreview()">
-                                        <input type="text" id="setting-ticketEmbedColor-text" value="#a855f7" style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; border-radius: 8px; font-family: monospace;" oninput="document.getElementById('setting-ticketEmbedColor').value=this.value; updateTicketPreview();">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Column: Live Discord Ticket Embed Simulator -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); sticky; top: 100px;">
-                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-eye" style="color: #a855f7;"></i> Live Interactive Discord Embed</h3>
+                    <div style="display: flex; flex-direction: column; gap: 25px;">
+                        <!-- Top Block: Interactive Live Preview -->
+                        <div class="panel">
+                            <h3>Interactive Ticket Preview</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                Live preview of the ticketing panel in Discord. Click the buttons to test the intake modal form.
+                            </p>
                             
-                            <div style="background: #313338; border-radius: 12px; padding: 20px; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4); text-align: left;">
-                                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                                    <img src="nora.png" style="width: 40px; height: 40px; border-radius: 50%;">
-                                    <div>
-                                        <div style="display: flex; align-items: center; gap: 6px;">
-                                            <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">Nora</span>
-                                            <span style="background: #5865F2; color: #fff; font-size: 0.6rem; padding: 1px 4px; border-radius: 3px; font-weight: 700;">BOT</span>
-                                            <span style="font-size: 0.72rem; color: #949ba4;">Today at 12:00 PM</span>
+                            <div class="discord-preview-container" style="background: #313338; border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); font-family: sans-serif;">
+                                <div class="discord-msg" style="display: flex; gap: 15px;">
+                                    <img class="discord-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0;">
+                                    <div class="discord-content" style="flex: 1;">
+                                        <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
+                                            <span>Nora</span>
+                                            <span class="discord-bot-tag" style="background: #5865F2; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; text-transform: uppercase;">APP</span>
                                         </div>
                                         
-                                        <!-- Embed Card -->
-                                        <div id="mock-ticket-embed" style="margin-top: 8px; background: #2b2d31; border-left: 4px solid #a855f7; border-radius: 4px; padding: 16px; width: 100%; box-sizing: border-box;">
-                                            <h4 id="mock-ticket-title" style="margin: 0 0 8px 0; font-size: 1rem; color: #fff; font-weight: 700;">Support Center</h4>
-                                            <p id="mock-ticket-desc" style="margin: 0; font-size: 0.85rem; color: #dbdee1; line-height: 1.4; white-space: pre-wrap;">Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.</p>
+                                        <!-- Embed Box -->
+                                        <div id="ticket-preview-embed" class="discord-embed" style="background: #2b2d31; border-left: 4px solid #ffffff; padding: 12px; margin-top: 8px; border-radius: 4px; max-width: 520px; box-sizing: border-box;">
+                                            <div id="ticket-preview-title" class="discord-embed-title" style="color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 6px;">Support Center</div>
+                                            <div id="ticket-preview-desc" class="discord-embed-desc" style="color: #dbdee1; font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap;">Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.</div>
+                                            <div style="font-size: 0.72rem; color: #949ba4; margin-top: 8px;">Support Ticketing System</div>
                                         </div>
-
-                                        <!-- Embed Action Buttons -->
-                                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
-                                            <button type="button" style="background: #5865F2; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-headset"></i> General Support</button>
-                                            <button type="button" style="background: #da373c; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-flag"></i> Report Member</button>
-                                            <button type="button" style="background: #4e5058; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-undo"></i> Appeal Punishment</button>
+                                        
+                                        <!-- Buttons Row -->
+                                        <div id="ticket-preview-buttons" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                                            <button id="preview-btn-support" class="discord-btn discord-btn-primary" onclick="showMockTicketModal('Support')">Support</button>
+                                            <button id="preview-btn-reporting" class="discord-btn discord-btn-danger" onclick="showMockTicketModal('Reporting')">Reporting</button>
+                                            <button id="preview-btn-appeals" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Appeals')">Appeals</button>
+                                            <button id="preview-btn-other" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Other')">Other</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-top: 20px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: #a855f7;"></i> Save your settings in the top toolbar before spawning your panel.</p>
-                            <button class="save-btn" style="margin-top: 15px; width: 100%; padding: 14px; font-size: 0.95rem; font-weight: 800; background: #ffffff !important; color: #000000 !important; box-shadow: 0 4px 15px rgba(255,255,255,0.2);" onclick="triggerAction('spawn_tickets', this)">Spawn Ticket Panel</button>
-                        </div>
-                    </div>
-                </div>
-
                         </div>
 
                         <!-- Bottom Block: Controls -->
