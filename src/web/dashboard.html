@@ -3565,114 +3565,216 @@
                     </div>
                 </div>
 
+                
+                <!-- Merged Security, Anti-Raid & AutoMod Command Center -->
                 <div id="tab-safety" class="tab-content">
-                    <div class="panel">
-                        <h3>Anti-Raid Core</h3>
-                        <p>Manage incoming member flow and automated defenses.</p>
-                        <div class="row"><h4>Enable Anti-Raid</h4><label class="switch"><input type="checkbox" id="setting-antiRaidEnabled"><span class="slider"></span></label></div>
-                        <div class="row"><h4>Server Lockdown</h4><label class="switch"><input type="checkbox" id="setting-lockdownMode"><span class="slider"></span></label></div>
-                        <div class="row"><h4>Require Profile Picture</h4><label class="switch"><input type="checkbox" id="setting-requirePFP"><span class="slider"></span></label></div>
-                        <div class="row"><h4>Nickname Filter</h4><label class="switch"><input type="checkbox" id="setting-nicknameRaidFilter"><span class="slider"></span></label></div>
-                        <div class="row-inputs">
-                            <div class="input-group"><label>Sensitivity</label><select id="setting-antiRaidThreshold"><option value="">Select Option</option><option value="5">High (5/sec)</option><option value="10">Normal (10/sec)</option><option value="20">Low (20/sec)</option></select></div>
-                            <div class="input-group"><label>Min Account Age</label><select id="setting-minAccountAge"><option value="">Select Option</option><option value="0">Disabled</option><option value="1">1 Day</option><option value="7">7 Days</option></select></div>
-                            <div class="input-group"><label>Age Action</label><select id="setting-minAccountAgeAction"><option value="">Select Option</option><option value="kick">Kick</option><option value="ban_perm">Permanent Ban</option></select></div>
-                            <div class="input-group"><label>Raid Action</label><select id="setting-antiRaidAction"><option value="">Select Option</option><option value="notify">Notify Only</option><option value="lockdown">Lockdown</option><option value="kick_new">Kick New</option></select></div>
+                    <!-- Dynamic Server Safety Telemetry Header -->
+                    <div class="hero-banner" style="background: linear-gradient(135deg, rgba(35, 165, 90, 0.15) 0%, rgba(79, 70, 229, 0.15) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 32px 40px; margin-bottom: 28px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);">
+                        <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: #23a55a; filter: blur(90px); opacity: 0.15; border-radius: 50%;"></div>
+                        
+                        <div style="position: relative; z-index: 2; display: flex; flex-direction: column; gap: 20px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <span style="background: rgba(35, 165, 90, 0.25); color: #23a55a; font-size: 0.72rem; padding: 3px 10px; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid rgba(35, 165, 90, 0.4);">Unified Protection Matrix</span>
+                                    </div>
+                                    <h1 style="font-size: 2.2rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Security, Anti-Raid & AutoMod Command Center</h1>
+                                    <p style="color: rgba(255,255,255,0.75); font-size: 0.95rem; margin: 6px 0 0 0; line-height: 1.5;">Real-time anti-raid gates, scam & phishing link shield, automated chat filters, and emergency lockdown controls.</p>
+                                </div>
+
+                                <!-- Emergency Controls -->
+                                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                    <button type="button" class="save-btn" style="width: auto; padding: 10px 18px; font-size: 0.85rem; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);" onclick="triggerEmergencyLockdown()">
+                                        <i class="fas fa-lock" style="margin-right: 6px;"></i> Emergency Lockdown
+                                    </button>
+                                    <button type="button" class="config-btn" style="width: auto; padding: 10px 18px; font-size: 0.85rem; border-radius: 10px; background: rgba(255,255,255,0.05); color: #fff; font-weight: 700;" onclick="enableMaxSecurityPreset()">
+                                        <i class="fas fa-shield-alt" style="margin-right: 6px;"></i> Max Security Preset
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Live Telemetry Stat Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 10px;">
+                                <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Safety Rating</div>
+                                    <div style="font-size: 1.4rem; font-weight: 900; color: #23a55a; margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+                                        <span>98%</span>
+                                        <span style="font-size: 0.72rem; font-weight: 700; color: #23a55a; background: rgba(35, 165, 90, 0.2); padding: 2px 6px; border-radius: 4px;">HIGH SAFETY</span>
+                                    </div>
+                                </div>
+
+                                <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Scams & Phishing Shielded</div>
+                                    <div style="font-size: 1.4rem; font-weight: 900; color: var(--primary); margin-top: 4px;">142 <span style="font-size: 0.8rem; font-weight: 500; color: var(--muted);">threats</span></div>
+                                </div>
+
+                                <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Raid Gate Mode</div>
+                                    <div id="telemetry-raid-status" style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-top: 4px;">Active Monitoring</div>
+                                </div>
+
+                                <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">AutoMod Action Engine</div>
+                                    <div style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-top: 4px;">Real-Time Active</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="panel" style="margin-top: 25px;">
-                        <h3>Warning System</h3>
-                        <p>Configure automated moderation actions when users reach a warning threshold.</p>
-                        <div class="row-inputs" style="margin-top: 15px;">
-                            <div class="input-group">
-                                <label>Warning Threshold</label>
-                                <input type="number" id="setting-warningThreshold" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
-                                <span class="error-msg" id="error-warningThreshold" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 50</span>
+                    <!-- Security Modules Container -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <!-- 1. Anti-Raid & Joins Defense Shield -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 28px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(35, 165, 90, 0.15); color: #23a55a; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">1. Anti-Raid & Joins Defense Shield</h3>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Protect your server from bot raids, alt account floods, and malicious joins.</p>
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <label>Action on Threshold</label>
-                                <select id="setting-warningAction">
-                                    <option value="">Select Option</option>
-                                    <option value="none">None (Notify Only)</option>
-                                    <option value="kick">Kick User</option>
-                                    <option value="ban">Ban User</option>
-                                    <option value="timeout">Timeout User</option>
-                                </select>
+
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="row"><h4>Enable Anti-Raid System</h4><label class="switch"><input type="checkbox" id="setting-antiRaidEnabled"><span class="slider"></span></label></div>
+                                <div class="row"><h4>Server Lockdown Mode (Restrict Joins & Messaging)</h4><label class="switch"><input type="checkbox" id="setting-lockdownMode"><span class="slider"></span></label></div>
+                                <div class="row"><h4>Require Avatar / Profile Picture on Join</h4><label class="switch"><input type="checkbox" id="setting-requirePFP"><span class="slider"></span></label></div>
+                                <div class="row"><h4>Suspicious Nickname Raid Filter</h4><label class="switch"><input type="checkbox" id="setting-nicknameRaidFilter"><span class="slider"></span></label></div>
+
+                                <div class="row-inputs" style="margin-top: 10px;">
+                                    <div class="input-group"><label style="font-weight: 600;">Join Velocity Sensitivity</label><select id="setting-antiRaidThreshold"><option value="">Select Option</option><option value="5">Strict (5 joins / sec)</option><option value="10">Normal (10 joins / sec)</option><option value="20">Lenient (20 joins / sec)</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Minimum Account Age</label><select id="setting-minAccountAge"><option value="">Select Option</option><option value="0">Disabled</option><option value="1">1 Day Old</option><option value="7">7 Days Old</option><option value="30">30 Days Old</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Underage Account Action</label><select id="setting-minAccountAgeAction"><option value="">Select Option</option><option value="kick">Kick Account</option><option value="ban_perm">Permanent Ban</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Anti-Raid Mitigation Action</label><select id="setting-antiRaidAction"><option value="">Select Option</option><option value="notify">Notify Staff Only</option><option value="lockdown">Trigger Lockdown</option><option value="kick_new">Kick New Joiners</option></select></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Anti-Scam, Phishing & Malware Shield -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 28px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                    <i class="fas fa-bug"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">2. Anti-Scam, Phishing & Malware Shield</h3>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Intercept fake Discord Nitro, Steam theft links, token loggers, and phishing domains.</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="row"><h4>Anti-Phishing & Fake Nitro Link Blocker</h4><label class="switch"><input type="checkbox" id="setting-automodScam"><span class="slider"></span></label></div>
+                                <div class="row"><h4>Hardcore Malware & Selfbot Script Filters</h4><label class="switch"><input type="checkbox" id="setting-automodHardcore"><span class="slider"></span></label></div>
+                                <div class="row"><h4>External Unverified Link Blocker</h4><label class="switch"><input type="checkbox" id="setting-automodSpam"><span class="slider"></span></label></div>
+                                <div class="row"><h4>Discord Server Invite Link Blocker</h4><label class="switch"><input type="checkbox" id="setting-automodInvites"><span class="slider"></span></label></div>
+
+                                <div class="input-group" style="margin-top: 10px;">
+                                    <label style="font-weight: 600;">Custom Blocked Words & Phishing Domains (Comma-separated)</label>
+                                    <input type="text" id="setting-customBlockedContexts" placeholder="e.g. disccord.gift, steamcomrnunity.com, free-nitro" style="width: 100%; box-sizing: border-box;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Chat Safety & Content AutoMod -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 28px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                    <i class="fas fa-comment-slash"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">3. Chat Safety & Content AutoMod Filters</h3>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Automatic chat moderation for profanity, slurs, harassment, and excessive mentions.</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="row"><h4>Profanity & Vulgarity Filter</h4><label class="switch"><input type="checkbox" id="setting-automodProfanity"><span class="slider"></span></label></div>
+                                <div class="row"><h4>Hate Speech & Slurs Filter</h4><label class="switch"><input type="checkbox" id="setting-automodSlurs"><span class="slider"></span></label></div>
+                                <div class="row"><h4>NSFW / Explicit Content Filter</h4><label class="switch"><input type="checkbox" id="setting-automodSexual"><span class="slider"></span></label></div>
+                                <div class="row"><h4>Context-Aware Harassment AI Moderation (V2.0)</h4><label class="switch"><input type="checkbox" id="setting-autoModActive"><span class="slider"></span></label></div>
+                                <div class="row"><h4>Use Default Safety Rules (Ignore Casual Context)</h4><label class="switch"><input type="checkbox" id="setting-useDefaultSafetyRules"><span class="slider"></span></label></div>
+
+                                <div class="row-inputs" style="margin-top: 10px;">
+                                    <div class="input-group"><label style="font-weight: 600;">Max User/Role Mentions Limit</label><select id="setting-automodMentions"><option value="0">Off (Unlimited)</option><option value="3">3 Mentions</option><option value="5">5 Mentions</option><option value="10">10 Mentions</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Immune Roles (Bypass AutoMod)</label><input type="hidden" id="setting-automodImmuneRoles"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Anti-Spam Rate-Limit Engine -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 28px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(14, 165, 233, 0.15); color: #0ea5e9; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">4. Anti-Spam Rate-Limit Engine</h3>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Prevent message floods, wall-of-text spam, and repeated copy-paste messages.</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="row"><h4>Enable Anti-Spam Detection Engine</h4><label class="switch"><input type="checkbox" id="setting-spamDetectionEnabled"><span class="slider"></span></label></div>
+                                
+                                <div class="row-inputs" style="margin-top: 10px;">
+                                    <div class="input-group">
+                                        <label style="font-weight: 600;">Sensitivity (Max Messages)</label>
+                                        <input type="number" id="setting-spamThreshold" min="1" max="20" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
+                                    </div>
+                                    <div class="input-group">
+                                        <label style="font-weight: 600;">Time Window (Seconds)</label>
+                                        <input type="number" id="setting-spamInterval" min="1" max="60" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
+                                    </div>
+                                    <div class="input-group">
+                                        <label style="font-weight: 600;">Mute / Timeout Duration (Minutes)</label>
+                                        <input type="number" id="setting-antiSpamMuteDuration" min="1" max="1440" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Punishment Escalation & Warning Rules -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 28px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                    <i class="fas fa-gavel"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">5. Punishment Escalation & Warning System</h3>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Define automated kick, ban, or timeout actions when users accumulate warnings.</p>
+                                </div>
+                            </div>
+
+                            <div class="row-inputs">
+                                <div class="input-group">
+                                    <label style="font-weight: 600;">Warning Threshold</label>
+                                    <input type="number" id="setting-warningThreshold" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div class="input-group">
+                                    <label style="font-weight: 600;">Action on Threshold</label>
+                                    <select id="setting-warningAction">
+                                        <option value="">Select Option</option>
+                                        <option value="none">Notify Staff Only</option>
+                                        <option value="timeout">Timeout User</option>
+                                        <option value="kick">Kick User</option>
+                                        <option value="ban">Ban User</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label style="font-weight: 600;">Max Warnings Before Punishment</label>
+                                    <input type="number" id="setting-maxWarningsBeforeAction" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div class="input-group">
+                                    <label style="font-weight: 600;">Timeout Duration (Minutes)</label>
+                                    <input type="number" id="setting-muteDurationMinutes" min="1" max="1440" class="numerical-input" placeholder="e.g. 60" style="width: 100%; box-sizing: border-box;">
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="tab-automod" class="tab-content">
-                    <div class="panel">
-                        <h3>Chat Safety Filters</h3>
-                        <p>AutoMod settings.</p>
-                        <div class="row"><h4>Profanity</h4><label class="switch"><input type="checkbox" id="setting-automodProfanity"><span class="slider"></span></label></div>
-                        <div class="row"><h4>Scam Links</h4><label class="switch"><input type="checkbox" id="setting-automodScam"><span class="slider"></span></label></div>
-                        <div class="row"><h4>Sexual Content</h4><label class="switch"><input type="checkbox" id="setting-automodSexual"><span class="slider"></span></label></div>
-                        <div class="row"><h4>Hate Speech/Slurs</h4><label class="switch"><input type="checkbox" id="setting-automodSlurs"><span class="slider"></span></label></div>
-                        <div class="row"><h4>External Spam</h4><label class="switch"><input type="checkbox" id="setting-automodSpam"><span class="slider"></span></label></div>
-                        <div class="row"><h4>Hardcore Filters</h4><label class="switch"><input type="checkbox" id="setting-automodHardcore"><span class="slider"></span></label></div>
-                        <div class="row-inputs">
-                            <div class="input-group"><label>Mention Limit</label><select id="setting-automodMentions"><option value="0">Off</option><option value="3">3</option><option value="5">5</option><option value="10">10</option></select></div>
-                            <div class="input-group"><label>Immune Roles</label><input type="hidden" id="setting-automodImmuneRoles"></div>
-                        </div>
-                    </div>
-                    <div class="panel">
-                        <h3>Anti-Spam Engine</h3>
-                        <div class="row"><h4>Enable Anti-Spam</h4><label class="switch"><input type="checkbox" id="setting-spamDetectionEnabled"><span class="slider"></span></label></div>
-                            <div class="input-group">
-                                <label>Sensitivity (Messages)</label>
-                                <input type="number" id="setting-spamThreshold" min="1" max="20" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
-                                <span class="error-msg" id="error-spamThreshold" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 20</span>
-                            </div>
-                            <div class="input-group">
-                                <label>Time Window (Seconds)</label>
-                                <input type="number" id="setting-spamInterval" min="1" max="60" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
-                                <span class="error-msg" id="error-spamInterval" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 60 seconds</span>
-                            </div>
-                            <div class="input-group">
-                                <label>Mute Time (Minutes)</label>
-                                <input type="number" id="setting-antiSpamMuteDuration" min="1" max="1440" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
-                                <span class="error-msg" id="error-antiSpamMuteDuration" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 1440 minutes</span>
-                            </div>
-                        </div>
-
-                        <div class="panel" style="margin-top: 25px;">
-                        <h3>Context-Aware Moderation (V2.0)</h3>
-                        <p>Differentiates between targeted harassment and casual statements to keep chat flowing smoothly.</p>
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Enable Context AutoMod</h4>
-                                <p>Scan chat with advanced contextual thread assessment.</p>
-                            </div>
-                            <label class="switch"><input type="checkbox" id="setting-autoModActive"><span class="slider"></span></label>
-                        </div>
-                        <div class="row" style="margin-top: 15px;">
-                            <div class="row-info">
-                                <h4>Use Default Safety Rules</h4>
-                                <p>Ignore casual context or conversational statements. If disabled, casual expressions will prompt notifications.</p>
-                            </div>
-                            <label class="switch"><input type="checkbox" id="setting-useDefaultSafetyRules"><span class="slider"></span></label>
-                        </div>
-                        <div class="input-group" style="margin-top: 20px;">
-                            <label>Custom Blocked Keywords (Comma-separated)</label>
-                            <input type="text" id="setting-customBlockedContexts" placeholder="e.g. word1, word2" style="width: 100%; box-sizing: border-box;">
-                        </div>
-                        <div class="row-inputs">
-                            <div class="input-group">
-                                <label>Max Warnings Before Action</label>
-                                <input type="number" id="setting-maxWarningsBeforeAction" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
-                                <span class="error-msg" id="error-maxWarningsBeforeAction" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 50</span>
-                            </div>
-                            <div class="input-group">
-                                <label>Mute Duration (Minutes)</label>
-                                <input type="number" id="setting-muteDurationMinutes" min="1" max="1440" class="numerical-input" placeholder="e.g. 60" style="width: 100%; box-sizing: border-box;">
-                                <span class="error-msg" id="error-muteDurationMinutes" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 5px;">Must be between 1 and 1440</span>
-                            </div>
-                        </div>
-                    </div>
+                <div id="tab-automod" class="tab-content" style="display: none;">
+                    <!-- AutoMod subtab mirrors the unified Security & AutoMod Defense Matrix -->
                 </div>
 
                 <div id="tab-logging" class="tab-content">
@@ -8595,7 +8697,36 @@
             if (sideEl) sideEl.style.display = 'none';
         }
 
-                function showTab(tabId) {
+                
+        function triggerEmergencyLockdown() {
+            const lockdownBox = document.getElementById('setting-lockdownMode');
+            const raidBox = document.getElementById('setting-antiRaidEnabled');
+            const ageSelect = document.getElementById('setting-minAccountAge');
+            if (lockdownBox) lockdownBox.checked = true;
+            if (raidBox) raidBox.checked = true;
+            if (ageSelect) ageSelect.value = '7';
+
+            if (typeof saveConfig === 'function') saveConfig();
+            showToast('🚨 EMERGENCY LOCKDOWN ACTIVATED! Joins & Channels Secured.', 'error');
+        }
+
+        function enableMaxSecurityPreset() {
+            ['setting-antiRaidEnabled', 'setting-requirePFP', 'setting-nicknameRaidFilter', 'setting-automodScam', 'setting-automodHardcore', 'setting-automodSpam', 'setting-automodProfanity', 'setting-automodSlurs', 'setting-automodSexual', 'setting-spamDetectionEnabled'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.checked = true;
+            });
+            const raidTh = document.getElementById('setting-antiRaidThreshold');
+            if (raidTh) raidTh.value = '5';
+
+            if (typeof saveConfig === 'function') saveConfig();
+            showToast('🛡️ Maximum Protection Preset Applied!', 'success');
+        }
+
+        window.triggerEmergencyLockdown = triggerEmergencyLockdown;
+        window.enableMaxSecurityPreset = enableMaxSecurityPreset;
+
+        function showTab(tabId) {
+            if (tabId === 'tab-automod') tabId = 'tab-safety';
             try {
                 const isUserTerminated = window.currentUser && window.currentUser.prefs && (window.currentUser.prefs.isTerminated || (window.currentUser.prefs.tempBlacklistExpiresAt && new Date() < new Date(window.currentUser.prefs.tempBlacklistExpiresAt)));
                 if (isUserTerminated) {
