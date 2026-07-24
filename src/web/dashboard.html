@@ -8700,9 +8700,10 @@
         window.rawSecurityLogs = [];
 
         function syncRealSecurityStats() {
-            const raidEnabled = document.getElementById('setting-antiRaidEnabled')?.checked;
-            const lockdownActive = document.getElementById('setting-lockdownMode')?.checked;
-            const accountAgeVal = document.getElementById('setting-minAccountAge')?.value;
+            const raidEnabled = !!document.getElementById('setting-antiRaidEnabled')?.checked;
+            const lockdownActive = !!document.getElementById('setting-lockdownMode')?.checked;
+            const accountAgeEl = document.getElementById('setting-minAccountAge');
+            const accountAgeVal = accountAgeEl ? accountAgeEl.value : '';
 
             const statRaid = document.getElementById('real-stat-antiraid');
             if (statRaid) {
@@ -8718,7 +8719,13 @@
 
             const statAge = document.getElementById('real-stat-accountage');
             if (statAge) {
-                statAge.textContent = accountAgeVal && accountAgeVal !== '0' ? `${accountAgeVal} Day(s) Min` : 'Disabled';
+                if (accountAgeVal && accountAgeVal !== '0' && accountAgeVal !== '') {
+                    statAge.textContent = `${accountAgeVal} Day(s) Min Age`;
+                    statAge.style.color = 'var(--primary)';
+                } else {
+                    statAge.textContent = 'Disabled';
+                    statAge.style.color = '#fff';
+                }
             }
         }
 
