@@ -6646,8 +6646,21 @@
         }
         updateToastPos();
 
+        window.getApiBaseUrl = function() {
+            const host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
+                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
+                    ? window.location.origin 
+                    : 'http://localhost:3000';
+            }
+            const localOverride = localStorage.getItem('nora_api_url');
+            if (localOverride) return localOverride;
+            return 'https://api.vaztinix.dev';
+        };
+
         async function safeFetch(url, options = {}) {
-            const res = await fetch(url, options);
+            const targetUrl = url.startsWith('http') ? url : (window.getApiBaseUrl() + url);
+            const res = await fetch(targetUrl, options);
             const text = await res.text();
             
             if (!res.ok) {
