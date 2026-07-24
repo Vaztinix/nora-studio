@@ -6396,7 +6396,7 @@
                     safeStack = safeStack.replace(/#token_type=[^\)]*/g, '#[REDACTED]');
                 }
 
-                await fetch('/api/logs/client', {
+                await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/logs/client', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -6625,7 +6625,7 @@
             try {
                 const headers = { 'Content-Type': 'application/json' };
                 if (t) headers['Authorization'] = `Bearer ${t}`;
-                await fetch('/api/logs/client', {
+                await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/logs/client', {
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify({ message, level: uppercaseLevel, context })
@@ -6964,7 +6964,7 @@
 
         async function fetchRobloxStatus(t) {
             try {
-                const res = await fetch('/api/user/roblox/accounts', { headers: { Authorization: `Bearer ${t}` } });
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/accounts', { headers: { Authorization: `Bearer ${t}` } });
                 if (!res.ok) {
                     const errData = await res.json().catch(() => ({}));
                     throw new Error(errData.error || `HTTP ${res.status}`);
@@ -7016,7 +7016,7 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="position: relative;">
-                                    <img src="/api/user/roblox/avatar?userId=${acc.robloxId}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.src='/api/user/roblox/avatar?userId=1'">
+                                    <img src="https://api.vaztinix.dev/api/user/roblox/avatar?userId=${acc.robloxId}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.src='/api/user/roblox/avatar?userId=1'">
                                     ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">✓</div>' : ''}
                                 </div>
                                 <div>
@@ -7123,7 +7123,7 @@
             const sessionHardened = sessionHardenedEl ? sessionHardenedEl.checked : false;
             
             try {
-                await fetch('/api/user/profile', {
+                await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({
@@ -7132,7 +7132,7 @@
                     })
                 });
 
-                await fetch('/api/user/prefs', {
+                await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/prefs', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ sessionHardened })
@@ -7158,7 +7158,7 @@
             }
             if (!confirm('Activate 3-day server XP boost? This has a 24-hour cooldown once finished.')) return;
             const t = sessionStorage.getItem('discord_token');
-            const res = await fetch(`/api/guilds/${currentServerId}/premium-boost`, {
+            const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/premium-boost`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${t}` }
             });
@@ -7179,7 +7179,7 @@
             if (!username) return alert('Please enter a Roblox username.');
             
             const t = sessionStorage.getItem('discord_token');
-            const res = await fetch('/api/user/roblox/link', {
+            const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/link', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                 body: JSON.stringify({ username })
@@ -7197,7 +7197,7 @@
             logToTerminal(`Toggling active Roblox profile to: ${robloxId}`, 'ROBLOX_ACTIVATE');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch('/api/user/roblox/accounts/toggle', {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/accounts/toggle', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ robloxId })
@@ -7219,7 +7219,7 @@
             logToTerminal(`Verifying Roblox account ID: ${robloxId}`, 'ROBLOX_VERIFY');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch('/api/user/roblox/check', {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ robloxId })
@@ -7243,7 +7243,7 @@
             logToTerminal(`Unlinking Roblox account ID: ${robloxId}`, 'ROBLOX_UNLINK');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch('/api/user/roblox/unlink', {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/unlink', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ robloxId })
@@ -7395,7 +7395,7 @@
             logToTerminal('Fetching user guilds...', 'GUILD_FETCH');
             toggleLoading(true);
             try {
-                const res = await fetch('/api/user/guilds', { headers: { Authorization: `Bearer ${t}` } });
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/guilds', { headers: { Authorization: `Bearer ${t}` } });
                 const guilds = await res.json();
                 
                 if (guilds.error) {
@@ -7430,7 +7430,7 @@
             if (!confirm('Are you sure you want to unlink this bot? This will delete all webhook tracking connections.')) return;
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/user/topgg/bots/${botId}`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/topgg/bots/${botId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -7450,7 +7450,7 @@
             if (!confirm('Are you sure you want to unlink this server? This will delete all webhook tracking connections.')) return;
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/user/topgg/servers/${serverId}`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/topgg/servers/${serverId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -7603,7 +7603,7 @@
             const t = sessionStorage.getItem('discord_token');
             logToTerminal(`Attempting to save settings for ${currentServerId}`, 'SAVE_START', payload);
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/settings`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/settings`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -8405,7 +8405,7 @@
             const auth = sessionStorage.getItem('discord_token');
             if (auth) {
                 try {
-                    await fetch('/api/user/profile', {
+                    await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/profile', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${auth}`,
@@ -8795,7 +8795,7 @@
             if (!confirm('CRITICAL WARNING: This will permanently delete your XP, levels, memory, Roblox connections, and warnings across ALL Nora-connected servers. This is irreversible. Proceed?')) return;
             logToTerminal('Executing global data purge.', 'USER_PURGE');
             const t = sessionStorage.getItem('discord_token');
-            const res = await fetch('/api/user/clear-data', { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
+            const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/clear-data', { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
             if (res.ok) alert('Global data purge complete.');
             else alert('Failed to purge data.');
         }
@@ -8804,7 +8804,7 @@
             if (!confirm('Restart application core? This will take the bot offline for a few seconds.')) return;
             logToTerminal('Owner requested bot RESTART.', 'SYSTEM_ACTION');
             const t = sessionStorage.getItem('discord_token');
-            const res = await fetch('/api/owner/restart', { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
+            const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/owner/restart', { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
             if (res.ok) {
                 alert('Restart signal sent.');
                 addNotification('System Restart', 'Owner initiated a bot restart from the dashboard.', 'warning', 'System');
@@ -8822,7 +8822,7 @@
             
             terminalFeedInterval = setInterval(async () => {
                 try {
-                    const res = await fetch('/api/logs', {
+                    const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/logs', {
                         headers: { Authorization: `Bearer ${sessionStorage.getItem('discord_token')}` }
                     });
                     const logs = await res.json();
@@ -9143,7 +9143,7 @@
                 if (force || now - entry.timestamp >= 30000) {
                     const t = sessionStorage.getItem('discord_token');
                     isFetchingMembers = true;
-                    fetch(`/api/guilds/${currentServerId}/members`, {
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/members`, {
                         headers: { 'Authorization': `Bearer ${t}` }
                     }).then(res => {
                         if (res.status === 429) throw new Error('Rate limit');
@@ -9180,7 +9180,7 @@
             }
 
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/members${force ? '?force=true' : ''}`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/members${force ? '?force=true' : ''}`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 
@@ -9528,7 +9528,7 @@
 
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/members/${userId}/level`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/members/${userId}/level`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ level: parseInt(newLevel), xp: parseInt(newXp) })
@@ -9622,7 +9622,7 @@
                 const entry = window.dashboardCache.analytics.get(cacheKey);
                 if (force || now - entry.timestamp >= CACHE_TTL) {
                     const t = sessionStorage.getItem('discord_token');
-                    fetch(`/api/guilds/${currentServerId}/analytics`, {
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/analytics`, {
                         headers: { 'Authorization': `Bearer ${t}` }
                     }).then(res => res.json()).then(freshData => {
                         window.dashboardCache.analytics.set(cacheKey, { timestamp: Date.now(), data: freshData });
@@ -9638,7 +9638,7 @@
             toggleLoading(true);
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/analytics`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/analytics`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 data = await res.json();
@@ -10103,7 +10103,7 @@
                 const entry = window.dashboardCache.channels.get(cacheKey);
                 if (now - entry.timestamp >= CACHE_TTL) {
                     const t = sessionStorage.getItem('discord_token');
-                    fetch(`/api/guilds/${currentServerId}/channels`, {
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/channels`, {
                         headers: { 'Authorization': `Bearer ${t}` }
                     }).then(res => {
                         if (!res.ok) throw new Error('Failed to fetch channels');
@@ -10119,7 +10119,7 @@
 
             try {
                 const t = sessionStorage.getItem('discord_token');
-                const res = await fetch(`/api/guilds/${currentServerId}/channels`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/channels`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 if (!res.ok) {
@@ -10240,7 +10240,7 @@
             };
 
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/webhook-send`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/webhook-send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionStorage.getItem('discord_token')}` },
                     body: JSON.stringify(data)
@@ -10869,7 +10869,7 @@
 
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${window.currentGuild.id}/reaction-roles/publish`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${window.currentGuild.id}/reaction-roles/publish`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify(body)
@@ -10899,7 +10899,7 @@
             const dmNotifBroadcasts = document.getElementById('user-pref-dmNotifBroadcasts').checked;
 
             try {
-                const res = await fetch('/api/user/profile', {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ 
@@ -10959,7 +10959,7 @@
             const t = sessionStorage.getItem('discord_token');
             if (t) {
                 try {
-                    await fetch('/api/user/profile', {
+                    await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/profile', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                         body: JSON.stringify({ language: val })
@@ -11385,7 +11385,7 @@
             if (!sessions) {
                 const t = sessionStorage.getItem('discord_token');
                 try {
-                    const res = await fetch('/api/user/sessions', {
+                    const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/sessions', {
                         headers: { 'Authorization': `Bearer ${t}` }
                     });
                     if (!res.ok) throw new Error('Failed to fetch sessions');
@@ -11463,7 +11463,7 @@
         async function expireSession(sessionId) {
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/user/sessions/${sessionId}/expire`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/sessions/${sessionId}/expire`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -11484,7 +11484,7 @@
             }
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch('/api/user/sessions/expire-all', {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/sessions/expire-all', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -11558,7 +11558,7 @@
             const t = sessionStorage.getItem('discord_token');
             try {
                 // Fetch bots
-                const res = await fetch(`/api/user/topgg/bots?guildId=${currentServerId}`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/topgg/bots?guildId=${currentServerId}`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 const text = await res.text();
@@ -11575,7 +11575,7 @@
                 }
 
                 // Fetch servers
-                const serversRes = await fetch(`/api/user/topgg/servers`, {
+                const serversRes = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/topgg/servers`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 let serversData = { servers: [] };
@@ -11677,7 +11677,7 @@
             try {
                 const legacyOwnerId = document.getElementById('setting-topggLegacyOwnerId')?.value || '';
                 const token = document.getElementById('setting-topggWebhookAuth')?.value || '';
-                const res = await fetch(`/api/guilds/${currentServerId}/topgg/link`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/topgg/link`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -11758,7 +11758,7 @@
             
             try {
                 if (targetId) {
-                    await fetch(`/api/guilds/${currentServerId}/topgg/unlink`, {
+                    await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/topgg/unlink`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -11772,7 +11772,7 @@
             }
 
             const p = { topggVerified: false, topggBotId: null, topggWebhookAuth: null };
-            const res = await fetch(`/api/guilds/${currentServerId}/settings`, { 
+            const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/settings`, { 
                 method: 'POST', 
                 headers: { 
                     'Content-Type': 'application/json',
@@ -11794,7 +11794,7 @@
             showToast('Sending test notification...', 'info');
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/topgg/test`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/topgg/test`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -11928,7 +11928,7 @@
                 const entry = window.dashboardCache.roles.get(cacheKey);
                 if (now - entry.timestamp >= CACHE_TTL) {
                     const t = sessionStorage.getItem('discord_token');
-                    fetch(`/api/guilds/${currentServerId}/roles`, {
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/roles`, {
                         headers: { 'Authorization': `Bearer ${t}` }
                     }).then(res => {
                         if (!res.ok) throw new Error('Failed to fetch roles');
@@ -11944,7 +11944,7 @@
 
             try {
                 const t = sessionStorage.getItem('discord_token');
-                const res = await fetch(`/api/guilds/${currentServerId}/roles`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/roles`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 if (!res.ok) {
@@ -12565,7 +12565,7 @@
             if (joinBtn) joinBtn.style.display = 'none';
             
             try {
-                const res = await fetch('/api/user/roblox/presence', { headers: { Authorization: `Bearer ${t}` } });
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/presence', { headers: { Authorization: `Bearer ${t}` } });
                 const text = await res.text();
                 let d;
                 try {
@@ -12684,7 +12684,7 @@
                 const entry = window.dashboardCache.settings.get(cacheKey);
                 if (force || now - entry.timestamp >= CACHE_TTL) {
                     const t = sessionStorage.getItem('discord_token');
-                    fetch(`/api/guilds/${currentServerId}/settings`, {
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/settings`, {
                         headers: { 'Authorization': `Bearer ${t}` }
                     }).then(res => {
                         if (!res.ok) throw new Error(`Server returned ${res.status}`);
@@ -12702,7 +12702,7 @@
             toggleLoading(true);
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/settings`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/settings`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 if (!res.ok) throw new Error(`Server returned ${res.status}: ${res.statusText}`);
@@ -12953,7 +12953,7 @@
                 // Fetch Top.gg Connections and populate asset dropdown
                 let guildConns = [];
                 try {
-                    const connRes = await fetch('/api/user/topgg/connections', {
+                    const connRes = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/topgg/connections', {
                         headers: { 'Authorization': `Bearer ${t}` }
                     });
                     if (connRes.ok) {
@@ -13046,7 +13046,7 @@
         async function triggerAction(action, btn) {
             const t = sessionStorage.getItem('discord_token');
             const old = btn.textContent; btn.textContent = "Working...";
-            const res = await fetch(`/api/guilds/${currentServerId}/action`, { 
+            const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/action`, { 
                 method: 'POST', 
                 headers: { 
                     'Content-Type': 'application/json',
@@ -13061,7 +13061,7 @@
         async function fetchPremiumAccess() {
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch('/api/admin/premium', {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/admin/premium', {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -13138,7 +13138,7 @@
             const t = sessionStorage.getItem('discord_token');
             toggleLoading(true);
             try {
-                const res = await fetch('/api/admin/premium/grant', {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/admin/premium/grant', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -13169,7 +13169,7 @@
             const t = sessionStorage.getItem('discord_token');
             toggleLoading(true);
             try {
-                const res = await fetch('/api/admin/premium/revoke', {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/admin/premium/revoke', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -13215,7 +13215,7 @@
                 const entry = window.dashboardCache.feeds.get(cacheKey);
                 if (force || now - entry.timestamp >= CACHE_TTL) {
                     const t = sessionStorage.getItem('discord_token');
-                    fetch(`/api/guilds/${currentServerId}/feeds`, {
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/feeds`, {
                         headers: { 'Authorization': `Bearer ${t}` }
                     }).then(res => {
                         if (!res.ok) throw new Error('Failed to load feeds');
@@ -13231,7 +13231,7 @@
             // No cache — first load
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/feeds`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/feeds`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 if (!res.ok) throw new Error('Failed to load feeds');
@@ -13306,7 +13306,7 @@
             
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/feeds`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/feeds`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -13337,7 +13337,7 @@
             if (!confirm('Are you sure you want to delete this feed?')) return;
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/feeds/${id}`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/feeds/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -13383,7 +13383,7 @@
                 const entry = window.dashboardCache.autoresponders.get(cacheKey);
                 if (now - entry.timestamp >= CACHE_TTL) {
                     const t = sessionStorage.getItem('discord_token');
-                    fetch(`/api/guilds/${currentServerId}/autoresponders`, {
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/autoresponders`, {
                         headers: { 'Authorization': `Bearer ${t}` }
                     }).then(res => {
                         if (!res.ok) throw new Error('Failed to fetch rules');
@@ -13400,7 +13400,7 @@
             // No cache — first load
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/autoresponders`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/autoresponders`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch rules');
@@ -13857,7 +13857,7 @@
             if (!confirm('Are you sure you want to delete this autoresponder rule?')) return;
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/autoresponders/${id}`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/autoresponders/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -14170,8 +14170,8 @@
                 if (now - entry.timestamp >= CACHE_TTL) {
                     const t = sessionStorage.getItem('discord_token');
                     Promise.all([
-                        fetch(`/api/guilds/${currentServerId}/emojis`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json().catch(() => [])),
-                        fetch(`/api/guilds/${currentServerId}/app-emojis`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.ok ? r.json().catch(() => []) : [])
+                        fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/emojis`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json().catch(() => [])),
+                        fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/app-emojis`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.ok ? r.json().catch(() => []) : [])
                     ]).then(([serverEmojis, appEmojis]) => {
                         const freshData = { serverEmojis, appEmojis };
                         window.dashboardCache.emojis.set(cacheKey, { timestamp: Date.now(), data: freshData });
@@ -14186,8 +14186,8 @@
             const t = sessionStorage.getItem('discord_token');
             try {
                 const [serverEmojisRes, appEmojisRes] = await Promise.all([
-                    fetch(`/api/guilds/${currentServerId}/emojis`, { headers: { Authorization: `Bearer ${t}` } }),
-                    fetch(`/api/guilds/${currentServerId}/app-emojis`, { headers: { Authorization: `Bearer ${t}` } })
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/emojis`, { headers: { Authorization: `Bearer ${t}` } }),
+                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/app-emojis`, { headers: { Authorization: `Bearer ${t}` } })
                 ]);
                 const serverEmojis = serverEmojisRes.ok ? await serverEmojisRes.json() : [];
                 const appEmojis = appEmojisRes.ok ? await appEmojisRes.json() : [];
@@ -14537,7 +14537,7 @@
         async function toggleApplicationActive(appId, currentActive) {
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/applications/${appId}/toggle`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/applications/${appId}/toggle`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -14561,7 +14561,7 @@
             if (!confirm('Are you sure you want to delete this application set?')) return;
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/applications/${appId}`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/applications/${appId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
@@ -14580,7 +14580,7 @@
             if (!currentServerId) return;
             const t = sessionStorage.getItem('discord_token');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/applications`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/applications`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
                 if (res.ok) {
@@ -14654,7 +14654,7 @@
             const t = sessionStorage.getItem('discord_token');
             showToast('Saving application set...', 'info');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/applications`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/applications`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -14705,7 +14705,7 @@
             const t = sessionStorage.getItem('discord_token');
             showToast('Sending application panel to channel...', 'info');
             try {
-                const res = await fetch(`/api/guilds/${currentServerId}/applications/${appId}/send-panel`, {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/applications/${appId}/send-panel`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` },
                     body: JSON.stringify({ channelId, embedTitle, embedDescription, buttonLabel })
