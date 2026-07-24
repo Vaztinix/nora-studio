@@ -6171,7 +6171,7 @@
         const REDIRECT_URI = encodeURIComponent(window.location.origin + targetRedirectPath);
         const discordLoginURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify+guilds`;
         
-        const authOverlay = document.getElementById('auth-overlay');
+        let authOverlay = null;
         let viewServers, viewConfig, viewPrefs, viewNotifications, viewProfile;
         let currentServerId = null;
         let currentServerName = "";
@@ -6318,6 +6318,7 @@
         `;
         document.head.appendChild(style);
 
+            authOverlay = document.getElementById('auth-overlay');
             viewServers = document.getElementById('view-greeting');
             viewConfig = document.getElementById('view-config');
             viewPrefs = document.getElementById('view-prefs');
@@ -6901,15 +6902,24 @@
 
                 const expiredOverlay = document.getElementById('session-expired-overlay');
                 if (expiredOverlay) expiredOverlay.style.display = 'none';
-                authOverlay.style.opacity = '0'; 
-                setTimeout(() => { 
-                    authOverlay.style.display = 'none'; 
+                const elAuth = authOverlay || document.getElementById('auth-overlay');
+                if (elAuth) {
+                    elAuth.style.opacity = '0'; 
+                    setTimeout(() => { 
+                        elAuth.style.display = 'none'; 
+                        const sideEl = document.querySelector('.sidebar');
+                        if (sideEl) sideEl.style.display = 'flex';
+                        fetchGuilds(t); 
+                        fetchRobloxStatus(t); 
+                        if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
+                    }, 300);
+                } else {
                     const sideEl = document.querySelector('.sidebar');
                     if (sideEl) sideEl.style.display = 'flex';
                     fetchGuilds(t); 
                     fetchRobloxStatus(t); 
                     if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
-                }, 300);
+                }
             } catch (e) { 
                 console.error('Authentication Error:', e);
                 showToast(`Auth Fault: ${e.message || 'Unknown'}`, 'error');
@@ -6923,12 +6933,16 @@
                 const shouldInvalidateSession = e.status === 401 || e.status === 403;
                 if (shouldInvalidateSession) {
                     sessionStorage.removeItem('discord_token');
+                    localStorage.removeItem('nora_discord_token');
                     localStorage.removeItem('nora_last_user_id');
-                    localStorage.removeItem('nora_auth'); // Clear invalid token to allow fresh login
+                    localStorage.removeItem('nora_auth');
                     window.currentUser = null;
                     loadNotifications();
-                    authOverlay.style.opacity = '1'; 
-                    authOverlay.style.display = 'flex';
+                    const elAuth = authOverlay || document.getElementById('auth-overlay');
+                    if (elAuth) {
+                        elAuth.style.opacity = '1'; 
+                        elAuth.style.display = 'flex';
+                    }
                 }
             } finally {
                 toggleLoading(false);
