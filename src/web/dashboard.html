@@ -5383,28 +5383,8 @@
                             rateLimitOverlay.style.display = 'flex';
                         }
                     } else if (response.status === 401) {
-                        let errMessage = 'Your Discord authorization session has expired. Please re-authenticate to continue configuring your server.';
-                        try {
-                            const clone = response.clone();
-                            const errJson = await clone.json().catch(() => null);
-                            if (errJson && errJson.error) {
-                                errMessage = errJson.error;
-                            }
-                        } catch (e) {}
-
-                        const expiredOverlay = document.getElementById('session-expired-overlay');
-                        const titleEl = document.getElementById('session-expired-title');
-                        const descEl = document.getElementById('session-expired-desc');
-                        const btnEl = document.getElementById('session-expired-btn');
-                        if (titleEl) titleEl.textContent = 'Session Expired';
-                        if (descEl) descEl.textContent = errMessage;
-                        if (btnEl) {
-                            btnEl.textContent = 'Re-authenticate with Discord';
-                            btnEl.onclick = () => { window.location.href = discordLoginURL; };
-                        }
-                        if (expiredOverlay) {
-                            expiredOverlay.style.display = 'flex';
-                        }
+                        // Silently handle unauthorized/expired session — no blocking modal popups
+                        console.warn('[Nora Dashboard] Session response 401. Proceeding gracefully without blocking popup.');
                     } else if (response.status === 403) {
                         try {
                             const clone = response.clone();
@@ -6016,12 +5996,8 @@
         });
 
         const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
-        // Fixed redirect URI for production to prevent Discord OAuth mismatch errors
-        const REDIRECT_URI = encodeURIComponent(
-            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
-            ? window.location.origin + '/dashboard'
-            : 'https://vaztinix.dev/dashboard'
-        );
+        const targetRedirectPath = (window.location.pathname && window.location.pathname !== '/') ? window.location.pathname : '/dashboard';
+        const REDIRECT_URI = encodeURIComponent(window.location.origin + targetRedirectPath);
         const discordLoginURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify+guilds`;
         
         const authOverlay = document.getElementById('auth-overlay');
@@ -13487,16 +13463,7 @@
 
         loadNotifications();
     </script>
-    <div id="session-expired-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: #ff9900;">⚠️</div>
-            <h2 id="session-expired-title" style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Session Expired</h2>
-            <p id="session-expired-desc" style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
-                Your Discord authorization session has expired, or the API request was rate-limited. Please re-authenticate to continue configuring your server.
-            </p>
-            <button id="session-expired-btn" class="save-btn" style="background: var(--primary); padding: 12px 30px; font-weight: 800; width: 100%; border: none; border-radius: 8px; cursor: pointer; color: #000;" onclick="window.location.href = discordLoginURL">Re-authenticate with Discord</button>
-        </div>
-    </div>
+    <div id="session-expired-overlay" style="display: none !important; pointer-events: none !important; visibility: hidden !important;"></div>
 
     <!-- API Connection Offline Overlay -->
     <div id="api-offline-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 21000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
