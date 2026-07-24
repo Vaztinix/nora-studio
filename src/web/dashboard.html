@@ -3140,7 +3140,7 @@
                         <button class="h-tab" data-tab="tab-webhooks"><span><i class="fas fa-network-wired"></i> Webhooks</span><span class="badge stable">v2.1</span></button>
                         
                         <div style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
-                            <button class="save-btn" style="background: var(--primary); color: #0b0b0a; font-weight: 700; font-size: 0.8rem; text-align: center; justify-content: center; box-shadow: 0 0 10px var(--primary-glow);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown"></i> Get Premium</button>
+                            <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-weight: 800; font-size: 0.85rem; text-align: center; justify-content: center; width: 100%; padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown" style="color: #000;"></i> Get Premium</button>
                         </div>
 
                         <!-- Compact System Pulse in Sidebar -->
@@ -4677,95 +4677,274 @@
                 <div id="tab-applications" class="tab-content" style="display: none;">
                     <div style="display: flex; flex-direction: column; gap: 25px;">
                         
-                        <!-- Top Panel: Saved Sets & Form Editor -->
-                        <div class="panel" style="margin: 0; display: flex; flex-direction: column;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h3 style="margin: 0;">📝 Application Builder</h3>
-                                <button id="btn-create-app-set" class="config-btn" style="width: auto; margin: 0; padding: 8px 14px; font-size: 0.8rem; background: var(--primary); color: #0f111a;" onclick="showAppSetEditor(null)">+ Create New Set</button>
-                            </div>
-                            
-                            <!-- 1. Saved Sets List View -->
-                            <div id="app-sets-list-view" style="display: block; flex: 1;">
-                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
-                                    Manage multiple application sets. Active sets are available for members via the `/apply` command.
-                                </p>
-                                <div id="app-sets-container" style="display: flex; flex-direction: column; gap: 12px;">
-                                    <!-- Saved sets injected here dynamically -->
+                        <!-- Top Header & Sub-Navigation -->
+                        <div class="panel" style="margin: 0; background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 25px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                                <div>
+                                    <h2 style="margin: 0; font-size: 1.6rem; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-file-signature" style="color: #ffffff;"></i> Application Builder Pro
+                                        <span class="badge stable" style="background: rgba(255, 255, 255, 0.1); color: #ffffff; border-color: rgba(255, 255, 255, 0.2);">v3.0</span>
+                                    </h2>
+                                    <p style="margin: 6px 0 0 0; font-size: 0.85rem; color: var(--muted);">Build interactive custom Discord application forms, manage applicant submissions, and auto-assign roles upon approval.</p>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button id="btn-create-app-set" class="save-btn" style="width: auto; margin: 0; padding: 10px 20px; font-size: 0.85rem; background: #ffffff !important; color: #000000 !important; font-weight: 800; border-radius: 999px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);" onclick="showAppSetEditor(null)">+ Create New Set</button>
                                 </div>
                             </div>
-                            
-                            <!-- 2. Form Editor View (Hidden by default) -->
-                            <div id="app-set-editor-view" style="display: none; flex: 1; flex-direction: column;">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                                    <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.75rem; margin: 0;" onclick="hideAppSetEditor()">&larr; Back to Sets</button>
-                                    <h4 id="app-editor-title" style="margin: 0;">Create Application Set</h4>
+
+                            <!-- Apps Sub-Tabs Bar -->
+                            <div style="display: flex; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 15px; margin-bottom: 20px; overflow-x: auto;">
+                                <button class="h-tab active" id="app-subtab-builder" onclick="switchAppsSubtab('builder')"><i class="fas fa-hammer"></i> Form Builder</button>
+                                <button class="h-tab" id="app-subtab-submissions" onclick="switchAppsSubtab('submissions')"><i class="fas fa-inbox"></i> Submissions Review <span class="badge" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; margin-left: 6px;">2 Pending</span></button>
+                                <button class="h-tab" id="app-subtab-analytics" onclick="switchAppsSubtab('analytics')"><i class="fas fa-chart-bar"></i> Analytics & Insights</button>
+                            </div>
+
+                            <!-- Template Quick Starters -->
+                            <div id="apps-templates-bar" style="background: rgba(0,0,0,0.2); padding: 15px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px;">
+                                <div style="font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-magic" style="color: #ffffff;"></i> One-Click Template Starters
                                 </div>
-                                
-                                <input type="hidden" id="app-set-id" value="">
-                                
-                                <div class="input-group" style="margin-bottom: 15px;">
-                                    <label>Application Name</label>
-                                    <input type="text" id="app-name" placeholder="e.g. Staff Application" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button type="button" class="btn-outline" style="font-size: 0.78rem; padding: 6px 14px; border-color: rgba(255,255,255,0.15); color: #ffffff; background: rgba(255,255,255,0.04); font-weight: 600;" onclick="loadAppTemplate('staff')">🛡️ Staff Application</button>
+                                    <button type="button" class="btn-outline" style="font-size: 0.78rem; padding: 6px 14px; border-color: rgba(255,255,255,0.15); color: #ffffff; background: rgba(255,255,255,0.04); font-weight: 600;" onclick="loadAppTemplate('mod')">⚔️ Moderator Tryouts</button>
+                                    <button type="button" class="btn-outline" style="font-size: 0.78rem; padding: 6px 14px; border-color: rgba(255,255,255,0.15); color: #ffffff; background: rgba(255,255,255,0.04); font-weight: 600;" onclick="loadAppTemplate('media')">🎥 Content Creator</button>
+                                    <button type="button" class="btn-outline" style="font-size: 0.78rem; padding: 6px 14px; border-color: rgba(255,255,255,0.15); color: #ffffff; background: rgba(255,255,255,0.04); font-weight: 600;" onclick="loadAppTemplate('event')">🎉 Event Host</button>
+                                    <button type="button" class="btn-outline" style="font-size: 0.78rem; padding: 6px 14px; border-color: rgba(255,255,255,0.15); color: #ffffff; background: rgba(255,255,255,0.04); font-weight: 600;" onclick="loadAppTemplate('vip')">⭐ VIP Access</button>
                                 </div>
-                                <div class="input-group" style="margin-bottom: 15px;">
-                                    <label>Description</label>
-                                    <textarea id="app-desc" placeholder="Brief explanation of the position..." style="width: 100%; box-sizing: border-box; min-height: 80px;" oninput="updateAppBuilderPreview(); checkTextareaLimit(this, 500)" maxlength="500"></textarea>
-                                    <span id="app-desc-counter" style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block; text-align: right;">0/500</span>
-                                </div>
-                                <div class="input-group" style="margin-bottom: 15px;">
-                                    <label>Staff Review Channel</label>
-                                    <select id="app-review-channel" style="width: 100%; box-sizing: border-box;">
-                                        <option value="">Select channel...</option>
-                                    </select>
-                                </div>
-                                
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 10px;">
-                                    <h4 style="margin: 0;">Questions (Max 5)</h4>
-                                    <button type="button" class="config-btn" style="width: auto; margin: 0; padding: 4px 10px; font-size: 0.75rem; background: var(--border); border-color: rgba(255,255,255,0.1); color: #fff;" onclick="addBuilderQuestion()">+ Add Question</button>
-                                </div>
-                                <div id="app-questions-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
-                                    <!-- Injected dynamic question editors -->
-                                </div>
- 
-                                <button class="config-btn" style="background: var(--primary); color: #0f111a; font-weight: 700; width: 100%;" onclick="saveApplicationConfig()">Save Configuration</button>
                             </div>
                         </div>
- 
-                        <!-- Bottom Panel: Live Discord Modal Simulator -->
-                        <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column;">
-                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">Discord Modal Simulator</h3>
-                            
-                            <div style="background: #313338; border-radius: 12px; padding: 25px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 440px; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4); position: relative; overflow: hidden;">
-                                <!-- Window Frame Accent (OS style) -->
-                                <div style="position: absolute; top: 12px; left: 16px; display: flex; gap: 6px;">
-                                    <span style="width: 8px; height: 8px; background: #ff5f56; border-radius: 50%;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ffbd2e; border-radius: 50%;"></span>
-                                    <span style="width: 8px; height: 8px; background: #27c93f; border-radius: 50%;"></span>
-                                </div>
-                                <div style="position: absolute; top: 8px; font-size: 0.65rem; color: rgba(255,255,255,0.15); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">Preview Window</div>
- 
-                                <!-- Mock Discord Modal Box -->
-                                <div style="background: #1e1f22; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); border: 1px solid #2b2d31; width: 100%; max-width: 440px; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; text-align: left;">
-                                    <!-- Modal Header -->
-                                    <div style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03);">
-                                        <div id="mock-modal-title" style="color: #fff; font-weight: 700; font-size: 1rem;">Apply: Staff Application</div>
-                                        <div style="color: #949ba4; font-size: 1.25rem; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#949ba4'">&times;</div>
-                                    </div>
-                                    <!-- Modal Body -->
-                                    <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #1a1b1e transparent;">
-                                        <div id="mock-modal-desc" style="color: #b5bac1; font-size: 0.85rem; line-height: 1.4; background: rgba(255,255,255,0.02); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03);">Brief explanation of the position...</div>
-                                        <div id="mock-modal-fields" style="display: flex; flex-direction: column; gap: 16px;">
-                                            <!-- Dynamically generated questions go here -->
+
+                        <!-- SUB-VIEW 1: FORM BUILDER -->
+                        <div id="apps-subview-builder" style="display: flex; flex-direction: column; gap: 25px;">
+                            <!-- Form Editor Grid -->
+                            <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 25px; align-items: start;">
+                                
+                                <!-- Left Column: Builder Form -->
+                                <div class="panel" style="margin: 0; display: flex; flex-direction: column;">
+                                    <!-- 1. Saved Sets List View -->
+                                    <div id="app-sets-list-view" style="display: block; flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff;">Configured Application Sets</h3>
+                                        </div>
+                                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+                                            Manage multiple application sets. Active sets are available for members via the `/apply` command.
+                                        </p>
+                                        <div id="app-sets-container" style="display: flex; flex-direction: column; gap: 12px;">
+                                            <!-- Default demo set card -->
+                                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-weight: 700; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                                        <span>Staff Application</span>
+                                                        <span class="badge stable" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">Active</span>
+                                                    </div>
+                                                    <div style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">Review Channel: #staff-apps • Questions: 3</div>
+                                                </div>
+                                                <div style="display: flex; gap: 8px;">
+                                                    <button class="config-btn" style="width: auto; padding: 6px 14px; font-size: 0.78rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: #fff;" onclick="showAppSetEditor('demo')"><i class="fas fa-edit"></i> Edit</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <!-- Modal Footer -->
-                                    <div style="background: #2b2d31; padding: 14px 20px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255,255,255,0.02);">
-                                        <button style="background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 600; padding: 8px 16px; border-radius: 3px; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Cancel</button>
-                                        <button style="background: #5865F2; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 600; padding: 8px 20px; border-radius: 3px; transition: background 0.2s;" onmouseover="this.style.background='#4752c4'" onmouseout="this.style.background='#5865F2'">Submit</button>
+                                    
+                                    <!-- 2. Form Editor View -->
+                                    <div id="app-set-editor-view" style="display: flex; flex: 1; flex-direction: column;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.75rem; margin: 0; background: rgba(255,255,255,0.05); color: #fff;" onclick="hideAppSetEditor()">&larr; Back to Sets</button>
+                                                <h4 id="app-editor-title" style="margin: 0; font-size: 1.1rem; color: #fff; font-weight: 700;">Edit Application Set</h4>
+                                            </div>
+                                        </div>
+                                        
+                                        <input type="hidden" id="app-set-id" value="demo">
+                                        
+                                        <div class="input-group" style="margin-bottom: 15px;">
+                                            <label style="font-weight: 600; color: #fff;">Application Name</label>
+                                            <input type="text" id="app-name" value="Staff Application" placeholder="e.g. Staff Application" style="width: 100%; box-sizing: border-box;" oninput="updateAppBuilderPreview()">
+                                        </div>
+                                        <div class="input-group" style="margin-bottom: 15px;">
+                                            <label style="font-weight: 600; color: #fff;">Description & Instructions</label>
+                                            <textarea id="app-desc" placeholder="Brief explanation of the position..." style="width: 100%; box-sizing: border-box; min-height: 80px;" oninput="updateAppBuilderPreview(); checkTextareaLimit(this, 500)" maxlength="500">Apply for server Staff! Please answer all questions accurately.</textarea>
+                                            <span id="app-desc-counter" style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block; text-align: right;">61/500</span>
+                                        </div>
+                                        
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                            <div class="input-group">
+                                                <label style="font-weight: 600; color: #fff;">Staff Review Channel</label>
+                                                <select id="app-review-channel" style="width: 100%; box-sizing: border-box;">
+                                                    <option value="12345">#staff-apps-review</option>
+                                                </select>
+                                            </div>
+                                            <div class="input-group">
+                                                <label style="font-weight: 600; color: #fff;">Auto-Role on Approval</label>
+                                                <select id="app-auto-role" style="width: 100%; box-sizing: border-box;">
+                                                    <option value="">Select role to assign...</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 12px;">
+                                            <h4 style="margin: 0; color: #fff; font-weight: 700;">Form Questions (Max 5)</h4>
+                                            <button type="button" class="save-btn" style="width: auto; margin: 0; padding: 6px 14px; font-size: 0.75rem; background: #ffffff !important; color: #000000 !important; font-weight: 800; border-radius: 999px;" onclick="addBuilderQuestion()">+ Add Question</button>
+                                        </div>
+
+                                        <div id="app-questions-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                                            <!-- Dynamic questions container -->
+                                            <div class="app-question-card" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <span style="font-weight: 700; font-size: 0.82rem; color: #fff;">Question 1</span>
+                                                    <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 0.7rem; color: #ff5555; border-color: rgba(255,85,85,0.2);" onclick="this.closest('.app-question-card').remove(); updateAppBuilderPreview();">Remove</button>
+                                                </div>
+                                                <input type="text" class="q-label" value="Why do you want to join our staff team?" placeholder="Enter question..." style="width: 100%; font-size: 0.85rem;" oninput="updateAppBuilderPreview()">
+                                                <div style="display: flex; gap: 10px; align-items: center;">
+                                                    <select class="q-type" style="flex: 1; font-size: 0.8rem;" onchange="updateAppBuilderPreview()">
+                                                        <option value="paragraph" selected>Paragraph Text (Long)</option>
+                                                        <option value="short">Short Text (Single Line)</option>
+                                                    </select>
+                                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); cursor: pointer; margin-bottom: 0;">
+                                                        <input type="checkbox" class="q-required" checked onchange="updateAppBuilderPreview()"> Required
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="app-question-card" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <span style="font-weight: 700; font-size: 0.82rem; color: #fff;">Question 2</span>
+                                                    <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 0.7rem; color: #ff5555; border-color: rgba(255,85,85,0.2);" onclick="this.closest('.app-question-card').remove(); updateAppBuilderPreview();">Remove</button>
+                                                </div>
+                                                <input type="text" class="q-label" value="How many hours per week can you dedicate?" placeholder="Enter question..." style="width: 100%; font-size: 0.85rem;" oninput="updateAppBuilderPreview()">
+                                                <div style="display: flex; gap: 10px; align-items: center;">
+                                                    <select class="q-type" style="flex: 1; font-size: 0.8rem;" onchange="updateAppBuilderPreview()">
+                                                        <option value="short" selected>Short Text (Single Line)</option>
+                                                        <option value="paragraph">Paragraph Text (Long)</option>
+                                                    </select>
+                                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); cursor: pointer; margin-bottom: 0;">
+                                                        <input type="checkbox" class="q-required" checked onchange="updateAppBuilderPreview()"> Required
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+         
+                                        <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-weight: 800; font-size: 0.95rem; width: 100%; padding: 14px; border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);" onclick="saveApplicationConfig()">Save Configuration</button>
+                                    </div>
+                                </div>
+         
+                                <!-- Right Column: Live Discord Modal Simulator -->
+                                <div class="panel" style="margin: 0; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; sticky; top: 104px;">
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">Discord Modal Simulator</h3>
+                                    
+                                    <div style="background: #313338; border-radius: 12px; padding: 25px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 440px; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4); position: relative; overflow: hidden;">
+                                        <!-- Window Frame Accent -->
+                                        <div style="position: absolute; top: 12px; left: 16px; display: flex; gap: 6px;">
+                                            <span style="width: 8px; height: 8px; background: #ff5f56; border-radius: 50%;"></span>
+                                            <span style="width: 8px; height: 8px; background: #ffbd2e; border-radius: 50%;"></span>
+                                            <span style="width: 8px; height: 8px; background: #27c93f; border-radius: 50%;"></span>
+                                        </div>
+                                        <div style="position: absolute; top: 8px; font-size: 0.65rem; color: rgba(255,255,255,0.2); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">Live Interactive Preview</div>
+
+                                        <!-- Mock Discord Modal Box -->
+                                        <div style="background: #1e1f22; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); border: 1px solid #2b2d31; width: 100%; max-width: 440px; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; text-align: left;">
+                                            <!-- Modal Header -->
+                                            <div style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                                <div id="mock-modal-title" style="color: #fff; font-weight: 700; font-size: 1rem;">Apply: Staff Application</div>
+                                                <div style="color: #949ba4; font-size: 1.25rem; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#949ba4'">&times;</div>
+                                            </div>
+                                            <!-- Modal Body -->
+                                            <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #1a1b1e transparent;">
+                                                <div id="mock-modal-desc" style="color: #b5bac1; font-size: 0.85rem; line-height: 1.4; background: rgba(255,255,255,0.02); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03);">Apply for server Staff! Please answer all questions accurately.</div>
+                                                <div id="mock-modal-fields" style="display: flex; flex-direction: column; gap: 16px;">
+                                                    <!-- Dynamically rendered questions -->
+                                                </div>
+                                            </div>
+                                            <!-- Modal Footer -->
+                                            <div style="background: #2b2d31; padding: 14px 20px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255,255,255,0.02);">
+                                                <button type="button" style="background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 600; padding: 8px 16px; border-radius: 3px; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Cancel</button>
+                                                <button type="button" style="background: #ffffff !important; border: none; color: #000000 !important; cursor: pointer; font-size: 0.875rem; font-weight: 800; padding: 8px 20px; border-radius: 4px; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);" onclick="showToast('Simulated application submitted successfully!', 'success')">Submit</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- SUB-VIEW 2: SUBMISSIONS REVIEW DOCK (Hidden by default) -->
+                        <div id="apps-subview-submissions" style="display: none; flex-direction: column; gap: 20px;">
+                            <div class="panel" style="margin: 0; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #fff;">Applicant Submissions Manager</h3>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="notif-filter-btn active" style="font-size: 0.75rem;">Pending (2)</button>
+                                        <button class="notif-filter-btn" style="font-size: 0.75rem;">Approved (14)</button>
+                                        <button class="notif-filter-btn" style="font-size: 0.75rem;">Denied (5)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Submissions List -->
+                                <div style="display: flex; flex-direction: column; gap: 14px;">
+                                    <!-- Pending Submission 1 -->
+                                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <img src="https://cdn.discordapp.com/embed/avatars/1.png" style="width: 42px; height: 42px; border-radius: 50%;">
+                                                <div>
+                                                    <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">CyberGamer99 <span style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">(ID: 9812450124)</span></div>
+                                                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Applied for: <strong>Staff Application</strong> • 15 minutes ago</div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; gap: 8px;">
+                                                <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-size: 0.8rem; padding: 6px 16px; font-weight: 800; border-radius: 8px;" onclick="showToast('Application approved! Role assigned automatically.', 'success')"><i class="fas fa-check"></i> Approve & Assign Role</button>
+                                                <button class="config-btn" style="border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 6px 14px; border-radius: 8px;" onclick="showToast('Application denied.', 'info')"><i class="fas fa-times"></i> Deny</button>
+                                            </div>
+                                        </div>
+                                        <div style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; line-height: 1.5; color: #e4e4e7;">
+                                            <strong>Q1: Why do you want to join our staff team?</strong><br>
+                                            "I have over 3 years of moderation experience on high-volume Discord communities and love helping members solve problems cleanly."<br><br>
+                                            <strong>Q2: How many hours per week can you dedicate?</strong><br>
+                                            "Approximately 20-25 hours per week across evenings and weekends."
+                                        </div>
+                                    </div>
+
+                                    <!-- Pending Submission 2 -->
+                                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <img src="https://cdn.discordapp.com/embed/avatars/2.png" style="width: 42px; height: 42px; border-radius: 50%;">
+                                                <div>
+                                                    <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">SolarisX <span style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">(ID: 4120958102)</span></div>
+                                                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Applied for: <strong>Moderator Tryouts</strong> • 2 hours ago</div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; gap: 8px;">
+                                                <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-size: 0.8rem; padding: 6px 16px; font-weight: 800; border-radius: 8px;" onclick="showToast('Application approved! Role assigned automatically.', 'success')"><i class="fas fa-check"></i> Approve & Assign Role</button>
+                                                <button class="config-btn" style="border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 6px 14px; border-radius: 8px;" onclick="showToast('Application denied.', 'info')"><i class="fas fa-times"></i> Deny</button>
+                                            </div>
+                                        </div>
+                                        <div style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; line-height: 1.5; color: #e4e4e7;">
+                                            <strong>Q1: What moderation tools are you familiar with?</strong><br>
+                                            "AutoMod filters, timeout scales, ticket handling, and log auditing."
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SUB-VIEW 3: ANALYTICS & INSIGHTS (Hidden by default) -->
+                        <div id="apps-subview-analytics" style="display: none; flex-direction: column; gap: 20px;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                                <div class="panel" style="margin: 0; padding: 20px; text-align: center; background: rgba(255,255,255,0.02);">
+                                    <div style="font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">Total Submissions</div>
+                                    <div style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-top: 4px;">21</div>
+                                </div>
+                                <div class="panel" style="margin: 0; padding: 20px; text-align: center; background: rgba(255,255,255,0.02);">
+                                    <div style="font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">Acceptance Rate</div>
+                                    <div style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-top: 4px;">73.6%</div>
+                                </div>
+                                <div class="panel" style="margin: 0; padding: 20px; text-align: center; background: rgba(255,255,255,0.02);">
+                                    <div style="font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">Avg. Response Time</div>
+                                    <div style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-top: 4px;">1.4 hrs</div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -13261,6 +13440,201 @@
                 container.appendChild(card);
             });
         }
+
+        // Apps Builder Pro Sub-Navigation & Dynamic Live Simulator Sync
+        window.switchAppsSubtab = function(sub) {
+            const builderView = document.getElementById('apps-subview-builder');
+            const submissionsView = document.getElementById('apps-subview-submissions');
+            const analyticsView = document.getElementById('apps-subview-analytics');
+            
+            const btnBuilder = document.getElementById('app-subtab-builder');
+            const btnSubmissions = document.getElementById('app-subtab-submissions');
+            const btnAnalytics = document.getElementById('app-subtab-analytics');
+
+            if (builderView) builderView.style.display = sub === 'builder' ? 'flex' : 'none';
+            if (submissionsView) submissionsView.style.display = sub === 'submissions' ? 'flex' : 'none';
+            if (analyticsView) analyticsView.style.display = sub === 'analytics' ? 'flex' : 'none';
+
+            if (btnBuilder) btnBuilder.classList.toggle('active', sub === 'builder');
+            if (btnSubmissions) btnSubmissions.classList.toggle('active', sub === 'submissions');
+            if (btnAnalytics) btnAnalytics.classList.toggle('active', sub === 'analytics');
+        };
+
+        window.updateAppBuilderPreview = function() {
+            const name = document.getElementById('app-name')?.value || 'Staff Application';
+            const desc = document.getElementById('app-desc')?.value || 'Brief explanation of the position...';
+            
+            const titleEl = document.getElementById('mock-modal-title');
+            const descEl = document.getElementById('mock-modal-desc');
+            const fieldsEl = document.getElementById('mock-modal-fields');
+
+            if (titleEl) titleEl.textContent = `Apply: ${name}`;
+            if (descEl) descEl.textContent = desc;
+
+            if (fieldsEl) {
+                fieldsEl.innerHTML = '';
+                const cards = document.querySelectorAll('.app-question-card');
+                if (cards.length === 0) {
+                    fieldsEl.innerHTML = '<div style="font-size: 0.8rem; color: #949ba4; text-align: center; padding: 20px;">No questions added yet. Click "+ Add Question" to get started.</div>';
+                } else {
+                    cards.forEach((card, idx) => {
+                        const label = card.querySelector('.q-label')?.value || `Question ${idx + 1}`;
+                        const type = card.querySelector('.q-type')?.value || 'paragraph';
+                        const req = card.querySelector('.q-required')?.checked ? ' *' : '';
+                        
+                        const div = document.createElement('div');
+                        div.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
+                        div.innerHTML = `
+                            <label style="font-size: 0.78rem; font-weight: 700; color: #dbdee1; text-transform: uppercase; letter-spacing: 0.5px;">${label}${req}</label>
+                            ${type === 'paragraph' 
+                                ? `<textarea placeholder="Applicant response..." style="background: #111214; border: 1px solid #2b2d31; color: #dbdee1; border-radius: 4px; padding: 8px 10px; font-size: 0.82rem; min-height: 50px; resize: none; outline: none;"></textarea>`
+                                : `<input type="text" placeholder="Applicant response..." style="background: #111214; border: 1px solid #2b2d31; color: #dbdee1; border-radius: 4px; padding: 8px 10px; font-size: 0.82rem; outline: none;">`
+                            }
+                        `;
+                        fieldsEl.appendChild(div);
+                    });
+                }
+            }
+        };
+
+        window.loadAppTemplate = function(tplKey) {
+            const templates = {
+                staff: {
+                    name: 'Staff Application',
+                    desc: 'Apply to join our server staff team! Please answer all questions honestly.',
+                    questions: [
+                        { label: 'Why do you want to join our staff team?', type: 'paragraph', req: true },
+                        { label: 'How many hours per week can you dedicate to moderation?', type: 'short', req: true },
+                        { label: 'Do you have prior experience with Nora Bot automations?', type: 'short', req: false }
+                    ]
+                },
+                mod: {
+                    name: 'Moderator Tryouts',
+                    desc: 'Moderator tryouts intake. High activity and familiarity with server rules required.',
+                    questions: [
+                        { label: 'How would you handle a member spamming dangerous links?', type: 'paragraph', req: true },
+                        { label: 'What is your timezone and primary active hours?', type: 'short', req: true },
+                        { label: 'Link to your Roblox or main gaming profile:', type: 'short', req: false }
+                    ]
+                },
+                media: {
+                    name: 'Content Creator Application',
+                    desc: 'Apply for official Creator role and stream announcement privileges.',
+                    questions: [
+                        { label: 'Link your primary YouTube / Twitch channel:', type: 'short', req: true },
+                        { label: 'What average concurrent viewership or subscriber count do you have?', type: 'short', req: true },
+                        { label: 'How often do you produce content featuring our community?', type: 'paragraph', req: false }
+                    ]
+                },
+                event: {
+                    name: 'Event Host Application',
+                    desc: 'Apply to host community game nights, tournaments, and giveaways.',
+                    questions: [
+                        { label: 'What type of events do you plan on hosting?', type: 'paragraph', req: true },
+                        { label: 'Do you require prize sponsorship or special roles?', type: 'short', req: true }
+                    ]
+                },
+                vip: {
+                    name: 'VIP Access Application',
+                    desc: 'Request early access to secret server channels and beta features.',
+                    questions: [
+                        { label: 'Why should your account be granted VIP privileges?', type: 'paragraph', req: true }
+                    ]
+                }
+            };
+
+            const tpl = templates[tplKey];
+            if (!tpl) return;
+
+            document.getElementById('app-name').value = tpl.name;
+            document.getElementById('app-desc').value = tpl.desc;
+
+            const qList = document.getElementById('app-questions-list');
+            if (qList) {
+                qList.innerHTML = '';
+                tpl.questions.forEach((q, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'app-question-card';
+                    card.style.cssText = 'background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;';
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; font-size: 0.82rem; color: #fff;">Question ${idx + 1}</span>
+                            <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 0.7rem; color: #ff5555; border-color: rgba(255,85,85,0.2);" onclick="this.closest('.app-question-card').remove(); updateAppBuilderPreview();">Remove</button>
+                        </div>
+                        <input type="text" class="q-label" value="${q.label}" placeholder="Enter question..." style="width: 100%; font-size: 0.85rem;" oninput="updateAppBuilderPreview()">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select class="q-type" style="flex: 1; font-size: 0.8rem;" onchange="updateAppBuilderPreview()">
+                                <option value="paragraph" ${q.type === 'paragraph' ? 'selected' : ''}>Paragraph Text (Long)</option>
+                                <option value="short" ${q.type === 'short' ? 'selected' : ''}>Short Text (Single Line)</option>
+                            </select>
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); cursor: pointer; margin-bottom: 0;">
+                                <input type="checkbox" class="q-required" ${q.req ? 'checked' : ''} onchange="updateAppBuilderPreview()"> Required
+                            </label>
+                        </div>
+                    `;
+                    qList.appendChild(card);
+                });
+            }
+
+            showAppSetEditor('demo');
+            updateAppBuilderPreview();
+            showToast(`Loaded template: ${tpl.name}`, 'info');
+        };
+
+        window.addBuilderQuestion = function() {
+            const qList = document.getElementById('app-questions-list');
+            if (!qList) return;
+            const count = qList.querySelectorAll('.app-question-card').length;
+            if (count >= 5) {
+                return showToast('Maximum 5 questions allowed per application set.', 'warning');
+            }
+
+            const card = document.createElement('div');
+            card.className = 'app-question-card';
+            card.style.cssText = 'background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;';
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700; font-size: 0.82rem; color: #fff;">Question ${count + 1}</span>
+                    <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 0.7rem; color: #ff5555; border-color: rgba(255,85,85,0.2);" onclick="this.closest('.app-question-card').remove(); updateAppBuilderPreview();">Remove</button>
+                </div>
+                <input type="text" class="q-label" value="" placeholder="Enter question..." style="width: 100%; font-size: 0.85rem;" oninput="updateAppBuilderPreview()">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select class="q-type" style="flex: 1; font-size: 0.8rem;" onchange="updateAppBuilderPreview()">
+                        <option value="paragraph">Paragraph Text (Long)</option>
+                        <option value="short">Short Text (Single Line)</option>
+                    </select>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); cursor: pointer; margin-bottom: 0;">
+                        <input type="checkbox" class="q-required" checked onchange="updateAppBuilderPreview()"> Required
+                    </label>
+                </div>
+            `;
+            qList.appendChild(card);
+            updateAppBuilderPreview();
+        };
+
+        window.showAppSetEditor = function(setId) {
+            const listView = document.getElementById('app-sets-list-view');
+            const editorView = document.getElementById('app-set-editor-view');
+            if (listView) listView.style.display = 'none';
+            if (editorView) editorView.style.display = 'flex';
+            updateAppBuilderPreview();
+        };
+
+        window.hideAppSetEditor = function() {
+            const listView = document.getElementById('app-sets-list-view');
+            const editorView = document.getElementById('app-set-editor-view');
+            if (listView) listView.style.display = 'block';
+            if (editorView) editorView.style.display = 'none';
+        };
+
+        window.saveApplicationConfig = function() {
+            showToast('Application configuration saved successfully!', 'success');
+            hideAppSetEditor();
+        };
+
+        window.fetchApplications = function() {
+            updateAppBuilderPreview();
+        };
 
         function populateAutoresponderFormDropdowns() {
             const channelsContainer = document.getElementById('autoresponder-channels-list');
