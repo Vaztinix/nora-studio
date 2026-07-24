@@ -117,6 +117,21 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.DATE,
         allowNull: true,
         defaultValue: null
+    },
+    // ---- Member Card & Image Customization ----
+    customRankCardBg: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    customLevelUpBg: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    customCardShape: {
+        type: DataTypes.STRING,
+        defaultValue: 'default' // 'default' allows fallback to GuildSettings server shape
     }
 });
 

@@ -104,11 +104,11 @@
         }
 
                 :root {
-            --bg: #12080c;
-            --sidebar-bg: #1a0c10;
-            --panel-bg: #180b0e;
-            --card-bg: #1a0c10;
-            --card-hover: #261218;
+            --bg: #09090b;
+            --sidebar-bg: #111115;
+            --panel-bg: #141418;
+            --card-bg: #141418;
+            --card-hover: #1e1e24;
             --primary: #ffffff;
             --primary-glow: rgba(255, 255, 255, 0.12);
             --primary-hover: #ffffff;
@@ -185,6 +185,15 @@
         .global-nav-btn.active {
             color: var(--primary) !important;
             background: var(--primary-glow) !important;
+        }
+
+        /* Glassmorphism Design System */
+        .panel, .card, .modal, .config-card {
+            background: rgba(14, 14, 16, 0.85) !important;
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
         }
 
         /* Smooth Transition when Switching Themes */
@@ -3294,72 +3303,67 @@
                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 30px;">
                         
                         <!-- Automation & Safety -->
-                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-safety]').click()" style="--card-glow: rgba(255,85,85,0.15); --card-border-hover: rgba(255,85,85,0.3); height: 245px; box-sizing: border-box;">
-                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,85,85,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
-                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,85,85,0.1); color: #ff6b6b; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255,85,85,0.2);">
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-safety]').click()" style="background: rgba(18, 18, 22, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); height: auto; min-height: 245px; box-sizing: border-box; padding: 24px; border-radius: 16px; position: relative; transition: all 0.25s ease;">
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 16px;">
                                 <i class="fas fa-shield-alt"></i>
                             </div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Automation & Safety</h3>
-                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">Anti-raid gates, auto-moderation rules, spam filters, and logging settings.</p>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                                <span style="font-size: 0.75rem; color: #ff6b6b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
-                                <i class="fas fa-arrow-right" style="color: #ff6b6b; font-size: 0.8rem;"></i>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 8px 0;">Automation & Safety</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0 0 16px 0; flex: 1;">Anti-raid gates, auto-moderation rules, spam filters, and logging settings.</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px;">
+                                <span style="font-size: 0.75rem; color: #a1a1aa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure Module</span>
+                                <i class="fas fa-arrow-right" style="color: #a1a1aa; font-size: 0.85rem;"></i>
                             </div>
                         </div>
  
                         <!-- Moderation -->
-                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-automod]').click()" style="--card-glow: rgba(155,93,229,0.15); --card-border-hover: rgba(155,93,229,0.3); height: 245px; box-sizing: border-box;">
-                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(155,93,229,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
-                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(155,93,229,0.1); color: #b485ee; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(155,93,229,0.2);">
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-automod]').click()" style="background: rgba(18, 18, 22, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); height: auto; min-height: 245px; box-sizing: border-box; padding: 24px; border-radius: 16px; position: relative; transition: all 0.25s ease;">
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 16px;">
                                 <i class="fas fa-gavel"></i>
                             </div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Auto Moderation</h3>
-                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">Profanity filters, link blockers, and automated punishment scales.</p>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                                <span style="font-size: 0.75rem; color: #b485ee; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
-                                <i class="fas fa-arrow-right" style="color: #b485ee; font-size: 0.8rem;"></i>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 8px 0;">Auto Moderation</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0 0 16px 0; flex: 1;">Profanity filters, link blockers, and automated punishment scales.</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px;">
+                                <span style="font-size: 0.75rem; color: #a1a1aa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure Module</span>
+                                <i class="fas fa-arrow-right" style="color: #a1a1aa; font-size: 0.85rem;"></i>
                             </div>
                         </div>
  
                         <!-- Leveling & Progression -->
-                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-leveling]').click()" style="--card-glow: rgba(0,245,212,0.15); --card-border-hover: rgba(0,245,212,0.3); height: 245px; box-sizing: border-box;">
-                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(0,245,212,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
-                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(0,245,212,0.1); color: #33ffd8; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(0,245,212,0.2);">
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-leveling]').click()" style="background: rgba(18, 18, 22, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); height: auto; min-height: 245px; box-sizing: border-box; padding: 24px; border-radius: 16px; position: relative; transition: all 0.25s ease;">
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 16px;">
                                 <i class="fas fa-arrow-up"></i>
                             </div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Progression & XP</h3>
-                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">Leveling up formulas, custom rank cards, and automated role rewards.</p>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                                <span style="font-size: 0.75rem; color: #33ffd8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
-                                <i class="fas fa-arrow-right" style="color: #33ffd8; font-size: 0.8rem;"></i>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 8px 0;">Progression & XP</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0 0 16px 0; flex: 1;">Leveling up formulas, custom rank cards, and automated role rewards.</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px;">
+                                <span style="font-size: 0.75rem; color: #a1a1aa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure Module</span>
+                                <i class="fas fa-arrow-right" style="color: #a1a1aa; font-size: 0.85rem;"></i>
                             </div>
                         </div>
  
                         <!-- Modules & Games -->
-                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-welcome]').click()" style="--card-glow: rgba(255,142,60,0.15); --card-border-hover: rgba(255,142,60,0.3); height: 245px; box-sizing: border-box;">
-                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,142,60,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
-                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,142,60,0.1); color: #ffa668; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255,142,60,0.2);">
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-welcome]').click()" style="background: rgba(18, 18, 22, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); height: auto; min-height: 245px; box-sizing: border-box; padding: 24px; border-radius: 16px; position: relative; transition: all 0.25s ease;">
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 16px;">
                                 <i class="fas fa-gamepad"></i>
                             </div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Modules & Fun</h3>
-                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">Counting channels, ticket systems, welcome messages, and fun toggles.</p>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                                <span style="font-size: 0.75rem; color: #ffa668; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
-                                <i class="fas fa-arrow-right" style="color: #ffa668; font-size: 0.8rem;"></i>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 8px 0;">Modules & Fun</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0 0 16px 0; flex: 1;">Counting channels, ticket systems, welcome messages, and fun toggles.</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px;">
+                                <span style="font-size: 0.75rem; color: #a1a1aa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure Module</span>
+                                <i class="fas fa-arrow-right" style="color: #a1a1aa; font-size: 0.85rem;"></i>
                             </div>
                         </div>
  
                         <!-- Content Feeds -->
-                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-feeds]').click()" style="--card-glow: rgba(255,255,255,0.15); --card-border-hover: rgba(174,239,255,0.3); height: 245px; box-sizing: border-box;">
-                            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
-                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(174,239,255,0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(174,239,255,0.2);">
+                        <div class="config-card" onclick="document.querySelector('[data-tab=tab-feeds]').click()" style="background: rgba(18, 18, 22, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); height: auto; min-height: 245px; box-sizing: border-box; padding: 24px; border-radius: 16px; position: relative; transition: all 0.25s ease;">
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 16px;">
                                 <i class="fas fa-broadcast-tower"></i>
                             </div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Content Feeds</h3>
-                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; flex: 1;">YouTube, Twitch, and Reddit notifications synced directly to channels.</p>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                                <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure</span>
-                                <i class="fas fa-arrow-right" style="color: var(--primary); font-size: 0.8rem;"></i>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 8px 0;">Content Feeds</h3>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0 0 16px 0; flex: 1;">YouTube, Twitch, and Reddit notifications synced directly to channels.</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px;">
+                                <span style="font-size: 0.75rem; color: #a1a1aa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Configure Module</span>
+                                <i class="fas fa-arrow-right" style="color: #a1a1aa; font-size: 0.85rem;"></i>
                             </div>
                         </div>
 
@@ -5288,9 +5292,11 @@
             const host = window.location.hostname;
             const port = window.location.port;
 
-            // Local development overrides — always target local machine if loaded locally
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:' || port === '3000' || port === '4000') {
-                return 'http://localhost:4000';
+            // Local development overrides — target current running port or fallback to 3000
+            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
+                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
+                    ? window.location.origin 
+                    : 'http://localhost:3000';
             }
 
             // User-configured or offline-recovered override

@@ -684,6 +684,21 @@ const GuildSettings = sequelize.define('GuildSettings', {
     levelingCardBorderColor: {
         type: DataTypes.STRING,
         defaultValue: '#23252e'
+    },
+    // ---- Server Custom Shape Presets & Backgrounds ----
+    serverRankCardBg: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    serverLevelUpBg: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    serverCardShape: {
+        type: DataTypes.STRING,
+        defaultValue: 'rounded-rect' // 'rounded-rect', 'capsule', 'hexagon', 'diamond', 'classic'
     }
 });
 
