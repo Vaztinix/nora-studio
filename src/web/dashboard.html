@@ -881,26 +881,24 @@
 
         .toast {
             position: absolute;
-            background: #1c2033;
-            border-left: 4px solid var(--primary);
-            padding: 12px 18px;
-            border-radius: 8px;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-size: 0.9rem;
-            font-weight: 600;
+            background: rgba(8, 8, 12, 0.78) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-left: 4px solid #ffffff !important;
+            padding: 14px 20px !important;
+            border-radius: 14px !important;
+            color: #ffffff !important;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+            font-size: 0.88rem !important;
+            font-weight: 600 !important;
             pointer-events: auto;
-            max-width: 350px;
+            max-width: 380px;
             width: 100%;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             box-sizing: border-box;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-left: 4px solid var(--primary);
-            
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
             --current-offset: var(--collapsed-offset, 0px);
             transform: translateY(calc(var(--current-offset) * var(--dir, 1))) scale(var(--scale, 1));
             z-index: calc(100 - var(--index, 0));
@@ -908,9 +906,10 @@
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, z-index 0.3s ease;
         }
 
-        .toast.success { border-left-color: var(--success); }
-        .toast.error { border-left-color: var(--danger); }
-        .toast.warning { border-left-color: var(--warning); }
+        .toast.success { border-left-color: #10b981 !important; }
+        .toast.error { border-left-color: #ff5555 !important; }
+        .toast.warning { border-left-color: #f59e0b !important; }
+        .toast.info { border-left-color: #ffffff !important; }
 
         .toast[style*="--index: 3"],
         .toast[style*="--index: 4"],
@@ -957,16 +956,16 @@
         }
 
         .notif-card {
-            background: rgba(255, 255, 255, 0.02) !important;
+            background: rgba(8, 8, 12, 0.78) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
             padding: 18px !important;
             border-radius: 16px !important;
             margin-bottom: 12px !important;
             animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+            box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
         }
 
         .member-card {
