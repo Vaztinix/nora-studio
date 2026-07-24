@@ -328,6 +328,18 @@ sequelize.sync().then(async () => {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `displayName` VARCHAR(255) DEFAULT NULL;");
     } catch (e) {}
     try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `showAvatarInRankCard` TINYINT(1) DEFAULT 1;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `rankCardThemeMode` VARCHAR(255) DEFAULT 'preset';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `rankCardCustomColor` VARCHAR(255) DEFAULT '#4f46e5';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `rankCardBackgroundImage` TEXT DEFAULT NULL;");
+    } catch (e) {}
+    try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `tempBlacklistExpiresAt` DATETIME DEFAULT NULL;");
     } catch (e) {}
 
