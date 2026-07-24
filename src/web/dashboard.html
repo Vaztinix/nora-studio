@@ -4845,12 +4845,11 @@
                                         <div style="background: #1e1f22; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); border: 1px solid #2b2d31; width: 100%; max-width: 440px; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; text-align: left;">
                                             <!-- Modal Header -->
                                             <div style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03);">
-                                                <div id="mock-modal-title" style="color: #fff; font-weight: 700; font-size: 1rem;">Apply: Staff Application</div>
+                                                <div id="mock-modal-title" style="color: #fff; font-weight: 700; font-size: 1rem;">Staff Application</div>
                                                 <div style="color: #949ba4; font-size: 1.25rem; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#949ba4'">&times;</div>
                                             </div>
                                             <!-- Modal Body -->
-                                            <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #1a1b1e transparent;">
-                                                <div id="mock-modal-desc" style="color: #b5bac1; font-size: 0.85rem; line-height: 1.4; background: rgba(255,255,255,0.02); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03);">Apply for server Staff! Please answer all questions accurately.</div>
+                                            <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #1a1b1e transparent;">
                                                 <div id="mock-modal-fields" style="display: flex; flex-direction: column; gap: 16px;">
                                                     <!-- Dynamically rendered questions -->
                                                 </div>
@@ -13461,34 +13460,39 @@
         };
 
         window.updateAppBuilderPreview = function() {
-            const name = document.getElementById('app-name')?.value || 'Staff Application';
-            const desc = document.getElementById('app-desc')?.value || 'Brief explanation of the position...';
-            
+            const name = (document.getElementById('app-name')?.value || 'Staff Application').substring(0, 45);
             const titleEl = document.getElementById('mock-modal-title');
-            const descEl = document.getElementById('mock-modal-desc');
             const fieldsEl = document.getElementById('mock-modal-fields');
 
-            if (titleEl) titleEl.textContent = `Apply: ${name}`;
-            if (descEl) descEl.textContent = desc;
+            if (titleEl) titleEl.textContent = name;
 
             if (fieldsEl) {
                 fieldsEl.innerHTML = '';
                 const cards = document.querySelectorAll('.app-question-card');
                 if (cards.length === 0) {
-                    fieldsEl.innerHTML = '<div style="font-size: 0.8rem; color: #949ba4; text-align: center; padding: 20px;">No questions added yet. Click "+ Add Question" to get started.</div>';
+                    fieldsEl.innerHTML = `
+                        <div style="font-size: 0.82rem; color: #949ba4; text-align: center; padding: 30px 10px; background: rgba(0,0,0,0.15); border-radius: 6px; border: 1px dashed rgba(255,255,255,0.08);">
+                            No modal questions added yet. Discord allows up to 5 Text Input fields per modal. Click <strong>"+ Add Question"</strong> to build your form.
+                        </div>
+                    `;
                 } else {
                     cards.forEach((card, idx) => {
-                        const label = card.querySelector('.q-label')?.value || `Question ${idx + 1}`;
+                        const rawLabel = card.querySelector('.q-label')?.value || `Question ${idx + 1}`;
+                        const label = rawLabel.substring(0, 45);
                         const type = card.querySelector('.q-type')?.value || 'paragraph';
-                        const req = card.querySelector('.q-required')?.checked ? ' *' : '';
+                        const isRequired = card.querySelector('.q-required')?.checked !== false;
+                        const placeholder = card.querySelector('.q-placeholder')?.value || (type === 'paragraph' ? 'Enter detailed answer...' : 'Enter answer...');
                         
                         const div = document.createElement('div');
-                        div.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
+                        div.style.cssText = 'display: flex; flex-direction: column; gap: 6px; text-align: left;';
                         div.innerHTML = `
-                            <label style="font-size: 0.78rem; font-weight: 700; color: #dbdee1; text-transform: uppercase; letter-spacing: 0.5px;">${label}${req}</label>
+                            <label style="font-size: 0.72rem; font-weight: 700; color: #b5bac1; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center;">
+                                <span>${label}</span>
+                                ${isRequired ? '<span style="color: #fa5252; margin-left: 3px; font-weight: 800;">*</span>' : ''}
+                            </label>
                             ${type === 'paragraph' 
-                                ? `<textarea placeholder="Applicant response..." style="background: #111214; border: 1px solid #2b2d31; color: #dbdee1; border-radius: 4px; padding: 8px 10px; font-size: 0.82rem; min-height: 50px; resize: none; outline: none;"></textarea>`
-                                : `<input type="text" placeholder="Applicant response..." style="background: #111214; border: 1px solid #2b2d31; color: #dbdee1; border-radius: 4px; padding: 8px 10px; font-size: 0.82rem; outline: none;">`
+                                ? `<textarea placeholder="${placeholder}" style="background: #111214; border: 1px solid #1e1f22; color: #dbdee1; border-radius: 4px; padding: 10px 12px; font-size: 0.875rem; min-height: 70px; resize: none; outline: none; font-family: inherit; transition: border-color 0.2s;" onfocus="this.style.borderColor='#ffffff'" onblur="this.style.borderColor='#1e1f22'"></textarea>`
+                                : `<input type="text" placeholder="${placeholder}" style="background: #111214; border: 1px solid #1e1f22; color: #dbdee1; border-radius: 4px; padding: 10px 12px; font-size: 0.875rem; outline: none; font-family: inherit; transition: border-color 0.2s;" onfocus="this.style.borderColor='#ffffff'" onblur="this.style.borderColor='#1e1f22'">`
                             }
                         `;
                         fieldsEl.appendChild(div);
