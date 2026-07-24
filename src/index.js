@@ -2623,11 +2623,11 @@ app.get('/api/user/roblox/presence', async (req, res) => {
 
 
 const getWebFilePath = (filename) => {
-    const distPath = path.join(__dirname, '../dist', filename);
-    if (fs.existsSync(distPath)) {
-        return distPath;
+    const srcPath = path.join(__dirname, 'web', filename);
+    if (fs.existsSync(srcPath)) {
+        return srcPath;
     }
-    return path.join(__dirname, 'web', filename);
+    return path.join(__dirname, '../dist', filename);
 };
 
 // Serve index.html (Vaztinix Bio landing page) at root '/'
