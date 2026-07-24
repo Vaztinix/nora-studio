@@ -2130,7 +2130,7 @@ app.get('/api/user/roblox/oauth-link', async (req, res) => {
         let oauthUrl;
         if (process.env.ROBLOX_CLIENT_ID) {
             const redirectUri = encodeURIComponent(process.env.ROBLOX_REDIRECT_URI || `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/user/roblox/callback`);
-            oauthUrl = `https://apis.roblox.com/oauth/v1/authorize?client_id=${process.env.ROBLOX_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid+profile&state=${state}`;
+            oauthUrl = `https://authorize.roblox.com/?client_id=${process.env.ROBLOX_CLIENT_ID}&response_type=code&redirect_uri=${redirectUri}&scope=openid+profile&state=${state}`;
         } else {
             oauthUrl = `/api/auth/roblox/mock-authorize?state=${state}`;
         }
