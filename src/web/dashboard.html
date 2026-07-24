@@ -668,10 +668,32 @@
         .config-title p { color: var(--muted); font-size: 0.9rem; }
         
         .save-btn {
-            background: var(--primary); color: #000; padding: 12px 28px; border-radius: 999px; font-size: 0.95rem;
-            font-weight: 700; border: none; cursor: pointer; transition: 0.2s;
+            background: #ffffff; color: #000000; padding: 12px 28px; border-radius: 999px; font-size: 0.95rem;
+            font-weight: 800; border: none; cursor: pointer; transition: all 0.25s ease;
         }
-        .save-btn:hover { transform: translateY(-2px); background: var(--primary-hover); }
+        .save-btn:hover { transform: translateY(-2px); background: #e4e4e7; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3); }
+        
+        #save-settings-btn:disabled,
+        #save-settings-btn.disabled,
+        #save-settings-btn[disabled] {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            cursor: not-allowed !important;
+            opacity: 0.45 !important;
+            pointer-events: none !important;
+            box-shadow: none !important;
+        }
+        #save-settings-btn:not(:disabled):not(.disabled) {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-weight: 800 !important;
+            cursor: pointer !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            box-shadow: 0 4px 14px rgba(255, 255, 255, 0.3) !important;
+        }
+
         #broadcast-send-btn { box-shadow: none !important; }
         #broadcast-send-btn:hover { box-shadow: none !important; }
 
@@ -688,8 +710,8 @@
         }
         .numerical-input:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px var(--primary-glow);
+            border-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
         }
         .numerical-input.invalid {
             border-color: var(--danger) !important;
@@ -705,10 +727,10 @@
 
         .h-nav {
             display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto; padding: 5px 0;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
-        .h-nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        .h-nav::-webkit-scrollbar { display: none; }
         
         .h-tab {
             background: rgba(30, 41, 59, 0.25);
@@ -729,15 +751,15 @@
         }
         .h-tab i { font-size: 1rem; }
         .h-tab:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
         }
         .h-tab.active {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(0, 212, 255, 0.1);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4) !important;
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2) !important;
         }
 
         /* New Reactive Config Layout */
@@ -762,44 +784,16 @@
             line-height: 1.3;
             text-align: left;
         }
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.58rem;
-            font-weight: 800;
-            padding: 1px 6px;
-            border-radius: 9999px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-left: 8px;
-            flex-shrink: 0;
-        }
-        .badge.stable {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.15);
-        }
-        .badge.beta {
-            background: rgba(245, 158, 11, 0.15);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-        .badge.dev {
-            background: rgba(99, 102, 241, 0.15);
-            color: #6366f1;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-        }
         .config-sidebar .h-tab:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.12);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
         }
         .config-sidebar .h-tab.active {
-            background: rgba(0, 212, 255, 0.1);
-            border-color: var(--primary);
-            color: var(--primary);
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: rgba(255, 255, 255, 0.4) !important;
+            color: #ffffff !important;
+            box-shadow: inset 3px 0 0 #ffffff, 0 4px 15px rgba(255, 255, 255, 0.15) !important;
         }
         
         .v-tab {
@@ -807,10 +801,20 @@
             padding: 14px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; 
             cursor: pointer; transition: 0.2s; text-align: left; display: flex; align-items: center; gap: 12px;
         }
-        .v-tab:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+        .v-tab:hover { background: rgba(255,255,255,0.06); color: #ffffff; }
         .v-tab.active { 
-            background: rgba(174, 239, 255, 0.08); border-color: rgba(174, 239, 255, 0.2); 
-            color: var(--primary); 
+            background: rgba(255, 255, 255, 0.12) !important; 
+            border-color: rgba(255, 255, 255, 0.3) !important; 
+            color: #ffffff !important; 
+            box-shadow: inset 3px 0 0 #ffffff, 0 0 15px rgba(255, 255, 255, 0.15) !important;
+        }
+        .v-tab i { font-size: 1.1rem; opacity: 0.7; }
+        .v-tab.active i { opacity: 1; color: #ffffff !important; }
+
+        .global-nav-btn.active {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.4) !important;
+            color: #ffffff !important;
         }
         .v-tab i { font-size: 1.1rem; opacity: 0.7; }
         .v-tab.active i { opacity: 1; }
@@ -2567,9 +2571,9 @@
             </button>
 
             <!-- Premium Ad in Sidebar -->
-            <div id="sidebar-premium-ad" class="premium-ad" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')" style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(108, 92, 231, 0.05) 100%); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 12px; padding: 12px; width: 100%; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='rgba(0, 212, 255, 0.4)'; " onmouseout="this.style.borderColor='rgba(0, 212, 255, 0.2)';">
-                <h4 style="font-size: 0.8rem; font-weight: 800; color: var(--primary); margin: 0;">NORA PREMIUM</h4>
-                <p style="font-size: 0.7rem; color: var(--muted); margin: 4px 0 0 0; line-height: 1.3;">Unlock Leveling Boosts, Advanced Verification & More</p>
+            <div id="sidebar-premium-ad" class="premium-ad" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')" style="background: #ffffff; border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px; width: 100%; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2); text-align: center;" onmouseover="this.style.background='#e4e4e7';" onmouseout="this.style.background='#ffffff';">
+                <h4 style="font-size: 0.85rem; font-weight: 900; color: #000000; margin: 0; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fas fa-crown" style="color: #000;"></i> Get Premium</h4>
+                <p style="font-size: 0.72rem; color: #27272a; margin: 4px 0 0 0; line-height: 1.3; font-weight: 600;">Unlock Leveling Boosts, Advanced Verification & More</p>
             </div>
         </aside>
 
@@ -3109,7 +3113,7 @@
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <button class="config-btn" id="undo-btn" onclick="undoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-undo" style="margin-right: 6px;"></i> Undo</button>
                         <button class="config-btn" id="redo-btn" onclick="redoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-redo" style="margin-right: 6px;"></i> Redo</button>
-                        <button class="save-btn" id="save-settings-btn" onclick="saveSettings()">Save Data</button>
+                        <button class="save-btn disabled" id="save-settings-btn" onclick="saveSettings()" disabled>Save Data</button>
                     </div>
                 </div>
 
@@ -8500,6 +8504,22 @@
         // Rebuild standard color inputs to modern custom swatch select menus
         makeModernColorPicker('theme-color-picker', ['#ffffff', '#aeefff', '#4b69ff', '#2ecc71', '#ff8e3c', '#ff6b8b', '#ffd700', '#9b5de5', '#00f5d4']);
         makeModernColorPicker('broadcast-embed-color', ['#ffffff', '#aeefff', '#4b69ff', '#2ecc71', '#ff8e3c', '#ff6b8b', '#ffd700', '#9b5de5', '#00f5d4']);
+
+        // Form change tracking to enable Save Data button
+        document.addEventListener('input', (e) => {
+            const saveBtn = document.getElementById('save-settings-btn');
+            if (saveBtn && (e.target.closest('#view-config') || (e.target.id && e.target.id.startsWith('setting-')))) {
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('disabled');
+            }
+        });
+        document.addEventListener('change', (e) => {
+            const saveBtn = document.getElementById('save-settings-btn');
+            if (saveBtn && (e.target.closest('#view-config') || (e.target.id && e.target.id.startsWith('setting-')))) {
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('disabled');
+            }
+        });
 
         // Initialize form change undo/redo tracking
         initHistoryTracking();
