@@ -7165,6 +7165,8 @@
                     throw new Error(errData.error || `HTTP ${res.status}`);
                 }
                 const accounts = await res.json();
+                window.currentRobloxAccounts = accounts;
+                if (typeof updateProfileRobloxPreview === 'function') updateProfileRobloxPreview();
                 
                 const container = document.getElementById('roblox-accounts-container');
                 if (!container) return;
@@ -7384,6 +7386,30 @@
             }
         }
         window.saveUserProfile = saveUserProfile;
+
+        function updateProfileRobloxPreview() {
+            const robloxVal = document.getElementById('profile-roblox-val');
+            if (!robloxVal) return;
+            const roBox = document.getElementById('user-pref-robloxPublic');
+            const robloxPublic = roBox ? roBox.checked : true;
+
+            const accs = window.currentRobloxAccounts || [];
+            if (accs.length === 0) {
+                robloxVal.textContent = 'Not Connected';
+                robloxVal.style.color = 'rgba(255,255,255,0.4)';
+            } else {
+                const verifiedAcc = accs.find(a => a.status === 'VERIFIED' && a.isActive) || accs.find(a => a.status === 'VERIFIED');
+                if (verifiedAcc) {
+                    robloxVal.textContent = robloxPublic ? `@${verifiedAcc.robloxUsername}` : 'Private';
+                    robloxVal.style.color = robloxPublic ? 'var(--success)' : 'var(--muted)';
+                } else {
+                    robloxVal.textContent = 'Pending Verification';
+                    robloxVal.style.color = 'var(--warning)';
+                }
+            }
+        }
+        window.updateProfileRobloxPreview = updateProfileRobloxPreview;
+
 
         async function linkRoblox() {
             const usernameInput = document.getElementById('roblox-link-username');
