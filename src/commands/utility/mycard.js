@@ -186,6 +186,14 @@ module.exports = {
             } catch (e) {}
 
             robloxDisplay = `**Account:** [${username}](https://www.roblox.com/users/${robloxRecord.robloxId}/profile)\n**Status:** ${status}`;
+            if (targetPrefs?.auxiliaryRobloxHandles) {
+                try {
+                    const aux = JSON.parse(targetPrefs.auxiliaryRobloxHandles);
+                    if (Array.isArray(aux) && aux.length > 0) {
+                        robloxDisplay += `\n**Linked Profiles:** ${aux.length} account(s)`;
+                    }
+                } catch (e) {}
+            }
             if (joinUrl) {
                 robloxDisplay += `\n👉 [**Join Experience**](${joinUrl})`;
             }
@@ -193,6 +201,13 @@ module.exports = {
 
         // Global Bio with Markdown support
         const bioDisplay = targetPrefs?.bio ? targetPrefs.bio : '*No bio set.*';
+
+        // Rank Card Theme Summary
+        const cardStyleText = targetPrefs ? (
+            targetPrefs.rankCardThemeMode === 'custom' ? `Custom Color (${targetPrefs.rankCardCustomColor || '#4f46e5'})` :
+            targetPrefs.rankCardThemeMode === 'image' ? 'Custom Background Image' : 'Server Preset'
+        ) : 'Server Preset';
+        const avatarStyleText = targetPrefs?.showAvatarInRankCard === false ? 'Hidden (Discord Icon)' : 'Visible (Discord PFP)';
 
         // Build the Embed with Premium Star Badge and Gold Styling
         const authorName = `${target.username}${isPremium ? ' ⭐' : ''}'s Personal Card`;
@@ -205,6 +220,7 @@ module.exports = {
                 { name: 'User Info', value: `**Account Created:** ${createdAt}\n**Joined Server:** ${joinedAt}`, inline: true },
                 { name: 'Permissions', value: permissionText, inline: true },
                 { name: 'Leveling', value: `**Level:** ${isDM ? 'N/A' : level}\n**XP:** ${isDM ? 'N/A' : `${xp.toLocaleString()} / ${nextLevelXp.toLocaleString()}`}`, inline: true },
+                { name: 'Rank Card Style', value: `**Theme:** ${cardStyleText}\n**Avatar:** ${avatarStyleText}`, inline: true },
                 { name: 'Nora Badges', value: badgesDisplay, inline: false },
                 { name: 'Roblox Integration', value: robloxDisplay, inline: false },
                 { name: 'Top Roles', value: rolesDisplay, inline: false },

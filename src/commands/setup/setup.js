@@ -231,10 +231,11 @@ module.exports = {
             // --- LEVELING ---
             if (viewName === 'view_levels') {
                 embed.setTitle('Leveling & XP')
-                     .setDescription('Users gain XP by chatting and being active in voice.')
+                     .setDescription('Users gain XP by chatting (15-25 XP/min) and being active in voice (50 XP every 5 min).')
                      .addFields(
                         { name: 'Level Alerts', value: settings.levelUpNotificationsEnabled ? 'On' : 'Off', inline: true },
-                        { name: 'Alert Channel', value: settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : 'Current Channel', inline: true }
+                        { name: 'Alert Channel', value: settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : 'Current Channel', inline: true },
+                        { name: 'Voice XP Rate', value: '50 XP per 300s (5 min)', inline: true }
                      );
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_leveling_toggle').setLabel(settings.levelingEnabled ? 'Disable XP' : 'Enable XP').setStyle(ButtonStyle.Primary),

@@ -110,6 +110,25 @@ module.exports = {
         await interaction.deferReply();
 
         try {
+            const UserPrefs = require('../../database/models/UserPrefs');
+            const targetPrefs = await UserPrefs.findOne({ where: { userId: target.id } });
+
+            // Determine custom avatar & theme settings
+            const userShowAvatar = targetPrefs ? targetPrefs.showAvatarInRankCard !== false : true;
+            const finalShowPfp = showPfp && userShowAvatar;
+
+            let cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
+            let cardBgColor = settings?.levelingCardBgColor || '#111217';
+            let cardUserBg = targetPrefs?.customRankCardBg || null;
+
+            if (targetPrefs) {
+                if (targetPrefs.rankCardThemeMode === 'custom' && targetPrefs.rankCardCustomColor) {
+                    cardAccent = targetPrefs.rankCardCustomColor;
+                } else if (targetPrefs.rankCardThemeMode === 'image' && targetPrefs.rankCardBackgroundImage) {
+                    cardUserBg = targetPrefs.rankCardBackgroundImage;
+                }
+            }
+
             const { generateRankCard } = require('../../utils/rankCardGenerator');
             const imageBuffer = await generateRankCard({
                 username: target.username,
@@ -118,10 +137,11 @@ module.exports = {
                 nextLevelXp: xpStepForLevelIncrement,
                 rank: rankIndex,
                 avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
-                showPfp: showPfp,
-                bgColor: settings?.levelingCardBgColor || '#111217',
-                accentColor: settings?.levelingCardAccentColor || '#7c3aed',
-                borderColor: settings?.levelingCardBorderColor || '#23252e'
+                showPfp: finalShowPfp,
+                bgColor: cardBgColor,
+                accentColor: cardAccent,
+                borderColor: settings?.levelingCardBorderColor || '#23252e',
+                userCustomBg: cardUserBg
             });
 
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'rank-card.png' });
