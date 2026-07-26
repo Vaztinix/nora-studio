@@ -8306,7 +8306,7 @@
             try {
                 const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/topgg/bots/${botId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${t}` }
+                    headers: { 'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || ''}` }
                 });
                 if (res.ok) {
                     showToast('Bot connection deleted successfully.', 'success');
@@ -9517,9 +9517,17 @@
                         fetchAutoresponders();
                         populateAutoresponderFormDropdowns();
                     } else if (tabId === 'tab-reactionroles') {
-                if (typeof initRRTabDefaultSlots === 'function') initRRTabDefaultSlots();
-                        updateRRPreview();
-                        fetchServerEmojis();
+                        if (typeof initRRTabDefaultSlots === 'function') initRRTabDefaultSlots();
+                        if (typeof updateRRPreview === 'function') updateRRPreview();
+                        if (typeof fetchServerEmojis === 'function') fetchServerEmojis();
+                    } else if (tabId === 'tab-tickets') {
+                        if (typeof updateTicketPreview === 'function') updateTicketPreview();
+                    } else if (tabId === 'tab-starboard') {
+                        if (typeof updateStarboardPreview === 'function') updateStarboardPreview();
+                    } else if (tabId === 'tab-applications') {
+                        if (typeof fetchApplications === 'function') fetchApplications();
+                    } else if (tabId === 'tab-feeds') {
+                        if (typeof fetchFeeds === 'function') fetchFeeds();
                     }
                 } else if (tabId === 'servers') {
                     document.body.classList.remove('in-config');
