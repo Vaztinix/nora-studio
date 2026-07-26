@@ -423,6 +423,37 @@ const ALLOWED_HOSTS = [
 
 // ── EARLY DIAGNOSTIC LOGGER (before all security middleware) ──────────────────
 // Logs every single request that reaches the server so we can debug mobile issues
+
+// 🛡️ ANTI-MALWARE & MALICIOUS CRAWLER DEFENSE MIDDLEWARE
+const MALICIOUS_CRAWLER_UA_REGEX = /(sqlmap|nikto|zgrab|nmap|masscan|dirbuster|wpscan|gobuster|censys|bytespider|python-urllib|libwww-perl|gavel-scanner)/i;
+const PATTERN_EXPLOIT_REGEX = /(\.\.[\/\\]|union\s+select|drop\s+table|information_schema|<script\b|exec\s*\(|eval\s*\(|base64_decode)/i;
+
+app.use((req, res, next) => {
+    const ua = req.headers['user-agent'] || '';
+    const rawUrl = req.originalUrl || req.url || '';
+    
+    if (MALICIOUS_CRAWLER_UA_REGEX.test(ua)) {
+        console.warn(`[SECURITY BLOCKED] Malicious crawler detected: User-Agent="${ua}" IP=${req.ip} URL=${rawUrl}`);
+        return res.status(403).json({ error: 'Access Denied: Unsafe crawler signature detected.', status: 403 });
+    }
+
+    if (PATTERN_EXPLOIT_REGEX.test(rawUrl)) {
+        console.warn(`[SECURITY BLOCKED] Exploit pattern detected in URL: IP=${req.ip} URL=${rawUrl}`);
+        return res.status(403).json({ error: 'Access Denied: Malicious request pattern blocked.', status: 403 });
+    }
+
+    if (req.body && typeof req.body === 'object') {
+        const bodyStr = JSON.stringify(req.body);
+        if (PATTERN_EXPLOIT_REGEX.test(bodyStr)) {
+            console.warn(`[SECURITY BLOCKED] Exploit pattern detected in payload body: IP=${req.ip} URL=${rawUrl}`);
+            return res.status(403).json({ error: 'Access Denied: Unsafe payload detected.', status: 403 });
+        }
+    }
+
+    next();
+});
+
+
 app.use((req, res, next) => {
     const cfIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.ip || 'unknown';
     const host = req.headers.host || 'no-host';
