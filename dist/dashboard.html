@@ -2420,6 +2420,44 @@
         
 
     </style>
+
+        <script>
+            window.isFormDirty = false;
+            window.markFormDirty = function() {
+                window.isFormDirty = true;
+                const bar = document.getElementById('unsaved-changes-bar');
+                if (bar) bar.style.display = 'flex';
+            };
+            window.markFormClean = function() {
+                window.isFormDirty = false;
+                const bar = document.getElementById('unsaved-changes-bar');
+                if (bar) bar.style.display = 'none';
+            };
+            window.revertUnsavedChanges = function() {
+                if (typeof refreshAllDashboardData === 'function') {
+                    refreshAllDashboardData('HARD_OVERWRITE');
+                }
+                window.markFormClean();
+                if (typeof showToast === 'function') showToast('Reverted unsaved changes to server state.', 'info');
+            };
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const configContainer = document.getElementById('view-config');
+                if (configContainer) {
+                    configContainer.addEventListener('input', (e) => {
+                        if (e.target.id && (e.target.id.startsWith('setting-') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+                            window.markFormDirty();
+                        }
+                    });
+                    configContainer.addEventListener('change', (e) => {
+                        if (e.target.id && (e.target.id.startsWith('setting-') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+                            window.markFormDirty();
+                        }
+                    });
+                }
+            });
+        </script>
+        
 </head>
 <body class="nora-theme">
     <div class="custom-cursor cursor-hidden" id="custom-cursor">
@@ -3144,7 +3182,20 @@
                 </div>
             </div>
 
-            <div id="view-config" style="display: none;">
+            <div id="view-config"
+
+        <!-- Floating Unsaved Changes Guard Banner -->
+        <div id="unsaved-changes-bar" style="display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(18, 18, 24, 0.96); border: 1px solid var(--primary); padding: 12px 24px; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 99999; align-items: center; gap: 20px; backdrop-filter: blur(16px); animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div style="display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.88rem; font-weight: 700;">
+                <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.1rem;"></i>
+                <span>Careful — you have unsaved configuration changes!</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="button" class="config-btn" onclick="revertUnsavedChanges()" style="padding: 6px 14px; font-size: 0.8rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #ccc;">Discard</button>
+                <button type="button" class="config-btn primary" onclick="saveCurrentTabSettings()" style="padding: 6px 18px; font-size: 0.8rem; background: var(--primary); color: #fff; font-weight: 700; box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);">Save Changes</button>
+            </div>
+        </div>
+     style="display: none;">
                 <div class="config-header">
                     <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
                         <button class="back-link" id="back-to-servers">← Back to Servers</button>

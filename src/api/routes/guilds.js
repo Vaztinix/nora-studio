@@ -24,6 +24,81 @@ const TicketHistory = require('../../database/models/TicketHistory');
 
 router.use(requireGuildPermission);
 
+/**
+ * GET /api/guilds/:guildId/full-dashboard-data
+ * Single aggregated endpoint fetching channels, roles, emojis, settings, feeds, autoresponders, applications & analytics in ONE HTTP call to eliminate API rate limits.
+ */
+router.get('/full-dashboard-data', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
+
+        const me = guild.members.me || await guild.members.fetch(req.client.user.id).catch(() => null);
+
+        // 1. Channels
+        const channels = [];
+        guild.channels.cache.forEach(c => {
+            if (c.type === 0 || c.isTextBased()) {
+                const canView = c.permissionsFor(me)?.has('ViewChannel') || false;
+                const canSend = c.permissionsFor(me)?.has('SendMessages') || false;
+                if (canView) {
+                    channels.push({ id: c.id, name: c.name, canSend });
+                }
+            }
+        });
+
+        // 2. Roles
+        const roles = guild.roles.cache.map(r => ({
+            id: r.id,
+            name: r.name,
+            color: r.hexColor,
+            position: r.position,
+            managed: r.managed
+        })).sort((a, b) => b.position - a.position);
+
+        // 3. Emojis
+        const emojis = guild.emojis.cache.map(e => ({
+            id: e.id,
+            name: e.name,
+            animated: e.animated,
+            url: e.imageURL()
+        }));
+
+        // 4. Database Models
+        const GuildSettings = require('../../database/models/GuildSettings');
+        const ContentFeed = require('../../database/models/ContentFeed');
+        const Autoresponder = require('../../database/models/Autoresponder');
+
+        const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
+        const contentFeeds = await ContentFeed.findAll({ where: { guildId } }).catch(() => []);
+        const autoresponders = await Autoresponder.findAll({ where: { guildId } }).catch(() => []);
+
+        // 5. Analytics summary
+        const analytics = {
+            memberCount: guild.memberCount || 0,
+            channelCount: guild.channels.cache.size || 0,
+            roleCount: guild.roles.cache.size || 0
+        };
+
+        res.json({
+            success: true,
+            channels,
+            roles,
+            emojis,
+            settings: settings ? settings.toJSON() : {},
+            contentFeeds,
+            autoresponders,
+            applications: [],
+            analytics
+        });
+    } catch (e) {
+        console.error('Error fetching full dashboard data:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+
 
 
 /**
