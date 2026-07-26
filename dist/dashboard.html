@@ -7283,28 +7283,28 @@
                 const roBox = document.getElementById('user-pref-robloxPublic');
                 const pubBox = document.getElementById('user-pref-profilePublic');
                 
-            if (user && user.prefs) {
+            if (d && d.prefs) {
                 const teamNameEl = document.getElementById('user-pref-teamDisplayName');
-                if (teamNameEl) teamNameEl.value = user.prefs.teamCardDisplayName || '';
+                if (teamNameEl) teamNameEl.value = d.prefs.teamCardDisplayName || '';
 
                 const teamBadgesEl = document.getElementById('user-pref-teamBadges');
-                if (teamBadgesEl) teamBadgesEl.value = user.prefs.teamCardBadges || '';
+                if (teamBadgesEl) teamBadgesEl.value = d.prefs.teamCardBadges || '';
 
                 const teamDescEl = document.getElementById('user-pref-teamDescription');
-                if (teamDescEl) teamDescEl.value = user.prefs.teamCardDescription || '';
+                if (teamDescEl) teamDescEl.value = d.prefs.teamCardDescription || '';
 
-                if (user.prefs.teamCardLinks) {
+                if (d.prefs.teamCardLinks) {
                     try {
-                        const links = typeof user.prefs.teamCardLinks === 'string' ? JSON.parse(user.prefs.teamCardLinks) : user.prefs.teamCardLinks;
+                        const links = typeof d.prefs.teamCardLinks === 'string' ? JSON.parse(d.prefs.teamCardLinks) : d.prefs.teamCardLinks;
                         const w = document.getElementById('user-pref-teamLinkWeb');
                         if (w) w.value = links.web || '';
                         const g = document.getElementById('user-pref-teamLinkGithub');
                         if (g) g.value = links.github || '';
                         const r = document.getElementById('user-pref-teamLinkRoblox');
                         if (r) r.value = links.roblox || '';
-                        const d = document.getElementById('user-pref-teamLinkDiscord');
-                        if (d) d.value = links.discord || '';
-                    } catch(e) {}
+                        const discEl = document.getElementById('user-pref-teamLinkDiscord');
+                        if (discEl) discEl.value = links.discord || '';
+                    } catch(err) {}
                 }
             }
             const bioBox = document.getElementById('user-pref-bio');
