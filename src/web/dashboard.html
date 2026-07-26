@@ -2419,7 +2419,35 @@
         }
         
 
-    </style>
+    
+        /* Overflow & Layout Protection Rules */
+        html, body {
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+        }
+
+        .app-layout, .config-container, .config-main, .panel, .tab-content, .overview-accordion-card, .log-row-container, .hero-banner {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            min-width: 0 !important;
+        }
+
+        .tab-content {
+            overflow-x: hidden !important;
+            width: 100% !important;
+        }
+
+        .panel, .card, .config-main {
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        select, input, textarea, button {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+    
+</style>
 
         <script>
             window.isFormDirty = false;
@@ -7842,6 +7870,7 @@
             }
         }
 
+        
         async function saveTeamCardPrefs() {
             const teamCardDisplayName = document.getElementById('user-pref-teamDisplayName')?.value || '';
             const teamCardBadges = document.getElementById('user-pref-teamBadges')?.value || '';
@@ -7857,13 +7886,13 @@
                 github,
                 roblox,
                 discord,
-                custom: customTeamLinksList.filter(l => l.url && l.url.trim())
+                custom: typeof customTeamLinksList !== 'undefined' ? customTeamLinksList.filter(l => l.url && l.url.trim()) : []
             };
 
             const t = sessionStorage.getItem('discord_token');
             if (typeof toggleLoading === 'function') toggleLoading(true);
             try {
-                await safeFetch('/api/user/profile', {
+                const res = await safeFetch('/api/user/profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({
@@ -7873,6 +7902,14 @@
                         teamCardLinks: JSON.stringify(payloadLinks)
                     })
                 });
+
+                if (window.currentUser && window.currentUser.prefs) {
+                    window.currentUser.prefs.teamCardDisplayName = teamCardDisplayName;
+                    window.currentUser.prefs.teamCardBadges = teamCardBadges;
+                    window.currentUser.prefs.teamCardDescription = teamCardDescription;
+                    window.currentUser.prefs.teamCardLinks = JSON.stringify(payloadLinks);
+                }
+
                 showToast('Team Card changes saved successfully!', 'success');
             } catch (e) {
                 console.error('[Save Team Card Error]:', e);

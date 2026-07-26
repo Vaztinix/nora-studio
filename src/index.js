@@ -1477,6 +1477,28 @@ app.get('/api/user/me', async (req, res) => {
 });
 
 // Update profile preferences
+
+// GET /api/user/team-cards — Fetches all custom team cards saved by team members/owners
+app.get('/api/user/team-cards', async (req, res) => {
+    try {
+        const UserPrefs = require('./database/models/UserPrefs');
+        const Op = require('sequelize').Op;
+        const teamPrefs = await UserPrefs.findAll({
+            where: {
+                [Op.or]: [
+                    { isOwner: true },
+                    { isTeamMember: true },
+                    { hasTeamCard: true }
+                ]
+            }
+        });
+        res.json({ success: true, teamCards: teamPrefs });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+
 app.post('/api/user/profile', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });

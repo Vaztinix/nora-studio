@@ -578,5 +578,56 @@
             });
         });
     </script>
+<script>
+        // Load custom saved Team Cards from Nora API
+        async function fetchNoraTeamCards() {
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const res = await fetch(apiBase + '/api/user/team-cards');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data.success || !Array.isArray(data.teamCards)) return;
+
+                data.teamCards.forEach(tc => {
+                    const card = document.querySelector(`.card[data-user="${tc.userId}"]`);
+                    if (!card) return;
+
+                    if (tc.teamCardDisplayName && tc.teamCardDisplayName.trim()) {
+                        const nameHeading = card.querySelector('.display-name');
+                        if (nameHeading) nameHeading.textContent = tc.teamCardDisplayName;
+                    }
+
+                    if (tc.teamCardDescription && tc.teamCardDescription.trim()) {
+                        const bioPara = card.querySelector('.bio');
+                        if (bioPara) bioPara.textContent = tc.teamCardDescription;
+                    }
+
+                    if (tc.teamCardLinks) {
+                        try {
+                            const linksObj = typeof tc.teamCardLinks === 'string' ? JSON.parse(tc.teamCardLinks) : tc.teamCardLinks;
+                            const socialLinksContainer = card.querySelector('.social-links');
+                            if (socialLinksContainer && linksObj) {
+                                socialLinksContainer.innerHTML = '';
+                                if (linksObj.web) socialLinksContainer.innerHTML += `<a href="${linksObj.web}" target="_blank">Website</a>`;
+                                if (linksObj.github) socialLinksContainer.innerHTML += `<a href="${linksObj.github}" target="_blank">GitHub</a>`;
+                                if (linksObj.roblox) socialLinksContainer.innerHTML += `<a href="${linksObj.roblox}" target="_blank">Roblox</a>`;
+                                if (linksObj.discord) socialLinksContainer.innerHTML += `<a href="${linksObj.discord}" target="_blank">Discord</a>`;
+                                if (Array.isArray(linksObj.custom)) {
+                                    linksObj.custom.forEach(c => {
+                                        if (c.url && c.label) {
+                                            socialLinksContainer.innerHTML += `<a href="${c.url}" target="_blank">${c.label}</a>`;
+                                        }
+                                    });
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                });
+            } catch (e) {
+                console.error('Failed to load custom team cards:', e);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', fetchNoraTeamCards);
+    </script>
 </body>
 </html>
