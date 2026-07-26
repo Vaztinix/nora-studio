@@ -2510,7 +2510,7 @@
                 <span id="user-name-top" style="color: #fff; font-size: 0.8rem; font-weight: 700;" data-no-translate>Loading</span>
             </div>
             <!-- Logout Button in Topbar -->
-            <button onclick="sessionStorage.clear(); localStorage.removeItem('nora_last_user_id'); window.location.reload();" class="global-nav-btn" style="padding: 6px; border-radius: 50%; color: var(--danger); background: transparent; border: none; cursor: pointer;" title="Logout">
+            <button onclick="performLogout()" class="global-nav-btn" style="padding: 6px; border-radius: 50%; color: var(--danger); background: transparent; border: none; cursor: pointer;" title="Logout">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
@@ -2539,7 +2539,7 @@
             </div>
 
             <!-- Logout Button in Sidebar -->
-            <button class="logout-btn" onclick="sessionStorage.removeItem('discord_token'); localStorage.removeItem('nora_last_user_id'); window.location.reload();" style="margin-top: auto; margin-bottom: 15px;">
+            <button class="logout-btn" onclick="performLogout()" style="margin-top: auto; margin-bottom: 15px;">
                 <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
             </button>
 
@@ -7751,6 +7751,42 @@
         window.removeCustomTeamLink = removeCustomTeamLink;
         window.updateCustomTeamLink = updateCustomTeamLink;
     
+
+        
+        async function performLogout() {
+            try {
+                const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('nora_auth_token');
+                if (t && typeof safeFetch === 'function') {
+                    await safeFetch('/api/user/sessions/expire-all', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` }
+                    }).catch(() => {});
+                }
+            } catch(e) {}
+
+            sessionStorage.clear();
+            localStorage.removeItem('discord_token');
+            localStorage.removeItem('nora_discord_token');
+            localStorage.removeItem('nora_auth_token');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user_token');
+            localStorage.removeItem('nora_last_user_id');
+            localStorage.removeItem('discord_user');
+            localStorage.removeItem('currentUser');
+
+            try {
+                document.cookie.split(";").forEach(c => {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+            } catch(e) {}
+
+            window.currentUser = null;
+            // Clean redirect to login page (stops auto-login from cached URL tokens or reload loop)
+            window.location.href = '/install?logout=true';
+        }
+        window.performLogout = performLogout;
+
 
         async function saveUserProfile() {
             const bioBox = document.getElementById('user-pref-bio');
