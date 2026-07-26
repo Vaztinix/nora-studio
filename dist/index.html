@@ -118,12 +118,17 @@
             transform: translateY(0);
         }
 
-        /* ===== CARD HOVER GLOW ===== */
-        .secondary-card {
+        /* ===== CARD HOVER GLOW & GLASSMORPHISM ===== */
+        .secondary-card, .simulator-wrapper, .modal {
+            background: rgba(18, 18, 24, 0.65) !important;
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
             transition: all 0.35s ease;
         }
         .secondary-card:hover {
-            box-shadow: 0 0 30px rgba(88, 101, 242, 0.08);
+            box-shadow: 0 0 30px rgba(88, 101, 242, 0.15) !important;
         }
 
         .container {
@@ -899,7 +904,7 @@
                 <a href="/team">Team</a>
                 <a href="/legal">Legal</a>
             </nav>
-            <a href="/dashboard" class="btn-header">Open Console</a>
+            <a href="/dashboard" class="btn-header">Open Dashboard</a>
         </div>
     </header>
 
@@ -1225,7 +1230,7 @@
                     <p>Set up Nora Studio in under five minutes. Privacy-first, zero configurations required.</p>
                     <div class="hero-buttons">
                         <a href="/install" class="btn-main btn-main-primary">Invite Nora Bot</a>
-                        <a href="/dashboard" class="btn-main btn-main-secondary">Open Console</a>
+                        <a href="/dashboard" class="btn-main btn-main-secondary">Open Dashboard</a>
                     </div>
                 </div>
             </div>

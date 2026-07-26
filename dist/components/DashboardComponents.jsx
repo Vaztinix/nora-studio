@@ -430,7 +430,7 @@ export const DashboardLayout = ({ children, activeTab, onTabChange, guildInfo, u
                 {guildInfo?.name || 'Nora Studio'}
               </h1>
               <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase block mt-0.5">
-                Guild Console
+                Guild Dashboard
               </span>
             </div>
           </div>

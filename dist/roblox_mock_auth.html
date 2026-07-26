@@ -4,215 +4,503 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roblox | Authorize Nora</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --site-bg: #070706;
-            --primary: #ffffff;
-            --primary-hover: #eeeeec;
-            --border: #191918;
-            --muted: #9d9d9d;
-            --card-bg: #111110;
-            --text: #eeeeec;
-            --radius: 16px;
-            --success: #2ea043;
-            --danger: #f85149;
+            --bg-color: #111318;
+            --card-bg: #191b22;
+            --card-border: #262933;
+            --text-main: #ffffff;
+            --text-sub: #949ba4;
+            --btn-white: #ffffff;
+            --btn-white-hover: #e5e5e5;
+            --btn-dark: rgba(255, 255, 255, 0.05);
+            --btn-dark-hover: rgba(255, 255, 255, 0.1);
+            --badge-green: #00e676;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--site-bg);
-            color: var(--text);
+            background-color: var(--bg-color);
+            color: var(--text-main);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px 20px 20px 20px;
+        }
+
+        /* Top Header Logo */
+        .roblox-header-logo {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .roblox-wordmark {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Main Container */
+        .auth-container {
+            width: 100%;
+            max-width: 580px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin: auto;
+        }
+
+        .auth-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 25px;
+            letter-spacing: -0.3px;
+        }
+
+        .logged-in-label {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 16px;
+        }
+
+        /* User Avatar Box */
+        .avatar-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .avatar-img-wrapper {
+            width: 90px;
+            height: 90px;
+            border-radius: 16px;
+            background: #1e212b;
+            border: 1px solid var(--card-border);
+            padding: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            overflow: hidden;
         }
 
-        .auth-card {
+        .avatar-img-wrapper img {
             width: 100%;
-            max-width: 450px;
+            height: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .username-display {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Input for changing username */
+        .search-input-box {
+            width: 100%;
+            max-width: 440px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .search-input-box label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .search-input-box input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #161820;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input-box input:focus {
+            border-color: #ffffff;
+        }
+
+        /* Action Buttons */
+        .btn-stack {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .btn-continue {
+            width: 100%;
+            padding: 14px;
+            background: var(--btn-white) !important;
+            color: #000000 !important;
+            font-weight: 800;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-continue:hover {
+            background: var(--btn-white-hover) !important;
+        }
+
+        .btn-continue:active {
+            transform: scale(0.99);
+        }
+
+        .or-divider {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .or-divider::before, .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-change-acc {
+            width: 100%;
+            padding: 14px;
+            background: var(--btn-dark);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-change-acc:hover {
+            background: var(--btn-dark-hover);
+        }
+
+        /* STEP 2: CONSENT SCREEN ELEMENTS */
+        .connector-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .app-icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .app-icon-circle img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+        }
+
+        .lock-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-sub);
+            font-size: 1rem;
+        }
+
+        .lock-line::before, .lock-line::after {
+            content: '';
+            width: 35px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Scope Card */
+        .scope-card {
+            width: 100%;
+            max-width: 540px;
             background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 35px 25px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .scope-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #ffffff;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .scope-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .scope-table th {
+            text-align: left;
+            color: var(--text-sub);
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .scope-table td {
+            padding: 12px 0;
+            color: #dbdee1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: middle;
+        }
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--badge-green);
+            font-weight: 600;
+        }
+
+        .risk-badge::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            background: var(--badge-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--badge-green);
+        }
+
+        .terms-notice {
+            font-size: 0.78rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+            max-width: 520px;
+            margin-bottom: 30px;
             text-align: center;
         }
 
-        .roblox-logo {
-            font-size: 2.5rem;
-            color: #fff;
-            margin-bottom: 15px;
+        .terms-notice a {
+            color: #ffffff;
+            text-decoration: underline;
         }
 
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        p.subtitle {
-            color: var(--muted);
-            font-size: 0.9rem;
-            margin-bottom: 25px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-            color: var(--muted);
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: white;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        .input-field:focus {
-            border-color: var(--primary);
-        }
-
-        .profile-preview {
-            display: none;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: left;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .profile-preview img {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border);
-        }
-
-        .profile-info {
+        .consent-actions {
             display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .profile-name {
-            font-weight: 700;
-            font-size: 1rem;
-            color: white;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .profile-username {
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-
-        .profile-meta {
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-top: 4px;
-        }
-
-        .btn {
+            gap: 15px;
             width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: 0.2s;
+            max-width: 440px;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: #070706;
+        .consent-actions button {
+            flex: 1;
         }
 
-        .btn-primary:hover {
-            background: var(--primary-hover);
+        /* Footer Links */
+        .footer-nav {
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 30px;
         }
 
-        .btn-search {
-            background: rgba(255,255,255,0.05);
-            color: white;
-            border: 1px solid var(--border);
-            margin-top: 10px;
+        .footer-nav a {
+            color: var(--text-sub);
+            text-decoration: none;
         }
 
-        .btn-search:hover {
-            background: rgba(255,255,255,0.08);
+        .footer-copy {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 12px;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
-    <div class="auth-card">
-        <div class="roblox-logo"><i class="fa-solid fa-cube"></i></div>
-        <h1>Authorize Nora</h1>
-        <p class="subtitle">Grant permission to link your Roblox identity with Discord</p>
 
-        <form id="auth-form" action="/api/auth/roblox/mock-authorize-submit" method="POST">
-            <input type="hidden" name="state" id="state-input">
-            <input type="hidden" name="robloxId" id="roblox-id-input">
-            <input type="hidden" name="robloxUsername" id="roblox-username-input">
-            
-            <div id="search-section">
-                <div class="input-group">
-                    <label for="username-input">Roblox Username</label>
-                    <input type="text" id="username-input" class="input-field" placeholder="Enter username (e.g. Builderman)" required>
+    <!-- Top Roblox Logo Header -->
+    <div class="roblox-header-logo">
+        <div class="roblox-wordmark">
+            <i class="fa-solid fa-cube" style="font-size: 1.5rem;"></i> ROBLOX
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="auth-container">
+        
+        <!-- ================= STEP 1: SELECT ACCOUNT ================= -->
+        <div id="step-select-account" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+            <h1 class="auth-title">Select Account to Continue to Nora</h1>
+            <p class="logged-in-label">You're logged in as</p>
+
+            <div class="avatar-box">
+                <div class="avatar-img-wrapper">
+                    <img id="step1-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Roblox User Avatar">
                 </div>
-                <button type="button" class="btn btn-search" onclick="searchRobloxUser()">Find Account</button>
+                <div id="step1-username" class="username-display">Builderman</div>
+                <div id="step1-handle" style="font-size: 0.8rem; color: var(--text-sub);">@Builderman</div>
             </div>
 
-            <div class="profile-preview" id="profile-preview">
-                <img id="profile-avatar" src="" alt="Avatar">
-                <div class="profile-info">
-                    <span class="profile-name" id="profile-display-name">DisplayName</span>
-                    <span class="profile-username" id="profile-user-handle">@username</span>
-                    <span class="profile-meta" id="profile-age">Account Age: --</span>
+            <!-- Optional Account Search Drawer (Hidden by default) -->
+            <div id="change-account-drawer" class="search-input-box" style="display: none;">
+                <label>Enter Different Roblox Username</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="custom-username-input" placeholder="e.g. RobloxPlayer123">
+                    <button type="button" class="btn-change-acc" style="width: auto; padding: 0 16px; white-space: nowrap;" onclick="lookupCustomRobloxUser()">Find</button>
                 </div>
             </div>
 
-            <div id="auth-section" style="display: none;">
-                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; text-align: left; line-height: 1.4;">
-                    By clicking Authorize, you grant <strong>Nora</strong> permission to view your Roblox username, ID, group memberships, and public profile data.
-                </p>
-                <button type="submit" class="btn btn-primary">Authorize & Connect</button>
+            <div class="btn-stack">
+                <button type="button" class="btn-continue" onclick="goToConsentStep()">Continue</button>
+                <div class="or-divider">or</div>
+                <button type="button" class="btn-change-acc" onclick="toggleChangeAccount()">Change Account</button>
             </div>
-        </form>
+        </div>
+
+        <!-- ================= STEP 2: CONSENT & SCOPES ================= -->
+        <div id="step-consent-access" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+            <h1 class="auth-title">Nora is Requesting Access</h1>
+
+            <!-- Icon Connector -->
+            <div class="connector-row">
+                <div class="app-icon-circle">
+                    <img src="nora.png" onerror="this.onerror=null; this.src='nora.png';" alt="Nora App">
+                </div>
+                <div class="lock-line">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="app-icon-circle" style="border-color: rgba(255,255,255,0.2);">
+                    <img id="step2-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Roblox Avatar">
+                </div>
+            </div>
+
+            <div style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 25px;">
+                Nora by <strong style="color: #fff;">Vaztinix Studios</strong>
+            </div>
+
+            <!-- Scopes Accordion Card -->
+            <div class="scope-card">
+                <div class="scope-header">
+                    <span><i class="fas fa-user-circle" style="margin-right: 8px; color: #fff;"></i> Your personal profile</span>
+                    <i class="fas fa-chevron-up"></i>
+                </div>
+                <table class="scope-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Permission</th>
+                            <th style="width: 55%;">Description</th>
+                            <th style="width: 20%;">Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 600;">Read User ID</td>
+                            <td>View your Roblox User ID to know who you are.</td>
+                            <td><span class="risk-badge">Low</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">Read User Profile</td>
+                            <td>View your username, display name, user avatar and profile link.</td>
+                            <td><span class="risk-badge">Low</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">Read Group Ranks</td>
+                            <td>View your Roblox group memberships for automated role sync.</td>
+                            <td><span class="risk-badge">Low</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Terms Notice -->
+            <p class="terms-notice">
+                By clicking "Confirm and Give Access", you acknowledge that you have read and agree to Nora's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. You can view and remove access anytime from App Permissions.
+            </p>
+
+            <!-- Submit Form -->
+            <form id="auth-form" action="/api/auth/roblox/mock-authorize-submit" method="POST" style="width: 100%; display: flex; justify-content: center;">
+                <input type="hidden" name="state" id="state-input">
+                <input type="hidden" name="robloxId" id="roblox-id-input">
+                <input type="hidden" name="robloxUsername" id="roblox-username-input">
+
+                <div class="consent-actions">
+                    <button type="button" class="btn-change-acc" onclick="backToStep1()">Cancel</button>
+                    <button type="submit" class="btn-continue">Confirm and Give Access (1)</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <div class="footer-nav">
+            <a href="#">About Us</a> &nbsp;|&nbsp;
+            <a href="#">Join Us</a> &nbsp;|&nbsp;
+            <a href="#">Terms</a> &nbsp;|&nbsp;
+            <a href="#">Privacy</a> &nbsp;|&nbsp;
+            <a href="#">Accessibility</a>
+        </div>
+        <div class="footer-copy">
+            ©2026 Roblox Corporation. Roblox, the Roblox logo and Powering Imagination are among our registered and unregistered trademarks in the U.S. and other countries.
+        </div>
     </div>
 
     <script>
@@ -220,48 +508,64 @@
         const params = new URLSearchParams(window.location.search);
         document.getElementById('state-input').value = params.get('state') || '';
 
-        async function searchRobloxUser() {
-            const username = document.getElementById('username-input').value.trim();
-            if (!username) return;
+        let currentRobloxAccount = {
+            id: '156711358',
+            name: 'Builderman',
+            displayName: 'Builderman',
+            avatarUrl: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B1E5A7A0C7F46B18D41C48D2A1152F94-Png/150/150/AvatarHeadshot/Webp/noFilter'
+        };
 
-            const preview = document.getElementById('profile-preview');
-            const authSection = document.getElementById('auth-section');
-            preview.style.display = 'none';
-            authSection.style.display = 'none';
+        function updateUI(acc) {
+            document.getElementById('roblox-id-input').value = acc.id;
+            document.getElementById('roblox-username-input').value = acc.name;
+            
+            document.getElementById('step1-username').textContent = acc.displayName || acc.name;
+            document.getElementById('step1-handle').textContent = '@' + acc.name;
+            document.getElementById('step1-avatar').src = acc.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            document.getElementById('step2-avatar').src = acc.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png';
+        }
+
+        // Initialize default UI
+        updateUI(currentRobloxAccount);
+
+        function toggleChangeAccount() {
+            const drawer = document.getElementById('change-account-drawer');
+            drawer.style.display = drawer.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        async function lookupCustomRobloxUser() {
+            const inputVal = document.getElementById('custom-username-input').value.trim();
+            if (!inputVal) return;
 
             try {
-                // Fetch public search endpoint
-                const res = await fetch('/api/public/roblox/search?username=' + encodeURIComponent(username));
+                const res = await fetch('/api/public/roblox/search?username=' + encodeURIComponent(inputVal));
                 if (!res.ok) {
-                    alert('Roblox user not found. Check spelling.');
+                    alert('Roblox username not found. Please check spelling.');
                     return;
                 }
                 const data = await res.json();
-                
-                document.getElementById('roblox-id-input').value = data.id;
-                document.getElementById('roblox-username-input').value = data.name;
-
-                document.getElementById('profile-display-name').textContent = data.displayName;
-                document.getElementById('profile-user-handle').textContent = '@' + data.name;
-                
-                // Account age / created date
-                const createdDate = new Date(data.created);
-                const diffTime = Math.abs(new Date() - createdDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                const ageText = diffDays > 365 
-                    ? `${(diffDays/365).toFixed(1)} years ago` 
-                    : `${diffDays} days ago`;
-                document.getElementById('profile-age').textContent = `Created: ${createdDate.toLocaleDateString()} (${ageText})`;
-
-                // Set avatar thumbnail
-                document.getElementById('profile-avatar').src = data.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png';
-
-                preview.style.display = 'flex';
-                authSection.style.display = 'block';
+                currentRobloxAccount = {
+                    id: data.id,
+                    name: data.name,
+                    displayName: data.displayName,
+                    avatarUrl: data.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                };
+                updateUI(currentRobloxAccount);
+                document.getElementById('change-account-drawer').style.display = 'none';
             } catch (err) {
                 console.error(err);
-                alert('Error looking up user from Roblox API.');
+                alert('Failed to connect to Roblox API.');
             }
+        }
+
+        function goToConsentStep() {
+            document.getElementById('step-select-account').style.display = 'none';
+            document.getElementById('step-consent-access').style.display = 'flex';
+        }
+
+        function backToStep1() {
+            document.getElementById('step-consent-access').style.display = 'none';
+            document.getElementById('step-select-account').style.display = 'flex';
         }
     </script>
 </body>

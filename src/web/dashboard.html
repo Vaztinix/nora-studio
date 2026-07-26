@@ -2703,6 +2703,59 @@
                             <button class="save-btn" style="margin-top: 24px; width: 100%; padding: 15px; font-size: 0.95rem; font-weight: 600; border-radius: 12px; background: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);" onclick="saveUserProfile()">Save Profile Changes</button>
                         </div>
 
+                        
+                        <!-- Team Card Customization Panel -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    <i class="fas fa-id-badge"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Team Card Customization</h3>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Manage what your Team Member Card displays across directories and team profiles.</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600;">Team Display Name</label>
+                                    <input type="text" id="user-pref-teamDisplayName" placeholder="e.g. Vazzy | Lead Founder" style="width: 100%; box-sizing: border-box;">
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600;">Custom Badges / Role Tag</label>
+                                    <input type="text" id="user-pref-teamBadges" placeholder="e.g. 👑 Founder • 💻 Core Developer" style="width: 100%; box-sizing: border-box;">
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600;">Team Card Bio & Description</label>
+                                    <textarea id="user-pref-teamDescription" placeholder="Full-stack bot developer & community architect..." rows="3" style="width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+                                </div>
+
+                                <div style="background: rgba(0,0,0,0.15); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
+                                    <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 12px; display: block;">Social & Integration Links</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.78rem;">Website URL</label>
+                                            <input type="text" id="user-pref-teamLinkWeb" placeholder="https://vaztinix.dev" style="width: 100%; box-sizing: border-box;">
+                                        </div>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.78rem;">GitHub URL</label>
+                                            <input type="text" id="user-pref-teamLinkGithub" placeholder="https://github.com/vaztinix" style="width: 100%; box-sizing: border-box;">
+                                        </div>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.78rem;">Roblox Profile URL</label>
+                                            <input type="text" id="user-pref-teamLinkRoblox" placeholder="https://roblox.com/users/..." style="width: 100%; box-sizing: border-box;">
+                                        </div>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.78rem;">Discord Community Link</label>
+                                            <input type="text" id="user-pref-teamLinkDiscord" placeholder="https://discord.gg/..." style="width: 100%; box-sizing: border-box;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Connected Integrations (Roblox) -->
                         <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                             <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-link" style="color: var(--primary);"></i> Roblox Integration</h3>
@@ -7229,7 +7282,32 @@
                 // Populate My Profile Inputs
                 const roBox = document.getElementById('user-pref-robloxPublic');
                 const pubBox = document.getElementById('user-pref-profilePublic');
-                const bioBox = document.getElementById('user-pref-bio');
+                
+            if (user && user.prefs) {
+                const teamNameEl = document.getElementById('user-pref-teamDisplayName');
+                if (teamNameEl) teamNameEl.value = user.prefs.teamCardDisplayName || '';
+
+                const teamBadgesEl = document.getElementById('user-pref-teamBadges');
+                if (teamBadgesEl) teamBadgesEl.value = user.prefs.teamCardBadges || '';
+
+                const teamDescEl = document.getElementById('user-pref-teamDescription');
+                if (teamDescEl) teamDescEl.value = user.prefs.teamCardDescription || '';
+
+                if (user.prefs.teamCardLinks) {
+                    try {
+                        const links = typeof user.prefs.teamCardLinks === 'string' ? JSON.parse(user.prefs.teamCardLinks) : user.prefs.teamCardLinks;
+                        const w = document.getElementById('user-pref-teamLinkWeb');
+                        if (w) w.value = links.web || '';
+                        const g = document.getElementById('user-pref-teamLinkGithub');
+                        if (g) g.value = links.github || '';
+                        const r = document.getElementById('user-pref-teamLinkRoblox');
+                        if (r) r.value = links.roblox || '';
+                        const d = document.getElementById('user-pref-teamLinkDiscord');
+                        if (d) d.value = links.discord || '';
+                    } catch(e) {}
+                }
+            }
+            const bioBox = document.getElementById('user-pref-bio');
                 const prefLangBox = document.getElementById('pref-language');
                 const dmNotifBox = document.getElementById('user-pref-dmNotificationsEnabled');
                 const dmLevelsBox = document.getElementById('user-pref-dmNotifLevels');

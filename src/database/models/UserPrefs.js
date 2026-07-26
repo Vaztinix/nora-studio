@@ -146,6 +146,27 @@ const UserPrefs = sequelize.define('UserPrefs', {
         allowNull: true,
         defaultValue: null
     },
+    
+    // ---- Team Card Customization ----
+    teamCardDisplayName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    teamCardDescription: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    teamCardBadges: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    teamCardLinks: {
+        type: DataTypes.TEXT,
+        defaultValue: '{}'
+    },
     customCardShape: {
         type: DataTypes.STRING,
         defaultValue: 'default' // 'default' allows fallback to GuildSettings server shape
