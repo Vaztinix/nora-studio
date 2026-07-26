@@ -9494,7 +9494,8 @@
                     }
                     
                     document.querySelectorAll('.tab-content').forEach(tc => {
-                        tc.style.display = 'none';
+                        tc.classList.remove('active');
+                        tc.style.setProperty('display', 'none', 'important');
                         tc.classList.remove('view-transition');
                     });
                     document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
@@ -9502,7 +9503,8 @@
                     if (btn) btn.classList.add('active');
                     const content = document.getElementById(tabId);
                     if (content) {
-                        content.style.display = 'block';
+                        content.classList.add('active');
+                        content.style.setProperty('display', 'block', 'important');
                         void content.offsetWidth; // Trigger reflow for animation
                         content.classList.add('view-transition');
                     }
