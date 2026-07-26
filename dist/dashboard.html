@@ -2704,16 +2704,25 @@
                         </div>
 
                         
-                        <!-- Team Card Customization Panel -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                                    <i class="fas fa-id-badge"></i>
+                        
+                        <!-- Team Card Customization Panel (Only visible to Team Card owners) -->
+                        <div id="team-card-customization-panel" style="display: none; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                        <i class="fas fa-id-badge"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                            Team Card Customization
+                                            <span style="font-size: 0.7rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 2px 8px; border-radius: 99px; border: 1px solid rgba(245, 158, 11, 0.3);">Verified Team Member</span>
+                                        </h3>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Manage what your official Team Card displays across Nora directories and team showcases.</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Team Card Customization</h3>
-                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Manage what your Team Member Card displays across directories and team profiles.</p>
-                                </div>
+                                <button type="button" onclick="saveTeamCardPrefs()" style="padding: 8px 16px; font-size: 0.82rem; background: #5865F2; color: #ffffff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;">
+                                    <i class="fas fa-save"></i> Save Team Card
+                                </button>
                             </div>
 
                             <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -2733,8 +2742,13 @@
                                 </div>
 
                                 <div style="background: rgba(0,0,0,0.15); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
-                                    <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 12px; display: block;">Social & Integration Links</label>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                        <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 0;">Social & Integration Links</label>
+                                        <button type="button" class="config-btn" style="width: auto; padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="addCustomTeamLink()">
+                                            <i class="fas fa-plus" style="margin-right: 4px;"></i> Add More Links
+                                        </button>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                                         <div class="input-group" style="margin-bottom: 0;">
                                             <label style="font-size: 0.78rem;">Website URL</label>
                                             <input type="text" id="user-pref-teamLinkWeb" placeholder="https://vaztinix.dev" style="width: 100%; box-sizing: border-box;">
@@ -2752,6 +2766,9 @@
                                             <input type="text" id="user-pref-teamLinkDiscord" placeholder="https://discord.gg/..." style="width: 100%; box-sizing: border-box;">
                                         </div>
                                     </div>
+
+                                    <!-- Dynamic Additional Custom Links -->
+                                    <div id="custom-team-links-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -7283,7 +7300,23 @@
                 const roBox = document.getElementById('user-pref-robloxPublic');
                 const pubBox = document.getElementById('user-pref-profilePublic');
                 
-            if (d && d.prefs) {
+            const TEAM_CARD_USER_IDS = [
+                '1214048435632603137',
+                '1366229304257544213',
+                '914530504718561351',
+                '1375943730951098549',
+                '941084096673755188',
+                '1301949827701149697',
+                '1364634555977564230',
+                '734113955986931734'
+            ];
+            const hasTeamCardAccess = d.isOwner || d.isTeamMember || d.hasTeamCard || (d.prefs && d.prefs.hasTeamCard) || TEAM_CARD_USER_IDS.includes(String(d.id));
+            const teamPanelEl = document.getElementById('team-card-customization-panel');
+            if (teamPanelEl) {
+                teamPanelEl.style.display = hasTeamCardAccess ? 'block' : 'none';
+            }
+
+            if (hasTeamCardAccess && d && d.prefs) {
                 const teamNameEl = document.getElementById('user-pref-teamDisplayName');
                 if (teamNameEl) teamNameEl.value = d.prefs.teamCardDisplayName || '';
 
@@ -7304,6 +7337,10 @@
                         if (r) r.value = links.roblox || '';
                         const discEl = document.getElementById('user-pref-teamLinkDiscord');
                         if (discEl) discEl.value = links.discord || '';
+                        if (Array.isArray(links.custom)) {
+                            customTeamLinksList = links.custom;
+                            renderCustomTeamLinksUI();
+                        }
                     } catch(err) {}
                 }
             }
@@ -7633,6 +7670,87 @@
                 showToast('Failed to save personal preferences.', 'error');
             }
         }
+
+        
+        let customTeamLinksList = [];
+
+        function renderCustomTeamLinksUI() {
+            const container = document.getElementById('custom-team-links-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            customTeamLinksList.forEach((link, idx) => {
+                const row = document.createElement('div');
+                row.style.cssText = 'display: flex; gap: 10px; align-items: center;';
+                row.innerHTML = `
+                    <input type="text" value="${(link.label || '').replace(/"/g, '&quot;')}" placeholder="Link Title (e.g. YouTube, Twitch)" oninput="updateCustomTeamLink(${idx}, 'label', this.value)" style="flex: 1; box-sizing: border-box; font-size: 0.82rem;">
+                    <input type="text" value="${(link.url || '').replace(/"/g, '&quot;')}" placeholder="https://..." oninput="updateCustomTeamLink(${idx}, 'url', this.value)" style="flex: 1.5; box-sizing: border-box; font-size: 0.82rem;">
+                    <button type="button" class="config-btn" style="width: auto; padding: 6px 10px; color: var(--danger); border-color: rgba(255,85,85,0.25);" onclick="removeCustomTeamLink(${idx})"><i class="fas fa-trash-alt"></i></button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addCustomTeamLink() {
+            customTeamLinksList.push({ label: '', url: '' });
+            renderCustomTeamLinksUI();
+        }
+
+        function removeCustomTeamLink(idx) {
+            customTeamLinksList.splice(idx, 1);
+            renderCustomTeamLinksUI();
+        }
+
+        function updateCustomTeamLink(idx, key, value) {
+            if (customTeamLinksList[idx]) {
+                customTeamLinksList[idx][key] = value;
+            }
+        }
+
+        async function saveTeamCardPrefs() {
+            const teamCardDisplayName = document.getElementById('user-pref-teamDisplayName')?.value || '';
+            const teamCardBadges = document.getElementById('user-pref-teamBadges')?.value || '';
+            const teamCardDescription = document.getElementById('user-pref-teamDescription')?.value || '';
+            
+            const web = document.getElementById('user-pref-teamLinkWeb')?.value || '';
+            const github = document.getElementById('user-pref-teamLinkGithub')?.value || '';
+            const roblox = document.getElementById('user-pref-teamLinkRoblox')?.value || '';
+            const discord = document.getElementById('user-pref-teamLinkDiscord')?.value || '';
+
+            const payloadLinks = {
+                web,
+                github,
+                roblox,
+                discord,
+                custom: customTeamLinksList.filter(l => l.url && l.url.trim())
+            };
+
+            const t = sessionStorage.getItem('discord_token');
+            if (typeof toggleLoading === 'function') toggleLoading(true);
+            try {
+                await safeFetch('/api/user/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({
+                        teamCardDisplayName,
+                        teamCardBadges,
+                        teamCardDescription,
+                        teamCardLinks: JSON.stringify(payloadLinks)
+                    })
+                });
+                showToast('Team Card changes saved successfully!', 'success');
+            } catch (e) {
+                console.error('[Save Team Card Error]:', e);
+                showToast(`Failed to save Team Card: ${e.message}`, 'error');
+            } finally {
+                if (typeof toggleLoading === 'function') toggleLoading(false);
+            }
+        }
+        window.saveTeamCardPrefs = saveTeamCardPrefs;
+        window.addCustomTeamLink = addCustomTeamLink;
+        window.removeCustomTeamLink = removeCustomTeamLink;
+        window.updateCustomTeamLink = updateCustomTeamLink;
+    
 
         async function saveUserProfile() {
             const bioBox = document.getElementById('user-pref-bio');
