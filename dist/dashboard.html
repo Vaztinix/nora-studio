@@ -3237,7 +3237,7 @@
                         <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 10px 14px; font-weight: 700;">Main Menu</div>
                         <button class="h-tab active" data-tab="tab-overview"><span><i class="fas fa-chart-line"></i> Overview</span></button>
                         <button class="h-tab" data-tab="tab-safety"><span><i class="fas fa-shield-alt"></i> Security & Anti-Raid</span><span class="badge stable">v2.1</span></button>
-                        <button class="h-tab" data-tab="tab-verify"><span><i class="fas fa-user-check"></i> Roblox Verification</span><span class="badge stable">v2.4</span></button>
+                        <button class="h-tab" data-tab="tab-verify"><span><i class="fas fa-user-check"></i> Verification</span><span class="badge stable">v2.4</span></button>
                         <button class="h-tab" data-tab="tab-tickets"><span><i class="fas fa-ticket-alt"></i> Support Ticketing</span><span class="badge beta">Beta</span></button>
                         <button class="h-tab" data-tab="tab-starboard"><span><i class="fas fa-star"></i> Starboard</span><span class="badge stable">v2.5</span></button>
                         <button class="h-tab" data-tab="tab-applications"><span><i class="fas fa-file-signature"></i> Apps Builder</span><span class="badge dev">Dev</span></button>
@@ -4373,10 +4373,6 @@
                                 </div>
                             </div>
 
-                        </div>
-                    </div>
-                </div>
-
                 <div id="tab-leveling" class="tab-content">
                     <input type="hidden" id="setting-roleRewards">
                     <input type="hidden" id="setting-xpRoleMultipliers">
@@ -4697,74 +4693,150 @@
                     </div>
                 </div>
 
+                
                 <div id="tab-verify" class="tab-content" style="display: none;">
-
-
-                    <div class="panel">
-                        <h3>Verification System</h3>
-                        <p>Configure Nora's member verification gate.</p>
-                        <div class="input-group" style="margin-top: 15px; margin-bottom: 20px;">
-                            <label>Verify Channel</label>
-                            <select id="setting-verifyChannelId"><option value="">Select channel...</option></select>
-                        </div>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Verify Roles</label><input type="hidden" id="setting-verifyRoleId"></div>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the verification panel so the bot uses your latest configurations.</p>
-                        <div style="margin-top: 20px;">
-                             <button class="config-btn" onclick="triggerAction('spawn_verify', this)">Spawn Verify Panel</button>
-                        </div>
-                    </div>
-
-                    <div class="panel">
-                        <h3>Roblox Identity Core</h3>
-                        <div class="input-group" style="margin-bottom: 20px;"><label>Verified Role</label><select id="setting-robloxVerifyRoleId"><option value="">No role selected</option></select></div>
-                        <div class="input-group" style="margin-bottom: 20px;">
-                            <label>Spawn Channel</label>
-                            <select id="setting-robloxVerifyChannelId"><option value="">Select channel...</option></select>
-                        </div>
-                        <div class="row"><h4>Enable Verification Module</h4><label class="switch"><input type="checkbox" id="setting-robloxVerifyEnabled"><span class="slider"></span></label></div>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 15px; margin-bottom: 5px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> <strong>Important:</strong> Save settings in the top-right toolbar <strong>before</strong> spawning the verification panel so the bot uses your latest Roblox configurations.</p>
-                        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                             <button class="config-btn" onclick="triggerAction('spawn_verify_roblox', this)">Spawn Verify Panel</button>
-                             <button class="config-btn" onclick="triggerAction('check_group_ranks', this)">Check Group Ranks</button>
-                        </div>
-                    </div>
-
-                    <div class="panel">
-                        <h3>Reaction Role Settings</h3>
-                        <p>Configure how reaction role events behave on your server.</p>
-                        <div class="row">
-                            <h4>Direct Message Notifications</h4>
-                            <label class="switch">
-                                <input type="checkbox" id="setting-reactionRoleNotifyDm">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--muted); margin-top: 10px;">If enabled, users will receive a direct message confirmation when they add or remove a reaction role.</p>
-                    </div>
-
-                                        <div id="roblox-advanced-features" class="locked-feature">
-                        <div class="locked-overlay-text">🔒 VERIFICATION REQUIRED</div>
-                        <div class="panel">
-                            <h3>Live Presence Tracker (BETA)</h3>
-                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Real-time status monitoring for your linked Roblox account.</p>
-                            <div class="row" style="align-items: center; gap: 20px; background: rgba(0,0,0,0.1); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
-                                <div style="position: relative;">
-                                    <img id="roblox-presence-avatar" src="nora.png" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border); background: #000;" onerror="this.src='nora.png'">
-                                    <div id="roblox-presence-dot" style="position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; background: #555; border: 2px solid #1a1b1e;"></div>
-                                </div>
-                                <div style="flex: 1;">
-                                    <div id="roblox-presence-names" style="font-weight: 700; font-size: 1rem;">Roblox User</div>
-                                    <div id="roblox-presence-status" style="font-size: 0.85rem; color: var(--muted);">Click check status below...</div>
-                                    <button id="roblox-join-btn" class="config-btn" style="display: none; background: #2ea043; color: white; margin-top: 8px; border: none; width: auto; padding: 5px 12px; font-size: 0.8rem;"><i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Join Game</button>
-                                </div>
-                                <button class="config-btn" id="roblox-presence-btn" style="width: auto; padding: 8px 15px;" onclick="fetchRobloxPresence()">Check Status</button>
+                    <!-- Verification Hero Banner -->
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 36px; margin-bottom: 28px; backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);">
+                        <div style="max-width: 650px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="background: rgba(16, 185, 129, 0.25); color: #10b981; font-size: 0.72rem; padding: 3px 10px; border-radius: 999px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(16, 185, 129, 0.4);">Security & Identity Gatekeeper</span>
                             </div>
-                            <div class="row" style="margin-top: 15px;">
-                                <h4>Join User in Game (BETA)</h4>
-                                <label class="switch"><input type="checkbox" id="setting-robloxJoinGameEnabled"><span class="slider"></span></label>
+                            <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Server Verification & Identity Center</h1>
+                            <p style="color: rgba(255,255,255,0.75); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">Configure Discord onboarding gates and Roblox group identity sync to keep your community safe from alts and raiders.</p>
+                            
+                            <!-- Sub-view navigation buttons -->
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="config-btn active" id="verify-subnav-discord" onclick="switchVerifySubnav('discord')" style="width: auto; padding: 8px 18px; font-size: 0.82rem; border-radius: 10px; background: rgba(255,255,255,0.12); color: #fff; font-weight: 700;">
+                                    <i class="fab fa-discord" style="margin-right: 6px; color: #5865F2;"></i> Standard Discord Verification
+                                </button>
+                                <button type="button" class="config-btn" id="verify-subnav-roblox" onclick="switchVerifySubnav('roblox')" style="width: auto; padding: 8px 18px; font-size: 0.82rem; border-radius: 10px; background: rgba(255,255,255,0.04); color: #ccc; font-weight: 600;">
+                                    <i class="fas fa-cube" style="margin-right: 6px; color: #00a2ff;"></i> Roblox Verification & Group Sync
+                                </button>
                             </div>
                         </div>
                     </div>
+
+                    <!-- SECTION 1: Standard Discord Verification -->
+                    <div id="verify-section-discord" style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 28px; align-items: start;">
+                        <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Discord Gatekeeper Configuration</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 24px;">Configure standard Discord verification methods, auto-role granting, and onboarding panel spawning.</p>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Verification Spawn Channel</label>
+                                <select id="setting-verifyChannelId" style="width: 100%; box-sizing: border-box;">
+                                    <option value="">Select channel...</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Verified Member Role</label>
+                                <select id="setting-verifyRoleId" style="width: 100%; box-sizing: border-box;">
+                                    <option value="">Select role to assign upon verification...</option>
+                                </select>
+                            </div>
+
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 12px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px;">
+                                <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">Protection Rules</div>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <span style="font-size: 0.8rem; color: var(--muted);">Require Minimum Account Age (7 Days)</span>
+                                    <label class="switch small"><input type="checkbox" id="setting-minAccountAgeEnabled"><span class="slider"></span></label>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <span style="font-size: 0.8rem; color: var(--muted);">Alt Account Flagging & Raid Prevention</span>
+                                    <label class="switch small"><input type="checkbox" id="setting-altPreventionEnabled"><span class="slider"></span></label>
+                                </div>
+                            </div>
+
+                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> Save settings in the top toolbar before spawning the verification panel.</p>
+                            <button type="button" class="config-btn primary" onclick="triggerAction('spawn_verify', this)" style="width: 100%; padding: 12px; font-weight: 800; font-size: 0.9rem; background: var(--primary); color: #fff; border-radius: 10px;">
+                                <i class="fas fa-paper-plane" style="margin-right: 6px;"></i> Spawn Discord Verification Panel
+                            </button>
+                        </div>
+
+                        <!-- Live Preview Card -->
+                        <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 16px;">Live Panel Embed Preview</h3>
+                            <div style="background: #313338; border-radius: 14px; padding: 20px; font-family: 'gg sans', sans-serif; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);">
+                                <div style="display: flex; gap: 14px; align-items: flex-start;">
+                                    <img src="nora.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" onerror="this.src='nora.png';">
+                                    <div style="flex: 1; overflow: hidden;">
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                            <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">Nora Gatekeeper</span>
+                                            <span style="background: #5865F2; color: #fff; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; font-weight: 700;">BOT</span>
+                                        </div>
+                                        <div style="border-left: 4px solid #10b981; background: #2b2d31; border-radius: 4px; padding: 14px 16px; margin-top: 4px;">
+                                            <div style="font-weight: 700; color: #fff; font-size: 0.98rem; margin-bottom: 6px;">🔒 Server Verification</div>
+                                            <div style="font-size: 0.88rem; color: #dbdee1; line-height: 1.4;">Click the button below to verify your Discord account and gain access to the community channels.</div>
+                                        </div>
+                                        <div style="margin-top: 10px;">
+                                            <button style="background: #248046; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">✅ Verify Account</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: Roblox Verification & Group Sync -->
+                    <div id="verify-section-roblox" style="display: none; flex-direction: column; gap: 24px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                            <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">Roblox Identity Core</h3>
+                                    <label class="switch"><input type="checkbox" id="setting-robloxVerifyEnabled"><span class="slider"></span></label>
+                                </div>
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Enable Roblox verification gates and automatically synchronize Roblox avatar profiles with Nora.</p>
+
+                                <div class="input-group" style="margin-bottom: 18px;">
+                                    <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Roblox Verified Role</label>
+                                    <select id="setting-robloxVerifyRoleId" style="width: 100%; box-sizing: border-box;">
+                                        <option value="">No role selected</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 20px;">
+                                    <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Roblox Verification Spawn Channel</label>
+                                    <select id="setting-robloxVerifyChannelId" style="width: 100%; box-sizing: border-box;">
+                                        <option value="">Select channel...</option>
+                                    </select>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <button type="button" class="config-btn" onclick="triggerAction('spawn_verify_roblox', this)" style="padding: 10px; font-weight: 700; font-size: 0.82rem;">Spawn Roblox Panel</button>
+                                    <button type="button" class="config-btn" onclick="triggerAction('check_group_ranks', this)" style="padding: 10px; font-weight: 700; font-size: 0.82rem;">Sync Group Ranks</button>
+                                </div>
+                            </div>
+
+                            <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
+                                <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Live Roblox Presence Tracker</h3>
+                                <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Monitor live in-game status of linked Roblox members.</p>
+
+                                <div style="display: flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                                    <img id="roblox-presence-avatar" src="nora.png" style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover;" onerror="this.src='nora.png';">
+                                    <div style="flex: 1;">
+                                        <div id="roblox-presence-names" style="font-weight: 700; color: #fff; font-size: 0.95rem;">Roblox User</div>
+                                        <div id="roblox-presence-status" style="font-size: 0.8rem; color: var(--muted);">Click check status below...</div>
+                                    </div>
+                                    <button type="button" class="config-btn" id="roblox-presence-btn" onclick="fetchRobloxPresence()" style="width: auto; padding: 8px 14px; font-size: 0.8rem;">Check Status</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Roblox Group Bindings -->
+                        <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">Roblox Group Rank Bindings</h3>
+                                <button type="button" class="config-btn primary" onclick="addRobloxGroupBinding()" style="width: auto; padding: 6px 14px; font-size: 0.8rem; background: var(--primary); color: #fff; font-weight: 700; border-radius: 10px;">+ Add Group Binding</button>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Automatically assign Discord roles based on a user's rank in a specific Roblox group.</p>
+                            <div id="roblox-group-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+                                <!-- Group rows injected here -->
+                            </div>
+                            <input type="hidden" id="setting-robloxGroupBindings">
+                        </div>
+                    </div>
+                </div>
 
                     <div class="panel">
                         <h3>Roblox Group Bindings</h3>
@@ -4888,40 +4960,133 @@
                     </div>
                 </div>
 
+                
                 <div id="tab-tickets" class="tab-content" style="display: none;">
-                    <div style="display: flex; flex-direction: column; gap: 25px;">
-                        <!-- Top Block: Interactive Live Preview -->
-                        <div class="panel">
-                            <h3>Interactive Ticket Preview</h3>
-                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
-                                Live preview of the ticketing panel in Discord. Click the buttons to test the intake modal form.
-                            </p>
+                    <!-- Tickets Hero Banner -->
+                    <div style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.15) 0%, rgba(14, 165, 233, 0.1) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 36px; margin-bottom: 28px; backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);">
+                        <div style="max-width: 650px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="background: rgba(88, 101, 242, 0.25); color: #5865F2; font-size: 0.72rem; padding: 3px 10px; border-radius: 999px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(88, 101, 242, 0.4);">Support System</span>
+                            </div>
+                            <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Support Ticket Panel & Help Desk</h1>
+                            <p style="color: rgba(255,255,255,0.75); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">Create private, multi-category support ticket channels with customizable Discord buttons and live preview.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 28px; align-items: start;">
+                        <!-- Left Panel: Controls & Customization -->
+                        <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Ticket Panel Configuration</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 24px;">Configure channels, category parent, embed titles, and button colors.</p>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Ticket Spawn Channel</label>
+                                <select id="setting-ticketChannelId" style="width: 100%; box-sizing: border-box;">
+                                    <option value="">Select channel...</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Ticket Category Parent ID</label>
+                                <input type="text" id="setting-ticketCategoryId" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Embed Title</label>
+                                <input type="text" id="setting-ticketEmbedTitle" placeholder="Support Center" value="🎫 Support & Help Desk" style="width: 100%; box-sizing: border-box;" oninput="updateTicketPreview()">
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Embed Description</label>
+                                <textarea id="setting-ticketEmbedDesc" placeholder="Describe how members can open a ticket..." style="width: 100%; min-height: 80px; box-sizing: border-box;" oninput="updateTicketPreview()">Need help or have a question? Click one of the buttons below to open a private support ticket with our team!</textarea>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 24px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Accent Color</label>
+                                <input type="color" id="setting-ticketEmbedColor" value="#5865F2" style="height: 42px; width: 100%; cursor: pointer; padding: 4px;" oninput="updateTicketPreview()">
+                            </div>
+
+                            <div style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
+                                <h4 style="margin: 0 0 16px 0; font-size: 1rem; font-weight: 800; color: #fff;">Button Styles</h4>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                    <div>
+                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Support</label>
+                                        <select id="setting-ticketBtnStyleSupport" style="width: 100%;" onchange="updateTicketPreview()">
+                                            <option value="Primary">Blurple</option>
+                                            <option value="Secondary">Grey</option>
+                                            <option value="Success">Green</option>
+                                            <option value="Danger">Red</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Reporting</label>
+                                        <select id="setting-ticketBtnStyleReporting" style="width: 100%;" onchange="updateTicketPreview()">
+                                            <option value="Danger">Red</option>
+                                            <option value="Primary">Blurple</option>
+                                            <option value="Secondary">Grey</option>
+                                            <option value="Success">Green</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+                                    <div>
+                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Appeals</label>
+                                        <select id="setting-ticketBtnStyleAppeals" style="width: 100%;" onchange="updateTicketPreview()">
+                                            <option value="Secondary">Grey</option>
+                                            <option value="Primary">Blurple</option>
+                                            <option value="Success">Green</option>
+                                            <option value="Danger">Red</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Other</label>
+                                        <select id="setting-ticketBtnStyleOther" style="width: 100%;" onchange="updateTicketPreview()">
+                                            <option value="Secondary">Grey</option>
+                                            <option value="Primary">Blurple</option>
+                                            <option value="Success">Green</option>
+                                            <option value="Danger">Red</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="save-btn" onclick="triggerAction('spawn_tickets', this)" style="width: 100%; padding: 14px; font-weight: 800; font-size: 0.95rem; background: #ffffff !important; color: #000000 !important; border-radius: 12px; box-shadow: 0 4px 15px rgba(255,255,255,0.2);">
+                                <i class="fas fa-ticket-alt" style="margin-right: 6px;"></i> Spawn Support Ticket Panel
+                            </button>
+                        </div>
+
+                        <!-- Right Panel: Live Discord Buttons Simulator -->
+                        <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 16px;">Live Discord Ticket Panel Preview</h3>
                             
-                            <div class="discord-preview-container" style="background: #313338; border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); font-family: sans-serif;">
-                                <div class="discord-msg" style="display: flex; gap: 15px;">
-                                    <img class="discord-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0;">
-                                    <div class="discord-content" style="flex: 1;">
-                                        <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
-                                            <span>Nora</span>
-                                            <span class="discord-bot-tag" style="background: #5865F2; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; text-transform: uppercase;">APP</span>
+                            <div style="background: #313338; border-radius: 14px; padding: 20px; font-family: 'gg sans', sans-serif; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);">
+                                <div style="display: flex; gap: 14px; align-items: flex-start;">
+                                    <img src="nora.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" onerror="this.src='nora.png';">
+                                    <div style="flex: 1; overflow: hidden;">
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                            <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">Nora Support</span>
+                                            <span style="background: #5865F2; color: #fff; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; font-weight: 700;">BOT</span>
                                         </div>
-                                        
-                                        <!-- Embed Box -->
-                                        <div id="ticket-preview-embed" class="discord-embed" style="background: #2b2d31; border-left: 4px solid #ffffff; padding: 12px; margin-top: 8px; border-radius: 4px; max-width: 520px; box-sizing: border-box;">
-                                            <div id="ticket-preview-title" class="discord-embed-title" style="color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 6px;">Support Center</div>
-                                            <div id="ticket-preview-desc" class="discord-embed-desc" style="color: #dbdee1; font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap;">Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.</div>
-                                            <div style="font-size: 0.72rem; color: #949ba4; margin-top: 8px;">Support Ticketing System</div>
+
+                                        <div id="ticket-preview-embed" style="border-left: 4px solid #5865F2; background: #2b2d31; border-radius: 4px; padding: 14px 16px; margin-top: 4px;">
+                                            <div id="ticket-preview-title" style="font-weight: 700; color: #fff; font-size: 0.98rem; margin-bottom: 6px;">🎫 Support & Help Desk</div>
+                                            <div id="ticket-preview-desc" style="font-size: 0.88rem; color: #dbdee1; line-height: 1.4;">Need help or have a question? Click one of the buttons below to open a private support ticket with our team!</div>
                                         </div>
-                                        
-                                        <!-- Buttons Row -->
-                                        <div id="ticket-preview-buttons" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
-                                            <button id="preview-btn-support" class="discord-btn discord-btn-primary" onclick="showMockTicketModal('Support')">Support</button>
-                                            <button id="preview-btn-reporting" class="discord-btn discord-btn-danger" onclick="showMockTicketModal('Reporting')">Reporting</button>
-                                            <button id="preview-btn-appeals" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Appeals')">Appeals</button>
-                                            <button id="preview-btn-other" class="discord-btn discord-btn-secondary" onclick="showMockTicketModal('Other')">Other</button>
+
+                                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+                                            <button id="preview-btn-support" class="discord-btn discord-btn-primary" style="padding: 6px 14px; font-size: 0.85rem;">Support</button>
+                                            <button id="preview-btn-reporting" class="discord-btn discord-btn-danger" style="padding: 6px 14px; font-size: 0.85rem;">Reporting</button>
+                                            <button id="preview-btn-appeals" class="discord-btn discord-btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;">Appeals</button>
+                                            <button id="preview-btn-other" class="discord-btn discord-btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;">Other</button>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                             </div>
                         </div>
 
@@ -9350,7 +9515,7 @@
                         'tab-reactionroles': 'Reaction Roles',
                         'tab-welcome': 'Games & Counting',
                         'tab-logging': 'Server Logging',
-                        'tab-verify': 'Verification & Onboarding',
+                        'tab-verify': 'Verification',
                         'tab-leveling': 'Leveling System',
                         'tab-safety': 'Security & Anti-Raid',
                         'tab-automod': 'AutoMod',
