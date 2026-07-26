@@ -3676,29 +3676,145 @@
                             </div>
                         </div>
 
-                        <!-- 4. Warning Thresholds & Punishments -->
+                        
+                        <!-- 4. Warning & Moderation System (Visual Server Overview & Actions Feed) -->
                         <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">4. Warning Thresholds & Punishment Rules</h3>
-                            
-                            <div class="row-inputs">
-                                <div class="input-group">
-                                    <label style="font-weight: 600;">Warning Limit</label>
-                                    <input type="number" id="setting-warningThreshold" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-gavel" style="color: var(--primary);"></i> Warning & Moderation System
+                                    </h3>
+                                    <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--muted);">Visual server overview of member warnings, mutes, kicks, bans, and quick moderation tools.</p>
                                 </div>
-                                <div class="input-group">
-                                    <label style="font-weight: 600;">Automated Action</label>
-                                    <select id="setting-warningAction">
-                                        <option value="">Select Option</option>
-                                        <option value="none">Notify Staff Only</option>
-                                        <option value="timeout">Timeout User</option>
-                                        <option value="kick">Kick User</option>
-                                        <option value="ban">Ban User</option>
+
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button type="button" class="save-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; background: var(--primary); color: #fff; font-weight: 700; border-radius: 8px;" onclick="openModActionModal()">
+                                        <i class="fas fa-plus-circle" style="margin-right: 6px;"></i> Issue Mod Action
+                                    </button>
+                                    <button type="button" class="config-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: #fff; font-weight: 600;" onclick="loadModLogs()">
+                                        <i class="fas fa-sync-alt" style="margin-right: 6px;"></i> Refresh Feed
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Moderation Telemetry Summary Bar -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Active Warnings</div>
+                                    <div id="mod-stat-warnings" style="font-size: 1.25rem; font-weight: 800; color: #f59e0b; margin-top: 4px;">0 Active</div>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Timeouts / Mutes</div>
+                                    <div id="mod-stat-timeouts" style="font-size: 1.25rem; font-weight: 800; color: #0ea5e9; margin-top: 4px;">0 Active</div>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Bans Issued</div>
+                                    <div id="mod-stat-bans" style="font-size: 1.25rem; font-weight: 800; color: #ef4444; margin-top: 4px;">0 Bans</div>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Total Cases Logged</div>
+                                    <div id="mod-stat-total" style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-top: 4px;">0 Cases</div>
+                                </div>
+                            </div>
+
+                            <!-- Automated Warning Escalation Rules -->
+                            <div style="background: rgba(0,0,0,0.15); border-radius: 12px; padding: 18px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.04);">
+                                <h4 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0 0 12px 0;">Automated Warning Rules</h4>
+                                <div class="row-inputs">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Warning Limit Threshold</label>
+                                        <input type="number" id="setting-warningThreshold" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Action on Reaching Threshold</label>
+                                        <select id="setting-warningAction">
+                                            <option value="">Select Option</option>
+                                            <option value="none">Notify Staff Only</option>
+                                            <option value="timeout">Timeout User</option>
+                                            <option value="kick">Kick User</option>
+                                            <option value="ban">Ban User</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Inline Moderation Action Drawer/Box -->
+                            <div id="mod-action-box" style="display: none; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                    <h4 style="margin: 0; color: #fff; font-weight: 700; font-size: 1rem;">Execute Moderation Action</h4>
+                                    <button type="button" onclick="closeModActionModal()" style="background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 1rem;"><i class="fas fa-times"></i></button>
+                                </div>
+
+                                <div class="row-inputs">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Target User ID <span style="color: #ef4444;">*</span></label>
+                                        <input type="text" id="mod-input-userid" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Action Type</label>
+                                        <select id="mod-input-action">
+                                            <option value="WARN">Warn User</option>
+                                            <option value="TIMEOUT">Timeout User</option>
+                                            <option value="KICK">Kick User</option>
+                                            <option value="BAN">Ban User</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Duration (Mins, Timeout Only)</label>
+                                        <input type="number" id="mod-input-duration" value="10" placeholder="10" style="width: 100%; box-sizing: border-box;">
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="margin-top: 12px;">
+                                    <label style="font-weight: 600;">Reason / Notes</label>
+                                    <input type="text" id="mod-input-reason" placeholder="e.g. Repeated spamming after warning" style="width: 100%; box-sizing: border-box;">
+                                </div>
+
+                                <button type="button" class="save-btn" style="margin-top: 14px; width: 100%; padding: 12px; font-weight: 700; background: var(--primary); color: #fff; border-radius: 8px;" onclick="submitModAction()">
+                                    Submit & Execute Action
+                                </button>
+                            </div>
+
+                            <!-- ModLog & User Actions Feed Table Header & Search -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                                <h4 style="margin: 0; color: #fff; font-weight: 700; font-size: 0.95rem;">ModLogs & User Actions Feed</h4>
+                                <div style="display: flex; gap: 10px; flex: 1; max-width: 500px;">
+                                    <input type="text" id="modlog-search" placeholder="Search by User, Mod, or Case ID..." oninput="filterModLogs()" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
+                                    <select id="modlog-filter-action" onchange="filterModLogs()" style="width: 160px; box-sizing: border-box; font-size: 0.82rem;">
+                                        <option value="ALL">All Actions</option>
+                                        <option value="WARN">Warnings</option>
+                                        <option value="TIMEOUT">Timeouts / Mutes</option>
+                                        <option value="KICK">Kicks</option>
+                                        <option value="BAN">Bans</option>
                                     </select>
                                 </div>
                             </div>
+
+                            <!-- ModLogs Table -->
+                            <div style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #dbdee1; text-align: left;">
+                                    <thead>
+                                        <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem;">
+                                            <th style="padding: 10px 14px;">Case ID</th>
+                                            <th style="padding: 10px 14px;">Timestamp</th>
+                                            <th style="padding: 10px 14px;">Target User</th>
+                                            <th style="padding: 10px 14px;">Action</th>
+                                            <th style="padding: 10px 14px;">Moderator</th>
+                                            <th style="padding: 10px 14px;">Reason / Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="modlog-tbody">
+                                        <tr>
+                                            <td colspan="6" style="padding: 25px; text-align: center; color: var(--muted);">
+                                                Loading moderation logs...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
-                        <!-- 5. Real Blocked Content & Action Audit Log -->
+                        <!-- 5. Blocked Content & Enforcement Log -->
                         <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
                                 <div>
@@ -8826,6 +8942,180 @@
         window.syncRealSecurityStats = syncRealSecurityStats;
         window.loadSecurityAuditLogs = loadSecurityAuditLogs;
         window.filterSecurityAuditLogs = filterSecurityAuditLogs;
+
+        
+        window.rawModLogs = [];
+
+        function openModActionModal() {
+            const box = document.getElementById('mod-action-box');
+            if (box) box.style.display = 'block';
+        }
+
+        function closeModActionModal() {
+            const box = document.getElementById('mod-action-box');
+            if (box) box.style.display = 'none';
+        }
+
+        async function submitModAction() {
+            const userId = (document.getElementById('mod-input-userid')?.value || '').trim();
+            const action = document.getElementById('mod-input-action')?.value || 'WARN';
+            const durationMinutes = document.getElementById('mod-input-duration')?.value || '10';
+            const reason = (document.getElementById('mod-input-reason')?.value || '').trim();
+
+            if (!userId) {
+                showToast('Please enter a valid target Discord User ID!', 'error');
+                return;
+            }
+
+            if (!window.currentGuildId) {
+                showToast('Please select a server first!', 'error');
+                return;
+            }
+
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const res = await fetch(`${apiBase}/api/guilds/${window.currentGuildId}/moderate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_token')}`
+                    },
+                    body: JSON.stringify({ userId, action, reason, durationMinutes })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    showToast(`${action} executed for ${userId} (${data.caseId})`, 'success');
+                    closeModActionModal();
+                    document.getElementById('mod-input-userid').value = '';
+                    document.getElementById('mod-input-reason').value = '';
+                    loadModLogs();
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    showToast(d.error || 'Failed to submit moderation action.', 'error');
+                }
+            } catch (e) {
+                console.error('Failed submitting mod action:', e);
+                showToast('Error communicating with server.', 'error');
+            }
+        }
+
+        async function loadModLogs() {
+            const tbody = document.getElementById('modlog-tbody');
+            if (!tbody) return;
+
+            if (!window.currentGuildId) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--muted);">Select a server to view moderation log history.</td></tr>';
+                return;
+            }
+
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const res = await fetch(`${apiBase}/api/guilds/${window.currentGuildId}/modlogs`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_token')}`
+                    }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    window.rawModLogs = data.modlogs || [];
+                    
+                    if (data.stats) {
+                        const warnEl = document.getElementById('mod-stat-warnings');
+                        if (warnEl) warnEl.textContent = `${data.stats.activeWarnings || 0} Active`;
+
+                        const timeEl = document.getElementById('mod-stat-timeouts');
+                        if (timeEl) timeEl.textContent = `${data.stats.totalTimeouts || 0} Active`;
+
+                        const banEl = document.getElementById('mod-stat-bans');
+                        if (banEl) banEl.textContent = `${data.stats.totalBans || 0} Bans`;
+
+                        const totEl = document.getElementById('mod-stat-total');
+                        if (totEl) totEl.textContent = `${data.stats.totalCases || 0} Cases`;
+                    }
+                } else {
+                    window.rawModLogs = [];
+                }
+            } catch (e) {
+                console.error('Failed fetching modlogs:', e);
+                window.rawModLogs = [];
+            }
+
+            filterModLogs();
+        }
+
+        function filterModLogs() {
+            const tbody = document.getElementById('modlog-tbody');
+            if (!tbody) return;
+
+            const searchVal = (document.getElementById('modlog-search')?.value || '').toLowerCase().trim();
+            const actionVal = document.getElementById('modlog-filter-action')?.value || 'ALL';
+
+            const filtered = window.rawModLogs.filter(item => {
+                const matchesSearch = !searchVal ||
+                    (item.caseId && item.caseId.toLowerCase().includes(searchVal)) ||
+                    (item.userTag && item.userTag.toLowerCase().includes(searchVal)) ||
+                    (item.userId && item.userId.includes(searchVal)) ||
+                    (item.moderatorTag && item.moderatorTag.toLowerCase().includes(searchVal)) ||
+                    (item.reason && item.reason.toLowerCase().includes(searchVal));
+
+                const matchesAction = actionVal === 'ALL' || (item.action && item.action.toUpperCase().includes(actionVal));
+                return matchesSearch && matchesAction;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--muted);">No moderation logs found for this server.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => {
+                const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleString() : 'N/A';
+                let badgeStyle = 'background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);';
+                
+                const act = (item.action || 'WARN').toUpperCase();
+                if (act.includes('BAN')) {
+                    badgeStyle = 'background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);';
+                } else if (act.includes('KICK')) {
+                    badgeStyle = 'background: rgba(249, 115, 22, 0.15); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.3);';
+                } else if (act.includes('TIMEOUT') || act.includes('MUTE')) {
+                    badgeStyle = 'background: rgba(14, 165, 233, 0.15); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.3);';
+                }
+
+                return `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--primary); font-family: monospace;">${item.caseId || '#0'}</td>
+                        <td style="padding: 10px 14px; color: var(--muted); font-size: 0.78rem; white-space: nowrap;">${timeStr}</td>
+                        <td style="padding: 10px 14px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <img src="${item.userAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 22px; height: 22px; border-radius: 50%;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
+                                <div>
+                                    <div style="font-weight: 600; color: #fff;">${item.userTag || 'User'}</div>
+                                    <div style="font-size: 0.7rem; color: var(--muted);">ID: ${item.userId || 'N/A'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 10px 14px;">
+                            <span style="font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; ${badgeStyle}">
+                                ${act}
+                            </span>
+                        </td>
+                        <td style="padding: 10px 14px; color: var(--muted); font-size: 0.8rem;">
+                            ${item.moderatorTag || 'Nora System'}
+                        </td>
+                        <td style="padding: 10px 14px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; color: #f2f3f5;">
+                            ${item.reason || 'No details specified'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.openModActionModal = openModActionModal;
+        window.closeModActionModal = closeModActionModal;
+        window.submitModAction = submitModAction;
+        window.loadModLogs = loadModLogs;
+        window.filterModLogs = filterModLogs;
 
         function showTab(tabId) {
             if (tabId === 'tab-automod') tabId = 'tab-safety';

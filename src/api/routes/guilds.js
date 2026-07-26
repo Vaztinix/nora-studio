@@ -3399,3 +3399,147 @@ router.get('/security-logs', async (req, res) => {
         res.status(500).json({ error: e.message, logs: [] });
     }
 });
+
+
+/**
+ * GET /api/guilds/:guildId/modlogs
+ * Returns visual server overview of modlogs and user actions (warnings, kicks, bans, timeouts).
+ */
+router.get('/modlogs', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = req.client.guilds.cache.get(guildId);
+
+        // Fetch all cases from database
+        const cases = await Case.findAll({
+            where: { guildId },
+            order: [['createdAt', 'DESC']],
+            limit: 100
+        });
+
+        // Count totals
+        const warningsCount = await Warning.count({ where: { guildId, active: true } });
+        const bansCount = cases.filter(c => c.type === 'BAN' || c.type === 'TEMPBAN').length;
+        const kicksCount = cases.filter(c => c.type === 'KICK').length;
+        const timeoutsCount = cases.filter(c => c.type === 'TIMEOUT' || c.type === 'MUTE').length;
+
+        // Enrich cases with target user & moderator metadata
+        const enrichedCases = await Promise.all(cases.map(async (c) => {
+            let targetTag = `User (${c.userId})`;
+            let targetAvatar = `https://cdn.discordapp.com/embed/avatars/${parseInt(c.userId || '0') % 5}.png`;
+            let modTag = c.moderatorId === 'System' ? 'Nora AutoMod' : `Mod (${c.moderatorId})`;
+
+            if (guild) {
+                const targetMember = guild.members.cache.get(c.userId) || await guild.members.fetch(c.userId).catch(() => null);
+                if (targetMember) {
+                    targetTag = targetMember.user.tag || targetMember.user.username;
+                    targetAvatar = targetMember.user.displayAvatarURL({ dynamic: true, size: 64 }) || targetAvatar;
+                }
+
+                if (c.moderatorId !== 'System') {
+                    const modMember = guild.members.cache.get(c.moderatorId) || await guild.members.fetch(c.moderatorId).catch(() => null);
+                    if (modMember) {
+                        modTag = modMember.user.tag || modMember.user.username;
+                    }
+                }
+            }
+
+            return {
+                id: c.id,
+                caseId: `#${c.id}`,
+                timestamp: c.createdAt,
+                userId: c.userId,
+                userTag: targetTag,
+                userAvatar: targetAvatar,
+                moderatorId: c.moderatorId,
+                moderatorTag: modTag,
+                action: c.type || 'WARN',
+                reason: c.reason || 'No reason provided',
+                status: c.status || 'active'
+            };
+        }));
+
+        res.json({
+            stats: {
+                totalCases: cases.length,
+                activeWarnings: warningsCount,
+                totalBans: bansCount,
+                totalKicks: kicksCount,
+                totalTimeouts: timeoutsCount
+            },
+            modlogs: enrichedCases
+        });
+    } catch (e) {
+        console.error('Error fetching modlogs:', e);
+        res.status(500).json({ error: e.message, stats: {}, modlogs: [] });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/moderate
+ * Issues a new moderation action (warn, timeout, kick, ban) from dashboard.
+ */
+router.post('/moderate', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { userId, action, reason, durationMinutes } = req.body;
+
+        if (!userId) return res.status(400).json({ error: 'User ID is required.' });
+        if (!action) return res.status(400).json({ error: 'Action type is required.' });
+
+        const guild = req.client.guilds.cache.get(guildId);
+        const moderatorId = req.user ? req.user.id : 'Dashboard Admin';
+
+        // 1. Create Case in database
+        const newCase = await Case.create({
+            guildId,
+            userId,
+            moderatorId,
+            type: action.toUpperCase(),
+            reason: reason || 'Issued via Nora Studio Dashboard'
+        });
+
+        // 2. If action is WARN, also create Warning record
+        if (action.toUpperCase() === 'WARN') {
+            await Warning.create({
+                guildId,
+                userId,
+                moderatorId,
+                reason: reason || 'Issued via Nora Studio Dashboard',
+                active: true
+            });
+        }
+
+        // 3. Attempt physical action in Discord if bot is in guild
+        let discordActionResult = 'Recorded in database';
+        if (guild) {
+            const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+            if (member) {
+                try {
+                    if (action.toUpperCase() === 'TIMEOUT' && member.moderatable) {
+                        const durationMs = (parseInt(durationMinutes) || 10) * 60 * 1000;
+                        await member.timeout(durationMs, reason || 'Dashboard Timeout');
+                        discordActionResult = `Timed out for ${durationMinutes || 10} minutes`;
+                    } else if (action.toUpperCase() === 'KICK' && member.kickable) {
+                        await member.kick(reason || 'Dashboard Kick');
+                        discordActionResult = 'Kicked from server';
+                    } else if (action.toUpperCase() === 'BAN' && member.bannable) {
+                        await member.ban({ reason: reason || 'Dashboard Ban' });
+                        discordActionResult = 'Banned from server';
+                    }
+                } catch (err) {
+                    discordActionResult = `DB Logged (Discord Action Note: ${err.message})`;
+                }
+            }
+        }
+
+        res.json({
+            success: true,
+            caseId: `#${newCase.id}`,
+            discordActionResult
+        });
+    } catch (e) {
+        console.error('Error executing moderation action:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
