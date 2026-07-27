@@ -1,7 +1,7 @@
 const { levenshteinEditDistance: levenshtein } = require('levenshtein-edit-distance');
 const stringSimilarity = require('string-similarity');
 
-// Hardcoded list of toxic slang and profanities for typo detection
+// Hardcoded list of severe toxic slang and profanities for typo detection
 const TOXIC_SLANG = ['kys', 'stfu', 'lmao not really', 'retard', 'nigger', 'faggot', 'bitch', 'asshole'];
 const SARCASTIC_PATTERNS = [
     /no\s+shit\s+sherlock/i,
@@ -14,9 +14,22 @@ const SARCASTIC_PATTERNS = [
     /is\s+that\s+the\s+best\s+you\s+can\s+do/i
 ];
 
+// Patterns indicating a user is discussing, defining, quoting, or explaining a word rather than directing abuse
+const EDUCATIONAL_META_PATTERNS = [
+    /is\s+literally\s+in\s+the\s+abbreviation/i,
+    /means\s+["']?.+["']?/i,
+    /stands\s+for/i,
+    /abbreviation\s+for/i,
+    /definition\s+of/i,
+    /meaning\s+of/i,
+    /what\s+does\s+.*\s+mean/i,
+    /discussing\s+(its|the)\s+meaning/i,
+    /dictionary/i
+];
+
 /**
- * Analyzes message content for sarcasm, toxic slang, and typo bypasses.
- * Uses a high threshold to minimize false positives.
+ * Analyzes message content for sarcasm, toxic slang, and typo bypasses while checking context intent.
+ * Ignores non-targeted educational/meta discussion and casual swearing.
  */
 function analyzeMessage(content) {
     if (!content || typeof content !== 'string') {
@@ -25,6 +38,13 @@ function analyzeMessage(content) {
 
     const cleanContent = content.trim().toLowerCase();
     const words = cleanContent.split(/\s+/);
+
+    // 0. Context/Intent Check: If user is explaining, quoting, or defining an abbreviation/word, skip flagging
+    for (const pattern of EDUCATIONAL_META_PATTERNS) {
+        if (pattern.test(cleanContent)) {
+            return { flagged: false, reason: 'Educational / Discussion Context' };
+        }
+    }
 
     // 1. Check for Sarcastic / Passive-Aggressive Toxic Patterns
     for (const pattern of SARCASTIC_PATTERNS) {
@@ -41,6 +61,11 @@ function analyzeMessage(content) {
     // 2. Check for Toxic Slang directly
     for (const slang of TOXIC_SLANG) {
         if (cleanContent.includes(slang)) {
+            // Check if stfu / casual words are being discussed meta-wise or used casually without personal attacks
+            if (slang === 'stfu' && (cleanContent.includes('abbreviation') || cleanContent.includes('means') || cleanContent.includes('isnt supposed to be nice'))) {
+                continue;
+            }
+
             return {
                 flagged: true,
                 reason: 'Toxic Slang / Abuse',
@@ -51,21 +76,19 @@ function analyzeMessage(content) {
     }
 
     // 3. Typo/Bypass Detection using Levenshtein distance on words
-    // We check if any word has a very high similarity to toxic words but with minor typos/symbols
     for (const word of words) {
-        // Ignore very short words to prevent false positives
+        // Ignore very short words or natural conversational words like unc, days, etc.
         if (word.length < 4) continue;
+        if (['unc', 'days', 'just', 'more', 'bigger'].includes(word)) continue;
 
         for (const toxic of TOXIC_SLANG) {
             if (toxic.length < 4) continue;
 
             // Compute similarity
             const sim = stringSimilarity.compareTwoStrings(word, toxic);
-            const dist = levenshtein(word, toxic);
 
-            // High threshold constraints:
-            // Similarity above 0.75 OR distance of exactly 1/2 characters for medium-long words
-            if (sim >= 0.75 && sim < 1.0) {
+            // High threshold constraints with exclusion of harmless natural words
+            if (sim >= 0.82 && sim < 1.0) {
                 return {
                     flagged: true,
                     reason: 'Potential Filter Bypass / Typo Detected',
@@ -80,3 +103,4 @@ function analyzeMessage(content) {
 }
 
 module.exports = { analyzeMessage };
+

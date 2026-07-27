@@ -1510,10 +1510,14 @@ app.post('/api/user/profile', async (req, res) => {
         
         const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts, displayName, showAvatarInRankCard, rankCardThemeMode, rankCardCustomColor, rankCardBackgroundImage, teamCardDisplayName, teamCardDescription, teamCardBadges, teamCardLinks } = req.body;
 
+        if (teamCardDisplayName !== undefined || teamCardDescription !== undefined || teamCardLinks !== undefined) {
+            prefs.hasTeamCard = true;
+        }
         if (teamCardDisplayName !== undefined) prefs.teamCardDisplayName = teamCardDisplayName;
         if (teamCardDescription !== undefined) prefs.teamCardDescription = teamCardDescription;
         if (teamCardBadges !== undefined) prefs.teamCardBadges = teamCardBadges;
         if (teamCardLinks !== undefined) prefs.teamCardLinks = typeof teamCardLinks === 'object' ? JSON.stringify(teamCardLinks) : teamCardLinks;
+
         if (robloxPublic !== undefined) prefs.robloxPublic = robloxPublic;
         if (profilePublic !== undefined) prefs.profilePublic = profilePublic;
         if (bio !== undefined) prefs.bio = bio;

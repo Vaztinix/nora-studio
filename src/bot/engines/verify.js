@@ -1,4 +1,5 @@
-const { PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+
 const sharp = require('sharp');
 
 function generateRandomCaptcha(length = 6) {
@@ -150,7 +151,25 @@ async function handleVerifyModalSubmit(interaction, settings) {
             await interaction.editReply({ content: 'You are already verified!' });
         } else {
             await interaction.editReply({ content: '✅ **Verification Successful!** You have been granted access to the server.' });
+            
+            const logChannelId = settings.verificationLogChannelId || settings.logChannelId;
+            if (logChannelId) {
+                const logChannel = interaction.guild.channels.cache.get(logChannelId);
+                if (logChannel) {
+                    const logEmbed = new EmbedBuilder()
+                        .setTitle('✅ Member Verified')
+                        .setDescription(`${member.user} (${member.user.tag}) completed verification.`)
+                        .addFields(
+                            { name: 'User ID', value: `\`${member.user.id}\``, inline: true },
+                            { name: 'Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
+                        )
+                        .setColor(0x2ea043)
+                        .setTimestamp();
+                    await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
+                }
+            }
         }
+
     } catch (error) {
         console.error('Verification Error:', error);
         await interaction.editReply({ content: 'I encountered an error trying to assign the roles. Please contact an admin.' });

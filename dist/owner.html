@@ -227,21 +227,6 @@
         }
 
         .admin-header h2 span {
-            color: var(--muted);
-            font-weight: 400;
-            font-size: 1rem;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
             padding: 30px;
         }
 
@@ -352,7 +337,9 @@
             <button class="logout" onclick="performLogout()">Logout</button>
         </div>
 
-        <div class="grid" style="margin-bottom: 40px;">
+        <!-- Top Control Panels (Vertical Stack) -->
+        <div class="grid" style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 40px;">
+
             <!-- Premium Manager Card -->
             <div class="card">
                 <h3><i class="fas fa-gem" style="color: #ffd700;"></i> Manual Premium Provision</h3>
@@ -435,16 +422,18 @@
                 <div style="color: var(--muted); font-size: 0.88rem; padding: 20px 0;">Loading observed public figures...</div>
             </div>
         </div>
-        </div>
 
-        <!-- Lists Grid -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; align-items: start;">
+
+
+        <!-- Lists Grid (Vertical Stack) -->
+        <div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 30px; width: 100%;">
             <!-- Active Servers List -->
             <div class="card" style="padding: 24px; min-height: 250px;">
                 <h3 style="font-size: 1.05rem; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px;"><i class="fas fa-server" style="color: #5865F2;"></i> Active Servers (<span id="server-count">0</span>)</h3>
                 <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Sort By:</span>
                     <select id="servers-sort" onchange="loadAdminDeskData()" style="padding: 4px 8px; font-size: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: white; cursor: pointer; outline: none;">
+
                         <option value="newest">Newest Joined</option>
                         <option value="oldest">Oldest Joined</option>
                         <option value="members_desc">Most Members</option>

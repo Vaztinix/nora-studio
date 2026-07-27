@@ -1047,8 +1047,14 @@
             border-color: rgba(255, 255, 255, 0.2);
             box-shadow: 0 10px 30px rgba(255, 255, 255, 0.04);
         }
-        .panel.has-open-dropdown {
-            z-index: 99 !important;
+        .panel.has-open-dropdown,
+        .panel:focus-within,
+        .row:focus-within,
+        .log-row-compact:focus-within,
+        .input-group:focus-within,
+        .config-card:focus-within {
+            z-index: 100 !important;
+            position: relative;
         }
         .panel > h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
         .panel > p { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; line-height: 1.5; }
@@ -1075,13 +1081,14 @@
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             display: flex;
             flex-direction: column;
             gap: 12px;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
+
         .config-card:hover {
             background: rgba(30, 41, 59, 0.65);
             transform: translateY(-4px);
@@ -3293,7 +3300,8 @@
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <button type="button" class="config-btn" onclick="revertUnsavedChanges()" style="padding: 6px 14px; font-size: 0.8rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #ccc;">Discard</button>
-                <button type="button" class="config-btn primary" onclick="saveCurrentTabSettings()" style="padding: 6px 18px; font-size: 0.8rem; background: var(--primary); color: #fff; font-weight: 700; box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);">Save Changes</button>
+                <button type="button" class="config-btn primary" onclick="saveCurrentTabSettings()" style="padding: 8px 20px; font-size: 0.82rem; background: #5865f2; color: #ffffff; font-weight: 800; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.5);">Save Changes</button>
+
             </div>
         </div>
                 <div class="config-header">
@@ -3305,6 +3313,7 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="config-btn" id="reload-config-btn" onclick="manualReloadConfig()" style="width: auto; padding: 10px 14px;" title="Reload Configuration From Server"><i class="fas fa-sync-alt" id="reload-config-icon" style="margin-right: 6px;"></i> Reload Config</button>
                         <button class="config-btn" id="undo-btn" onclick="undoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-undo" style="margin-right: 6px;"></i> Undo</button>
                         <button class="config-btn" id="redo-btn" onclick="redoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-redo" style="margin-right: 6px;"></i> Redo</button>
                         <button class="save-btn disabled" id="save-settings-btn" onclick="saveSettings()" disabled>Save Data</button>
@@ -4604,7 +4613,28 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border);">
+                            <label style="font-size: 0.85rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 8px;">
+                                <i class="fas fa-image" style="color: var(--primary); margin-right: 6px;"></i> Custom Rank Card Background Image (Upload File or URL)
+                            </label>
+                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="setting-levelingCardBackgroundImage" class="custom-msg-input" placeholder="https://example.com/rank-background.png or upload below..." style="flex: 1; min-width: 260px;" oninput="updateRankCardBgPreview(this.value)">
+                                <label class="config-btn" style="width: auto; margin: 0; padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); font-size: 0.82rem; color: #fff;">
+                                    <i class="fas fa-upload"></i> Upload Image
+                                    <input type="file" id="rank-card-bg-file" accept="image/*" style="display: none;" onchange="handleRankCardBgUpload(event)">
+                                </label>
+                                <button type="button" class="config-btn" style="width: auto; margin: 0; padding: 10px 14px; background: rgba(255,85,85,0.1); border-color: rgba(255,85,85,0.25); color: #ff5555; font-size: 0.82rem;" onclick="clearRankCardBgImage()">
+                                    <i class="fas fa-trash-alt"></i> Clear
+                                </button>
+                            </div>
+                            <div id="rank-card-bg-preview-container" style="margin-top: 12px; display: none;">
+                                <div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 6px;">Image Preview:</div>
+                                <img id="rank-card-bg-preview" src="" style="max-height: 120px; max-width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+                            </div>
+                        </div>
                     </div>
+
 
                     <script>
                         // Keep text input and color picker synced
@@ -7362,11 +7392,31 @@
                 if (prefSecureSession) {
                     prefSecureSession.checked = d.sessionHardened;
                 }
+                function resolveDiscordUserAvatarUrl(user) {
+                    if (!user) return 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    if (user.avatar && (user.avatar.startsWith('http://') || user.avatar.startsWith('https://') || user.avatar.startsWith('data:'))) {
+                        return user.avatar;
+                    }
+                    if (user.avatar) {
+                        const isAnimated = user.avatar.startsWith('a_');
+                        return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`;
+                    }
+                    if (user.id) {
+                        try {
+                            const index = Number(BigInt(user.id) % 5n);
+                            return `https://cdn.discordapp.com/embed/avatars/${index}.png`;
+                        } catch (e) {
+                            return `https://cdn.discordapp.com/embed/avatars/0.png`;
+                        }
+                    }
+                    return 'https://cdn.discordapp.com/embed/avatars/0.png';
+                }
+
+                const userAvatarFormatted = resolveDiscordUserAvatarUrl(d);
                 
                 const avatarEl = document.getElementById('user-avatar-top');
                 if (avatarEl) {
-                    avatarEl.src = d.avatar;
-                    if (d.avatar.startsWith('a_')) avatarEl.src += '.gif';
+                    avatarEl.src = userAvatarFormatted;
                 }
                 
                 const userNameEl = document.getElementById('user-name-top');
@@ -7377,9 +7427,9 @@
                 // Populate Settings
                 const avatarElSidebar = document.getElementById('user-avatar');
                 if (avatarElSidebar) {
-                    avatarElSidebar.src = d.avatar;
-                    if (d.avatar.startsWith('a_')) avatarElSidebar.src += '.gif';
+                    avatarElSidebar.src = userAvatarFormatted;
                 }
+
                 const userNameElSidebar = document.getElementById('user-name');
                 if (userNameElSidebar) {
                     userNameElSidebar.textContent = (d.prefs && d.prefs.displayName) || d.username;
@@ -14534,10 +14584,78 @@
             } finally {
                 toggleLoading(false);
             }
+        function isUserEditing() {
+            const active = document.activeElement;
+            if (!active) return false;
+            const tag = active.tagName.toLowerCase();
+            return tag === 'input' || tag === 'textarea' || tag === 'select' || active.isContentEditable || !!window.hasUnsavedChanges;
         }
 
+        async function manualReloadConfig() {
+            if (!currentServerId) return;
+            const icon = document.getElementById('reload-config-icon');
+            if (icon) icon.classList.add('fa-spin');
+            try {
+                if (typeof loadGuildConfig === 'function') {
+                    await loadGuildConfig(currentServerId, true);
+                } else if (typeof fetchServerSettings === 'function') {
+                    await fetchServerSettings(currentServerId, true);
+                }
+                if (typeof showToast === 'function') showToast('Server settings reloaded successfully', 'success');
+            } catch (e) {
+                if (typeof showToast === 'function') showToast('Failed to reload settings: ' + e.message, 'error');
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        }
+
+        function updateRankCardBgPreview(url) {
+            const container = document.getElementById('rank-card-bg-preview-container');
+            const img = document.getElementById('rank-card-bg-preview');
+            if (!container || !img) return;
+            if (url && url.trim()) {
+                img.src = url.trim();
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+                img.src = '';
+            }
+        }
+
+        function handleRankCardBgUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) {
+                if (typeof showToast === 'function') showToast('Image file too large. Please select an image under 5MB.', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                const input = document.getElementById('setting-levelingCardBackgroundImage');
+                if (input) {
+                    input.value = dataUrl;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                updateRankCardBgPreview(dataUrl);
+                if (typeof showToast === 'function') showToast('Rank card background image loaded successfully!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearRankCardBgImage() {
+            const input = document.getElementById('setting-levelingCardBackgroundImage');
+            const fileInput = document.getElementById('rank-card-bg-file');
+            if (input) {
+                input.value = '';
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (fileInput) fileInput.value = '';
+            updateRankCardBgPreview('');
+        }
 
         async function fetchContentFeeds(force = false) {
+
             if (!currentServerId) return;
             const container = document.getElementById('social-feeds-container');
             if (!container) return;
