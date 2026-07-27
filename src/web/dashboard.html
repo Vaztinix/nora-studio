@@ -2614,9 +2614,10 @@
                 </div>
             </div>
             
-            <button id="login-btn" class="btn-discord-login">
+            <button id="login-btn" class="btn-discord-login" onclick="redirectToDiscordLogin()">
                 <i class="fab fa-discord" style="font-size: 1.15rem;"></i> Login with Discord
             </button>
+
         </div>
     </div>
 
@@ -6808,6 +6809,12 @@
         const targetRedirectPath = (window.location.pathname && window.location.pathname !== '/') ? window.location.pathname : '/dashboard';
         const REDIRECT_URI = encodeURIComponent(window.location.origin + targetRedirectPath);
         const discordLoginURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify+guilds`;
+        
+        function redirectToDiscordLogin() {
+            window.location.href = discordLoginURL;
+        }
+        window.redirectToDiscordLogin = redirectToDiscordLogin;
+
         
         let authOverlay = null;
         let viewServers, viewConfig, viewPrefs, viewNotifications, viewProfile;
