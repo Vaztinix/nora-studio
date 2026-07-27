@@ -15,11 +15,12 @@
             --primary: #10B981;
             --primary-glow: rgba(16, 185, 129, 0.45);
             --secondary: #06B6D4;
-            --secondary-glow: rgba(6, 182, 212, 0.4);
-            --accent: #34D399;
-            --border: rgba(16, 185, 129, 0.2);
-            --border-hover: rgba(52, 211, 153, 0.45);
-            --card-bg: rgba(10, 22, 16, 0.85);
+            --accent-mint: #A7F3D0;
+            --accent-lavender: #C4B5FD;
+            --accent-cyan: #A5F3FC;
+            --border: rgba(16, 185, 129, 0.25);
+            --border-hover: rgba(52, 211, 153, 0.5);
+            --card-bg: rgba(10, 22, 16, 0.88);
             --text: #F3F4F6;
             --muted: #9CA3AF;
         }
@@ -41,7 +42,7 @@
             position: relative;
         }
 
-        /* Canvas Soundwave Background */
+        /* Peak Multi-Layer Canvas Soundwave Background */
         #audio-canvas {
             position: fixed;
             top: 0;
@@ -50,7 +51,7 @@
             height: 100%;
             z-index: 0;
             pointer-events: none;
-            opacity: 0.45;
+            opacity: 0.65;
         }
 
         .container {
@@ -137,7 +138,7 @@
 
         /* Hero Developer Section */
         .hero-section {
-            padding: 60px 0 40px;
+            padding: 50px 0 30px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -154,7 +155,7 @@
             height: 140px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid rgba(52, 211, 153, 0.3);
+            border: 3px solid rgba(52, 211, 153, 0.35);
             box-shadow: 0 0 40px var(--primary-glow);
             transition: transform 0.4s ease;
         }
@@ -186,7 +187,7 @@
             font-size: 3.2rem;
             font-weight: 900;
             letter-spacing: -1px;
-            background: linear-gradient(135deg, #FFFFFF 20%, #34D399 60%, #10B981 100%);
+            background: linear-gradient(135deg, #FFFFFF 20%, #A7F3D0 40%, #34D399 70%, #10B981 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
@@ -217,22 +218,23 @@
             gap: 6px;
         }
 
-        /* 100% Direct Real MP3 Music Player */
+        /* PEAK Music Player Card with Vibrant Pastel & Neon Accents */
         .music-player-card {
-            background: rgba(10, 22, 16, 0.92);
-            backdrop-filter: blur(25px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 26px;
+            background: linear-gradient(135deg, rgba(12, 28, 20, 0.94), rgba(8, 18, 14, 0.94));
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            border-radius: 28px;
+            padding: 28px;
             width: 100%;
-            max-width: 720px;
+            max-width: 760px;
             margin: 25px auto 40px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(52, 211, 153, 0.2);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(16, 185, 129, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.15);
             display: flex;
             align-items: center;
-            gap: 22px;
+            gap: 24px;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .music-player-card::before {
@@ -241,31 +243,82 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            height: 4px;
+            background: linear-gradient(90deg, #10B981, #A7F3D0, #06B6D4, #C4B5FD, #FFFFFF);
+        }
+
+        /* Vinyl Cover Box with Pulsing Aura */
+        .cover-art-container {
+            position: relative;
+            flex-shrink: 0;
         }
 
         .cover-art-box {
-            width: 105px;
-            height: 105px;
-            border-radius: 18px;
+            width: 115px;
+            height: 115px;
+            border-radius: 50%;
             position: relative;
-            flex-shrink: 0;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.7), 0 0 20px rgba(16, 185, 129, 0.4);
             overflow: hidden;
-            border: 2px solid rgba(52, 211, 153, 0.35);
+            border: 3px solid #34D399;
             background: #040806;
+            transition: transform 0.4s ease;
         }
 
         .cover-art-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.4s ease;
+            border-radius: 50%;
         }
 
-        .music-player-card.playing .cover-art-img {
-            transform: scale(1.08) rotate(3deg);
+        /* Vinyl Center Hole Overlay */
+        .cover-art-box::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #060B08;
+            border: 2px solid #34D399;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
+        }
+
+        .music-player-card.playing .cover-art-box {
+            animation: spinVinyl 12s linear infinite;
+        }
+
+        @keyframes spinVinyl {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Outer Beat Aura Ring */
+        .beat-aura-ring {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border-radius: 50%;
+            border: 2px dashed rgba(167, 243, 208, 0.5);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .music-player-card.playing .beat-aura-ring {
+            opacity: 1;
+            animation: pulseAuraRing 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseAuraRing {
+            0% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.06); opacity: 1; border-color: #C4B5FD; }
+            100% { transform: scale(1); opacity: 0.6; }
         }
 
         .track-info {
@@ -275,45 +328,78 @@
 
         .track-meta-badge {
             font-size: 0.72rem;
-            font-weight: 700;
-            color: #6EE7B7;
-            background: rgba(16, 185, 129, 0.18);
-            padding: 3px 10px;
+            font-weight: 800;
+            color: #060B08;
+            background: linear-gradient(135deg, #A7F3D0, #34D399);
+            padding: 4px 12px;
             border-radius: 999px;
             display: inline-block;
             margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            box-shadow: 0 2px 10px rgba(52, 211, 153, 0.4);
         }
 
         .track-title {
-            font-weight: 800;
-            font-size: 1.2rem;
+            font-weight: 900;
+            font-size: 1.3rem;
             color: white;
             margin-bottom: 3px;
+            letter-spacing: -0.3px;
         }
 
         .track-artist {
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             color: var(--muted);
-            margin-bottom: 12px;
-        }
-
-        /* Equalizer Frequency Bars */
-        .equalizer-bars {
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            height: 28px;
             margin-bottom: 10px;
         }
 
+        /* 20-Bar Spectrum Equalizer */
+        .equalizer-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 32px;
+            margin-bottom: 12px;
+        }
+
         .eq-bar {
-            width: 4px;
-            background: linear-gradient(to top, var(--primary), #A7F3D0);
-            border-radius: 2px;
+            width: 5px;
+            background: linear-gradient(to top, #10B981 0%, #A7F3D0 50%, #C4B5FD 80%, #FFFFFF 100%);
+            border-radius: 3px;
             height: 6px;
-            transition: height 0.1s ease;
+            transition: height 0.08s ease;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Interactive Scrubber & Time Display */
+        .scrubber-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.75rem;
+            font-family: 'Fira Code', monospace;
+            color: var(--muted);
+        }
+
+        .scrubber-bar {
+            flex-grow: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .scrubber-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10B981, #A7F3D0, #FFFFFF);
+            border-radius: 999px;
+            box-shadow: 0 0 10px var(--primary-glow);
+            transition: width 0.1s linear;
         }
 
         .player-controls-row {
@@ -326,43 +412,44 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid var(--border);
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.95rem;
+            font-size: 1rem;
             transition: all 0.2s ease;
         }
 
         .ctrl-btn:hover {
             background: rgba(16, 185, 129, 0.3);
-            border-color: var(--primary);
+            border-color: #34D399;
+            color: #A7F3D0;
             transform: scale(1.1);
         }
 
         .btn-play {
-            width: 52px;
-            height: 52px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
-            background: #10B981;
+            background: linear-gradient(135deg, #10B981, #34D399);
             color: #060B08;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             transition: all 0.2s ease;
-            box-shadow: 0 0 25px var(--primary-glow);
+            box-shadow: 0 0 30px var(--primary-glow);
         }
 
         .btn-play:hover {
             transform: scale(1.1);
-            background: #34D399;
-            box-shadow: 0 0 35px var(--primary-glow);
+            background: linear-gradient(135deg, #34D399, #A7F3D0);
+            box-shadow: 0 0 40px var(--primary-glow);
         }
 
         .volume-container {
@@ -370,13 +457,13 @@
             align-items: center;
             gap: 8px;
             color: var(--muted);
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             margin-left: 8px;
         }
 
         .volume-slider {
-            width: 75px;
-            accent-color: var(--primary);
+            width: 80px;
+            accent-color: #34D399;
             cursor: pointer;
         }
 
@@ -547,7 +634,7 @@
 </head>
 <body>
 
-    <!-- Dynamic Soundwave Canvas Background -->
+    <!-- Peak Multi-Color Soundwave Canvas Background -->
     <canvas id="audio-canvas"></canvas>
 
     <!-- Hidden Native Audio Engine -->
@@ -591,10 +678,13 @@
                 Creator of the <strong>Nora Studio</strong> Discord ecosystem. Passionate about building privacy-first AI moderation, real-time WebSocket infrastructure, and high-performance Web applications.
             </p>
 
-            <!-- 100% Native Real MP3 Music Player Widget -->
+            <!-- PEAK Music Player Widget -->
             <div class="music-player-card" id="music-player-card">
-                <div class="cover-art-box">
-                    <img src="ReVaztinix.jpeg" alt="Track Cover" class="cover-art-img" id="cover-art" onerror="this.src='nora.png'">
+                <div class="cover-art-container">
+                    <div class="beat-aura-ring"></div>
+                    <div class="cover-art-box">
+                        <img src="ReVaztinix.jpeg" alt="Track Cover" class="cover-art-img" id="cover-art" onerror="this.src='nora.png'">
+                    </div>
                 </div>
 
                 <div class="track-info">
@@ -602,19 +692,18 @@
                     <div class="track-title" id="track-name">Cyber Neon Rush</div>
                     <div class="track-artist" id="track-artist">Vaztinix • High-Energy Soundscape</div>
                     
+                    <!-- 20-Bar Spectrum Equalizer -->
                     <div class="equalizer-bars" id="eq-bars">
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
+                        <!-- Bars dynamically created via JS -->
+                    </div>
+
+                    <!-- Scrubber & Time -->
+                    <div class="scrubber-container">
+                        <span id="time-current">00:00</span>
+                        <div class="scrubber-bar" id="scrubber-bar">
+                            <div class="scrubber-fill" id="scrubber-fill"></div>
+                        </div>
+                        <span id="time-total">00:00</span>
                     </div>
                 </div>
 
@@ -757,7 +846,7 @@
         </div>
     </footer>
 
-    <!-- Native HTML5 Real MP3 Audio Engine -->
+    <!-- Native Real MP3 Audio Engine & Peak Canvas Visualizer -->
     <script>
         const REAL_AUDIO_PLAYLIST = [
             {
@@ -769,7 +858,7 @@
             },
             {
                 title: "Synthwave Sunset",
-                artist: "Vaztinix • Retrowave Beat",
+                artist: "Vaztinix • Retrowave Groove",
                 genre: "SYNTHPOP • 120 BPM",
                 cover: "nora.png",
                 src: "/audio/track2.mp3"
@@ -804,9 +893,29 @@
         const btnNext = document.getElementById('btn-next-track');
         const playIcon = document.getElementById('play-icon');
         const volSlider = document.getElementById('vol-slider');
+        const eqBarsContainer = document.getElementById('eq-bars');
+
+        const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
+        const scrubberBar = document.getElementById('scrubber-bar');
+        const scrubberFill = document.getElementById('scrubber-fill');
+
+        // Dynamically build 20 spectrum equalizer bars
+        for (let i = 0; i < 20; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'eq-bar';
+            eqBarsContainer.appendChild(bar);
+        }
         const eqBars = document.querySelectorAll('.eq-bar');
 
         audioElement.volume = parseFloat(volSlider.value);
+
+        function formatTime(secs) {
+            if (isNaN(secs) || !secs) return "00:00";
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
 
         function updateTrackUI() {
             const track = REAL_AUDIO_PLAYLIST[currentTrackIdx];
@@ -815,6 +924,9 @@
             trackArtistEl.textContent = track.artist;
             coverArtEl.src = track.cover;
             audioElement.src = track.src;
+            scrubberFill.style.width = '0%';
+            timeCurrent.textContent = "00:00";
+            timeTotal.textContent = "00:00";
         }
 
         updateTrackUI();
@@ -859,6 +971,23 @@
             if (isPlaying) playTrack();
         });
 
+        audioElement.addEventListener('timeupdate', () => {
+            if (audioElement.duration) {
+                const pct = (audioElement.currentTime / audioElement.duration) * 100;
+                scrubberFill.style.width = `${pct}%`;
+                timeCurrent.textContent = formatTime(audioElement.currentTime);
+                timeTotal.textContent = formatTime(audioElement.duration);
+            }
+        });
+
+        scrubberBar.addEventListener('click', (e) => {
+            if (audioElement.duration) {
+                const rect = scrubberBar.getBoundingClientRect();
+                const clickPos = (e.clientX - rect.left) / rect.width;
+                audioElement.currentTime = clickPos * audioElement.duration;
+            }
+        });
+
         audioElement.addEventListener('ended', () => {
             currentTrackIdx = (currentTrackIdx + 1) % REAL_AUDIO_PLAYLIST.length;
             updateTrackUI();
@@ -869,7 +998,7 @@
             audioElement.volume = parseFloat(e.target.value);
         });
 
-        // Soundwave Canvas Background
+        // Multi-Layer Canvas Visualizer with Pastel Waves & Floating Orbs
         const canvas = document.getElementById('audio-canvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
@@ -880,35 +1009,73 @@
             height = canvas.height = window.innerHeight;
         });
 
+        // Floating Orbs Particles
+        const particles = [];
+        for (let p = 0; p < 35; p++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 3.5 + 1.5,
+                color: ['rgba(16, 185, 129, 0.45)', 'rgba(167, 243, 208, 0.5)', 'rgba(196, 181, 253, 0.45)', 'rgba(165, 243, 252, 0.5)', 'rgba(255, 255, 255, 0.6)'][Math.floor(Math.random() * 5)],
+                speedY: Math.random() * 0.8 + 0.3,
+                speedX: Math.random() * 0.4 - 0.2
+            });
+        }
+
         let phase = 0;
         function animateVisualizer() {
             ctx.clearRect(0, 0, width, height);
 
-            const speed = isPlaying ? 0.04 : 0.01;
-            const waveAmp = isPlaying ? 45 : 20;
+            const speed = isPlaying ? 0.045 : 0.012;
+            const waveAmp = isPlaying ? 50 : 22;
 
-            ctx.lineWidth = 2.5;
-            const gradient = ctx.createLinearGradient(0, 0, width, 0);
-            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.55)');
-            gradient.addColorStop(0.5, 'rgba(6, 182, 212, 0.55)');
-            gradient.addColorStop(1, 'rgba(52, 211, 153, 0.55)');
-            ctx.strokeStyle = gradient;
-
-            for (let j = 0; j < 3; j++) {
+            // Draw Floating Particles
+            particles.forEach(pt => {
                 ctx.beginPath();
-                for (let i = 0; i < width; i += 8) {
-                    const y = height / 2 + Math.sin(i * 0.004 + phase + j * 0.8) * (waveAmp + j * 20) + Math.cos(i * 0.002 - phase) * 20;
+                ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2);
+                ctx.fillStyle = pt.color;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = pt.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                pt.y -= isPlaying ? pt.speedY * 1.8 : pt.speedY;
+                pt.x += pt.speedX;
+
+                if (pt.y < -10) {
+                    pt.y = height + 10;
+                    pt.x = Math.random() * width;
+                }
+            });
+
+            // 5 Pastel & Cyber Emerald Waves
+            const waveGradients = [
+                { color: 'rgba(16, 185, 129, 0.6)', freq: 0.003, ampMult: 1 },
+                { color: 'rgba(167, 243, 208, 0.55)', freq: 0.004, ampMult: 0.85 },
+                { color: 'rgba(6, 182, 212, 0.5)', freq: 0.002, ampMult: 1.1 },
+                { color: 'rgba(196, 181, 253, 0.45)', freq: 0.005, ampMult: 0.75 },
+                { color: 'rgba(255, 255, 255, 0.65)', freq: 0.0035, ampMult: 0.9 }
+            ];
+
+            waveGradients.forEach((w, idx) => {
+                ctx.lineWidth = idx === 4 ? 2.8 : 2;
+                ctx.strokeStyle = w.color;
+                ctx.beginPath();
+
+                for (let i = 0; i <= width; i += 6) {
+                    const y = height / 2 + Math.sin(i * w.freq + phase + idx * 0.7) * (waveAmp * w.ampMult) + Math.cos(i * 0.002 - phase * 0.8) * 22;
                     if (i === 0) ctx.moveTo(i, y);
                     else ctx.lineTo(i, y);
                 }
                 ctx.stroke();
-            }
+            });
 
             phase += speed;
 
+            // Animate Spectrum Equalizer Bars
             if (isPlaying) {
                 eqBars.forEach((bar, idx) => {
-                    const h = Math.floor(Math.sin(phase * 6 + idx * 0.8) * 11) + 12;
+                    const h = Math.floor(Math.sin(phase * 7 + idx * 0.6) * 14) + 14;
                     bar.style.height = `${h}px`;
                 });
             }
