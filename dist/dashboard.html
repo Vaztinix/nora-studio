@@ -1178,10 +1178,11 @@
             align-items: center;
             justify-content: center;
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            opacity: 0;
+            opacity: 1;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
+
 
         .auth-card {
             background: rgba(17, 17, 16, 0.55);
@@ -7641,25 +7642,23 @@
                 
                 // If it is a connection error (Failed to fetch), trigger the offline overlay to poll/switch API base URL
                 if (e.message && (e.message.includes('Failed to fetch') || e.message.includes('NetworkError') || e.status === 502 || e.status === 503 || e.status === 504)) {
-                    triggerApiOffline();
+                    if (typeof triggerApiOffline === 'function') triggerApiOffline();
                 }
                 
-                // Only invalidate session on explicit 401/403 errors, not on network connection dropouts
-                const shouldInvalidateSession = e.status === 401 || e.status === 403;
-                if (shouldInvalidateSession) {
-                    sessionStorage.removeItem('discord_token');
-                    localStorage.removeItem('nora_discord_token');
-                    localStorage.removeItem('nora_last_user_id');
-                    localStorage.removeItem('nora_auth');
-                    window.currentUser = null;
-                    loadNotifications();
-                    const elAuth = authOverlay || document.getElementById('auth-overlay');
-                    if (elAuth) {
-                        elAuth.style.opacity = '1'; 
-                        elAuth.style.display = 'flex';
-                    }
+                // On auth failure, invalidate invalid tokens and reveal auth overlay so user can re-authenticate
+                sessionStorage.removeItem('discord_token');
+                localStorage.removeItem('nora_discord_token');
+                localStorage.removeItem('nora_last_user_id');
+                localStorage.removeItem('nora_auth');
+                window.currentUser = null;
+                if (typeof loadNotifications === 'function') loadNotifications();
+                const elAuth = authOverlay || document.getElementById('auth-overlay');
+                if (elAuth) {
+                    elAuth.style.opacity = '1'; 
+                    elAuth.style.display = 'flex';
                 }
             } finally {
+
                 toggleLoading(false);
             }
         }
