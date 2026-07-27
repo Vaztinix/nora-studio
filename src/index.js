@@ -283,6 +283,13 @@ sequelize.sync().then(async () => {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBorderColor` VARCHAR(255) DEFAULT '#23252e';");
     } catch (e) {}
     try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBackgroundImage` TEXT DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardIgnoredChannels` TEXT DEFAULT '[]';");
+    } catch (e) {}
+
+    try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");
     } catch (e) {}
     try {

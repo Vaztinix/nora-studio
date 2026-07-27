@@ -24,7 +24,16 @@ module.exports = {
             const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
             
             if (settings && settings.starboardEnabled && settings.starboardChannelId) {
+                let ignoredChannels = [];
+                if (settings.starboardIgnoredChannels) {
+                    try {
+                        ignoredChannels = typeof settings.starboardIgnoredChannels === 'string' ? JSON.parse(settings.starboardIgnoredChannels) : settings.starboardIgnoredChannels;
+                    } catch(e) {}
+                }
+                if (Array.isArray(ignoredChannels) && ignoredChannels.includes(reaction.message.channel.id)) return;
+
                 const triggerEmoji = settings.starboardEmoji || '⭐';
+
                 const emojiName = reaction.emoji.id ? null : reaction.emoji.name;
                 const emojiId = reaction.emoji.id;
                 

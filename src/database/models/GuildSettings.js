@@ -690,6 +690,12 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true,
         defaultValue: null
     },
+    starboardIgnoredChannels: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: '[]'
+    },
+
 
     // ---- Server Custom Shape Presets & Backgrounds ----
     serverRankCardBg: {
