@@ -26,12 +26,14 @@ Just tools that help communities run smoothly.
 
 ## Features
 
-• Simple moderation tools  
-• Helpful automation  
-• Privacy-first philosophy  
-• Easy server configuration  
+• **Security & Anti-Raid System (v2.1):** Account age checks, PFP requirements, nickname raid filters, and server lockdown.  
+• **Roblox Identity & Group Verification (v2.4):** Real-time identity linking, group rank bindings, and nickname sync.  
+• **Starboard System (v2.5):** Community reaction voting, custom emojis, threshold rules, branded webhooks, and ignored channels filter.  
+• **Custom Rank Card & Leveling Studio (v2.3):** Customizable rank cards (colors, borders, image uploads), voice XP, and leaderboards.  
+• **Support Ticketing & Reaction Roles:** Multi-category help desk ticketing with auto-transcripts and reaction role menus.  
+• **Privacy-First Zero-Access Architecture:** User sovereign data wipe (`/mycard` -> Erase Data) and isolated server containers.  
+• **Nora Studio Web Dashboard:** Web-based guild management with real-time sync and unsaved changes protection.  
 
-Nora is designed so communities can **start using it quickly** without learning a complicated system.
 
 ---
 

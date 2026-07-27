@@ -255,11 +255,12 @@
                 </section>
 
                 <section>
-                    <h2>3. Dynamic Engagement & Leveling Logic</h2>
+                    <h2>3. Dynamic Engagement & Custom Rank Cards (v2.3)</h2>
                     <p>Nora utilizes a sophisticated Experience (XP) algorithm designed to encourage genuine interaction rather than chat spamming.</p>
                     <ul>
                         <li><strong>Voice Activity XP:</strong> Users earn XP for time spent in voice channels. To prevent farming, this system requires at least two users to be present in the channel.</li>
-                        <li><strong>Refined Leveling Logic:</strong> Optimized background processes allow Nora to track rankings in large servers without impacting bot response times or Discord’s API limits.</li>
+                        <li><strong>Custom Rank Card Studio:</strong> Server administrators can fully customize generated rank and level-up card graphics with custom background colors, accent highlights, border colors, and direct file/URL background image uploads.</li>
+                        <li><strong>Refined Leveling Logic:</strong> Lightweight canvas rendering allows Nora to generate high-resolution custom rank cards in milliseconds without hitting API rate limits.</li>
                     </ul>
                 </section>
 
@@ -279,13 +280,32 @@
                     <ul>
                         <li><strong>Command Hiding:</strong> All moderation, administration, and configuration commands natively utilize Discord's Application Command Permission framework, which physically hides commands from users who lack the required permission levels (e.g. Moderate Members, Ban Members, Manage Guild, etc.).</li>
                         <li><strong>Dynamic Help Menu:</strong> The `/help` command checks the user's active permissions in real-time, completely filtering out moderator-only categories and commands from non-moderators to maintain a clean, secure chat environment.</li>
-                    </ul>
-                    <ul>
                         <li><strong>Unified Warning Management (/warn):</strong> Server moderators can manage warning actions through a single `/warn` command using subcommands to add, edit, list, delete, or clear warnings.</li>
                         <li><strong>Case Management System (/case):</strong> Track, inspect, and manage server moderation actions dynamically.</li>
                         <li><strong>One-Step Roblox Link (/verify):</strong> The legacy multi-command verification flow is replaced by the singular <code>/verify</code> command. Users link Roblox accounts and receive roles in a single fluid interaction.</li>
                     </ul>
                 </section>
+
+                <section>
+                    <h2>6. Starboard v2.5 & Channel Filtering</h2>
+                    <p>The community Starboard engine automatically highlights top-reacted messages across the server.</p>
+                    <ul>
+                        <li><strong>Custom Triggers & Thresholds:</strong> Configure custom reaction emojis (standard or custom guild emojis) and star count thresholds.</li>
+                        <li><strong>Branded Webhook Posts:</strong> Automatically post starboard highlights using custom bot names and profile pictures.</li>
+                        <li><strong>Ignored Channels Filter:</strong> Exclude specific channels (such as staff channels, bot commands, or announcement feeds) from Starboard reaction tracking via a multi-select channel dropdown.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>7. Nora Studio Dashboard & Unsaved Guard</h2>
+                    <p>The web dashboard provides full real-time management across all server modules.</p>
+                    <ul>
+                        <li><strong>Real-Time Configuration Sync:</strong> Instantly inspect and modify AutoMod rules, Ticket panels, Leveling settings, and Webhook filters.</li>
+                        <li><strong>Unsaved Changes Protection:</strong> A floating floating notification guard prevents accidental navigation when configuration changes remain unsaved.</li>
+                        <li><strong>Team Role Cards & Owner Console:</strong> Manage authorized team members, view server health pulse, and monitor bot telemetry.</li>
+                    </ul>
+                </section>
+
             </div>
         </div>
     </main>
