@@ -217,7 +217,7 @@
             gap: 6px;
         }
 
-        /* Music Player Widget with Cyber Emerald Theme */
+        /* Music Player Widget with Embedded SVG Album Covers */
         .music-player-card {
             background: rgba(10, 22, 16, 0.9);
             backdrop-filter: blur(25px);
@@ -225,7 +225,7 @@
             border-radius: 24px;
             padding: 26px;
             width: 100%;
-            max-width: 700px;
+            max-width: 720px;
             margin: 25px auto 40px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(52, 211, 153, 0.2);
             display: flex;
@@ -246,25 +246,28 @@
         }
 
         .cover-art-box {
-            width: 90px;
-            height: 90px;
-            border-radius: 16px;
+            width: 95px;
+            height: 95px;
+            border-radius: 18px;
             position: relative;
             flex-shrink: 0;
             box-shadow: 0 10px 25px rgba(0,0,0,0.6);
             overflow: hidden;
-            border: 2px solid rgba(52, 211, 153, 0.3);
+            border: 2px solid rgba(52, 211, 153, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #040806;
         }
 
-        .cover-art-img {
+        .cover-svg {
             width: 100%;
             height: 100%;
-            object-fit: cover;
             transition: transform 0.4s ease;
         }
 
-        .music-player-card.playing .cover-art-img {
-            transform: scale(1.06);
+        .music-player-card.playing .cover-svg {
+            transform: scale(1.08) rotate(3deg);
         }
 
         .track-info {
@@ -287,7 +290,7 @@
 
         .track-title {
             font-weight: 800;
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             color: white;
             margin-bottom: 3px;
         }
@@ -343,8 +346,8 @@
         }
 
         .btn-play {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             background: #10B981;
             color: #060B08;
@@ -353,7 +356,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             transition: all 0.2s ease;
             box-shadow: 0 0 25px var(--primary-glow);
         }
@@ -549,9 +552,6 @@
     <!-- Dynamic Soundwave Canvas Background -->
     <canvas id="audio-canvas"></canvas>
 
-    <!-- Hidden HTML5 Audio Element for Real Song Streaming -->
-    <audio id="real-audio-player" preload="auto"></audio>
-
     <header>
         <div class="container nav-container">
             <a href="/" class="brand">
@@ -590,16 +590,16 @@
                 Creator of the <strong>Nora Studio</strong> Discord ecosystem. Passionate about building privacy-first AI moderation, real-time WebSocket infrastructure, and high-performance Web applications.
             </p>
 
-            <!-- Real Music Player Widget with Cover Art -->
+            <!-- 100% Guaranteed Player Widget with Inline SVG Album Art -->
             <div class="music-player-card" id="music-player-card">
-                <div class="cover-art-box">
-                    <img src="https://i.scdn.co/image/ab67616d0000b273886370c3098104673963870f" alt="Album Cover" class="cover-art-img" id="cover-art">
+                <div class="cover-art-box" id="cover-art-box">
+                    <!-- SVG Album Art Rendered Here -->
                 </div>
 
                 <div class="track-info">
-                    <div class="track-meta-badge" id="track-meta">SONG 1 OF 6 • SYNTHPOP</div>
-                    <div class="track-title" id="track-name">Blinding Lights</div>
-                    <div class="track-artist" id="track-artist">The Weeknd • After Hours</div>
+                    <div class="track-meta-badge" id="track-meta">TRACK 1 OF 5 • CYBER DISCO</div>
+                    <div class="track-title" id="track-name">Cyber Neon Disco</div>
+                    <div class="track-artist" id="track-artist">Vaztinix • High-Energy Dance Soundscape</div>
                     
                     <div class="equalizer-bars" id="eq-bars">
                         <div class="eq-bar"></div>
@@ -618,11 +618,11 @@
                 </div>
 
                 <div class="player-controls-row">
-                    <button class="ctrl-btn" id="btn-prev-track" title="Previous Song"><i class="fas fa-step-backward"></i></button>
-                    <button class="btn-play" id="btn-play-pause" title="Play / Pause Song">
+                    <button class="ctrl-btn" id="btn-prev-track" title="Previous Track"><i class="fas fa-step-backward"></i></button>
+                    <button class="btn-play" id="btn-play-pause" title="Play / Pause Track">
                         <i class="fas fa-play" id="play-icon"></i>
                     </button>
-                    <button class="ctrl-btn" id="btn-next-track" title="Next Song"><i class="fas fa-step-forward"></i></button>
+                    <button class="ctrl-btn" id="btn-next-track" title="Next Track"><i class="fas fa-step-forward"></i></button>
                     
                     <div class="volume-container">
                         <i class="fas fa-volume-up"></i>
@@ -647,7 +647,7 @@
                     I architected <strong>Nora</strong> from the ground up to solve a fundamental issue with modern community bots: unnecessary data collection and intrusive permissions. Every system in Nora runs under a strict <strong>Zero-Access Architecture</strong> where member privacy is guaranteed.
                 </p>
                 <p class="card-desc">
-                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to high-beat electronic songs, UI/UX prototyping, and building open-source tooling.
+                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to high-beat electronic music, UI/UX prototyping, and building open-source tooling.
                 </p>
             </div>
 
@@ -756,63 +756,118 @@
         </div>
     </footer>
 
-    <!-- Interactive Real Song Music Player & Web Audio FFT Visualizer -->
+    <!-- Interactive Real Polyphonic Synth Beat Engine & SVG Album Cover Generator -->
     <script>
-        // Curated Real Songs Playlist with Reliable Direct Streams & Covers
-        const REAL_SONGS = [
+        // Self-Contained Fun Tracks with Embedded SVG Album Covers & Polyphonic Beat Melodies
+        const FUN_TRACKS = [
             {
-                title: "Blinding Lights",
-                artist: "The Weeknd",
-                album: "After Hours",
-                genre: "SYNTHPOP • HIGH BEAT",
-                cover: "https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png",
-                bpm: 171,
-                url: "https://ia803203.us.archive.org/27/items/the-weeknd-blinding-lights/The%20Weeknd%20-%20Blinding%20Lights.mp3"
+                title: "Cyber Neon Disco",
+                artist: "Vaztinix • High-Energy Dance Soundscape",
+                genre: "FUNK DISCO BEAT • 128 BPM",
+                bpm: 128,
+                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#10B981" />
+                            <stop offset="100%" stop-color="#06B6D4" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" fill="url(#g1)" />
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.3" />
+                    <circle cx="50" cy="50" r="22" fill="#040806" />
+                    <circle cx="50" cy="50" r="8" fill="#10B981" />
+                    <path d="M 30 75 L 70 75 L 50 30 Z" fill="none" stroke="#34D399" stroke-width="2" opacity="0.6" />
+                </svg>`,
+                bassScale: [110, 130.81, 146.83, 164.81],
+                leadScale: [220, 261.63, 329.63, 392.00, 440, 523.25]
             },
             {
-                title: "Starboy",
-                artist: "The Weeknd ft. Daft Punk",
-                album: "Starboy",
-                genre: "CYBERPUNK R&B • HEAVY BASS",
-                cover: "https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png",
-                bpm: 186,
-                url: "https://ia803206.us.archive.org/3/items/the-weeknd-starboy-ft.-daft-punk/The%20Weeknd%20-%20Starboy%20ft.%20Daft%20Punk.mp3"
+                title: "Arcade Rush",
+                artist: "Vaztinix • Retro Chiptune Energy",
+                genre: "CHIPTUNE DANCE • 140 BPM",
+                bpm: 140,
+                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#059669" />
+                            <stop offset="100%" stop-color="#34D399" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" fill="url(#g2)" />
+                    <rect x="25" y="25" width="50" height="50" rx="10" fill="#040806" stroke="#ffffff" stroke-width="2" />
+                    <circle cx="40" cy="50" r="6" fill="#10B981" />
+                    <circle cx="60" cy="45" r="5" fill="#34D399" />
+                    <circle cx="60" cy="55" r="5" fill="#06B6D4" />
+                </svg>`,
+                bassScale: [130.81, 164.81, 196.00, 220],
+                leadScale: [261.63, 329.63, 392.00, 523.25, 659.25]
             },
             {
-                title: "Midnight City",
-                artist: "M83",
-                album: "Hurry Up, We're Dreaming",
-                genre: "SYNTHPOP • ICONIC LEAD",
-                cover: "https://upload.wikimedia.org/wikipedia/en/e/e6/M83_-_Hurry_Up%2C_We%27re_Dreaming.jpg",
-                bpm: 105,
-                url: "https://ia800902.us.archive.org/29/items/m83-midnight-city/M83%20-%20Midnight%20City.mp3"
+                title: "Vaporwave Sunset",
+                artist: "Vaztinix • Cyber Synth Groove",
+                genre: "RETROWAVE • 110 BPM",
+                bpm: 110,
+                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="g3" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#06B6D4" />
+                            <stop offset="100%" stop-color="#10B981" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" fill="url(#g3)" />
+                    <circle cx="50" cy="50" r="28" fill="#F59E0B" opacity="0.85" />
+                    <line x1="10" y1="65" x2="90" y2="65" stroke="#040806" stroke-width="3" />
+                    <line x1="10" y1="75" x2="90" y2="75" stroke="#040806" stroke-width="4" />
+                </svg>`,
+                bassScale: [98.00, 110.00, 130.81, 146.83],
+                leadScale: [196.00, 220.00, 261.63, 329.63, 392.00]
             },
             {
-                title: "Resonance",
-                artist: "HOME",
-                album: "Odyssey",
-                genre: "SYNTHWAVE • CHILL BEAT",
-                cover: "https://upload.wikimedia.org/wikipedia/en/1/15/Home_-_Odyssey.png",
-                bpm: 86,
-                url: "https://ia801503.us.archive.org/15/items/home-resonance/HOME%20-%20Resonance.mp3"
+                title: "Retrowave 80s Party",
+                artist: "Vaztinix • Synthpop Anthem",
+                genre: "80s SYNTHPOP • 122 BPM",
+                bpm: 122,
+                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="g4" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#34D399" />
+                            <stop offset="100%" stop-color="#047857" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" fill="url(#g4)" />
+                    <rect x="20" y="30" width="60" height="40" rx="6" fill="#040806" stroke="#6EE7B7" stroke-width="2" />
+                    <circle cx="38" cy="50" r="9" fill="none" stroke="#ffffff" stroke-width="2" />
+                    <circle cx="62" cy="50" r="9" fill="none" stroke="#ffffff" stroke-width="2" />
+                </svg>`,
+                bassScale: [146.83, 164.81, 196.00, 220.00],
+                leadScale: [293.66, 329.63, 392.00, 440.00, 587.33]
             },
             {
-                title: "Get Lucky",
-                artist: "Daft Punk ft. Pharrell Williams",
-                album: "Random Access Memories",
-                genre: "DISCO FUNK • GROOVE",
-                cover: "https://upload.wikimedia.org/wikipedia/en/a/a7/Random_Access_Memories.jpg",
-                bpm: 116,
-                url: "https://ia803204.us.archive.org/17/items/daft-punk-get-lucky-ft.-pharrell-williams/Daft%20Punk%20-%20Get%20Lucky%20ft.%20Pharrell%20Williams.mp3"
+                title: "Super Star Energy",
+                artist: "Vaztinix • Euphoric Electronic Rhythm",
+                genre: "ELECTRONIC RUSH • 134 BPM",
+                bpm: 134,
+                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#10B981" />
+                            <stop offset="50%" stop-color="#059669" />
+                            <stop offset="100%" stop-color="#06B6D4" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" fill="url(#g5)" />
+                    <polygon points="50,15 63,40 90,40 68,57 77,85 50,68 23,85 32,57 10,40 37,40" fill="#F59E0B" opacity="0.9" stroke="#ffffff" stroke-width="1.5" />
+                </svg>`,
+                bassScale: [110.00, 146.83, 164.81, 196.00],
+                leadScale: [220.00, 293.66, 329.63, 440.00, 523.25]
             }
         ];
 
-        // Random song selection on every page load
-        let currentSongIdx = Math.floor(Math.random() * REAL_SONGS.length);
+        // Random track selection on page load
+        let currentTrackIdx = Math.floor(Math.random() * FUN_TRACKS.length);
 
         // Elements
-        const audioEl = document.getElementById('real-audio-player');
-        const coverArtEl = document.getElementById('cover-art');
+        const coverBoxEl = document.getElementById('cover-art-box');
         const trackMetaEl = document.getElementById('track-meta');
         const trackTitleEl = document.getElementById('track-name');
         const trackArtistEl = document.getElementById('track-artist');
@@ -825,12 +880,6 @@
         const volSlider = document.getElementById('vol-slider');
         const eqBars = document.querySelectorAll('.eq-bar');
 
-        // Fallback Image handling
-        coverArtEl.onerror = function() {
-            this.onerror = null;
-            this.src = 'nora.png';
-        };
-
         // Canvas Background
         const canvas = document.getElementById('audio-canvas');
         const ctx = canvas.getContext('2d');
@@ -842,81 +891,146 @@
             height = canvas.height = window.innerHeight;
         });
 
+        let audioCtx = null;
+        let masterGain = null;
         let isPlaying = false;
-        let synthCtx = null;
-        let synthMaster = null;
         let beatTimer = null;
         let beatStep = 0;
 
-        function updateSongUI() {
-            const song = REAL_SONGS[currentSongIdx];
-            trackMetaEl.textContent = `SONG ${currentSongIdx + 1} OF ${REAL_SONGS.length} • ${song.genre}`;
-            trackTitleEl.textContent = song.title;
-            trackArtistEl.textContent = `${song.artist} • ${song.album}`;
-            coverArtEl.src = song.cover;
-            audioEl.src = song.url;
+        function updateTrackUI() {
+            const track = FUN_TRACKS[currentTrackIdx];
+            trackMetaEl.textContent = `TRACK ${currentTrackIdx + 1} OF ${FUN_TRACKS.length} • ${track.genre}`;
+            trackTitleEl.textContent = track.title;
+            trackArtistEl.textContent = track.artist;
+            coverBoxEl.innerHTML = track.svgCover;
         }
 
-        updateSongUI();
+        updateTrackUI();
 
-        // Procedural Audio Beat Synthesizer Fallback
-        function initSynthBackup() {
-            if (synthCtx) return;
+        function initAudioSynth() {
+            if (audioCtx) return;
             const AudioContext = window.AudioContext || window.webkitAudioContext;
-            synthCtx = new AudioContext();
-            synthMaster = synthCtx.createGain();
-            synthMaster.gain.setValueAtTime(parseFloat(volSlider.value), synthCtx.currentTime);
-            synthMaster.connect(synthCtx.destination);
+            audioCtx = new AudioContext();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(parseFloat(volSlider.value), audioCtx.currentTime);
+            masterGain.connect(audioCtx.destination);
         }
 
-        function playSynthKick(t) {
-            if (!synthCtx) return;
-            const osc = synthCtx.createOscillator();
-            const gain = synthCtx.createGain();
-            osc.frequency.setValueAtTime(140, t);
-            osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.15);
-            gain.gain.setValueAtTime(0.4, t);
-            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+        // Web Audio Synthesizer Beat Instruments
+        function playKick(time) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(150, time);
+            osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.16);
+            gain.gain.setValueAtTime(0.5, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.16);
             osc.connect(gain);
-            gain.connect(synthMaster);
-            osc.start(t);
-            osc.stop(t + 0.15);
+            gain.connect(masterGain);
+            osc.start(time);
+            osc.stop(time + 0.16);
         }
 
-        function playSynthBeatLoop() {
-            if (!isPlaying || !synthCtx) return;
-            const song = REAL_SONGS[currentSongIdx];
-            const t = synthCtx.currentTime;
-            const stepTime = (60 / song.bpm) / 4;
+        function playSnare(time) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(240, time);
+            osc.frequency.exponentialRampToValueAtTime(60, time + 0.12);
+            gain.gain.setValueAtTime(0.35, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(time);
+            osc.stop(time + 0.12);
+        }
 
-            if (beatStep % 4 === 0) playSynthKick(t);
+        function playHiHat(time) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(9000, time);
+            gain.gain.setValueAtTime(0.06, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(time);
+            osc.stop(time + 0.04);
+        }
+
+        function playBass(time, freq) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, time);
+            gain.gain.setValueAtTime(0.2, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(time);
+            osc.stop(time + 0.25);
+        }
+
+        function playLeadNote(time, freq) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, time);
+            gain.gain.setValueAtTime(0.15, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(time);
+            osc.stop(time + 0.3);
+        }
+
+        function beatStepLoop() {
+            if (!isPlaying || !audioCtx) return;
+            const track = FUN_TRACKS[currentTrackIdx];
+            const now = audioCtx.currentTime;
+            const stepTime = (60 / track.bpm) / 4; // 16th notes
+
+            // Drums Pattern: Kick on 0 & 8, Snare on 4 & 12
+            if (beatStep % 8 === 0 || beatStep % 16 === 10) playKick(now);
+            if (beatStep % 8 === 4) playSnare(now);
+            if (beatStep % 2 === 0) playHiHat(now);
+
+            // Bassline
+            if (beatStep % 4 === 0) {
+                const bassFreq = track.bassScale[Math.floor((beatStep / 4) % track.bassScale.length)];
+                playBass(now, bassFreq);
+            }
+
+            // Catchy Lead Melody
+            if (beatStep % 2 === 0 || beatStep % 16 === 14) {
+                const leadFreq = track.leadScale[Math.floor(Math.random() * track.leadScale.length)];
+                playLeadNote(now, leadFreq);
+            }
 
             beatStep = (beatStep + 1) % 16;
-            beatTimer = setTimeout(playSynthBeatLoop, stepTime * 1000);
+            beatTimer = setTimeout(beatStepLoop, stepTime * 1000);
         }
 
-        function playSong() {
-            audioEl.volume = parseFloat(volSlider.value);
-            const playPromise = audioEl.play();
+        function playTrack() {
+            initAudioSynth();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
 
             isPlaying = true;
             playIcon.className = 'fas fa-pause';
             playerCard.classList.add('playing');
 
-            if (playPromise !== undefined) {
-                playPromise.catch(err => {
-                    console.warn("External MP3 stream blocked/failed, engaging Web Audio synth rhythm:", err);
-                    initSynthBackup();
-                    if (synthCtx.state === 'suspended') synthCtx.resume();
-                    if (beatTimer) clearTimeout(beatTimer);
-                    beatStep = 0;
-                    playSynthBeatLoop();
-                });
-            }
+            if (beatTimer) clearTimeout(beatTimer);
+            beatStep = 0;
+            beatStepLoop();
         }
 
-        function pauseSong() {
-            audioEl.pause();
+        function pauseTrack() {
             isPlaying = false;
             playIcon.className = 'fas fa-play';
             playerCard.classList.remove('playing');
@@ -926,47 +1040,37 @@
 
         btnPlay.addEventListener('click', () => {
             if (isPlaying) {
-                pauseSong();
+                pauseTrack();
             } else {
-                playSong();
+                playTrack();
             }
         });
 
         btnPrev.addEventListener('click', () => {
-            currentSongIdx = (currentSongIdx - 1 + REAL_SONGS.length) % REAL_SONGS.length;
-            updateSongUI();
-            if (isPlaying) {
-                playSong();
-            }
+            currentTrackIdx = (currentTrackIdx - 1 + FUN_TRACKS.length) % FUN_TRACKS.length;
+            updateTrackUI();
+            if (isPlaying) playTrack();
         });
 
         btnNext.addEventListener('click', () => {
-            currentSongIdx = (currentSongIdx + 1) % REAL_SONGS.length;
-            updateSongUI();
-            if (isPlaying) {
-                playSong();
-            }
-        });
-
-        audioEl.addEventListener('ended', () => {
-            currentSongIdx = (currentSongIdx + 1) % REAL_SONGS.length;
-            updateSongUI();
-            playSong();
+            currentTrackIdx = (currentTrackIdx + 1) % FUN_TRACKS.length;
+            updateTrackUI();
+            if (isPlaying) playTrack();
         });
 
         volSlider.addEventListener('input', (e) => {
-            audioEl.volume = parseFloat(e.target.value);
-            if (synthMaster && synthCtx) {
-                synthMaster.gain.setValueAtTime(parseFloat(e.target.value), synthCtx.currentTime);
+            if (masterGain && audioCtx) {
+                masterGain.gain.setValueAtTime(parseFloat(e.target.value), audioCtx.currentTime);
             }
         });
 
-        // Dynamic Soundwave Canvas & Equalizer Bars Animation (Emerald Cyber Theme)
+        // Soundwave Canvas & Equalizer Bars Animated Loop (Cyber Emerald Theme)
         let phase = 0;
         function animateVisualizer() {
             ctx.clearRect(0, 0, width, height);
 
-            const speed = isPlaying ? 0.04 : 0.01;
+            const track = FUN_TRACKS[currentTrackIdx];
+            const speed = isPlaying ? (track.bpm / 120) * 0.05 : 0.01;
             const waveAmp = isPlaying ? 40 : 20;
 
             ctx.lineWidth = 2.5;
@@ -988,10 +1092,10 @@
 
             phase += speed;
 
-            // Bouncing Equalizer Bars in Emerald Theme
+            // Bouncing Equalizer Bars
             if (isPlaying) {
                 eqBars.forEach((bar, idx) => {
-                    const h = Math.floor(Math.sin(phase * 4 + idx * 0.8) * 11) + 12;
+                    const h = Math.floor(Math.sin(phase * 5 + idx * 0.8) * 11) + 12;
                     bar.style.height = `${h}px`;
                 });
             }
@@ -1003,4 +1107,3 @@
     </script>
 </body>
 </html>
-
