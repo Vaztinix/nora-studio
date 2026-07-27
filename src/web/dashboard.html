@@ -1103,7 +1103,7 @@
         .input-group label { font-size: 0.85rem; color: var(--muted); }
 
         select, input[type="text"], input[type="number"], textarea {
-            background: var(--input-bg);
+            background: #121319;
             border: 1px solid var(--border);
             color: var(--text);
             padding: 10px 16px;
@@ -1114,21 +1114,27 @@
             transition: all 0.25s ease;
             appearance: none;
             -webkit-appearance: none;
-            color-scheme: var(--color-scheme, dark);
+            color-scheme: dark !important;
         }
 
-        option {
-            background-color: var(--card-bg);
-            color: var(--text);
+        option, optgroup {
+            background-color: #161720 !important;
+            color: #ffffff !important;
+            padding: 12px !important;
+            font-size: 0.9rem !important;
         }
 
         select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 40px;
-            cursor: pointer;
+            background-color: #121319 !important;
+            color: #ffffff !important;
+            color-scheme: dark !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 14px center !important;
+            padding-right: 40px !important;
+            cursor: pointer !important;
         }
+
 
         select:hover, input:hover, textarea:hover {
             background: rgba(255, 255, 255, 0.08);
@@ -3861,11 +3867,12 @@
                                 <div class="row"><h4>Filter Suspicious Join Nicknames</h4><label class="switch"><input type="checkbox" id="setting-nicknameRaidFilter"><span class="slider"></span></label></div>
 
                                 <div class="row-inputs" style="margin-top: 10px;">
-                                    <div class="input-group"><label style="font-weight: 600;">Join Velocity Sensitivity</label><select id="setting-antiRaidThreshold"><option value="">Select Option</option><option value="5">Strict (5 joins / sec)</option><option value="10">Normal (10 joins / sec)</option><option value="20">Lenient (20 joins / sec)</option></select></div>
-                                    <div class="input-group"><label style="font-weight: 600;">Minimum Account Age Requirement</label><select id="setting-minAccountAge" onchange="syncRealSecurityStats()"><option value="">Disabled</option><option value="0">Disabled</option><option value="1">1 Day Old</option><option value="7">7 Days Old</option><option value="30">30 Days Old</option></select></div>
-                                    <div class="input-group"><label style="font-weight: 600;">Underage Account Enforcement</label><select id="setting-minAccountAgeAction"><option value="">Select Option</option><option value="kick">Kick Account</option><option value="ban_perm">Permanent Ban</option></select></div>
-                                    <div class="input-group"><label style="font-weight: 600;">Anti-Raid Mitigation Action</label><select id="setting-antiRaidAction"><option value="">Select Option</option><option value="notify">Notify Staff Only</option><option value="lockdown">Trigger Lockdown</option><option value="kick_new">Kick New Joiners</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Join Velocity Sensitivity</label><select id="setting-antiRaidThreshold"><option value="">Select Sensitivity...</option><option value="5">Strict (5 joins / sec)</option><option value="10">Normal (10 joins / sec)</option><option value="20">Lenient (20 joins / sec)</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Minimum Account Age Requirement</label><select id="setting-minAccountAge" onchange="syncRealSecurityStats()"><option value="0">Disabled (No Age Requirement)</option><option value="1">1 Day Old</option><option value="7">7 Days Old</option><option value="30">30 Days Old</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Underage Account Enforcement</label><select id="setting-minAccountAgeAction"><option value="">Select Enforcement Action...</option><option value="kick">Kick Member</option><option value="ban_perm">Permanent Ban</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Anti-Raid Mitigation Action</label><select id="setting-antiRaidAction"><option value="">Select Mitigation Action...</option><option value="notify">Log & Notify Staff Only</option><option value="lockdown">Server Lockdown</option><option value="kick_new">Kick Malicious Joiners</option><option value="ban_perm">Permanent Ban</option></select></div>
                                 </div>
+
                             </div>
                         </div>
 
@@ -3887,7 +3894,7 @@
                                 </div>
 
                                 <div class="row-inputs" style="margin-top: 10px;">
-                                    <div class="input-group"><label style="font-weight: 600;">Max User/Role Mention Limit</label><select id="setting-automodMentions"><option value="0">Off (Unlimited)</option><option value="3">3 Mentions</option><option value="5">5 Mentions</option><option value="10">10 Mentions</option></select></div>
+                                    <div class="input-group"><label style="font-weight: 600;">Max User/Role Mention Limit</label><select id="setting-automodMentions"><option value="0">Off (Unlimited Mentions)</option><option value="3">3 Mentions Limit</option><option value="5">5 Mentions Limit</option><option value="10">10 Mentions Limit</option></select></div>
                                     <div class="input-group"><label style="font-weight: 600;">Immune Roles (Bypass Safety Filters)</label><input type="hidden" id="setting-automodImmuneRoles"></div>
                                 </div>
                             </div>
@@ -3969,11 +3976,11 @@
                                     <div class="input-group" style="margin-bottom: 0;">
                                         <label style="font-weight: 600;">Action on Reaching Threshold</label>
                                         <select id="setting-warningAction">
-                                            <option value="">Select Option</option>
-                                            <option value="none">Notify Staff Only</option>
-                                            <option value="timeout">Timeout User</option>
-                                            <option value="kick">Kick User</option>
-                                            <option value="ban">Ban User</option>
+                                            <option value="">Select Action...</option>
+                                            <option value="none">Log & Notify Staff Only</option>
+                                            <option value="timeout">Temporary Timeout (Mute)</option>
+                                            <option value="kick">Kick Member</option>
+                                            <option value="ban">Permanent Ban</option>
                                         </select>
                                     </div>
                                 </div>

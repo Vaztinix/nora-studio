@@ -1,47 +1,150 @@
 /**
- * Analyzes conversational context around flagged keywords to avoid over-moderation.
+ * Advanced Contextual AutoMod Engine for Nora
+ * Distinguishes targeted harassment vs casual conversation & handles mention limiting.
  */
+
+const SEVERE_SLUR_PATTERNS = [
+    /\b(nigger|nigga|nigg|faggot|fag|kike|chink|spic|tranny|retard|retarded)\b/i
+];
+
+const TOXIC_HARASSMENT_PATTERNS = [
+    /\b(kys|kill\s*your\s*self|go\s*die|go\s*neck\s*your\s*self|die\s*in\s*a\s*fire|hope\s*you\s*die)\b/i,
+    /\b(shut\s*the\s*fuck\s*up|stfu|screw\s*you|fuck\s*you|fuck\s*u|get\s*a\s*life)\b/i
+];
+
+const GENERAL_PROFANITY_PATTERNS = [
+    /\b(bitch|whore|slut|cunt|bastard|dipshit|motherfucker|pussy|dickhead|jackass|asshole|dumbass)\b/i,
+    /\b(fuck|shit|damn|crap|piss|cock|dick|tits)\b/i
+];
+
+const SCAM_PHISHING_PATTERNS = [
+    /discord\.gift/i,
+    /steamcom+unity\.com/i,
+    /dlscord/i,
+    /free.*nitro/i,
+    /grabify/i,
+    /iplogger/i
+];
+
+const DIRECT_TARGETING_INDICATORS = [
+    /\b(you\s*are\s*a|you're\s*a|youre\s*a|u\s*r\s*a|u\s*a|you\s*a|ur\s*a|ur\s*an)\b/i,
+    /\b(you\s*are|you're|youre|u\s*r|ur)\b/i,
+    /\b(your\s*mom|your\s*mother|your\s*family)\b/i
+];
+
 async function assessMessageThreatContext(guildConfig, messageInstance) {
-    // Return immediately if the custom moderation module hasn't been manually enabled
-    if (!guildConfig.autoModActive) {
-        return { actionRequired: false };
+    if (!guildConfig) return { actionRequired: false };
+
+    const rawText = messageInstance.content ? messageInstance.content.toLowerCase() : '';
+
+    // 1. MENTION LIMITING CHECK
+    const mentionLimit = parseInt(guildConfig.automodMentions || 0, 10);
+    if (mentionLimit > 0) {
+        const userMentions = messageInstance.mentions?.users?.size || 0;
+        const roleMentions = messageInstance.mentions?.roles?.size || 0;
+        const everyoneMention = messageInstance.mentions?.everyone ? 1 : 0;
+        const totalMentions = userMentions + roleMentions + everyoneMention;
+
+        if (totalMentions > mentionLimit) {
+            return {
+                actionRequired: true,
+                contextClassification: "MENTION_LIMIT_EXCEEDED",
+                recommendedAction: "DELETE_AND_WARN",
+                reason: `Exceeded mention limit (${totalMentions} mentions sent, limit is ${mentionLimit}).`
+            };
+        }
     }
 
-    const rawTextContent = messageInstance.content.toLowerCase();
-    
-    // Custom blocked context keywords stored as a JSON array of strings in SQLite
-    let wordDictionary = [];
+    // 2. SCAM & PHISHING CHECK
+    if (guildConfig.automodScam || guildConfig.automodHardcore || guildConfig.automodSpam) {
+        for (const pattern of SCAM_PHISHING_PATTERNS) {
+            if (pattern.test(rawText)) {
+                return {
+                    actionRequired: true,
+                    contextClassification: "TARGETED_HARASSMENT",
+                    recommendedAction: "DELETE_AND_WARN",
+                    reason: "Detected malicious scam or phishing link pattern."
+                };
+            }
+        }
+    }
+
+    // 3. CUSTOM BLOCKED CONTEXTS & WORDS
+    let customWords = [];
     try {
-        wordDictionary = JSON.parse(guildConfig.customBlockedContexts || '[]');
+        customWords = JSON.parse(guildConfig.customBlockedContexts || '[]');
     } catch (e) {
-        wordDictionary = [];
+        customWords = [];
     }
-    
-    // Evaluate message text against the active keyword list
-    const identifiedViolations = wordDictionary.filter(term => rawTextContent.includes(term.toLowerCase()));
-    if (identifiedViolations.length === 0) {
+
+    let customMatch = null;
+    if (Array.isArray(customWords)) {
+        for (const word of customWords) {
+            if (word && rawText.includes(word.toLowerCase())) {
+                customMatch = word;
+                break;
+            }
+        }
+    }
+
+    // 4. PROFANITY & HATE SPEECH CHECK
+    let matchedSlur = null;
+    if (guildConfig.automodSlurs || guildConfig.autoModActive) {
+        for (const pattern of SEVERE_SLUR_PATTERNS) {
+            const match = rawText.match(pattern);
+            if (match) {
+                matchedSlur = match[0];
+                break;
+            }
+        }
+    }
+
+    let matchedHarassment = null;
+    for (const pattern of TOXIC_HARASSMENT_PATTERNS) {
+        const match = rawText.match(pattern);
+        if (match) {
+            matchedHarassment = match[0];
+            break;
+        }
+    }
+
+    let matchedProfanity = null;
+    if (guildConfig.automodProfanity || guildConfig.autoModActive) {
+        for (const pattern of GENERAL_PROFANITY_PATTERNS) {
+            const match = rawText.match(pattern);
+            if (match) {
+                matchedProfanity = match[0];
+                break;
+            }
+        }
+    }
+
+    const violationTerm = customMatch || matchedSlur || matchedHarassment || matchedProfanity;
+    if (!violationTerm) {
         return { actionRequired: false };
     }
 
-    // Check for indicators of targeted intent
-    const targetedMentionPresent = messageInstance.mentions.users.size > 0;
-    const characterSpamDetected = /(.)\1{4,}/.test(rawTextContent); // Matches heavy character repetition
+    // 5. DETERMINE INTENT (Targeted Harassment vs Casual Conversation)
+    const hasMentions = (messageInstance.mentions?.users?.size || 0) > 0 || (messageInstance.mentions?.roles?.size || 0) > 0;
+    const isDirectlyTargeted = DIRECT_TARGETING_INDICATORS.some(pat => pat.test(rawText));
+    const characterSpamDetected = /(.)\1{5,}/.test(rawText);
+    const isSevereViolation = Boolean(matchedSlur || matchedHarassment);
 
-    if (targetedMentionPresent || characterSpamDetected) {
+    if (hasMentions || isDirectlyTargeted || characterSpamDetected || isSevereViolation) {
         return {
             actionRequired: true,
             contextClassification: "TARGETED_HARASSMENT",
             recommendedAction: "EXECUTE_TIMEOUT_PROMPT",
-            reason: `Flagged keyword [${identifiedViolations[0]}] deployed in a high-threat targeted interaction.`
+            reason: `Language [${violationTerm}] used in a targeted or high-severity interaction.`
         };
     }
 
-    // Handle conversational expressions smoothly according to server safety preferences
+    // Casual expression (e.g. swearing in conversation without targeting someone)
     return {
-        actionRequired: !guildConfig.useDefaultSafetyRules, // False if owner sets layout to ignore casual context
+        actionRequired: guildConfig.automodProfanity || !guildConfig.useDefaultSafetyRules,
         contextClassification: "CASUAL_EXPRESSION",
         recommendedAction: "DISPATCH_EPHEMERAL_NOTICE",
-        reason: "Flagged keyword detected inside an un-targeted conversational statement."
+        reason: `Conversational use of flagged word [${violationTerm}].`
     };
 }
 

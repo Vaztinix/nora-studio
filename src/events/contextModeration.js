@@ -14,16 +14,50 @@ module.exports = {
 
         try {
             const settings = await settingsCache.get(message.guild.id);
-            if (!settings || !settings.autoModActive) return;
+            if (!settings) return;
+
+            // Check immune roles
+            if (settings.automodImmuneRoles && message.member) {
+                try {
+                    const immuneRoles = JSON.parse(settings.automodImmuneRoles || '[]');
+                    if (Array.isArray(immuneRoles) && immuneRoles.some(rId => message.member.roles.cache.has(rId))) {
+                        return;
+                    }
+                } catch (e) {}
+            }
 
             // Forward-only timeline privacy check
-            const botJoinTime = settings && settings.installedAt ? new Date(settings.installedAt).getTime() : Date.now();
+            const botJoinTime = settings.installedAt ? new Date(settings.installedAt).getTime() : Date.now();
             const messageTime = new Date(message.createdAt).getTime();
             if (messageTime < botJoinTime) return;
 
             const res = await assessMessageThreatContext(settings, message);
-            
-            if (res.contextClassification === "TARGETED_HARASSMENT") {
+            if (!res.actionRequired) return;
+
+            if (res.contextClassification === "MENTION_LIMIT_EXCEEDED") {
+                // Delete message
+                if (message.deletable) {
+                    await message.delete().catch(() => {});
+                }
+
+                // Temporary notice to user
+                const notice = await message.channel.send(`⚠️ <@${message.author.id}>, your message was deleted for exceeding the server's mention limit.`);
+                setTimeout(() => notice.delete().catch(() => {}), 5000);
+
+                // Dispatch log to staff channel
+                if (settings.loggingChannelId) {
+                    const logChannel = message.guild.channels.cache.get(settings.loggingChannelId) 
+                        || await message.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+                    if (logChannel) {
+                        const embed = new EmbedBuilder()
+                            .setTitle('🛡️ AutoMod V2: Mention Limit Exceeded')
+                            .setDescription(`**User:** ${message.author.tag} (${message.author.id})\n**Channel:** <#${message.channel.id}>\n**Details:** ${res.reason}\n**Message Snippet:** ${message.content.substring(0, 500)}`)
+                            .setColor(0xffaa00)
+                            .setTimestamp();
+                        await logChannel.send({ embeds: [embed] }).catch(() => {});
+                    }
+                }
+            } else if (res.contextClassification === "TARGETED_HARASSMENT") {
                 // Delete message
                 if (message.deletable) {
                     await message.delete().catch(() => {});
@@ -42,7 +76,7 @@ module.exports = {
                 });
 
                 // Reply to user in the channel
-                const warnMsg = await message.channel.send(`⚠️ <@${message.author.id}>, your message was deleted by AutoMod for targeted harassment.`);
+                const warnMsg = await message.channel.send(`⚠️ <@${message.author.id}>, your message was deleted by AutoMod for targeted harassment/slurs.`);
                 setTimeout(() => warnMsg.delete().catch(() => {}), 5000);
 
                 // Execute timeout escalation if limit reached
@@ -65,35 +99,32 @@ module.exports = {
                         || await message.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
                     if (logChannel) {
                         const embed = new EmbedBuilder()
-                            .setTitle('🛡️ AutoMod V2: Targeted Harassment')
+                            .setTitle('🛡️ AutoMod V2: Targeted Harassment / Slur Violation')
                             .setDescription(`**User:** ${message.author.tag} (${message.author.id})\n**Channel:** <#${message.channel.id}>\n**Violation:** ${res.reason}\n**Message:** ${message.content}\n**Total Warnings:** ${warningCount}`)
                             .setColor(0xff5555)
                             .setTimestamp();
                         await logChannel.send({ embeds: [embed] }).catch(() => {});
                     }
                 }
-            } else if (res.contextClassification === "CASUAL_EXPRESSION" && res.actionRequired) {
-                // If conversational use is also restricted, delete and warn user privately
+            } else if (res.contextClassification === "CASUAL_EXPRESSION") {
+                // If conversational use of flagged word is restricted, delete quietly and notify privately
                 if (message.deletable) {
                     await message.delete().catch(() => {});
                 }
                 
-                // Send a private DM to the user
                 try {
-                    await message.author.send(`⚠️ Hi! The word you used on **${message.guild.name}** is not allowed in general chat, even conversationally. Please keep the channel friendly!`);
+                    await message.author.send(`⚠️ Hi! The language used in your message on **${message.guild.name}** is restricted in general chat. Please keep the discussion friendly!`);
                 } catch (e) {
-                    // Fallback to temporary notice in channel
-                    const temp = await message.channel.send(`⚠️ <@${message.author.id}>, conversational use of that word is restricted in this channel. Message deleted.`);
+                    const temp = await message.channel.send(`⚠️ <@${message.author.id}>, conversational use of that word is restricted in this channel.`);
                     setTimeout(() => temp.delete().catch(() => {}), 3000);
                 }
 
-                // Dispatch log to staff channel
                 if (settings.loggingChannelId) {
                     const logChannel = message.guild.channels.cache.get(settings.loggingChannelId) 
                         || await message.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
                     if (logChannel) {
                         const embed = new EmbedBuilder()
-                            .setTitle('🛡️ AutoMod V2: Casual Expression Warning')
+                            .setTitle('🛡️ AutoMod V2: Casual Language Filter')
                             .setDescription(`**User:** ${message.author.tag} (${message.author.id})\n**Channel:** <#${message.channel.id}>\n**Violation:** ${res.reason}\n**Message:** ${message.content}\n**Action:** Message deleted & user notified privately.`)
                             .setColor(0xffaa00)
                             .setTimestamp();
