@@ -217,7 +217,7 @@
             gap: 6px;
         }
 
-        /* 100% Native Iframe-Free Custom Music Player */
+        /* 100% Direct Real MP3 Music Player */
         .music-player-card {
             background: rgba(10, 22, 16, 0.92);
             backdrop-filter: blur(25px);
@@ -246,8 +246,8 @@
         }
 
         .cover-art-box {
-            width: 95px;
-            height: 95px;
+            width: 105px;
+            height: 105px;
             border-radius: 18px;
             position: relative;
             flex-shrink: 0;
@@ -550,6 +550,9 @@
     <!-- Dynamic Soundwave Canvas Background -->
     <canvas id="audio-canvas"></canvas>
 
+    <!-- Hidden Native Audio Engine -->
+    <audio id="real-audio-player"></audio>
+
     <header>
         <div class="container nav-container">
             <a href="/" class="brand">
@@ -588,16 +591,16 @@
                 Creator of the <strong>Nora Studio</strong> Discord ecosystem. Passionate about building privacy-first AI moderation, real-time WebSocket infrastructure, and high-performance Web applications.
             </p>
 
-            <!-- 100% Native Iframe-Free Custom Music Player Widget -->
+            <!-- 100% Native Real MP3 Music Player Widget -->
             <div class="music-player-card" id="music-player-card">
                 <div class="cover-art-box">
                     <img src="ReVaztinix.jpeg" alt="Track Cover" class="cover-art-img" id="cover-art" onerror="this.src='nora.png'">
                 </div>
 
                 <div class="track-info">
-                    <div class="track-meta-badge" id="track-meta">TRACK 1 OF 5 • CYBER DISCO</div>
-                    <div class="track-title" id="track-name">Cyber Neon Disco</div>
-                    <div class="track-artist" id="track-artist">Vaztinix • High-Energy Dance Soundscape</div>
+                    <div class="track-meta-badge" id="track-meta">TRACK 1 OF 4 • CYBER ELECTRO</div>
+                    <div class="track-title" id="track-name">Cyber Neon Rush</div>
+                    <div class="track-artist" id="track-artist">Vaztinix • High-Energy Soundscape</div>
                     
                     <div class="equalizer-bars" id="eq-bars">
                         <div class="eq-bar"></div>
@@ -754,58 +757,42 @@
         </div>
     </footer>
 
-    <!-- Native Polyphonic Beat Synthesizer & Visualizer Engine -->
+    <!-- Native HTML5 Real MP3 Audio Engine -->
     <script>
-        const LOCAL_TRACKS = [
+        const REAL_AUDIO_PLAYLIST = [
             {
-                title: "Cyber Neon Disco",
-                artist: "Vaztinix • High-Energy Dance Soundscape",
-                genre: "FUNK DISCO BEAT • 128 BPM",
-                bpm: 128,
+                title: "Cyber Neon Rush",
+                artist: "Vaztinix • High-Energy Electro Soundscape",
+                genre: "CYBERPUNK ELECTRO • HIGH BEAT",
                 cover: "ReVaztinix.jpeg",
-                bassScale: [110, 130.81, 146.83, 164.81],
-                leadScale: [220, 261.63, 329.63, 392.00, 440, 523.25]
+                src: "/audio/track1.mp3"
             },
             {
-                title: "Arcade Rush",
-                artist: "Vaztinix • Retro Chiptune Energy",
+                title: "Synthwave Sunset",
+                artist: "Vaztinix • Retrowave Beat",
+                genre: "SYNTHPOP • 120 BPM",
+                cover: "nora.png",
+                src: "/audio/track2.mp3"
+            },
+            {
+                title: "Arcade Euphoria",
+                artist: "Vaztinix • Electronic Soundscape",
                 genre: "CHIPTUNE DANCE • 140 BPM",
-                bpm: 140,
-                cover: "nora.png",
-                bassScale: [130.81, 164.81, 196.00, 220],
-                leadScale: [261.63, 329.63, 392.00, 523.25, 659.25]
-            },
-            {
-                title: "Vaporwave Sunset",
-                artist: "Vaztinix • Cyber Synth Groove",
-                genre: "RETROWAVE • 110 BPM",
-                bpm: 110,
                 cover: "ReVaztinix.jpeg",
-                bassScale: [98.00, 110.00, 130.81, 146.83],
-                leadScale: [196.00, 220.00, 261.63, 329.63, 392.00]
+                src: "/audio/track3.mp3"
             },
             {
-                title: "Retrowave 80s Party",
-                artist: "Vaztinix • Synthpop Anthem",
-                genre: "80s SYNTHPOP • 122 BPM",
-                bpm: 122,
+                title: "Action Electro Pulse",
+                artist: "Vaztinix • Heavy Bass Beat",
+                genre: "ACTION ELECTRO • HIGH BEAT",
                 cover: "nora.png",
-                bassScale: [146.83, 164.81, 196.00, 220.00],
-                leadScale: [293.66, 329.63, 392.00, 440.00, 587.33]
-            },
-            {
-                title: "Super Star Energy",
-                artist: "Vaztinix • Euphoric Electronic Rhythm",
-                genre: "ELECTRONIC RUSH • 134 BPM",
-                bpm: 134,
-                cover: "ReVaztinix.jpeg",
-                bassScale: [110.00, 146.83, 164.81, 196.00],
-                leadScale: [220.00, 293.66, 329.63, 440.00, 523.25]
+                src: "/audio/track4.mp3"
             }
         ];
 
-        let currentTrackIdx = Math.floor(Math.random() * LOCAL_TRACKS.length);
+        let currentTrackIdx = Math.floor(Math.random() * REAL_AUDIO_PLAYLIST.length);
 
+        const audioElement = document.getElementById('real-audio-player');
         const coverArtEl = document.getElementById('cover-art');
         const trackMetaEl = document.getElementById('track-meta');
         const trackTitleEl = document.getElementById('track-name');
@@ -819,146 +806,36 @@
         const volSlider = document.getElementById('vol-slider');
         const eqBars = document.querySelectorAll('.eq-bar');
 
+        audioElement.volume = parseFloat(volSlider.value);
+
         function updateTrackUI() {
-            const track = LOCAL_TRACKS[currentTrackIdx];
-            trackMetaEl.textContent = `TRACK ${currentTrackIdx + 1} OF ${LOCAL_TRACKS.length} • ${track.genre}`;
+            const track = REAL_AUDIO_PLAYLIST[currentTrackIdx];
+            trackMetaEl.textContent = `TRACK ${currentTrackIdx + 1} OF ${REAL_AUDIO_PLAYLIST.length} • ${track.genre}`;
             trackTitleEl.textContent = track.title;
             trackArtistEl.textContent = track.artist;
             coverArtEl.src = track.cover;
+            audioElement.src = track.src;
         }
 
         updateTrackUI();
 
-        let audioCtx = null;
-        let masterGain = null;
         let isPlaying = false;
-        let beatTimer = null;
-        let beatStep = 0;
-
-        function initAudioSynth() {
-            if (audioCtx) return;
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-            masterGain = audioCtx.createGain();
-            masterGain.gain.setValueAtTime(parseFloat(volSlider.value), audioCtx.currentTime);
-            masterGain.connect(audioCtx.destination);
-        }
-
-        function playKick(time) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(150, time);
-            osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.16);
-            gain.gain.setValueAtTime(0.5, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.16);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.16);
-        }
-
-        function playSnare(time) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(240, time);
-            osc.frequency.exponentialRampToValueAtTime(60, time + 0.12);
-            gain.gain.setValueAtTime(0.35, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.12);
-        }
-
-        function playHiHat(time) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(9000, time);
-            gain.gain.setValueAtTime(0.06, time);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.04);
-        }
-
-        function playBass(time, freq) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(freq, time);
-            gain.gain.setValueAtTime(0.2, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.25);
-        }
-
-        function playLeadNote(time, freq) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, time);
-            gain.gain.setValueAtTime(0.15, time);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.3);
-        }
-
-        function beatStepLoop() {
-            if (!isPlaying || !audioCtx) return;
-            const track = LOCAL_TRACKS[currentTrackIdx];
-            const now = audioCtx.currentTime;
-            const stepTime = (60 / track.bpm) / 4;
-
-            if (beatStep % 8 === 0 || beatStep % 16 === 10) playKick(now);
-            if (beatStep % 8 === 4) playSnare(now);
-            if (beatStep % 2 === 0) playHiHat(now);
-
-            if (beatStep % 4 === 0) {
-                const bassFreq = track.bassScale[Math.floor((beatStep / 4) % track.bassScale.length)];
-                playBass(now, bassFreq);
-            }
-
-            if (beatStep % 2 === 0 || beatStep % 16 === 14) {
-                const leadFreq = track.leadScale[Math.floor(Math.random() * track.leadScale.length)];
-                playLeadNote(now, leadFreq);
-            }
-
-            beatStep = (beatStep + 1) % 16;
-            beatTimer = setTimeout(beatStepLoop, stepTime * 1000);
-        }
 
         function playTrack() {
-            initAudioSynth();
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-
-            isPlaying = true;
-            playIcon.className = 'fas fa-pause';
-            playerCard.classList.add('playing');
-
-            if (beatTimer) clearTimeout(beatTimer);
-            beatStep = 0;
-            beatStepLoop();
+            audioElement.play().then(() => {
+                isPlaying = true;
+                playIcon.className = 'fas fa-pause';
+                playerCard.classList.add('playing');
+            }).catch(e => {
+                console.error("Audio playback error:", e);
+            });
         }
 
         function pauseTrack() {
+            audioElement.pause();
             isPlaying = false;
             playIcon.className = 'fas fa-play';
             playerCard.classList.remove('playing');
-            if (beatTimer) clearTimeout(beatTimer);
             eqBars.forEach(bar => bar.style.height = '6px');
         }
 
@@ -971,21 +848,25 @@
         });
 
         btnPrev.addEventListener('click', () => {
-            currentTrackIdx = (currentTrackIdx - 1 + LOCAL_TRACKS.length) % LOCAL_TRACKS.length;
+            currentTrackIdx = (currentTrackIdx - 1 + REAL_AUDIO_PLAYLIST.length) % REAL_AUDIO_PLAYLIST.length;
             updateTrackUI();
             if (isPlaying) playTrack();
         });
 
         btnNext.addEventListener('click', () => {
-            currentTrackIdx = (currentTrackIdx + 1) % LOCAL_TRACKS.length;
+            currentTrackIdx = (currentTrackIdx + 1) % REAL_AUDIO_PLAYLIST.length;
             updateTrackUI();
             if (isPlaying) playTrack();
         });
 
+        audioElement.addEventListener('ended', () => {
+            currentTrackIdx = (currentTrackIdx + 1) % REAL_AUDIO_PLAYLIST.length;
+            updateTrackUI();
+            playTrack();
+        });
+
         volSlider.addEventListener('input', (e) => {
-            if (masterGain && audioCtx) {
-                masterGain.gain.setValueAtTime(parseFloat(e.target.value), audioCtx.currentTime);
-            }
+            audioElement.volume = parseFloat(e.target.value);
         });
 
         // Soundwave Canvas Background
@@ -1003,9 +884,8 @@
         function animateVisualizer() {
             ctx.clearRect(0, 0, width, height);
 
-            const track = LOCAL_TRACKS[currentTrackIdx];
-            const speed = isPlaying ? (track.bpm / 120) * 0.05 : 0.01;
-            const waveAmp = isPlaying ? 40 : 20;
+            const speed = isPlaying ? 0.04 : 0.01;
+            const waveAmp = isPlaying ? 45 : 20;
 
             ctx.lineWidth = 2.5;
             const gradient = ctx.createLinearGradient(0, 0, width, 0);
@@ -1028,7 +908,7 @@
 
             if (isPlaying) {
                 eqBars.forEach((bar, idx) => {
-                    const h = Math.floor(Math.sin(phase * 5 + idx * 0.8) * 11) + 12;
+                    const h = Math.floor(Math.sin(phase * 6 + idx * 0.8) * 11) + 12;
                     bar.style.height = `${h}px`;
                 });
             }
