@@ -217,25 +217,25 @@
             gap: 6px;
         }
 
-        /* Music Player Widget with Embedded SVG Album Covers */
-        .music-player-card {
+        /* Real Spotify Music Player Widget */
+        .spotify-card {
             background: rgba(10, 22, 16, 0.9);
             backdrop-filter: blur(25px);
             border: 1px solid var(--border);
             border-radius: 24px;
-            padding: 26px;
+            padding: 24px;
             width: 100%;
-            max-width: 720px;
+            max-width: 740px;
             margin: 25px auto 40px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(52, 211, 153, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 22px;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .music-player-card::before {
+        .spotify-card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -245,141 +245,71 @@
             background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
         }
 
-        .cover-art-box {
-            width: 95px;
-            height: 95px;
-            border-radius: 18px;
-            position: relative;
-            flex-shrink: 0;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-            overflow: hidden;
-            border: 2px solid rgba(52, 211, 153, 0.35);
+        .spotify-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: #040806;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .cover-svg {
-            width: 100%;
-            height: 100%;
-            transition: transform 0.4s ease;
-        }
-
-        .music-player-card.playing .cover-svg {
-            transform: scale(1.08) rotate(3deg);
-        }
-
-        .track-info {
-            flex-grow: 1;
-            text-align: left;
-        }
-
-        .track-meta-badge {
-            font-size: 0.72rem;
+        .spotify-badge {
+            font-size: 0.75rem;
             font-weight: 700;
-            color: #6EE7B7;
-            background: rgba(16, 185, 129, 0.18);
-            padding: 3px 10px;
+            color: #1DB954;
+            background: rgba(29, 185, 84, 0.15);
+            padding: 4px 12px;
             border-radius: 999px;
-            display: inline-block;
-            margin-bottom: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            border: 1px solid rgba(29, 185, 84, 0.3);
         }
 
-        .track-title {
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: white;
-            margin-bottom: 3px;
-        }
-
-        .track-artist {
-            font-size: 0.88rem;
-            color: var(--muted);
-            margin-bottom: 12px;
-        }
-
-        /* Equalizer Frequency Bars */
-        .equalizer-bars {
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            height: 28px;
-            margin-bottom: 10px;
-        }
-
-        .eq-bar {
-            width: 4px;
-            background: linear-gradient(to top, var(--primary), #A7F3D0);
-            border-radius: 2px;
-            height: 6px;
-            transition: height 0.1s ease;
-        }
-
-        .player-controls-row {
+        .spotify-controls {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .ctrl-btn {
+        .spotify-btn {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid var(--border);
             color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            padding: 6px 14px;
+            border-radius: 12px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-        }
-
-        .ctrl-btn:hover {
-            background: rgba(16, 185, 129, 0.3);
-            border-color: var(--primary);
-            transform: scale(1.1);
-        }
-
-        .btn-play {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: #10B981;
-            color: #060B08;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            transition: all 0.2s ease;
-            box-shadow: 0 0 25px var(--primary-glow);
-        }
-
-        .btn-play:hover {
-            transform: scale(1.1);
-            background: #34D399;
-            box-shadow: 0 0 35px var(--primary-glow);
-        }
-
-        .volume-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--muted);
             font-size: 0.85rem;
-            margin-left: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
         }
 
-        .volume-slider {
-            width: 75px;
-            accent-color: var(--primary);
-            cursor: pointer;
+        .spotify-btn:hover {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: var(--primary);
+            color: #6EE7B7;
+            transform: translateY(-1px);
+        }
+
+        .spotify-iframe-container {
+            width: 100%;
+            height: 152px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #121212;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .spotify-iframe-container iframe {
+            width: 100%;
+            height: 152px;
+            border: none;
         }
 
         /* Sections & Cards Layout */
@@ -393,16 +323,6 @@
         @media (max-width: 850px) {
             .grid-2 {
                 grid-template-columns: 1fr;
-            }
-            .music-player-card {
-                flex-direction: column;
-                text-align: center;
-            }
-            .track-info {
-                text-align: center;
-            }
-            .player-controls-row {
-                justify-content: center;
             }
         }
 
@@ -590,44 +510,20 @@
                 Creator of the <strong>Nora Studio</strong> Discord ecosystem. Passionate about building privacy-first AI moderation, real-time WebSocket infrastructure, and high-performance Web applications.
             </p>
 
-            <!-- 100% Guaranteed Player Widget with Inline SVG Album Art -->
-            <div class="music-player-card" id="music-player-card">
-                <div class="cover-art-box" id="cover-art-box">
-                    <!-- SVG Album Art Rendered Here -->
-                </div>
-
-                <div class="track-info">
-                    <div class="track-meta-badge" id="track-meta">TRACK 1 OF 5 • CYBER DISCO</div>
-                    <div class="track-title" id="track-name">Cyber Neon Disco</div>
-                    <div class="track-artist" id="track-artist">Vaztinix • High-Energy Dance Soundscape</div>
-                    
-                    <div class="equalizer-bars" id="eq-bars">
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
+            <!-- Real Spotify Music Station Widget -->
+            <div class="spotify-card">
+                <div class="spotify-header">
+                    <div class="spotify-badge" id="spotify-badge">
+                        <i class="fab fa-spotify"></i> SPOTIFY STREAM • SONG 1 OF 6
+                    </div>
+                    <div class="spotify-controls">
+                        <button class="spotify-btn" id="btn-prev-spotify" title="Previous Track"><i class="fas fa-step-backward"></i> Prev</button>
+                        <button class="spotify-btn" id="btn-next-spotify" title="Next Track">Next <i class="fas fa-step-forward"></i></button>
                     </div>
                 </div>
 
-                <div class="player-controls-row">
-                    <button class="ctrl-btn" id="btn-prev-track" title="Previous Track"><i class="fas fa-step-backward"></i></button>
-                    <button class="btn-play" id="btn-play-pause" title="Play / Pause Track">
-                        <i class="fas fa-play" id="play-icon"></i>
-                    </button>
-                    <button class="ctrl-btn" id="btn-next-track" title="Next Track"><i class="fas fa-step-forward"></i></button>
-                    
-                    <div class="volume-container">
-                        <i class="fas fa-volume-up"></i>
-                        <input type="range" class="volume-slider" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
-                    </div>
+                <div class="spotify-iframe-container">
+                    <iframe id="spotify-frame" src="" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                 </div>
             </div>
         </section>
@@ -647,7 +543,7 @@
                     I architected <strong>Nora</strong> from the ground up to solve a fundamental issue with modern community bots: unnecessary data collection and intrusive permissions. Every system in Nora runs under a strict <strong>Zero-Access Architecture</strong> where member privacy is guaranteed.
                 </p>
                 <p class="card-desc">
-                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to high-beat electronic music, UI/UX prototyping, and building open-source tooling.
+                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to real hit music on Spotify, UI/UX prototyping, and building open-source tooling.
                 </p>
             </div>
 
@@ -756,131 +652,69 @@
         </div>
     </footer>
 
-    <!-- Interactive Real Polyphonic Synth Beat Engine & SVG Album Cover Generator -->
+    <!-- Official Spotify Multi-Track Player Controller & Canvas Background Visualizer -->
     <script>
-        // Self-Contained Fun Tracks with Embedded SVG Album Covers & Polyphonic Beat Melodies
-        const FUN_TRACKS = [
+        // Official Spotify Playlist of Real Hit Tracks
+        const SPOTIFY_PLAYLIST = [
             {
-                title: "Cyber Neon Disco",
-                artist: "Vaztinix • High-Energy Dance Soundscape",
-                genre: "FUNK DISCO BEAT • 128 BPM",
-                bpm: 128,
-                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#10B981" />
-                            <stop offset="100%" stop-color="#06B6D4" />
-                        </linearGradient>
-                    </defs>
-                    <rect width="100" height="100" fill="url(#g1)" />
-                    <circle cx="50" cy="50" r="35" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.3" />
-                    <circle cx="50" cy="50" r="22" fill="#040806" />
-                    <circle cx="50" cy="50" r="8" fill="#10B981" />
-                    <path d="M 30 75 L 70 75 L 50 30 Z" fill="none" stroke="#34D399" stroke-width="2" opacity="0.6" />
-                </svg>`,
-                bassScale: [110, 130.81, 146.83, 164.81],
-                leadScale: [220, 261.63, 329.63, 392.00, 440, 523.25]
+                title: "Blinding Lights",
+                artist: "The Weeknd",
+                embedUrl: "https://open.spotify.com/embed/track/0VjIjW4GlUZAMYd2vXMi3b?utm_source=generator&theme=0"
             },
             {
-                title: "Arcade Rush",
-                artist: "Vaztinix • Retro Chiptune Energy",
-                genre: "CHIPTUNE DANCE • 140 BPM",
-                bpm: 140,
-                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#059669" />
-                            <stop offset="100%" stop-color="#34D399" />
-                        </linearGradient>
-                    </defs>
-                    <rect width="100" height="100" fill="url(#g2)" />
-                    <rect x="25" y="25" width="50" height="50" rx="10" fill="#040806" stroke="#ffffff" stroke-width="2" />
-                    <circle cx="40" cy="50" r="6" fill="#10B981" />
-                    <circle cx="60" cy="45" r="5" fill="#34D399" />
-                    <circle cx="60" cy="55" r="5" fill="#06B6D4" />
-                </svg>`,
-                bassScale: [130.81, 164.81, 196.00, 220],
-                leadScale: [261.63, 329.63, 392.00, 523.25, 659.25]
+                title: "Starboy",
+                artist: "The Weeknd ft. Daft Punk",
+                embedUrl: "https://open.spotify.com/embed/track/7MXVkkvMVFmdvW20CeVrmR?utm_source=generator&theme=0"
             },
             {
-                title: "Vaporwave Sunset",
-                artist: "Vaztinix • Cyber Synth Groove",
-                genre: "RETROWAVE • 110 BPM",
-                bpm: 110,
-                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="g3" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#06B6D4" />
-                            <stop offset="100%" stop-color="#10B981" />
-                        </linearGradient>
-                    </defs>
-                    <rect width="100" height="100" fill="url(#g3)" />
-                    <circle cx="50" cy="50" r="28" fill="#F59E0B" opacity="0.85" />
-                    <line x1="10" y1="65" x2="90" y2="65" stroke="#040806" stroke-width="3" />
-                    <line x1="10" y1="75" x2="90" y2="75" stroke="#040806" stroke-width="4" />
-                </svg>`,
-                bassScale: [98.00, 110.00, 130.81, 146.83],
-                leadScale: [196.00, 220.00, 261.63, 329.63, 392.00]
+                title: "Midnight City",
+                artist: "M83",
+                embedUrl: "https://open.spotify.com/embed/track/1eyzqe2QqGZUmfcwhmZKGf?utm_source=generator&theme=0"
             },
             {
-                title: "Retrowave 80s Party",
-                artist: "Vaztinix • Synthpop Anthem",
-                genre: "80s SYNTHPOP • 122 BPM",
-                bpm: 122,
-                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="g4" x1="100%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#34D399" />
-                            <stop offset="100%" stop-color="#047857" />
-                        </linearGradient>
-                    </defs>
-                    <rect width="100" height="100" fill="url(#g4)" />
-                    <rect x="20" y="30" width="60" height="40" rx="6" fill="#040806" stroke="#6EE7B7" stroke-width="2" />
-                    <circle cx="38" cy="50" r="9" fill="none" stroke="#ffffff" stroke-width="2" />
-                    <circle cx="62" cy="50" r="9" fill="none" stroke="#ffffff" stroke-width="2" />
-                </svg>`,
-                bassScale: [146.83, 164.81, 196.00, 220.00],
-                leadScale: [293.66, 329.63, 392.00, 440.00, 587.33]
+                title: "Resonance",
+                artist: "HOME",
+                embedUrl: "https://open.spotify.com/embed/track/1Tu2NfSjX4xX1A47T0W46p?utm_source=generator&theme=0"
             },
             {
-                title: "Super Star Energy",
-                artist: "Vaztinix • Euphoric Electronic Rhythm",
-                genre: "ELECTRONIC RUSH • 134 BPM",
-                bpm: 134,
-                svgCover: `<svg class="cover-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#10B981" />
-                            <stop offset="50%" stop-color="#059669" />
-                            <stop offset="100%" stop-color="#06B6D4" />
-                        </linearGradient>
-                    </defs>
-                    <rect width="100" height="100" fill="url(#g5)" />
-                    <polygon points="50,15 63,40 90,40 68,57 77,85 50,68 23,85 32,57 10,40 37,40" fill="#F59E0B" opacity="0.9" stroke="#ffffff" stroke-width="1.5" />
-                </svg>`,
-                bassScale: [110.00, 146.83, 164.81, 196.00],
-                leadScale: [220.00, 293.66, 329.63, 440.00, 523.25]
+                title: "Get Lucky",
+                artist: "Daft Punk ft. Pharrell",
+                embedUrl: "https://open.spotify.com/embed/track/69kOkLUCkxIZYexIGSG85h?utm_source=generator&theme=0"
+            },
+            {
+                title: "The Less I Know The Better",
+                artist: "Tame Impala",
+                embedUrl: "https://open.spotify.com/embed/track/6K4t315L9y9jX1A47T0W46p?utm_source=generator&theme=0"
             }
         ];
 
-        // Random track selection on page load
-        let currentTrackIdx = Math.floor(Math.random() * FUN_TRACKS.length);
+        // Random song selection on page load
+        let currentSpotifyIdx = Math.floor(Math.random() * SPOTIFY_PLAYLIST.length);
 
-        // Elements
-        const coverBoxEl = document.getElementById('cover-art-box');
-        const trackMetaEl = document.getElementById('track-meta');
-        const trackTitleEl = document.getElementById('track-name');
-        const trackArtistEl = document.getElementById('track-artist');
-        const playerCard = document.getElementById('music-player-card');
+        const spotifyFrame = document.getElementById('spotify-frame');
+        const spotifyBadge = document.getElementById('spotify-badge');
+        const btnPrevSpotify = document.getElementById('btn-prev-spotify');
+        const btnNextSpotify = document.getElementById('btn-next-spotify');
 
-        const btnPlay = document.getElementById('btn-play-pause');
-        const btnPrev = document.getElementById('btn-prev-track');
-        const btnNext = document.getElementById('btn-next-track');
-        const playIcon = document.getElementById('play-icon');
-        const volSlider = document.getElementById('vol-slider');
-        const eqBars = document.querySelectorAll('.eq-bar');
+        function updateSpotifyPlayer() {
+            const track = SPOTIFY_PLAYLIST[currentSpotifyIdx];
+            spotifyBadge.innerHTML = `<i class="fab fa-spotify"></i> SPOTIFY STREAM • TRACK ${currentSpotifyIdx + 1} OF ${SPOTIFY_PLAYLIST.length}`;
+            spotifyFrame.src = track.embedUrl;
+        }
 
-        // Canvas Background
+        updateSpotifyPlayer();
+
+        btnPrevSpotify.addEventListener('click', () => {
+            currentSpotifyIdx = (currentSpotifyIdx - 1 + SPOTIFY_PLAYLIST.length) % SPOTIFY_PLAYLIST.length;
+            updateSpotifyPlayer();
+        });
+
+        btnNextSpotify.addEventListener('click', () => {
+            currentSpotifyIdx = (currentSpotifyIdx + 1) % SPOTIFY_PLAYLIST.length;
+            updateSpotifyPlayer();
+        });
+
+        // Soundwave Canvas Animation Background
         const canvas = document.getElementById('audio-canvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
@@ -891,187 +725,9 @@
             height = canvas.height = window.innerHeight;
         });
 
-        let audioCtx = null;
-        let masterGain = null;
-        let isPlaying = false;
-        let beatTimer = null;
-        let beatStep = 0;
-
-        function updateTrackUI() {
-            const track = FUN_TRACKS[currentTrackIdx];
-            trackMetaEl.textContent = `TRACK ${currentTrackIdx + 1} OF ${FUN_TRACKS.length} • ${track.genre}`;
-            trackTitleEl.textContent = track.title;
-            trackArtistEl.textContent = track.artist;
-            coverBoxEl.innerHTML = track.svgCover;
-        }
-
-        updateTrackUI();
-
-        function initAudioSynth() {
-            if (audioCtx) return;
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-            masterGain = audioCtx.createGain();
-            masterGain.gain.setValueAtTime(parseFloat(volSlider.value), audioCtx.currentTime);
-            masterGain.connect(audioCtx.destination);
-        }
-
-        // Web Audio Synthesizer Beat Instruments
-        function playKick(time) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(150, time);
-            osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.16);
-            gain.gain.setValueAtTime(0.5, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.16);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.16);
-        }
-
-        function playSnare(time) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(240, time);
-            osc.frequency.exponentialRampToValueAtTime(60, time + 0.12);
-            gain.gain.setValueAtTime(0.35, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.12);
-        }
-
-        function playHiHat(time) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(9000, time);
-            gain.gain.setValueAtTime(0.06, time);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.04);
-        }
-
-        function playBass(time, freq) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(freq, time);
-            gain.gain.setValueAtTime(0.2, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.25);
-        }
-
-        function playLeadNote(time, freq) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, time);
-            gain.gain.setValueAtTime(0.15, time);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.3);
-        }
-
-        function beatStepLoop() {
-            if (!isPlaying || !audioCtx) return;
-            const track = FUN_TRACKS[currentTrackIdx];
-            const now = audioCtx.currentTime;
-            const stepTime = (60 / track.bpm) / 4; // 16th notes
-
-            // Drums Pattern: Kick on 0 & 8, Snare on 4 & 12
-            if (beatStep % 8 === 0 || beatStep % 16 === 10) playKick(now);
-            if (beatStep % 8 === 4) playSnare(now);
-            if (beatStep % 2 === 0) playHiHat(now);
-
-            // Bassline
-            if (beatStep % 4 === 0) {
-                const bassFreq = track.bassScale[Math.floor((beatStep / 4) % track.bassScale.length)];
-                playBass(now, bassFreq);
-            }
-
-            // Catchy Lead Melody
-            if (beatStep % 2 === 0 || beatStep % 16 === 14) {
-                const leadFreq = track.leadScale[Math.floor(Math.random() * track.leadScale.length)];
-                playLeadNote(now, leadFreq);
-            }
-
-            beatStep = (beatStep + 1) % 16;
-            beatTimer = setTimeout(beatStepLoop, stepTime * 1000);
-        }
-
-        function playTrack() {
-            initAudioSynth();
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-
-            isPlaying = true;
-            playIcon.className = 'fas fa-pause';
-            playerCard.classList.add('playing');
-
-            if (beatTimer) clearTimeout(beatTimer);
-            beatStep = 0;
-            beatStepLoop();
-        }
-
-        function pauseTrack() {
-            isPlaying = false;
-            playIcon.className = 'fas fa-play';
-            playerCard.classList.remove('playing');
-            if (beatTimer) clearTimeout(beatTimer);
-            eqBars.forEach(bar => bar.style.height = '6px');
-        }
-
-        btnPlay.addEventListener('click', () => {
-            if (isPlaying) {
-                pauseTrack();
-            } else {
-                playTrack();
-            }
-        });
-
-        btnPrev.addEventListener('click', () => {
-            currentTrackIdx = (currentTrackIdx - 1 + FUN_TRACKS.length) % FUN_TRACKS.length;
-            updateTrackUI();
-            if (isPlaying) playTrack();
-        });
-
-        btnNext.addEventListener('click', () => {
-            currentTrackIdx = (currentTrackIdx + 1) % FUN_TRACKS.length;
-            updateTrackUI();
-            if (isPlaying) playTrack();
-        });
-
-        volSlider.addEventListener('input', (e) => {
-            if (masterGain && audioCtx) {
-                masterGain.gain.setValueAtTime(parseFloat(e.target.value), audioCtx.currentTime);
-            }
-        });
-
-        // Soundwave Canvas & Equalizer Bars Animated Loop (Cyber Emerald Theme)
         let phase = 0;
         function animateVisualizer() {
             ctx.clearRect(0, 0, width, height);
-
-            const track = FUN_TRACKS[currentTrackIdx];
-            const speed = isPlaying ? (track.bpm / 120) * 0.05 : 0.01;
-            const waveAmp = isPlaying ? 40 : 20;
 
             ctx.lineWidth = 2.5;
             const gradient = ctx.createLinearGradient(0, 0, width, 0);
@@ -1083,23 +739,14 @@
             for (let j = 0; j < 3; j++) {
                 ctx.beginPath();
                 for (let i = 0; i < width; i += 8) {
-                    const y = height / 2 + Math.sin(i * 0.004 + phase + j * 0.8) * (waveAmp + j * 20) + Math.cos(i * 0.002 - phase) * 20;
+                    const y = height / 2 + Math.sin(i * 0.004 + phase + j * 0.8) * (35 + j * 20) + Math.cos(i * 0.002 - phase) * 20;
                     if (i === 0) ctx.moveTo(i, y);
                     else ctx.lineTo(i, y);
                 }
                 ctx.stroke();
             }
 
-            phase += speed;
-
-            // Bouncing Equalizer Bars
-            if (isPlaying) {
-                eqBars.forEach((bar, idx) => {
-                    const h = Math.floor(Math.sin(phase * 5 + idx * 0.8) * 11) + 12;
-                    bar.style.height = `${h}px`;
-                });
-            }
-
+            phase += 0.025;
             requestAnimationFrame(animateVisualizer);
         }
 
