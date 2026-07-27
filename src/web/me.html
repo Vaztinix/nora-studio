@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaztinix | Lead Architect & Developer of Nora</title>
+    <meta name="description" content="Official developer portfolio of Vaztinix - Lead Architect & Creator of Nora Studio ecosystem. Privacy-first AI, Discord bots, and full-stack systems engineer.">
+    <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --site-bg: #07070a;
+            --primary: #7C3AED;
+            --primary-glow: rgba(124, 58, 237, 0.4);
+            --secondary: #3B82F6;
+            --secondary-glow: rgba(59, 130, 246, 0.4);
+            --accent: #EC4899;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --card-bg: rgba(18, 18, 26, 0.7);
+            --text: #F3F4F6;
+            --muted: #9CA3AF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--site-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Canvas Soundwave Background */
+        #audio-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.35;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(16px);
+            background: rgba(7, 7, 10, 0.85);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: white;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .brand img {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: white;
+            opacity: 1;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 9px 22px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        /* Hero Developer Section */
+        .hero-section {
+            padding: 60px 0 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .avatar-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 40px var(--primary-glow);
+            transition: transform 0.4s ease;
+        }
+
+        .avatar-wrapper:hover .avatar-img {
+            transform: scale(1.05) rotate(2deg);
+        }
+
+        .status-badge {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: #10B981;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 3px solid var(--site-bg);
+            box-shadow: 0 0 12px #10B981;
+            animation: pulse-badge 2s infinite;
+        }
+
+        @keyframes pulse-badge {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .dev-name {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #FFFFFF 20%, #A78BFA 60%, #60A5FA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .dev-title {
+            font-size: 1.15rem;
+            color: var(--muted);
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge-chip {
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: #C4B5FD;
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Music Player Widget */
+        .music-player-card {
+            background: rgba(22, 22, 32, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 650px;
+            margin: 25px auto 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .music-player-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+
+        .vinyl-disc {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #222 20%, #111 21%, #111 40%, #000 41%);
+            border: 3px solid #333;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            animation: spin-vinyl 4s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .vinyl-disc.playing {
+            animation-play-state: running;
+        }
+
+        @keyframes spin-vinyl {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .vinyl-center {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid white;
+        }
+
+        .track-info {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .track-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .track-artist {
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        /* Equalizer Frequency Bars */
+        .equalizer-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 24px;
+            margin-bottom: 8px;
+        }
+
+        .eq-bar {
+            width: 4px;
+            background: linear-gradient(to top, var(--primary), #C4B5FD);
+            border-radius: 2px;
+            height: 6px;
+            transition: height 0.15s ease;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .btn-play {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: white;
+            color: #07070a;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-play:hover {
+            transform: scale(1.1);
+            background: #EEEEEC;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .volume-slider {
+            width: 80px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        /* Sections & Cards Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 850px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .music-player-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .track-info {
+                text-align: center;
+            }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(124, 58, 237, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: #C4B5FD;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        p.card-desc {
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+
+        /* Tech Skill Badges */
+        .skills-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .skill-tag {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #E5E7EB;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .skill-tag:hover {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Links Grid */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+            margin-bottom: 50px;
+        }
+
+        .link-card {
+            background: rgba(22, 22, 32, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .link-card:hover {
+            background: rgba(124, 58, 237, 0.12);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px var(--primary-glow);
+        }
+
+        .link-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .link-text h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .link-text p {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.88rem;
+            background: rgba(7, 7, 10, 0.95);
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dynamic Soundwave Canvas Background -->
+    <canvas id="audio-canvas"></canvas>
+
+    <header>
+        <div class="container nav-container">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/install">Invite</a>
+                <a href="/docs">Docs</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/team">Team</a>
+                <a href="/me" class="active">Developer</a>
+                <a href="/legal">Legal</a>
+            </nav>
+            <a href="/dashboard" class="btn-header">Open Dashboard</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="avatar-wrapper">
+                <img src="ReVaztinix.jpeg" alt="Vaztinix Avatar" class="avatar-img" onerror="this.src='nora.png'">
+                <div class="status-badge" title="Online & Coding"></div>
+            </div>
+            
+            <h1 class="dev-name">Vaztinix</h1>
+            <div class="dev-title">
+                <span>Lead Architect & Systems Engineer</span>
+                <span class="badge-chip"><i class="fas fa-shield-alt"></i> Privacy First</span>
+                <span class="badge-chip"><i class="fas fa-code"></i> Full-Stack Dev</span>
+            </div>
+
+            <p style="max-width: 650px; color: var(--muted); line-height: 1.7; font-size: 1.05rem; margin-bottom: 25px;">
+                Creator of the <strong>Nora Studio</strong> Discord ecosystem. Passionate about building privacy-first AI moderation, real-time WebSocket infrastructure, and high-performance Web applications.
+            </p>
+
+            <!-- Interactive Music Player Widget -->
+            <div class="music-player-card">
+                <div class="vinyl-disc" id="vinyl-disc">
+                    <div class="vinyl-center"></div>
+                </div>
+
+                <div class="track-info">
+                    <div class="track-title" id="track-name">Cyberpunk Synthwave Beats</div>
+                    <div class="track-artist">Vaztinix • Developer Soundscape</div>
+                    
+                    <div class="equalizer-bars" id="eq-bars">
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                    </div>
+                </div>
+
+                <div class="player-controls">
+                    <button class="btn-play" id="btn-play-pause" title="Play Ambient Soundscape">
+                        <i class="fas fa-play" id="play-icon"></i>
+                    </button>
+                    <div class="volume-container">
+                        <i class="fas fa-volume-up"></i>
+                        <input type="range" class="volume-slider" id="vol-slider" min="0" max="1" step="0.05" value="0.5">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Bio & Tech Arsenal -->
+        <div class="grid-2">
+            <!-- Bio Card -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-user-astronaut"></i></div>
+                    <h2 class="card-title">About Me</h2>
+                </div>
+                <p class="card-desc">
+                    Hey! I'm <strong>Vaztinix</strong>, an independent software developer and systems engineer dedicated to building software that respects user privacy.
+                </p>
+                <p class="card-desc">
+                    I architected <strong>Nora</strong> from the ground up to solve a fundamental issue with modern community bots: unnecessary data collection and intrusive permissions. Every system in Nora runs under a strict <strong>Zero-Access Architecture</strong> where member privacy is guaranteed.
+                </p>
+                <p class="card-desc">
+                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy ambient synthwave music, UI/UX prototyping, and building open-source tooling.
+                </p>
+            </div>
+
+            <!-- Tech Arsenal Card -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-layer-group"></i></div>
+                    <h2 class="card-title">Tech Arsenal & Stack</h2>
+                </div>
+                <p class="card-desc">Technologies and frameworks powering Nora Studio and my development workflow:</p>
+                
+                <div class="skills-wrap">
+                    <span class="skill-tag"><i class="fab fa-js" style="color: #F7DF1E;"></i> JavaScript (ESNext)</span>
+                    <span class="skill-tag"><i class="fab fa-node-js" style="color: #68A063;"></i> Node.js Engine</span>
+                    <span class="skill-tag"><i class="fab fa-discord" style="color: #5865F2;"></i> Discord.js v14</span>
+                    <span class="skill-tag"><i class="fab fa-python" style="color: #3776AB;"></i> Python 3</span>
+                    <span class="skill-tag"><i class="fas fa-database" style="color: #003B5C;"></i> SQLite / Sequelize</span>
+                    <span class="skill-tag"><i class="fab fa-react" style="color: #61DAFB;"></i> React & Next.js</span>
+                    <span class="skill-tag"><i class="fas fa-paint-brush" style="color: #EC4899;"></i> HTML5 Canvas Engine</span>
+                    <span class="skill-tag"><i class="fas fa-network-wired" style="color: #10B981;"></i> WebSockets & REST</span>
+                    <span class="skill-tag"><i class="fab fa-git-alt" style="color: #F05032;"></i> Git & GitHub</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Projects Grid -->
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 20px; text-align: center;">Featured Creations</h2>
+        <div class="grid-2" style="margin-bottom: 50px;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #34D399;"><i class="fas fa-robot"></i></div>
+                    <h3 class="card-title">Nora Discord Ecosystem (v2.5)</h3>
+                </div>
+                <p class="card-desc">
+                    Full-featured Discord management bot featuring real-time AutoMod, Roblox group verification, Starboard v2.5 with channel filtering, custom rank cards, and Web UI telemetry.
+                </p>
+            </div>
+
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); color: #60A5FA;"><i class="fas fa-brain"></i></div>
+                    <h3 class="card-title">Aura AI Native Engine</h3>
+                </div>
+                <p class="card-desc">
+                    Lightweight utility intelligence engine engineered for rapid math evaluation, contextual auto-moderation, and conversational assistance with minimal response latency.
+                </p>
+            </div>
+        </div>
+
+        <!-- Links Grid -->
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 20px; text-align: center;">Connect & Links</h2>
+        <div class="links-grid">
+            <a href="https://vaztinix.dev" target="_blank" class="link-card">
+                <div class="link-icon" style="background: rgba(124, 58, 237, 0.2); color: #A78BFA;"><i class="fas fa-globe"></i></div>
+                <div class="link-text">
+                    <h4>Official Website</h4>
+                    <p>vaztinix.dev</p>
+                </div>
+            </a>
+
+            <a href="https://github.com/Vaztinix" target="_blank" class="link-card">
+                <div class="link-icon" style="background: rgba(255, 255, 255, 0.1); color: white;"><i class="fab fa-github"></i></div>
+                <div class="link-text">
+                    <h4>GitHub Profile</h4>
+                    <p>github.com/Vaztinix</p>
+                </div>
+            </a>
+
+            <a href="https://top.gg/user/593420060990005248" target="_blank" class="link-card">
+                <div class="link-icon" style="background: rgba(255, 51, 102, 0.2); color: #FF3366;"><i class="fas fa-award"></i></div>
+                <div class="link-text">
+                    <h4>Top.gg Developer</h4>
+                    <p>Approved Bot Creator</p>
+                </div>
+            </a>
+
+            <a href="https://discord.com/users/1214048435632603137" target="_blank" class="link-card">
+                <div class="link-icon" style="background: rgba(88, 101, 242, 0.2); color: #5865F2;"><i class="fab fa-discord"></i></div>
+                <div class="link-text">
+                    <h4>Discord Direct</h4>
+                    <p>@vaztinix</p>
+                </div>
+            </a>
+
+            <a href="/install" class="link-card">
+                <div class="link-icon" style="background: rgba(16, 185, 129, 0.2); color: #34D399;"><i class="fas fa-plus"></i></div>
+                <div class="link-text">
+                    <h4>Invite Nora</h4>
+                    <p>Add to your server</p>
+                </div>
+            </a>
+
+            <a href="mailto:vaztinixstudios@gmail.com" class="link-card">
+                <div class="link-icon" style="background: rgba(236, 72, 153, 0.2); color: #F472B6;"><i class="fas fa-envelope"></i></div>
+                <div class="link-text">
+                    <h4>Email Contact</h4>
+                    <p>vaztinixstudios@gmail.com</p>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            &copy; 2026 Vaztinix • Nora Studio. Built with curiosity & privacy-first principles.
+        </div>
+    </footer>
+
+    <!-- Interactive Music Player & Audio Visualizer Engine -->
+    <script>
+        // Web Audio API Synthesizer & Canvas Soundwave Visualizer
+        const canvas = document.getElementById('audio-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        // Procedural Audio Synthesizer
+        let audioCtx = null;
+        let isPlaying = false;
+        let masterGain = null;
+        let synthOsc = null;
+
+        const btnPlay = document.getElementById('btn-play-pause');
+        const playIcon = document.getElementById('play-icon');
+        const vinyl = document.getElementById('vinyl-disc');
+        const volSlider = document.getElementById('vol-slider');
+        const eqBars = document.querySelectorAll('.eq-bar');
+
+        function initAudioEngine() {
+            if (audioCtx) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(parseFloat(volSlider.value), audioCtx.currentTime);
+            masterGain.connect(audioCtx.destination);
+        }
+
+        function playSynthBeats() {
+            initAudioEngine();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            isPlaying = true;
+            playIcon.className = 'fas fa-pause';
+            vinyl.classList.add('playing');
+            
+            // Generate ambient synth chord loops
+            synthLoop();
+        }
+
+        function pauseSynthBeats() {
+            isPlaying = false;
+            playIcon.className = 'fas fa-play';
+            vinyl.classList.remove('playing');
+            if (synthOsc) {
+                try { synthOsc.stop(); } catch(e) {}
+            }
+            eqBars.forEach(bar => bar.style.height = '6px');
+        }
+
+        btnPlay.addEventListener('click', () => {
+            if (isPlaying) {
+                pauseSynthBeats();
+            } else {
+                playSynthBeats();
+            }
+        });
+
+        volSlider.addEventListener('input', (e) => {
+            if (masterGain && audioCtx) {
+                masterGain.gain.setValueAtTime(parseFloat(e.target.value), audioCtx.currentTime);
+            }
+        });
+
+        const synthNotes = [220, 261.63, 329.63, 392.00, 440, 523.25];
+        function synthLoop() {
+            if (!isPlaying || !audioCtx) return;
+            try {
+                const note = synthNotes[Math.floor(Math.random() * synthNotes.length)];
+                synthOsc = audioCtx.createOscillator();
+                const noteGain = audioCtx.createGain();
+
+                synthOsc.type = 'sine';
+                synthOsc.frequency.setValueAtTime(note, audioCtx.currentTime);
+
+                noteGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+                noteGain.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.2);
+                noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+
+                synthOsc.connect(noteGain);
+                noteGain.connect(masterGain);
+
+                synthOsc.start();
+                synthOsc.stop(audioCtx.currentTime + 1.25);
+            } catch(e) {}
+
+            setTimeout(synthLoop, 600);
+        }
+
+        // Animated Soundwave Background & Equalizer Frame Loop
+        let phase = 0;
+        function animateSoundwave() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw glowing synthwave lines
+            ctx.lineWidth = 2;
+            const gradient = ctx.createLinearGradient(0, 0, width, 0);
+            gradient.addColorStop(0, 'rgba(124, 58, 237, 0.4)');
+            gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.4)');
+            gradient.addColorStop(1, 'rgba(236, 72, 153, 0.4)');
+            ctx.strokeStyle = gradient;
+
+            for (let j = 0; j < 3; j++) {
+                ctx.beginPath();
+                for (let i = 0; i < width; i += 10) {
+                    const y = height / 2 + Math.sin(i * 0.004 + phase + j * 0.8) * (30 + j * 20) + Math.cos(i * 0.002 - phase) * 20;
+                    if (i === 0) ctx.moveTo(i, y);
+                    else ctx.lineTo(i, y);
+                }
+                ctx.stroke();
+            }
+
+            phase += isPlaying ? 0.04 : 0.01;
+
+            // Bouncing Equalizer Bars when playing
+            if (isPlaying) {
+                eqBars.forEach(bar => {
+                    const h = Math.floor(Math.random() * 20) + 4;
+                    bar.style.height = `${h}px`;
+                });
+            }
+
+            requestAnimationFrame(animateSoundwave);
+        }
+
+        animateSoundwave();
+    </script>
+</body>
+</html>
