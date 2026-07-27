@@ -217,15 +217,15 @@
             gap: 6px;
         }
 
-        /* Real Spotify Music Player Widget */
-        .spotify-card {
-            background: rgba(10, 22, 16, 0.9);
+        /* Real Music Player Station Widget */
+        .music-station-card {
+            background: rgba(10, 22, 16, 0.92);
             backdrop-filter: blur(25px);
             border: 1px solid var(--border);
             border-radius: 24px;
             padding: 24px;
             width: 100%;
-            max-width: 740px;
+            max-width: 780px;
             margin: 25px auto 40px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(52, 211, 153, 0.2);
             position: relative;
@@ -235,7 +235,7 @@
             gap: 16px;
         }
 
-        .spotify-card::before {
+        .music-station-card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -245,7 +245,7 @@
             background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
         }
 
-        .spotify-header {
+        .station-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -253,62 +253,63 @@
             gap: 10px;
         }
 
-        .spotify-badge {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #1DB954;
-            background: rgba(29, 185, 84, 0.15);
-            padding: 4px 12px;
+        .station-badge {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #34D399;
+            background: rgba(16, 185, 129, 0.15);
+            padding: 5px 14px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border: 1px solid rgba(29, 185, 84, 0.3);
+            border: 1px solid rgba(52, 211, 153, 0.3);
         }
 
-        .spotify-controls {
+        .station-controls {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .spotify-btn {
+        .station-btn {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid var(--border);
             color: white;
-            padding: 6px 14px;
+            padding: 7px 16px;
             border-radius: 12px;
             cursor: pointer;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
         }
 
-        .spotify-btn:hover {
+        .station-btn:hover {
             background: rgba(16, 185, 129, 0.25);
             border-color: var(--primary);
             color: #6EE7B7;
             transform: translateY(-1px);
         }
 
-        .spotify-iframe-container {
+        .video-iframe-wrapper {
             width: 100%;
-            height: 152px;
+            aspect-ratio: 16 / 9;
+            max-height: 400px;
             border-radius: 16px;
             overflow: hidden;
-            background: #121212;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            background: #000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .spotify-iframe-container iframe {
+        .video-iframe-wrapper iframe {
             width: 100%;
-            height: 152px;
+            height: 100%;
             border: none;
         }
 
@@ -510,20 +511,20 @@
                 Creator of the <strong>Nora Studio</strong> Discord ecosystem. Passionate about building privacy-first AI moderation, real-time WebSocket infrastructure, and high-performance Web applications.
             </p>
 
-            <!-- Real Spotify Music Station Widget -->
-            <div class="spotify-card">
-                <div class="spotify-header">
-                    <div class="spotify-badge" id="spotify-badge">
-                        <i class="fab fa-spotify"></i> SPOTIFY STREAM • SONG 1 OF 6
+            <!-- Real Music Station Player Card -->
+            <div class="music-station-card">
+                <div class="station-header">
+                    <div class="station-badge" id="station-badge">
+                        <i class="fab fa-youtube" style="color: #FF0000;"></i> MUSIC STATION • SONG 1 OF 6
                     </div>
-                    <div class="spotify-controls">
-                        <button class="spotify-btn" id="btn-prev-spotify" title="Previous Track"><i class="fas fa-step-backward"></i> Prev</button>
-                        <button class="spotify-btn" id="btn-next-spotify" title="Next Track">Next <i class="fas fa-step-forward"></i></button>
+                    <div class="station-controls">
+                        <button class="station-btn" id="btn-prev-music" title="Previous Track"><i class="fas fa-step-backward"></i> Prev</button>
+                        <button class="station-btn" id="btn-next-music" title="Next Track">Next <i class="fas fa-step-forward"></i></button>
                     </div>
                 </div>
 
-                <div class="spotify-iframe-container">
-                    <iframe id="spotify-frame" src="" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <div class="video-iframe-wrapper">
+                    <iframe id="music-frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </div>
         </section>
@@ -543,7 +544,7 @@
                     I architected <strong>Nora</strong> from the ground up to solve a fundamental issue with modern community bots: unnecessary data collection and intrusive permissions. Every system in Nora runs under a strict <strong>Zero-Access Architecture</strong> where member privacy is guaranteed.
                 </p>
                 <p class="card-desc">
-                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to real hit music on Spotify, UI/UX prototyping, and building open-source tooling.
+                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to real hit music videos, UI/UX prototyping, and building open-source tooling.
                 </p>
             </div>
 
@@ -652,69 +653,69 @@
         </div>
     </footer>
 
-    <!-- Official Spotify Multi-Track Player Controller & Canvas Background Visualizer -->
+    <!-- Official Real Hit Music Station Player & Background Visualizer -->
     <script>
-        // Official Spotify Playlist of Real Hit Tracks
-        const SPOTIFY_PLAYLIST = [
+        // Playlist of Real Famous Hit Music Videos
+        const MUSIC_STATION_PLAYLIST = [
             {
                 title: "Blinding Lights",
                 artist: "The Weeknd",
-                embedUrl: "https://open.spotify.com/embed/track/0VjIjW4GlUZAMYd2vXMi3b?utm_source=generator&theme=0"
+                embedUrl: "https://www.youtube.com/embed/4NRXx6U8ABQ?enablejsapi=1"
             },
             {
                 title: "Starboy",
                 artist: "The Weeknd ft. Daft Punk",
-                embedUrl: "https://open.spotify.com/embed/track/7MXVkkvMVFmdvW20CeVrmR?utm_source=generator&theme=0"
+                embedUrl: "https://www.youtube.com/embed/34Na4j8AVgA?enablejsapi=1"
             },
             {
                 title: "Midnight City",
                 artist: "M83",
-                embedUrl: "https://open.spotify.com/embed/track/1eyzqe2QqGZUmfcwhmZKGf?utm_source=generator&theme=0"
+                embedUrl: "https://www.youtube.com/embed/DX3Kb_8N6Ew?enablejsapi=1"
             },
             {
                 title: "Resonance",
                 artist: "HOME",
-                embedUrl: "https://open.spotify.com/embed/track/1Tu2NfSjX4xX1A47T0W46p?utm_source=generator&theme=0"
+                embedUrl: "https://www.youtube.com/embed/8GW6sLrK40k?enablejsapi=1"
             },
             {
                 title: "Get Lucky",
-                artist: "Daft Punk ft. Pharrell",
-                embedUrl: "https://open.spotify.com/embed/track/69kOkLUCkxIZYexIGSG85h?utm_source=generator&theme=0"
+                artist: "Daft Punk ft. Pharrell Williams",
+                embedUrl: "https://www.youtube.com/embed/5NV6Rdv1a3I?enablejsapi=1"
             },
             {
                 title: "The Less I Know The Better",
                 artist: "Tame Impala",
-                embedUrl: "https://open.spotify.com/embed/track/6K4t315L9y9jX1A47T0W46p?utm_source=generator&theme=0"
+                embedUrl: "https://www.youtube.com/embed/sBzrzS1Ag_g?enablejsapi=1"
             }
         ];
 
         // Random song selection on page load
-        let currentSpotifyIdx = Math.floor(Math.random() * SPOTIFY_PLAYLIST.length);
+        let currentMusicIdx = Math.floor(Math.random() * MUSIC_STATION_PLAYLIST.length);
 
-        const spotifyFrame = document.getElementById('spotify-frame');
-        const spotifyBadge = document.getElementById('spotify-badge');
-        const btnPrevSpotify = document.getElementById('btn-prev-spotify');
-        const btnNextSpotify = document.getElementById('btn-next-spotify');
+        const musicFrame = document.getElementById('music-frame');
+        const stationBadge = document.getElementById('station-badge');
+        const btnPrevMusic = document.getElementById('btn-prev-music');
+        const btnNextMusic = document.getElementById('btn-next-music');
 
-        function updateSpotifyPlayer() {
-            const track = SPOTIFY_PLAYLIST[currentSpotifyIdx];
-            spotifyBadge.innerHTML = `<i class="fab fa-spotify"></i> SPOTIFY STREAM • TRACK ${currentSpotifyIdx + 1} OF ${SPOTIFY_PLAYLIST.length}`;
-            spotifyFrame.src = track.embedUrl;
+        function updateMusicStation() {
+            const track = MUSIC_STATION_PLAYLIST[currentMusicIdx];
+            stationBadge.innerHTML = `<i class="fab fa-youtube" style="color: #FF0000;"></i> MUSIC STATION • ${track.title.toUpperCase()} (${currentMusicIdx + 1}/${MUSIC_STATION_PLAYLIST.length})`;
+            musicFrame.src = track.embedUrl;
         }
 
-        updateSpotifyPlayer();
+        updateMusicStation();
 
-        btnPrevSpotify.addEventListener('click', () => {
-            currentSpotifyIdx = (currentSpotifyIdx - 1 + SPOTIFY_PLAYLIST.length) % SPOTIFY_PLAYLIST.length;
-            updateSpotifyPlayer();
+        btnPrevMusic.addEventListener('click', () => {
+            currentMusicIdx = (currentMusicIdx - 1 + MUSIC_STATION_PLAYLIST.length) % MUSIC_STATION_PLAYLIST.length;
+            updateMusicStation();
         });
 
-        btnNextSpotify.addEventListener('click', () => {
-            currentSpotifyIdx = (currentSpotifyIdx + 1) % SPOTIFY_PLAYLIST.length;
-            updateSpotifyPlayer();
+        btnNextMusic.addEventListener('click', () => {
+            currentMusicIdx = (currentMusicIdx + 1) % MUSIC_STATION_PLAYLIST.length;
+            updateMusicStation();
         });
 
-        // Soundwave Canvas Animation Background
+        // Soundwave Canvas Background Animation
         const canvas = document.getElementById('audio-canvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
@@ -739,7 +740,7 @@
             for (let j = 0; j < 3; j++) {
                 ctx.beginPath();
                 for (let i = 0; i < width; i += 8) {
-                    const y = height / 2 + Math.sin(i * 0.004 + phase + j * 0.8) * (35 + j * 20) + Math.cos(i * 0.002 - phase) * 20;
+                    const y = height / 2 + Math.sin(i * 0.004 + phase + j * 0.8) * (35 + j * 25) + Math.cos(i * 0.002 - phase) * 20;
                     if (i === 0) ctx.moveTo(i, y);
                     else ctx.lineTo(i, y);
                 }
