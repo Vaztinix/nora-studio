@@ -14590,7 +14590,10 @@
             } finally {
                 toggleLoading(false);
             }
+        }
+
         function isUserEditing() {
+
             const active = document.activeElement;
             if (!active) return false;
             const tag = active.tagName.toLowerCase();
