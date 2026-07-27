@@ -46,20 +46,21 @@ Unlike legacy Discord bots that hoard user data or spam permissions, Nora operat
 ## 🛠️ Core System Architecture
 
 ```mermaid
-graph TD
-    A[Discord API & Gateway] --> B(Nora Core Router)
-    B --> C{Permission Check & Hiding}
-    C -->|Moderator / Admin| D[Mod Console /warn /case /setup]
-    C -->|Community Member| E[Commands /verify /mycard /rank]
-    B --> F[Real-Time AutoMod Engine]
-    F -->|Targeted Harassment / Slurs| G[Message Delete + DB Warning + Timeout Escalation]
-    F -->|Casual Expression| H[Gentle Delete / Ephemeral Notice]
-    F -->|Mention Limit Exceeded| I[Immediate Deletion + Staff Alert Log]
-    B --> J[Starboard Engine v2.5]
-    J -->|Check Ignored Channels| K{Ignored?}
-    K -->|Yes| L[Bypass Starboard]
-    K -->|No| M[Post Branded Webhook Embed]
+flowchart TD
+    A["Discord API & Gateway"] --> B["Nora Core Router"]
+    B --> C{"Permission Hiding Check"}
+    C -->|"Staff Member"| D["Mod Commands (/warn, /case, /setup)"]
+    C -->|"Community Member"| E["Member Commands (/verify, /mycard, /rank)"]
+    B --> F["Real-Time AutoMod Engine"]
+    F -->|"Targeted Harassment"| G["Delete Message + Log DB Warning + Timeout Escalation"]
+    F -->|"Casual Expression"| H["Gentle Deletion + Ephemeral Notice"]
+    F -->|"Mention Limit Exceeded"| I["Immediate Deletion + Staff Alert Log"]
+    B --> J["Starboard Engine v2.5"]
+    J -->|"Check Ignored Channels"| K{"Is Channel Ignored?"}
+    K -->|"Yes"| L["Bypass Reaction Tracking"]
+    K -->|"No"| M["Post Branded Webhook Embed"]
 ```
+
 
 ---
 
