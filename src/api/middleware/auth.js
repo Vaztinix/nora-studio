@@ -16,10 +16,11 @@ const resolveDiscordToken = async (token) => {
             err.status = 401;
             throw err;
         }
-        return session.discordToken;
+        return session.discordToken || token;
     }
     return token;
 };
+
 
 const getCachedUserGuilds = async (token) => {
     if (token === 'nora_mock_token') {

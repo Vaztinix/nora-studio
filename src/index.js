@@ -1220,10 +1220,11 @@ const resolveDiscordToken = async (token) => {
             throw err;
         }
 
-        return session.discordToken;
+        return session.discordToken || token;
     }
     return token;
 };
+
 
 const getDiscordUser = async (token) => {
     if (token === 'nora_mock_token') {
@@ -1403,12 +1404,14 @@ app.get('/api/user/me', async (req, res) => {
             session = await Session.create({
                 id: tokenHash,
                 userId: user.id,
+                discordToken: token,
                 ipAddress: clientIp,
                 userAgent: req.headers['user-agent'] || 'Unknown',
                 location: location,
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                 sessionGenerationMarker: prefs.sessionGenerationMarker
             });
+
         }
         
         // Construct full CDN avatar URL
