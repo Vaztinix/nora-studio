@@ -1,73 +1,103 @@
 <div align="center">
 
-# ✨ Nora
+# ✨ Nora Studio
 
-### Privacy-First AI & Moderation for Discord
+### **Privacy-First AI & Next-Gen Moderation Ecosystem for Discord**
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1200&color=A970FF&center=true&vCenter=true&width=500&lines=Moderation+made+simple;Automation+that+respects+privacy;Built+for+Discord+communities" />
+<p align="center">
+  <a href="https://vaztinix.dev"><img src="https://img.shields.io/badge/Website-vaztinix.dev-7C3AED?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website" /></a>
+  <a href="https://top.gg/user/593420060990005248"><img src="https://img.shields.io/badge/Top.gg-Approved_Bot-FF3366?style=for-the-badge&logo=top.gg&logoColor=white" alt="Top.gg" /></a>
+  <a href="https://discord.com/users/1214048435632603137"><img src="https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" /></a>
+  <a href="https://github.com/Vaztinix/nora-studio"><img src="https://img.shields.io/badge/Version-2.5_Stable-10B981?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
+  <a href="#-privacy-first-philosophy"><img src="https://img.shields.io/badge/Privacy-Zero--Access-00B4D8?style=for-the-badge&logo=shield&logoColor=white" alt="Privacy" /></a>
+</p>
+
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1200&color=A970FF&center=true&vCenter=true&width=600&lines=Moderation+made+simple;Automation+that+respects+privacy;Roblox+Verification+%26+Group+Sync;Starboard+v2.5+%26+Custom+Rank+Cards;Built+for+modern+Discord+communities" alt="Typing Banner" />
 
 </div>
 
 ---
 
-## What is Nora?
+## 🚀 What is Nora?
 
-**Nora** is a Discord bot focused on something many tools forget:
+**Nora** is a high-performance, privacy-first Discord ecosystem engineered to provide elite community moderation, Roblox identity verification, engagement leveling, and server telemetry without compromising user privacy.
 
-**respecting the people who use it.**
-
-It provides moderation and helpful automation while staying **simple, transparent, and privacy-first**.
-
-No complicated setup.  
-No unnecessary data collection.  
-Just tools that help communities run smoothly.
+Unlike legacy Discord bots that hoard user data or spam permissions, Nora operates under a strict **Zero-Access Architecture**:
+- 🚫 **No Permanent Message Storage:** Chat content is processed in volatile memory only for AutoMod/AI checks and discarded instantly.
+- 🔒 **Zero Developer Backdoors:** Developers have no backend overrides to inspect private chats, server logs, or member statistics.
+- ⚡ **User Sovereignty:** Members can run `/mycard` to inspect their data and hit **Erase Data** for an immediate, irreversible wipe.
 
 ---
 
-## Features
+## ⚡ Key Feature Modules
 
-• **Security & Anti-Raid System (v2.1):** Account age checks, PFP requirements, nickname raid filters, and server lockdown.  
-• **Roblox Identity & Group Verification (v2.4):** Real-time identity linking, group rank bindings, and nickname sync.  
-• **Starboard System (v2.5):** Community reaction voting, custom emojis, threshold rules, branded webhooks, and ignored channels filter.  
-• **Custom Rank Card & Leveling Studio (v2.3):** Customizable rank cards (colors, borders, image uploads), voice XP, and leaderboards.  
-• **Support Ticketing & Reaction Roles:** Multi-category help desk ticketing with auto-transcripts and reaction role menus.  
-• **Privacy-First Zero-Access Architecture:** User sovereign data wipe (`/mycard` -> Erase Data) and isolated server containers.  
-• **Nora Studio Web Dashboard:** Web-based guild management with real-time sync and unsaved changes protection.  
-
-
----
-
-## Developer
-
-**Vaztinix**  
-Creator of Nora
+| Module | Version | Description |
+| :--- | :---: | :--- |
+| 🛡️ **Security & Anti-Raid** | `v2.1` | Velocity join limiters, account age enforcement, avatar requirements, suspicious nickname filtering, and 1-click server lockdown. |
+| 🎮 **Roblox Verification** | `v2.4` | Real-time Roblox identity linking, group rank role bindings, nickname sync, and server access gating. |
+| ⭐ **Starboard System** | `v2.5` | Reaction voting highlights, custom emojis, star count thresholds, branded webhook posts, and **Ignored Channels filter**. |
+| 🎨 **Leveling & Rank Cards** | `v2.3` | Voice & text XP algorithms, role rewards, leaderboards, and custom rank card design studio (custom colors, borders, image uploads). |
+| 🎫 **Support Ticketing** | `Beta` | Help desk reaction panels, staff routing, automated transcripts, and auto-category archiving. |
+| 🤖 **AI & Autoresponder** | `v2.1` | Dual-AI engine (Local Aura V10 & Gemini/OpenAI), regex autoresponders, and smart intent classifier (Targeted vs. Casual context). |
+| 📊 **Nora Studio Dashboard** | `v2.5` | Web-based management portal with real-time sync, unsaved changes guards, and server telemetry. |
 
 ---
 
-## 🔗 Links
+## 🛠️ Core System Architecture
 
-Top.gg  
-https://top.gg/user/593420060990005248
-
-GitHub  
-https://github.com/Vaztinix
-
-Website  
-https://vaztinix.dev
-
-Developer Page  
-https://vaztinix.dev/me
-
-Discord  
-https://discord.com/users/1214048435632603137
-
-Email  
-vaztinixstudios@gmail.com
+```mermaid
+graph TD
+    A[Discord API & Gateway] --> B(Nora Core Router)
+    B --> C{Permission Check & Hiding}
+    C -->|Moderator / Admin| D[Mod Console /warn /case /setup]
+    C -->|Community Member| E[Commands /verify /mycard /rank]
+    B --> F[Real-Time AutoMod Engine]
+    F -->|Targeted Harassment / Slurs| G[Message Delete + DB Warning + Timeout Escalation]
+    F -->|Casual Expression| H[Gentle Delete / Ephemeral Notice]
+    F -->|Mention Limit Exceeded| I[Immediate Deletion + Staff Alert Log]
+    B --> J[Starboard Engine v2.5]
+    J -->|Check Ignored Channels| K{Ignored?}
+    K -->|Yes| L[Bypass Starboard]
+    K -->|No| M[Post Branded Webhook Embed]
+```
 
 ---
+
+## 🛡️ Privacy-First Philosophy
+
+Nora is built around complete user sovereignty. Server administrators and individual members maintain total control over their data:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    NORA ZERO-ACCESS DATA                │
+├─────────────────────────────────────────────────────────┤
+│ • Guild Settings  : Stored securely per server ID       │
+│ • Level & XP      : Isolated to local guild context     │
+│ • Roblox Link     : Hashed ID association               │
+│ • Message Content : NEVER stored on disk                │
+│ • User Control    : /mycard ➜ Instant "Erase Data" Wipe │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 👨‍💻 Developer & Official Links
 
 <div align="center">
 
-*Built with curiosity and a belief that privacy should be the default.*
+### **Created with passion by Vaztinix**
+
+| Platform | Direct Link |
+| :--- | :--- |
+| 🌐 **Official Website** | [vaztinix.dev](https://vaztinix.dev) |
+| 🤖 **Developer Portfolio** | [vaztinix.dev/me](https://vaztinix.dev/me) |
+| 🏆 **Top.gg Profile** | [top.gg/user/593420060990005248](https://top.gg/user/593420060990005248) |
+| 🐙 **GitHub Repository** | [github.com/Vaztinix/nora-studio](https://github.com/Vaztinix/nora-studio) |
+| 💬 **Discord Contact** | [discord.com/users/1214048435632603137](https://discord.com/users/1214048435632603137) |
+| 📧 **Business Inquiries** | [vaztinixstudios@gmail.com](mailto:vaztinixstudios@gmail.com) |
+
+<br>
+
+*Built with curiosity, precision, and a belief that privacy should always be the default.*
 
 </div>
