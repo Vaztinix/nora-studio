@@ -50,7 +50,7 @@
             height: 100%;
             z-index: 0;
             pointer-events: none;
-            opacity: 0.4;
+            opacity: 0.45;
         }
 
         .container {
@@ -217,15 +217,15 @@
             gap: 6px;
         }
 
-        /* Music Player Widget */
+        /* Music Player Widget with Real Song Cover Art */
         .music-player-card {
-            background: rgba(22, 22, 34, 0.85);
+            background: rgba(22, 22, 34, 0.88);
             backdrop-filter: blur(25px);
             border: 1px solid var(--border);
             border-radius: 24px;
             padding: 26px;
             width: 100%;
-            max-width: 680px;
+            max-width: 700px;
             margin: 25px auto 40px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
             display: flex;
@@ -245,37 +245,41 @@
             background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
         }
 
+        .cover-art-box {
+            width: 90px;
+            height: 90px;
+            border-radius: 16px;
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .cover-art-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
         .vinyl-disc {
-            width: 85px;
-            height: 85px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             background: radial-gradient(circle, #222 20%, #111 21%, #111 40%, #000 41%);
             border: 3px solid #333;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
             animation: spin-vinyl 4s linear infinite;
-            animation-play-state: paused;
         }
 
-        .vinyl-disc.playing {
-            animation-play-state: running;
-        }
-
-        @keyframes spin-vinyl {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .vinyl-center {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--primary);
-            border: 2px solid white;
-            box-shadow: 0 0 10px var(--primary-glow);
+        .music-player-card.playing .cover-art-img {
+            transform: scale(1.05);
         }
 
         .track-info {
@@ -298,13 +302,13 @@
 
         .track-title {
             font-weight: 800;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             color: white;
             margin-bottom: 3px;
         }
 
         .track-artist {
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             color: var(--muted);
             margin-bottom: 12px;
         }
@@ -314,7 +318,7 @@
             display: flex;
             align-items: flex-end;
             gap: 4px;
-            height: 26px;
+            height: 28px;
             margin-bottom: 10px;
         }
 
@@ -323,7 +327,7 @@
             background: linear-gradient(to top, var(--primary), #C4B5FD);
             border-radius: 2px;
             height: 6px;
-            transition: height 0.15s ease;
+            transition: height 0.1s ease;
         }
 
         .player-controls-row {
@@ -336,14 +340,14 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid var(--border);
             color: white;
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             transition: all 0.2s ease;
         }
 
@@ -354,8 +358,8 @@
         }
 
         .btn-play {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: white;
             color: #07070a;
@@ -364,7 +368,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             transition: all 0.2s ease;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
         }
@@ -559,6 +563,9 @@
     <!-- Dynamic Soundwave Canvas Background -->
     <canvas id="audio-canvas"></canvas>
 
+    <!-- Hidden HTML5 Audio Element for Real Song Streaming -->
+    <audio id="real-audio-player" crossorigin="anonymous" preload="auto"></audio>
+
     <header>
         <div class="container nav-container">
             <a href="/" class="brand">
@@ -597,16 +604,16 @@
                 Creator of the <strong>Nora Studio</strong> Discord ecosystem. Passionate about building privacy-first AI moderation, real-time WebSocket infrastructure, and high-performance Web applications.
             </p>
 
-            <!-- Interactive Multi-Track Music Player Widget -->
-            <div class="music-player-card">
-                <div class="vinyl-disc" id="vinyl-disc">
-                    <div class="vinyl-center"></div>
+            <!-- Real Music Player Widget with Cover Art -->
+            <div class="music-player-card" id="music-player-card">
+                <div class="cover-art-box">
+                    <img src="https://i.scdn.co/image/ab67616d0000b273886370c3098104673963870f" alt="Album Cover" class="cover-art-img" id="cover-art">
                 </div>
 
                 <div class="track-info">
-                    <div class="track-meta-badge" id="track-meta">TRACK 1 OF 5 • SYNTHWAVE BEAT</div>
-                    <div class="track-title" id="track-name">Cyberpunk Overdrive</div>
-                    <div class="track-artist" id="track-artist">Vaztinix • Developer Soundscape</div>
+                    <div class="track-meta-badge" id="track-meta">SONG 1 OF 6 • SYNTHPOP</div>
+                    <div class="track-title" id="track-name">Blinding Lights</div>
+                    <div class="track-artist" id="track-artist">The Weeknd • After Hours</div>
                     
                     <div class="equalizer-bars" id="eq-bars">
                         <div class="eq-bar"></div>
@@ -625,15 +632,15 @@
                 </div>
 
                 <div class="player-controls-row">
-                    <button class="ctrl-btn" id="btn-prev-track" title="Previous Track"><i class="fas fa-step-backward"></i></button>
-                    <button class="btn-play" id="btn-play-pause" title="Play / Pause Soundscape">
+                    <button class="ctrl-btn" id="btn-prev-track" title="Previous Song"><i class="fas fa-step-backward"></i></button>
+                    <button class="btn-play" id="btn-play-pause" title="Play / Pause Song">
                         <i class="fas fa-play" id="play-icon"></i>
                     </button>
-                    <button class="ctrl-btn" id="btn-next-track" title="Next Track"><i class="fas fa-step-forward"></i></button>
+                    <button class="ctrl-btn" id="btn-next-track" title="Next Song"><i class="fas fa-step-forward"></i></button>
                     
                     <div class="volume-container">
                         <i class="fas fa-volume-up"></i>
-                        <input type="range" class="volume-slider" id="vol-slider" min="0" max="1" step="0.05" value="0.5">
+                        <input type="range" class="volume-slider" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
                     </div>
                 </div>
             </div>
@@ -654,7 +661,7 @@
                     I architected <strong>Nora</strong> from the ground up to solve a fundamental issue with modern community bots: unnecessary data collection and intrusive permissions. Every system in Nora runs under a strict <strong>Zero-Access Architecture</strong> where member privacy is guaranteed.
                 </p>
                 <p class="card-desc">
-                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to high-beat electronic music, UI/UX prototyping, and building open-source tooling.
+                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to iconic songs with great beats, UI/UX prototyping, and building open-source tooling.
                 </p>
             </div>
 
@@ -763,61 +770,79 @@
         </div>
     </footer>
 
-    <!-- Interactive Multi-Track Music Engine & Soundwave Visualizer -->
+    <!-- Interactive Real Song Music Player & Web Audio FFT Visualizer -->
     <script>
-        // Track Playlist with Real Beats, Frequencies & Rhythms
-        const TRACKS = [
+        // Curated Real Songs Playlist with Iconic Beats
+        const REAL_SONGS = [
             {
-                title: "Cyberpunk Overdrive",
-                artist: "Vaztinix • High-Energy Synthwave",
-                genre: "SYNTHWAVE BEAT • 124 BPM",
-                bpm: 124,
-                baseFreq: 110,
-                scale: [110, 130.81, 164.81, 196.00, 220, 261.63],
-                pattern: "punchy"
+                title: "Blinding Lights",
+                artist: "The Weeknd",
+                album: "After Hours",
+                genre: "SYNTHPOP • HIGH BEAT",
+                cover: "https://i.scdn.co/image/ab67616d0000b273886370c3098104673963870f",
+                url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo126/v4/05/7a/df/057adfec-639a-5431-7dfc-4467c6999a4c/mzaf_14787998906915014603.plus.aac.p.m4a"
             },
             {
-                title: "Midnight Lo-Fi Chill",
-                artist: "Vaztinix • Smooth Chillhop Session",
-                genre: "LO-FI CHILL • 88 BPM",
-                bpm: 88,
-                baseFreq: 130.81,
-                scale: [130.81, 146.83, 164.81, 196.00, 220, 246.94],
-                pattern: "chill"
+                title: "Starboy",
+                artist: "The Weeknd ft. Daft Punk",
+                album: "Starboy",
+                genre: "CYBERPUNK R&B • HEAVY BASS",
+                cover: "https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7a4526",
+                url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo115/v4/f4/e2/a3/f4e2a392-aa66-c73d-9f4c-b4db4bf1a980/mzaf_18218128362615467471.plus.aac.p.m4a"
             },
             {
-                title: "Neon Horizon Pulse",
-                artist: "Vaztinix • Electronic Retrowave",
-                genre: "RETROWAVE • 112 BPM",
-                bpm: 112,
-                baseFreq: 146.83,
-                scale: [146.83, 174.61, 196.00, 220, 261.63, 293.66],
-                pattern: "pulse"
+                title: "Midnight City",
+                artist: "M83",
+                album: "Hurry Up, We're Dreaming",
+                genre: "SYNTHPOP • ICONIC LEAD",
+                cover: "https://i.scdn.co/image/ab67616d0000b273b069b16b47596b6d859d0426",
+                url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo125/v4/10/72/51/1072517a-5b12-9c4c-3507-6bdf6a33758b/mzaf_12681580173663952796.plus.aac.p.m4a"
             },
             {
-                title: "Aura Matrix Cyber Bass",
-                artist: "Vaztinix • Cyberpunk Heavy Bass",
-                genre: "CYBER BASS • 128 BPM",
-                bpm: 128,
-                baseFreq: 98,
-                scale: [98, 110, 130.81, 146.83, 164.81, 196],
-                pattern: "heavy"
+                title: "Resonance",
+                artist: "HOME",
+                album: "Odyssey",
+                genre: "SYNTHWAVE • CHILL BEAT",
+                cover: "https://i.scdn.co/image/ab67616d0000b27341850119b9d3e5276e033d59",
+                url: "https://ia801503.us.archive.org/15/items/home-resonance/HOME%20-%20Resonance.mp3"
             },
             {
-                title: "Code Flow Melodic Groove",
-                artist: "Vaztinix • Deep Tech Ambient",
-                genre: "DEEP TECH • 105 BPM",
-                bpm: 105,
-                baseFreq: 164.81,
-                scale: [164.81, 196.00, 220, 246.94, 293.66, 329.63],
-                pattern: "groove"
+                title: "Get Lucky",
+                artist: "Daft Punk ft. Pharrell Williams",
+                album: "Random Access Memories",
+                genre: "DISCO FUNK • GROOVE",
+                cover: "https://i.scdn.co/image/ab67616d0000b273b33d46e26715ae7b8058721c",
+                url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo125/v4/2b/24/c4/2b24c449-307b-8c88-e8cb-7e3e9d8924b1/mzaf_12727144212711689139.plus.aac.p.m4a"
+            },
+            {
+                title: "The Less I Know The Better",
+                artist: "Tame Impala",
+                album: "Currents",
+                genre: "INDIE GROOVE • BASSLINE",
+                cover: "https://i.scdn.co/image/ab67616d0000b2739e78a2e2b34a66a1a4577f88",
+                url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo115/v4/bf/1a/b6/bf1ab6f0-d5be-047b-1b1e-089c89fb9804/mzaf_9006509653896568853.plus.aac.p.m4a"
             }
         ];
 
-        // Random initial track selection on every page load
-        let currentTrackIdx = Math.floor(Math.random() * TRACKS.length);
+        // Random song selection on every page load
+        let currentSongIdx = Math.floor(Math.random() * REAL_SONGS.length);
 
-        // Canvas & Visualizer
+        // Elements
+        const audioEl = document.getElementById('real-audio-player');
+        const coverArtEl = document.getElementById('cover-art');
+        const trackMetaEl = document.getElementById('track-meta');
+        const trackTitleEl = document.getElementById('track-name');
+        const trackArtistEl = document.getElementById('track-artist');
+        const playerCard = document.getElementById('music-player-card');
+
+        const btnPlay = document.getElementById('btn-play-pause');
+        const btnPrev = document.getElementById('btn-prev-track');
+        const btnNext = document.getElementById('btn-next-track');
+        const playIcon = document.getElementById('play-icon');
+        const volSlider = document.getElementById('vol-slider');
+        const eqBars = document.querySelectorAll('.eq-bar');
+
+        // Canvas & Web Audio Analyser
         const canvas = document.getElementById('audio-canvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
@@ -828,200 +853,129 @@
             height = canvas.height = window.innerHeight;
         });
 
-        // Audio Engine Elements
         let audioCtx = null;
-        let masterGain = null;
+        let analyser = null;
+        let sourceNode = null;
         let isPlaying = false;
-        let beatTimer = null;
-        let beatStep = 0;
+        let freqData = new Uint8Array(64);
 
-        const btnPlay = document.getElementById('btn-play-pause');
-        const btnPrev = document.getElementById('btn-prev-track');
-        const btnNext = document.getElementById('btn-next-track');
-        const playIcon = document.getElementById('play-icon');
-        const vinyl = document.getElementById('vinyl-disc');
-        const volSlider = document.getElementById('vol-slider');
-        const eqBars = document.querySelectorAll('.eq-bar');
-
-        const trackMetaEl = document.getElementById('track-meta');
-        const trackTitleEl = document.getElementById('track-name');
-        const trackArtistEl = document.getElementById('track-artist');
-
-        function updateTrackUI() {
-            const track = TRACKS[currentTrackIdx];
-            trackMetaEl.textContent = `TRACK ${currentTrackIdx + 1} OF ${TRACKS.length} • ${track.genre}`;
-            trackTitleEl.textContent = track.title;
-            trackArtistEl.textContent = track.artist;
+        function updateSongUI() {
+            const song = REAL_SONGS[currentSongIdx];
+            trackMetaEl.textContent = `SONG ${currentSongIdx + 1} OF ${REAL_SONGS.length} • ${song.genre}`;
+            trackTitleEl.textContent = song.title;
+            trackArtistEl.textContent = `${song.artist} • ${song.album}`;
+            coverArtEl.src = song.cover;
+            audioEl.src = song.url;
         }
 
-        updateTrackUI();
+        updateSongUI();
 
-        function initAudioEngine() {
+        function initWebAudioAnalyser() {
             if (audioCtx) return;
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-            masterGain = audioCtx.createGain();
-            masterGain.gain.setValueAtTime(parseFloat(volSlider.value), audioCtx.currentTime);
-            masterGain.connect(audioCtx.destination);
-        }
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 64;
+                freqData = new Uint8Array(analyser.frequencyBinCount);
 
-        // Real Multi-Oscillator Rhythm Synthesizer (Kick, Snare, Hi-Hat, Bass, Lead)
-        function triggerKick(time) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(150, time);
-            osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.15);
-            gain.gain.setValueAtTime(0.5, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.15);
-        }
-
-        function triggerSnare(time) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(220, time);
-            osc.frequency.exponentialRampToValueAtTime(80, time + 0.1);
-            gain.gain.setValueAtTime(0.3, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.1);
-        }
-
-        function triggerHiHat(time) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(8000, time);
-            gain.gain.setValueAtTime(0.08, time);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + 0.04);
-        }
-
-        function triggerMelodyNote(time, freq, duration = 0.25) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(freq, time);
-            gain.gain.setValueAtTime(0.12, time);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(time);
-            osc.stop(time + duration);
-        }
-
-        function playBeatSequence() {
-            if (!isPlaying || !audioCtx) return;
-            const track = TRACKS[currentTrackIdx];
-            const now = audioCtx.currentTime;
-            const stepTime = (60 / track.bpm) / 4; // 16th notes
-
-            // Kick drum on 1 and 3 (steps 0, 8, 10)
-            if (beatStep % 8 === 0 || beatStep % 16 === 10) {
-                triggerKick(now);
+                sourceNode = audioCtx.createMediaElementSource(audioEl);
+                sourceNode.connect(analyser);
+                analyser.connect(audioCtx.destination);
+            } catch(e) {
+                console.error("Web Audio Analyser Init Error:", e);
             }
-
-            // Snare on 2 and 4 (steps 4, 12)
-            if (beatStep % 8 === 4) {
-                triggerSnare(now);
-            }
-
-            // Hi-hats on every 2nd step
-            if (beatStep % 2 === 0) {
-                triggerHiHat(now);
-            }
-
-            // Melody note according to pattern
-            if (beatStep % 4 === 0 || beatStep % 16 === 14) {
-                const note = track.scale[Math.floor(Math.random() * track.scale.length)];
-                triggerMelodyNote(now, note, stepTime * 2);
-            }
-
-            beatStep = (beatStep + 1) % 16;
-            beatTimer = setTimeout(playBeatSequence, stepTime * 1000);
         }
 
-        function playSoundtrack() {
-            initAudioEngine();
-            if (audioCtx.state === 'suspended') {
+        function playSong() {
+            initWebAudioAnalyser();
+            if (audioCtx && audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
 
-            isPlaying = true;
-            playIcon.className = 'fas fa-pause';
-            vinyl.classList.add('playing');
-            
-            if (beatTimer) clearTimeout(beatTimer);
-            beatStep = 0;
-            playBeatSequence();
+            audioEl.volume = parseFloat(volSlider.value);
+            audioEl.play().then(() => {
+                isPlaying = true;
+                playIcon.className = 'fas fa-pause';
+                playerCard.classList.add('playing');
+            }).catch(err => {
+                console.warn("Autoplay blocked, click play to listen:", err);
+                isPlaying = false;
+            });
         }
 
-        function pauseSoundtrack() {
+        function pauseSong() {
+            audioEl.pause();
             isPlaying = false;
             playIcon.className = 'fas fa-play';
-            vinyl.classList.remove('playing');
-            if (beatTimer) clearTimeout(beatTimer);
+            playerCard.classList.remove('playing');
             eqBars.forEach(bar => bar.style.height = '6px');
         }
 
         btnPlay.addEventListener('click', () => {
             if (isPlaying) {
-                pauseSoundtrack();
+                pauseSong();
             } else {
-                playSoundtrack();
+                playSong();
             }
         });
 
         btnPrev.addEventListener('click', () => {
-            currentTrackIdx = (currentTrackIdx - 1 + TRACKS.length) % TRACKS.length;
-            updateTrackUI();
+            currentSongIdx = (currentSongIdx - 1 + REAL_SONGS.length) % REAL_SONGS.length;
+            updateSongUI();
             if (isPlaying) {
-                playSoundtrack();
+                playSong();
             }
         });
 
         btnNext.addEventListener('click', () => {
-            currentTrackIdx = (currentTrackIdx + 1) % TRACKS.length;
-            updateTrackUI();
+            currentSongIdx = (currentSongIdx + 1) % REAL_SONGS.length;
+            updateSongUI();
             if (isPlaying) {
-                playSoundtrack();
+                playSong();
             }
+        });
+
+        audioEl.addEventListener('ended', () => {
+            // Auto advance to next song when current finishes
+            currentSongIdx = (currentSongIdx + 1) % REAL_SONGS.length;
+            updateSongUI();
+            playSong();
         });
 
         volSlider.addEventListener('input', (e) => {
-            if (masterGain && audioCtx) {
-                masterGain.gain.setValueAtTime(parseFloat(e.target.value), audioCtx.currentTime);
-            }
+            audioEl.volume = parseFloat(e.target.value);
         });
 
-        // Animated Soundwave Background & Dynamic Equalizer Frame Loop
+        // Soundwave Canvas & Equalizer Bars Animated Loop using Real FFT Data
         let phase = 0;
-        function animateSoundwave() {
+        function animateVisualizer() {
             ctx.clearRect(0, 0, width, height);
+
+            if (analyser && isPlaying) {
+                analyser.getByteFrequencyData(freqData);
+            }
+
+            let avgFreq = 0;
+            for (let i = 0; i < freqData.length; i++) {
+                avgFreq += freqData[i];
+            }
+            avgFreq = avgFreq / (freqData.length || 1);
+
+            const speed = isPlaying ? 0.02 + (avgFreq / 255) * 0.06 : 0.01;
+            const waveAmp = isPlaying ? 35 + (avgFreq / 255) * 50 : 25;
 
             ctx.lineWidth = 2.5;
             const gradient = ctx.createLinearGradient(0, 0, width, 0);
-            gradient.addColorStop(0, 'rgba(124, 58, 237, 0.45)');
-            gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.45)');
-            gradient.addColorStop(1, 'rgba(236, 72, 153, 0.45)');
+            gradient.addColorStop(0, 'rgba(124, 58, 237, 0.5)');
+            gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.5)');
+            gradient.addColorStop(1, 'rgba(236, 72, 153, 0.5)');
             ctx.strokeStyle = gradient;
-
-            const currentTrack = TRACKS[currentTrackIdx];
-            const speed = isPlaying ? (currentTrack.bpm / 120) * 0.05 : 0.01;
 
             for (let j = 0; j < 3; j++) {
                 ctx.beginPath();
                 for (let i = 0; i < width; i += 8) {
-                    const y = height / 2 + Math.sin(i * 0.004 + phase + j * 0.8) * (35 + j * 25) + Math.cos(i * 0.002 - phase) * 25;
+                    const y = height / 2 + Math.sin(i * 0.004 + phase + j * 0.8) * (waveAmp + j * 20) + Math.cos(i * 0.002 - phase) * 20;
                     if (i === 0) ctx.moveTo(i, y);
                     else ctx.lineTo(i, y);
                 }
@@ -1030,18 +984,19 @@
 
             phase += speed;
 
-            // Bouncing Equalizer Bars when playing
-            if (isPlaying) {
+            // Equalizer Bars updated with Real Frequency Audio Data
+            if (isPlaying && freqData.length > 0) {
                 eqBars.forEach((bar, idx) => {
-                    const h = Math.floor(Math.sin(phase * 4 + idx) * 12) + 12;
+                    const val = freqData[idx * 2] || 0;
+                    const h = Math.max(6, Math.floor((val / 255) * 26));
                     bar.style.height = `${h}px`;
                 });
             }
 
-            requestAnimationFrame(animateSoundwave);
+            requestAnimationFrame(animateVisualizer);
         }
 
-        animateSoundwave();
+        animateVisualizer();
     </script>
 </body>
 </html>
