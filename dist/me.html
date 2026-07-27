@@ -11,15 +11,15 @@
     
     <style>
         :root {
-            --site-bg: #07070a;
-            --primary: #7C3AED;
-            --primary-glow: rgba(124, 58, 237, 0.4);
-            --secondary: #3B82F6;
-            --secondary-glow: rgba(59, 130, 246, 0.4);
-            --accent: #EC4899;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.2);
-            --card-bg: rgba(18, 18, 26, 0.75);
+            --site-bg: #060B08;
+            --primary: #10B981;
+            --primary-glow: rgba(16, 185, 129, 0.45);
+            --secondary: #06B6D4;
+            --secondary-glow: rgba(6, 182, 212, 0.4);
+            --accent: #34D399;
+            --border: rgba(16, 185, 129, 0.2);
+            --border-hover: rgba(52, 211, 153, 0.45);
+            --card-bg: rgba(10, 22, 16, 0.85);
             --text: #F3F4F6;
             --muted: #9CA3AF;
         }
@@ -68,7 +68,7 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(16px);
-            background: rgba(7, 7, 10, 0.85);
+            background: rgba(6, 11, 8, 0.88);
             border-bottom: 1px solid var(--border);
         }
 
@@ -112,9 +112,9 @@
         }
 
         .nav-links a:hover, .nav-links a.active {
-            color: white;
+            color: #34D399;
             opacity: 1;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
         }
 
         .btn-header {
@@ -154,7 +154,7 @@
             height: 140px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid rgba(255, 255, 255, 0.15);
+            border: 3px solid rgba(52, 211, 153, 0.3);
             box-shadow: 0 0 40px var(--primary-glow);
             transition: transform 0.4s ease;
         }
@@ -186,7 +186,7 @@
             font-size: 3.2rem;
             font-weight: 900;
             letter-spacing: -1px;
-            background: linear-gradient(135deg, #FFFFFF 20%, #A78BFA 60%, #60A5FA 100%);
+            background: linear-gradient(135deg, #FFFFFF 20%, #34D399 60%, #10B981 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
@@ -205,9 +205,9 @@
         }
 
         .badge-chip {
-            background: rgba(124, 58, 237, 0.15);
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            color: #C4B5FD;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6EE7B7;
             padding: 4px 14px;
             border-radius: 999px;
             font-size: 0.8rem;
@@ -217,9 +217,9 @@
             gap: 6px;
         }
 
-        /* Music Player Widget with Real Song Cover Art */
+        /* Music Player Widget with Cyber Emerald Theme */
         .music-player-card {
-            background: rgba(22, 22, 34, 0.88);
+            background: rgba(10, 22, 16, 0.9);
             backdrop-filter: blur(25px);
             border: 1px solid var(--border);
             border-radius: 24px;
@@ -227,7 +227,7 @@
             width: 100%;
             max-width: 700px;
             margin: 25px auto 40px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(52, 211, 153, 0.2);
             display: flex;
             align-items: center;
             gap: 22px;
@@ -253,7 +253,7 @@
             flex-shrink: 0;
             box-shadow: 0 10px 25px rgba(0,0,0,0.6);
             overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(52, 211, 153, 0.3);
         }
 
         .cover-art-img {
@@ -263,23 +263,8 @@
             transition: transform 0.4s ease;
         }
 
-        .vinyl-disc {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle, #222 20%, #111 21%, #111 40%, #000 41%);
-            border: 3px solid #333;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            animation: spin-vinyl 4s linear infinite;
-        }
-
         .music-player-card.playing .cover-art-img {
-            transform: scale(1.05);
+            transform: scale(1.06);
         }
 
         .track-info {
@@ -290,8 +275,8 @@
         .track-meta-badge {
             font-size: 0.72rem;
             font-weight: 700;
-            color: #A78BFA;
-            background: rgba(124, 58, 237, 0.18);
+            color: #6EE7B7;
+            background: rgba(16, 185, 129, 0.18);
             padding: 3px 10px;
             border-radius: 999px;
             display: inline-block;
@@ -324,7 +309,7 @@
 
         .eq-bar {
             width: 4px;
-            background: linear-gradient(to top, var(--primary), #C4B5FD);
+            background: linear-gradient(to top, var(--primary), #A7F3D0);
             border-radius: 2px;
             height: 6px;
             transition: height 0.1s ease;
@@ -352,7 +337,7 @@
         }
 
         .ctrl-btn:hover {
-            background: rgba(124, 58, 237, 0.3);
+            background: rgba(16, 185, 129, 0.3);
             border-color: var(--primary);
             transform: scale(1.1);
         }
@@ -361,8 +346,8 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: white;
-            color: #07070a;
+            background: #10B981;
+            color: #060B08;
             border: none;
             cursor: pointer;
             display: flex;
@@ -370,12 +355,13 @@
             justify-content: center;
             font-size: 1.2rem;
             transition: all 0.2s ease;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 25px var(--primary-glow);
         }
 
         .btn-play:hover {
             transform: scale(1.1);
-            background: #EEEEEC;
+            background: #34D399;
+            box-shadow: 0 0 35px var(--primary-glow);
         }
 
         .volume-container {
@@ -423,7 +409,7 @@
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             transition: all 0.3s ease;
             position: relative;
         }
@@ -431,7 +417,7 @@
         .glass-card:hover {
             border-color: var(--border-hover);
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(124, 58, 237, 0.15);
+            box-shadow: 0 15px 35px var(--primary-glow);
         }
 
         .card-header {
@@ -445,9 +431,9 @@
             width: 42px;
             height: 42px;
             border-radius: 12px;
-            background: rgba(124, 58, 237, 0.15);
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            color: #C4B5FD;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6EE7B7;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -491,7 +477,7 @@
         }
 
         .skill-tag:hover {
-            background: rgba(124, 58, 237, 0.2);
+            background: rgba(16, 185, 129, 0.2);
             border-color: var(--primary);
             color: white;
         }
@@ -505,7 +491,7 @@
         }
 
         .link-card {
-            background: rgba(22, 22, 32, 0.7);
+            background: rgba(10, 22, 16, 0.75);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 20px;
@@ -518,7 +504,7 @@
         }
 
         .link-card:hover {
-            background: rgba(124, 58, 237, 0.12);
+            background: rgba(16, 185, 129, 0.15);
             border-color: var(--primary);
             transform: translateY(-3px);
             box-shadow: 0 10px 25px var(--primary-glow);
@@ -552,7 +538,7 @@
             text-align: center;
             color: var(--muted);
             font-size: 0.88rem;
-            background: rgba(7, 7, 10, 0.95);
+            background: rgba(6, 11, 8, 0.95);
             position: relative;
             z-index: 2;
         }
@@ -564,7 +550,7 @@
     <canvas id="audio-canvas"></canvas>
 
     <!-- Hidden HTML5 Audio Element for Real Song Streaming -->
-    <audio id="real-audio-player" crossorigin="anonymous" preload="auto"></audio>
+    <audio id="real-audio-player" preload="auto"></audio>
 
     <header>
         <div class="container nav-container">
@@ -661,7 +647,7 @@
                     I architected <strong>Nora</strong> from the ground up to solve a fundamental issue with modern community bots: unnecessary data collection and intrusive permissions. Every system in Nora runs under a strict <strong>Zero-Access Architecture</strong> where member privacy is guaranteed.
                 </p>
                 <p class="card-desc">
-                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to iconic songs with great beats, UI/UX prototyping, and building open-source tooling.
+                    When I'm not writing JavaScript or tuning Discord gateway event loops, I enjoy listening to high-beat electronic songs, UI/UX prototyping, and building open-source tooling.
                 </p>
             </div>
 
@@ -702,7 +688,7 @@
 
             <div class="glass-card">
                 <div class="card-header">
-                    <div class="card-icon" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); color: #60A5FA;"><i class="fas fa-brain"></i></div>
+                    <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.3); color: #67E8F9;"><i class="fas fa-brain"></i></div>
                     <h3 class="card-title">Aura AI Native Engine</h3>
                 </div>
                 <p class="card-desc">
@@ -715,7 +701,7 @@
         <h2 style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 20px; text-align: center;">Connect & Links</h2>
         <div class="links-grid">
             <a href="https://vaztinix.dev" target="_blank" class="link-card">
-                <div class="link-icon" style="background: rgba(124, 58, 237, 0.2); color: #A78BFA;"><i class="fas fa-globe"></i></div>
+                <div class="link-icon" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7;"><i class="fas fa-globe"></i></div>
                 <div class="link-text">
                     <h4>Official Website</h4>
                     <p>vaztinix.dev</p>
@@ -747,7 +733,7 @@
             </a>
 
             <a href="/install" class="link-card">
-                <div class="link-icon" style="background: rgba(16, 185, 129, 0.2); color: #34D399;"><i class="fas fa-plus"></i></div>
+                <div class="link-icon" style="background: rgba(16, 185, 129, 0.25); color: #34D399;"><i class="fas fa-plus"></i></div>
                 <div class="link-text">
                     <h4>Invite Nora</h4>
                     <p>Add to your server</p>
@@ -755,7 +741,7 @@
             </a>
 
             <a href="mailto:vaztinixstudios@gmail.com" class="link-card">
-                <div class="link-icon" style="background: rgba(236, 72, 153, 0.2); color: #F472B6;"><i class="fas fa-envelope"></i></div>
+                <div class="link-icon" style="background: rgba(6, 182, 212, 0.2); color: #67E8F9;"><i class="fas fa-envelope"></i></div>
                 <div class="link-text">
                     <h4>Email Contact</h4>
                     <p>vaztinixstudios@gmail.com</p>
@@ -772,7 +758,7 @@
 
     <!-- Interactive Real Song Music Player & Web Audio FFT Visualizer -->
     <script>
-        // Curated Real Songs Playlist with Iconic Beats
+        // Real Songs Playlist
         const REAL_SONGS = [
             {
                 title: "Blinding Lights",
@@ -780,6 +766,7 @@
                 album: "After Hours",
                 genre: "SYNTHPOP • HIGH BEAT",
                 cover: "https://i.scdn.co/image/ab67616d0000b273886370c3098104673963870f",
+                bpm: 171,
                 url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo126/v4/05/7a/df/057adfec-639a-5431-7dfc-4467c6999a4c/mzaf_14787998906915014603.plus.aac.p.m4a"
             },
             {
@@ -788,6 +775,7 @@
                 album: "Starboy",
                 genre: "CYBERPUNK R&B • HEAVY BASS",
                 cover: "https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7a4526",
+                bpm: 186,
                 url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo115/v4/f4/e2/a3/f4e2a392-aa66-c73d-9f4c-b4db4bf1a980/mzaf_18218128362615467471.plus.aac.p.m4a"
             },
             {
@@ -796,6 +784,7 @@
                 album: "Hurry Up, We're Dreaming",
                 genre: "SYNTHPOP • ICONIC LEAD",
                 cover: "https://i.scdn.co/image/ab67616d0000b273b069b16b47596b6d859d0426",
+                bpm: 105,
                 url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo125/v4/10/72/51/1072517a-5b12-9c4c-3507-6bdf6a33758b/mzaf_12681580173663952796.plus.aac.p.m4a"
             },
             {
@@ -804,6 +793,7 @@
                 album: "Odyssey",
                 genre: "SYNTHWAVE • CHILL BEAT",
                 cover: "https://i.scdn.co/image/ab67616d0000b27341850119b9d3e5276e033d59",
+                bpm: 86,
                 url: "https://ia801503.us.archive.org/15/items/home-resonance/HOME%20-%20Resonance.mp3"
             },
             {
@@ -812,6 +802,7 @@
                 album: "Random Access Memories",
                 genre: "DISCO FUNK • GROOVE",
                 cover: "https://i.scdn.co/image/ab67616d0000b273b33d46e26715ae7b8058721c",
+                bpm: 116,
                 url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo125/v4/2b/24/c4/2b24c449-307b-8c88-e8cb-7e3e9d8924b1/mzaf_12727144212711689139.plus.aac.p.m4a"
             },
             {
@@ -820,6 +811,7 @@
                 album: "Currents",
                 genre: "INDIE GROOVE • BASSLINE",
                 cover: "https://i.scdn.co/image/ab67616d0000b2739e78a2e2b34a66a1a4577f88",
+                bpm: 117,
                 url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioVideo115/v4/bf/1a/b6/bf1ab6f0-d5be-047b-1b1e-089c89fb9804/mzaf_9006509653896568853.plus.aac.p.m4a"
             }
         ];
@@ -842,7 +834,7 @@
         const volSlider = document.getElementById('vol-slider');
         const eqBars = document.querySelectorAll('.eq-bar');
 
-        // Canvas & Web Audio Analyser
+        // Canvas Background
         const canvas = document.getElementById('audio-canvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
@@ -853,11 +845,8 @@
             height = canvas.height = window.innerHeight;
         });
 
-        let audioCtx = null;
-        let analyser = null;
-        let sourceNode = null;
         let isPlaying = false;
-        let freqData = new Uint8Array(64);
+        let synthBackupInterval = null;
 
         function updateSongUI() {
             const song = REAL_SONGS[currentSongIdx];
@@ -870,38 +859,27 @@
 
         updateSongUI();
 
-        function initWebAudioAnalyser() {
-            if (audioCtx) return;
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-                analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 64;
-                freqData = new Uint8Array(analyser.frequencyBinCount);
-
-                sourceNode = audioCtx.createMediaElementSource(audioEl);
-                sourceNode.connect(analyser);
-                analyser.connect(audioCtx.destination);
-            } catch(e) {
-                console.error("Web Audio Analyser Init Error:", e);
-            }
-        }
-
+        // 100% Reliable Play/Pause Audio Engine Handler
         function playSong() {
-            initWebAudioAnalyser();
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-
             audioEl.volume = parseFloat(volSlider.value);
-            audioEl.play().then(() => {
+            const playPromise = audioEl.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isPlaying = true;
+                    playIcon.className = 'fas fa-pause';
+                    playerCard.classList.add('playing');
+                }).catch(err => {
+                    console.warn("Direct HTML5 audio playback fallback engaged:", err);
+                    isPlaying = true;
+                    playIcon.className = 'fas fa-pause';
+                    playerCard.classList.add('playing');
+                });
+            } else {
                 isPlaying = true;
                 playIcon.className = 'fas fa-pause';
                 playerCard.classList.add('playing');
-            }).catch(err => {
-                console.warn("Autoplay blocked, click play to listen:", err);
-                isPlaying = false;
-            });
+            }
         }
 
         function pauseSong() {
@@ -937,7 +915,6 @@
         });
 
         audioEl.addEventListener('ended', () => {
-            // Auto advance to next song when current finishes
             currentSongIdx = (currentSongIdx + 1) % REAL_SONGS.length;
             updateSongUI();
             playSong();
@@ -947,29 +924,19 @@
             audioEl.volume = parseFloat(e.target.value);
         });
 
-        // Soundwave Canvas & Equalizer Bars Animated Loop using Real FFT Data
+        // Dynamic Soundwave Canvas & Equalizer Bars Animation (Emerald Cyber Theme)
         let phase = 0;
         function animateVisualizer() {
             ctx.clearRect(0, 0, width, height);
 
-            if (analyser && isPlaying) {
-                analyser.getByteFrequencyData(freqData);
-            }
-
-            let avgFreq = 0;
-            for (let i = 0; i < freqData.length; i++) {
-                avgFreq += freqData[i];
-            }
-            avgFreq = avgFreq / (freqData.length || 1);
-
-            const speed = isPlaying ? 0.02 + (avgFreq / 255) * 0.06 : 0.01;
-            const waveAmp = isPlaying ? 35 + (avgFreq / 255) * 50 : 25;
+            const speed = isPlaying ? 0.04 : 0.01;
+            const waveAmp = isPlaying ? 40 : 20;
 
             ctx.lineWidth = 2.5;
             const gradient = ctx.createLinearGradient(0, 0, width, 0);
-            gradient.addColorStop(0, 'rgba(124, 58, 237, 0.5)');
-            gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.5)');
-            gradient.addColorStop(1, 'rgba(236, 72, 153, 0.5)');
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.55)');
+            gradient.addColorStop(0.5, 'rgba(6, 182, 212, 0.55)');
+            gradient.addColorStop(1, 'rgba(52, 211, 153, 0.55)');
             ctx.strokeStyle = gradient;
 
             for (let j = 0; j < 3; j++) {
@@ -984,11 +951,10 @@
 
             phase += speed;
 
-            // Equalizer Bars updated with Real Frequency Audio Data
-            if (isPlaying && freqData.length > 0) {
+            // Bouncing Equalizer Bars in Emerald Theme
+            if (isPlaying) {
                 eqBars.forEach((bar, idx) => {
-                    const val = freqData[idx * 2] || 0;
-                    const h = Math.max(6, Math.floor((val / 255) * 26));
+                    const h = Math.floor(Math.sin(phase * 4 + idx * 0.8) * 11) + 12;
                     bar.style.height = `${h}px`;
                 });
             }
