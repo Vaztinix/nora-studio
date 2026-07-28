@@ -52,7 +52,7 @@ module.exports = {
                         { name: '🌐 Web Dashboard', value: 'Configure all features, moderation, leveling, and logs at:\n[https://vaztinix.dev/dashboard](https://vaztinix.dev/dashboard)', inline: false },
                         { name: '🛠️ Server Setup Command', value: 'Run `/setup` in your server to let Nora help you configure channels, roles, and basic automod rules.', inline: false },
                         { name: '📖 Documentation', value: 'Check out the detailed guides and documentation at:\n[https://vaztinix.dev/docs](https://vaztinix.dev/docs)', inline: false },
-                        { name: '💬 Need Help?', value: 'Join our official Support Server to get assistance from the team:\n[https://discord.gg/nora](https://discord.gg/nora)', inline: false }
+                        { name: '💬 Need Help?', value: 'Join our official Support Server to get assistance from the team:\n[https://discord.gg/He2Q76H4qP](https://discord.gg/He2Q76H4qP)', inline: false }
                     )
                     .setColor(0x57acf2)
                     .setFooter({ text: 'Nora Assistant • Premium Automation' })
