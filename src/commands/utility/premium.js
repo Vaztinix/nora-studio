@@ -58,7 +58,7 @@ module.exports = {
                     inline: false
                 }
             )
-            .setFooter({ text: 'Nora Studio Premium • 30-Day Value Guarantee • Cancel Anytime', iconURL: interaction.client.user.displayAvatarURL() })
+            .setFooter({ text: 'Nora Studio Premium • Processed via Discord Monetization • Cancel Anytime in Discord Settings', iconURL: interaction.client.user.displayAvatarURL() })
             .setTimestamp();
 
         const row = new ActionRowBuilder().addComponents(

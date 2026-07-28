@@ -2027,7 +2027,7 @@ app.get('/api/user/guilds', async (req, res) => {
                 isOwnerPremium = true;
             }
 
-            const isPremium = true;
+            const isPremium = isPremiumSettings || isOwnerPremium || (settings && settings.paidExpiresAt && (new Date(settings.paidExpiresAt).getTime() + (settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0) > Date.now()));
 
             return {
                 id: g.id,

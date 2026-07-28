@@ -91,7 +91,7 @@ module.exports = {
                           { name: '🚀 200 Custom Autoresponder Slots', value: '40x capacity with granular role ignored and allowed filters.' },
                           { name: '🎨 Custom GIF Rank Cards & HEX Colors', value: 'Personalize level rank cards with GIF backdrops and custom HEX styling.' },
                           { name: '🛡️ AutoMod Threat Shield & 15+ Audit Streams', value: 'Contextual AI slur detection and dedicated audit log channels.' },
-                          { name: '💖 Instant Activation & 30-Day Value Guarantee', value: 'Use `/premium` to view status or upgrade at https://vaztinix.dev/dashboard' }
+                          { name: '💖 Instant Server Activation', value: 'Subscriptions processed via Discord App Subscriptions. View status using `/premium` or upgrade at https://vaztinix.dev/dashboard' }
                      );
             }
             return embed;
