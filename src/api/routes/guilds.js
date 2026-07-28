@@ -2803,11 +2803,35 @@ router.post('/autoresponders', async (req, res) => {
 
         const count = await Autoresponder.count({ where: { guildId } });
 
-        const cap = isPremium ? 200 : 20;
+        const cap = isPremium ? 200 : 5;
 
         if (count >= cap) {
 
-            return res.status(400).json({ error: `Limit exceeded: Free servers are capped at 20 autoresponder rules, while Premium servers get up to 200. Please upgrade to Studio Plus for more slots.` });
+            return res.status(400).json({ error: `Limit exceeded: Free servers are capped at 5 triggers/autoresponder rules, while Premium servers get up to 200. Please upgrade to Nora Premium for unlimited triggers.` });
+
+        }
+
+
+
+        // Role filter check for Free tier
+
+        let hasRoleFilters = false;
+
+        try {
+
+            const igR = Array.isArray(ignoredChannels) ? ignoredChannels : JSON.parse(ignoredChannels || '[]');
+
+            const alR = Array.isArray(allowedRoles) ? allowedRoles : JSON.parse(allowedRoles || '[]');
+
+            hasRoleFilters = (igR.length > 0 || alR.length > 0);
+
+        } catch(e) {}
+
+
+
+        if (!isPremium && hasRoleFilters) {
+
+            return res.status(400).json({ error: 'Premium Feature: Granular Role Ignored/Allowed Filters require Nora Premium.' });
 
         }
 
