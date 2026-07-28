@@ -2739,12 +2739,28 @@
                 </div>
 
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; margin-top: 10px;">
                     <div>
                         <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff;">Server Management</h2>
                         <p style="color: var(--muted); font-size: 0.85rem;">Manage your Discord servers with Nora</p>
                     </div>
                     <button class="save-btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: #fff; padding: 8px 16px; font-size: 0.85rem;" onclick="inviteBot()">+ Invite Nora</button>
+                </div>
+
+                <!-- Premium Callout Banner -->
+                <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.1) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 18px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0 0 2px 0; font-size: 1rem; font-weight: 800; color: #fff;">Unlock Nora Studio Plus Premium</h4>
+                            <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 0.83rem;">Instant Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="openPremiumModal()" style="background: #10B981 !important; color: #000 !important; font-weight: 800 !important; font-size: 0.85rem; padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                        ★ Upgrade Server ($4.99/mo)
+                    </button>
                 </div>
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
