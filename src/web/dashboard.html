@@ -16334,6 +16334,19 @@
                 searchInput.addEventListener('input', renderEmojiPickerList);
             }
         });
+        window.openPremiumModal = function() {
+            let modal = document.getElementById('nora-premium-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        };
+
+        window.closePremiumModal = function() {
+            let modal = document.getElementById('nora-premium-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        };
         // Nora Dashboard Initialization Complete
     </script>
 
@@ -16365,6 +16378,87 @@
             <button class="config-btn" style="width: auto; margin: 0; background: transparent; border-color: rgba(255,255,255,0.15); color: #fff;" onclick="document.getElementById('send-app-modal').style.display='none'">Cancel</button>
             <button class="config-btn" style="width: auto; margin: 0; background: var(--primary); color: #000; font-weight: 700;" onclick="submitSendAppToChannel()">Send Panel</button>
         </div>
+    </div>
+</div>
+
+<!-- High-Converting Nora Studio Premium Modal -->
+<div id="nora-premium-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #111116 0%, #1a1924 100%); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 24px; padding: 36px; width: 100%; max-width: 720px; box-shadow: 0 25px 70px rgba(16, 185, 129, 0.25); max-height: 90vh; overflow-y: auto; position: relative;">
+        
+        <button onclick="closePremiumModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">&times;</button>
+
+        <div style="text-align: center; margin-bottom: 28px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; color: #10B981; text-transform: uppercase; margin-bottom: 12px;">
+                <i class="fas fa-crown"></i> Studio Plus Premium
+            </div>
+            <h2 style="font-size: 2.1rem; font-weight: 800; color: #fff; margin-bottom: 8px;">Supercharge Your Server for $4.99/mo</h2>
+            <p style="color: rgba(255,255,255,0.7); font-size: 0.95rem; max-width: 540px; margin: 0 auto; line-height: 1.5;">Unlock maximum speed, 200 automation slots, AI Co-Pilot, and custom branding for your community.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px;">
+            
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; display: flex; gap: 12px; align-items: start;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-bolt"></i></div>
+                <div>
+                    <h4 style="font-weight: 800; color: #fff; margin: 0 0 4px 0; font-size: 0.92rem;">Instant Roblox Rank Sync</h4>
+                    <p style="color: var(--muted); font-size: 0.8rem; margin: 0; line-height: 1.4;">Zero delay! Sync group rank promotions and verifications in real-time.</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; display: flex; gap: 12px; align-items: start;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(168, 85, 247, 0.2); color: #A855F7; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-brain"></i></div>
+                <div>
+                    <h4 style="font-weight: 800; color: #fff; margin: 0 0 4px 0; font-size: 0.92rem;">Aura AI Co-Pilot</h4>
+                    <p style="color: var(--muted); font-size: 0.8rem; margin: 0; line-height: 1.4;">24/7 AI moderation, auto-answers, and custom system personas via `/ask`.</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; display: flex; gap: 12px; align-items: start;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.2); color: #3B82F6; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-robot"></i></div>
+                <div>
+                    <h4 style="font-weight: 800; color: #fff; margin: 0 0 4px 0; font-size: 0.92rem;">200 Autoresponder Slots</h4>
+                    <p style="color: var(--muted); font-size: 0.8rem; margin: 0; line-height: 1.4;">40x trigger capacity with granular role ignored & allowed controls.</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; display: flex; gap: 12px; align-items: start;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(245, 158, 11, 0.2); color: #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-paint-brush"></i></div>
+                <div>
+                    <h4 style="font-weight: 800; color: #fff; margin: 0 0 4px 0; font-size: 0.92rem;">GIF Rank Cards & Custom HEX</h4>
+                    <p style="color: var(--muted); font-size: 0.8rem; margin: 0; line-height: 1.4;">Upload custom GIF backdrops and set custom HEX color builders.</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; display: flex; gap: 12px; align-items: start;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(236, 72, 153, 0.2); color: #EC4899; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-rocket"></i></div>
+                <div>
+                    <h4 style="font-weight: 800; color: #fff; margin: 0 0 4px 0; font-size: 0.92rem;">10x Leveling Multipliers</h4>
+                    <p style="color: var(--muted); font-size: 0.8rem; margin: 0; line-height: 1.4;">Set custom role boosters for VIP, Booster, and Staff members.</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; display: flex; gap: 12px; align-items: start;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-shield-alt"></i></div>
+                <div>
+                    <h4 style="font-weight: 800; color: #fff; margin: 0 0 4px 0; font-size: 0.92rem;">15+ Audit Stream Channels</h4>
+                    <p style="color: var(--muted); font-size: 0.8rem; margin: 0; line-height: 1.4;">Granular logging channels for voice, bans, automod, and edits.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 24px;">
+            <div style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">$4.99 <span style="font-size: 0.9rem; font-weight: 600; color: var(--muted);">/ month</span></div>
+            <p style="color: #A7F3D0; font-size: 0.85rem; margin: 0; font-weight: 700;">30-Day Value Guarantee • Instant Server Activation • Cancel Anytime</p>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+            <button onclick="closePremiumModal()" style="flex: 1; padding: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; font-weight: 700; border-radius: 12px; cursor: pointer;">Close</button>
+            <a href="https://vaztinix.dev/dashboard" target="_blank" style="flex: 2; padding: 14px; background: #10B981 !important; color: #000 !important; font-weight: 800; text-align: center; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fas fa-crown"></i> Upgrade to Studio Plus
+            </a>
+        </div>
+
     </div>
 </div>
 

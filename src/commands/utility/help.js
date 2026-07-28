@@ -35,7 +35,8 @@ module.exports = {
                 embed.addFields(
                     { name: '👤 Profiles & Leveling', value: 'Interactive global rank cards, level up updates, server XP leaderboards, and custom rewards.' },
                     { name: '⚙️ Setup & Config', value: 'Verification setups, Roblox linkages, Top.gg server integrations, and general bot configs.' },
-                    { name: '🎮 Fun & Games', value: 'Chat with Nora, counting logs, rock paper scissors, guess game rewards, and announcement broadcasts.' }
+                    { name: '🎮 Fun & Games', value: 'Chat with Nora, counting logs, rock paper scissors, guess game rewards, and announcement broadcasts.' },
+                    { name: '💎 Premium Perks', value: 'Unlock instant Roblox sync, Aura AI Co-Pilot, 200 autoresponder slots, GIF rank cards, and 10x XP multipliers.' }
                 );
             } else if (category === 'safety') {
                 embed.setTitle('🛡️ Safety & Moderation Commands')
@@ -68,7 +69,8 @@ module.exports = {
                     { name: '`/info` & `/invite`', value: 'Review bot uptime, status telemetry, and invite links.' },
                     { name: '`/language`', value: 'Change local command languages.' },
                     { name: '`/verify`', value: 'Verify and link Roblox account to gain server roles. `[v2.4 Stable]`' },
-                    { name: '`/roblox`', value: 'Search profile and group structures on Roblox. `[v2.4 Stable]`' }
+                    { name: '`/roblox`', value: 'Search profile and group structures on Roblox. `[v2.4 Stable]`' },
+                    { name: '`/premium`', value: 'View server premium status and unlock exclusive features.' }
                 );
             } else if (category === 'fun') {
                 embed.setTitle('🎮 Fun & Games Commands')
@@ -79,6 +81,17 @@ module.exports = {
                           { name: '`/rps`', value: 'Play rock paper scissors against Nora.' },
                           { name: '`/announce`', value: 'Broadcast styled announcement cards.' },
                           { name: '`/setjoinlink`', value: 'Configure your active join link for playing Roblox experiences. `[v2.0 Stable]`' }
+                     );
+            } else if (category === 'premium') {
+                embed.setTitle('💎 Nora Studio Premium Benefits')
+                     .setDescription('Supercharge your server with maximum automation power, instant sync speed, and custom branding for just $4.99/mo!')
+                     .addFields(
+                          { name: '⚡ Real-Time Roblox Rank Sync', value: 'Zero polling delay! Rank changes and verification roles update instantly.' },
+                          { name: '🤖 Aura AI Co-Pilot', value: 'Powered by Gemini 1.5 & GPT-4o for 24/7 AI server assistance & custom personas.' },
+                          { name: '🚀 200 Custom Autoresponder Slots', value: '40x capacity with granular role ignored and allowed filters.' },
+                          { name: '🎨 Custom GIF Rank Cards & HEX Colors', value: 'Personalize level rank cards with GIF backdrops and custom HEX styling.' },
+                          { name: '🛡️ AutoMod Threat Shield & 15+ Audit Streams', value: 'Contextual AI slur detection and dedicated audit log channels.' },
+                          { name: '💖 Instant Activation & 30-Day Value Guarantee', value: 'Use `/premium` to view status or upgrade at https://vaztinix.dev/dashboard' }
                      );
             }
             return embed;
@@ -93,7 +106,8 @@ module.exports = {
         dropdownOptions.push(
             { label: 'Profiles & Leveling', value: 'profile', emoji: '👤' },
             { label: 'Setup & Config', value: 'setup', emoji: '⚙️' },
-            { label: 'Fun & Games', value: 'fun', emoji: '🎮' }
+            { label: 'Fun & Games', value: 'fun', emoji: '🎮' },
+            { label: 'Premium Perks', value: 'premium', emoji: '💎' }
         );
 
         const dropdown = new StringSelectMenuBuilder()
