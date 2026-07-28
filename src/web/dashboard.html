@@ -4980,7 +4980,14 @@
                         <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                                 <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">Roblox Group Rank Bindings</h3>
-                                <button type="button" class="config-btn primary" onclick="addRobloxGroupBinding()" style="width: auto; padding: 6px 14px; font-size: 0.8rem; background: var(--primary); color: #fff; font-weight: 700; border-radius: 10px;">+ Add Group Binding</button>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" onclick="addRobloxGroupBinding()" style="background: #10B981 !important; color: #000000 !important; font-weight: 800 !important; font-size: 0.82rem; padding: 7px 14px; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.45);">
+                                        <i class="fas fa-plus"></i> Add Group Binding
+                                    </button>
+                                    <button type="button" onclick="removeLastRobloxGroupBinding()" style="background: rgba(239, 68, 68, 0.2) !important; color: #FCA5A5 !important; font-weight: 700 !important; font-size: 0.82rem; padding: 7px 14px; border: 1px solid rgba(239, 68, 68, 0.4) !important; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-trash-alt"></i> Remove Row
+                                    </button>
+                                </div>
                             </div>
                             <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Automatically assign Discord roles based on a user's rank in a specific Roblox group.</p>
                             <div id="roblox-group-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
@@ -5046,10 +5053,17 @@
                                 </div>
                             </div>
 
-                            <!-- Role Mapping Slots -->
+                            <!-- Role Mapping Slots Header Buttons -->
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 28px; margin-bottom: 16px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
                                 <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #fff;">Role & Emoji Slots</h4>
-                                <button type="button" class="config-btn primary" onclick="addRRSlotRow()" style="width: auto; padding: 6px 14px; font-size: 0.8rem; background: var(--primary); color: #fff; font-weight: 700; border-radius: 10px;">+ Add Slot</button>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" onclick="addRRSlotRow()" style="background: #10B981 !important; color: #000000 !important; font-weight: 800 !important; font-size: 0.82rem; padding: 7px 14px; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.45);">
+                                        <i class="fas fa-plus"></i> Add Row
+                                    </button>
+                                    <button type="button" onclick="removeLastRRSlotRow()" style="background: rgba(239, 68, 68, 0.2) !important; color: #FCA5A5 !important; font-weight: 700 !important; font-size: 0.82rem; padding: 7px 14px; border: 1px solid rgba(239, 68, 68, 0.4) !important; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-trash-alt"></i> Remove Row
+                                    </button>
+                                </div>
                             </div>
 
                             <div id="rr-mappings-container" style="display: flex; flex-direction: column; gap: 14px;">
@@ -15424,6 +15438,85 @@
                 const dropdown = document.getElementById('sidebar-server-dropdown');
                 if (dropdown) dropdown.style.display = 'none';
                 openConfig(g);
+            }
+        };
+
+        // Reaction Roles & Roblox Group Bindings Dynamic Row Managers
+        window.addRRSlotRow = function(emoji = '🔔', roleId = '') {
+            const container = document.getElementById('rr-mappings-container');
+            if (!container) return;
+            
+            const row = document.createElement('div');
+            row.className = 'rr-slot-row';
+            row.style.cssText = 'display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);';
+            
+            let rolesOptions = '<option value="">Select Role...</option>';
+            if (window.guildRoles) {
+                rolesOptions += window.guildRoles.map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''}>${r.name}</option>`).join('');
+            }
+
+            row.innerHTML = `
+                <div style="position: relative; width: 140px;">
+                    <input type="text" class="rr-emoji-input" value="${emoji}" placeholder="Emoji (e.g. 🔔)" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 0.85rem;" oninput="updateRRPreview()">
+                </div>
+                <select class="rr-role-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;" onchange="updateRRPreview()">
+                    ${rolesOptions}
+                </select>
+                <button type="button" onclick="removeRRSlotRow(this)" style="background: rgba(239, 68, 68, 0.2) !important; color: #FCA5A5 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; font-weight: 700 !important; font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                    <i class="fas fa-trash-alt"></i> Remove Row
+                </button>
+            `;
+            
+            container.appendChild(row);
+            if (typeof updateRRPreview === 'function') updateRRPreview();
+        };
+
+        window.removeRRSlotRow = function(btn) {
+            const row = btn.closest('.rr-slot-row');
+            if (row) {
+                row.remove();
+                if (typeof updateRRPreview === 'function') updateRRPreview();
+            }
+        };
+
+        window.removeLastRRSlotRow = function() {
+            const container = document.getElementById('rr-mappings-container');
+            if (container && container.lastElementChild) {
+                container.lastElementChild.remove();
+                if (typeof updateRRPreview === 'function') updateRRPreview();
+            }
+        };
+
+        window.addRobloxGroupBinding = function() {
+            const container = document.getElementById('roblox-group-list');
+            if (!container) return;
+            
+            const row = document.createElement('div');
+            row.className = 'roblox-group-row';
+            row.style.cssText = 'display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);';
+            
+            let rolesOptions = '<option value="">Select Discord Role...</option>';
+            if (window.guildRoles) {
+                rolesOptions += window.guildRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+            }
+
+            row.innerHTML = `
+                <input type="text" class="rgb-group-id" placeholder="Roblox Group ID" style="width: 140px; padding: 8px 10px; font-size: 0.85rem;">
+                <input type="number" class="rgb-min-rank" placeholder="Min Rank (1-255)" style="width: 130px; padding: 8px 10px; font-size: 0.85rem;">
+                <select class="rgb-role-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;">
+                    ${rolesOptions}
+                </select>
+                <button type="button" onclick="this.closest('.roblox-group-row').remove();" style="background: rgba(239, 68, 68, 0.2) !important; color: #FCA5A5 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; font-weight: 700 !important; font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                    <i class="fas fa-trash-alt"></i> Remove Row
+                </button>
+            `;
+            container.appendChild(row);
+        };
+
+        window.removeLastRobloxGroupBinding = function() {
+            const container = document.getElementById('roblox-group-list');
+            if (container && container.lastElementChild) {
+                container.lastElementChild.remove();
             }
         };
 
