@@ -17,25 +17,49 @@ async function resolveDirectMediaUrl(url) {
     if (url.startsWith('data:image')) return url;
 
     const lower = url.toLowerCase();
-    const isWebpage = (lower.includes('klipy.com') || lower.includes('tenor.com') || lower.includes('giphy.com')) && !lower.match(/\.(gif|jpg|jpeg|png|webp)($|\?)/i);
+    // If direct image extension, return as is
+    if (lower.match(/\.(gif|jpg|jpeg|png|webp)($|\?)/i)) {
+        return url;
+    }
 
-    if (isWebpage) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
         try {
             const htmlRes = await axios.get(url, { 
-                timeout: 4000, 
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' } 
+                timeout: 5000, 
+                headers: { 
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' 
+                } 
             });
+
+            const contentType = htmlRes.headers['content-type'] || '';
+            if (contentType.includes('image/')) {
+                return url;
+            }
+
             const html = String(htmlRes.data);
             
-            const match = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
-                          html.match(/<meta\s+content=["']([^"']+)["']\s+property=["']og:image["']/i) ||
-                          html.match(/<meta\s+property=["']og:video["']\s+content=["']([^"']+)["']/i) ||
-                          html.match(/<link\s+rel=["']image_src["']\s+href=["']([^"']+)["']/i) ||
-                          html.match(/https?:\/\/[^"'\s]+\.(gif|webp)/i);
-            
-            if (match) {
-                const foundUrl = match[1] || match[0];
-                if (foundUrl) return foundUrl;
+            const patterns = [
+                /<meta\s+property=["']og:image:secure_url["']\s+content=["']([^"']+)["']/i,
+                /<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i,
+                /<meta\s+content=["']([^"']+)["']\s+property=["']og:image["']/i,
+                /<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i,
+                /<meta\s+property=["']og:video["']\s+content=["']([^"']+)["']/i,
+                /<link\s+rel=["']image_src["']\s+href=["']([^"']+)["']/i,
+                /"contentUrl"\s*:\s*["']([^"']+)["']/i,
+                /"gif"\s*:\s*["']([^"']+)["']/i,
+                /(https?:\/\/[^"'\s\)]+\.(?:gif|webp|mp4|png))/i
+            ];
+
+            for (const pattern of patterns) {
+                const match = html.match(pattern);
+                if (match) {
+                    let mediaUrl = match[1] || match[0];
+                    if (mediaUrl) {
+                        mediaUrl = mediaUrl.replace(/&amp;/g, '&');
+                        if (mediaUrl.startsWith('//')) mediaUrl = 'https:' + mediaUrl;
+                        return mediaUrl;
+                    }
+                }
             }
         } catch (e) {
             console.error('Error resolving webpage GIF link:', e.message);
@@ -100,7 +124,8 @@ async function generateRankCard({
             } else {
                 const response = await axios.get(resolvedUrl, { responseType: 'arraybuffer', timeout: 7000 });
                 rawBuffer = Buffer.from(response.data);
-                if (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')) {
+                const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
+                if (isGifHeader || resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')) {
                     isAnimatedGif = true;
                 }
             }

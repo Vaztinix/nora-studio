@@ -2900,26 +2900,26 @@
                                     <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">Card Theme Mode</label>
                                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                         <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
-                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI(); saveUserProfile();" checked> Default Server Style
+                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI();" checked> Default Server Style
                                         </label>
                                         <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
-                                            <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI(); saveUserProfile();"> Custom Accent Color
+                                            <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI();"> Custom Accent Color
                                         </label>
                                         <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
-                                            <input type="radio" name="userRankCardThemeMode" value="image" onchange="toggleUserRankCardThemeModeUI(); saveUserProfile();"> GIF / Image Background
+                                            <input type="radio" name="userRankCardThemeMode" value="image" onchange="toggleUserRankCardThemeModeUI();"> GIF / Image Background
                                         </label>
                                     </div>
                                 </div>
 
                                 <div id="user-rankcard-custom-color-container" style="display: none; align-items: center; gap: 12px; background: rgba(0,0,0,0.15); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
                                     <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">Rank Card Accent Color:</label>
-                                    <input type="color" id="user-pref-rankCardCustomColor" value="#7c3aed" onchange="saveUserProfile();" style="width: 44px; height: 38px; cursor: pointer; border-radius: 6px; border: none; background: transparent;">
+                                    <input type="color" id="user-pref-rankCardCustomColor" value="#7c3aed" style="width: 44px; height: 38px; cursor: pointer; border-radius: 6px; border: none; background: transparent;">
                                 </div>
 
                                 <div id="user-rankcard-image-container" style="display: none; flex-direction: column; gap: 14px;">
                                     <div class="input-group" style="margin-bottom: 0;">
                                         <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">GIF or Image Background URL</label>
-                                        <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Klipy GIF, Tenor, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;" oninput="saveUserProfile();">
+                                        <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Klipy GIF, Tenor, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;">
                                     </div>
 
                                     <!-- Klipy GIF Gallery Picker -->
@@ -8308,8 +8308,7 @@
             const bgInput = document.getElementById('user-pref-rankCardBackgroundImage');
             if (bgInput) {
                 bgInput.value = gifUrl;
-                showToast('GIF selected! Saving changes...', 'success');
-                saveUserProfile();
+                showToast('GIF selected! Click "Save Rank Card Preferences" to apply.', 'info');
             }
         };
 
