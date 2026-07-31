@@ -2748,17 +2748,17 @@
                 </div>
 
                 <!-- Premium Callout Banner -->
-                <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.1) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 18px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                <div id="premium-callout-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.1) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 18px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
                     <div style="display: flex; align-items: center; gap: 14px;">
                         <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
                             <i class="fas fa-crown"></i>
                         </div>
                         <div>
-                            <h4 style="margin: 0 0 2px 0; font-size: 1rem; font-weight: 800; color: #fff;">Unlock Nora Studio Plus Premium</h4>
-                            <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 0.83rem;">Instant Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.</p>
+                            <h4 id="premium-banner-title" style="margin: 0 0 2px 0; font-size: 1rem; font-weight: 800; color: #fff;">Unlock Nora Studio Plus Premium</h4>
+                            <p id="premium-banner-desc" style="margin: 0; color: rgba(255,255,255,0.7); font-size: 0.83rem;">Instant Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.</p>
                         </div>
                     </div>
-                    <button type="button" onclick="openPremiumModal()" style="background: #10B981 !important; color: #000 !important; font-weight: 800 !important; font-size: 0.85rem; padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                    <button type="button" id="premium-banner-btn" onclick="openPremiumModal()" style="background: #10B981 !important; color: #000 !important; font-weight: 800 !important; font-size: 0.85rem; padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
                         ★ Upgrade Server ($4.99/mo)
                     </button>
                 </div>
@@ -4119,6 +4119,48 @@
                                         <tr>
                                             <td colspan="5" style="padding: 25px; text-align: center; color: var(--muted);">
                                                 Loading security audit logs...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 6. Server Action Log (Accountability Feed for Nora's Site) -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px; margin-top: 25px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-history" style="color: #ffffff;"></i> Nora's Site Action Log
+                                    </h3>
+                                    <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--muted);">Track which administrator made changes to the bot's configuration or moderation settings on this server.</p>
+                                </div>
+
+                                <button type="button" class="config-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: #fff; font-weight: 600;" onclick="loadServerActionLogs()">
+                                    <i class="fas fa-sync-alt" style="margin-right: 6px;"></i> Refresh Log
+                                </button>
+                            </div>
+
+                            <!-- Log Filters Bar -->
+                            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                                <input type="text" id="action-log-search" placeholder="Search by Administrator, User ID, Action, or Details..." oninput="loadServerActionLogs()" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
+                            </div>
+
+                            <!-- Log Table -->
+                            <div style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #dbdee1; text-align: left;">
+                                    <thead>
+                                        <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem;">
+                                            <th style="padding: 12px 15px;">Timestamp</th>
+                                            <th style="padding: 12px 15px;">Administrator</th>
+                                            <th style="padding: 12px 15px;">Action</th>
+                                            <th style="padding: 12px 15px;">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="action-log-tbody">
+                                        <tr>
+                                            <td colspan="4" style="padding: 25px; text-align: center; color: var(--muted);">
+                                                Loading action logs...
                                             </td>
                                         </tr>
                                     </tbody>
@@ -8427,6 +8469,11 @@
 
                 renderAllGuilds(guilds);
 
+                window.userHasAnyPremium = guilds.some(g => g.isPremium);
+                if (typeof window.updatePremiumUI === 'function') {
+                    window.updatePremiumUI(window.userHasAnyPremium);
+                }
+
             } catch (e) {
                 console.error(e);
                 showToast(`Failed to load servers: ${e.message || 'Unknown error'}`, 'error');
@@ -8653,6 +8700,7 @@
                     
                     showToast('Settings saved successfully.', 'success');
                     refreshModuleBadges();
+                    if (typeof loadServerActionLogs === 'function') loadServerActionLogs();
                     if (window.dashboardCache && window.dashboardCache.settings) window.dashboardCache.settings.delete(currentServerId);
                 } else {
                     const d = await res.json().catch(() => ({}));
@@ -8664,6 +8712,57 @@
             } finally {
                 saveBtn.textContent = originalText;
                 saveBtn.disabled = false;
+            }
+        }
+
+        async function loadServerActionLogs() {
+            if (!currentServerId) return;
+            const tbody = document.getElementById('action-log-tbody');
+            if (!tbody) return;
+
+            const searchInput = document.getElementById('action-log-search');
+            const search = searchInput ? searchInput.value : '';
+            const t = sessionStorage.getItem('discord_token');
+
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const url = `${apiBase}/api/guilds/${currentServerId}/action-logs?search=${encodeURIComponent(search)}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+
+                if (!res.ok) throw new Error('Failed to fetch action logs');
+                const data = await res.json();
+
+                if (!data.logs || data.logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="padding: 25px; text-align: center; color: var(--muted);">No server action logs recorded yet.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.logs.map(log => {
+                    const dateStr = new Date(log.createdAt).toLocaleString();
+                    const avatarUrl = log.userAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    const userLabel = log.username ? `${log.username} (${log.userId || 'N/A'})` : (log.userId || 'Administrator');
+                    
+                    return `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                            <td style="padding: 10px 15px; color: var(--muted); font-size: 0.78rem; white-space: nowrap;">${dateStr}</td>
+                            <td style="padding: 10px 15px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <img src="${avatarUrl}" alt="Avatar" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" onError="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                    <span style="font-weight: 600; color: #fff; font-size: 0.82rem;">${userLabel}</span>
+                                </div>
+                            </td>
+                            <td style="padding: 10px 15px;">
+                                <span style="background: rgba(88, 101, 242, 0.15); color: #5865F2; border: 1px solid rgba(88, 101, 242, 0.3); font-weight: 700; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">${log.action}</span>
+                            </td>
+                            <td style="padding: 10px 15px; color: #dbdee1; font-size: 0.82rem;">${log.details || 'No details provided'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('[Action Log Error]:', err);
+                tbody.innerHTML = `<tr><td colspan="4" style="padding: 25px; text-align: center; color: #ff4757;">Failed to load action logs.</td></tr>`;
             }
         }
 
@@ -10392,6 +10491,9 @@
         }
 
         function applyPremiumLocking() {
+            if (typeof window.updatePremiumUI === 'function') {
+                window.updatePremiumUI(!!currentServerIsPremium);
+            }
             const premiumTabs = ['tab-broadcast', 'tab-analytics'];
             premiumTabs.forEach(tabId => {
                 const tab = document.getElementById(tabId);
@@ -16350,9 +16452,64 @@
                 searchInput.addEventListener('input', renderEmojiPickerList);
             }
         });
+        window.updatePremiumUI = function(isPremium) {
+            window.currentServerIsPremium = !!isPremium;
+
+            // Banner Elements
+            const bannerTitle = document.getElementById('premium-banner-title');
+            const bannerDesc = document.getElementById('premium-banner-desc');
+            const bannerBtn = document.getElementById('premium-banner-btn');
+
+            if (bannerTitle && bannerDesc && bannerBtn) {
+                if (isPremium) {
+                    bannerTitle.textContent = "Nora Studio Plus Active";
+                    bannerDesc.textContent = "Your server has active Studio Plus benefits! Enjoy 200 Autoresponder Slots, AI Co-Pilot, 10x XP Boosters, and raised limits.";
+                    bannerBtn.innerHTML = "★ Your Benefits";
+                } else {
+                    bannerTitle.textContent = "Unlock Nora Studio Plus Premium";
+                    bannerDesc.textContent = "Instant Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.";
+                    bannerBtn.innerHTML = "★ Upgrade Server ($4.99/mo)";
+                }
+            }
+
+            // Modal Elements
+            const modalBadge = document.getElementById('premium-modal-badge');
+            const modalTitle = document.getElementById('premium-modal-title');
+            const modalDesc = document.getElementById('premium-modal-desc');
+            const modalPriceBox = document.getElementById('premium-modal-price-box');
+            const modalUpgradeBtn = document.getElementById('premium-modal-upgrade-btn');
+
+            if (modalBadge && modalTitle && modalDesc && modalPriceBox && modalUpgradeBtn) {
+                if (isPremium) {
+                    modalBadge.innerHTML = '<i class="fas fa-crown"></i> Studio Plus Active';
+                    modalTitle.textContent = "Your Nora Studio Plus Benefits";
+                    modalDesc.textContent = "Your server currently enjoys full access to maximum speed, 200 automation slots, AI Co-Pilot, and custom branding.";
+                    modalPriceBox.innerHTML = `
+                        <div style="font-size: 1.4rem; font-weight: 800; color: #10B981; margin-bottom: 4px;">★ Premium Subscription Active</div>
+                        <p style="color: #A7F3D0; font-size: 0.85rem; margin: 0; font-weight: 700;">Managed via Discord App Subscriptions • All Premium Benefits Unlocked</p>
+                    `;
+                    modalUpgradeBtn.href = "https://discord.com/discovery/applications/1375943730951098549/store/1490857354609168534";
+                    modalUpgradeBtn.innerHTML = '<i class="fas fa-crown"></i> Manage Plan in Discord';
+                } else {
+                    modalBadge.innerHTML = '<i class="fas fa-crown"></i> Studio Plus Premium';
+                    modalTitle.textContent = "Supercharge Your Server for $4.99/mo";
+                    modalDesc.textContent = "Unlock maximum speed, 200 automation slots, AI Co-Pilot, and custom branding for your community.";
+                    modalPriceBox.innerHTML = `
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">$4.99 <span style="font-size: 0.9rem; font-weight: 600; color: var(--muted);">/ month</span></div>
+                        <p style="color: #A7F3D0; font-size: 0.85rem; margin: 0; font-weight: 700;">Processed via Discord App Subscriptions • Instant Server Activation • Cancel Anytime in Discord</p>
+                    `;
+                    modalUpgradeBtn.href = "https://discord.com/discovery/applications/1375943730951098549/store/1490857354609168534";
+                    modalUpgradeBtn.innerHTML = '<i class="fas fa-crown"></i> Upgrade to Studio Plus';
+                }
+            }
+        };
+
         window.openPremiumModal = function() {
             let modal = document.getElementById('nora-premium-modal');
             if (modal) {
+                if (typeof window.updatePremiumUI === 'function') {
+                    window.updatePremiumUI(!!window.currentServerIsPremium);
+                }
                 modal.style.display = 'flex';
             }
         };
@@ -16363,6 +16520,7 @@
                 modal.style.display = 'none';
             }
         };
+        // Nora Dashboard Initialization Complete
         // Nora Dashboard Initialization Complete
     </script>
 
@@ -16404,11 +16562,11 @@
         <button onclick="closePremiumModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">&times;</button>
 
         <div style="text-align: center; margin-bottom: 28px;">
-            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; color: #10B981; text-transform: uppercase; margin-bottom: 12px;">
+            <div id="premium-modal-badge" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; color: #10B981; text-transform: uppercase; margin-bottom: 12px;">
                 <i class="fas fa-crown"></i> Studio Plus Premium
             </div>
-            <h2 style="font-size: 2.1rem; font-weight: 800; color: #fff; margin-bottom: 8px;">Supercharge Your Server for $4.99/mo</h2>
-            <p style="color: rgba(255,255,255,0.7); font-size: 0.95rem; max-width: 540px; margin: 0 auto; line-height: 1.5;">Unlock maximum speed, 200 automation slots, AI Co-Pilot, and custom branding for your community.</p>
+            <h2 id="premium-modal-title" style="font-size: 2.1rem; font-weight: 800; color: #fff; margin-bottom: 8px;">Supercharge Your Server for $4.99/mo</h2>
+            <p id="premium-modal-desc" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; max-width: 540px; margin: 0 auto; line-height: 1.5;">Unlock maximum speed, 200 automation slots, AI Co-Pilot, and custom branding for your community.</p>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px;">
@@ -16463,14 +16621,14 @@
 
         </div>
 
-        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 24px;">
+        <div id="premium-modal-price-box" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 24px;">
             <div style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">$4.99 <span style="font-size: 0.9rem; font-weight: 600; color: var(--muted);">/ month</span></div>
             <p style="color: #A7F3D0; font-size: 0.85rem; margin: 0; font-weight: 700;">Processed via Discord App Subscriptions • Instant Server Activation • Cancel Anytime in Discord</p>
         </div>
 
         <div style="display: flex; gap: 12px;">
             <button onclick="closePremiumModal()" style="flex: 1; padding: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; font-weight: 700; border-radius: 12px; cursor: pointer;">Close</button>
-            <a href="https://vaztinix.dev/dashboard" target="_blank" style="flex: 2; padding: 14px; background: #10B981 !important; color: #000 !important; font-weight: 800; text-align: center; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <a id="premium-modal-upgrade-btn" href="https://discord.com/discovery/applications/1375943730951098549/store/1490857354609168534" target="_blank" style="flex: 2; padding: 14px; background: #10B981 !important; color: #000 !important; font-weight: 800; text-align: center; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
                 <i class="fas fa-crown"></i> Upgrade to Studio Plus
             </a>
         </div>

@@ -17,12 +17,58 @@ const Case = require('../../database/models/Case');
 const ActiveTicket = require('../../database/models/ActiveTicket');
 
 const TicketHistory = require('../../database/models/TicketHistory');
+const ActionLog = require('../../database/models/ActionLog');
+const { logServerAction } = require('../../utils/actionLogger');
 
 
 
 // Apply guild permission checking middleware
 
 router.use(requireGuildPermission);
+
+/**
+ * GET /api/guilds/:guildId/action-logs
+ * Fetch per-server site action logs for accountability.
+ */
+router.get('/action-logs', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { limit = 50, page = 1, search = '' } = req.query;
+        const { Op } = require('sequelize');
+
+        const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+        const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+        const offset = (parsedPage - 1) * parsedLimit;
+
+        const whereClause = { guildId };
+        if (search) {
+            whereClause[Op.or] = [
+                { username: { [Op.like]: `%${search}%` } },
+                { userId: { [Op.like]: `%${search}%` } },
+                { action: { [Op.like]: `%${search}%` } },
+                { details: { [Op.like]: `%${search}%` } }
+            ];
+        }
+
+        const { count, rows } = await ActionLog.findAndCountAll({
+            where: whereClause,
+            order: [['createdAt', 'DESC']],
+            limit: parsedLimit,
+            offset
+        });
+
+        res.json({
+            success: true,
+            total: count,
+            page: parsedPage,
+            totalPages: Math.ceil(count / parsedLimit),
+            logs: rows
+        });
+    } catch (error) {
+        console.error(`Error fetching action logs for guild ${req.params.guildId}:`, error);
+        res.status(500).json({ error: 'Internal server error while fetching action logs.' });
+    }
+});
 
 /**
  * GET /api/guilds/:guildId/full-dashboard-data
@@ -1151,6 +1197,14 @@ router.post('/action', async (req, res) => {
         const user = token ? await getDiscordUser(token).catch(() => null) : null;
 
         const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        // Record per-server action log for Nora's site accountability
+        await logServerAction({
+            guildId,
+            req,
+            action: `EXECUTE_ACTION_${(action || 'UNKNOWN').toUpperCase()}`,
+            details: userId ? `Target: ${userId} | Action: ${action} | Reason: ${reason || 'No reason provided'}` : `Executed action: ${action}`
+        });
 
 
 
@@ -2898,23 +2952,6 @@ router.put('/autoresponders/:id', async (req, res) => {
     try {
 
         const { guildId, id } = req.params;
-
-        const Autoresponder = require('../../database/models/Autoresponder');
-
-        const GuildSettings = require('../../database/models/GuildSettings');
-
-        const { trigger, response, matchType, isEmbed, ignoreStaffAndBots, ignoredChannels, ignoredRoles, allowedRoles } = req.body;
-
-
-
-        const responder = await Autoresponder.findOne({ where: { id, guildId } });
-
-        if (!responder) return res.status(404).json({ error: 'Autoresponder rule not found.' });
-
-
-
-        // Fetch settings and check premium status
-
         let settings = await GuildSettings.findOne({ where: { guildId } });
 
         if (!settings) {

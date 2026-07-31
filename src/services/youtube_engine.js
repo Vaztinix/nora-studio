@@ -5,11 +5,12 @@ const xml2js = require('xml2js');
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 // Setup Redis instance (expects REDIS_URL in env, defaults to localhost)
-// Safe options to prevent startup crash on offline local Redis
+// Safe options to prevent repeated ECONNREFUSED logs on offline local Redis
 const redis = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379', {
     maxRetriesPerRequest: 1,
-    enableOfflineQueue: true,
-    connectTimeout: 5000
+    enableOfflineQueue: false,
+    connectTimeout: 2000,
+    retryStrategy: () => null // Stop retrying on connection failure to fall back gracefully
 });
 
 let redisAvailable = false;
@@ -24,6 +25,8 @@ redis.on('error', (err) => {
         console.warn('[YouTube Engine] Redis connection failed, falling back to in-memory deduplication:', err.message);
         global.redisWarningLogged = true;
     }
+    // Disconnect cleanly so ioredis stops background socket retry loop
+    try { redis.disconnect(false); } catch (e) {}
 });
 
 const memoryDeduplicationSet = new Set();

@@ -32,8 +32,21 @@ router.get('/', async (req, res) => {
             ? Math.max(0, Math.round(req.client.ws.ping)) 
             : 15; // default fallback if ws is offline/not connected yet
 
+        // Calculate Premium status for the guild
+        let isPremium = !!settings.isPremium || !!settings.isManualPremium;
+        const guild = req.client ? req.client.guilds.cache.get(guildId) : null;
+        if (guild && (guild.ownerId === '1214048435632603137' || guild.ownerId === '1366229304257544213')) {
+            isPremium = true;
+        }
+        const paidTime = settings.paidExpiresAt ? new Date(settings.paidExpiresAt).getTime() : 0;
+        const expandedMs = settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0;
+        if (paidTime + expandedMs > Date.now()) {
+            isPremium = true;
+        }
+
         res.json({
             ...settings.toJSON(),
+            isPremium,
             heartbeat,
             dbSync
         });
@@ -210,6 +223,19 @@ router.post('/', async (req, res) => {
             ).catch(() => null);
         }
 
+        // Record per-server action log for Nora's site accountability
+        const { logServerAction } = require('../../utils/actionLogger');
+        const changedKeys = Object.keys(payload);
+        const detailsSummary = changedKeys.length > 0 
+            ? `Updated configuration fields: ${changedKeys.join(', ')}`
+            : 'Saved server settings';
+        await logServerAction({
+            guildId,
+            req,
+            action: 'UPDATE_SETTINGS',
+            details: detailsSummary
+        });
+
         res.json({ success: true, settings });
     } catch (error) {
         console.error(`Error updating settings for guild ${req.params.guildId}:`, error);
@@ -230,6 +256,15 @@ router.delete('/', async (req, res) => {
         
         // Invalidate the settings cache as well
         settingsCache.invalidate(guildId);
+
+        // Record per-server action log for Nora's site accountability
+        const { logServerAction } = require('../../utils/actionLogger');
+        await logServerAction({
+            guildId,
+            req,
+            action: 'RESET_SETTINGS',
+            details: 'Performed a complete server configuration reset and data erasure.'
+        });
         
         res.json({ success: true, message: 'Cascading settings reset successfully performed.' });
     } catch (error) {

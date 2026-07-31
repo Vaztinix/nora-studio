@@ -6,15 +6,15 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('say')
         .setDescription('Send a plain text message to a specific channel.')
-        .addChannelOption(option => 
-            option.setName('channel')
-                .setDescription('The channel to send the message to')
-                .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-                .setRequired(true))
         .addStringOption(option => 
             option.setName('message')
                 .setDescription('The text to send. Use \\n for newlines.')
                 .setRequired(true))
+        .addChannelOption(option => 
+            option.setName('channel')
+                .setDescription('The channel to send the message to (defaults to current channel)')
+                .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+                .setRequired(false))
         .addRoleOption(option => 
             option.setName('ping')
                 .setDescription('A role to mention with the message')
@@ -23,7 +23,7 @@ module.exports = {
         .setDMPermission(false),
 
     async execute(interaction) {
-        const targetChannel = interaction.options.getChannel('channel');
+        const targetChannel = interaction.options.getChannel('channel') || interaction.channel;
         let message = interaction.options.getString('message').replace(/\\n/g, '\n');
         const pingRole = interaction.options.getRole('ping');
 
