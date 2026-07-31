@@ -54,13 +54,39 @@ async function generateRankCard({
     }
 
     let customBgBase64 = '';
+    let isAnimatedGif = false;
+    let animatedBgBuffer = null;
+
     if (finalBgImage) {
         try {
+            let rawBuffer;
             if (finalBgImage.startsWith('data:image')) {
-                customBgBase64 = finalBgImage;
+                const base64Data = finalBgImage.split(',')[1];
+                rawBuffer = Buffer.from(base64Data, 'base64');
+                if (finalBgImage.startsWith('data:image/gif')) isAnimatedGif = true;
             } else {
                 const response = await axios.get(finalBgImage, { responseType: 'arraybuffer', timeout: 7000 });
-                const pngBuffer = await sharp(response.data)
+                rawBuffer = Buffer.from(response.data);
+                if (finalBgImage.toLowerCase().includes('.gif') || finalBgImage.includes('tenor') || finalBgImage.includes('giphy')) {
+                    isAnimatedGif = true;
+                }
+            }
+
+            if (isAnimatedGif) {
+                try {
+                    animatedBgBuffer = await sharp(rawBuffer, { animated: true })
+                        .resize(800, 220, { fit: 'cover' })
+                        .toBuffer();
+                } catch(gifErr) {
+                    isAnimatedGif = false;
+                    const pngBuffer = await sharp(rawBuffer)
+                        .resize(800, 220, { fit: 'cover' })
+                        .png()
+                        .toBuffer();
+                    customBgBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+                }
+            } else {
+                const pngBuffer = await sharp(rawBuffer)
                     .resize(800, 220, { fit: 'cover' })
                     .png()
                     .toBuffer();
@@ -149,6 +175,20 @@ async function generateRankCard({
         ${barWidth > 0 ? `<rect x="190" y="145" width="${barWidth}" height="24" rx="12" fill="url(#progressGrad)" />` : ''}
     </svg>
     `.trim();
+
+    if (isAnimatedGif && animatedBgBuffer) {
+        try {
+            const overlaySvg = svgString.replace('fill="url(#bgPattern)"', 'fill="none"');
+            const overlayPng = await sharp(Buffer.from(overlaySvg)).png().toBuffer();
+
+            return await sharp(animatedBgBuffer, { animated: true })
+                .composite([{ input: overlayPng, tile: false }])
+                .gif({ loop: 0 })
+                .toBuffer();
+        } catch(compErr) {
+            console.error('Error compositing animated GIF rank card:', compErr.message);
+        }
+    }
 
     return await sharp(Buffer.from(svgString))
         .png()

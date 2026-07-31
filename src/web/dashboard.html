@@ -2883,6 +2883,63 @@
                             <button class="save-btn" style="margin-top: 24px; width: 100%; padding: 15px; font-size: 0.95rem; font-weight: 600; border-radius: 12px; background: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);" onclick="saveUserProfile()">Save Profile Changes</button>
                         </div>
 
+                        <!-- Leveling Rank Card & Animated GIF Background Customization Panel -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">Rank Card & Animated GIF Backgrounds</h3>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Customize your personal rank card displayed in <code>/rank</code> and <code>/mycard</code> with animated GIFs.</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 18px;">
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">Card Theme Mode</label>
+                                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                        <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
+                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI(); saveUserProfile();" checked> Default Server Style
+                                        </label>
+                                        <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
+                                            <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI(); saveUserProfile();"> Custom Accent Color
+                                        </label>
+                                        <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
+                                            <input type="radio" name="userRankCardThemeMode" value="image" onchange="toggleUserRankCardThemeModeUI(); saveUserProfile();"> GIF / Image Background
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="user-rankcard-custom-color-container" style="display: none; align-items: center; gap: 12px; background: rgba(0,0,0,0.15); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
+                                    <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">Rank Card Accent Color:</label>
+                                    <input type="color" id="user-pref-rankCardCustomColor" value="#7c3aed" onchange="saveUserProfile();" style="width: 44px; height: 38px; cursor: pointer; border-radius: 6px; border: none; background: transparent;">
+                                </div>
+
+                                <div id="user-rankcard-image-container" style="display: none; flex-direction: column; gap: 14px;">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">GIF or Image Background URL</label>
+                                        <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Tenor GIF, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;" oninput="saveUserProfile();">
+                                    </div>
+
+                                    <!-- Tenor GIF Gallery Picker -->
+                                    <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                                            <span style="font-size: 0.85rem; font-weight: 700; color: #fff;"><i class="fas fa-film" style="color: var(--primary);"></i> Tenor & Discord Animated GIF Gallery</span>
+                                            <div style="display: flex; gap: 6px;">
+                                                <input type="text" id="tenor-gif-query" placeholder="Search Tenor GIFs..." style="padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff;" onkeyup="if(event.key==='Enter') searchTenorGifs();">
+                                                <button type="button" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="searchTenorGifs()"><i class="fas fa-search"></i> Search</button>
+                                            </div>
+                                        </div>
+
+                                        <div id="tenor-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                                            <!-- Dynamic Tenor GIF Thumbnails -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         
                         
                         <!-- Team Card Customization Panel (Only visible to Team Card owners) -->
@@ -5324,7 +5381,10 @@
                             <div class="input-group" style="margin-bottom: 15px;">
                                 <label style="font-weight: 600; color: #fff;">Ignored Channels</label>
                                 <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Messages in these channels will be ignored by Starboard.</p>
-                                <input type="hidden" id="setting-starboardIgnoredChannels">
+                                <input type="hidden" id="setting-starboardIgnoredChannels" value="[]">
+                                <div id="starboard-ignored-channels-container" style="margin-top: 8px; max-height: 160px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="font-size: 0.8rem; color: var(--muted); text-align: center;">Select a server to load channels...</div>
+                                </div>
                             </div>
 
 
@@ -8130,6 +8190,90 @@
                 if (typeof toggleLoading === 'function') toggleLoading(false);
             }
         }
+        window.toggleUserRankCardThemeModeUI = function() {
+            const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
+            const colorContainer = document.getElementById('user-rankcard-custom-color-container');
+            const imageContainer = document.getElementById('user-rankcard-image-container');
+            
+            if (colorContainer) colorContainer.style.display = (mode === 'custom') ? 'flex' : 'none';
+            if (imageContainer) {
+                imageContainer.style.display = (mode === 'image') ? 'flex' : 'none';
+                if (mode === 'image') loadCuratedTenorGifs();
+            }
+        };
+
+        const CURATED_RANK_GIFS = [
+            { name: 'Cyberpunk Neon', url: 'https://media.tenor.com/gK96eUuE63AAAAAC/cyberpunk-neon.gif' },
+            { name: 'Starry Galaxy', url: 'https://media.tenor.com/O6LwK-9dO3kAAAAC/galaxy-stars.gif' },
+            { name: 'Synthwave Sunset', url: 'https://media.tenor.com/yF9WJz_J37cAAAAC/synthwave-grid.gif' },
+            { name: 'Pixel Rain', url: 'https://media.tenor.com/6XzW7W1c3-YAAAAC/pixel-rain-night.gif' },
+            { name: 'Cosmic Nebula', url: 'https://media.tenor.com/JbW7N81q3K4AAAAC/nebula-space.gif' },
+            { name: 'Retro Arcade', url: 'https://media.tenor.com/1G662B0mQBAAAAAC/retro-synthwave.gif' }
+        ];
+
+        window.loadCuratedTenorGifs = function() {
+            const grid = document.getElementById('tenor-gif-results-grid');
+            if (!grid) return;
+            renderTenorGifThumbnails(CURATED_RANK_GIFS);
+        };
+
+        window.searchTenorGifs = async function() {
+            const queryInput = document.getElementById('tenor-gif-query');
+            const query = queryInput ? queryInput.value.trim() : '';
+            if (!query) {
+                loadCuratedTenorGifs();
+                return;
+            }
+
+            const grid = document.getElementById('tenor-gif-results-grid');
+            if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">Searching Tenor GIFs...</div>`;
+
+            try {
+                const res = await fetch(`https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=LIVDSRZULELA&limit=10`);
+                if (!res.ok) throw new Error('Search failed');
+                const data = await res.json();
+                const results = (data.results || []).map(r => {
+                    const media = r.media_formats?.gif || r.media_formats?.tinygif || r.media_formats?.mediumgif;
+                    return {
+                        name: r.content_description || query,
+                        url: media ? media.url : null
+                    };
+                }).filter(r => r.url);
+
+                if (results.length === 0) {
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">No GIFs found on Tenor for "${query}".</div>`;
+                } else {
+                    renderTenorGifThumbnails(results);
+                }
+            } catch(e) {
+                console.error('[Tenor Search Error]:', e);
+                loadCuratedTenorGifs();
+            }
+        };
+
+        window.renderTenorGifThumbnails = function(gifList) {
+            const grid = document.getElementById('tenor-gif-results-grid');
+            if (!grid) return;
+
+            grid.innerHTML = gifList.map((item) => `
+                <div style="position: relative; border-radius: 8px; overflow: hidden; height: 70px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onclick="selectRankCardGif('${item.url}')">
+                    <img src="${item.url}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%); display: flex; align-items: flex-end; padding: 4px 6px;">
+                        <span style="font-size: 0.65rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.selectRankCardGif = function(gifUrl) {
+            const bgInput = document.getElementById('user-pref-rankCardBackgroundImage');
+            if (bgInput) {
+                bgInput.value = gifUrl;
+                showToast('GIF selected! Saving changes...', 'success');
+                saveUserProfile();
+            }
+        };
+
         window.saveUserProfile = saveUserProfile;
 
         function updateProfileRobloxPreview() {
@@ -11539,9 +11683,53 @@
             }
         }
 
+        window.populateStarboardIgnoredChannels = function(channels) {
+            const container = document.getElementById('starboard-ignored-channels-container');
+            const input = document.getElementById('setting-starboardIgnoredChannels');
+            if (!container || !input) return;
+
+            let selected = [];
+            try {
+                selected = typeof input.value === 'string' ? JSON.parse(input.value || '[]') : input.value;
+                if (!Array.isArray(selected)) selected = [];
+            } catch(e) {
+                selected = [];
+            }
+
+            const chanList = channels || window.guildChannels || [];
+            if (!chanList || chanList.length === 0) {
+                container.innerHTML = `<div style="font-size: 0.8rem; color: var(--muted); text-align: center;">No channels available</div>`;
+                return;
+            }
+
+            container.innerHTML = chanList.map(c => {
+                const isChecked = selected.includes(c.id);
+                return `
+                    <label style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 6px; cursor: pointer; user-select: none;" onmouseenter="this.style.background='rgba(255,255,255,0.05)'" onmouseleave="this.style.background='rgba(255,255,255,0.02)'">
+                        <span style="font-size: 0.82rem; color: #fff; font-weight: 500;">#${c.name}</span>
+                        <input type="checkbox" class="starboard-ignored-cb" value="${c.id}" ${isChecked ? 'checked' : ''} onchange="updateStarboardIgnoredChannelsFromUI()">
+                    </label>
+                `;
+            }).join('');
+        };
+
+        window.updateStarboardIgnoredChannelsFromUI = function() {
+            const checkboxes = document.querySelectorAll('.starboard-ignored-cb');
+            const selected = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) selected.push(cb.value);
+            });
+            const input = document.getElementById('setting-starboardIgnoredChannels');
+            if (input) {
+                input.value = JSON.stringify(selected);
+                if (typeof showUnsavedChangesBar === 'function') showUnsavedChangesBar();
+            }
+        };
+
         function _applyChannels(channels) {
             if (!channels) return;
             try {
+                window.populateStarboardIgnoredChannels(channels);
                 const selects = [
                     'broadcast-channel',
                     'setting-topggVoteChannelId',
