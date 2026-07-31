@@ -2952,6 +2952,50 @@
                                     </div>
                                 </div>
 
+                                <!-- Live Rank Card Preview Box -->
+                                <div style="margin-top: 14px; background: rgba(0,0,0,0.3); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: space-between;">
+                                        <span><i class="fas fa-eye" style="color: var(--primary);"></i> Live Rank Card Preview</span>
+                                        <span style="font-size: 0.7rem; color: var(--success); font-weight: 600;">Overrides All Server Rank Cards</span>
+                                    </div>
+                                    
+                                    <div id="live-rank-card-preview-frame" style="position: relative; width: 100%; height: 150px; border-radius: 12px; overflow: hidden; background: #111217; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; padding: 0 20px; box-sizing: border-box;">
+                                        <!-- Animated GIF / Accent Background Layer -->
+                                        <div id="live-rank-card-bg-layer" style="position: absolute; inset: 0; background-size: cover; background-position: center; transition: all 0.3s ease; opacity: 0.85;"></div>
+                                        <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(17,18,23,0.85) 0%, rgba(17,18,23,0.65) 60%, rgba(17,18,23,0.45) 100%); pointer-events: none;"></div>
+
+                                        <!-- Card Overlay Elements -->
+                                        <div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 16px; width: 100%;">
+                                            <div style="position: relative; flex-shrink: 0;">
+                                                <img id="live-rank-card-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; box-shadow: 0 4px 15px rgba(0,0,0,0.5);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
+                                            </div>
+                                            
+                                            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                    <div style="display: flex; flex-direction: column;">
+                                                        <span id="live-rank-card-name" style="font-weight: 800; font-size: 1.1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">@User</span>
+                                                        <span id="live-rank-card-level-badge" style="font-size: 0.75rem; font-weight: 700; color: #a78bfa;">LEVEL 4</span>
+                                                    </div>
+                                                    <div style="background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); font-size: 0.75rem; font-weight: 800; color: #fff;">
+                                                        RANK <span id="live-rank-card-rank-val" style="color: var(--primary);">#1</span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- XP Progress Bar -->
+                                                <div style="display: flex; flex-direction: column; gap: 3px;">
+                                                    <div style="width: 100%; height: 10px; background: rgba(0,0,0,0.6); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                                                        <div id="live-rank-card-progress-bar" style="width: 65%; height: 100%; background: linear-gradient(90deg, #7c3aed, #4f46e5); border-radius: 6px; transition: all 0.3s ease;"></div>
+                                                    </div>
+                                                    <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: rgba(255,255,255,0.7); font-weight: 600;">
+                                                        <span>PROGRESS</span>
+                                                        <span>497 / 740 XP</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <button class="save-btn" style="margin-top: 10px; width: 100%; padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 10px; background: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);" onclick="saveUserProfile()"><i class="fas fa-save"></i> Save Rank Card Preferences</button>
                             </div>
                         </div>
@@ -8260,15 +8304,49 @@
                 imageContainer.style.display = (mode === 'image') ? 'flex' : 'none';
                 if (mode === 'image') loadCuratedKlipyGifs();
             }
+            if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+        };
+
+        window.updateLiveRankCardPreview = function() {
+            const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
+            const customColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#7c3aed';
+            const customBgUrl = document.getElementById('user-pref-rankCardBackgroundImage')?.value || '';
+            const bgLayer = document.getElementById('live-rank-card-bg-layer');
+            const progressBar = document.getElementById('live-rank-card-progress-bar');
+            const nameEl = document.getElementById('live-rank-card-name');
+            const avatarEl = document.getElementById('live-rank-card-avatar');
+
+            if (window.currentUser) {
+                if (nameEl) nameEl.textContent = '@' + (window.currentUser.username || 'User');
+                if (avatarEl && window.currentUser.avatar) {
+                    avatarEl.src = `https://cdn.discordapp.com/avatars/${window.currentUser.id}/${window.currentUser.avatar}.png?size=256`;
+                }
+            }
+
+            if (!bgLayer) return;
+
+            if (mode === 'image' && customBgUrl) {
+                bgLayer.style.backgroundImage = `url("${customBgUrl}")`;
+                bgLayer.style.backgroundColor = 'transparent';
+                if (progressBar) progressBar.style.background = `linear-gradient(90deg, #7c3aed, #3b82f6)`;
+            } else if (mode === 'custom') {
+                bgLayer.style.backgroundImage = 'none';
+                bgLayer.style.backgroundColor = customColor;
+                if (progressBar) progressBar.style.background = customColor;
+            } else {
+                bgLayer.style.backgroundImage = 'none';
+                bgLayer.style.backgroundColor = '#1e1b4b';
+                if (progressBar) progressBar.style.background = 'linear-gradient(90deg, #7c3aed, #4f46e5)';
+            }
         };
 
         const CURATED_RANK_GIFS = [
-            { name: 'Cyberpunk Neon', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZhcTBxaHkxcWNrdzhndml4eHFlMGIwZHdrMXBmaHdsZnBqaWNidCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lq0h93752f6J9tijrh/giphy.gif' },
-            { name: 'Starry Galaxy', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHdqOHptZm42NnkxZml6Nmhvd3hxc3NpeHgwYmp3cnRqMjYwOHJ1dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/u23zXev77q65y/giphy.gif' },
-            { name: 'Synthwave Sunset', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGx5ZnUza3Nidm9tdWh4bXFybGF5ZXVyc3hhOTZpeHFtcGV3eHpyMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt6ML6BklcajjsA/giphy.gif' },
-            { name: 'Pixel Rain', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjVvaWs5Nmx3bzFhZ3Rva3YxNDdybWV1ODlydW9mbGNpaTFndnRxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/139eZBmH1HTyRa/giphy.gif' },
-            { name: 'Cosmic Nebula', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDkxbXNhZmk4MXJveGs2b2JubmJ2dWVzbWFybmZlZzgyazFwdDdxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26AHPxxnSw1L9T1rW/giphy.gif' },
-            { name: 'Retro Arcade', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3F3NGM1eGJicXZrcDF2bGVnMnBvdzE3Nmt4Mm54cWF2ZWh5cmNmeCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d4aU235GY58V5vA4/giphy.gif' }
+            { name: 'Cyberpunk Neon', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZhcTBxaHkxcWNrdzhndml4eHFlMGIwZHdrMXBmaHdsZnBqaWNidCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lq0h93752f6J9tijrh/giphy.gif' },
+            { name: 'Starry Galaxy', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHdqOHptZm42NnkxZml6Nmhvd3hxc3NpeHgwYmp3cnRqMjYwOHJ1dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/u23zXev77q65y/giphy.gif' },
+            { name: 'Synthwave Sunset', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGx5ZnUza3Nidm9tdWh4bXFybGF5ZXVyc3hhOTZpeHFtcGV3eHpyMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt6ML6BklcajjsA/giphy.gif' },
+            { name: 'Pixel Rain', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjVvaWs5Nmx3bzFhZ3Rva3YxNDdybWV1ODlydW9mbGNpaTFndnRxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/139eZBmH1HTyRa/giphy.gif' },
+            { name: 'Cosmic Nebula', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDkxbXNhZmk4MXJveGs2b2JubmJ2dWVzbWFybmZlZzgyazFwdDdxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26AHPxxnSw1L9T1rW/giphy.gif' },
+            { name: 'Retro Arcade', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3F3NGM1eGJicXZrcDF2bGVnMnBvdzE3Nmt4Mm54cWF2ZWh5cmNmeCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d4aU235GY58V5vA4/giphy.gif' }
         ];
 
         window.loadCuratedKlipyGifs = function() {
@@ -8319,10 +8397,13 @@
             if (!grid) return;
 
             grid.innerHTML = gifList.map((item) => `
-                <div style="position: relative; border-radius: 8px; overflow: hidden; height: 70px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onclick="selectRankCardGif('${item.url}')">
-                    <img src="${item.url}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;">
-                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%); display: flex; align-items: flex-end; padding: 4px 6px;">
-                        <span style="font-size: 0.65rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+                <div style="position: relative; border-radius: 10px; overflow: hidden; height: 80px; border: 1px solid rgba(255,255,255,0.12); cursor: pointer; transition: all 0.25s ease;" 
+                     onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--primary)';" 
+                     onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.12)';" 
+                     onclick="selectRankCardGif('${item.url}')">
+                    <img src="${item.url}" alt="${item.name}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://media.giphy.com/media/l41K3tokK31M68MgU/giphy.gif';">
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); display: flex; align-items: flex-end; padding: 6px 8px;">
+                        <span style="font-size: 0.7rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
                     </div>
                 </div>
             `).join('');
@@ -8332,7 +8413,8 @@
             const bgInput = document.getElementById('user-pref-rankCardBackgroundImage');
             if (bgInput) {
                 bgInput.value = gifUrl;
-                showToast('GIF selected! Click "Save Rank Card Preferences" to apply.', 'info');
+                updateLiveRankCardPreview();
+                showToast('GIF selected! Live Preview updated below. Click Save to apply.', 'info');
             }
         };
 
