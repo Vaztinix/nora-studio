@@ -2023,7 +2023,7 @@ app.get('/api/user/guilds', async (req, res) => {
                     isOwnerPremium = true;
                 }
             }
-            if (g.owner && isUserBotOwner) {
+            if (isUserBotOwner) {
                 isOwnerPremium = true;
             }
 

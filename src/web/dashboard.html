@@ -7553,13 +7553,22 @@
 
                 const prefPremium = document.getElementById('pref-premium-status');
                 if (prefPremium) {
-                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
-                    if (d.noraPremium) prefPremium.innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
+                    if (d.noraPremium || d.isOwner) {
+                        prefPremium.innerHTML = '<span style="color: #10B981; font-weight: 700;"><i class="fas fa-crown"></i> Nora Studio Plus Active</span>';
+                    } else if (d.premium) {
+                        prefPremium.innerHTML = '<span style="color: #ffcc00; font-weight: 700;"><i class="fab fa-discord"></i> Discord Nitro Active</span>';
+                    } else {
+                        prefPremium.innerHTML = '<span style="color: var(--muted);">Standard User</span>';
+                    }
+                }
+                if ((d.noraPremium || d.isOwner) && typeof window.updatePremiumUI === 'function') {
+                    window.userHasAnyPremium = true;
+                    window.updatePremiumUI(true);
                 }
 
                 const premiumStatusEl = document.getElementById('premium-center-status');
                 if (premiumStatusEl) {
-                    if (d.noraPremium) {
+                    if (d.noraPremium || d.isOwner) {
                         premiumStatusEl.innerHTML = '<strong style="color: var(--primary);">Nora+ is active.</strong> Your account currently unlocks premium AI limits, boosted automation, and priority support.';
                     } else if (d.premium) {
                         premiumStatusEl.innerHTML = '<strong style="color: #ffcc00;">Discord Nitro is active.</strong> You can still upgrade Nora+ for extra automation, AI capacity, and advanced boosts.';
@@ -8698,6 +8707,8 @@
                         console.error('[Change Tracking Error]:', innerErr);
                     }
                     
+                    const unsavedBar = document.getElementById('unsaved-changes-bar');
+                    if (unsavedBar) unsavedBar.style.display = 'none';
                     showToast('Settings saved successfully.', 'success');
                     refreshModuleBadges();
                     if (typeof loadServerActionLogs === 'function') loadServerActionLogs();
@@ -8714,6 +8725,17 @@
                 saveBtn.disabled = false;
             }
         }
+
+        window.saveCurrentTabSettings = function() {
+            saveSettings();
+        };
+
+        window.revertUnsavedChanges = function() {
+            const unsavedBar = document.getElementById('unsaved-changes-bar');
+            if (unsavedBar) unsavedBar.style.display = 'none';
+            if (typeof fetchSettings === 'function') fetchSettings(true);
+            showToast('Changes discarded.', 'info');
+        };
 
         async function loadServerActionLogs() {
             if (!currentServerId) return;
