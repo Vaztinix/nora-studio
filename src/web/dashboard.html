@@ -4150,11 +4150,11 @@
                             <div style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
                                 <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #dbdee1; text-align: left;">
                                     <thead>
-                                        <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem;">
-                                            <th style="padding: 12px 15px;">Timestamp</th>
-                                            <th style="padding: 12px 15px;">Administrator</th>
-                                            <th style="padding: 12px 15px;">Action</th>
-                                            <th style="padding: 12px 15px;">Details</th>
+                                        <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px;">
+                                            <th style="padding: 14px 18px; width: 190px; white-space: nowrap;">Timestamp</th>
+                                            <th style="padding: 14px 18px; width: 230px; white-space: nowrap;">Administrator</th>
+                                            <th style="padding: 14px 18px; width: 170px; white-space: nowrap;">Action</th>
+                                            <th style="padding: 14px 18px;">Details</th>
                                         </tr>
                                     </thead>
                                     <tbody id="action-log-tbody">
@@ -8762,23 +8762,65 @@
                 }
 
                 tbody.innerHTML = data.logs.map(log => {
-                    const dateStr = new Date(log.createdAt).toLocaleString();
+                    const dateObj = new Date(log.createdAt);
+                    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric', year: 'numeric' }) + ', ' + dateObj.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
                     const avatarUrl = log.userAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-                    const userLabel = log.username ? `${log.username} (${log.userId || 'N/A'})` : (log.userId || 'Administrator');
+                    const username = log.username || 'Administrator';
+                    const userId = log.userId || '';
                     
+                    // Action Badge Formatting
+                    let badgeBg = 'rgba(88, 101, 242, 0.15)';
+                    let badgeColor = '#818cf8';
+                    let badgeBorder = 'rgba(88, 101, 242, 0.3)';
+                    let actionLabel = (log.action || 'ACTION').replace(/_/g, ' ');
+
+                    if (log.action.includes('DELETE') || log.action.includes('REMOVE')) {
+                        badgeBg = 'rgba(239, 68, 68, 0.15)';
+                        badgeColor = '#fca5a5';
+                        badgeBorder = 'rgba(239, 68, 68, 0.3)';
+                    } else if (log.action.includes('CREATE') || log.action.includes('ADD')) {
+                        badgeBg = 'rgba(16, 185, 129, 0.15)';
+                        badgeColor = '#6ee7b7';
+                        badgeBorder = 'rgba(16, 185, 129, 0.3)';
+                    }
+
+                    // Format details field cleanly
+                    let detailsContent = log.details || 'No details provided';
+                    if (detailsContent.startsWith('Updated configuration fields:')) {
+                        const rawFields = detailsContent.replace('Updated configuration fields:', '').split(',').map(s => s.trim()).filter(Boolean);
+                        if (rawFields.length > 4) {
+                            const tagsHtml = rawFields.map(f => `<span style="background: rgba(255,255,255,0.06); color: #e4e4e7; border: 1px solid rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 6px; font-family: monospace; font-size: 0.73rem;">${f}</span>`).join(' ');
+                            detailsContent = `<div style="display: flex; flex-direction: column; gap: 6px;">
+                                <div style="font-weight: 700; color: #fff;">Updated ${rawFields.length} Configuration Fields</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 80px; overflow-y: auto;">${tagsHtml}</div>
+                            </div>`;
+                        } else {
+                            const tagsHtml = rawFields.map(f => `<span style="background: rgba(255,255,255,0.06); color: #e4e4e7; border: 1px solid rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 6px; font-family: monospace; font-size: 0.73rem;">${f}</span>`).join(' ');
+                            detailsContent = `<div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;"><strong style="color: #fff;">Updated fields:</strong> ${tagsHtml}</div>`;
+                        }
+                    }
+
                     return `
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                            <td style="padding: 10px 15px; color: var(--muted); font-size: 0.78rem; white-space: nowrap;">${dateStr}</td>
-                            <td style="padding: 10px 15px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <img src="${avatarUrl}" alt="Avatar" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" onError="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-                                    <span style="font-weight: 600; color: #fff; font-size: 0.82rem;">${userLabel}</span>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                            <td style="padding: 12px 18px; color: var(--muted); font-size: 0.8rem; font-weight: 500; white-space: nowrap; vertical-align: top;">
+                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                    <i class="far fa-clock" style="font-size: 0.75rem; opacity: 0.7;"></i>
+                                    <span>${dateStr}</span>
                                 </div>
                             </td>
-                            <td style="padding: 10px 15px;">
-                                <span style="background: rgba(88, 101, 242, 0.15); color: #5865F2; border: 1px solid rgba(88, 101, 242, 0.3); font-weight: 700; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">${log.action}</span>
+                            <td style="padding: 12px 18px; vertical-align: top; white-space: nowrap;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="${avatarUrl}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1);" onError="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                    <div style="display: flex; flex-direction: column; min-width: 0;">
+                                        <span style="font-weight: 700; color: #fff; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${username}</span>
+                                        ${userId ? `<span style="font-size: 0.7rem; color: var(--muted); font-family: monospace; white-space: nowrap;">ID: (${userId})</span>` : ''}
+                                    </div>
+                                </div>
                             </td>
-                            <td style="padding: 10px 15px; color: #dbdee1; font-size: 0.82rem;">${log.details || 'No details provided'}</td>
+                            <td style="padding: 12px 18px; vertical-align: top; white-space: nowrap;">
+                                <span style="display: inline-block; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; font-weight: 800; font-size: 0.7rem; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;">${actionLabel}</span>
+                            </td>
+                            <td style="padding: 12px 18px; color: #dbdee1; font-size: 0.85rem; vertical-align: top; line-height: 1.4;">${detailsContent}</td>
                         </tr>
                     `;
                 }).join('');

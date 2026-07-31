@@ -224,10 +224,9 @@ router.post('/', async (req, res) => {
         }
 
         // Record per-server action log for Nora's site accountability
-        const { logServerAction } = require('../../utils/actionLogger');
         const changedKeys = Object.keys(payload);
         const detailsSummary = changedKeys.length > 0 
-            ? `Updated configuration fields: ${changedKeys.join(', ')}`
+            ? `Updated ${changedKeys.length} configuration fields`
             : 'Saved server settings';
         await logServerAction({
             guildId,
