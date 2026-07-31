@@ -15,6 +15,9 @@ module.exports = {
         .setDefaultMemberPermissions(null),
 
     async execute(interaction) {
+        // Defer reply immediately so Discord interaction token never expires (3s timeout protection)
+        await interaction.deferReply().catch(() => {});
+
         const { checkAndAwardEgg } = require('../../utils/easterEggSystem');
         checkAndAwardEgg(interaction, 9);
 
@@ -23,7 +26,9 @@ module.exports = {
 
         // We only exclude Nora herself from the rank system to avoid self-tracking.
         if (target.id === interaction.client.user.id) {
-            return handleError(interaction, 'Nora is Supreme', 'I do not have a rank profile; I am simply here to assist you!');
+            return interaction.editReply({
+                content: '⚠️ **Nora is Supreme:** I do not have a rank profile; I am simply here to assist you!'
+            });
         }
 
         const userLevel = await UserLevel.findOne({
@@ -100,14 +105,11 @@ module.exports = {
             embed.setFooter({ text: `Server Rank | ${interaction.guild.name}`, iconURL: interaction.guild.iconURL() })
                 .setTimestamp();
 
-            return interaction.reply({ 
+            return interaction.editReply({ 
                 content: hasNoXp ? `👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:` : null,
                 embeds: [embed] 
             });
         }
-
-        // Defer reply as generating rank card might take a bit due to asset fetching and processing
-        await interaction.deferReply();
 
         try {
             const UserPrefs = require('../../database/models/UserPrefs');
