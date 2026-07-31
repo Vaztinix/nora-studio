@@ -12,6 +12,38 @@ const sharp = require('sharp');
  * @param {string} options.avatarUrl
  * @param {boolean} [options.showPfp=true]
  * @returns {Promise<Buffer>} PNG Image buffer
+async function resolveDirectMediaUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.startsWith('data:image')) return url;
+
+    const lower = url.toLowerCase();
+    const isWebpage = (lower.includes('klipy.com') || lower.includes('tenor.com') || lower.includes('giphy.com')) && !lower.match(/\.(gif|jpg|jpeg|png|webp)($|\?)/i);
+
+    if (isWebpage) {
+        try {
+            const htmlRes = await axios.get(url, { 
+                timeout: 4000, 
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' } 
+            });
+            const html = String(htmlRes.data);
+            
+            const match = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
+                          html.match(/<meta\s+content=["']([^"']+)["']\s+property=["']og:image["']/i) ||
+                          html.match(/<meta\s+property=["']og:video["']\s+content=["']([^"']+)["']/i) ||
+                          html.match(/<link\s+rel=["']image_src["']\s+href=["']([^"']+)["']/i) ||
+                          html.match(/https?:\/\/[^"'\s]+\.(gif|webp)/i);
+            
+            if (match) {
+                const foundUrl = match[1] || match[0];
+                if (foundUrl) return foundUrl;
+            }
+        } catch (e) {
+            console.error('Error resolving webpage GIF link:', e.message);
+        }
+    }
+    return url;
+}
+
 /**
  * Generates a rank card image buffer with custom image backgrounds and shape presets.
  * Member uploaded changes ALWAYS overwrite server settings.
@@ -59,15 +91,16 @@ async function generateRankCard({
 
     if (finalBgImage) {
         try {
+            const resolvedUrl = await resolveDirectMediaUrl(finalBgImage);
             let rawBuffer;
-            if (finalBgImage.startsWith('data:image')) {
-                const base64Data = finalBgImage.split(',')[1];
+            if (resolvedUrl.startsWith('data:image')) {
+                const base64Data = resolvedUrl.split(',')[1];
                 rawBuffer = Buffer.from(base64Data, 'base64');
-                if (finalBgImage.startsWith('data:image/gif')) isAnimatedGif = true;
+                if (resolvedUrl.startsWith('data:image/gif')) isAnimatedGif = true;
             } else {
-                const response = await axios.get(finalBgImage, { responseType: 'arraybuffer', timeout: 7000 });
+                const response = await axios.get(resolvedUrl, { responseType: 'arraybuffer', timeout: 7000 });
                 rawBuffer = Buffer.from(response.data);
-                if (finalBgImage.toLowerCase().includes('.gif') || finalBgImage.includes('klipy') || finalBgImage.includes('tenor') || finalBgImage.includes('giphy')) {
+                if (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')) {
                     isAnimatedGif = true;
                 }
             }
