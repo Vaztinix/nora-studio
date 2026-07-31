@@ -7800,6 +7800,7 @@
                         if (sideEl) sideEl.style.display = 'flex';
                         fetchGuilds(t); 
                         fetchRobloxStatus(t); 
+                        if (typeof fetchUserProfile === 'function') fetchUserProfile();
                         if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
                     }, 300);
                 } else {
@@ -7807,6 +7808,7 @@
                     if (sideEl) sideEl.style.display = 'flex';
                     fetchGuilds(t); 
                     fetchRobloxStatus(t); 
+                    if (typeof fetchUserProfile === 'function') fetchUserProfile();
                     if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
                 }
             } catch (e) { 
@@ -8190,6 +8192,40 @@
                 if (typeof toggleLoading === 'function') toggleLoading(false);
             }
         }
+
+        async function fetchUserProfile() {
+            const t = sessionStorage.getItem('discord_token');
+            if (!t) return;
+            try {
+                const { data } = await safeFetch('/api/user/profile', {
+                    headers: { Authorization: `Bearer ${t}` }
+                });
+                if (data && data.prefs) {
+                    const prefs = data.prefs;
+                    const bioBox = document.getElementById('user-pref-bio');
+                    const roBox = document.getElementById('user-pref-robloxPublic');
+                    const pubBox = document.getElementById('user-pref-profilePublic');
+                    const colorBox = document.getElementById('user-pref-rankCardCustomColor');
+                    const bgBox = document.getElementById('user-pref-rankCardBackgroundImage');
+
+                    if (bioBox && prefs.bio) bioBox.value = prefs.bio;
+                    if (roBox && prefs.robloxPublic !== undefined) roBox.checked = prefs.robloxPublic;
+                    if (pubBox && prefs.profilePublic !== undefined) pubBox.checked = prefs.profilePublic;
+                    if (colorBox && prefs.rankCardCustomColor) colorBox.value = prefs.rankCardCustomColor;
+                    if (bgBox && prefs.rankCardBackgroundImage) bgBox.value = prefs.rankCardBackgroundImage;
+
+                    const mode = prefs.rankCardThemeMode || (prefs.rankCardBackgroundImage ? 'image' : (prefs.rankCardCustomColor ? 'custom' : 'preset'));
+                    const radio = document.querySelector(`input[name="userRankCardThemeMode"][value="${mode}"]`);
+                    if (radio) radio.checked = true;
+
+                    if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
+                }
+            } catch (e) {
+                console.error('[Fetch Profile Error]:', e);
+            }
+        }
+        window.fetchUserProfile = fetchUserProfile;
+
         window.toggleUserRankCardThemeModeUI = function() {
             const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
             const colorContainer = document.getElementById('user-rankcard-custom-color-container');

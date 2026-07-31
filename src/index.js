@@ -1517,6 +1517,20 @@ app.get('/api/user/team-cards', async (req, res) => {
 });
 
 
+app.get('/api/user/profile', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const UserPrefs = require('./database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+        res.json({ success: true, prefs });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/profile');
+    }
+});
+
 app.post('/api/user/profile', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });

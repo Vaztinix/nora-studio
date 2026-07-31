@@ -119,17 +119,10 @@ module.exports = {
             const userShowAvatar = targetPrefs ? targetPrefs.showAvatarInRankCard !== false : true;
             const finalShowPfp = showPfp && userShowAvatar;
 
-            let cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
+            // Member customizations ALWAYS override server settings across all servers
+            let cardAccent = (targetPrefs && targetPrefs.rankCardCustomColor) ? targetPrefs.rankCardCustomColor : (settings?.levelingCardAccentColor || '#7c3aed');
             let cardBgColor = settings?.levelingCardBgColor || '#111217';
-            let cardUserBg = targetPrefs?.customRankCardBg || null;
-
-            if (targetPrefs) {
-                if (targetPrefs.rankCardThemeMode === 'custom' && targetPrefs.rankCardCustomColor) {
-                    cardAccent = targetPrefs.rankCardCustomColor;
-                } else if (targetPrefs.rankCardThemeMode === 'image' && targetPrefs.rankCardBackgroundImage) {
-                    cardUserBg = targetPrefs.rankCardBackgroundImage;
-                }
-            }
+            let cardUserBg = (targetPrefs && (targetPrefs.rankCardBackgroundImage || targetPrefs.customRankCardBg)) ? (targetPrefs.rankCardBackgroundImage || targetPrefs.customRankCardBg) : null;
 
             const { generateRankCard } = require('../../utils/rankCardGenerator');
             const imageBuffer = await generateRankCard({
