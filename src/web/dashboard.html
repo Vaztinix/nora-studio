@@ -8263,12 +8263,12 @@
         };
 
         const CURATED_RANK_GIFS = [
-            { name: 'Cyberpunk Neon', url: 'https://media.tenor.com/gK96eUuE63AAAAAC/cyberpunk-neon.gif' },
-            { name: 'Starry Galaxy', url: 'https://media.tenor.com/O6LwK-9dO3kAAAAC/galaxy-stars.gif' },
-            { name: 'Synthwave Sunset', url: 'https://media.tenor.com/yF9WJz_J37cAAAAC/synthwave-grid.gif' },
-            { name: 'Pixel Rain', url: 'https://media.tenor.com/6XzW7W1c3-YAAAAC/pixel-rain-night.gif' },
-            { name: 'Cosmic Nebula', url: 'https://media.tenor.com/JbW7N81q3K4AAAAC/nebula-space.gif' },
-            { name: 'Retro Arcade', url: 'https://media.tenor.com/1G662B0mQBAAAAAC/retro-synthwave.gif' }
+            { name: 'Cyberpunk Neon', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZhcTBxaHkxcWNrdzhndml4eHFlMGIwZHdrMXBmaHdsZnBqaWNidCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lq0h93752f6J9tijrh/giphy.gif' },
+            { name: 'Starry Galaxy', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHdqOHptZm42NnkxZml6Nmhvd3hxc3NpeHgwYmp3cnRqMjYwOHJ1dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/u23zXev77q65y/giphy.gif' },
+            { name: 'Synthwave Sunset', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGx5ZnUza3Nidm9tdWh4bXFybGF5ZXVyc3hhOTZpeHFtcGV3eHpyMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt6ML6BklcajjsA/giphy.gif' },
+            { name: 'Pixel Rain', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjVvaWs5Nmx3bzFhZ3Rva3YxNDdybWV1ODlydW9mbGNpaTFndnRxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/139eZBmH1HTyRa/giphy.gif' },
+            { name: 'Cosmic Nebula', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDkxbXNhZmk4MXJveGs2b2JubmJ2dWVzbWFybmZlZzgyazFwdDdxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26AHPxxnSw1L9T1rW/giphy.gif' },
+            { name: 'Retro Arcade', url: 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3F3NGM1eGJicXZrcDF2bGVnMnBvdzE3Nmt4Mm54cWF2ZWh5cmNmeCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d4aU235GY58V5vA4/giphy.gif' }
         ];
 
         window.loadCuratedKlipyGifs = function() {
@@ -8300,20 +8300,11 @@
             if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">Searching Klipy GIFs...</div>`;
 
             try {
-                // Try Klipy / Tenor search fallback
-                const res = await fetch(`https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=LIVDSRZULELA&limit=10`);
-                if (!res.ok) throw new Error('Search failed');
-                const data = await res.json();
-                const results = (data.results || []).map(r => {
-                    const media = r.media_formats?.gif || r.media_formats?.tinygif || r.media_formats?.mediumgif;
-                    return {
-                        name: r.content_description || query,
-                        url: media ? media.url : null
-                    };
-                }).filter(r => r.url);
+                const res = await safeFetch(`/api/klipy/search?q=${encodeURIComponent(query)}`);
+                const results = (res && res.data && res.data.results) ? res.data.results : [];
 
                 if (results.length === 0) {
-                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">No GIFs found on Klipy for "${query}".</div>`;
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">No GIFs found for "${query}".</div>`;
                 } else {
                     renderKlipyGifThumbnails(results);
                 }
