@@ -576,6 +576,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    inviteRewards: {
+        type: DataTypes.JSON,
+        defaultValue: []
+    },
+    inviteXpReward: {
+        type: DataTypes.INTEGER,
+        defaultValue: 50
+    },
     webhookUrl: {
         type: DataTypes.STRING,
         allowNull: true

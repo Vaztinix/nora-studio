@@ -49,6 +49,10 @@ const UserLevel = sequelize.define('UserLevel', {
     lastVoteTimestamp: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    invitesCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 }, {
     indexes: [

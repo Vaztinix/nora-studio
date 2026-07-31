@@ -58,17 +58,22 @@ module.exports = {
         try {
             if (subcommand === 'lock') {
                 await targetChannel.permissionOverwrites.edit(interaction.guild.roles.everyone, {
-                    SendMessages: false
+                    SendMessages: false,
+                    SendMessagesInThreads: false,
+                    CreatePublicThreads: false,
+                    CreatePrivateThreads: false
                 }, { reason: `Locked by ${interaction.user.tag}: ${reason}` });
 
-                await handleSuccess(interaction, 'Channel Locked', `Successfully locked <#${targetChannel.id}>.\n**Reason:** ${reason}`);
+                await handleSuccess(interaction, 'Channel Locked 🔒', `Successfully locked <#${targetChannel.id}>.\n**Reason:** ${reason}`);
             } else if (subcommand === 'unlock') {
-                // Setting to null removes the explicit deny override, reverting to default role behaviors
                 await targetChannel.permissionOverwrites.edit(interaction.guild.roles.everyone, {
-                    SendMessages: null
+                    SendMessages: null,
+                    SendMessagesInThreads: null,
+                    CreatePublicThreads: null,
+                    CreatePrivateThreads: null
                 }, { reason: `Unlocked by ${interaction.user.tag}: ${reason}` });
 
-                await handleSuccess(interaction, 'Channel Unlocked', `Successfully unlocked <#${targetChannel.id}>.\n**Reason:** ${reason}`);
+                await handleSuccess(interaction, 'Channel Unlocked 🔓', `Successfully unlocked <#${targetChannel.id}>.\n**Reason:** ${reason}`);
             }
         } catch (error) {
             console.error(error);
