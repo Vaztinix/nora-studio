@@ -67,7 +67,7 @@ async function generateRankCard({
             } else {
                 const response = await axios.get(finalBgImage, { responseType: 'arraybuffer', timeout: 7000 });
                 rawBuffer = Buffer.from(response.data);
-                if (finalBgImage.toLowerCase().includes('.gif') || finalBgImage.includes('tenor') || finalBgImage.includes('giphy')) {
+                if (finalBgImage.toLowerCase().includes('.gif') || finalBgImage.includes('klipy') || finalBgImage.includes('tenor') || finalBgImage.includes('giphy')) {
                     isAnimatedGif = true;
                 }
             }

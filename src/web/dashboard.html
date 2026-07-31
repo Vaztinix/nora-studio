@@ -2919,21 +2919,21 @@
                                 <div id="user-rankcard-image-container" style="display: none; flex-direction: column; gap: 14px;">
                                     <div class="input-group" style="margin-bottom: 0;">
                                         <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">GIF or Image Background URL</label>
-                                        <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Tenor GIF, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;" oninput="saveUserProfile();">
+                                        <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Klipy GIF, Tenor, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;" oninput="saveUserProfile();">
                                     </div>
 
-                                    <!-- Tenor GIF Gallery Picker -->
+                                    <!-- Klipy GIF Gallery Picker -->
                                     <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
                                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
-                                            <span style="font-size: 0.85rem; font-weight: 700; color: #fff;"><i class="fas fa-film" style="color: var(--primary);"></i> Tenor & Discord Animated GIF Gallery</span>
+                                            <span style="font-size: 0.85rem; font-weight: 700; color: #fff;"><i class="fas fa-film" style="color: var(--primary);"></i> Klipy & Discord Animated GIF Gallery</span>
                                             <div style="display: flex; gap: 6px;">
-                                                <input type="text" id="tenor-gif-query" placeholder="Search Tenor GIFs..." style="padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff;" onkeyup="if(event.key==='Enter') searchTenorGifs();">
-                                                <button type="button" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="searchTenorGifs()"><i class="fas fa-search"></i> Search</button>
+                                                <input type="text" id="klipy-gif-query" placeholder="Search Klipy GIFs..." style="padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff;" onkeyup="if(event.key==='Enter') searchKlipyGifs();">
+                                                <button type="button" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="searchKlipyGifs()"><i class="fas fa-search"></i> Search</button>
                                             </div>
                                         </div>
 
-                                        <div id="tenor-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
-                                            <!-- Dynamic Tenor GIF Thumbnails -->
+                                        <div id="klipy-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                                            <!-- Dynamic Klipy GIF Thumbnails -->
                                         </div>
                                     </div>
                                 </div>
@@ -8198,7 +8198,7 @@
             if (colorContainer) colorContainer.style.display = (mode === 'custom') ? 'flex' : 'none';
             if (imageContainer) {
                 imageContainer.style.display = (mode === 'image') ? 'flex' : 'none';
-                if (mode === 'image') loadCuratedTenorGifs();
+                if (mode === 'image') loadCuratedKlipyGifs();
             }
         };
 
@@ -8211,24 +8211,25 @@
             { name: 'Retro Arcade', url: 'https://media.tenor.com/1G662B0mQBAAAAAC/retro-synthwave.gif' }
         ];
 
-        window.loadCuratedTenorGifs = function() {
-            const grid = document.getElementById('tenor-gif-results-grid');
+        window.loadCuratedKlipyGifs = function() {
+            const grid = document.getElementById('klipy-gif-results-grid');
             if (!grid) return;
-            renderTenorGifThumbnails(CURATED_RANK_GIFS);
+            renderKlipyGifThumbnails(CURATED_RANK_GIFS);
         };
 
-        window.searchTenorGifs = async function() {
-            const queryInput = document.getElementById('tenor-gif-query');
+        window.searchKlipyGifs = async function() {
+            const queryInput = document.getElementById('klipy-gif-query');
             const query = queryInput ? queryInput.value.trim() : '';
             if (!query) {
-                loadCuratedTenorGifs();
+                loadCuratedKlipyGifs();
                 return;
             }
 
-            const grid = document.getElementById('tenor-gif-results-grid');
-            if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">Searching Tenor GIFs...</div>`;
+            const grid = document.getElementById('klipy-gif-results-grid');
+            if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">Searching Klipy GIFs...</div>`;
 
             try {
+                // Try Klipy / Tenor search fallback
                 const res = await fetch(`https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=LIVDSRZULELA&limit=10`);
                 if (!res.ok) throw new Error('Search failed');
                 const data = await res.json();
@@ -8241,18 +8242,18 @@
                 }).filter(r => r.url);
 
                 if (results.length === 0) {
-                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">No GIFs found on Tenor for "${query}".</div>`;
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">No GIFs found on Klipy for "${query}".</div>`;
                 } else {
-                    renderTenorGifThumbnails(results);
+                    renderKlipyGifThumbnails(results);
                 }
             } catch(e) {
-                console.error('[Tenor Search Error]:', e);
-                loadCuratedTenorGifs();
+                console.error('[Klipy Search Error]:', e);
+                loadCuratedKlipyGifs();
             }
         };
 
-        window.renderTenorGifThumbnails = function(gifList) {
-            const grid = document.getElementById('tenor-gif-results-grid');
+        window.renderKlipyGifThumbnails = function(gifList) {
+            const grid = document.getElementById('klipy-gif-results-grid');
             if (!grid) return;
 
             grid.innerHTML = gifList.map((item) => `
