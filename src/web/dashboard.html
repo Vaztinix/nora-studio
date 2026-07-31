@@ -2900,7 +2900,7 @@
                                     <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">Card Theme Mode</label>
                                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                         <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
-                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI();" checked> Default Server Style
+                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI();"> Default Server Style
                                         </label>
                                         <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
                                             <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI();"> Custom Accent Color
@@ -2922,17 +2922,31 @@
                                         <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Klipy GIF, Tenor, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;">
                                     </div>
 
-                                    <!-- Klipy GIF Gallery Picker -->
-                                    <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
-                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
-                                            <span style="font-size: 0.85rem; font-weight: 700; color: #fff;"><i class="fas fa-film" style="color: var(--primary);"></i> Klipy & Discord Animated GIF Gallery</span>
-                                            <div style="display: flex; gap: 6px;">
-                                                <input type="text" id="klipy-gif-query" placeholder="Search Klipy GIFs..." style="padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff;" onkeyup="if(event.key==='Enter') searchKlipyGifs();">
-                                                <button type="button" class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="searchKlipyGifs()"><i class="fas fa-search"></i> Search</button>
+                                    <!-- Klipy & Discord Animated GIF Gallery Picker -->
+                                    <div style="background: rgba(0,0,0,0.25); padding: 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                            <span style="font-size: 0.9rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-film" style="color: var(--primary);"></i> Klipy Animated GIF Picker
+                                            </span>
+                                            <div style="display: flex; gap: 8px; align-items: center; flex: 1; max-width: 320px; min-width: 200px;">
+                                                <input type="text" id="klipy-gif-query" placeholder="Search Klipy GIFs..." style="flex: 1; padding: 8px 12px; font-size: 0.82rem; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; box-sizing: border-box;" onkeyup="if(event.key==='Enter') searchKlipyGifs();">
+                                                <button type="button" class="save-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; white-space: nowrap; height: 36px;" onclick="searchKlipyGifs()"><i class="fas fa-search"></i> Search</button>
                                             </div>
                                         </div>
 
-                                        <div id="klipy-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                                        <!-- Discord-style GIF Category Pills -->
+                                        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;">
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('trending')">🔥 Trending</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('hello')">👋 Hello</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('lol')">😂 LOL</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('love')">❤️ Love</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('birthday')">🎂 Birthday</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('gaming')">🎮 Gaming</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('anime')">✨ Anime</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('synthwave')">🌆 Synthwave</button>
+                                        </div>
+
+                                        <div id="klipy-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
                                             <!-- Dynamic Klipy GIF Thumbnails -->
                                         </div>
                                     </div>
@@ -8161,8 +8175,8 @@
 
             const showAvatarBox = document.getElementById('user-pref-showAvatarInRankCard');
             const showAvatarInRankCard = showAvatarBox ? showAvatarBox.checked : true;
-            const rankCardThemeMode = document.querySelector('input[name="rankCardThemeMode"]:checked')?.value || 'preset';
-            const rankCardCustomColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#4f46e5';
+            const rankCardThemeMode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || document.querySelector('input[name="rankCardThemeMode"]:checked')?.value || 'preset';
+            const rankCardCustomColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#7c3aed';
             const rankCardBackgroundImage = document.getElementById('user-pref-rankCardBackgroundImage')?.value || null;
 
             const t = sessionStorage.getItem('discord_token');
@@ -8186,7 +8200,15 @@
                         rankCardBackgroundImage
                     })
                 });
-                showToast('Profile changes saved successfully!', 'success');
+
+                if (window.currentUser) {
+                    if (!window.currentUser.prefs) window.currentUser.prefs = {};
+                    window.currentUser.prefs.rankCardThemeMode = rankCardThemeMode;
+                    window.currentUser.prefs.rankCardCustomColor = rankCardCustomColor;
+                    window.currentUser.prefs.rankCardBackgroundImage = rankCardBackgroundImage;
+                }
+
+                showToast('Profile & Rank Card preferences saved globally!', 'success');
             } catch (e) {
                 console.error('[Save Profile Error]:', e);
                 showToast(`Failed to save profile: ${e.message}`, 'error');
@@ -8253,6 +8275,17 @@
             const grid = document.getElementById('klipy-gif-results-grid');
             if (!grid) return;
             renderKlipyGifThumbnails(CURATED_RANK_GIFS);
+        };
+
+        window.searchKlipyCategory = function(category) {
+            const queryInput = document.getElementById('klipy-gif-query');
+            if (category === 'trending') {
+                if (queryInput) queryInput.value = '';
+                loadCuratedKlipyGifs();
+            } else {
+                if (queryInput) queryInput.value = category;
+                searchKlipyGifs();
+            }
         };
 
         window.searchKlipyGifs = async function() {
