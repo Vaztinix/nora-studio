@@ -211,7 +211,15 @@ commandHandler(client);
 eventHandler(client);
 
 // Sync database and login with high-stability index handling
-sequelize.sync().then(async () => {
+async function runPreSyncMigrations() {
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `inviteRewards` TEXT DEFAULT '[]';"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `inviteXpReward` INTEGER DEFAULT 50;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `UserLevels` ADD COLUMN `invitesCount` INTEGER DEFAULT 0;"); } catch (e) {}
+}
+
+runPreSyncMigrations().then(() => {
+    return sequelize.sync();
+}).then(async () => {
     console.log('Nora - Database Synchronized (Leveling Indices Healthy)');
     
     // Safely add columns to ContentFeeds if they don't exist
