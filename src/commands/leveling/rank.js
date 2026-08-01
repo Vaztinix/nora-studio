@@ -122,7 +122,12 @@ module.exports = {
             // Member customizations ALWAYS override server settings across all servers
             let cardAccent = (targetPrefs && targetPrefs.rankCardCustomColor) ? targetPrefs.rankCardCustomColor : (settings?.levelingCardAccentColor || '#7c3aed');
             let cardBgColor = settings?.levelingCardBgColor || '#111217';
-            let cardUserBg = (targetPrefs && (targetPrefs.rankCardBackgroundImage || targetPrefs.customRankCardBg)) ? (targetPrefs.rankCardBackgroundImage || targetPrefs.customRankCardBg) : null;
+            let cardUserBg = null;
+
+            const themeMode = targetPrefs?.rankCardThemeMode || (targetPrefs?.rankCardBackgroundImage ? 'image' : 'preset');
+            if (themeMode === 'image' || targetPrefs?.rankCardBackgroundImage) {
+                cardUserBg = targetPrefs?.rankCardBackgroundImage || targetPrefs?.customRankCardBg || null;
+            }
 
             const { generateRankCard } = require('../../utils/rankCardGenerator');
             const imageBuffer = await generateRankCard({
