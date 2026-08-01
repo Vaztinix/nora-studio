@@ -1532,19 +1532,24 @@ app.get('/api/user/profile', async (req, res) => {
 });
 
 app.get('/api/klipy/search', async (req, res) => {
-    const q = req.query.q || 'cyberpunk';
+    const q = req.query.q || 'trending';
+    const offset = parseInt(req.query.offset) || 0;
     try {
-        const response = await axios.get(`https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(q)}&limit=30`, { timeout: 5000 });
-        const results = (response.data?.data || []).map(item => {
-            const directUrl = `https://media.giphy.com/media/${item.id}/giphy.gif`;
-            return {
-                name: item.title || q,
-                url: directUrl
-            };
-        }).filter(r => r.url);
-        res.json({ success: true, results });
+        const isTrending = (!q || q === 'trending');
+        const endpoint = isTrending
+            ? `https://api.giphy.com/v1/gifs/trending?api_key=dc6zaTOxFJmzC&limit=30&offset=${offset}`
+            : `https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(q)}&limit=30&offset=${offset}`;
+        
+        const response = await axios.get(endpoint, { timeout: 6000 });
+        const results = (response.data?.data || []).map(item => ({
+            id: item.id,
+            name: item.title || q,
+            url: `https://media.giphy.com/media/${item.id}/giphy.gif`
+        })).filter(r => r.url);
+        
+        res.json({ success: true, results, nextOffset: offset + results.length });
     } catch (e) {
-        res.json({ success: false, results: [] });
+        res.json({ success: false, results: [], nextOffset: 0 });
     }
 });
 

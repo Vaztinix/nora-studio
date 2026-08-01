@@ -2946,9 +2946,13 @@
                                             <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('synthwave')">🌆 Synthwave</button>
                                         </div>
 
-                                        <div id="klipy-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+                                        <div id="klipy-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
                                             <!-- Dynamic Klipy GIF Thumbnails -->
                                         </div>
+
+                                        <button type="button" id="klipy-load-more-btn" class="btn-outline" style="margin-top: 8px; width: 100%; padding: 8px; font-size: 0.8rem; border-radius: 8px; cursor: pointer; display: none; background: rgba(255,255,255,0.03); color: #fff;" onclick="loadMoreKlipyGifs()">
+                                            <i class="fas fa-plus-circle"></i> Load More GIFs
+                                        </button>
                                     </div>
                                 </div>
 
@@ -8340,70 +8344,86 @@
             }
         };
 
-        const CURATED_RANK_GIFS = [
-            { url: 'https://media.giphy.com/media/Lq0h93752f6J9tijrh/giphy.gif' },
-            { url: 'https://media.giphy.com/media/3o6Zt6ML6BklcajjsA/giphy.gif' },
-            { url: 'https://media.giphy.com/media/139eZBmH1HTyRa/giphy.gif' },
-            { url: 'https://media.giphy.com/media/26AHPxxnSw1L9T1rW/giphy.gif' },
-            { url: 'https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif' },
-            { url: 'https://media.giphy.com/media/l0HlHJGHe3yAMhdQY/giphy.gif' }
-        ];
+        let currentKlipyQuery = 'trending';
+        let currentKlipyOffset = 0;
 
         window.loadCuratedKlipyGifs = function() {
-            const grid = document.getElementById('klipy-gif-results-grid');
-            if (!grid) return;
-            renderKlipyGifThumbnails(CURATED_RANK_GIFS);
+            currentKlipyQuery = 'trending';
+            currentKlipyOffset = 0;
+            searchKlipyGifs(false);
         };
 
         window.searchKlipyCategory = function(category) {
             const queryInput = document.getElementById('klipy-gif-query');
-            if (category === 'trending') {
-                if (queryInput) queryInput.value = '';
-                loadCuratedKlipyGifs();
-            } else {
-                if (queryInput) queryInput.value = category;
-                searchKlipyGifs();
-            }
+            currentKlipyQuery = category || 'trending';
+            currentKlipyOffset = 0;
+            if (queryInput) queryInput.value = (category === 'trending') ? '' : category;
+            searchKlipyGifs(false);
         };
 
-        window.searchKlipyGifs = async function() {
+        window.searchKlipyGifs = async function(append = false) {
             const queryInput = document.getElementById('klipy-gif-query');
-            const query = queryInput ? queryInput.value.trim() : '';
-            if (!query) {
-                loadCuratedKlipyGifs();
-                return;
+            if (!append) {
+                currentKlipyQuery = (queryInput && queryInput.value.trim()) ? queryInput.value.trim() : 'trending';
+                currentKlipyOffset = 0;
             }
 
             const grid = document.getElementById('klipy-gif-results-grid');
-            if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">Searching Klipy GIFs...</div>`;
+            const loadMoreBtn = document.getElementById('klipy-load-more-btn');
+            
+            if (!grid) return;
+
+            if (!append) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: var(--muted); font-size: 0.85rem;"><i class="fas fa-spinner fa-spin"></i> Loading Klipy GIF library...</div>`;
+                if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+            } else if (loadMoreBtn) {
+                loadMoreBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading more...`;
+            }
 
             try {
-                const res = await safeFetch(`/api/klipy/search?q=${encodeURIComponent(query)}`);
+                const res = await safeFetch(`/api/klipy/search?q=${encodeURIComponent(currentKlipyQuery)}&offset=${currentKlipyOffset}`);
                 const results = (res && res.data && res.data.results) ? res.data.results : [];
+                const nextOffset = (res && res.data && res.data.nextOffset) ? res.data.nextOffset : (currentKlipyOffset + results.length);
 
-                if (results.length === 0) {
-                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">No GIFs found for "${query}".</div>`;
+                if (!append && results.length === 0) {
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: var(--muted); font-size: 0.85rem;">No GIFs found for "${currentKlipyQuery}". Try another search term!</div>`;
+                    if (loadMoreBtn) loadMoreBtn.style.display = 'none';
                 } else {
-                    renderKlipyGifThumbnails(results);
+                    renderKlipyGifThumbnails(results, append);
+                    currentKlipyOffset = nextOffset;
+                    if (loadMoreBtn) {
+                        loadMoreBtn.style.display = (results.length >= 10) ? 'block' : 'none';
+                        loadMoreBtn.innerHTML = `<i class="fas fa-plus-circle"></i> Load More GIFs (${currentKlipyOffset}+ Available)`;
+                    }
                 }
             } catch(e) {
-                console.error('[Klipy Search Error]:', e);
-                loadCuratedKlipyGifs();
+                console.error('[Klipy Library Search Error]:', e);
+                if (!append && grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">Unable to connect to Klipy API.</div>`;
             }
         };
 
-        window.renderKlipyGifThumbnails = function(gifList) {
+        window.loadMoreKlipyGifs = function() {
+            searchKlipyGifs(true);
+        };
+
+        window.renderKlipyGifThumbnails = function(gifList, append = false) {
             const grid = document.getElementById('klipy-gif-results-grid');
             if (!grid) return;
 
-            grid.innerHTML = gifList.map((item) => `
-                <div style="position: relative; border-radius: 10px; overflow: hidden; height: 90px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: all 0.25s ease;" 
+            const html = gifList.map((item) => `
+                <div style="position: relative; border-radius: 10px; overflow: hidden; height: 95px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: all 0.25s ease;" 
                      onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--primary)';" 
                      onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.15)';" 
                      onclick="selectRankCardGif('${item.url}')">
                     <img src="${item.url}" alt="Klipy GIF" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif';">
                 </div>
             `).join('');
+
+            if (append) {
+                grid.insertAdjacentHTML('beforeend', html);
+            } else {
+                grid.innerHTML = html;
+            }
         };
 
         window.selectRankCardGif = function(gifUrl) {
