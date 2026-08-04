@@ -70,13 +70,13 @@ Nora is built around complete user sovereignty. Server administrators and indivi
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    NORA ZERO-ACCESS DATA                │
+│                    NORA LIMITED ACCESSS DATA            │
 ├─────────────────────────────────────────────────────────┤
-│ • Guild Settings  : Stored securely per server ID       │
-│ • Level & XP      : Isolated to local guild context     │
-│ • Roblox Link     : Hashed ID association               │
-│ • Message Content : NEVER stored on disk                │
-│ • User Control    : /mycard ➜ Instant "Erase Data" Wipe │
+│ • Guild Settings : Stored securely per server ID        │
+│ • Level & XP     : Isolated to local guild context      │
+│ • Roblox Link    : Hashed ID association                │
+│ • Message Content: NEVER stored on disk                 │
+│ • User Control   : /mycard ➜ Instant "Erase Data" Wipe │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -90,12 +90,13 @@ Nora is built around complete user sovereignty. Server administrators and indivi
 
 | Platform | Direct Link |
 | :--- | :--- |
+| **Archived Website** | [vaztinix.github.io/Nora](https://vaztinix.github.io/Nora) |
 | **Official Website** | [vaztinix.dev](https://vaztinix.dev) |
-| **Developer Portfolio** | [vaztinix.dev/me](https://vaztinix.dev/me) |
+| **Developer Profile** | [vaztinix.dev/me](https://vaztinix.dev/me) |
 | **Top.gg Profile** | [top.gg/user/593420060990005248](https://top.gg/user/593420060990005248) |
 | **GitHub Repository** | [github.com/Vaztinix/nora-studio](https://github.com/Vaztinix/nora-studio) |
-| **Discord Contact** | [discord.com/users/1214048435632603137](https://discord.com/users/1214048435632603137) |
-| **Business Inquiries** | [vaztinixstudios@gmail.com](mailto:vaztinixstudios@gmail.com) |
+| **Discord Profile** | [discord.com/users/1214048435632603137](https://discord.com/users/1214048435632603137) |
+| **Contact me** | [vaztinixstudios@gmail.com](mailto:vaztinixstudios@gmail.com) |
 
 <br>
 
