@@ -145,5 +145,74 @@ module.exports = {
     sanitize: (str) => {
         if (typeof str !== 'string') return str;
         return str.replace(/[`|@]/g, ''); // Basic injection prevention
+    },
+
+    /**
+     * Validates external URLs to prevent SSRF (Server-Side Request Forgery).
+     * Rejects non-HTTP/HTTPS protocols and private/loopback/metadata IP ranges.
+     * @param {string} urlStr
+     * @returns {boolean}
+     */
+    validateExternalUrl: (urlStr) => {
+        if (!urlStr || typeof urlStr !== 'string') return false;
+        try {
+            const parsed = new URL(urlStr);
+            if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+                return false;
+            }
+
+            const hostname = parsed.hostname.toLowerCase().trim();
+
+            // Block loopback, local, and metadata IP addresses/hostnames
+            if (
+                hostname === 'localhost' ||
+                hostname === '127.0.0.1' ||
+                hostname === '0.0.0.0' ||
+                hostname === '::1' ||
+                hostname === '169.254.169.254' ||
+                hostname.endsWith('.local') ||
+                hostname.endsWith('.internal')
+            ) {
+                return false;
+            }
+
+            // Block private IPv4 ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16)
+            const ipMatch = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+            if (ipMatch) {
+                const [, p1, p2] = ipMatch.map(Number);
+                if (p1 === 10) return false;
+                if (p1 === 172 && p2 >= 16 && p2 <= 31) return false;
+                if (p1 === 192 && p2 === 168) return false;
+                if (p1 === 169 && p2 === 254) return false;
+                if (p1 === 127) return false;
+                if (p1 === 0) return false;
+            }
+
+            return true;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    /**
+     * Generates a cryptographically secure random hex string.
+     * Replaces insecure Math.random() usage for tokens and secrets.
+     * @param {number} bytes
+     * @returns {string}
+     */
+    secureRandomString: (bytes = 16) => {
+        return crypto.randomBytes(bytes).toString('hex');
+    },
+
+    /**
+     * Ensures an input parameter is a non-empty string to prevent Type Confusion attacks.
+     * @param {*} val
+     * @param {string} fallback
+     * @returns {string}
+     */
+    ensureString: (val, fallback = '') => {
+        if (typeof val === 'string') return val;
+        if (typeof val === 'number') return String(val);
+        return fallback;
     }
 };

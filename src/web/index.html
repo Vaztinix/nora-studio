@@ -1486,6 +1486,48 @@
 
             document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
         })();
+
+        // ===== STATUS SHARK: WEBPAGE DISCORD & BOT DOWNTIME MONITOR =====
+        (function() {
+            const WEBHOOK_URL = ''; // Configured via env or proxy
+            const HEALTH_ENDPOINT = '/api/health';
+            const CHECK_INTERVAL = 45000; // 45 seconds
+
+            let isDown = false;
+            let downSince = null;
+
+            async function checkHealth() {
+                const now = Date.now();
+                try {
+                    const res = await fetch(HEALTH_ENDPOINT, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    // RECOVERY DETECTED
+                    if (isDown) {
+                        const durationMs = now - downSince;
+                        const durationSec = Math.floor(durationMs / 1000);
+                        const mins = Math.floor(durationSec / 60);
+                        const secs = durationSec % 60;
+                        const durationStr = mins > 0 ? `${mins} min ${secs} sec` : `${secs} sec`;
+                        
+                        isDown = false;
+                        downSince = null;
+                        
+                        console.log('[Status Shark Web Monitor] Bot recovered after ' + durationStr);
+                    }
+                } catch (err) {
+                    // DOWNTIME DETECTED
+                    if (!isDown) {
+                        isDown = true;
+                        downSince = now;
+                        console.warn('[Status Shark Web Monitor] Bot Health Check Failed! Bot is offline.');
+                    }
+                }
+            }
+
+            setInterval(checkHealth, CHECK_INTERVAL);
+            setTimeout(checkHealth, 5000);
+        })();
     </script>
 </body>
 </html>

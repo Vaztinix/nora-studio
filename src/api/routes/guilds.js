@@ -1919,7 +1919,7 @@ router.post('/feeds', async (req, res) => {
 
 
 
-            const twitchCheck = await axios.get(`https://decapi.me/twitch/uptime/${publicHandle}`).catch(() => null);
+            const twitchCheck = await axios.get(`https://decapi.me/twitch/uptime/${encodeURIComponent(publicHandle)}`).catch(() => null);
 
             if (twitchCheck && twitchCheck.data.includes('not exist')) {
 
@@ -2157,7 +2157,7 @@ router.put('/feeds/:feedId', async (req, res) => {
 
                 const axios = require('axios');
 
-                const twitchCheck = await axios.get(`https://decapi.me/twitch/uptime/${publicHandle}`).catch(() => null);
+                const twitchCheck = await axios.get(`https://decapi.me/twitch/uptime/${encodeURIComponent(publicHandle)}`).catch(() => null);
 
                 if (twitchCheck && twitchCheck.data.includes('not exist')) {
 

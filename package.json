@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "restart": "node src/index.js",
-    "shutdown": "taskkill /f /im node.exe || exit 0",
+    "shutdown": "node scripts/shutdown.js",
     "build": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -46,13 +46,15 @@
   },
   "overrides": {
     "protobufjs": "^7.6.5",
-    "undici": "^6.28.0",
+    "undici": "^7.29.0",
+    "ip-address": "^10.4.0",
     "uuid": "^11.1.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "tar": "^7.5.21",
-    "brace-expansion": "^5.0.8",
-    "fast-uri": "^3.1.4",
+    "brace-expansion": "^5.0.9",
+    "fast-uri": "^4.1.2",
     "sharp": "^0.35.1",
-    "@hono/node-server": "^2.0.5"
+    "@hono/node-server": "^2.0.5",
+    "hono": "^4.13.0"
   }
 }

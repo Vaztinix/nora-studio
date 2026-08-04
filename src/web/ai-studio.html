@@ -991,6 +991,15 @@
     </div>
 
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
         window.getApiBaseUrl = function() {
             const host = window.location.hostname;
             const port = window.location.port;
@@ -1317,22 +1326,22 @@
                         item.innerHTML = `
                             <header>
                                 <div>
-                                    <h3>${bot.name}</h3>
-                                    <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;">${bot.id}</p>
+                                    <h3>${escapeHtml(bot.name)}</h3>
+                                    <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;">${escapeHtml(bot.id)}</p>
                                 </div>
                                 <span style="font-size: 0.8rem; color: var(--primary);">${bot.isEnabled ? 'Enabled' : 'Disabled'}</span>
                             </header>
-                            <p style="margin: 0; color: var(--muted); line-height: 1.5;">Prefix: ${bot.prefix} • Command count: ${bot.commandCount} • Tokens used: ${bot.totalTokensUsed}</p>
+                            <p style="margin: 0; color: var(--muted); line-height: 1.5;">Prefix: ${escapeHtml(bot.prefix)} • Command count: ${bot.commandCount} • Tokens used: ${bot.totalTokensUsed}</p>
                             <div class="bot-meta">
                                 <span>${bot.inviteUrl ? 'Invite URL ready' : 'Invite URL pending'}</span>
                                 <span>Monthly limit ${bot.tokenLimit}</span>
                                 <span>Events ${bot.totalEventsTriggered}</span>
                             </div>
                             <div class="bot-actions">
-                                <button data-bot-id="${bot.id}" class="secondary-btn inspect-bot">Inspect Commands</button>
-                                <button data-bot-id="${bot.id}" class="danger-btn remove-bot">Remove Bot</button>
+                                <button data-bot-id="${escapeHtml(bot.id)}" class="secondary-btn inspect-bot">Inspect Commands</button>
+                                <button data-bot-id="${escapeHtml(bot.id)}" class="danger-btn remove-bot">Remove Bot</button>
                             </div>
-                            <div class="command-list" data-bot-id="${bot.id}"></div>
+                            <div class="command-list" data-bot-id="${escapeHtml(bot.id)}"></div>
                         `;
                         list.appendChild(item);
                     });
@@ -1347,8 +1356,8 @@
                             const commands = await jsonFetch(`/api/user/hosted-bots/${state.selectedBotId}/commands`);
                             container.innerHTML = commands.length ? commands.map(command => `
                                 <div class="command-item">
-                                    <strong>${command.name}</strong>
-                                    <p>${command.description || 'No description provided.'} • ${command.type} • ${command.trigger}</p>
+                                    <strong>${escapeHtml(command.name)}</strong>
+                                    <p>${escapeHtml(command.description || 'No description provided.')} • ${escapeHtml(command.type)} • ${escapeHtml(command.trigger)}</p>
                                     <div class="bot-actions">
                                         <button data-name="${command.name}" data-bot-id="${state.selectedBotId}" class="secondary-btn remove-command">Delete</button>
                                     </div>

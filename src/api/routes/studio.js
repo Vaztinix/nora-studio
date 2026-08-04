@@ -67,9 +67,12 @@ const requireAuth = async (req, res, next) => {
             // Fetch GeoIP
             let location = 'Unknown Location';
             try {
-                const geo = await axios.get(`http://ip-api.com/json/${clientIp}`, { timeout: 3000 });
-                if (geo.data && geo.data.status === 'success') {
-                    location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
+                const safeIp = encodeURIComponent(clientIp.replace(/[^a-fA-F0-9:.]/g, ''));
+                if (safeIp) {
+                    const geo = await axios.get(`http://ip-api.com/json/${safeIp}`, { timeout: 3000 });
+                    if (geo.data && geo.data.status === 'success') {
+                        location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
+                    }
                 }
             } catch (e) {}
             

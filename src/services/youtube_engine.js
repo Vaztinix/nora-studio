@@ -61,7 +61,18 @@ async function resolveChannelId(input) {
 
     try {
         let handle = '';
-        if (cleanInput.includes('youtube.com/')) {
+        let isUrl = false;
+        try {
+            const parsedUrl = new URL(cleanInput.startsWith('http') ? cleanInput : `https://${cleanInput}`);
+            const host = parsedUrl.hostname.toLowerCase();
+            if (host === 'youtube.com' || host.endsWith('.youtube.com') || host === 'youtu.be') {
+                isUrl = true;
+            }
+        } catch (e) {
+            isUrl = false;
+        }
+
+        if (isUrl || cleanInput.includes('/')) {
             // URL parsing
             if (cleanInput.includes('/@')) {
                 handle = '@' + cleanInput.split('/@')[1].split('/')[0].split('?')[0];

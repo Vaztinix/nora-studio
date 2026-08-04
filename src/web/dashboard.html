@@ -6312,6 +6312,15 @@
 
 
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
         let notifications = [];
         let newNotifCount = 0;
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
@@ -7240,13 +7249,11 @@
         // Global Error Handling & Telemetry
         window.onerror = function(msg, url, lineNo, columnNo, error) {
             logErrorToTerminal(`Uncaught Error: ${msg}`, 'PANIC', { url, lineNo, columnNo, stack: error?.stack });
-            showToast('A system error occurred. Developers have been notified.', 'error');
             return false;
         };
 
         window.onunhandledrejection = function(event) {
             logErrorToTerminal(`Unhandled Promise Rejection: ${event.reason}`, 'PANIC_PROMISE');
-            showToast('A background task failed. Check console for details.', 'error');
         };
 
         async function logErrorToTerminal(message, level = 'ERROR', context = {}) {
@@ -8692,7 +8699,7 @@
                 card.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; width: 100%; flex-grow: 1; justify-content: center; min-height: 0;">
                         <img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 60px; height: 60px; border-radius: 14px; margin-bottom: 12px; flex-shrink: 0;">
-                        <h3>${g.name}</h3>
+                        <h3>${escapeHtml(g.name)}</h3>
                         ${memberInfo}
                     </div>
                     <div style="width: 100%; margin-top: auto; flex-shrink: 0;">
@@ -9117,8 +9124,8 @@
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <img src="${avatarUrl}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1);" onError="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
                                     <div style="display: flex; flex-direction: column; min-width: 0;">
-                                        <span style="font-weight: 700; color: #fff; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${username}</span>
-                                        ${userId ? `<span style="font-size: 0.7rem; color: var(--muted); font-family: monospace; white-space: nowrap;">ID: (${userId})</span>` : ''}
+                                        <span style="font-weight: 700; color: #fff; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(username)}</span>
+                                        ${userId ? `<span style="font-size: 0.7rem; color: var(--muted); font-family: monospace; white-space: nowrap;">ID: (${escapeHtml(userId)})</span>` : ''}
                                     </div>
                                 </div>
                             </td>
@@ -9222,8 +9229,8 @@
                         const el = document.createElement('div');
                         el.style.cssText = 'padding: 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.8rem;';
                         el.innerHTML = `
-                            <div style="font-weight: 600; color: #fff; margin-bottom: 2px;">${n.title}</div>
-                            <div style="color: var(--muted); font-size: 0.75rem;">${n.content}</div>
+                            <div style="font-weight: 600; color: #fff; margin-bottom: 2px;">${escapeHtml(n.title)}</div>
+                            <div style="color: var(--muted); font-size: 0.75rem;">${escapeHtml(n.content)}</div>
                         `;
                         rightList.appendChild(el);
                     });
@@ -9260,7 +9267,7 @@
                         div.style.background = 'rgba(255,255,255,0.03)';
                         div.style.borderRadius = '8px';
                         div.style.borderLeft = `3px solid ${n.read ? 'transparent' : 'var(--primary)'}`;
-                        div.innerHTML = `<span style="font-weight: 700;">${n.title}</span><br><span style="opacity: 0.7;">${n.content.substring(0, 50)}${n.content.length > 50 ? '...' : ''}</span>`;
+                        div.innerHTML = `<span style="font-weight: 700;">${escapeHtml(n.title)}</span><br><span style="opacity: 0.7;">${escapeHtml(n.content.substring(0, 50))}${n.content.length > 50 ? '...' : ''}</span>`;
                         overviewList.appendChild(div);
                     });
                 } else {
@@ -9311,7 +9318,7 @@
             };
 
             const time = new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const serverTag = n.server ? `<span class="badge-user" style="font-size: 0.65rem; padding: 2px 6px; margin: 0; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);">${n.server}</span>` : '';
+            const serverTag = n.server ? `<span class="badge-user" style="font-size: 0.65rem; padding: 2px 6px; margin: 0; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);">${escapeHtml(n.server)}</span>` : '';
             
             const typeStyles = {
                 'info': { color: '#ffffff', bg: 'rgba(255, 255, 255, 0.1)', text: 'INFO' },
@@ -9329,8 +9336,8 @@
                 item.style.background = 'rgba(255, 215, 0, 0.02)';
             }
 
-            const displayTitle = translateText(n.title);
-            const displayContent = translateText(n.content);
+            const displayTitle = escapeHtml(translateText(n.title));
+            const displayContent = escapeHtml(translateText(n.content));
             const groupedBadge = (n.count > 1)
                 ? `<div style="margin-top: 6px; font-size: 0.7rem; color: var(--primary); font-weight: 700;">Grouped ${n.count} similar alerts</div>`
                 : '';
@@ -9854,13 +9861,13 @@
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <img src="${log.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 24px; height: 24px; border-radius: 50%;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                                 <div>
-                                    <div style="font-weight: 600; color: #fff;">${log.username || 'User'}</div>
-                                    <div style="font-size: 0.72rem; color: var(--muted);">ID: ${log.userId || 'N/A'}</div>
+                                    <div style="font-weight: 600; color: #fff;">${escapeHtml(log.username || 'User')}</div>
+                                    <div style="font-size: 0.72rem; color: var(--muted);">ID: ${escapeHtml(log.userId || 'N/A')}</div>
                                 </div>
                             </div>
                         </td>
                         <td style="padding: 12px 15px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 0.8rem; color: #f2f3f5;">
-                            ${log.reason || 'Safety Filter Violation'}
+                            ${escapeHtml(log.reason || 'Safety Filter Violation')}
                         </td>
                         <td style="padding: 12px 15px;">
                             <span style="font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: rgba(79, 70, 229, 0.15); color: var(--primary); border: 1px solid rgba(79, 70, 229, 0.3);">
@@ -10824,7 +10831,7 @@
             currentServerName = g.name;
             currentServerIsPremium = g.isPremium;
             document.getElementById('cfg-icon').src = g.icon;
-            document.getElementById('cfg-name').innerHTML = `${g.name} <div id="cfg-status" class="status-indicator online" title="Online"></div>`;
+            document.getElementById('cfg-name').innerHTML = `${escapeHtml(g.name)} <div id="cfg-status" class="status-indicator online" title="Online"></div>`;
             
             [viewServers, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
             viewConfig.style.display = 'block';
@@ -11105,7 +11112,7 @@
                             <span style="font-weight: 800; color: ${trophyColor}; font-size: 0.85rem; min-width: 15px;">#${idx + 1}</span>
                             <img src="${m.avatar}" style="width: 28px; height: 28px; border-radius: 50%; margin: 0;">
                             <div style="overflow: hidden; flex: 1;">
-                                <div style="font-weight: 700; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${m.displayName}</div>
+                                <div style="font-weight: 700; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${escapeHtml(m.displayName)}</div>
                             </div>
                             <span style="font-weight: 700; font-size: 0.75rem; color: var(--primary);">Lvl ${m.level}</span>
                         `;
@@ -11138,7 +11145,7 @@
                 
                 const premiumBadge = m.isPremium ? `<span class="badge-user" style="color: var(--primary); background: rgba(174, 239, 255, 0.1); border: 1px solid rgba(255,255,255,0.15); font-size: 0.62rem; padding: 2px 6px; margin: 0; display: inline-flex; align-items: center; gap: 4px; border-radius: 4px;"><i class="fas fa-star" style="font-size: 0.55rem;"></i> Premium</span>` : '';
                 const robloxBadge = (m.robloxLinked && m.robloxPublic) ? `<span class="badge-user" style="color: #00A2FF; background: rgba(0, 162, 255, 0.1); border: 1px solid rgba(0,162,255,0.15); font-size: 0.62rem; padding: 2px 6px; margin: 0; display: inline-flex; align-items: center; gap: 4px; border-radius: 4px;"><i class="fas fa-gamepad" style="font-size: 0.55rem;"></i> Linked</span>` : '';
-                const bioSection = m.bio ? `<div style="font-size: 0.7rem; color: var(--muted); margin-top: 8px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; line-height: 1.4; word-break: break-word;">"${m.bio}"</div>` : '';
+                const bioSection = m.bio ? `<div style="font-size: 0.7rem; color: var(--muted); margin-top: 8px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; line-height: 1.4; word-break: break-word;">"${escapeHtml(m.bio)}"</div>` : '';
                 
                 const hasBanner = !!m.banner;
                 const bannerHtml = hasBanner ? `<div style="height: 75px; background: ${m.banner.startsWith('#') ? m.banner : `url('${m.banner}') center/cover`};"></div>` : '';
@@ -11159,8 +11166,8 @@
                         
                         <!-- Name & Username -->
                         <div>
-                            <div style="font-weight: 800; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${m.displayName}</div>
-                            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 1px;">@${m.username}</div>
+                            <div style="font-weight: 800; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${escapeHtml(m.displayName)}</div>
+                            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 1px;">@${escapeHtml(m.username)}</div>
                         </div>
 
                         <!-- Stats Box -->
@@ -11867,7 +11874,7 @@
                 const isChecked = selected.includes(c.id);
                 return `
                     <label style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 6px; cursor: pointer; user-select: none;" onmouseenter="this.style.background='rgba(255,255,255,0.05)'" onmouseleave="this.style.background='rgba(255,255,255,0.02)'">
-                        <span style="font-size: 0.82rem; color: #fff; font-weight: 500;">#${c.name}</span>
+                        <span style="font-size: 0.82rem; color: #fff; font-weight: 500;">#${escapeHtml(c.name)}</span>
                         <input type="checkbox" class="starboard-ignored-cb" value="${c.id}" ${isChecked ? 'checked' : ''} onchange="updateStarboardIgnoredChannelsFromUI()">
                     </label>
                 `;
@@ -12616,42 +12623,12 @@
             }
         }
 
-        
         let rrSlotCount = 5;
 
-        function addRRSlotRow(roleId = '', emoji = '') {
-            rrSlotCount++;
-            const container = document.getElementById('rr-mappings-container');
-            if (!container) return;
-
-            const row = document.createElement('div');
-            row.className = 'rr-slot-row';
-            row.style = 'display: grid; grid-template-columns: 1.2fr 0.8fr auto; gap: 12px; align-items: center; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px; border: 1px solid var(--border);';
-            
-            // Build role options from existing roles dropdown
-            let roleOptions = '<option value="">Select role...</option>';
-            const sampleSelect = document.getElementById('rr-role-1');
-            if (sampleSelect) {
-                roleOptions = sampleSelect.innerHTML;
+        function addRRSlotRow(roleId = '', emoji = '🔔') {
+            if (typeof window.addRRSlotRow === 'function') {
+                return window.addRRSlotRow(roleId, emoji);
             }
-
-            row.innerHTML = `
-                <div class="input-group" style="margin-bottom: 0;">
-                    <select id="rr-role-${rrSlotCount}" onchange="updateRRPreview()">${roleOptions}</select>
-                </div>
-                <div class="input-group" style="margin-bottom: 0; position: relative;">
-                    <input type="text" id="rr-emoji-${rrSlotCount}" class="rr-emoji-input" value="${emoji}" placeholder="Click to select..." readonly onclick="showEmojiPicker(event, 'rr-emoji-${rrSlotCount}')" style="width: 100%; box-sizing: border-box; padding-right: 32px; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
-                    <button type="button" class="btn-outline rr-picker-btn" onclick="showEmojiPicker(event, 'rr-emoji-${rrSlotCount}')" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: none; padding: 4px 6px; font-size: 0.85rem; color: var(--muted); background: transparent;" title="Select Emoji"><i class="far fa-smile"></i></button>
-                </div>
-                <button type="button" class="btn-outline delete-slot-btn" onclick="clearRRSlot(this)" style="border-color: rgba(255,85,85,0.2); color: #ff5555; padding: 10px 12px; background: transparent;" title="Clear Slot"><i class="fas fa-times"></i></button>
-            `;
-
-            container.appendChild(row);
-            if (roleId) {
-                const sel = document.getElementById(`rr-role-${rrSlotCount}`);
-                if (sel) sel.value = roleId;
-            }
-            updateRRPreview();
         }
 
         function applyRRPreset(presetType) {
@@ -12714,7 +12691,8 @@
             const imgVal = document.getElementById('setting-rr-panelImage').value;
 
             // Hex text
-            document.getElementById('rr-color-hex').textContent = colorVal.toUpperCase();
+            const hexEl = document.getElementById('rr-color-hex');
+            if (hexEl) hexEl.textContent = colorVal.toUpperCase();
 
             // Embed properties
             const titleEl = document.getElementById('rr-preview-title');
@@ -12751,9 +12729,10 @@
             const reactionsContainer = document.getElementById('rr-preview-reactions');
             reactionsContainer.innerHTML = '';
 
-            for (let i = 1; i <= 5; i++) {
-                const rSelect = document.getElementById(`rr-role-${i}`);
-                const eInput = document.getElementById(`rr-emoji-${i}`);
+            const rows = document.querySelectorAll('#rr-mappings-container .rr-slot-row');
+            rows.forEach(row => {
+                const rSelect = row.querySelector('.rr-role-select') || row.querySelector('select');
+                const eInput = row.querySelector('.rr-emoji-input') || row.querySelector('input[type="text"]');
                 if (rSelect && rSelect.value && eInput && eInput.value.trim()) {
                     const emoji = eInput.value.trim();
                     let displayEmoji = emoji;
@@ -12796,11 +12775,12 @@
                     };
                     reactionsContainer.appendChild(badge);
                 }
-            }
+            });
         }
 
         async function publishReactionRolesPanel() {
-            const channelId = document.getElementById('rr-channelId').value;
+            const channelSelect = document.getElementById('setting-reactionRolesChannel') || document.getElementById('rr-channelId');
+            const channelId = channelSelect ? channelSelect.value : '';
             const title = document.getElementById('setting-rr-panelTitle').value;
             const description = document.getElementById('setting-rr-panelDescription').value;
             const color = document.getElementById('setting-rr-panelColor').value;
@@ -12812,13 +12792,14 @@
             }
 
             const roles = [];
-            for (let i = 1; i <= 5; i++) {
-                const rVal = document.getElementById(`rr-role-${i}`).value;
-                const eVal = document.getElementById(`rr-emoji-${i}`).value.trim();
-                if (rVal && eVal) {
-                    roles.push({ roleId: rVal, emoji: eVal });
+            const rows = document.querySelectorAll('#rr-mappings-container .rr-slot-row');
+            rows.forEach(row => {
+                const rSelect = row.querySelector('.rr-role-select') || row.querySelector('select');
+                const eInput = row.querySelector('.rr-emoji-input') || row.querySelector('input[type="text"]');
+                if (rSelect && rSelect.value && eInput && eInput.value.trim()) {
+                    roles.push({ roleId: rSelect.value, emoji: eInput.value.trim() });
                 }
-            }
+            });
 
             if (!roles.length) {
                 showToast('Please configure at least one role mapping!', 'error');
@@ -13226,8 +13207,10 @@
         }
 
         // Form change tracking history logic
-        let undoStack = [];
-        let redoStack = [];
+        window.undoStack = window.undoStack || [];
+        window.redoStack = window.redoStack || [];
+        var undoStack = window.undoStack;
+        var redoStack = window.redoStack;
         let isApplyingHistoryState = false;
 
         function getFormState() {
@@ -13971,7 +13954,7 @@
                 const selectedOpt = Array.from(selectEl.options).find(opt => opt.value === selectEl.value) || selectEl.options[0];
                 selectedText = selectedOpt.textContent;
             }
-            trigger.innerHTML = `${selectedText} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
+            trigger.innerHTML = `${escapeHtml(selectedText)} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
         }
 
         /* Custom Single-Select Dropdown Logic */
@@ -14050,7 +14033,7 @@
                 if (!hasActiveSelection && selectEl.options.length > 0) {
                     selectedText = selectEl.options[0].textContent;
                 }
-                trigger.innerHTML = `${selectedText} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
+                trigger.innerHTML = `${escapeHtml(selectedText)} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
             }
 
             rebuildOptions();
@@ -14689,9 +14672,62 @@
                 toggleLoading(false);
                 return;
             }
+            // Fetch server channels and roles for dropdowns
+            fetchGuildChannelsAndRoles(currentServerId);
             _applySettings(s);
             fetchApplications();
             toggleLoading(false);
+        }
+
+        async function fetchGuildChannelsAndRoles(guildId) {
+            if (!guildId) return;
+            const t = sessionStorage.getItem('discord_token');
+            const headers = { 'Authorization': `Bearer ${t}` };
+            const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+
+            try {
+                const [chRes, rlRes] = await Promise.all([
+                    fetch(`${apiBase}/api/guilds/${guildId}/channels`, { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch(`${apiBase}/api/guilds/${guildId}/roles`, { headers }).then(r => r.ok ? r.json() : []).catch(() => [])
+                ]);
+
+                window.guildChannels = chRes;
+                window.guildRoles = rlRes;
+
+                // Populate Target Channel dropdowns
+                const targetChannelSelects = [
+                    document.getElementById('setting-reactionRolesChannel'),
+                    document.getElementById('rr-channelId'),
+                    document.getElementById('setting-loggingChannelId'),
+                    document.getElementById('setting-starboardChannelId'),
+                    document.getElementById('setting-welcomeChannelId'),
+                    document.getElementById('setting-verifyChannelId')
+                ];
+
+                targetChannelSelects.forEach(select => {
+                    if (select) {
+                        const currentVal = select.value;
+                        let opts = '<option value="">Select channel...</option>';
+                        chRes.forEach(ch => {
+                            opts += `<option value="${ch.id}" ${ch.id === currentVal ? 'selected' : ''}>#${ch.name}</option>`;
+                        });
+                        select.innerHTML = opts;
+                        if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown(select.id);
+                    }
+                });
+
+                // Refresh any existing RR slot role dropdowns
+                document.querySelectorAll('.rr-role-select').forEach(select => {
+                    const currentVal = select.value;
+                    let opts = '<option value="">Select Role...</option>';
+                    rlRes.forEach(r => {
+                        opts += `<option value="${r.id}" ${r.id === currentVal ? 'selected' : ''}>${r.name}</option>`;
+                    });
+                    select.innerHTML = opts;
+                });
+            } catch (e) {
+                console.error('Failed to fetch guild channels or roles:', e);
+            }
         }
 
         async function _applySettings(s) {
@@ -15504,7 +15540,7 @@
                     <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                         <div style="background: rgba(0, 180, 216, 0.08); border: 1px solid rgba(0, 180, 216, 0.2); border-radius: 8px; padding: 8px 12px; min-width: 150px; text-align: left;">
                             <div style="font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Trigger</div>
-                            <span style="font-weight: 700; color: #fff; font-size: 0.85rem; word-break: break-all;">${r.trigger}</span>
+                            <span style="font-weight: 700; color: #fff; font-size: 0.85rem; word-break: break-all;">${escapeHtml(r.trigger)}</span>
                         </div>
                         
                         <div style="color: var(--muted); font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
@@ -15514,9 +15550,9 @@
                         <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; flex: 1; min-width: 200px; text-align: left;">
                             <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; display: flex; justify-content: space-between;">
                                 <span>Action / Response</span>
-                                <span style="font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 0px 4px; border-radius: 3px;">${matchTypeLabels[r.matchType] || r.matchType}</span>
+                                <span style="font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 0px 4px; border-radius: 3px;">${escapeHtml(matchTypeLabels[r.matchType] || r.matchType)}</span>
                             </div>
-                            <p style="margin: 0; font-size: 0.8rem; color: #dbdee1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.response}</p>
+                            <p style="margin: 0; font-size: 0.8rem; color: #dbdee1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(r.response)}</p>
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
@@ -15788,7 +15824,7 @@
                 channelsContainer.innerHTML = window.guildChannels.map(ch => `
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #fff; cursor: pointer; user-select: none;">
                         <input type="checkbox" class="ar-channel-checkbox" value="${ch.id}">
-                        <span>#${ch.name}</span>
+                        <span>#${escapeHtml(ch.name)}</span>
                     </label>
                 `).join('');
             }
@@ -15797,7 +15833,7 @@
                 const rolesHtml = window.guildRoles.map(r => `
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #fff; cursor: pointer; user-select: none;">
                         <input type="checkbox" class="ar-role-checkbox" value="${r.id}">
-                        <span style="color: ${r.color || '#fff'};">${r.name}</span>
+                        <span style="color: ${r.color || '#fff'};">${escapeHtml(r.name)}</span>
                     </label>
                 `).join('');
                 rolesContainer.innerHTML = rolesHtml;
@@ -15973,31 +16009,34 @@
         };
 
         // Reaction Roles & Roblox Group Bindings Dynamic Row Managers
-        window.addRRSlotRow = function(emoji = '🔔', roleId = '') {
+        window.addRRSlotRow = function(roleId = '', emoji = '🔔') {
+            rrSlotCount++;
+            const slotId = rrSlotCount;
             const container = document.getElementById('rr-mappings-container');
             if (!container) return;
-            
+
             const row = document.createElement('div');
             row.className = 'rr-slot-row';
             row.style.cssText = 'display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);';
-            
+
             let rolesOptions = '<option value="">Select Role...</option>';
             if (window.guildRoles) {
                 rolesOptions += window.guildRoles.map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''}>${r.name}</option>`).join('');
             }
 
             row.innerHTML = `
-                <div style="position: relative; width: 140px;">
-                    <input type="text" class="rr-emoji-input" value="${emoji}" placeholder="Emoji (e.g. 🔔)" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 0.85rem;" oninput="updateRRPreview()">
+                <div style="position: relative; width: 160px;">
+                    <input type="text" id="rr-emoji-${slotId}" class="rr-emoji-input" value="${emoji}" placeholder="Click to select..." readonly onclick="showEmojiPicker(event, 'rr-emoji-${slotId}')" style="width: 100%; box-sizing: border-box; padding: 8px 32px 8px 10px; font-size: 0.85rem; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
+                    <button type="button" class="btn-outline rr-picker-btn" onclick="showEmojiPicker(event, 'rr-emoji-${slotId}')" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: none; padding: 4px 6px; font-size: 0.85rem; color: var(--muted); background: transparent;" title="Select Emoji"><i class="far fa-smile"></i></button>
                 </div>
-                <select class="rr-role-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;" onchange="updateRRPreview()">
+                <select id="rr-role-${slotId}" class="rr-role-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;" onchange="updateRRPreview()">
                     ${rolesOptions}
                 </select>
                 <button type="button" onclick="removeRRSlotRow(this)" style="background: rgba(239, 68, 68, 0.2) !important; color: #FCA5A5 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; font-weight: 700 !important; font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                     <i class="fas fa-trash-alt"></i> Remove Row
                 </button>
             `;
-            
+
             container.appendChild(row);
             if (typeof updateRRPreview === 'function') updateRRPreview();
         };

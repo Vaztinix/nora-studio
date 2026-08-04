@@ -84,7 +84,8 @@ module.exports = {
                 }
 
                 // 4. Generate verification code and create pending record
-                const verifyCode = `Nora-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+                const crypto = require('crypto');
+                const verifyCode = `Nora-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
                 
                 // Find pending or overwrite
                 const existingPending = await RobloxVerify.findOne({

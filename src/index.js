@@ -33,7 +33,45 @@ console.warn = (...args) => {
     bufferLog(args.join(' '), 'WARN');
 };
 
+const fs = require('fs');
+const path = require('path');
+
+// ─── Register PID & Auto-Launch Independent Status Watcher ───
+const PID_FILE = path.join(__dirname, '../.nora.pid');
+const WATCHER_PID_FILE = path.join(__dirname, '../.nora_watcher.pid');
+try {
+    fs.writeFileSync(PID_FILE, process.pid.toString());
+} catch (e) {}
+
+(function ensureWatcherRunning() {
+    try {
+        let watcherAlive = false;
+        if (fs.existsSync(WATCHER_PID_FILE)) {
+            const watcherPid = parseInt(fs.readFileSync(WATCHER_PID_FILE, 'utf8').trim(), 10);
+            if (watcherPid > 0) {
+                try {
+                    process.kill(watcherPid, 0);
+                    watcherAlive = true;
+                } catch (e) {}
+            }
+        }
+        if (!watcherAlive) {
+            const { spawn } = require('child_process');
+            const watcherScript = path.join(__dirname, '../scripts/watcher.js');
+            const child = spawn(process.execPath, [watcherScript], {
+                detached: true,
+                stdio: 'ignore'
+            });
+            child.unref();
+            console.log('[System] Independent Status Watcher process spawned in background.');
+        }
+    } catch (e) {
+        console.error('[System] Failed to check/spawn independent watcher:', e.message);
+    }
+})();
+
 const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js');
+
 
 // ─── Roblox API Rate Limiter (Token Bucket) ───
 // Prevents 429s by throttling outbound requests to Roblox APIs.
@@ -151,8 +189,6 @@ async function fetchRoblox(url, options = {}) {
     }
     throw lastError;
 }
-const fs = require('fs');
-const path = require('path');
 const sequelize = require('./database/db');
 
 // Initialize encryption key before models load (auto-generates if missing)
@@ -397,6 +433,215 @@ runPreSyncMigrations().then(() => {
     client.login(process.env.TOKEN);
 }).catch(err => {
     console.error('Nora - Database Connection Failure:', err);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚨 LOCAL SHUTDOWN & RECOVERY ALERT SYSTEM
+// Transmits instant offline alert when PC initiates shutdown/reboot,
+// and sends recovery duration alert when PC boots back up!
+// ─────────────────────────────────────────────────────────────────────────────
+const { spawnSync } = require('child_process');
+const axios = require('axios');
+const DEFAULT_SHUTDOWN_WEBHOOK = 'https://discord.com/api/webhooks/1533295606590734456/NvUr7PcEGXp_hf7zGYtbRTm-hKl9r1AcQ3DzeVdPTVIwR5xAmTNTkNehc6GYLkon_F3p';
+const SHUTDOWN_WEBHOOK_CHANNEL = '1533291837173792859';
+const LAST_SHUTDOWN_FILE = path.join(__dirname, '../.nora_last_shutdown.json');
+let isShuttingDown = false;
+
+
+// Helper to deliver alerts via HTTP Webhook POST (works without Discord Bot Client)
+function sendStatusSharkAlert(embed) {
+    const webhookUrl = process.env.SHUTDOWN_WEBHOOK_URL || process.env.DISCORD_STATUS_WEBHOOK_URL || DEFAULT_SHUTDOWN_WEBHOOK;
+    
+    // 1. Fast Synchronous curl.exe Delivery (Guarantees packet sends before OS power off / exit)
+    if (webhookUrl) {
+        try {
+            const payload = JSON.stringify({
+                username: 'Status Shark',
+                avatar_url: 'https://nora.vaztinix.com/nora.png',
+                embeds: [embed]
+            });
+            const res = spawnSync('curl.exe', [
+                '-s', '-X', 'POST',
+                '-H', 'Content-Type: application/json',
+                '-d', payload,
+                '--max-time', '4',
+                webhookUrl
+            ], { encoding: 'utf8', timeout: 5000 });
+            if (res.status === 0) {
+                console.log('[Status Shark] Alert delivered via fast sync curl.exe Webhook!');
+                return true;
+            }
+        } catch (e) {
+            console.error('[Status Shark] Sync curl Webhook POST failed:', e.message);
+        }
+
+        // 2. Async Axios Fallback
+        try {
+            axios.post(webhookUrl, {
+                username: 'Status Shark',
+                avatar_url: 'https://nora.vaztinix.com/nora.png',
+                embeds: [embed]
+            }, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 5000
+            }).catch(e => console.error('[Status Shark] HTTP Webhook POST fallback error:', e.message));
+        } catch (e) {}
+    }
+
+    // 3. Fallback via Bot Client Channel Send
+    try {
+        let channel = client?.channels?.cache?.get(SHUTDOWN_WEBHOOK_CHANNEL);
+        if (channel && typeof channel.send === 'function') {
+            channel.send({ embeds: [embed] }).catch(() => null);
+            console.log('[Status Shark] Alert delivered via Discord Bot Channel!');
+            return true;
+        }
+    } catch (err) {
+        console.error('[Status Shark] Failed to deliver alert via Bot Channel:', err.message);
+    }
+    return false;
+}
+
+// 1. Startup Boot Recovery Check (Triggers when bot is logged in & ready)
+async function checkShutdownRecovery() {
+    try {
+        if (fs.existsSync(LAST_SHUTDOWN_FILE)) {
+            const rawData = fs.readFileSync(LAST_SHUTDOWN_FILE, 'utf8');
+            const data = JSON.parse(rawData);
+            if (fs.existsSync(LAST_SHUTDOWN_FILE)) {
+                try { fs.unlinkSync(LAST_SHUTDOWN_FILE); } catch (e) {}
+            }
+
+            if (data.shutdownAt) {
+                const now = Date.now();
+                const offlineMs = now - data.shutdownAt;
+                const totalSeconds = Math.floor(offlineMs / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                
+                const durationParts = [];
+                if (hours > 0) durationParts.push(`${hours}h`);
+                if (minutes > 0) durationParts.push(`${minutes}m`);
+                if (seconds > 0 || durationParts.length === 0) durationParts.push(`${seconds}s`);
+                const readableDuration = durationParts.join(' ');
+
+                console.log(`[Status Shark] Nora recovered from local PC shutdown after ${readableDuration}`);
+
+                const unixUp = Math.floor(now / 1000);
+                const unixDown = Math.floor(data.shutdownAt / 1000);
+                const embed = {
+                    title: '✅ Nora Bot Service Restored & Online',
+                    description: `**Nora Bot** is back online and operational following **${data.reason || 'PC Reboot / Shutdown'}**.`,
+                    color: 0x57F287, // Green
+                    fields: [
+                        {
+                            name: 'Total Offline Duration',
+                            value: `**${readableDuration}**`,
+                            inline: false
+                        },
+                        {
+                            name: 'Offline At',
+                            value: `<t:${unixDown}:F>`,
+                            inline: true
+                        },
+                        {
+                            name: 'Restored At',
+                            value: `<t:${unixUp}:F>`,
+                            inline: true
+                        }
+                    ],
+                    footer: { text: 'Status Shark • Local PC Power Monitor' },
+                    timestamp: new Date(now).toISOString()
+                };
+                await sendStatusSharkAlert(embed);
+            }
+        }
+    } catch (e) {
+        console.error('[Status Shark] Error checking last shutdown record:', e.message);
+    }
+}
+
+client.once('ready', () => {
+    checkShutdownRecovery();
+});
+
+// Continuous Heartbeat: Updates .nora_last_shutdown.json immediately & every 15s in case of abrupt power off / kill
+function updateHeartbeat() {
+    if (!isShuttingDown) {
+        try {
+            fs.writeFileSync(LAST_SHUTDOWN_FILE, JSON.stringify({
+                shutdownAt: Date.now(),
+                reason: 'Abrupt OS Power Cut / Process Kill'
+            }));
+        } catch (e) {}
+    }
+}
+updateHeartbeat();
+setInterval(updateHeartbeat, 15000);
+
+// 2. Graceful Shutdown Alert Handler
+async function notifyGracefulShutdown(reason = 'PC Shutdown / OS Signal') {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    console.log(`[Status Shark] Intercepted OS shutdown signal (${reason}). Dispatching instant offline alert...`);
+
+    const shutdownTimestamp = Date.now();
+    try {
+        fs.writeFileSync(LAST_SHUTDOWN_FILE, JSON.stringify({
+            shutdownAt: shutdownTimestamp,
+            reason: reason
+        }));
+    } catch (e) {}
+
+    const unixTime = Math.floor(shutdownTimestamp / 1000);
+    
+    const embed = {
+        title: '🚨 Nora Bot Service Going Offline',
+        description: `**Nora Bot** is shutting down due to **${reason}**.`,
+        color: 0xED4245, // Red
+        fields: [
+            {
+                name: 'Offline Started At',
+                value: `<t:${unixTime}:F> (<t:${unixTime}:R>)`,
+                inline: true
+            },
+            {
+                name: 'Target Channel',
+                value: `<#${SHUTDOWN_WEBHOOK_CHANNEL}>`,
+                inline: true
+            }
+        ],
+        footer: { text: 'Status Shark • Local PC Power Monitor' },
+        timestamp: new Date(shutdownTimestamp).toISOString()
+    };
+
+    await sendStatusSharkAlert(embed);
+}
+
+// Attach OS Signal Interceptors (Triggers when Windows shuts down or node exits)
+process.on('SIGHUP', async () => {
+    await notifyGracefulShutdown('PC Shutdown / Windows OS Signal');
+    process.exit(0);
+});
+process.on('SIGINT', async () => {
+    await notifyGracefulShutdown('Manual Ctrl+C / Stop Signal');
+    process.exit(0);
+});
+process.on('SIGTERM', async () => {
+    await notifyGracefulShutdown('System / OS Shutdown Signal');
+    process.exit(0);
+});
+process.on('SIGBREAK', async () => {
+    await notifyGracefulShutdown('Console / OS Shutdown Signal');
+    process.exit(0);
+});
+process.on('message', async (msg) => {
+    if (msg === 'shutdown') {
+        await notifyGracefulShutdown('System Command Shutdown');
+        process.exit(0);
+    }
 });
 
 // Global Error Handling to prevent the bot from going offline on minor errors
@@ -1129,9 +1374,23 @@ app.post('/api/notifications/clear', async (req, res) => {
     }
 });
 
-// Health check endpoint
+// Health check endpoint (Used by external monitors, Status Shark, and dashboard)
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Nora API is running.' });
+    const isBotReady = client && client.ws && client.ws.status === 0;
+    res.json({
+        status: isBotReady ? 'ok' : 'degraded',
+        bot: {
+            online: isBotReady,
+            ping: isBotReady ? client.ws.ping : -1,
+            user: client?.user?.tag || 'Nora#0000',
+            guilds: client?.guilds?.cache?.size || 0,
+            uptimeSeconds: Math.floor(process.uptime())
+        },
+        system: {
+            timestamp: new Date().toISOString(),
+            memoryUsageMb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+        }
+    });
 });
 
 // YouTube WebSub Webhook Router
@@ -1752,7 +2011,7 @@ app.post('/api/auth/pairing-code', async (req, res) => {
         // Generate a unique 6-digit code
         let code;
         do {
-            code = Math.floor(100000 + Math.random() * 900000).toString();
+            code = crypto.randomInt(100000, 1000000).toString();
         } while (pairingCodes.has(code));
         
         const ua = req.headers['user-agent'] || '';
@@ -2253,7 +2512,7 @@ app.get('/api/user/roblox/oauth-link', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        const state = Math.random().toString(36).substring(2, 18);
+        const state = crypto.randomBytes(8).toString('hex');
         robloxStateMap.set(state, { userId: user.id, token });
         
         // Timeout to clean up state after 15 minutes
@@ -2284,7 +2543,7 @@ app.post('/api/auth/roblox/mock-authorize-submit', express.urlencoded({ extended
     if (!state || !robloxId || !robloxUsername) {
         return res.status(400).send('Missing required fields');
     }
-    const code = 'mock_code_' + Math.random().toString(36).substring(2, 10);
+    const code = 'mock_code_' + crypto.randomBytes(6).toString('hex');
     robloxMockCodes.set(code, { robloxId, robloxUsername });
     
     // Timeout mock code after 5 minutes

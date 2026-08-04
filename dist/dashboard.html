@@ -2748,17 +2748,17 @@
                 </div>
 
                 <!-- Premium Callout Banner -->
-                <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.1) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 18px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                <div id="premium-callout-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.1) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 18px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
                     <div style="display: flex; align-items: center; gap: 14px;">
                         <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
                             <i class="fas fa-crown"></i>
                         </div>
                         <div>
-                            <h4 style="margin: 0 0 2px 0; font-size: 1rem; font-weight: 800; color: #fff;">Unlock Nora Studio Plus Premium</h4>
-                            <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 0.83rem;">Instant Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.</p>
+                            <h4 id="premium-banner-title" style="margin: 0 0 2px 0; font-size: 1rem; font-weight: 800; color: #fff;">Unlock Nora Studio Plus Premium</h4>
+                            <p id="premium-banner-desc" style="margin: 0; color: rgba(255,255,255,0.7); font-size: 0.83rem;">Instant Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.</p>
                         </div>
                     </div>
-                    <button type="button" onclick="openPremiumModal()" style="background: #10B981 !important; color: #000 !important; font-weight: 800 !important; font-size: 0.85rem; padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                    <button type="button" id="premium-banner-btn" onclick="openPremiumModal()" style="background: #10B981 !important; color: #000 !important; font-weight: 800 !important; font-size: 0.85rem; padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
                         ★ Upgrade Server ($4.99/mo)
                     </button>
                 </div>
@@ -2881,6 +2881,127 @@
                             </div>
                             
                             <button class="save-btn" style="margin-top: 24px; width: 100%; padding: 15px; font-size: 0.95rem; font-weight: 600; border-radius: 12px; background: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);" onclick="saveUserProfile()">Save Profile Changes</button>
+                        </div>
+
+                        <!-- Leveling Rank Card & Animated GIF Background Customization Panel -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">Rank Card & Animated GIF Backgrounds</h3>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Customize your personal rank card displayed in <code>/rank</code> and <code>/mycard</code> with animated GIFs.</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 18px;">
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">Card Theme Mode</label>
+                                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                        <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
+                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI();"> Default Server Style
+                                        </label>
+                                        <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
+                                            <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI();"> Custom Accent Color
+                                        </label>
+                                        <label class="btn-outline" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border);">
+                                            <input type="radio" name="userRankCardThemeMode" value="image" onchange="toggleUserRankCardThemeModeUI();"> GIF / Image Background
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="user-rankcard-custom-color-container" style="display: none; align-items: center; gap: 12px; background: rgba(0,0,0,0.15); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
+                                    <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">Rank Card Accent Color:</label>
+                                    <input type="color" id="user-pref-rankCardCustomColor" value="#7c3aed" style="width: 44px; height: 38px; cursor: pointer; border-radius: 6px; border: none; background: transparent;">
+                                </div>
+
+                                <div id="user-rankcard-image-container" style="display: none; flex-direction: column; gap: 14px;">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">GIF or Image Background URL</label>
+                                        <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Klipy GIF, Tenor, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;">
+                                    </div>
+
+                                    <!-- Klipy & Discord Animated GIF Gallery Picker -->
+                                    <div style="background: rgba(0,0,0,0.25); padding: 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                            <span style="font-size: 0.9rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-film" style="color: var(--primary);"></i> Klipy Animated GIF Picker
+                                            </span>
+                                            <div style="display: flex; gap: 8px; align-items: center; flex: 1; max-width: 320px; min-width: 200px;">
+                                                <input type="text" id="klipy-gif-query" placeholder="Search Klipy GIFs..." style="flex: 1; padding: 8px 12px; font-size: 0.82rem; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; box-sizing: border-box;" onkeyup="if(event.key==='Enter') searchKlipyGifs();">
+                                                <button type="button" class="save-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; white-space: nowrap; height: 36px;" onclick="searchKlipyGifs()"><i class="fas fa-search"></i> Search</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Discord-style GIF Category Pills -->
+                                        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;">
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('trending')">🔥 Trending</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('hello')">👋 Hello</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('lol')">😂 LOL</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('love')">❤️ Love</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('birthday')">🎂 Birthday</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('gaming')">🎮 Gaming</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('anime')">✨ Anime</button>
+                                            <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('synthwave')">🌆 Synthwave</button>
+                                        </div>
+
+                                        <div id="klipy-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
+                                            <!-- Dynamic Klipy GIF Thumbnails -->
+                                        </div>
+
+                                        <button type="button" id="klipy-load-more-btn" class="btn-outline" style="margin-top: 8px; width: 100%; padding: 8px; font-size: 0.8rem; border-radius: 8px; cursor: pointer; display: none; background: rgba(255,255,255,0.03); color: #fff;" onclick="loadMoreKlipyGifs()">
+                                            <i class="fas fa-plus-circle"></i> Load More GIFs
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Live Rank Card Preview Box -->
+                                <div style="margin-top: 14px; background: rgba(0,0,0,0.3); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: space-between;">
+                                        <span><i class="fas fa-eye" style="color: var(--primary);"></i> Live Rank Card Preview</span>
+                                        <span style="font-size: 0.7rem; color: var(--success); font-weight: 600;">Overrides All Server Rank Cards</span>
+                                    </div>
+                                    
+                                    <div id="live-rank-card-preview-frame" style="position: relative; width: 100%; height: 150px; border-radius: 12px; overflow: hidden; background: #111217; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; padding: 0 20px; box-sizing: border-box;">
+                                        <!-- Animated GIF / Accent Background Layer -->
+                                        <div id="live-rank-card-bg-layer" style="position: absolute; inset: 0; background-size: cover; background-position: center; transition: all 0.3s ease; opacity: 0.85;"></div>
+                                        <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(17,18,23,0.85) 0%, rgba(17,18,23,0.65) 60%, rgba(17,18,23,0.45) 100%); pointer-events: none;"></div>
+
+                                        <!-- Card Overlay Elements -->
+                                        <div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 16px; width: 100%;">
+                                            <div style="position: relative; flex-shrink: 0;">
+                                                <img id="live-rank-card-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; box-shadow: 0 4px 15px rgba(0,0,0,0.5);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
+                                            </div>
+                                            
+                                            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                    <div style="display: flex; flex-direction: column;">
+                                                        <span id="live-rank-card-name" style="font-weight: 800; font-size: 1.1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">@User</span>
+                                                        <span id="live-rank-card-level-badge" style="font-size: 0.75rem; font-weight: 700; color: #a78bfa;">LEVEL 4</span>
+                                                    </div>
+                                                    <div style="background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); font-size: 0.75rem; font-weight: 800; color: #fff;">
+                                                        RANK <span id="live-rank-card-rank-val" style="color: var(--primary);">#1</span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- XP Progress Bar -->
+                                                <div style="display: flex; flex-direction: column; gap: 3px;">
+                                                    <div style="width: 100%; height: 10px; background: rgba(0,0,0,0.6); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                                                        <div id="live-rank-card-progress-bar" style="width: 65%; height: 100%; background: linear-gradient(90deg, #7c3aed, #4f46e5); border-radius: 6px; transition: all 0.3s ease;"></div>
+                                                    </div>
+                                                    <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: rgba(255,255,255,0.7); font-weight: 600;">
+                                                        <span>PROGRESS</span>
+                                                        <span>497 / 740 XP</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="save-btn" style="margin-top: 10px; width: 100%; padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 10px; background: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);" onclick="saveUserProfile()"><i class="fas fa-save"></i> Save Rank Card Preferences</button>
+                            </div>
                         </div>
 
                         
@@ -4125,6 +4246,48 @@
                                 </table>
                             </div>
                         </div>
+
+                        <!-- 6. Server Action Log (Accountability Feed for Nora's Site) -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px; margin-top: 25px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-history" style="color: #ffffff;"></i> Nora's Site Action Log
+                                    </h3>
+                                    <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--muted);">Track which administrator made changes to the bot's configuration or moderation settings on this server.</p>
+                                </div>
+
+                                <button type="button" class="config-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: #fff; font-weight: 600;" onclick="loadServerActionLogs()">
+                                    <i class="fas fa-sync-alt" style="margin-right: 6px;"></i> Refresh Log
+                                </button>
+                            </div>
+
+                            <!-- Log Filters Bar -->
+                            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                                <input type="text" id="action-log-search" placeholder="Search by Administrator, User ID, Action, or Details..." oninput="loadServerActionLogs()" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
+                            </div>
+
+                            <!-- Log Table -->
+                            <div style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #dbdee1; text-align: left;">
+                                    <thead>
+                                        <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px;">
+                                            <th style="padding: 14px 18px; width: 190px; white-space: nowrap;">Timestamp</th>
+                                            <th style="padding: 14px 18px; width: 230px; white-space: nowrap;">Administrator</th>
+                                            <th style="padding: 14px 18px; width: 170px; white-space: nowrap;">Action</th>
+                                            <th style="padding: 14px 18px;">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="action-log-tbody">
+                                        <tr>
+                                            <td colspan="4" style="padding: 25px; text-align: center; color: var(--muted);">
+                                                Loading action logs...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -5282,7 +5445,10 @@
                             <div class="input-group" style="margin-bottom: 15px;">
                                 <label style="font-weight: 600; color: #fff;">Ignored Channels</label>
                                 <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Messages in these channels will be ignored by Starboard.</p>
-                                <input type="hidden" id="setting-starboardIgnoredChannels">
+                                <input type="hidden" id="setting-starboardIgnoredChannels" value="[]">
+                                <div id="starboard-ignored-channels-container" style="margin-top: 8px; max-height: 160px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="font-size: 0.8rem; color: var(--muted); text-align: center;">Select a server to load channels...</div>
+                                </div>
                             </div>
 
 
@@ -6146,6 +6312,15 @@
 
 
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
         let notifications = [];
         let newNotifCount = 0;
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
@@ -7074,13 +7249,11 @@
         // Global Error Handling & Telemetry
         window.onerror = function(msg, url, lineNo, columnNo, error) {
             logErrorToTerminal(`Uncaught Error: ${msg}`, 'PANIC', { url, lineNo, columnNo, stack: error?.stack });
-            showToast('A system error occurred. Developers have been notified.', 'error');
             return false;
         };
 
         window.onunhandledrejection = function(event) {
             logErrorToTerminal(`Unhandled Promise Rejection: ${event.reason}`, 'PANIC_PROMISE');
-            showToast('A background task failed. Check console for details.', 'error');
         };
 
         async function logErrorToTerminal(message, level = 'ERROR', context = {}) {
@@ -7511,13 +7684,22 @@
 
                 const prefPremium = document.getElementById('pref-premium-status');
                 if (prefPremium) {
-                    prefPremium.innerHTML = d.premium ? '<span style="color: #ffcc00;">★ Discord Nitro Active</span>' : 'Standard User';
-                    if (d.noraPremium) prefPremium.innerHTML += ' | <span style="color: var(--primary);">Nora Premium</span>';
+                    if (d.noraPremium || d.isOwner) {
+                        prefPremium.innerHTML = '<span style="color: #10B981; font-weight: 700;"><i class="fas fa-crown"></i> Nora Studio Plus Active</span>';
+                    } else if (d.premium) {
+                        prefPremium.innerHTML = '<span style="color: #ffcc00; font-weight: 700;"><i class="fab fa-discord"></i> Discord Nitro Active</span>';
+                    } else {
+                        prefPremium.innerHTML = '<span style="color: var(--muted);">Standard User</span>';
+                    }
+                }
+                if ((d.noraPremium || d.isOwner) && typeof window.updatePremiumUI === 'function') {
+                    window.userHasAnyPremium = true;
+                    window.updatePremiumUI(true);
                 }
 
                 const premiumStatusEl = document.getElementById('premium-center-status');
                 if (premiumStatusEl) {
-                    if (d.noraPremium) {
+                    if (d.noraPremium || d.isOwner) {
                         premiumStatusEl.innerHTML = '<strong style="color: var(--primary);">Nora+ is active.</strong> Your account currently unlocks premium AI limits, boosted automation, and priority support.';
                     } else if (d.premium) {
                         premiumStatusEl.innerHTML = '<strong style="color: #ffcc00;">Discord Nitro is active.</strong> You can still upgrade Nora+ for extra automation, AI capacity, and advanced boosts.';
@@ -7689,6 +7871,7 @@
                         if (sideEl) sideEl.style.display = 'flex';
                         fetchGuilds(t); 
                         fetchRobloxStatus(t); 
+                        if (typeof fetchUserProfile === 'function') fetchUserProfile();
                         if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
                     }, 300);
                 } else {
@@ -7696,6 +7879,7 @@
                     if (sideEl) sideEl.style.display = 'flex';
                     fetchGuilds(t); 
                     fetchRobloxStatus(t); 
+                    if (typeof fetchUserProfile === 'function') fetchUserProfile();
                     if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
                 }
             } catch (e) { 
@@ -8046,8 +8230,8 @@
 
             const showAvatarBox = document.getElementById('user-pref-showAvatarInRankCard');
             const showAvatarInRankCard = showAvatarBox ? showAvatarBox.checked : true;
-            const rankCardThemeMode = document.querySelector('input[name="rankCardThemeMode"]:checked')?.value || 'preset';
-            const rankCardCustomColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#4f46e5';
+            const rankCardThemeMode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || document.querySelector('input[name="rankCardThemeMode"]:checked')?.value || 'preset';
+            const rankCardCustomColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#7c3aed';
             const rankCardBackgroundImage = document.getElementById('user-pref-rankCardBackgroundImage')?.value || null;
 
             const t = sessionStorage.getItem('discord_token');
@@ -8071,7 +8255,15 @@
                         rankCardBackgroundImage
                     })
                 });
-                showToast('Profile changes saved successfully!', 'success');
+
+                if (window.currentUser) {
+                    if (!window.currentUser.prefs) window.currentUser.prefs = {};
+                    window.currentUser.prefs.rankCardThemeMode = rankCardThemeMode;
+                    window.currentUser.prefs.rankCardCustomColor = rankCardCustomColor;
+                    window.currentUser.prefs.rankCardBackgroundImage = rankCardBackgroundImage;
+                }
+
+                showToast('Profile & Rank Card preferences saved globally!', 'success');
             } catch (e) {
                 console.error('[Save Profile Error]:', e);
                 showToast(`Failed to save profile: ${e.message}`, 'error');
@@ -8079,6 +8271,177 @@
                 if (typeof toggleLoading === 'function') toggleLoading(false);
             }
         }
+
+        async function fetchUserProfile() {
+            const t = sessionStorage.getItem('discord_token');
+            if (!t) return;
+            try {
+                const { data } = await safeFetch('/api/user/profile', {
+                    headers: { Authorization: `Bearer ${t}` }
+                });
+                if (data && data.prefs) {
+                    const prefs = data.prefs;
+                    const bioBox = document.getElementById('user-pref-bio');
+                    const roBox = document.getElementById('user-pref-robloxPublic');
+                    const pubBox = document.getElementById('user-pref-profilePublic');
+                    const colorBox = document.getElementById('user-pref-rankCardCustomColor');
+                    const bgBox = document.getElementById('user-pref-rankCardBackgroundImage');
+
+                    if (bioBox && prefs.bio) bioBox.value = prefs.bio;
+                    if (roBox && prefs.robloxPublic !== undefined) roBox.checked = prefs.robloxPublic;
+                    if (pubBox && prefs.profilePublic !== undefined) pubBox.checked = prefs.profilePublic;
+                    if (colorBox && prefs.rankCardCustomColor) colorBox.value = prefs.rankCardCustomColor;
+                    if (bgBox && prefs.rankCardBackgroundImage) bgBox.value = prefs.rankCardBackgroundImage;
+
+                    const mode = prefs.rankCardThemeMode || (prefs.rankCardBackgroundImage ? 'image' : (prefs.rankCardCustomColor ? 'custom' : 'preset'));
+                    const radio = document.querySelector(`input[name="userRankCardThemeMode"][value="${mode}"]`);
+                    if (radio) radio.checked = true;
+
+                    if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
+                }
+            } catch (e) {
+                console.error('[Fetch Profile Error]:', e);
+            }
+        }
+        window.fetchUserProfile = fetchUserProfile;
+
+        window.toggleUserRankCardThemeModeUI = function() {
+            const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
+            const colorContainer = document.getElementById('user-rankcard-custom-color-container');
+            const imageContainer = document.getElementById('user-rankcard-image-container');
+            
+            if (colorContainer) colorContainer.style.display = (mode === 'custom') ? 'flex' : 'none';
+            if (imageContainer) {
+                imageContainer.style.display = (mode === 'image') ? 'flex' : 'none';
+                if (mode === 'image') loadCuratedKlipyGifs();
+            }
+            if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+        };
+
+        window.updateLiveRankCardPreview = function() {
+            const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
+            const customColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#7c3aed';
+            const customBgUrl = document.getElementById('user-pref-rankCardBackgroundImage')?.value || '';
+            const bgLayer = document.getElementById('live-rank-card-bg-layer');
+            const progressBar = document.getElementById('live-rank-card-progress-bar');
+            const nameEl = document.getElementById('live-rank-card-name');
+            const avatarEl = document.getElementById('live-rank-card-avatar');
+
+            if (window.currentUser) {
+                if (nameEl) nameEl.textContent = '@' + (window.currentUser.username || 'User');
+                if (avatarEl && window.currentUser.avatar) {
+                    avatarEl.src = `https://cdn.discordapp.com/avatars/${window.currentUser.id}/${window.currentUser.avatar}.png?size=256`;
+                }
+            }
+
+            if (!bgLayer) return;
+
+            if (mode === 'image' && customBgUrl) {
+                bgLayer.style.backgroundImage = `url("${customBgUrl}")`;
+                bgLayer.style.backgroundColor = 'transparent';
+                if (progressBar) progressBar.style.background = `linear-gradient(90deg, #7c3aed, #3b82f6)`;
+            } else if (mode === 'custom') {
+                bgLayer.style.backgroundImage = 'none';
+                bgLayer.style.backgroundColor = customColor;
+                if (progressBar) progressBar.style.background = customColor;
+            } else {
+                bgLayer.style.backgroundImage = 'none';
+                bgLayer.style.backgroundColor = '#1e1b4b';
+                if (progressBar) progressBar.style.background = 'linear-gradient(90deg, #7c3aed, #4f46e5)';
+            }
+        };
+
+        let currentKlipyQuery = 'trending';
+        let currentKlipyOffset = 0;
+
+        window.loadCuratedKlipyGifs = function() {
+            currentKlipyQuery = 'trending';
+            currentKlipyOffset = 0;
+            searchKlipyGifs(false);
+        };
+
+        window.searchKlipyCategory = function(category) {
+            const queryInput = document.getElementById('klipy-gif-query');
+            currentKlipyQuery = category || 'trending';
+            currentKlipyOffset = 0;
+            if (queryInput) queryInput.value = (category === 'trending') ? '' : category;
+            searchKlipyGifs(false);
+        };
+
+        window.searchKlipyGifs = async function(append = false) {
+            const queryInput = document.getElementById('klipy-gif-query');
+            if (!append) {
+                currentKlipyQuery = (queryInput && queryInput.value.trim()) ? queryInput.value.trim() : 'trending';
+                currentKlipyOffset = 0;
+            }
+
+            const grid = document.getElementById('klipy-gif-results-grid');
+            const loadMoreBtn = document.getElementById('klipy-load-more-btn');
+            
+            if (!grid) return;
+
+            if (!append) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: var(--muted); font-size: 0.85rem;"><i class="fas fa-spinner fa-spin"></i> Loading Klipy GIF library...</div>`;
+                if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+            } else if (loadMoreBtn) {
+                loadMoreBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading more...`;
+            }
+
+            try {
+                const res = await safeFetch(`/api/klipy/search?q=${encodeURIComponent(currentKlipyQuery)}&offset=${currentKlipyOffset}`);
+                const results = (res && res.data && res.data.results) ? res.data.results : [];
+                const nextOffset = (res && res.data && res.data.nextOffset) ? res.data.nextOffset : (currentKlipyOffset + results.length);
+
+                if (!append && results.length === 0) {
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: var(--muted); font-size: 0.85rem;">No GIFs found for "${currentKlipyQuery}". Try another search term!</div>`;
+                    if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+                } else {
+                    renderKlipyGifThumbnails(results, append);
+                    currentKlipyOffset = nextOffset;
+                    if (loadMoreBtn) {
+                        loadMoreBtn.style.display = (results.length >= 10) ? 'block' : 'none';
+                        loadMoreBtn.innerHTML = `<i class="fas fa-plus-circle"></i> Load More GIFs (${currentKlipyOffset}+ Available)`;
+                    }
+                }
+            } catch(e) {
+                console.error('[Klipy Library Search Error]:', e);
+                if (!append && grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">Unable to connect to Klipy API.</div>`;
+            }
+        };
+
+        window.loadMoreKlipyGifs = function() {
+            searchKlipyGifs(true);
+        };
+
+        window.renderKlipyGifThumbnails = function(gifList, append = false) {
+            const grid = document.getElementById('klipy-gif-results-grid');
+            if (!grid) return;
+
+            const html = gifList.map((item) => `
+                <div style="position: relative; border-radius: 10px; overflow: hidden; height: 95px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: all 0.25s ease;" 
+                     onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--primary)';" 
+                     onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.15)';" 
+                     onclick="selectRankCardGif('${item.url}')">
+                    <img src="${item.url}" alt="Klipy GIF" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif';">
+                </div>
+            `).join('');
+
+            if (append) {
+                grid.insertAdjacentHTML('beforeend', html);
+            } else {
+                grid.innerHTML = html;
+            }
+        };
+
+        window.selectRankCardGif = function(gifUrl) {
+            const bgInput = document.getElementById('user-pref-rankCardBackgroundImage');
+            if (bgInput) {
+                bgInput.value = gifUrl;
+                updateLiveRankCardPreview();
+                showToast('GIF selected! Live Preview updated below. Click Save to apply.', 'info');
+            }
+        };
+
         window.saveUserProfile = saveUserProfile;
 
         function updateProfileRobloxPreview() {
@@ -8336,7 +8699,7 @@
                 card.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; width: 100%; flex-grow: 1; justify-content: center; min-height: 0;">
                         <img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 60px; height: 60px; border-radius: 14px; margin-bottom: 12px; flex-shrink: 0;">
-                        <h3>${g.name}</h3>
+                        <h3>${escapeHtml(g.name)}</h3>
                         ${memberInfo}
                     </div>
                     <div style="width: 100%; margin-top: auto; flex-shrink: 0;">
@@ -8426,6 +8789,11 @@
                 if (inactiveEl) inactiveEl.textContent = `${inactiveCount} Not Configured`;
 
                 renderAllGuilds(guilds);
+
+                window.userHasAnyPremium = guilds.some(g => g.isPremium);
+                if (typeof window.updatePremiumUI === 'function') {
+                    window.updatePremiumUI(window.userHasAnyPremium);
+                }
 
             } catch (e) {
                 console.error(e);
@@ -8651,8 +9019,11 @@
                         console.error('[Change Tracking Error]:', innerErr);
                     }
                     
+                    const unsavedBar = document.getElementById('unsaved-changes-bar');
+                    if (unsavedBar) unsavedBar.style.display = 'none';
                     showToast('Settings saved successfully.', 'success');
                     refreshModuleBadges();
+                    if (typeof loadServerActionLogs === 'function') loadServerActionLogs();
                     if (window.dashboardCache && window.dashboardCache.settings) window.dashboardCache.settings.delete(currentServerId);
                 } else {
                     const d = await res.json().catch(() => ({}));
@@ -8664,6 +9035,110 @@
             } finally {
                 saveBtn.textContent = originalText;
                 saveBtn.disabled = false;
+            }
+        }
+
+        window.saveCurrentTabSettings = function() {
+            saveSettings();
+        };
+
+        window.revertUnsavedChanges = function() {
+            const unsavedBar = document.getElementById('unsaved-changes-bar');
+            if (unsavedBar) unsavedBar.style.display = 'none';
+            if (typeof fetchSettings === 'function') fetchSettings(true);
+            showToast('Changes discarded.', 'info');
+        };
+
+        async function loadServerActionLogs() {
+            if (!currentServerId) return;
+            const tbody = document.getElementById('action-log-tbody');
+            if (!tbody) return;
+
+            const searchInput = document.getElementById('action-log-search');
+            const search = searchInput ? searchInput.value : '';
+            const t = sessionStorage.getItem('discord_token');
+
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const url = `${apiBase}/api/guilds/${currentServerId}/action-logs?search=${encodeURIComponent(search)}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+
+                if (!res.ok) throw new Error('Failed to fetch action logs');
+                const data = await res.json();
+
+                if (!data.logs || data.logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="padding: 25px; text-align: center; color: var(--muted);">No server action logs recorded yet.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.logs.map(log => {
+                    const dateObj = new Date(log.createdAt);
+                    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric', year: 'numeric' }) + ', ' + dateObj.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+                    const avatarUrl = log.userAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    const username = log.username || 'Administrator';
+                    const userId = log.userId || '';
+                    
+                    // Action Badge Formatting
+                    let badgeBg = 'rgba(88, 101, 242, 0.15)';
+                    let badgeColor = '#818cf8';
+                    let badgeBorder = 'rgba(88, 101, 242, 0.3)';
+                    let actionLabel = (log.action || 'ACTION').replace(/_/g, ' ');
+
+                    if (log.action.includes('DELETE') || log.action.includes('REMOVE')) {
+                        badgeBg = 'rgba(239, 68, 68, 0.15)';
+                        badgeColor = '#fca5a5';
+                        badgeBorder = 'rgba(239, 68, 68, 0.3)';
+                    } else if (log.action.includes('CREATE') || log.action.includes('ADD')) {
+                        badgeBg = 'rgba(16, 185, 129, 0.15)';
+                        badgeColor = '#6ee7b7';
+                        badgeBorder = 'rgba(16, 185, 129, 0.3)';
+                    }
+
+                    // Format details field cleanly
+                    let detailsContent = log.details || 'No details provided';
+                    if (detailsContent.startsWith('Updated configuration fields:')) {
+                        const rawFields = detailsContent.replace('Updated configuration fields:', '').split(',').map(s => s.trim()).filter(Boolean);
+                        if (rawFields.length > 4) {
+                            const tagsHtml = rawFields.map(f => `<span style="background: rgba(255,255,255,0.06); color: #e4e4e7; border: 1px solid rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 6px; font-family: monospace; font-size: 0.73rem;">${f}</span>`).join(' ');
+                            detailsContent = `<div style="display: flex; flex-direction: column; gap: 6px;">
+                                <div style="font-weight: 700; color: #fff;">Updated ${rawFields.length} Configuration Fields</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 80px; overflow-y: auto;">${tagsHtml}</div>
+                            </div>`;
+                        } else {
+                            const tagsHtml = rawFields.map(f => `<span style="background: rgba(255,255,255,0.06); color: #e4e4e7; border: 1px solid rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 6px; font-family: monospace; font-size: 0.73rem;">${f}</span>`).join(' ');
+                            detailsContent = `<div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;"><strong style="color: #fff;">Updated fields:</strong> ${tagsHtml}</div>`;
+                        }
+                    }
+
+                    return `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                            <td style="padding: 12px 18px; color: var(--muted); font-size: 0.8rem; font-weight: 500; white-space: nowrap; vertical-align: top;">
+                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                    <i class="far fa-clock" style="font-size: 0.75rem; opacity: 0.7;"></i>
+                                    <span>${dateStr}</span>
+                                </div>
+                            </td>
+                            <td style="padding: 12px 18px; vertical-align: top; white-space: nowrap;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="${avatarUrl}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1);" onError="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                    <div style="display: flex; flex-direction: column; min-width: 0;">
+                                        <span style="font-weight: 700; color: #fff; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(username)}</span>
+                                        ${userId ? `<span style="font-size: 0.7rem; color: var(--muted); font-family: monospace; white-space: nowrap;">ID: (${escapeHtml(userId)})</span>` : ''}
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 12px 18px; vertical-align: top; white-space: nowrap;">
+                                <span style="display: inline-block; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; font-weight: 800; font-size: 0.7rem; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;">${actionLabel}</span>
+                            </td>
+                            <td style="padding: 12px 18px; color: #dbdee1; font-size: 0.85rem; vertical-align: top; line-height: 1.4;">${detailsContent}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('[Action Log Error]:', err);
+                tbody.innerHTML = `<tr><td colspan="4" style="padding: 25px; text-align: center; color: #ff4757;">Failed to load action logs.</td></tr>`;
             }
         }
 
@@ -8754,8 +9229,8 @@
                         const el = document.createElement('div');
                         el.style.cssText = 'padding: 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.8rem;';
                         el.innerHTML = `
-                            <div style="font-weight: 600; color: #fff; margin-bottom: 2px;">${n.title}</div>
-                            <div style="color: var(--muted); font-size: 0.75rem;">${n.content}</div>
+                            <div style="font-weight: 600; color: #fff; margin-bottom: 2px;">${escapeHtml(n.title)}</div>
+                            <div style="color: var(--muted); font-size: 0.75rem;">${escapeHtml(n.content)}</div>
                         `;
                         rightList.appendChild(el);
                     });
@@ -8792,7 +9267,7 @@
                         div.style.background = 'rgba(255,255,255,0.03)';
                         div.style.borderRadius = '8px';
                         div.style.borderLeft = `3px solid ${n.read ? 'transparent' : 'var(--primary)'}`;
-                        div.innerHTML = `<span style="font-weight: 700;">${n.title}</span><br><span style="opacity: 0.7;">${n.content.substring(0, 50)}${n.content.length > 50 ? '...' : ''}</span>`;
+                        div.innerHTML = `<span style="font-weight: 700;">${escapeHtml(n.title)}</span><br><span style="opacity: 0.7;">${escapeHtml(n.content.substring(0, 50))}${n.content.length > 50 ? '...' : ''}</span>`;
                         overviewList.appendChild(div);
                     });
                 } else {
@@ -8843,7 +9318,7 @@
             };
 
             const time = new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const serverTag = n.server ? `<span class="badge-user" style="font-size: 0.65rem; padding: 2px 6px; margin: 0; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);">${n.server}</span>` : '';
+            const serverTag = n.server ? `<span class="badge-user" style="font-size: 0.65rem; padding: 2px 6px; margin: 0; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);">${escapeHtml(n.server)}</span>` : '';
             
             const typeStyles = {
                 'info': { color: '#ffffff', bg: 'rgba(255, 255, 255, 0.1)', text: 'INFO' },
@@ -8861,8 +9336,8 @@
                 item.style.background = 'rgba(255, 215, 0, 0.02)';
             }
 
-            const displayTitle = translateText(n.title);
-            const displayContent = translateText(n.content);
+            const displayTitle = escapeHtml(translateText(n.title));
+            const displayContent = escapeHtml(translateText(n.content));
             const groupedBadge = (n.count > 1)
                 ? `<div style="margin-top: 6px; font-size: 0.7rem; color: var(--primary); font-weight: 700;">Grouped ${n.count} similar alerts</div>`
                 : '';
@@ -9386,13 +9861,13 @@
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <img src="${log.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 24px; height: 24px; border-radius: 50%;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                                 <div>
-                                    <div style="font-weight: 600; color: #fff;">${log.username || 'User'}</div>
-                                    <div style="font-size: 0.72rem; color: var(--muted);">ID: ${log.userId || 'N/A'}</div>
+                                    <div style="font-weight: 600; color: #fff;">${escapeHtml(log.username || 'User')}</div>
+                                    <div style="font-size: 0.72rem; color: var(--muted);">ID: ${escapeHtml(log.userId || 'N/A')}</div>
                                 </div>
                             </div>
                         </td>
                         <td style="padding: 12px 15px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 0.8rem; color: #f2f3f5;">
-                            ${log.reason || 'Safety Filter Violation'}
+                            ${escapeHtml(log.reason || 'Safety Filter Violation')}
                         </td>
                         <td style="padding: 12px 15px;">
                             <span style="font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: rgba(79, 70, 229, 0.15); color: var(--primary); border: 1px solid rgba(79, 70, 229, 0.3);">
@@ -10356,7 +10831,7 @@
             currentServerName = g.name;
             currentServerIsPremium = g.isPremium;
             document.getElementById('cfg-icon').src = g.icon;
-            document.getElementById('cfg-name').innerHTML = `${g.name} <div id="cfg-status" class="status-indicator online" title="Online"></div>`;
+            document.getElementById('cfg-name').innerHTML = `${escapeHtml(g.name)} <div id="cfg-status" class="status-indicator online" title="Online"></div>`;
             
             [viewServers, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
             viewConfig.style.display = 'block';
@@ -10392,6 +10867,9 @@
         }
 
         function applyPremiumLocking() {
+            if (typeof window.updatePremiumUI === 'function') {
+                window.updatePremiumUI(!!currentServerIsPremium);
+            }
             const premiumTabs = ['tab-broadcast', 'tab-analytics'];
             premiumTabs.forEach(tabId => {
                 const tab = document.getElementById(tabId);
@@ -10634,7 +11112,7 @@
                             <span style="font-weight: 800; color: ${trophyColor}; font-size: 0.85rem; min-width: 15px;">#${idx + 1}</span>
                             <img src="${m.avatar}" style="width: 28px; height: 28px; border-radius: 50%; margin: 0;">
                             <div style="overflow: hidden; flex: 1;">
-                                <div style="font-weight: 700; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${m.displayName}</div>
+                                <div style="font-weight: 700; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${escapeHtml(m.displayName)}</div>
                             </div>
                             <span style="font-weight: 700; font-size: 0.75rem; color: var(--primary);">Lvl ${m.level}</span>
                         `;
@@ -10667,7 +11145,7 @@
                 
                 const premiumBadge = m.isPremium ? `<span class="badge-user" style="color: var(--primary); background: rgba(174, 239, 255, 0.1); border: 1px solid rgba(255,255,255,0.15); font-size: 0.62rem; padding: 2px 6px; margin: 0; display: inline-flex; align-items: center; gap: 4px; border-radius: 4px;"><i class="fas fa-star" style="font-size: 0.55rem;"></i> Premium</span>` : '';
                 const robloxBadge = (m.robloxLinked && m.robloxPublic) ? `<span class="badge-user" style="color: #00A2FF; background: rgba(0, 162, 255, 0.1); border: 1px solid rgba(0,162,255,0.15); font-size: 0.62rem; padding: 2px 6px; margin: 0; display: inline-flex; align-items: center; gap: 4px; border-radius: 4px;"><i class="fas fa-gamepad" style="font-size: 0.55rem;"></i> Linked</span>` : '';
-                const bioSection = m.bio ? `<div style="font-size: 0.7rem; color: var(--muted); margin-top: 8px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; line-height: 1.4; word-break: break-word;">"${m.bio}"</div>` : '';
+                const bioSection = m.bio ? `<div style="font-size: 0.7rem; color: var(--muted); margin-top: 8px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; line-height: 1.4; word-break: break-word;">"${escapeHtml(m.bio)}"</div>` : '';
                 
                 const hasBanner = !!m.banner;
                 const bannerHtml = hasBanner ? `<div style="height: 75px; background: ${m.banner.startsWith('#') ? m.banner : `url('${m.banner}') center/cover`};"></div>` : '';
@@ -10688,8 +11166,8 @@
                         
                         <!-- Name & Username -->
                         <div>
-                            <div style="font-weight: 800; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${m.displayName}</div>
-                            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 1px;">@${m.username}</div>
+                            <div style="font-weight: 800; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${escapeHtml(m.displayName)}</div>
+                            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 1px;">@${escapeHtml(m.username)}</div>
                         </div>
 
                         <!-- Stats Box -->
@@ -11373,9 +11851,53 @@
             }
         }
 
+        window.populateStarboardIgnoredChannels = function(channels) {
+            const container = document.getElementById('starboard-ignored-channels-container');
+            const input = document.getElementById('setting-starboardIgnoredChannels');
+            if (!container || !input) return;
+
+            let selected = [];
+            try {
+                selected = typeof input.value === 'string' ? JSON.parse(input.value || '[]') : input.value;
+                if (!Array.isArray(selected)) selected = [];
+            } catch(e) {
+                selected = [];
+            }
+
+            const chanList = channels || window.guildChannels || [];
+            if (!chanList || chanList.length === 0) {
+                container.innerHTML = `<div style="font-size: 0.8rem; color: var(--muted); text-align: center;">No channels available</div>`;
+                return;
+            }
+
+            container.innerHTML = chanList.map(c => {
+                const isChecked = selected.includes(c.id);
+                return `
+                    <label style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 6px; cursor: pointer; user-select: none;" onmouseenter="this.style.background='rgba(255,255,255,0.05)'" onmouseleave="this.style.background='rgba(255,255,255,0.02)'">
+                        <span style="font-size: 0.82rem; color: #fff; font-weight: 500;">#${escapeHtml(c.name)}</span>
+                        <input type="checkbox" class="starboard-ignored-cb" value="${c.id}" ${isChecked ? 'checked' : ''} onchange="updateStarboardIgnoredChannelsFromUI()">
+                    </label>
+                `;
+            }).join('');
+        };
+
+        window.updateStarboardIgnoredChannelsFromUI = function() {
+            const checkboxes = document.querySelectorAll('.starboard-ignored-cb');
+            const selected = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) selected.push(cb.value);
+            });
+            const input = document.getElementById('setting-starboardIgnoredChannels');
+            if (input) {
+                input.value = JSON.stringify(selected);
+                if (typeof showUnsavedChangesBar === 'function') showUnsavedChangesBar();
+            }
+        };
+
         function _applyChannels(channels) {
             if (!channels) return;
             try {
+                window.populateStarboardIgnoredChannels(channels);
                 const selects = [
                     'broadcast-channel',
                     'setting-topggVoteChannelId',
@@ -12101,42 +12623,12 @@
             }
         }
 
-        
         let rrSlotCount = 5;
 
-        function addRRSlotRow(roleId = '', emoji = '') {
-            rrSlotCount++;
-            const container = document.getElementById('rr-mappings-container');
-            if (!container) return;
-
-            const row = document.createElement('div');
-            row.className = 'rr-slot-row';
-            row.style = 'display: grid; grid-template-columns: 1.2fr 0.8fr auto; gap: 12px; align-items: center; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px; border: 1px solid var(--border);';
-            
-            // Build role options from existing roles dropdown
-            let roleOptions = '<option value="">Select role...</option>';
-            const sampleSelect = document.getElementById('rr-role-1');
-            if (sampleSelect) {
-                roleOptions = sampleSelect.innerHTML;
+        function addRRSlotRow(roleId = '', emoji = '🔔') {
+            if (typeof window.addRRSlotRow === 'function') {
+                return window.addRRSlotRow(roleId, emoji);
             }
-
-            row.innerHTML = `
-                <div class="input-group" style="margin-bottom: 0;">
-                    <select id="rr-role-${rrSlotCount}" onchange="updateRRPreview()">${roleOptions}</select>
-                </div>
-                <div class="input-group" style="margin-bottom: 0; position: relative;">
-                    <input type="text" id="rr-emoji-${rrSlotCount}" class="rr-emoji-input" value="${emoji}" placeholder="Click to select..." readonly onclick="showEmojiPicker(event, 'rr-emoji-${rrSlotCount}')" style="width: 100%; box-sizing: border-box; padding-right: 32px; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
-                    <button type="button" class="btn-outline rr-picker-btn" onclick="showEmojiPicker(event, 'rr-emoji-${rrSlotCount}')" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: none; padding: 4px 6px; font-size: 0.85rem; color: var(--muted); background: transparent;" title="Select Emoji"><i class="far fa-smile"></i></button>
-                </div>
-                <button type="button" class="btn-outline delete-slot-btn" onclick="clearRRSlot(this)" style="border-color: rgba(255,85,85,0.2); color: #ff5555; padding: 10px 12px; background: transparent;" title="Clear Slot"><i class="fas fa-times"></i></button>
-            `;
-
-            container.appendChild(row);
-            if (roleId) {
-                const sel = document.getElementById(`rr-role-${rrSlotCount}`);
-                if (sel) sel.value = roleId;
-            }
-            updateRRPreview();
         }
 
         function applyRRPreset(presetType) {
@@ -12199,7 +12691,8 @@
             const imgVal = document.getElementById('setting-rr-panelImage').value;
 
             // Hex text
-            document.getElementById('rr-color-hex').textContent = colorVal.toUpperCase();
+            const hexEl = document.getElementById('rr-color-hex');
+            if (hexEl) hexEl.textContent = colorVal.toUpperCase();
 
             // Embed properties
             const titleEl = document.getElementById('rr-preview-title');
@@ -12236,9 +12729,10 @@
             const reactionsContainer = document.getElementById('rr-preview-reactions');
             reactionsContainer.innerHTML = '';
 
-            for (let i = 1; i <= 5; i++) {
-                const rSelect = document.getElementById(`rr-role-${i}`);
-                const eInput = document.getElementById(`rr-emoji-${i}`);
+            const rows = document.querySelectorAll('#rr-mappings-container .rr-slot-row');
+            rows.forEach(row => {
+                const rSelect = row.querySelector('.rr-role-select') || row.querySelector('select');
+                const eInput = row.querySelector('.rr-emoji-input') || row.querySelector('input[type="text"]');
                 if (rSelect && rSelect.value && eInput && eInput.value.trim()) {
                     const emoji = eInput.value.trim();
                     let displayEmoji = emoji;
@@ -12281,11 +12775,12 @@
                     };
                     reactionsContainer.appendChild(badge);
                 }
-            }
+            });
         }
 
         async function publishReactionRolesPanel() {
-            const channelId = document.getElementById('rr-channelId').value;
+            const channelSelect = document.getElementById('setting-reactionRolesChannel') || document.getElementById('rr-channelId');
+            const channelId = channelSelect ? channelSelect.value : '';
             const title = document.getElementById('setting-rr-panelTitle').value;
             const description = document.getElementById('setting-rr-panelDescription').value;
             const color = document.getElementById('setting-rr-panelColor').value;
@@ -12297,13 +12792,14 @@
             }
 
             const roles = [];
-            for (let i = 1; i <= 5; i++) {
-                const rVal = document.getElementById(`rr-role-${i}`).value;
-                const eVal = document.getElementById(`rr-emoji-${i}`).value.trim();
-                if (rVal && eVal) {
-                    roles.push({ roleId: rVal, emoji: eVal });
+            const rows = document.querySelectorAll('#rr-mappings-container .rr-slot-row');
+            rows.forEach(row => {
+                const rSelect = row.querySelector('.rr-role-select') || row.querySelector('select');
+                const eInput = row.querySelector('.rr-emoji-input') || row.querySelector('input[type="text"]');
+                if (rSelect && rSelect.value && eInput && eInput.value.trim()) {
+                    roles.push({ roleId: rSelect.value, emoji: eInput.value.trim() });
                 }
-            }
+            });
 
             if (!roles.length) {
                 showToast('Please configure at least one role mapping!', 'error');
@@ -12711,8 +13207,10 @@
         }
 
         // Form change tracking history logic
-        let undoStack = [];
-        let redoStack = [];
+        window.undoStack = window.undoStack || [];
+        window.redoStack = window.redoStack || [];
+        var undoStack = window.undoStack;
+        var redoStack = window.redoStack;
         let isApplyingHistoryState = false;
 
         function getFormState() {
@@ -13456,7 +13954,7 @@
                 const selectedOpt = Array.from(selectEl.options).find(opt => opt.value === selectEl.value) || selectEl.options[0];
                 selectedText = selectedOpt.textContent;
             }
-            trigger.innerHTML = `${selectedText} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
+            trigger.innerHTML = `${escapeHtml(selectedText)} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
         }
 
         /* Custom Single-Select Dropdown Logic */
@@ -13535,7 +14033,7 @@
                 if (!hasActiveSelection && selectEl.options.length > 0) {
                     selectedText = selectEl.options[0].textContent;
                 }
-                trigger.innerHTML = `${selectedText} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
+                trigger.innerHTML = `${escapeHtml(selectedText)} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
             }
 
             rebuildOptions();
@@ -14174,9 +14672,62 @@
                 toggleLoading(false);
                 return;
             }
+            // Fetch server channels and roles for dropdowns
+            fetchGuildChannelsAndRoles(currentServerId);
             _applySettings(s);
             fetchApplications();
             toggleLoading(false);
+        }
+
+        async function fetchGuildChannelsAndRoles(guildId) {
+            if (!guildId) return;
+            const t = sessionStorage.getItem('discord_token');
+            const headers = { 'Authorization': `Bearer ${t}` };
+            const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+
+            try {
+                const [chRes, rlRes] = await Promise.all([
+                    fetch(`${apiBase}/api/guilds/${guildId}/channels`, { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch(`${apiBase}/api/guilds/${guildId}/roles`, { headers }).then(r => r.ok ? r.json() : []).catch(() => [])
+                ]);
+
+                window.guildChannels = chRes;
+                window.guildRoles = rlRes;
+
+                // Populate Target Channel dropdowns
+                const targetChannelSelects = [
+                    document.getElementById('setting-reactionRolesChannel'),
+                    document.getElementById('rr-channelId'),
+                    document.getElementById('setting-loggingChannelId'),
+                    document.getElementById('setting-starboardChannelId'),
+                    document.getElementById('setting-welcomeChannelId'),
+                    document.getElementById('setting-verifyChannelId')
+                ];
+
+                targetChannelSelects.forEach(select => {
+                    if (select) {
+                        const currentVal = select.value;
+                        let opts = '<option value="">Select channel...</option>';
+                        chRes.forEach(ch => {
+                            opts += `<option value="${ch.id}" ${ch.id === currentVal ? 'selected' : ''}>#${ch.name}</option>`;
+                        });
+                        select.innerHTML = opts;
+                        if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown(select.id);
+                    }
+                });
+
+                // Refresh any existing RR slot role dropdowns
+                document.querySelectorAll('.rr-role-select').forEach(select => {
+                    const currentVal = select.value;
+                    let opts = '<option value="">Select Role...</option>';
+                    rlRes.forEach(r => {
+                        opts += `<option value="${r.id}" ${r.id === currentVal ? 'selected' : ''}>${r.name}</option>`;
+                    });
+                    select.innerHTML = opts;
+                });
+            } catch (e) {
+                console.error('Failed to fetch guild channels or roles:', e);
+            }
         }
 
         async function _applySettings(s) {
@@ -14989,7 +15540,7 @@
                     <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                         <div style="background: rgba(0, 180, 216, 0.08); border: 1px solid rgba(0, 180, 216, 0.2); border-radius: 8px; padding: 8px 12px; min-width: 150px; text-align: left;">
                             <div style="font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Trigger</div>
-                            <span style="font-weight: 700; color: #fff; font-size: 0.85rem; word-break: break-all;">${r.trigger}</span>
+                            <span style="font-weight: 700; color: #fff; font-size: 0.85rem; word-break: break-all;">${escapeHtml(r.trigger)}</span>
                         </div>
                         
                         <div style="color: var(--muted); font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
@@ -14999,9 +15550,9 @@
                         <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; flex: 1; min-width: 200px; text-align: left;">
                             <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; display: flex; justify-content: space-between;">
                                 <span>Action / Response</span>
-                                <span style="font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 0px 4px; border-radius: 3px;">${matchTypeLabels[r.matchType] || r.matchType}</span>
+                                <span style="font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 0px 4px; border-radius: 3px;">${escapeHtml(matchTypeLabels[r.matchType] || r.matchType)}</span>
                             </div>
-                            <p style="margin: 0; font-size: 0.8rem; color: #dbdee1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.response}</p>
+                            <p style="margin: 0; font-size: 0.8rem; color: #dbdee1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(r.response)}</p>
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
@@ -15273,7 +15824,7 @@
                 channelsContainer.innerHTML = window.guildChannels.map(ch => `
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #fff; cursor: pointer; user-select: none;">
                         <input type="checkbox" class="ar-channel-checkbox" value="${ch.id}">
-                        <span>#${ch.name}</span>
+                        <span>#${escapeHtml(ch.name)}</span>
                     </label>
                 `).join('');
             }
@@ -15282,7 +15833,7 @@
                 const rolesHtml = window.guildRoles.map(r => `
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #fff; cursor: pointer; user-select: none;">
                         <input type="checkbox" class="ar-role-checkbox" value="${r.id}">
-                        <span style="color: ${r.color || '#fff'};">${r.name}</span>
+                        <span style="color: ${r.color || '#fff'};">${escapeHtml(r.name)}</span>
                     </label>
                 `).join('');
                 rolesContainer.innerHTML = rolesHtml;
@@ -15458,31 +16009,34 @@
         };
 
         // Reaction Roles & Roblox Group Bindings Dynamic Row Managers
-        window.addRRSlotRow = function(emoji = '🔔', roleId = '') {
+        window.addRRSlotRow = function(roleId = '', emoji = '🔔') {
+            rrSlotCount++;
+            const slotId = rrSlotCount;
             const container = document.getElementById('rr-mappings-container');
             if (!container) return;
-            
+
             const row = document.createElement('div');
             row.className = 'rr-slot-row';
             row.style.cssText = 'display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);';
-            
+
             let rolesOptions = '<option value="">Select Role...</option>';
             if (window.guildRoles) {
                 rolesOptions += window.guildRoles.map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''}>${r.name}</option>`).join('');
             }
 
             row.innerHTML = `
-                <div style="position: relative; width: 140px;">
-                    <input type="text" class="rr-emoji-input" value="${emoji}" placeholder="Emoji (e.g. 🔔)" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 0.85rem;" oninput="updateRRPreview()">
+                <div style="position: relative; width: 160px;">
+                    <input type="text" id="rr-emoji-${slotId}" class="rr-emoji-input" value="${emoji}" placeholder="Click to select..." readonly onclick="showEmojiPicker(event, 'rr-emoji-${slotId}')" style="width: 100%; box-sizing: border-box; padding: 8px 32px 8px 10px; font-size: 0.85rem; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
+                    <button type="button" class="btn-outline rr-picker-btn" onclick="showEmojiPicker(event, 'rr-emoji-${slotId}')" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: none; padding: 4px 6px; font-size: 0.85rem; color: var(--muted); background: transparent;" title="Select Emoji"><i class="far fa-smile"></i></button>
                 </div>
-                <select class="rr-role-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;" onchange="updateRRPreview()">
+                <select id="rr-role-${slotId}" class="rr-role-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;" onchange="updateRRPreview()">
                     ${rolesOptions}
                 </select>
                 <button type="button" onclick="removeRRSlotRow(this)" style="background: rgba(239, 68, 68, 0.2) !important; color: #FCA5A5 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; font-weight: 700 !important; font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                     <i class="fas fa-trash-alt"></i> Remove Row
                 </button>
             `;
-            
+
             container.appendChild(row);
             if (typeof updateRRPreview === 'function') updateRRPreview();
         };
@@ -16350,9 +16904,64 @@
                 searchInput.addEventListener('input', renderEmojiPickerList);
             }
         });
+        window.updatePremiumUI = function(isPremium) {
+            window.currentServerIsPremium = !!isPremium;
+
+            // Banner Elements
+            const bannerTitle = document.getElementById('premium-banner-title');
+            const bannerDesc = document.getElementById('premium-banner-desc');
+            const bannerBtn = document.getElementById('premium-banner-btn');
+
+            if (bannerTitle && bannerDesc && bannerBtn) {
+                if (isPremium) {
+                    bannerTitle.textContent = "Nora Studio Plus Active";
+                    bannerDesc.textContent = "Your server has active Studio Plus benefits! Enjoy 200 Autoresponder Slots, AI Co-Pilot, 10x XP Boosters, and raised limits.";
+                    bannerBtn.innerHTML = "★ Your Benefits";
+                } else {
+                    bannerTitle.textContent = "Unlock Nora Studio Plus Premium";
+                    bannerDesc.textContent = "Instant Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.";
+                    bannerBtn.innerHTML = "★ Upgrade Server ($4.99/mo)";
+                }
+            }
+
+            // Modal Elements
+            const modalBadge = document.getElementById('premium-modal-badge');
+            const modalTitle = document.getElementById('premium-modal-title');
+            const modalDesc = document.getElementById('premium-modal-desc');
+            const modalPriceBox = document.getElementById('premium-modal-price-box');
+            const modalUpgradeBtn = document.getElementById('premium-modal-upgrade-btn');
+
+            if (modalBadge && modalTitle && modalDesc && modalPriceBox && modalUpgradeBtn) {
+                if (isPremium) {
+                    modalBadge.innerHTML = '<i class="fas fa-crown"></i> Studio Plus Active';
+                    modalTitle.textContent = "Your Nora Studio Plus Benefits";
+                    modalDesc.textContent = "Your server currently enjoys full access to maximum speed, 200 automation slots, AI Co-Pilot, and custom branding.";
+                    modalPriceBox.innerHTML = `
+                        <div style="font-size: 1.4rem; font-weight: 800; color: #10B981; margin-bottom: 4px;">★ Premium Subscription Active</div>
+                        <p style="color: #A7F3D0; font-size: 0.85rem; margin: 0; font-weight: 700;">Managed via Discord App Subscriptions • All Premium Benefits Unlocked</p>
+                    `;
+                    modalUpgradeBtn.href = "https://discord.com/discovery/applications/1375943730951098549/store/1490857354609168534";
+                    modalUpgradeBtn.innerHTML = '<i class="fas fa-crown"></i> Manage Plan in Discord';
+                } else {
+                    modalBadge.innerHTML = '<i class="fas fa-crown"></i> Studio Plus Premium';
+                    modalTitle.textContent = "Supercharge Your Server for $4.99/mo";
+                    modalDesc.textContent = "Unlock maximum speed, 200 automation slots, AI Co-Pilot, and custom branding for your community.";
+                    modalPriceBox.innerHTML = `
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">$4.99 <span style="font-size: 0.9rem; font-weight: 600; color: var(--muted);">/ month</span></div>
+                        <p style="color: #A7F3D0; font-size: 0.85rem; margin: 0; font-weight: 700;">Processed via Discord App Subscriptions • Instant Server Activation • Cancel Anytime in Discord</p>
+                    `;
+                    modalUpgradeBtn.href = "https://discord.com/discovery/applications/1375943730951098549/store/1490857354609168534";
+                    modalUpgradeBtn.innerHTML = '<i class="fas fa-crown"></i> Upgrade to Studio Plus';
+                }
+            }
+        };
+
         window.openPremiumModal = function() {
             let modal = document.getElementById('nora-premium-modal');
             if (modal) {
+                if (typeof window.updatePremiumUI === 'function') {
+                    window.updatePremiumUI(!!window.currentServerIsPremium);
+                }
                 modal.style.display = 'flex';
             }
         };
@@ -16363,6 +16972,7 @@
                 modal.style.display = 'none';
             }
         };
+        // Nora Dashboard Initialization Complete
         // Nora Dashboard Initialization Complete
     </script>
 
@@ -16404,11 +17014,11 @@
         <button onclick="closePremiumModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">&times;</button>
 
         <div style="text-align: center; margin-bottom: 28px;">
-            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; color: #10B981; text-transform: uppercase; margin-bottom: 12px;">
+            <div id="premium-modal-badge" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; color: #10B981; text-transform: uppercase; margin-bottom: 12px;">
                 <i class="fas fa-crown"></i> Studio Plus Premium
             </div>
-            <h2 style="font-size: 2.1rem; font-weight: 800; color: #fff; margin-bottom: 8px;">Supercharge Your Server for $4.99/mo</h2>
-            <p style="color: rgba(255,255,255,0.7); font-size: 0.95rem; max-width: 540px; margin: 0 auto; line-height: 1.5;">Unlock maximum speed, 200 automation slots, AI Co-Pilot, and custom branding for your community.</p>
+            <h2 id="premium-modal-title" style="font-size: 2.1rem; font-weight: 800; color: #fff; margin-bottom: 8px;">Supercharge Your Server for $4.99/mo</h2>
+            <p id="premium-modal-desc" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; max-width: 540px; margin: 0 auto; line-height: 1.5;">Unlock maximum speed, 200 automation slots, AI Co-Pilot, and custom branding for your community.</p>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px;">
@@ -16463,14 +17073,14 @@
 
         </div>
 
-        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 24px;">
+        <div id="premium-modal-price-box" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 24px;">
             <div style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">$4.99 <span style="font-size: 0.9rem; font-weight: 600; color: var(--muted);">/ month</span></div>
             <p style="color: #A7F3D0; font-size: 0.85rem; margin: 0; font-weight: 700;">Processed via Discord App Subscriptions • Instant Server Activation • Cancel Anytime in Discord</p>
         </div>
 
         <div style="display: flex; gap: 12px;">
             <button onclick="closePremiumModal()" style="flex: 1; padding: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; font-weight: 700; border-radius: 12px; cursor: pointer;">Close</button>
-            <a href="https://vaztinix.dev/dashboard" target="_blank" style="flex: 2; padding: 14px; background: #10B981 !important; color: #000 !important; font-weight: 800; text-align: center; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <a id="premium-modal-upgrade-btn" href="https://discord.com/discovery/applications/1375943730951098549/store/1490857354609168534" target="_blank" style="flex: 2; padding: 14px; background: #10B981 !important; color: #000 !important; font-weight: 800; text-align: center; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
                 <i class="fas fa-crown"></i> Upgrade to Studio Plus
             </a>
         </div>
