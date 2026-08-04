@@ -3162,7 +3162,7 @@ router.post('/reaction-roles/publish', async (req, res) => {
             });
 
             await targetMessage.react(emoji).catch(err => {
-                console.warn(`[Reaction Role Publish] Failed to react with ${emoji}:`, err.message);
+                console.warn('[Reaction Role Publish] Failed to react with %s:', emoji, err.message);
             });
         }
 

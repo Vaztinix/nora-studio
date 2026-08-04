@@ -190,6 +190,11 @@ async function fetchRoblox(url, options = {}) {
     if (!validateExternalUrl(url)) {
         throw new Error('Invalid or unsafe URL requested for Roblox API');
     }
+    const parsedUrl = new URL(url);
+    const host = parsedUrl.hostname.toLowerCase();
+    if (!host.endsWith('.roblox.com') && host !== 'roblox.com') {
+        throw new Error('Invalid host requested for Roblox API');
+    }
     let lastError = null;
     for (let i = 0; i < retries; i++) {
         try {
