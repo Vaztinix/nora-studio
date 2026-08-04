@@ -61,7 +61,6 @@ module.exports = {
             xpProgressInLevel = totalXpRaw - xpFloorForCurrentLevel;
             xpStepForLevelIncrement = xpGoalForNextLevel - xpFloorForCurrentLevel;
             progressPercentage = Math.min(100, Math.max(0, (xpProgressInLevel / xpStepForLevelIncrement) * 100));
-            rankIndex = guildUsers.findIndex(u => u.userId === target.id) + 1;
         } else {
             try {
                 xpStepForLevelIncrement = getTotalXPForLevel(1);
