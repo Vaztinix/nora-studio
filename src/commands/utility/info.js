@@ -47,46 +47,46 @@ module.exports = {
             <rect x="2" y="2" width="796" height="416" rx="22" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
 
             <rect x="40" y="40" width="8" height="44" rx="4" fill="url(#cardGrad)" />
-            <text x="64" y="70" font-family="'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="800" fill="#ffffff">Nora Core Status</text>
-            <text x="64" y="94" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#94a3b8">REAL-TIME SYSTEM DIAGNOSTICS &amp; METRICS</text>
+            <text x="64" y="70" font-family="sans-serif" font-size="30" font-weight="800" fill="#ffffff">Nora Core Status</text>
+            <text x="64" y="94" font-family="sans-serif" font-size="14" font-weight="600" fill="#94a3b8">REAL-TIME SYSTEM DIAGNOSTICS &amp; METRICS</text>
 
             <rect x="620" y="45" width="140" height="36" rx="18" fill="rgba(34, 197, 94, 0.15)" stroke="#22c55e" stroke-width="1.5" />
             <circle cx="642" cy="63" r="6" fill="#22c55e" />
-            <text x="658" y="68" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#4ade80">NOMINAL</text>
+            <text x="658" y="68" font-family="sans-serif" font-size="14" font-weight="700" fill="#4ade80">NOMINAL</text>
 
             <g transform="translate(40, 130)">
                 <rect width="226" height="110" rx="16" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <text x="20" y="36" font-family="'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#818cf8">LATENCY &amp; SHARDS</text>
-                <text x="20" y="72" font-family="'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="800" fill="#ffffff">${ping}ms</text>
-                <text x="20" y="92" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Active Shards: ${shardCount}</text>
+                <text x="20" y="36" font-family="sans-serif" font-size="13" font-weight="700" fill="#818cf8">LATENCY &amp; SHARDS</text>
+                <text x="20" y="72" font-family="sans-serif" font-size="28" font-weight="800" fill="#ffffff">${ping}ms</text>
+                <text x="20" y="92" font-family="sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Active Shards: ${shardCount}</text>
             </g>
 
             <g transform="translate(286, 130)">
                 <rect width="226" height="110" rx="16" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <text x="20" y="36" font-family="'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#38bdf8">TOTAL SERVERS</text>
-                <text x="20" y="72" font-family="'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="800" fill="#ffffff">${totalServers}</text>
-                <text x="20" y="92" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Members: ${totalMembers.toLocaleString()}</text>
+                <text x="20" y="36" font-family="sans-serif" font-size="13" font-weight="700" fill="#38bdf8">TOTAL SERVERS</text>
+                <text x="20" y="72" font-family="sans-serif" font-size="28" font-weight="800" fill="#ffffff">${totalServers}</text>
+                <text x="20" y="92" font-family="sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Members: ${totalMembers.toLocaleString()}</text>
             </g>
 
             <g transform="translate(534, 130)">
                 <rect width="226" height="110" rx="16" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <text x="20" y="36" font-family="'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#a78bfa">SYSTEM UPTIME</text>
-                <text x="20" y="72" font-family="'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="800" fill="#ffffff">${uptimeStr}</text>
-                <text x="20" y="92" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Online &amp; Operational</text>
+                <text x="20" y="36" font-family="sans-serif" font-size="13" font-weight="700" fill="#a78bfa">SYSTEM UPTIME</text>
+                <text x="20" y="72" font-family="sans-serif" font-size="28" font-weight="800" fill="#ffffff">${uptimeStr}</text>
+                <text x="20" y="92" font-family="sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Online &amp; Operational</text>
             </g>
 
             <g transform="translate(40, 260)">
                 <rect width="720" height="120" rx="16" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
                 
-                <text x="24" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#e2e8f0">RESOURCE ALLOCATION</text>
-                <text x="24" y="74" font-family="'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="800" fill="#818cf8">${heapUsedMB} MB</text>
-                <text x="24" y="96" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#64748b">RAM / Memory Heap</text>
+                <text x="24" y="40" font-family="sans-serif" font-size="14" font-weight="700" fill="#e2e8f0">RESOURCE ALLOCATION</text>
+                <text x="24" y="74" font-family="sans-serif" font-size="22" font-weight="800" fill="#818cf8">${heapUsedMB} MB</text>
+                <text x="24" y="96" font-family="sans-serif" font-size="12" font-weight="600" fill="#64748b">RAM / Memory Heap</text>
 
                 <line x1="360" y1="20" x2="360" y2="100" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
-                <text x="390" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#e2e8f0">PLATFORM ENVIRONMENT</text>
-                <text x="390" y="74" font-family="'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="800" fill="#38bdf8">Node.js ${process.version}</text>
-                <text x="390" y="96" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#64748b">Discord.js v${require('discord.js').version}</text>
+                <text x="390" y="40" font-family="sans-serif" font-size="14" font-weight="700" fill="#e2e8f0">PLATFORM ENVIRONMENT</text>
+                <text x="390" y="74" font-family="sans-serif" font-size="22" font-weight="800" fill="#38bdf8">Node.js ${process.version}</text>
+                <text x="390" y="96" font-family="sans-serif" font-size="12" font-weight="600" fill="#64748b">Discord.js v${require('discord.js').version}</text>
             </g>
         </svg>
         `;
