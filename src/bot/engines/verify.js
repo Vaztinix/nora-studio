@@ -71,18 +71,12 @@ async function handleVerifyButtonClick(interaction, settings) {
         }
 
         const captchaCode = generateRandomCaptcha(6);
-        const svgString = generateSvgCaptcha(captchaCode);
-        
-        let attachment = null;
-        try {
-            const pngBuffer = await Promise.race([
-                sharp(Buffer.from(svgString)).png().toBuffer(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Captcha image rendering timed out')), 2000))
-            ]);
-            attachment = new AttachmentBuilder(pngBuffer, { name: 'captcha.png' });
-        } catch (e) {
-            console.warn('[Verification Engine] Captcha image rendering timed out, falling back to text captcha.');
-        }
+
+        const embed = new EmbedBuilder()
+            .setTitle('🔒 Security Verification')
+            .setDescription(`Please view the CAPTCHA code below and click **Enter CAPTCHA Code** to submit:\n\n# \` ${captchaCode.split('').join(' ')} \`\n\n*Code is 6 characters long and case-sensitive.*`)
+            .setColor(0x57acf2)
+            .setFooter({ text: 'Nora Security Systems' });
 
         const enterCodeBtn = new ButtonBuilder()
             .setCustomId(`verify_enter_code_${captchaCode}`)
@@ -92,22 +86,17 @@ async function handleVerifyButtonClick(interaction, settings) {
 
         const row = new ActionRowBuilder().addComponents(enterCodeBtn);
 
-        const payload = {
-            content: attachment 
-                ? '🔒 **Security Verification**\nPlease look at the image below and click the button to enter the CAPTCHA code.'
-                : `🔒 **Security Verification**\nYour CAPTCHA code is: **\`${captchaCode}\`**\nPlease click the button below and enter this code to verify.`,
-            files: attachment ? [attachment] : [],
+        await interaction.editReply({
+            embeds: [embed],
             components: [row]
-        };
-
-        await interaction.editReply(payload);
+        });
     } catch (err) {
         if (err.name === 'AbortError' || err.code === 10062 || err.code === 40060) {
             console.warn('[Verification Engine] Verification interaction expired or aborted by Discord REST client.');
             return;
         }
         console.error('[Verification Engine] Error handling verify button click:', err);
-        const errPayload = { content: '⚠️ An error occurred while generating the CAPTCHA image. Please try clicking Verify again.' };
+        const errPayload = { content: '⚠️ An error occurred while generating the CAPTCHA. Please try clicking Verify again.' };
         if (interaction.deferred || interaction.replied) {
             await interaction.editReply(errPayload).catch(() => {});
         } else {
