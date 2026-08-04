@@ -562,32 +562,40 @@ async function checkShutdownRecovery() {
                 if (seconds > 0 || durationParts.length === 0) durationParts.push(`${seconds}s`);
                 const readableDuration = durationParts.join(' ');
 
-                console.log(`[Status Shark] Nora recovered from local PC shutdown after ${readableDuration}`);
+                const isUpdate = data.isUpdate || (data.reason && (data.reason.toLowerCase().includes('update') || data.reason.toLowerCase().includes('deploy')));
+                const titleText = isUpdate ? '🔄 Nora Bot System Update Complete & Online' : '✅ Nora Bot Service Restored & Online';
+                const descText = isUpdate 
+                    ? `**Nora Bot** was restarted for a **Software Update** and is now back online and fully operational.`
+                    : `**Nora Bot** is back online and operational following **${data.reason || 'PC Reboot / Shutdown'}**.`;
+                const embedColor = isUpdate ? 0x3498DB : 0x57F287; // Blue (0x3498DB) for system update, Green (0x57F287) for power restore
+                const footerText = isUpdate ? 'Status Shark • Software Update Monitor' : 'Status Shark • Local PC Power Monitor';
+
+                console.log(`[Status Shark] Nora restored (${isUpdate ? 'Update Restart' : 'Power Restore'}) after ${readableDuration}`);
 
                 const unixUp = Math.floor(now / 1000);
                 const unixDown = Math.floor(data.shutdownAt / 1000);
                 const embed = {
-                    title: '✅ Nora Bot Service Restored & Online',
-                    description: `**Nora Bot** is back online and operational following **${data.reason || 'PC Reboot / Shutdown'}**.`,
-                    color: 0x57F287, // Green
+                    title: titleText,
+                    description: descText,
+                    color: embedColor,
                     fields: [
                         {
-                            name: 'Total Offline Duration',
-                            value: `**${readableDuration}**`,
-                            inline: false
+                            name: 'Status Event',
+                            value: isUpdate ? '`Software Update / Code Deployment`' : `\`${data.reason || 'PC Restart'}\``,
+                            inline: true
                         },
                         {
-                            name: 'Offline At',
-                            value: `<t:${unixDown}:F>`,
+                            name: 'Restart Duration',
+                            value: `**${readableDuration}**`,
                             inline: true
                         },
                         {
                             name: 'Restored At',
                             value: `<t:${unixUp}:F>`,
-                            inline: true
+                            inline: false
                         }
                     ],
-                    footer: { text: 'Status Shark • Local PC Power Monitor' },
+                    footer: { text: footerText },
                     timestamp: new Date(now).toISOString()
                 };
                 await sendStatusSharkAlert(embed);
@@ -623,23 +631,29 @@ async function notifyGracefulShutdown(reason = 'PC Shutdown / OS Signal') {
 
     console.log(`[Status Shark] Intercepted OS shutdown signal (${reason}). Dispatching instant offline alert...`);
 
+    const isUpdate = reason.toLowerCase().includes('update') || reason.toLowerCase().includes('deploy');
     const shutdownTimestamp = Date.now();
     try {
         fs.writeFileSync(LAST_SHUTDOWN_FILE, JSON.stringify({
             shutdownAt: shutdownTimestamp,
-            reason: reason
+            reason: reason,
+            isUpdate: isUpdate
         }));
     } catch (e) {}
 
     const unixTime = Math.floor(shutdownTimestamp / 1000);
+    const titleText = isUpdate ? '🔄 Nora Bot Restarting for System Update' : '🚨 Nora Bot Service Going Offline';
+    const descText = isUpdate ? '**Nora Bot** is briefly restarting to apply a software update.' : `**Nora Bot** is shutting down due to **${reason}**.`;
+    const embedColor = isUpdate ? 0x3498DB : 0xED4245; // Blue (0x3498DB) for update restart, Red (0xED4245) for offline
+    const footerText = isUpdate ? 'Status Shark • Software Update Monitor' : 'Status Shark • Local PC Power Monitor';
     
     const embed = {
-        title: '🚨 Nora Bot Service Going Offline',
-        description: `**Nora Bot** is shutting down due to **${reason}**.`,
-        color: 0xED4245, // Red
+        title: titleText,
+        description: descText,
+        color: embedColor,
         fields: [
             {
-                name: 'Offline Started At',
+                name: isUpdate ? 'Restart Initiated At' : 'Offline Started At',
                 value: `<t:${unixTime}:F> (<t:${unixTime}:R>)`,
                 inline: true
             },
@@ -649,7 +663,7 @@ async function notifyGracefulShutdown(reason = 'PC Shutdown / OS Signal') {
                 inline: true
             }
         ],
-        footer: { text: 'Status Shark • Local PC Power Monitor' },
+        footer: { text: footerText },
         timestamp: new Date(shutdownTimestamp).toISOString()
     };
 
