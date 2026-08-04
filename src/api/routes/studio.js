@@ -231,7 +231,9 @@ router.delete('/autoresponders/:id', requireAuth, async (req, res) => {
 router.get('/validate-social-channel', requireAuth, async (req, res) => {
     try {
         const { platform, url } = req.query;
-        if (!platform || !url) return res.status(400).json({ error: 'Missing platform or url' });
+        if (typeof platform !== 'string' || typeof url !== 'string' || !platform || !url) {
+            return res.status(400).json({ error: 'Missing or invalid platform or url parameter' });
+        }
         
         // Simulating the keystrokes calculation loader "NoraCalculatingAnswers" with a 1.2 second timeout
         await new Promise(r => setTimeout(r, 1200));
@@ -239,12 +241,22 @@ router.get('/validate-social-channel', requireAuth, async (req, res) => {
         let username = 'Creator';
         let avatar = 'https://cdn.discordapp.com/embed/avatars/0.png';
         
-        if (url.includes('twitch.tv/')) {
-            username = url.split('twitch.tv/')[1].split('/')[0];
-            avatar = `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`;
-        } else if (url.includes('youtube.com/')) {
-            username = url.split('youtube.com/')[1].split('/')[0].replace('@', '');
-            avatar = `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`;
+        let parsedUrl;
+        try {
+            parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
+        } catch (e) {
+            return res.status(400).json({ error: 'Invalid URL format' });
+        }
+
+        const host = parsedUrl.hostname.toLowerCase();
+        if (host === 'twitch.tv' || host.endsWith('.twitch.tv')) {
+            const parts = parsedUrl.pathname.split('/').filter(Boolean);
+            if (parts.length > 0) username = parts[0];
+            avatar = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
+        } else if (host === 'youtube.com' || host.endsWith('.youtube.com') || host === 'youtu.be') {
+            const parts = parsedUrl.pathname.split('/').filter(Boolean);
+            if (parts.length > 0) username = parts[0].replace('@', '');
+            avatar = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
         }
         
         res.json({
@@ -581,12 +593,12 @@ router.get('/topgg/servers', requireAuth, async (req, res) => {
                 if (endOfObj !== -1) {
                     const rawSlice = html.substring(startOfObj, endOfObj + 1);
                     try {
-                        const unescaped = rawSlice
-                            .replace(/\\"/g, '"')
-                            .replace(/\\\\/g, '\\')
-                            .replace(/\\u0026/g, '&');
-                        
-                        const obj = JSON.parse(unescaped);
+                        let obj;
+                        try {
+                            obj = JSON.parse(rawSlice);
+                        } catch (e) {
+                            obj = JSON.parse(rawSlice.replace(/\\u0026/g, '&'));
+                        }
                         if (obj.id && obj.name && !seenIds.has(obj.id)) {
                             seenIds.add(obj.id);
                             servers.push({

@@ -725,7 +725,7 @@
                             ? `<div style="font-size: 0.7rem; color: var(--muted); margin-top: 4px;">⌛ Subscription: Expires ${new Date(s.paidExpiresAt).toLocaleDateString()}</div>`
                             : '';
                         const hasAnyPremium = s.isPremium || s.isManualPremium || s.paidExpiresAt;
-                        
+                                              const safeName = String(s.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                         return `
                         <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
@@ -733,7 +733,7 @@
                                     <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='nora.png'">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
-                                            ${s.name} ${premiumStatus}
+                                            ${String(s.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')} ${premiumStatus}
                                         </div>
                                         <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${s.id}</div>
                                     </div>
@@ -744,7 +744,7 @@
                                     ` : `
                                         <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(16,185,129,0.3); color: var(--success); flex-shrink: 0;" onclick="managePremiumEx('grant', 'server', '${s.id}')">Grant</button>
                                     `}
-                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.5); color: #ff5555; background: rgba(248,81,73,0.05); flex-shrink: 0;" onclick="leaveServerEx('${s.id}', '${s.name.replace(/'/g, "\\'")}')">Leave</button>
+                                    <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(248,81,73,0.5); color: #ff5555; background: rgba(248,81,73,0.05); flex-shrink: 0;" onclick="leaveServerEx('${s.id}', '${safeName}')">Leave</button>
                                 </div>
                             </div>
                             ${expiryInfo}

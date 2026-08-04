@@ -4,6 +4,21 @@ const GuildSettings = require('../../database/models/GuildSettings');
 const { requireGuildPermission, getDiscordUser } = require('../middleware/auth');
 const settingsCache = require('../../utils/settingsCache');
 
+// Rate limiting store for settings endpoints
+const settingsRequests = new Map();
+const settingsRateLimiter = (req, res, next) => {
+    const ip = req.headers['x-forwarded-for'] || req.ip || 'global';
+    const now = Date.now();
+    const timestamps = (settingsRequests.get(ip) || []).filter(ts => now - ts < 10000);
+    if (timestamps.length >= 60) {
+        return res.status(429).json({ error: 'Too many requests to settings endpoints.' });
+    }
+    timestamps.push(now);
+    settingsRequests.set(ip, timestamps);
+    next();
+};
+
+router.use(settingsRateLimiter);
 // Apply permission checking middleware to all routes in this router
 router.use(requireGuildPermission);
 
@@ -51,7 +66,7 @@ router.get('/', async (req, res) => {
             dbSync
         });
     } catch (error) {
-        console.error(`Error fetching settings for guild ${req.params.guildId}:`, error);
+        console.error('Error fetching settings for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error while fetching settings.' });
     }
 });
@@ -201,7 +216,7 @@ router.post('/', async (req, res) => {
         const { syncAllAutoModRules } = require('../../utils/automodSync');
         if (guild) {
             await syncAllAutoModRules(guild, settings).catch(err => {
-                console.error(`AutoMod Sync failed for guild ${guildId} on settings update:`, err);
+                console.error('AutoMod Sync failed for guild %s on settings update:', guildId, err);
             });
         }
 
@@ -237,7 +252,7 @@ router.post('/', async (req, res) => {
 
         res.json({ success: true, settings });
     } catch (error) {
-        console.error(`Error updating settings for guild ${req.params.guildId}:`, error);
+        console.error('Error updating settings for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error while updating settings.' });
     }
 });
@@ -267,7 +282,7 @@ router.delete('/', async (req, res) => {
         
         res.json({ success: true, message: 'Cascading settings reset successfully performed.' });
     } catch (error) {
-        console.error(`Error deleting settings for guild ${req.params.guildId}:`, error);
+        console.error('Error deleting settings for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error during settings reset.' });
     }
 });

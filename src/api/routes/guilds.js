@@ -65,7 +65,7 @@ router.get('/action-logs', async (req, res) => {
             logs: rows
         });
     } catch (error) {
-        console.error(`Error fetching action logs for guild ${req.params.guildId}:`, error);
+        console.error('Error fetching action logs for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error while fetching action logs.' });
     }
 });
@@ -1895,11 +1895,29 @@ router.post('/feeds', async (req, res) => {
 
                 publicHandle = url;
 
-            } else if (url.includes('youtube.com/')) {
+            } else {
 
-                const parts = url.replace(/\/$/, '').split('/');
+                let isYtUrl = false;
 
-                publicHandle = parts[parts.length - 1].split('?')[0];
+                try {
+
+                    const pUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
+
+                    const h = pUrl.hostname.toLowerCase();
+
+                    if (h === 'youtube.com' || h.endsWith('.youtube.com') || h === 'youtu.be') isYtUrl = true;
+
+                } catch (e) {}
+
+
+
+                if (isYtUrl || url.includes('/')) {
+
+                    const parts = url.replace(/\/$/, '').split('/');
+
+                    publicHandle = parts[parts.length - 1].split('?')[0];
+
+                }
 
             }
 
@@ -2127,11 +2145,29 @@ router.put('/feeds/:feedId', async (req, res) => {
 
                     publicHandle = url;
 
-                } else if (url.includes('youtube.com/')) {
+                } else {
 
-                    const parts = url.replace(/\/$/, '').split('/');
+                    let isYtUrl = false;
 
-                    publicHandle = parts[parts.length - 1].split('?')[0];
+                    try {
+
+                        const pUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
+
+                        const h = pUrl.hostname.toLowerCase();
+
+                        if (h === 'youtube.com' || h.endsWith('.youtube.com') || h === 'youtu.be') isYtUrl = true;
+
+                    } catch (e) {}
+
+
+
+                    if (isYtUrl || url.includes('/')) {
+
+                        const parts = url.replace(/\/$/, '').split('/');
+
+                        publicHandle = parts[parts.length - 1].split('?')[0];
+
+                    }
 
                 }
 

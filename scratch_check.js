@@ -2,7 +2,7 @@ const fs = require('fs');
 const srcHtml = fs.readFileSync('src/web/dashboard.html', 'utf8');
 
 // Extract the main script block (Script #3, starts at line 3936)
-const scriptRegex = /<script[^>]*>([\s\S]*?)<\/script>/g;
+const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
 let match;
 let idx = 0;
 while ((match = scriptRegex.exec(srcHtml)) !== null) {
@@ -39,7 +39,7 @@ try {
 
 // Also check the dist version
 const distHtml = fs.readFileSync('dist/dashboard.html', 'utf8');
-const distScriptRegex = /<script[^>]*>([\s\S]*?)<\/script>/g;
+const distScriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
 let distMatch;
 let distIdx = 0;
 while ((distMatch = distScriptRegex.exec(distHtml)) !== null) {

@@ -119,7 +119,7 @@ async function resolveChannelId(input) {
 
         return null;
     } catch (error) {
-        console.error(`[YouTube Resolver] Error resolving handle/URL "${input}":`, error.message);
+        console.error('[YouTube Resolver] Error resolving handle/URL %s:', input, error.message);
         return null;
     }
 }
@@ -133,6 +133,21 @@ async function resolveChannelId(input) {
 function createWebSubRouter(client, getGuildSubscriptions) {
     const router = express.Router();
 
+    const webSubRequests = new Map();
+    const webSubRateLimiter = (req, res, next) => {
+        const ip = req.headers['x-forwarded-for'] || req.ip || 'global';
+        const now = Date.now();
+        const timestamps = (webSubRequests.get(ip) || []).filter(ts => now - ts < 10000);
+        if (timestamps.length >= 100) {
+            return res.status(429).type('text/plain').send('Rate limit exceeded');
+        }
+        timestamps.push(now);
+        webSubRequests.set(ip, timestamps);
+        next();
+    };
+
+    router.use('/youtube/webhook', webSubRateLimiter);
+
     // 1. GET Request: Google WebSub Subscription Verification (hub.challenge)
     router.get('/youtube/webhook', (req, res) => {
         const hubMode = req.query['hub.mode'];
@@ -141,11 +156,12 @@ function createWebSubRouter(client, getGuildSubscriptions) {
         const hubLease = req.query['hub.lease_seconds'];
 
         if (hubMode === 'subscribe' || hubMode === 'unsubscribe') {
+            const safeChallenge = String(hubChallenge || '').replace(/[^a-zA-Z0-9_\-.~]/g, '');
             console.log(`[WebSub Verification] Mode: ${hubMode}, Topic: ${hubTopic}, Lease: ${hubLease}s`);
-            return res.status(200).send(hubChallenge);
+            return res.status(200).type('text/plain').send(safeChallenge);
         }
 
-        return res.status(400).send('Bad Request');
+        return res.status(400).type('text/plain').send('Bad Request');
     });
 
     // 2. POST Request: YouTube Notification Delivery (XML payload)
@@ -319,10 +335,10 @@ async function manageWebSubSubscriptions(callbackUrl, channelIds) {
                 console.log(`[WebSub Manager] Subscription request sent for Channel: ${channelId}`);
             } else {
                 const text = await response.text();
-                console.error(`[WebSub Manager] Failed subscribing to Channel: ${channelId}. Status: ${response.status}. Response: ${text}`);
+                console.error('[WebSub Manager] Failed subscribing to Channel %s. Status: %s', channelId, response.status);
             }
         } catch (error) {
-            console.error(`[WebSub Manager] Connection error subscribing to Channel ${channelId}:`, error.message);
+            console.error('[WebSub Manager] Connection error subscribing to Channel %s:', channelId, error.message);
         }
     }
 }

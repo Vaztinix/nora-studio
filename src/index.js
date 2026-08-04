@@ -154,6 +154,10 @@ function setCachedAvatar(userId, url) {
 async function fetchRoblox(url, options = {}) {
     const retries = options.retries !== undefined ? options.retries : 2;
     const timeoutMs = options.timeout !== undefined ? options.timeout : 3000;
+    const { validateExternalUrl } = require('./utils/security');
+    if (!validateExternalUrl(url)) {
+        throw new Error('Invalid or unsafe URL requested for Roblox API');
+    }
     let lastError = null;
     for (let i = 0; i < retries; i++) {
         try {
@@ -963,8 +967,8 @@ const ipRateLimiter = (req, res, next) => {
     next();
 };
 
-app.use('/api', (req, res, next) => {
-    if (req.path === '/health') return next();
+app.use((req, res, next) => {
+    if (req.path === '/health' || req.path === '/api/health') return next();
     ipRateLimiter(req, res, next);
 });
 
@@ -1660,9 +1664,12 @@ app.get('/api/user/me', async (req, res) => {
             const isLocalIp = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === 'localhost' || clientIp.startsWith('192.168.') || clientIp.startsWith('10.') || clientIp.startsWith('::ffff:127.0.0.1');
             if (!isLocalIp) {
                 try {
-                    const geo = await axios.get(`http://ip-api.com/json/${clientIp}`, { timeout: 3000 });
-                    if (geo.data && geo.data.status === 'success') {
-                        location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
+                    const safeIp = encodeURIComponent(clientIp.replace(/[^a-fA-F0-9:.]/g, ''));
+                    if (safeIp) {
+                        const geo = await axios.get(`http://ip-api.com/json/${safeIp}`, { timeout: 3000 });
+                        if (geo.data && geo.data.status === 'success') {
+                            location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
+                        }
                     }
                 } catch (e) {}
             } else {
@@ -2719,7 +2726,7 @@ app.get('/api/user/roblox/callback', async (req, res) => {
             <body>
                 <div class="container">
                     <h1>Verification Complete!</h1>
-                    <p>Your Roblox account <strong>@${robloxUsername}</strong> has been successfully verified and connected to your profile.</p>
+                    <p>Your Roblox account <strong>@${String(robloxUsername || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</strong> has been successfully verified and connected to your profile.</p>
                     <p>You may now close this browser window and return to Nora.</p>
                 </div>
             </body>
@@ -2727,7 +2734,7 @@ app.get('/api/user/roblox/callback', async (req, res) => {
         `);
     } catch (e) {
         console.error('Error in Roblox OAuth callback:', e);
-        res.status(500).send(`Verification failed: ${e.message}`);
+        res.status(500).type('text/plain').send('Verification failed. Please try again or contact support.');
     }
 });
 

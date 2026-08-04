@@ -53,13 +53,24 @@ module.exports = {
             let publicHandle = url;
             let channelId = null;
 
+            let isYoutubeUrl = false;
+            try {
+                const parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
+                const host = parsedUrl.hostname.toLowerCase();
+                if (host === 'youtube.com' || host.endsWith('.youtube.com') || host === 'youtu.be') {
+                    isYoutubeUrl = true;
+                }
+            } catch (e) {
+                isYoutubeUrl = false;
+            }
+
             if (url.includes('@')) {
                 publicHandle = url.split('@')[1].split('/')[0].split('?')[0];
             } else if (url.includes('/channel/')) {
                 publicHandle = url.split('/channel/')[1].split('/')[0];
             } else if (url.startsWith('UC') && url.length === 24) {
                 publicHandle = url;
-            } else if (url.includes('youtube.com/')) {
+            } else if (isYoutubeUrl || url.includes('/')) {
                 // Handle any youtube.com URL - extract the last meaningful segment
                 const parts = url.replace(/\/$/, '').split('/');
                 publicHandle = parts[parts.length - 1].split('?')[0];
@@ -134,12 +145,19 @@ module.exports = {
             const urlOrHandle = interaction.options.getString('url_or_handle').trim();
             await interaction.deferReply({ ephemeral: true });
 
+            let isYtUrl = false;
+            try {
+                const pUrl = new URL(urlOrHandle.startsWith('http') ? urlOrHandle : `https://${urlOrHandle}`);
+                const h = pUrl.hostname.toLowerCase();
+                if (h === 'youtube.com' || h.endsWith('.youtube.com') || h === 'youtu.be') isYtUrl = true;
+            } catch (e) {}
+
             let parsedHandle = urlOrHandle;
             if (urlOrHandle.includes('@')) {
                 parsedHandle = urlOrHandle.split('@')[1].split('/')[0].split('?')[0];
             } else if (urlOrHandle.includes('/channel/')) {
                 parsedHandle = urlOrHandle.split('/channel/')[1].split('/')[0];
-            } else if (urlOrHandle.includes('youtube.com/')) {
+            } else if (isYtUrl || urlOrHandle.includes('/')) {
                 const parts = urlOrHandle.replace(/\/$/, '').split('/');
                 parsedHandle = parts[parts.length - 1].split('?')[0];
             }
@@ -207,12 +225,19 @@ module.exports = {
             const urlOrHandle = interaction.options.getString('url_or_handle').trim();
             await interaction.deferReply({ ephemeral: true });
 
+            let isYtUrl2 = false;
+            try {
+                const pUrl = new URL(urlOrHandle.startsWith('http') ? urlOrHandle : `https://${urlOrHandle}`);
+                const h = pUrl.hostname.toLowerCase();
+                if (h === 'youtube.com' || h.endsWith('.youtube.com') || h === 'youtu.be') isYtUrl2 = true;
+            } catch (e) {}
+
             let parsedHandle = urlOrHandle;
             if (urlOrHandle.includes('@')) {
                 parsedHandle = urlOrHandle.split('@')[1].split('/')[0].split('?')[0];
             } else if (urlOrHandle.includes('/channel/')) {
                 parsedHandle = urlOrHandle.split('/channel/')[1].split('/')[0];
-            } else if (urlOrHandle.includes('youtube.com/')) {
+            } else if (isYtUrl2 || urlOrHandle.includes('/')) {
                 const parts = urlOrHandle.replace(/\/$/, '').split('/');
                 parsedHandle = parts[parts.length - 1].split('?')[0];
             }
