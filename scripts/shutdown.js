@@ -37,12 +37,6 @@ async function shutdownAll() {
     stopPid(PID_FILE, 'Nora Bot Core');
     stopPid(WATCHER_PID_FILE, 'Status Shark Watcher');
 
-    // Give 1.5s for async webhook delivery before closing remaining tasks
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    try {
-        execSync('taskkill /f /im node.exe 2>nul || exit 0', { stdio: 'ignore' });
-    } catch (e) {}
     console.log('✅ Graceful shutdown completed.');
 }
 

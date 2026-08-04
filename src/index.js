@@ -75,32 +75,7 @@ try {
     console.warn('[System Lock] Warning checking PID lock:', e.message);
 }
 
-(function ensureWatcherRunning() {
-    try {
-        let watcherAlive = false;
-        if (fs.existsSync(WATCHER_PID_FILE)) {
-            const watcherPid = parseInt(fs.readFileSync(WATCHER_PID_FILE, 'utf8').trim(), 10);
-            if (watcherPid > 0) {
-                try {
-                    process.kill(watcherPid, 0);
-                    watcherAlive = true;
-                } catch (e) {}
-            }
-        }
-        if (!watcherAlive) {
-            const { spawn } = require('child_process');
-            const watcherScript = path.join(__dirname, '../scripts/watcher.js');
-            const child = spawn(process.execPath, [watcherScript], {
-                detached: true,
-                stdio: 'ignore'
-            });
-            child.unref();
-            console.log('[System] Independent Status Watcher process spawned in background.');
-        }
-    } catch (e) {
-        console.error('[System] Failed to check/spawn independent watcher:', e.message);
-    }
-})();
+
 
 const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js');
 
