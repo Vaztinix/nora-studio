@@ -18,28 +18,28 @@
 
 ---
 
-## 🚀 What is Nora?
+## What is Nora?
 
 **Nora** is a high-performance, privacy-first Discord ecosystem engineered to provide elite community moderation, Roblox identity verification, engagement leveling, and server telemetry without compromising user privacy.
 
 Unlike legacy Discord bots that hoard user data or spam permissions, Nora operates under a strict **Zero-Access Architecture**:
-- 🚫 **No Permanent Message Storage:** Chat content is processed in volatile memory only for AutoMod/AI checks and discarded instantly.
-- 🔒 **Zero Developer Backdoors:** Developers have no backend overrides to inspect private chats, server logs, or member statistics.
-- ⚡ **User Sovereignty:** Members can run `/mycard` to inspect their data and hit **Erase Data** for an immediate, irreversible wipe.
+- **No Permanent Message Storage:** Chat content is processed in volatile memory only for AutoMod/AI checks and discarded instantly.
+- **Zero Developer Backdoors:** Developers have no backend overrides to inspect private chats, server logs, or member statistics.
+- **User Sovereignty:** Members can run `/mycard` to inspect their data and hit **Erase Data** for an immediate, irreversible wipe.
 
 ---
 
-## ⚡ Key Feature Modules
+## Key Feature Modules
 
 | Module | Version | Description |
 | :--- | :---: | :--- |
-| 🛡️ **Security & Anti-Raid** | `v2.1` | Velocity join limiters, account age enforcement, avatar requirements, suspicious nickname filtering, and 1-click server lockdown. |
-| 🎮 **Roblox Verification** | `v2.4` | Real-time Roblox identity linking, group rank role bindings, nickname sync, and server access gating. |
-| ⭐ **Starboard System** | `v2.5` | Reaction voting highlights, custom emojis, star count thresholds, branded webhook posts, and **Ignored Channels filter**. |
-| 🎨 **Leveling & Rank Cards** | `v2.3` | Voice & text XP algorithms, role rewards, leaderboards, and custom rank card design studio (custom colors, borders, image uploads). |
-| 🎫 **Support Ticketing** | `Beta` | Help desk reaction panels, staff routing, automated transcripts, and auto-category archiving. |
-| 🤖 **AI & Autoresponder** | `v2.1` | Dual-AI engine (Local Aura V10 & Gemini/OpenAI), regex autoresponders, and smart intent classifier (Targeted vs. Casual context). |
-| 📊 **Nora Studio Dashboard** | `v2.5` | Web-based management portal with real-time sync, unsaved changes guards, and server telemetry. |
+| **Security & Anti-Raid** | `v2.1` | Velocity join limiters, account age enforcement, avatar requirements, suspicious nickname filtering, and 1-click server lockdown. |
+| **Roblox Verification** | `v2.4` | Real-time Roblox identity linking, group rank role bindings, nickname sync, and server access gating. |
+| **Starboard System** | `v2.5` | Reaction voting highlights, custom emojis, star count thresholds, branded webhook posts, and **Ignored Channels filter**. |
+| **Leveling & Rank Cards** | `v2.3` | Voice & text XP algorithms, role rewards, leaderboards, and custom rank card design studio (custom colors, borders, image uploads). |
+| **Support Ticketing** | `Beta` | Help desk reaction panels, staff routing, automated transcripts, and auto-category archiving. |
+| **AI & Autoresponder** | `v2.1` | Dual-AI engine (Local Aura V10 & Gemini/OpenAI), regex autoresponders, and smart intent classifier (Targeted vs. Casual context). |
+| **Nora Studio Dashboard** | `v2.5` | Web-based management portal with real-time sync, unsaved changes guards, and server telemetry. |
 
 ---
 
@@ -64,7 +64,7 @@ flowchart TD
 
 ---
 
-## 🛡️ Privacy-First Philosophy
+## Privacy-First Philosophy
 
 Nora is built around complete user sovereignty. Server administrators and individual members maintain total control over their data:
 
@@ -82,7 +82,7 @@ Nora is built around complete user sovereignty. Server administrators and indivi
 
 ---
 
-## 👨‍💻 Developer & Official Links
+## Developer & Official Links
 
 <div align="center">
 
@@ -90,12 +90,12 @@ Nora is built around complete user sovereignty. Server administrators and indivi
 
 | Platform | Direct Link |
 | :--- | :--- |
-| 🌐 **Official Website** | [vaztinix.dev](https://vaztinix.dev) |
-| 🤖 **Developer Portfolio** | [vaztinix.dev/me](https://vaztinix.dev/me) |
-| 🏆 **Top.gg Profile** | [top.gg/user/593420060990005248](https://top.gg/user/593420060990005248) |
-| 🐙 **GitHub Repository** | [github.com/Vaztinix/nora-studio](https://github.com/Vaztinix/nora-studio) |
-| 💬 **Discord Contact** | [discord.com/users/1214048435632603137](https://discord.com/users/1214048435632603137) |
-| 📧 **Business Inquiries** | [vaztinixstudios@gmail.com](mailto:vaztinixstudios@gmail.com) |
+| **Official Website** | [vaztinix.dev](https://vaztinix.dev) |
+| **Developer Portfolio** | [vaztinix.dev/me](https://vaztinix.dev/me) |
+| **Top.gg Profile** | [top.gg/user/593420060990005248](https://top.gg/user/593420060990005248) |
+| **GitHub Repository** | [github.com/Vaztinix/nora-studio](https://github.com/Vaztinix/nora-studio) |
+| **Discord Contact** | [discord.com/users/1214048435632603137](https://discord.com/users/1214048435632603137) |
+| **Business Inquiries** | [vaztinixstudios@gmail.com](mailto:vaztinixstudios@gmail.com) |
 
 <br>
 
