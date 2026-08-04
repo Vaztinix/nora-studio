@@ -348,7 +348,6 @@ module.exports = {
 
         // Handle Verification Buttons (Anti-Bot Modal Upgrade)
         if (interaction.isButton() && interaction.customId === 'verify_system_button') {
-            await interaction.deferReply({ ephemeral: true }).catch(() => {});
             const verifyEngine = require('../bot/engines/verify');
             const settings = await settingsCache.get(interaction.guildId);
             await verifyEngine.handleVerifyButtonClick(interaction, settings);

@@ -61,22 +61,25 @@ function generateSvgCaptcha(text) {
  */
 async function handleVerifyButtonClick(interaction, settings) {
     try {
-        if (!interaction.deferred && !interaction.replied) {
-            await interaction.deferReply({ ephemeral: true }).catch(() => {});
-        }
-
         if (!settings || !settings.verifyRoleId) {
             const msg = '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask a server admin to configure the Verified Role in the dashboard or via `/setup`.';
-            return await interaction.editReply({ content: msg });
+            if (interaction.deferred || interaction.replied) {
+                return await interaction.editReply({ content: msg }).catch(() => {});
+            } else {
+                return await interaction.reply({ content: msg, ephemeral: true }).catch(() => {});
+            }
         }
 
         const captchaCode = generateRandomCaptcha(6);
-
-        const embed = new EmbedBuilder()
-            .setTitle('🔒 Security Verification')
-            .setDescription(`Please view the CAPTCHA code below and click **Enter CAPTCHA Code** to submit:\n\n# \` ${captchaCode.split('').join(' ')} \`\n\n*Code is 6 characters long and case-sensitive.*`)
-            .setColor(0x57acf2)
-            .setFooter({ text: 'Nora Security Systems' });
+        const svgString = generateSvgCaptcha(captchaCode);
+        
+        let attachment = null;
+        try {
+            const pngBuffer = await sharp(Buffer.from(svgString)).png().toBuffer();
+            attachment = new AttachmentBuilder(pngBuffer, { name: 'captcha.png' });
+        } catch (e) {
+            console.warn('[Verification Engine] Captcha image rendering failed:', e.message);
+        }
 
         const enterCodeBtn = new ButtonBuilder()
             .setCustomId(`verify_enter_code_${captchaCode}`)
@@ -86,21 +89,25 @@ async function handleVerifyButtonClick(interaction, settings) {
 
         const row = new ActionRowBuilder().addComponents(enterCodeBtn);
 
-        await interaction.editReply({
-            embeds: [embed],
-            components: [row]
-        });
-    } catch (err) {
-        if (err.name === 'AbortError' || err.code === 10062 || err.code === 40060) {
-            console.warn('[Verification Engine] Verification interaction expired or aborted by Discord REST client.');
-            return;
+        const payload = {
+            content: '🔒 **Security Verification**\nPlease look at the image below and click the button to enter the CAPTCHA code.',
+            files: attachment ? [attachment] : [],
+            components: [row],
+            ephemeral: true
+        };
+
+        if (interaction.deferred || interaction.replied) {
+            await interaction.editReply(payload);
+        } else {
+            await interaction.reply(payload);
         }
+    } catch (err) {
         console.error('[Verification Engine] Error handling verify button click:', err);
-        const errPayload = { content: '⚠️ An error occurred while generating the CAPTCHA. Please try clicking Verify again.' };
+        const errPayload = { content: '⚠️ An error occurred while generating the CAPTCHA image. Please try clicking Verify again.', ephemeral: true };
         if (interaction.deferred || interaction.replied) {
             await interaction.editReply(errPayload).catch(() => {});
         } else {
-            await interaction.reply({ ...errPayload, ephemeral: true }).catch(() => {});
+            await interaction.reply(errPayload).catch(() => {});
         }
     }
 }
