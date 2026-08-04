@@ -868,6 +868,9 @@ module.exports = {
             };
 
             try {
+                if (!command.showModal && !command.noAutoDefer && !interaction.deferred && !interaction.replied) {
+                    await interaction.deferReply({ ephemeral: command.ephemeral || false }).catch(() => {});
+                }
                 await command.execute(interaction, settings);
             } catch (error) {
                 const logger = require('../utils/logger');
