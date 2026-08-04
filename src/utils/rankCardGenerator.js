@@ -98,14 +98,17 @@ async function generateRankCard({
     let avatarBase64 = '';
     if (showPfp && avatarUrl) {
         try {
-            const response = await axios.get(avatarUrl, { responseType: 'arraybuffer', timeout: 5000 });
-            const pngBuffer = await sharp(response.data)
+            const avatarRes = await Promise.race([
+                axios.get(avatarUrl, { responseType: 'arraybuffer', timeout: 1200 }),
+                new Promise((_, r) => setTimeout(() => r(new Error('Avatar fetch timeout')), 1200))
+            ]);
+            const pngBuffer = await sharp(avatarRes.data)
                 .resize(120, 120)
                 .png()
                 .toBuffer();
             avatarBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
         } catch (e) {
-            console.error('Error fetching/processing avatar for rank card:', e.message);
+            console.warn('[Rank Generator] Avatar fetch/processing fallback used:', e.message);
         }
     }
 
@@ -115,15 +118,22 @@ async function generateRankCard({
 
     if (finalBgImage) {
         try {
-            const resolvedUrl = await resolveDirectMediaUrl(finalBgImage);
+            const resolvedUrl = await Promise.race([
+                resolveDirectMediaUrl(finalBgImage),
+                new Promise((_, r) => setTimeout(() => r(new Error('URL resolution timeout')), 1500))
+            ]);
+
             let rawBuffer;
             if (resolvedUrl.startsWith('data:image')) {
                 const base64Data = resolvedUrl.split(',')[1];
                 rawBuffer = Buffer.from(base64Data, 'base64');
                 if (resolvedUrl.startsWith('data:image/gif')) isAnimatedGif = true;
             } else {
-                const response = await axios.get(resolvedUrl, { responseType: 'arraybuffer', timeout: 7000 });
-                rawBuffer = Buffer.from(response.data);
+                const bgRes = await Promise.race([
+                    axios.get(resolvedUrl, { responseType: 'arraybuffer', timeout: 1500 }),
+                    new Promise((_, r) => setTimeout(() => r(new Error('Background fetch timeout')), 1500))
+                ]);
+                rawBuffer = Buffer.from(bgRes.data);
                 const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
                 if (isGifHeader || resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')) {
                     isAnimatedGif = true;
@@ -151,7 +161,7 @@ async function generateRankCard({
                 customBgBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
             }
         } catch (e) {
-            console.error('Error processing custom rank card background:', e.message);
+            console.warn('[Rank Generator] Custom background processing fallback used:', e.message);
         }
     }
 

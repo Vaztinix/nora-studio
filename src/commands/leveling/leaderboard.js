@@ -17,6 +17,8 @@ module.exports = {
         .setDefaultMemberPermissions(null),
     
     async execute(interaction) {
+        await interaction.deferReply().catch(() => {});
+
         const page = interaction.options.getInteger('page') || 1;
         const usersPerPage = 10;
         const offset = (page - 1) * usersPerPage;
@@ -28,11 +30,8 @@ module.exports = {
             offset: offset
         });
 
-        const GuildSettings = require('../../database/models/GuildSettings');
-        const settings = await GuildSettings.findOne({ where: { guildId: interaction.guild.id } });
-
-        // Defer reply
-        await interaction.deferReply();
+        const settingsCache = require('../../utils/settingsCache');
+        const settings = await settingsCache.get(interaction.guild.id);
 
         if (settings?.levelingUseImages === false) {
             let leaderboardText = '';
@@ -41,14 +40,19 @@ module.exports = {
                 const rank = offset + i + 1;
                 leaderboardText += `**${rank}.** <@${u.userId}> - Level **${u.level || 0}** (${(u.totalXp || 0).toLocaleString()} XP)\n`;
             }
-            const allUsers = await UserLevel.findAll({
-                where: { guildId: interaction.guild.id },
-                order: [['totalXp', 'DESC']]
+
+            const callerInfo = await UserLevel.findOne({
+                where: { userId: interaction.user.id, guildId: interaction.guild.id }
             });
-            const callerRank = allUsers.findIndex(u => u.userId === interaction.user.id) + 1;
-            const callerInfo = allUsers.find(u => u.userId === interaction.user.id);
+            const callerXp = callerInfo ? (callerInfo.totalXp || 0) : 0;
+            const callerRank = callerInfo
+                ? (await UserLevel.count({
+                    where: { guildId: interaction.guild.id, totalXp: { [require('sequelize').Op.gt]: callerXp } }
+                  })) + 1
+                : 'Unknown';
+
             const statsText = callerInfo 
-                ? `Your Stats: Rank **#${callerRank}** | Level **${callerInfo.level}** | XP **${callerInfo.totalXp.toLocaleString()}**`
+                ? `Your Stats: Rank **#${callerRank}** | Level **${callerInfo.level || 0}** | XP **${callerXp.toLocaleString()}**`
                 : `Your Stats: Rank **Unknown** (Send some messages to earn XP!)`;
 
             const totalPages = Math.ceil(count / usersPerPage);

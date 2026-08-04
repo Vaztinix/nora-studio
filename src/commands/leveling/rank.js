@@ -22,7 +22,7 @@ module.exports = {
         checkAndAwardEgg(interaction, 9);
 
         const target = interaction.options.getUser('target') || interaction.user;
-        const member = await interaction.guild.members.fetch(target.id).catch(() => null);
+        const member = interaction.guild.members.cache.get(target.id) || await interaction.guild.members.fetch(target.id).catch(() => null);
 
         // We only exclude Nora herself from the rank system to avoid self-tracking.
         if (target.id === interaction.client.user.id) {
@@ -35,18 +35,19 @@ module.exports = {
             where: { userId: target.id, guildId: interaction.guild.id }
         });
 
-        const guildUsers = await UserLevel.findAll({
-            where: { guildId: interaction.guild.id },
-            order: [['totalXp', 'DESC']]
-        });
+        const targetXp = userLevel ? (userLevel.totalXp || 0) : 0;
+        const higherCount = await UserLevel.count({
+            where: {
+                guildId: interaction.guild.id,
+                totalXp: { [require('sequelize').Op.gt]: targetXp }
+            }
+        }).catch(() => 0);
 
         let currentLevel = 0;
         let totalXpRaw = 0;
         let xpProgressInLevel = 0;
         let xpStepForLevelIncrement = 100;
-        let progressPercentage = 0;
-        let rankIndex = guildUsers.length + 1;
-        const totalUsers = guildUsers.length;
+        let rankIndex = higherCount + 1;
         const hasNoXp = !userLevel;
 
         const { getTotalXPForLevel } = require('../../utils/noraLeveling');
