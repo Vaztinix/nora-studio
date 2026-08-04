@@ -15,7 +15,8 @@ const BROWSER_HEADERS = {
 async function getYoutubeChannelId(handle) {
     try {
         // Clean the handle - remove @ if present
-        const cleanHandle = handle.replace(/^@/, '');
+        const cleanHandle = encodeURIComponent(String(handle || '').replace(/^@/, ''));
+        if (!cleanHandle) return null;
         const res = await axios.get(`https://www.youtube.com/@${cleanHandle}`, {
             headers: BROWSER_HEADERS
         });
@@ -23,7 +24,7 @@ async function getYoutubeChannelId(handle) {
         const match = html.match(/\/channel\/(UC[a-zA-Z0-9_-]{22})/);
         return match ? match[1] : null;
     } catch (e) {
-        console.error(`Error resolving YouTube handle @${handle}:`, e.message);
+        console.error('Error resolving YouTube handle @%s:', handle, e.message);
         return null;
     }
 }
@@ -34,19 +35,15 @@ async function getYoutubeChannelId(handle) {
  */
 async function isYoutubeShort(videoId) {
     try {
-        const res = await axios.get(`https://www.youtube.com/shorts/${videoId}`, {
+        const safeVideoId = encodeURIComponent(String(videoId || ''));
+        if (!safeVideoId) return false;
+        const res = await axios.get(`https://www.youtube.com/shorts/${safeVideoId}`, {
             headers: BROWSER_HEADERS,
             maxRedirects: 0,
             validateStatus: (status) => status < 400
         });
-        // If we get a 200 on /shorts/{id}, it IS a short
-        return true;
+        return res.status === 200;
     } catch (e) {
-        // 303/302 redirect to /watch?v= means it's NOT a short, or 404
-        if (e.response && (e.response.status === 303 || e.response.status === 302)) {
-            const location = e.response.headers?.location || '';
-            if (location.includes('/watch?v=')) return false;
-        }
         return false;
     }
 }
@@ -57,7 +54,8 @@ async function isYoutubeShort(videoId) {
  */
 async function scrapeLatestShort(handle, channelId) {
     try {
-        const cleanHandle = handle.replace(/^@/, '');
+        const cleanHandle = encodeURIComponent(String(handle || '').replace(/^@/, ''));
+        const safeChannelId = encodeURIComponent(String(channelId || ''));
         // Try @handle/shorts first (modern YouTube format)
         let res;
         try {
@@ -66,8 +64,8 @@ async function scrapeLatestShort(handle, channelId) {
             });
         } catch (e) {
             // Fallback to /channel/ path if @handle fails
-            if (channelId) {
-                res = await axios.get(`https://www.youtube.com/channel/${channelId}/shorts`, {
+            if (safeChannelId) {
+                res = await axios.get(`https://www.youtube.com/channel/${safeChannelId}/shorts`, {
                     headers: BROWSER_HEADERS
                 });
             } else {

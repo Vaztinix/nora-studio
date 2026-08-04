@@ -90,7 +90,9 @@ async function syncAllGuilds(client) {
 
 async function syncRobloxRolesWithBackoff(member, robloxId, bindings, attempts = 1, delay = 1000) {
     try {
-        const res = await axios.get(`https://groups.roblox.com/v2/users/${robloxId}/groups/roles`, { timeout: 5000 });
+        const safeRobloxId = encodeURIComponent(String(robloxId || '').replace(/[^0-9]/g, ''));
+        if (!safeRobloxId) return;
+        const res = await axios.get(`https://groups.roblox.com/v2/users/${safeRobloxId}/groups/roles`, { timeout: 5000 });
         const userGroups = res.data.data || [];
 
         for (const binding of bindings) {
