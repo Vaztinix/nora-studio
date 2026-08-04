@@ -74,18 +74,27 @@ module.exports = {
             );
             console.log(`[System Sync] Global Command Matrix synchronized. Badge eligibility: ACTIVE.`);
 
-            // 🧹 Duplicate Purge: Clear guild-local commands to ensure only the global ones show up.
-            const guildIds = client.guilds.cache.map(guild => guild.id);
-            console.log(`[System Sync] Purging local overrides from ${guildIds.length} nodes...`);
+            // 🧹 Duplicate Purge: Clear guild-local commands safely without triggering 429 rate limits
+            const guildsToPurge = Array.from(client.guilds.cache.keys());
+            console.log(`[System Sync] Verifying ${guildsToPurge.length} nodes for local command overrides...`);
 
-            await Promise.all(guildIds.map(async (guildId) => {
-                try {
-                    await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: [] });
-                    return true;
-                } catch (e) {
-                    return false;
+            for (let i = 0; i < guildsToPurge.length; i += 5) {
+                const chunk = guildsToPurge.slice(i, i + 5);
+                await Promise.all(chunk.map(async (guildId) => {
+                    try {
+                        const guildObj = client.guilds.cache.get(guildId);
+                        if (guildObj) {
+                            const localCmds = await guildObj.commands.fetch().catch(() => null);
+                            if (localCmds && localCmds.size > 0) {
+                                await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: [] });
+                            }
+                        }
+                    } catch (e) {}
+                }));
+                if (i + 5 < guildsToPurge.length) {
+                    await new Promise(r => setTimeout(r, 600));
                 }
-            }));
+            }
 
             console.log(`[System Sync] Global consistency restored.`);
         } catch (error) {
