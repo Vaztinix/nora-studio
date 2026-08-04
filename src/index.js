@@ -1142,7 +1142,7 @@ function serveDashboard(req, res) {
     }
 }
 
-app.get(['/dashboard', '/dashboard.html'], serveDashboard);
+app.get(['/dashboard', '/dashboard.html'], ipRateLimiter, serveDashboard);
 
 function serveVerify(req, res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -1166,7 +1166,7 @@ function serveVerify(req, res) {
     }
 }
 
-app.get('/verify', serveVerify);
+app.get('/verify', ipRateLimiter, serveVerify);
 
 function serveOwner(req, res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -1190,13 +1190,13 @@ function serveOwner(req, res) {
     }
 }
 
-app.get(['/owner', '/owner.html'], serveOwner);
+app.get(['/owner', '/owner.html'], ipRateLimiter, serveOwner);
 
-app.get('/favicon.ico', (req, res) => {
+app.get('/favicon.ico', ipRateLimiter, (req, res) => {
     res.sendFile(path.join(__dirname, 'web/nora.png'));
 });
 
-app.get(['/me', '/me.html'], (req, res) => {
+app.get(['/me', '/me.html'], ipRateLimiter, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
@@ -1213,7 +1213,7 @@ app.get(['/me', '/me.html'], (req, res) => {
     }
 });
 
-app.get(['/billing', '/billing-faq', '/billing-faq.html'], (req, res) => {
+app.get(['/billing', '/billing-faq', '/billing-faq.html'], ipRateLimiter, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
@@ -3064,41 +3064,37 @@ const getWebFilePath = (filename) => {
 };
 
 // Serve index.html (Vaztinix Bio landing page) at root '/'
-app.get('/', (req, res) => {
+app.get('/', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('index.html'));
 });
 
-
-
 // Clean URLs for other subpages
-app.get('/team', (req, res) => {
+app.get('/team', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('team.html'));
 });
 
-app.get('/docs', (req, res) => {
+app.get('/docs', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('docs.html'));
 });
 
-app.get('/ai', (req, res) => {
+app.get('/ai', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('AI.html'));
 });
-app.get('/ai-studio', (req, res) => {
+app.get('/ai-studio', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('ai-studio.html'));
 });
 
-
-
-app.get('/install', (req, res) => {
+app.get('/install', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('install.html'));
 });
 
-app.get('/legal', (req, res) => {
+app.get('/legal', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('legal.html'));
 });
 
 // GET /api/logs returns the buffered console output (Owner Only)
 // Uses session lookup instead of a live Discord API call to avoid connection hangs on every terminal poll
-app.get('/api/logs', async (req, res) => {
+app.get('/api/logs', ipRateLimiter, async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });

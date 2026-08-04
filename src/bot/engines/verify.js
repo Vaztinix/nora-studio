@@ -60,32 +60,49 @@ function generateSvgCaptcha(text) {
  * Sends the dynamic CAPTCHA image with an "Enter Code" button when the user clicks Verify.
  */
 async function handleVerifyButtonClick(interaction, settings) {
-    if (!settings || !settings.verifyRoleId) {
-        return interaction.reply({
-            content: '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask a server admin to configure the Verified Role in the dashboard or via `/setup`.',
-            ephemeral: true
-        });
+    try {
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferReply({ ephemeral: true }).catch(() => {});
+        }
+
+        if (!settings || !settings.verifyRoleId) {
+            const msg = '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask a server admin to configure the Verified Role in the dashboard or via `/setup`.';
+            return await interaction.editReply({ content: msg });
+        }
+
+        const captchaCode = generateRandomCaptcha(6);
+        const svgString = generateSvgCaptcha(captchaCode);
+        const pngBuffer = await sharp(Buffer.from(svgString)).png().toBuffer();
+        const attachment = new AttachmentBuilder(pngBuffer, { name: 'captcha.png' });
+
+        const enterCodeBtn = new ButtonBuilder()
+            .setCustomId(`verify_enter_code_${captchaCode}`)
+            .setLabel('Enter CAPTCHA Code')
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji('🔏');
+
+        const row = new ActionRowBuilder().addComponents(enterCodeBtn);
+
+        const payload = {
+            content: '🔒 **Security Verification**\nPlease look at the image below and click the button to enter the CAPTCHA code.',
+            files: [attachment],
+            components: [row]
+        };
+
+        await interaction.editReply(payload);
+    } catch (err) {
+        if (err.name === 'AbortError' || err.code === 10062 || err.code === 40060) {
+            console.warn('[Verification Engine] Verification interaction expired or aborted by Discord REST client.');
+            return;
+        }
+        console.error('[Verification Engine] Error handling verify button click:', err);
+        const errPayload = { content: '⚠️ An error occurred while generating the CAPTCHA image. Please try clicking Verify again.' };
+        if (interaction.deferred || interaction.replied) {
+            await interaction.editReply(errPayload).catch(() => {});
+        } else {
+            await interaction.reply({ ...errPayload, ephemeral: true }).catch(() => {});
+        }
     }
-
-    const captchaCode = generateRandomCaptcha(6);
-    const svgString = generateSvgCaptcha(captchaCode);
-    const pngBuffer = await sharp(Buffer.from(svgString)).png().toBuffer();
-    const attachment = new AttachmentBuilder(pngBuffer, { name: 'captcha.png' });
-
-    const enterCodeBtn = new ButtonBuilder()
-        .setCustomId(`verify_enter_code_${captchaCode}`)
-        .setLabel('Enter CAPTCHA Code')
-        .setStyle(ButtonStyle.Primary)
-        .setEmoji('🔏');
-
-    const row = new ActionRowBuilder().addComponents(enterCodeBtn);
-
-    await interaction.reply({
-        content: '🔒 **Security Verification**\nPlease look at the image below and click the button to enter the CAPTCHA code.',
-        files: [attachment],
-        components: [row],
-        ephemeral: true
-    });
 }
 
 /**

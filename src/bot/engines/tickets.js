@@ -97,20 +97,40 @@ async function closeTicket(channel, ticket, settings, closedByUserId, closedByTa
  * Handles the ticket close button interaction.
  */
 async function handleTicketClose(interaction, settings) {
-    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
-    if (!ticket) return interaction.reply({ content: 'Could not resolve this ticket in database.', ephemeral: true });
-    
-    const isCreator = interaction.user.id === ticket.ownerId;
-    const isSupport = settings.ticketSupportRoleId && interaction.member?.roles.cache.has(settings.ticketSupportRoleId);
-    const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.ManageChannels) || interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
+    try {
+        const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+        if (!ticket) {
+            const msg = 'Could not resolve this ticket in database.';
+            if (interaction.deferred || interaction.replied) return await interaction.editReply({ content: msg });
+            return await interaction.reply({ content: msg, ephemeral: true });
+        }
+        
+        const isCreator = interaction.user.id === ticket.ownerId;
+        const isSupport = settings?.ticketSupportRoleId && interaction.member?.roles.cache.has(settings.ticketSupportRoleId);
+        const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.ManageChannels) || interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
 
-    if (!isCreator && !isSupport && !isAdmin) {
-        return interaction.reply({ content: '⛔ Only the ticket creator or Support staff can close this ticket.', ephemeral: true });
+        if (!isCreator && !isSupport && !isAdmin) {
+            const msg = '⛔ Only the ticket creator or Support staff can close this ticket.';
+            if (interaction.deferred || interaction.replied) return await interaction.editReply({ content: msg });
+            return await interaction.reply({ content: msg, ephemeral: true });
+        }
+
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.reply({ content: '🔒 Close request acknowledged. Compiling transcript and closing...', ephemeral: true });
+        } else {
+            await interaction.editReply({ content: '🔒 Close request acknowledged. Compiling transcript and closing...' });
+        }
+
+        await closeTicket(interaction.channel, ticket, settings, interaction.user.id, interaction.user.tag, interaction.client);
+    } catch (err) {
+        console.error('[Ticket Engine] Error handling ticket close:', err);
+        const errContent = `⚠️ An error occurred while closing the ticket: ${err.message}`;
+        if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({ content: errContent }).catch(() => {});
+        } else {
+            await interaction.reply({ content: errContent, ephemeral: true }).catch(() => {});
+        }
     }
-
-    await interaction.reply({ content: '🔒 Close request acknowledged. Compiling transcript and closing...', ephemeral: true });
-
-    await closeTicket(interaction.channel, ticket, settings, interaction.user.id, interaction.user.tag, interaction.client);
 }
 
 /**

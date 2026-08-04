@@ -69,11 +69,10 @@ module.exports = {
         });
 
         try {
-            const payload = { embeds: [embed], components, ephemeral: true };
             if (interaction.replied || interaction.deferred) {
-                await interaction.editReply(payload).catch(() => {});
+                await interaction.editReply({ embeds: [embed], components }).catch(() => {});
             } else {
-                await interaction.reply(payload).catch(() => {});
+                await interaction.reply({ embeds: [embed], components, ephemeral: true }).catch(() => {});
             }
         } catch (e) {
             console.error('[Embed Trace] Failed to send error embed:', e);
@@ -93,11 +92,10 @@ module.exports = {
         });
 
         try {
-            const payload = { embeds: [embed], components, ephemeral };
             if (interaction.replied || interaction.deferred) {
-                await interaction.editReply(payload).catch(() => {});
+                await interaction.editReply({ embeds: [embed], components }).catch(() => {});
             } else {
-                await interaction.reply(payload).catch(() => {});
+                await interaction.reply({ embeds: [embed], components, ephemeral }).catch(() => {});
             }
         } catch (e) {
             console.error('[Embed Trace] Failed to send success embed:', e);
@@ -115,11 +113,10 @@ module.exports = {
         });
 
         try {
-            const payload = { embeds: [embed], components, ephemeral };
             if (interaction.replied || interaction.deferred) {
-                await interaction.editReply(payload).catch(() => {});
+                await interaction.editReply({ embeds: [embed], components }).catch(() => {});
             } else {
-                await interaction.reply(payload).catch(() => {});
+                await interaction.reply({ embeds: [embed], components, ephemeral }).catch(() => {});
             }
         } catch (e) {
             console.error('[Embed Trace] Failed to send info embed:', e);

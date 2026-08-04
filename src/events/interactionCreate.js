@@ -346,6 +346,7 @@ module.exports = {
 
         // Handle Verification Buttons (Anti-Bot Modal Upgrade)
         if (interaction.isButton() && interaction.customId === 'verify_system_button') {
+            await interaction.deferReply({ ephemeral: true }).catch(() => {});
             const verifyEngine = require('../bot/engines/verify');
             const settings = await settingsCache.get(interaction.guildId);
             await verifyEngine.handleVerifyButtonClick(interaction, settings);
@@ -614,19 +615,30 @@ module.exports = {
 
         // 🎟️ Handle Giveaway Entry Button (User Request)
         if (interaction.isButton() && interaction.customId === 'giveaway_enter') {
-            const Giveaway = require('../database/models/Giveaway');
-            const g = await Giveaway.findOne({ where: { messageId: interaction.message.id, ended: false } });
-            if (!g) return interaction.reply({ content: 'This giveaway is already ended or invalid!', ephemeral: true });
+            try {
+                const Giveaway = require('../database/models/Giveaway');
+                const g = await Giveaway.findOne({ where: { messageId: interaction.message.id, ended: false } });
+                const replySafely = async (content) => {
+                    if (interaction.deferred || interaction.replied) return await interaction.editReply({ content });
+                    return await interaction.reply({ content, ephemeral: true });
+                };
 
-            const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
-            if (g.requiredRoleId && (!member || !member.roles.cache.has(g.requiredRoleId))) {
-                return interaction.reply({ content: `You need the <@&${g.requiredRoleId}> role to enter this giveaway!`, ephemeral: true });
+                if (!g) return await replySafely('This giveaway is already ended or invalid!');
+
+                const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+                if (g.requiredRoleId && (!member || !member.roles.cache.has(g.requiredRoleId))) {
+                    return await replySafely(`You need the <@&${g.requiredRoleId}> role to enter this giveaway!`);
+                }
+
+                await interaction.message.react('🎉').catch(() => {});
+                return await replySafely('You have entered the giveaway. Good luck.');
+            } catch (err) {
+                console.error('[Giveaway Handler Error]:', err);
+                const msg = '⚠️ Failed to process giveaway entry. Please try again.';
+                if (interaction.deferred || interaction.replied) await interaction.editReply({ content: msg }).catch(() => {});
+                else await interaction.reply({ content: msg, ephemeral: true }).catch(() => {});
+                return;
             }
-
-            // Standard: We use REACTIONS as our persistent entry list so D.js can pick winners easily later
-            // We just add a reaction to the message using the bot (silent entry)
-            await interaction.message.react('🎉').catch(() => {});
-            return interaction.reply({ content: 'You have entered the giveaway. Good luck.', ephemeral: true });
         }
 
         // Handle standard Commands
@@ -854,22 +866,9 @@ module.exports = {
                 return await originalDeferReply(options);
             };
 
-            // ⏳ [Global Redirect & Wait] - System Command Monitoring
-            const timeoutId = setTimeout(async () => {
-                if (!interaction.deferred && !interaction.replied) {
-                    try {
-                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
-                        await interaction.editReply({ content: '☕ **Hang tight!** Nora is just gathering her thoughts. She will be with you in a second...', ephemeral: true }).catch(() => {});
-                    } catch (e) {}
-                }
-            }, 2000);
-
             try {
                 await command.execute(interaction, settings);
-                clearTimeout(timeoutId);
             } catch (error) {
-                clearTimeout(timeoutId);
-                
                 const logger = require('../utils/logger');
                 await logger.logCommandError(interaction, error);
                 

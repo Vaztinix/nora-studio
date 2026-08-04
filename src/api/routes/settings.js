@@ -26,7 +26,7 @@ router.use(requireGuildPermission);
  * GET /api/guilds/:guildId/settings
  * Retrieve the current GuildSettings for the specified server.
  */
-router.get('/', async (req, res) => {
+router.get('/', settingsRateLimiter, async (req, res) => {
     try {
         const { guildId } = req.params;
         let settings = await GuildSettings.findOne({ where: { guildId } });
@@ -75,7 +75,7 @@ router.get('/', async (req, res) => {
  * POST /api/guilds/:guildId/settings
  * Update the GuildSettings for the specified server.
  */
-router.post('/', async (req, res) => {
+router.post('/', settingsRateLimiter, async (req, res) => {
     try {
         const { guildId } = req.params;
         const payload = req.body;
@@ -261,7 +261,7 @@ router.post('/', async (req, res) => {
  * DELETE /api/guilds/:guildId/settings
  * Performs a cascading reset / data erasure for the guild.
  */
-router.delete('/', async (req, res) => {
+router.delete('/', settingsRateLimiter, async (req, res) => {
     try {
         const { guildId } = req.params;
         const { performCascadingErasure } = require('../../utils/erasure');
