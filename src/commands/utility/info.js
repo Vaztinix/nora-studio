@@ -101,10 +101,25 @@ module.exports = {
         </svg>
         `;
 
-        const imageBuffer = await sharp(Buffer.from(svgCard)).png().toBuffer();
-        const attachment = new AttachmentBuilder(imageBuffer, { name: 'nora-status-report.png' });
-
-        await interaction.editReply({ files: [attachment] });
+        try {
+            const imageBuffer = await Promise.race([
+                sharp(Buffer.from(svgCard)).png().toBuffer(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Rendering timeout')), 2000))
+            ]);
+            const attachment = new AttachmentBuilder(imageBuffer, { name: 'nora-status-report.png' });
+            await interaction.editReply({ files: [attachment] });
+        } catch (err) {
+            console.warn('[Info Command] Image rendering timed out or failed, sending rich embed fallback:', err.message);
+            const { handleInfo } = require('../../utils/embeds');
+            await handleInfo(interaction, 'Nora Core Status', 'REAL-TIME SYSTEM DIAGNOSTICS & METRICS', [
+                { name: '⚡ Latency', value: `\`${ping}ms\``, inline: true },
+                { name: '🌐 Total Servers', value: `\`${totalServers}\``, inline: true },
+                { name: '👥 Total Members', value: `\`${totalMembers.toLocaleString()}\``, inline: true },
+                { name: '⏱️ System Uptime', value: `\`${uptimeStr}\``, inline: true },
+                { name: '💾 Memory Heap', value: `\`${heapUsedMB} MB\``, inline: true },
+                { name: '⚙️ Environment', value: `Node.js \`${process.version}\` | Discord.js \`v${require('discord.js').version}\``, inline: true }
+            ]);
+        }
     },
 };
 

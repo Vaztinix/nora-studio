@@ -130,19 +130,22 @@ module.exports = {
             }
 
             const { generateRankCard } = require('../../utils/rankCardGenerator');
-            const imageBuffer = await generateRankCard({
-                username: target.username,
-                level: currentLevel,
-                currentXp: xpProgressInLevel,
-                nextLevelXp: xpStepForLevelIncrement,
-                rank: rankIndex,
-                avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
-                showPfp: finalShowPfp,
-                bgColor: cardBgColor,
-                accentColor: cardAccent,
-                borderColor: settings?.levelingCardBorderColor || '#23252e',
-                userCustomBg: cardUserBg
-            });
+            const imageBuffer = await Promise.race([
+                generateRankCard({
+                    username: target.username,
+                    level: currentLevel,
+                    currentXp: xpProgressInLevel,
+                    nextLevelXp: xpStepForLevelIncrement,
+                    rank: rankIndex,
+                    avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
+                    showPfp: finalShowPfp,
+                    bgColor: cardBgColor,
+                    accentColor: cardAccent,
+                    borderColor: settings?.levelingCardBorderColor || '#23252e',
+                    userCustomBg: cardUserBg
+                }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 2500))
+            ]);
 
             const isGifBuffer = imageBuffer.slice(0, 3).toString() === 'GIF';
             const fileName = isGifBuffer ? 'rank-card.gif' : 'rank-card.png';

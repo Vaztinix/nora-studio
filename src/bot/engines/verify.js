@@ -72,8 +72,17 @@ async function handleVerifyButtonClick(interaction, settings) {
 
         const captchaCode = generateRandomCaptcha(6);
         const svgString = generateSvgCaptcha(captchaCode);
-        const pngBuffer = await sharp(Buffer.from(svgString)).png().toBuffer();
-        const attachment = new AttachmentBuilder(pngBuffer, { name: 'captcha.png' });
+        
+        let attachment = null;
+        try {
+            const pngBuffer = await Promise.race([
+                sharp(Buffer.from(svgString)).png().toBuffer(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Captcha image rendering timed out')), 2000))
+            ]);
+            attachment = new AttachmentBuilder(pngBuffer, { name: 'captcha.png' });
+        } catch (e) {
+            console.warn('[Verification Engine] Captcha image rendering timed out, falling back to text captcha.');
+        }
 
         const enterCodeBtn = new ButtonBuilder()
             .setCustomId(`verify_enter_code_${captchaCode}`)
@@ -84,8 +93,10 @@ async function handleVerifyButtonClick(interaction, settings) {
         const row = new ActionRowBuilder().addComponents(enterCodeBtn);
 
         const payload = {
-            content: '🔒 **Security Verification**\nPlease look at the image below and click the button to enter the CAPTCHA code.',
-            files: [attachment],
+            content: attachment 
+                ? '🔒 **Security Verification**\nPlease look at the image below and click the button to enter the CAPTCHA code.'
+                : `🔒 **Security Verification**\nYour CAPTCHA code is: **\`${captchaCode}\`**\nPlease click the button below and enter this code to verify.`,
+            files: attachment ? [attachment] : [],
             components: [row]
         };
 
