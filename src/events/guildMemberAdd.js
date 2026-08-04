@@ -244,7 +244,8 @@ module.exports = {
             }
 
             // 3. --- Welcome Announcement (Welcomer Module) ---
-            if (settings.welcomerEnabled && settings.welcomeChannelId) {
+            const isWelcomerActive = settings.welcomerEnabled === true || settings.welcomerEnabled === 1 || settings.welcomerEnabled === 'true' || settings.welcomerEnabled === '1';
+            if (isWelcomerActive && settings.welcomeChannelId) {
                 let welcomeChannel = member.guild.channels.cache.get(settings.welcomeChannelId);
                 if (!welcomeChannel) welcomeChannel = await member.guild.channels.fetch(settings.welcomeChannelId).catch(() => null);
 
@@ -259,7 +260,9 @@ module.exports = {
                         .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                         .setFooter({ text: `Member #${member.guild.memberCount}` })
                         .setTimestamp();
-                    await welcomeChannel.send({ embeds: [embed] }).catch(() => { });
+                    await welcomeChannel.send({ embeds: [embed] }).catch((err) => {
+                        console.error(`[Welcomer Error] Could not send welcome message in channel ${settings.welcomeChannelId}:`, err.message);
+                    });
                 }
             }
 

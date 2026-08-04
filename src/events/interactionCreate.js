@@ -342,10 +342,13 @@ module.exports = {
             const settings = await settingsCache.get(interaction.guildId);
             await ticketsEngine.handleTicketButton(interaction, settings);
             return;
-        }        // Handle Verification Buttons (Anti-Bot Modal Upgrade)
+        }
+
+        // Handle Verification Buttons (Anti-Bot Modal Upgrade)
         if (interaction.isButton() && interaction.customId === 'verify_system_button') {
             const verifyEngine = require('../bot/engines/verify');
-            await verifyEngine.handleVerifyButtonClick(interaction);
+            const settings = await settingsCache.get(interaction.guildId);
+            await verifyEngine.handleVerifyButtonClick(interaction, settings);
             return;
         }
 
@@ -361,6 +364,14 @@ module.exports = {
         if (interaction.isButton() && interaction.customId.startsWith('verify_enter_code_')) {
             const verifyEngine = require('../bot/engines/verify');
             await verifyEngine.handleEnterCodeButtonClick(interaction);
+            return;
+        }
+
+        // Handle Verification Modal Submission
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('verify_modal_submit_')) {
+            const verifyEngine = require('../bot/engines/verify');
+            const settings = await settingsCache.get(interaction.guildId);
+            await verifyEngine.handleVerifyModalSubmit(interaction, settings);
             return;
         }
 

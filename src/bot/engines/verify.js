@@ -59,7 +59,14 @@ function generateSvgCaptcha(text) {
 /**
  * Sends the dynamic CAPTCHA image with an "Enter Code" button when the user clicks Verify.
  */
-async function handleVerifyButtonClick(interaction) {
+async function handleVerifyButtonClick(interaction, settings) {
+    if (!settings || !settings.verifyRoleId) {
+        return interaction.reply({
+            content: '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask a server admin to configure the Verified Role in the dashboard or via `/setup`.',
+            ephemeral: true
+        });
+    }
+
     const captchaCode = generateRandomCaptcha(6);
     const svgString = generateSvgCaptcha(captchaCode);
     const pngBuffer = await sharp(Buffer.from(svgString)).png().toBuffer();

@@ -36,12 +36,44 @@ console.warn = (...args) => {
 const fs = require('fs');
 const path = require('path');
 
-// ─── Register PID & Auto-Launch Independent Status Watcher ───
+// ─── Single Instance Lock Protection & PID Registration ───
 const PID_FILE = path.join(__dirname, '../.nora.pid');
 const WATCHER_PID_FILE = path.join(__dirname, '../.nora_watcher.pid');
+
 try {
+    if (fs.existsSync(PID_FILE)) {
+        const oldPidStr = fs.readFileSync(PID_FILE, 'utf8').trim();
+        const oldPid = parseInt(oldPidStr, 10);
+        if (!isNaN(oldPid) && oldPid > 0 && oldPid !== process.pid) {
+            let isAlive = false;
+            try {
+                process.kill(oldPid, 0);
+                isAlive = true;
+            } catch (e) {
+                isAlive = false;
+            }
+
+            if (isAlive) {
+                console.log(`[Single Instance Lock] Terminating existing background Nora instance (PID ${oldPid}) to prevent duplicate bot instances...`);
+                try {
+                    process.kill(oldPid, 'SIGKILL');
+                } catch (err) {}
+                try {
+                    const { execSync } = require('child_process');
+                    execSync(`taskkill /F /PID ${oldPid} 2>nul || exit 0`, { stdio: 'ignore' });
+                } catch (err) {}
+                
+                // Synchronous wait to ensure socket/file lock release
+                const start = Date.now();
+                while (Date.now() - start < 600) {}
+            }
+        }
+    }
     fs.writeFileSync(PID_FILE, process.pid.toString());
-} catch (e) {}
+    console.log(`[System Lock] Single instance protection active. Running under PID ${process.pid}.`);
+} catch (e) {
+    console.warn('[System Lock] Warning checking PID lock:', e.message);
+}
 
 (function ensureWatcherRunning() {
     try {
