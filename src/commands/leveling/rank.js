@@ -145,7 +145,7 @@ module.exports = {
                     borderColor: settings?.levelingCardBorderColor || '#23252e',
                     userCustomBg: cardUserBg
                 }),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 2500))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 1200))
             ]);
 
             const isGifBuffer = imageBuffer.slice(0, 3).toString() === 'GIF';

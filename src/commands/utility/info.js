@@ -92,7 +92,10 @@ module.exports = {
         `;
 
         try {
-            const imageBuffer = await sharp(Buffer.from(svgCard)).png().toBuffer();
+            const imageBuffer = await Promise.race([
+                sharp(Buffer.from(svgCard)).png().toBuffer(),
+                new Promise((_, r) => setTimeout(() => r(new Error('Image render timed out')), 1000))
+            ]);
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'nora-status-report.png' });
             await interaction.editReply({ files: [attachment] });
         } catch (err) {
