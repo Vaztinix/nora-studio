@@ -14,21 +14,23 @@ module.exports = {
 
         // 💎 Premium Entitlement Sync (Global Badge Recognition)
         if (interaction.user) {
-            const { isPremium } = require('../utils/premiumManager');
-            const currentUserIsPremium = isPremium(interaction);
-            
-            // We update their global status in our records for badge display on cards,
-            // but only if they do not have manual premium granted by the bot owner.
-            const UserLevel = require('../database/models/UserLevel');
-            const userLevels = await UserLevel.findAll({ where: { userId: interaction.user.id } }).catch(() => []);
-            const hasManualPremium = userLevels.some(ul => ul.isManualPremium);
-            
-            if (!hasManualPremium) {
-                await UserLevel.update(
-                    { isPremium: currentUserIsPremium },
-                    { where: { userId: interaction.user.id } }
-                ).catch(() => {}); // Silent fail if database is busy
-            }
+            // Asynchronous background sync so interaction response is NEVER delayed by DB locks
+            (async () => {
+                try {
+                    const { isPremium } = require('../utils/premiumManager');
+                    const currentUserIsPremium = isPremium(interaction);
+                    const UserLevel = require('../database/models/UserLevel');
+                    const userLevels = await UserLevel.findAll({ where: { userId: interaction.user.id } }).catch(() => []);
+                    const hasManualPremium = userLevels.some(ul => ul.isManualPremium);
+                    
+                    if (!hasManualPremium) {
+                        await UserLevel.update(
+                            { isPremium: currentUserIsPremium },
+                            { where: { userId: interaction.user.id } }
+                        ).catch(() => {});
+                    }
+                } catch (e) {}
+            })();
         }
 
         // ---- Application Builder Interaction Handlers ----
@@ -779,7 +781,7 @@ module.exports = {
             // 🔐 HARDENING: Layer 2 Redundant Permission Check (Double-Verify)
             // Even if Discord allowed the command, Nora re-probes the member locally.
             if ((category === 'setup' || category === 'moderation') && !isSocialCmd) {
-                const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+                const member = interaction.member || (interaction.guild ? (interaction.guild.members.cache.get(interaction.user.id) || await interaction.guild.members.fetch(interaction.user.id).catch(() => null)) : null);
                 if (!member) return handleError(interaction, 'Security Violation', 'Could not verify your identity on this server.');
                 
                 const hasStaffPerms = member.permissions.has(PermissionFlagsBits.ManageGuild) || 
