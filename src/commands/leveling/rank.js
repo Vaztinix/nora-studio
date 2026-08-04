@@ -91,7 +91,7 @@ module.exports = {
                 })
                 .setColor(isPromoting ? 0xFF007A : (targetIsPremium ? 0xFFD700 : 0x57acf2))
                 .addFields(
-                    { name: 'Rank', value: `**#${rankIndex}** / ${totalUsers}`, inline: true },
+                    { name: 'Rank', value: `**#${rankIndex}**`, inline: true },
                     { name: 'Level', value: `**${currentLevel}**`, inline: true },
                     { name: 'Lifetime XP', value: `**${totalXpRaw.toLocaleString()}**`, inline: true },
                     { name: 'Last Message', value: (userLevel && userLevel.lastMessageTimestamp) ? `<t:${Math.floor(new Date(userLevel.lastMessageTimestamp).getTime() / 1000)}:R>` : 'Never', inline: true },
@@ -144,7 +144,7 @@ module.exports = {
                     borderColor: settings?.levelingCardBorderColor || '#23252e',
                     userCustomBg: cardUserBg
                 }),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 1200))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 5000))
             ]);
 
             const isGifBuffer = imageBuffer.slice(0, 3).toString() === 'GIF';

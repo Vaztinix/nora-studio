@@ -94,21 +94,26 @@ module.exports = {
         try {
             const imageBuffer = await Promise.race([
                 sharp(Buffer.from(svgCard)).png().toBuffer(),
-                new Promise((_, r) => setTimeout(() => r(new Error('Image render timed out')), 1000))
+                new Promise((_, r) => setTimeout(() => r(new Error('Image render timed out')), 5000))
             ]);
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'nora-status-report.png' });
             await interaction.editReply({ files: [attachment] });
         } catch (err) {
             console.warn('[Info Command] Image rendering failed, sending fallback embed:', err.message);
-            const { handleInfo } = require('../../utils/embeds');
-            await handleInfo(interaction, 'Nora Core Status', 'REAL-TIME SYSTEM DIAGNOSTICS & METRICS', [
-                { name: '⚡ Latency', value: `\`${ping}ms\``, inline: true },
-                { name: '🌐 Total Servers', value: `\`${totalServers}\``, inline: true },
-                { name: '👥 Total Members', value: `\`${totalMembers.toLocaleString()}\``, inline: true },
-                { name: '⏱️ System Uptime', value: `\`${uptimeStr}\``, inline: true },
-                { name: '💾 Memory Heap', value: `\`${heapUsedMB} MB\``, inline: true },
-                { name: '⚙️ Environment', value: `Node.js \`${process.version}\` | Discord.js \`v${require('discord.js').version}\``, inline: true }
-            ]);
+            const { EmbedBuilder } = require('discord.js');
+            const fallbackEmbed = new EmbedBuilder()
+                .setTitle('⚡ Nora Core Status')
+                .setDescription('REAL-TIME SYSTEM DIAGNOSTICS & METRICS')
+                .setColor(0x57acf2)
+                .addFields(
+                    { name: '⚡ Latency', value: `\`${ping}ms\``, inline: true },
+                    { name: '🌐 Total Servers', value: `\`${totalServers}\``, inline: true },
+                    { name: '👥 Total Members', value: `\`${totalMembers.toLocaleString()}\``, inline: true },
+                    { name: '⏱️ System Uptime', value: `\`${uptimeStr}\``, inline: true },
+                    { name: '💾 Memory Heap', value: `\`${heapUsedMB} MB\``, inline: true },
+                    { name: '⚙️ Environment', value: `Node.js \`${process.version}\` | Discord.js \`v${require('discord.js').version}\``, inline: true }
+                );
+            await interaction.editReply({ embeds: [fallbackEmbed] }).catch(() => {});
         }
     },
 };
