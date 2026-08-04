@@ -7322,17 +7322,34 @@
 
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : (type === 'success' ? 'fa-check-circle' : 'fa-info-circle')}"></i>
-                        <span>${msg}</span>
-                    </div>
-                    <button class="toast-close-btn" style="background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 2px 5px; font-size: 0.8rem; transition: color 0.2s;" onclick="event.stopPropagation(); dismissToast(this.closest('.toast'))">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
+
+            const inner = document.createElement('div');
+            inner.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;';
+
+            const left = document.createElement('div');
+            left.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+
+            const icon = document.createElement('i');
+            icon.className = `fas ${type === 'error' ? 'fa-exclamation-triangle' : (type === 'success' ? 'fa-check-circle' : 'fa-info-circle')}`;
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = String(msg || '');
+
+            left.appendChild(icon);
+            left.appendChild(textSpan);
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'toast-close-btn';
+            closeBtn.style.cssText = 'background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 2px 5px; font-size: 0.8rem; transition: color 0.2s;';
+            closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            closeBtn.onclick = function(e) {
+                e.stopPropagation();
+                dismissToast(toast);
+            };
+
+            inner.appendChild(left);
+            inner.appendChild(closeBtn);
+            toast.appendChild(inner);
 
             toast.style.opacity = '0';
             toast.style.transform = 'translate3d(0, 30px, 0) scale(0.9)';
