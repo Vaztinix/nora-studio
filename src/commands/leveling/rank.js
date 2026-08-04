@@ -149,10 +149,12 @@ module.exports = {
 
             const isGifBuffer = imageBuffer.slice(0, 3).toString() === 'GIF';
             const fileName = isGifBuffer ? 'rank-card.gif' : 'rank-card.png';
-            const attachment = new AttachmentBuilder(imageBuffer, { name: fileName });
             await interaction.editReply({ 
                 content: hasNoXp ? `👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:` : null,
-                files: [attachment] 
+                files: [{
+                    attachment: imageBuffer,
+                    name: fileName
+                }] 
             });
         } catch (err) {
             console.error('Error generating rank card:', err);

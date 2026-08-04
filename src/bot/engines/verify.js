@@ -73,10 +73,9 @@ async function handleVerifyButtonClick(interaction, settings) {
         const captchaCode = generateRandomCaptcha(6);
         const svgString = generateSvgCaptcha(captchaCode);
         
-        let attachment = null;
+        let pngBuffer = null;
         try {
-            const pngBuffer = await sharp(Buffer.from(svgString)).png().toBuffer();
-            attachment = new AttachmentBuilder(pngBuffer, { name: 'captcha.png' });
+            pngBuffer = await sharp(Buffer.from(svgString)).png().toBuffer();
         } catch (e) {
             console.warn('[Verification Engine] Captcha image rendering failed:', e.message);
         }
@@ -91,7 +90,7 @@ async function handleVerifyButtonClick(interaction, settings) {
 
         const payload = {
             content: '🔒 **Security Verification**\nPlease look at the image below and click the button to enter the CAPTCHA code.',
-            files: attachment ? [attachment] : [],
+            files: pngBuffer ? [{ attachment: pngBuffer, name: 'captcha.png' }] : [],
             components: [row],
             ephemeral: true
         };

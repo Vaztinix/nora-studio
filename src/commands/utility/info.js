@@ -96,8 +96,12 @@ module.exports = {
                 sharp(Buffer.from(svgCard)).png().toBuffer(),
                 new Promise((_, r) => setTimeout(() => r(new Error('Image render timed out')), 5000))
             ]);
-            const attachment = new AttachmentBuilder(imageBuffer, { name: 'nora-status-report.png' });
-            await interaction.editReply({ files: [attachment] });
+            await interaction.editReply({
+                files: [{
+                    attachment: imageBuffer,
+                    name: 'nora-status-report.png'
+                }]
+            });
         } catch (err) {
             console.warn('[Info Command] Image rendering failed, sending fallback embed:', err.message);
             const { EmbedBuilder } = require('discord.js');
