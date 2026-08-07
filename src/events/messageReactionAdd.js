@@ -127,46 +127,56 @@ module.exports = {
         }
 
         const emojiKey = reaction.emoji.id ? reaction.emoji.id : reaction.emoji.name;
+        const rawEmojiStr = reaction.emoji.toString();
 
         try {
-            const match = await ReactionRole.findOne({
+            // Find mapping by emoji ID, emoji name, or raw string
+            const allMessageMappings = await ReactionRole.findAll({
                 where: {
                     guildId: guild.id,
-                    messageId: reaction.message.id,
-                    emoji: emojiKey
+                    messageId: reaction.message.id
                 }
             });
+
+            if (!allMessageMappings || allMessageMappings.length === 0) return;
+
+            const match = allMessageMappings.find(m => 
+                m.emoji === emojiKey || 
+                m.emoji === rawEmojiStr || 
+                (reaction.emoji.id && m.emoji === reaction.emoji.id) ||
+                (reaction.emoji.name && m.emoji === reaction.emoji.name)
+            );
 
             if (match) {
                 const member = await guild.members.fetch(user.id).catch(() => null);
                 if (member) {
-                    // Check if singleSelect mode is enabled for this message's reaction roles
-                    const allMessageMappings = await ReactionRole.findAll({
-                        where: {
-                            guildId: guild.id,
-                            messageId: reaction.message.id
-                        }
-                    });
-
+                    // Selection Mode: Check if any mapping for this message has singleSelect: true
                     const isSingleSelectMode = allMessageMappings.some(m => m.singleSelect);
 
                     if (isSingleSelectMode) {
                         // 1. Remove all other configured reaction roles from member
                         for (const otherMatch of allMessageMappings) {
                             if (otherMatch.roleId && otherMatch.roleId !== match.roleId) {
-                                await member.roles.remove(otherMatch.roleId).catch(err => {
-                                    console.warn(`[Reaction Role SingleSelect] Failed to remove role ${otherMatch.roleId}:`, err.message);
-                                });
+                                if (member.roles.cache.has(otherMatch.roleId)) {
+                                    await member.roles.remove(otherMatch.roleId).catch(err => {
+                                        console.warn(`[Reaction Role SingleSelect] Failed to remove role ${otherMatch.roleId}:`, err.message);
+                                    });
+                                }
                             }
                         }
 
-                        // 2. Fetch all reactions on the target message and remove user from ALL OTHER emojis
+                        // 2. Fetch all reactions on target message & remove user's reaction from other emojis
                         try {
                             await reaction.message.reactions.fetch().catch(() => {});
                             for (const [rId, msgReaction] of reaction.message.reactions.cache) {
                                 const rKey = msgReaction.emoji.id ? msgReaction.emoji.id : msgReaction.emoji.name;
-                                if (rKey !== emojiKey && msgReaction.emoji.toString() !== reaction.emoji.toString()) {
-                                    await msgReaction.users.remove(user.id).catch(() => {});
+                                const isTargetEmoji = (rKey === emojiKey) || (msgReaction.emoji.toString() === rawEmojiStr);
+                                if (!isTargetEmoji) {
+                                    await msgReaction.users.remove(user.id).catch(err => {
+                                        if (err.code === 50013) {
+                                            console.warn(`[Reaction Role Warning] Nora requires 'Manage Messages' permission in #${reaction.message.channel.name} to remove user reactions for Single-Role Mode.`);
+                                        }
+                                    });
                                 }
                             }
                         } catch (e) {}
@@ -185,8 +195,8 @@ module.exports = {
                             if (!settings || settings.reactionRoleNotifyDm !== false) {
                                 const { EmbedBuilder } = require('discord.js');
                                 const dmEmbed = new EmbedBuilder()
-                                    .setTitle('Role Added')
-                                    .setDescription(`You have been given the **${role.name}** role in **${guild.name}**!${isSingleSelectMode ? '\n*(Previous single-choice role & reaction were automatically removed)*' : ''}`)
+                                    .setTitle('Role Granted')
+                                    .setDescription(`You have received the **${role.name}** role in **${guild.name}**!${isSingleSelectMode ? '\n*(Single-Role Mode Active: Previous role was automatically replaced)*' : ''}`)
                                     .setColor(role.color || 0x4F46E5);
                                 await user.send({ embeds: [dmEmbed] }).catch(() => {});
                             }

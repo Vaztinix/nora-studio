@@ -23,14 +23,52 @@ module.exports = {
                 .addStringOption(opt => opt.setName('message_id').setDescription('The ID of the target message').setRequired(true))
                 .addStringOption(opt => opt.setName('emoji').setDescription('The emoji configured (Unicode or custom)').setRequired(true))
         )
+        .addSubcommand(sub =>
+            sub.setName('mode')
+                .setDescription('Set selection mode for an existing reaction role panel.')
+                .addStringOption(opt => opt.setName('message_id').setDescription('The ID of the target message').setRequired(true))
+                .addBooleanOption(opt => opt.setName('single_select').setDescription('True = Single Role Only (Exclusive), False = Multiple Roles Allowed').setRequired(true))
+        )
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
         .setDMPermission(false),
 
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
+
+        if (subcommand === 'mode') {
+            const messageId = interaction.options.getString('message_id');
+            const singleSelect = interaction.options.getBoolean('single_select');
+            await interaction.deferReply({ ephemeral: true });
+
+            try {
+                const mappings = await ReactionRole.findAll({
+                    where: { guildId: interaction.guild.id, messageId }
+                });
+
+                if (!mappings || mappings.length === 0) {
+                    return await handleError(interaction, 'Panel Not Found', `No reaction role configuration found for message ID \`${messageId}\`.`);
+                }
+
+                await ReactionRole.update(
+                    { singleSelect },
+                    { where: { guildId: interaction.guild.id, messageId } }
+                );
+
+                const modeTitle = singleSelect ? 'Single Role Only (Exclusive Mode)' : 'Multiple Roles Allowed (Multi-Select Mode)';
+                const modeDesc = singleSelect 
+                    ? `Message \`${messageId}\` is now set to **Single Role Only**. When members select a new emoji, their previous role & reaction will be automatically revoked.`
+                    : `Message \`${messageId}\` is now set to **Multiple Roles Allowed**. Members can pick any number of roles from this panel simultaneously.`;
+
+                return await handleSuccess(interaction, `Selection Mode Updated: ${modeTitle}`, modeDesc);
+            } catch (error) {
+                console.error('[Reaction Role Mode Error]:', error);
+                return await handleError(interaction, 'System Error', 'Failed to update selection mode.');
+            }
+        }
+
         const channel = interaction.options.getChannel('channel');
         const messageId = interaction.options.getString('message_id');
-        const emojiOption = interaction.options.getString('emoji').trim();
+        const emojiOption = interaction.options.getString('emoji') ? interaction.options.getString('emoji').trim() : '';
 
         // Resolve emoji key (ID for custom, character name for standard)
         let emojiKey = emojiOption;
@@ -68,12 +106,17 @@ module.exports = {
                     await record.update({ roleId: role.id, singleSelect });
                 }
 
+                // Make sure all mappings for this message share the singleSelect mode setting
+                if (singleSelect) {
+                    await ReactionRole.update({ singleSelect: true }, { where: { guildId: interaction.guild.id, messageId } });
+                }
+
                 // Add the reaction to the message
                 await targetMessage.react(emojiOption).catch(err => {
                     console.warn('[Reaction Role] Failed to react with user emoji:', err.message);
                 });
 
-                return await handleSuccess(interaction, 'Reaction Role Configured', `Reaction role successfully configured!\n- **Message**: \`${messageId}\` in <#${channel.id}>\n- **Emoji**: ${emojiOption}\n- **Role**: <@&${role.id}>`);
+                return await handleSuccess(interaction, 'Reaction Role Configured', `Reaction role successfully configured!\n- **Message**: \`${messageId}\` in <#${channel.id}>\n- **Emoji**: ${emojiOption}\n- **Role**: <@&${role.id}>\n- **Mode**: ${singleSelect ? '🔒 Single Role Only' : '🔓 Multiple Roles Allowed'}`);
             } catch (error) {
                 console.error('[Reaction Role Add Error]:', error);
                 return await handleError(interaction, 'System Error', 'Failed to configure the reaction role.');

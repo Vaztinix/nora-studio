@@ -3209,6 +3209,25 @@ router.post('/reaction-roles/publish', async (req, res) => {
     }
 });
 
+router.post('/reaction-roles/mode', async (req, res) => {
+    try {
+        const { messageId, singleSelect } = req.body;
+        const { guildId } = req.params;
+        if (!messageId) return res.status(400).json({ error: 'Message ID is required.' });
+
+        const ReactionRole = require('../../database/models/ReactionRole');
+        const [updatedCount] = await ReactionRole.update(
+            { singleSelect: !!singleSelect },
+            { where: { guildId, messageId } }
+        );
+
+        res.json({ success: true, updatedCount, singleSelect: !!singleSelect });
+    } catch (e) {
+        console.error('Error updating reaction role selection mode:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 /**
  * POST /api/guilds/:guildId/members/:userId/warn
  */

@@ -5266,12 +5266,25 @@
                                 </div>
                             </div>
 
-                            <div style="background: rgba(0,0,0,0.25); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-                                <div>
-                                    <label style="font-weight: 700; color: #fff; font-size: 0.88rem; display: block; margin: 0;">Single-Choice Mode</label>
-                                    <span style="font-size: 0.75rem; color: var(--muted);">Automatically removes previous reaction & role when reacting to a new emoji</span>
+                            <div style="background: rgba(0,0,0,0.25); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 24px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.9rem; display: block; margin-bottom: 10px;">Role Selection Mode</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <label style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px;">
+                                        <input type="radio" name="rr_selection_mode" value="multi" id="rr-mode-multi" checked style="margin-top: 3px;" onchange="updateRRPreview()">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.85rem; display: block;">🔓 Multiple Roles Allowed</strong>
+                                            <span style="font-size: 0.72rem; color: var(--muted); line-height: 1.3; display: block; margin-top: 2px;">Members can select multiple emojis and keep all chosen roles simultaneously.</span>
+                                        </div>
+                                    </label>
+                                    <label style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px;">
+                                        <input type="radio" name="rr_selection_mode" value="single" id="rr-mode-single" style="margin-top: 3px;" onchange="updateRRPreview()">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.85rem; display: block;">🔒 Single Role Only (Exclusive)</strong>
+                                            <span style="font-size: 0.72rem; color: var(--muted); line-height: 1.3; display: block; margin-top: 2px;">Members can only hold 1 role. Selecting a new emoji auto-revokes previous panel roles.</span>
+                                        </div>
+                                    </label>
                                 </div>
-                                <label class="switch"><input type="checkbox" id="setting-rr-singleSelect"><span class="slider"></span></label>
+                                <input type="hidden" id="setting-rr-singleSelect">
                             </div>
 
                             <!-- Role Mapping Slots Header Buttons -->
@@ -12834,7 +12847,7 @@
             const description = document.getElementById('setting-rr-panelDescription').value;
             const color = document.getElementById('setting-rr-panelColor').value;
             const imageUrl = document.getElementById('setting-rr-panelImage').value;
-            const singleSelect = document.getElementById('setting-rr-singleSelect')?.checked || false;
+            const singleSelect = document.getElementById('rr-mode-single')?.checked || document.getElementById('setting-rr-singleSelect')?.checked || false;
 
             if (!channelId) {
                 showToast('Please select a destination channel!', 'error');
