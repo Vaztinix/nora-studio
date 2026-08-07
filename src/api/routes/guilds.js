@@ -3040,11 +3040,11 @@ router.put('/autoresponders/:id', async (req, res) => {
 
         if (ignoreStaffAndBots !== undefined) updateData.ignoreStaffAndBots = !!ignoreStaffAndBots;
 
-        if (ignoredChannels !== undefined) updateData.ignoredChannels = JSON.stringify(ignoredChannels);
+        if (ignoredChannels !== undefined) updateData.ignoredChannels = Array.isArray(ignoredChannels) ? JSON.stringify(ignoredChannels) : ignoredChannels;
 
-        if (ignoredRoles !== undefined) updateData.ignoredRoles = JSON.stringify(ignoredRoles);
+        if (ignoredRoles !== undefined) updateData.ignoredRoles = Array.isArray(ignoredRoles) ? JSON.stringify(ignoredRoles) : ignoredRoles;
 
-        if (allowedRoles !== undefined) updateData.allowedRoles = JSON.stringify(allowedRoles);
+        if (allowedRoles !== undefined) updateData.allowedRoles = Array.isArray(allowedRoles) ? JSON.stringify(allowedRoles) : allowedRoles;
 
 
 
