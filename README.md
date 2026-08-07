@@ -10,6 +10,10 @@
   <a href="https://discord.com/users/1214048435632603137"><img src="https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" /></a>
   <a href="https://github.com/Vaztinix/nora-studio"><img src="https://img.shields.io/badge/Version-2.5_Stable-10B981?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
   <a href="#-privacy-first-philosophy"><img src="https://img.shields.io/badge/Privacy-Zero--Access-00B4D8?style=for-the-badge&logo=shield&logoColor=white" alt="Privacy" /></a>
+  <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=servers" alt="BotBoard" /></a>
+  <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=votes" alt="BotBoard" /></a>
+  <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=health" alt="BotBoard" /></a>
+  <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=rating" alt="BotBoard" /></a>
 </p>
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1200&color=A970FF&center=true&vCenter=true&width=600&lines=Moderation+made+simple;Automation+that+respects+privacy;Roblox+Verification+%26+Group+Sync;Starboard+v2.5+%26+Custom+Rank+Cards;Built+for+modern+Discord+communities" alt="Typing Banner" />
