@@ -3146,10 +3146,8 @@ app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'web', '404.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`[System] Web Dashboard and Webhook listener online at port ${PORT}`);
-    
-
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[System] Web Dashboard and Webhook listener online at port ${PORT} (0.0.0.0)`);
 });
 
 
