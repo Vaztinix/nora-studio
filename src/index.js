@@ -1426,8 +1426,8 @@ app.post('/api/notifications/clear', async (req, res) => {
     }
 });
 
-// Health check endpoint (Used by external monitors, Status Shark, and dashboard)
-app.get('/api/health', (req, res) => {
+// Health check endpoints (Used by Cloudflare Tunnels, Cloudflare Edge, Status Shark, and dashboard)
+const healthHandler = (req, res) => {
     const isBotReady = client && client.ws && client.ws.status === 0;
     res.json({
         status: isBotReady ? 'ok' : 'degraded',
@@ -1443,7 +1443,14 @@ app.get('/api/health', (req, res) => {
             memoryUsageMb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
         }
     });
-});
+};
+
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
+app.get('/ping', (req, res) => res.send('pong'));
+app.head('/health', (req, res) => res.sendStatus(200));
+app.head('/api/health', (req, res) => res.sendStatus(200));
+app.head('/', (req, res) => res.sendStatus(200));
 
 // YouTube WebSub Webhook Router
 try {
