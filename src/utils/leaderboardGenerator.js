@@ -81,16 +81,16 @@ async function generateLeaderboard({ guildName, page, totalPages, users, bgColor
         <image href="${avatarBase64}" x="56" y="${yOffset + 16}" width="48" height="48" clip-path="url(#clip-${u.userId})" />
         ` : `
         <circle cx="80" cy="${yOffset + 40}" r="24" fill="${bgColor}" />
-        <text x="80" y="${yOffset + 47}" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="${accentColor}" text-anchor="middle">@</text>
+        <text x="80" y="${yOffset + 47}" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="${accentColor}" text-anchor="middle">@</text>
         `}
         <circle cx="80" cy="${yOffset + 40}" r="25" fill="none" stroke="${borderColor}" stroke-width="1.5" />
 
         <!-- Rank & Username -->
-        <text x="130" y="${yOffset + 42}" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="${rankColor}">#${u.rank}</text>
-        <text x="190" y="${yOffset + 42}" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">@${u.username}</text>
+        <text x="130" y="${yOffset + 42}" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="${rankColor}">#${u.rank}</text>
+        <text x="190" y="${yOffset + 42}" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">@${u.username}</text>
 
         <!-- Level & XP -->
-        <text x="760" y="${yOffset + 42}" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#a1a1aa" text-anchor="end">
+        <text x="760" y="${yOffset + 42}" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="bold" fill="#a1a1aa" text-anchor="end">
             <tspan fill="${accentColor}">LVL</tspan> ${u.level}  <tspan fill="#52525b">•</tspan>  ${u.totalXp.toLocaleString()} <tspan fill="#52525b">XP</tspan>
         </text>
 
@@ -118,10 +118,10 @@ async function generateLeaderboard({ guildName, page, totalPages, users, bgColor
         <rect x="0.75" y="0.75" width="798.5" height="${totalHeight - 1.5}" rx="15.25" fill="none" stroke="${borderColor}" stroke-width="1.5" />
 
         <!-- Header -->
-        <text x="40" y="38" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="900" fill="#ffffff" letter-spacing="-0.5">LEADERBOARD</text>
-        <text x="40" y="58" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="${accentColor}">${guildName.toUpperCase()}</text>
+        <text x="40" y="38" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff" letter-spacing="-0.5">LEADERBOARD</text>
+        <text x="40" y="58" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold" fill="${accentColor}">${guildName.toUpperCase()}</text>
         
-        <text x="760" y="48" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#52525b" text-anchor="end">PAGE ${page} OF ${totalPages}</text>
+        <text x="760" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold" fill="#52525b" text-anchor="end">PAGE ${page} OF ${totalPages}</text>
 
         <!-- Divider below header -->
         <line x1="40" y1="78" x2="760" y2="78" stroke="${borderColor}" stroke-width="2" />

@@ -232,20 +232,20 @@ async function generateRankCard({
 
         <!-- Avatar border placeholder -->
         <circle cx="100" cy="110" r="64" fill="none" stroke="${borderColor}" stroke-width="2" />
-        ${!avatarPngBuffer ? `<circle cx="100" cy="110" r="60" fill="${bgColor}" /><text x="100" y="122" font-family="sans-serif" font-size="36" font-weight="bold" fill="${accentColor}" text-anchor="middle">@</text>` : ''}
+        ${!avatarPngBuffer ? `<circle cx="100" cy="110" r="60" fill="${bgColor}" /><text x="100" y="122" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="bold" fill="${accentColor}" text-anchor="middle">@</text>` : ''}
 
         <!-- Rank Badge -->
         <rect x="640" y="35" width="120" height="36" rx="18" fill="rgba(10, 11, 16, 0.75)" stroke="${borderColor}" stroke-width="1.5" />
-        <text x="700" y="59" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e4e4e7" text-anchor="middle">RANK #${rank}</text>
+        <text x="700" y="59" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold" fill="#e4e4e7" text-anchor="middle">RANK #${rank}</text>
 
         <!-- Username -->
-        <text x="190" y="75" font-family="sans-serif" font-size="38" font-weight="900" fill="#ffffff" letter-spacing="-0.5">@${username}</text>
+        <text x="190" y="75" font-family="Segoe UI, Arial, sans-serif" font-size="38" font-weight="900" fill="#ffffff" letter-spacing="-0.5">@${username}</text>
 
         <!-- Level indicator -->
-        <text x="190" y="125" font-family="sans-serif" font-size="22" font-weight="bold" fill="${accentColor}">LEVEL ${level}</text>
+        <text x="190" y="125" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="bold" fill="${accentColor}">LEVEL ${level}</text>
 
         <!-- XP info -->
-        <text x="630" y="125" font-family="sans-serif" font-size="18" font-weight="bold" fill="#a1a1aa" text-anchor="end">${currentXp.toLocaleString()} <tspan fill="#71717a">/ ${nextLevelXp.toLocaleString()} XP</tspan></text>
+        <text x="630" y="125" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="#a1a1aa" text-anchor="end">${currentXp.toLocaleString()} <tspan fill="#71717a">/ ${nextLevelXp.toLocaleString()} XP</tspan></text>
 
         <!-- Progress Bar container -->
         <rect x="190" y="145" width="440" height="24" rx="12" fill="rgba(10, 11, 16, 0.65)" stroke="${borderColor}" stroke-width="1" />
