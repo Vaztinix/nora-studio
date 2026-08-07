@@ -3,6 +3,7 @@ const { handleError } = require('../../utils/embeds');
 
 module.exports = {
     category: 'utility',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('poll-end')
         .setDescription('End a poll by locking in the final results')

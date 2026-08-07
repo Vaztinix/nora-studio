@@ -144,10 +144,34 @@ module.exports = {
             const isOffCooldown = NoraLeveling.checkCooldown(lastMs);
             if (!isOffCooldown) return;
 
-            // Check for Promoter Bonus
+            // Check for XP Multipliers (Role-based, Channel-based, Promoter)
             let multiplier = 1.0;
-            if (settings?.promoterRoleId && message.member.roles.cache.has(settings.promoterRoleId)) {
-                multiplier = 1.5;
+            if (settings?.promoterRoleId && message.member?.roles.cache.has(settings.promoterRoleId)) {
+                multiplier = Math.max(multiplier, 1.5);
+            }
+
+            if (settings?.xpRoleMultipliers) {
+                try {
+                    const rawMultipliers = typeof settings.xpRoleMultipliers === 'string' 
+                        ? JSON.parse(settings.xpRoleMultipliers || '{}') 
+                        : (settings.xpRoleMultipliers || {});
+                    
+                    for (const [targetId, multVal] of Object.entries(rawMultipliers)) {
+                        const parsedMult = parseFloat(multVal);
+                        if (isNaN(parsedMult) || parsedMult <= 0) continue;
+
+                        // Check Role match
+                        if (message.member?.roles.cache.has(targetId)) {
+                            multiplier = Math.max(multiplier, parsedMult);
+                        }
+                        // Check Channel or Parent Category match
+                        if (message.channel.id === targetId || message.channel.parentId === targetId) {
+                            multiplier = Math.max(multiplier, parsedMult);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[XP Multiplier Error]:', e.message);
+                }
             }
 
             // Atomic Progress Processor
@@ -161,12 +185,31 @@ module.exports = {
                     const member = message.member;
                     if (member && message.guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
                         const myHighest = message.guild.members.me.roles.highest.position;
-                        for (const [milestone, roleId] of Object.entries(rewards)) {
-                            if (userLevel.level >= parseInt(milestone)) {
-                                if (!member.roles.cache.has(roleId)) {
-                                    const role = message.guild.roles.cache.get(roleId);
-                                    if (role && role.position < myHighest) {
-                                        await member.roles.add(role).catch(() => { });
+                        const shouldStack = settings.roleRewardsStack !== false; // Default true
+
+                        const sortedMilestones = Object.keys(rewards)
+                            .map(n => parseInt(n, 10))
+                            .filter(n => !isNaN(n))
+                            .sort((a, b) => a - b);
+
+                        const earnedMilestones = sortedMilestones.filter(m => userLevel.level >= m);
+                        const highestEarnedLevel = earnedMilestones.length > 0 ? Math.max(...earnedMilestones) : null;
+
+                        for (const milestone of sortedMilestones) {
+                            const roleId = rewards[milestone];
+                            if (!roleId) continue;
+                            const role = message.guild.roles.cache.get(roleId);
+                            if (!role || role.position >= myHighest) continue;
+
+                            if (userLevel.level >= milestone) {
+                                if (shouldStack || milestone === highestEarnedLevel) {
+                                    if (!member.roles.cache.has(roleId)) {
+                                        await member.roles.add(role).catch(() => {});
+                                    }
+                                } else if (!shouldStack && milestone < highestEarnedLevel) {
+                                    // Remove lower milestone role if stacking is disabled
+                                    if (member.roles.cache.has(roleId)) {
+                                        await member.roles.remove(role).catch(() => {});
                                     }
                                 }
                             }

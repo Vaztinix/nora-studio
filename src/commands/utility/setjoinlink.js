@@ -2,6 +2,8 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const UserPrefs = require('../../database/models/UserPrefs');
 
 module.exports = {
+    category: 'utility',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('setjoinlink')
         .setDescription('Save or clear your Roblox experience invite link for others to join')

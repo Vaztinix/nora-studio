@@ -20,7 +20,7 @@ function startPresence() {
                 size: [1, 10],
             },
             buttons: [
-                { label: "Community", url: "https://discord.gg/He2Q76H4qP" },
+                { label: "Community", url: "https://discord.gg/Uxb2tNAxtp" },
                 { label: "Add Nora", url: "https://vaztinix.dev" }
             ],
             instance: false,

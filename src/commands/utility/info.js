@@ -34,8 +34,8 @@ module.exports = {
                 .setURL(`https://discord.com/oauth2/authorize?client_id=${interaction.client.user.id}&permissions=1102464543799&integration_type=0&scope=bot+applications.commands`)
                 .setStyle(ButtonStyle.Link),
             new ButtonBuilder()
-                .setLabel('Support HQ')
-                .setURL('https://discord.gg/8HwR7Yg3X5')
+                .setLabel('Support')
+                .setURL('https://discord.gg/Uxb2tNAxtp')
                 .setStyle(ButtonStyle.Link),
             new ButtonBuilder()
                 .setLabel('Discord Store')

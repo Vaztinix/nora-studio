@@ -140,6 +140,38 @@ module.exports = {
             if (match) {
                 const member = await guild.members.fetch(user.id).catch(() => null);
                 if (member) {
+                    // Check if singleSelect mode is enabled for this message's reaction roles
+                    const allMessageMappings = await ReactionRole.findAll({
+                        where: {
+                            guildId: guild.id,
+                            messageId: reaction.message.id
+                        }
+                    });
+
+                    const isSingleSelectMode = allMessageMappings.some(m => m.singleSelect);
+
+                    if (isSingleSelectMode) {
+                        // 1. Remove all other configured reaction roles from member
+                        for (const otherMatch of allMessageMappings) {
+                            if (otherMatch.roleId && otherMatch.roleId !== match.roleId) {
+                                await member.roles.remove(otherMatch.roleId).catch(err => {
+                                    console.warn(`[Reaction Role SingleSelect] Failed to remove role ${otherMatch.roleId}:`, err.message);
+                                });
+                            }
+                        }
+
+                        // 2. Fetch all reactions on the target message and remove user from ALL OTHER emojis
+                        try {
+                            await reaction.message.reactions.fetch().catch(() => {});
+                            for (const [rId, msgReaction] of reaction.message.reactions.cache) {
+                                const rKey = msgReaction.emoji.id ? msgReaction.emoji.id : msgReaction.emoji.name;
+                                if (rKey !== emojiKey && msgReaction.emoji.toString() !== reaction.emoji.toString()) {
+                                    await msgReaction.users.remove(user.id).catch(() => {});
+                                }
+                            }
+                        } catch (e) {}
+                    }
+
                     const role = guild.roles.cache.get(match.roleId);
                     if (role) {
                         const botHighest = guild.members.me.roles.highest.position;
@@ -154,7 +186,7 @@ module.exports = {
                                 const { EmbedBuilder } = require('discord.js');
                                 const dmEmbed = new EmbedBuilder()
                                     .setTitle('Role Added')
-                                    .setDescription(`You have been given the **${role.name}** role in **${guild.name}**!`)
+                                    .setDescription(`You have been given the **${role.name}** role in **${guild.name}**!${isSingleSelectMode ? '\n*(Previous single-choice role & reaction were automatically removed)*' : ''}`)
                                     .setColor(role.color || 0x4F46E5);
                                 await user.send({ embeds: [dmEmbed] }).catch(() => {});
                             }

@@ -22,6 +22,10 @@ const ReactionRole = sequelize.define('ReactionRole', {
     roleId: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    singleSelect: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 

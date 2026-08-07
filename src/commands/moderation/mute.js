@@ -4,6 +4,7 @@ const Case = require('../../database/models/Case');
 
 module.exports = {
     category: 'moderation',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('mute')
         .setDescription('Time out a user with robust error handling.')

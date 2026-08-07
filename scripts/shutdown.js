@@ -37,6 +37,12 @@ async function shutdownAll() {
     stopPid(PID_FILE, 'Nora Bot Core');
     stopPid(WATCHER_PID_FILE, 'Status Shark Watcher');
 
+    try {
+        if (process.platform === 'win32') {
+            execSync('taskkill /F /IM cloudflared.exe /T 2>nul', { stdio: 'ignore' });
+        }
+    } catch (e) {}
+
     console.log('✅ Graceful shutdown completed.');
 }
 

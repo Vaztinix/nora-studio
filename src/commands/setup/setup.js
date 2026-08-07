@@ -6,6 +6,7 @@ const settingsCache = require('../../utils/settingsCache');
 
 module.exports = {
     category: 'setup',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('setup')
         .setDescription('Server setup and configuration system.')

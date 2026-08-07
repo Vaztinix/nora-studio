@@ -120,12 +120,16 @@ module.exports = {
             const userShowAvatar = targetPrefs ? targetPrefs.showAvatarInRankCard !== false : true;
             const finalShowPfp = showPfp && userShowAvatar;
 
-            // Member customizations ALWAYS override server settings across all servers
-            let cardAccent = (targetPrefs && targetPrefs.rankCardCustomColor) ? targetPrefs.rankCardCustomColor : (settings?.levelingCardAccentColor || '#7c3aed');
+            const themeMode = targetPrefs?.rankCardThemeMode || (targetPrefs?.rankCardBackgroundImage ? 'image' : (targetPrefs?.rankCardCustomColor ? 'custom' : 'preset'));
+            let cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
+            if ((themeMode === 'custom' || themeMode === 'image') && targetPrefs?.rankCardCustomColor) {
+                cardAccent = targetPrefs.rankCardCustomColor;
+            } else if (targetPrefs?.rankCardCustomColor && themeMode !== 'preset') {
+                cardAccent = targetPrefs.rankCardCustomColor;
+            }
+
             let cardBgColor = settings?.levelingCardBgColor || '#111217';
             let cardUserBg = null;
-
-            const themeMode = targetPrefs?.rankCardThemeMode || (targetPrefs?.rankCardBackgroundImage ? 'image' : 'preset');
             if (themeMode === 'image' || targetPrefs?.rankCardBackgroundImage) {
                 cardUserBg = targetPrefs?.rankCardBackgroundImage || targetPrefs?.customRankCardBg || null;
             }

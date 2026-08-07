@@ -30,6 +30,18 @@ const Application = sequelize.define('Application', {
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+    },
+    autoRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    acceptMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    denyMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true
     }
 });
 

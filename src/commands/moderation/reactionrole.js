@@ -14,6 +14,7 @@ module.exports = {
                 .addStringOption(opt => opt.setName('message_id').setDescription('The ID of the target message').setRequired(true))
                 .addStringOption(opt => opt.setName('emoji').setDescription('The emoji to react with (Unicode or custom)').setRequired(true))
                 .addRoleOption(opt => opt.setName('role').setDescription('The role to assign').setRequired(true))
+                .addBooleanOption(opt => opt.setName('single_select').setDescription('Auto-remove previous roles & reactions on this message when a new one is clicked'))
         )
         .addSubcommand(sub =>
             sub.setName('remove')
@@ -41,6 +42,7 @@ module.exports = {
 
         if (subcommand === 'add') {
             const role = interaction.options.getRole('role');
+            const singleSelect = interaction.options.getBoolean('single_select') || false;
             await interaction.deferReply({ ephemeral: true });
 
             // Verify role hierarchy
@@ -59,11 +61,11 @@ module.exports = {
                 // Add database configuration
                 const [record, created] = await ReactionRole.findOrCreate({
                     where: { guildId: interaction.guild.id, messageId, emoji: emojiKey },
-                    defaults: { roleId: role.id }
+                    defaults: { roleId: role.id, singleSelect }
                 });
 
                 if (!created) {
-                    await record.update({ roleId: role.id });
+                    await record.update({ roleId: role.id, singleSelect });
                 }
 
                 // Add the reaction to the message

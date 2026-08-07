@@ -5,6 +5,7 @@ const { checkRateLimit } = require('../../utils/aiRateLimiter');
 
 module.exports = {
     category: 'utility',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('ask')
         .setDescription('Ask the Nora AI a question privately.')

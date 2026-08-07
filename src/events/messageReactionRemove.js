@@ -79,5 +79,47 @@ module.exports = {
         } catch (e) {
             console.error('[Starboard Error] messageReactionRemove failed:', e.message);
         }
+
+        // ---- Reaction Role Removal Integration ----
+        const ReactionRole = require('../database/models/ReactionRole');
+        const emojiKey = reaction.emoji.id ? reaction.emoji.id : reaction.emoji.name;
+
+        try {
+            const match = await ReactionRole.findOne({
+                where: {
+                    guildId: guild.id,
+                    messageId: reaction.message.id,
+                    emoji: emojiKey
+                }
+            });
+
+            if (match) {
+                const member = await guild.members.fetch(user.id).catch(() => null);
+                if (member) {
+                    const role = guild.roles.cache.get(match.roleId);
+                    if (role) {
+                        const botHighest = guild.members.me.roles.highest.position;
+                        if (role.position < botHighest) {
+                            await member.roles.remove(role).catch(err => {
+                                console.error(`[Reaction Role Remove] Failed to remove role ${role.name} from ${member.user.tag}:`, err.message);
+                            });
+
+                            const GuildSettings = require('../database/models/GuildSettings');
+                            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+                            if (!settings || settings.reactionRoleNotifyDm !== false) {
+                                const { EmbedBuilder } = require('discord.js');
+                                const dmEmbed = new EmbedBuilder()
+                                    .setTitle('Role Removed')
+                                    .setDescription(`The **${role.name}** role was removed from you in **${guild.name}** because you unreacted.`)
+                                    .setColor(0xEF4444);
+                                await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('[Reaction Remove Error] Fault:', error);
+        }
     }
 };

@@ -64,6 +64,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true,
         defaultValue: '{}'
     },
+    roleRewardsStack: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true // true = keep previous milestone roles; false = remove previous milestone role
+    },
     // ---- Dynamic Logging Framework ----
     loggingChannelId: {
         type: DataTypes.STRING,
@@ -585,6 +589,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
         defaultValue: 50
     },
     webhookUrl: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    botboardWebhookUrl: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    botboardApiToken: {
         type: DataTypes.STRING,
         allowNull: true
     },

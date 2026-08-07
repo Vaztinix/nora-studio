@@ -3,6 +3,7 @@ const { exportData } = require('../../utils/persistence');
 
 module.exports = {
     category: 'owner',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('nora-admin')
         .setDescription('Nora Systems Control Unit (Owner Only)')

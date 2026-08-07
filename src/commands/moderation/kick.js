@@ -4,6 +4,7 @@ const Case = require('../../database/models/Case');
 
 module.exports = {
     category: 'moderation',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('kick')
         .setDescription('Kick a user from the server with detailed logging.')

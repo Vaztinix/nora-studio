@@ -290,6 +290,11 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `inviteRewards` TEXT DEFAULT '[]';"); } catch (e) {}
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `inviteXpReward` INTEGER DEFAULT 50;"); } catch (e) {}
     try { await sequelize.query("ALTER TABLE `UserLevels` ADD COLUMN `invitesCount` INTEGER DEFAULT 0;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `roleRewardsStack` TINYINT(1) DEFAULT 1;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `autoRoleId` VARCHAR(255) NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `acceptMessage` TEXT NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `denyMessage` TEXT NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `ReactionRoles` ADD COLUMN `singleSelect` TINYINT(1) DEFAULT 0;"); } catch (e) {}
 }
 
 runPreSyncMigrations().then(() => {
@@ -724,6 +729,24 @@ app.set('trust proxy', true);
 // Conceal technology stack
 app.disable('x-powered-by');
 
+// Universal CORS Middleware — Must run FIRST before any route or security check
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+    } else {
+        res.header('Access-Control-Allow-Origin', '*');
+    }
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma');
+    res.header('Access-Control-Max-Age', '86400');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+    next();
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 🔒 HOST HEADER WHITELIST — Block requests targeting wrong/raw-IP hosts
 // ─────────────────────────────────────────────────────────────────────────────
@@ -778,13 +801,7 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    const host = req.headers.host || '';
-    const isAllowedHost = ALLOWED_HOSTS.some(pattern => pattern.test(host));
-    if (!isAllowedHost) {
-        console.warn(`[HOST_BLOCK] Blocked request with unauthorized Host header: "${host}" from IP ${req.ip}`);
-        return res.status(400).end();
-
-    }
+    // Host header pass-through to ensure all mobile devices, local IPs, and tunnels connect smoothly
     next();
 });
 
@@ -980,7 +997,7 @@ app.use(express.json({ limit: '10mb' }));
 // In-Memory IP Rate Limiter
 const ipRequests = new Map();
 const RATE_LIMIT_WINDOW_MS = 10000; // 10 seconds
-const MAX_REQUESTS_PER_WINDOW = 120; // 120 requests per 10 seconds
+const MAX_REQUESTS_PER_WINDOW = 350; // 350 requests per 10 seconds for smooth dashboard polling & tab switching
 
 setInterval(() => {
     const now = Date.now();
@@ -1121,9 +1138,9 @@ function serveDashboard(req, res) {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
-    const distPath = path.join(__dirname, '../dist/dashboard.html');
     const webPath  = path.join(__dirname, 'web/dashboard.html');
-    const filePath = fs.existsSync(distPath) ? distPath : webPath;
+    const distPath = path.join(__dirname, '../dist/dashboard.html');
+    const filePath = fs.existsSync(webPath) ? webPath : distPath;
 
     try {
         let html = fs.readFileSync(filePath, 'utf8');
@@ -1285,6 +1302,44 @@ app.use('/api/guilds/:guildId/settings', settingsRouter);
 
 const guildsRouter = require('./api/routes/guilds');
 app.use('/api/guilds/:guildId', guildsRouter);
+
+// Mount BotBoard.gg Webhook Router
+const botboardRouter = require('./api/routes/botboard')(client);
+app.use(['/api/webhooks/botboard', '/api/botboard'], botboardRouter);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 📈 BOTBOARD.GG STATS AUTO-POSTER (Co-exists alongside Top.gg)
+// ─────────────────────────────────────────────────────────────────────────────
+async function postBotBoardStats() {
+    try {
+        const token = process.env.BOTBOARD_API_TOKEN;
+        if (!token) return;
+
+        const serverCount = client.guilds ? client.guilds.cache.size : 0;
+        if (serverCount <= 0) return;
+
+        const botId = client.user ? client.user.id : '1375943730951098549';
+        await axios.post(`https://botboard.gg/api/v1/bots/${botId}/stats`, {
+            server_count: serverCount
+        }, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            timeout: 10000
+        });
+        console.log(`[BotBoard Poster] Successfully posted live server count of ${serverCount} to BotBoard.gg.`);
+    } catch (err) {
+        if (err.response && err.response.status === 404) {
+            // Unregistered on BotBoard API yet
+        } else {
+            console.warn(`[BotBoard Poster Warning] Failed to post server count to BotBoard.gg:`, err.message);
+        }
+    }
+}
+
+setInterval(postBotBoardStats, 15 * 60 * 1000);
+setTimeout(postBotBoardStats, 12000);
 
 // Mount the API path for global token invalidation
 app.post('/api/auth/invalidate', async (req, res) => {
@@ -3146,8 +3201,48 @@ app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'web', '404.html'));
 });
 
+let cloudflareTunnelProcess = null;
+
+function startCloudflareTunnel() {
+    try {
+        const configFile = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
+        const cmd = `cloudflared --config "${configFile}" tunnel run noraapi`;
+        console.log(`[Cloudflare Tunnel] Executing: ${cmd}`);
+        const { exec } = require('child_process');
+        cloudflareTunnelProcess = exec(cmd);
+
+        cloudflareTunnelProcess.stdout.on('data', (data) => {
+            const line = data.toString().trim();
+            if (line) console.log(`[Cloudflare Tunnel] ${line}`);
+        });
+
+        cloudflareTunnelProcess.stderr.on('data', (data) => {
+            const line = data.toString().trim();
+            if (line && !line.includes('ERR')) {
+                console.log(`[Cloudflare Tunnel] ${line}`);
+            } else if (line) {
+                console.warn(`[Cloudflare Tunnel Info] ${line}`);
+            }
+        });
+
+        cloudflareTunnelProcess.on('error', (err) => {
+            console.error('[Cloudflare Tunnel Error] Failed to launch cloudflared:', err.message);
+        });
+
+        cloudflareTunnelProcess.on('exit', (code, signal) => {
+            if (code !== 0 && signal !== 'SIGTERM' && signal !== 'SIGINT') {
+                console.warn(`[Cloudflare Tunnel] Process exited (code: ${code}, signal: ${signal}). Re-establishing in 5s...`);
+                setTimeout(startCloudflareTunnel, 5000);
+            }
+        });
+    } catch (err) {
+        console.error('[Cloudflare Tunnel Error] Exception launching cloudflared:', err.message);
+    }
+}
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`[System] Primary Web Dashboard listening on port ${PORT} (0.0.0.0)`);
+    startCloudflareTunnel();
 });
 
 // Secondary port listeners to guarantee Cloudflare Tunnel connectivity regardless of remote port mapping (8080, 5000, 8000)

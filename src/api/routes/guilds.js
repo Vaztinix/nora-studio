@@ -5,6 +5,7 @@ const router = express.Router({ mergeParams: true });
 const { requireGuildPermission, getDiscordUser } = require('../middleware/auth');
 
 const UserLevel = require('../../database/models/UserLevel');
+const GuildSettings = require('../../database/models/GuildSettings');
 
 const RobloxVerify = require('../../database/models/RobloxVerify');
 
@@ -2988,6 +2989,21 @@ router.put('/autoresponders/:id', async (req, res) => {
     try {
 
         const { guildId, id } = req.params;
+
+        const Autoresponder = require('../../database/models/Autoresponder');
+
+        const { trigger, response, matchType, isEmbed, ignoreStaffAndBots, ignoredChannels, ignoredRoles, allowedRoles } = req.body;
+
+
+
+        const responder = await Autoresponder.findOne({ where: { id, guildId } });
+
+        if (!responder) return res.status(404).json({ error: 'Autoresponder rule not found.' });
+
+
+
+        const GuildSettings = require('../../database/models/GuildSettings');
+
         let settings = await GuildSettings.findOne({ where: { guildId } });
 
         if (!settings) {
@@ -3109,7 +3125,7 @@ router.delete('/autoresponders/:id', async (req, res) => {
 router.post('/reaction-roles/publish', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { channelId, title, description, color, imageUrl, roles } = req.body;
+        const { channelId, title, description, color, imageUrl, roles, singleSelect } = req.body;
 
         if (!channelId) return res.status(400).json({ error: 'Destination channel is required.' });
         if (!roles || !Array.isArray(roles) || roles.length === 0) {
@@ -3158,7 +3174,8 @@ router.post('/reaction-roles/publish', async (req, res) => {
                 guildId,
                 messageId: targetMessage.id,
                 emoji: emojiKey,
-                roleId
+                roleId,
+                singleSelect: !!singleSelect
             });
 
             await targetMessage.react(emoji).catch(err => {
@@ -3401,11 +3418,206 @@ router.get('/applications', async (req, res) => {
 /**
  * POST /api/guilds/:guildId/applications
  * Creates or updates an application configuration.
+            return res.status(403).json({ error: 'Cannot moderate user: Role position is higher than or equal to bot.' });
+        }
+
+        await Warning.create({
+            guildId,
+            userId,
+            reason: reason || 'Warned from Web Dashboard',
+            moderatorId: req.userGuild.id
+        });
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        const logger = require('../../utils/logger');
+        logger.logDashboardOrCommandAction(
+            guild,
+            'Dashboard Action - Member Warned',
+            [
+                { name: 'Administrator', value: userTag, inline: true },
+                { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                { name: 'Reason', value: reason || 'No reason provided' }
+            ],
+            0xffff00
+        ).catch(() => null);
+
+        return res.json({ success: true, message: `Successfully warned ${member.user.tag}` });
+    } catch (e) {
+        console.error('Warn route error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/members/:userId/unwarn
+ */
+router.post('/members/:userId/unwarn', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { reason } = req.body;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+        if (!member) return res.status(404).json({ error: 'Member not found in guild.' });
+
+        // Find the latest active warning for the user
+        const latestWarning = await Warning.findOne({
+            where: { guildId, userId, active: true },
+            order: [['createdAt', 'DESC']]
+        });
+        if (!latestWarning) {
+            return res.status(404).json({ error: 'No active warnings found for this member.' });
+        }
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        await latestWarning.update({
+            active: false,
+            editedBy: user ? user.id : 'dashboard',
+            editedAt: new Date()
+        });
+
+        const logger = require('../../utils/logger');
+        logger.logDashboardOrCommandAction(
+            guild,
+            'Dashboard Action - Member Warning Removed (Unwarned)',
+            [
+                { name: 'Administrator', value: userTag, inline: true },
+                { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                { name: 'Reason', value: reason || 'No reason provided' },
+                { name: 'Removed Warning ID', value: String(latestWarning.id), inline: true }
+            ],
+            0x00ff00
+        ).catch(() => null);
+
+        return res.json({ success: true, message: `Successfully removed warning for ${member.user.tag}` });
+    } catch (e) {
+        console.error('Unwarn route error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/members/:userId/kick
+ */
+router.post('/members/:userId/kick', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { reason } = req.body;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+        if (!member) return res.status(404).json({ error: 'Member not found in guild.' });
+
+        if (member.roles.highest.position >= guild.members.me.roles.highest.position) {
+            return res.status(403).json({ error: 'Cannot moderate user: Role position is higher than or equal to bot.' });
+        }
+
+        await member.kick(reason || 'Kicked from Web Dashboard');
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        const logger = require('../../utils/logger');
+        logger.logDashboardOrCommandAction(
+            guild,
+            'Dashboard Action - Member Kicked',
+            [
+                { name: 'Administrator', value: userTag, inline: true },
+                { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                { name: 'Reason', value: reason || 'No reason provided' }
+            ],
+            0xffaa00
+        ).catch(() => null);
+
+        return res.json({ success: true, message: `Successfully kicked ${member.user.tag}` });
+    } catch (e) {
+        console.error('Kick route error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/members/:userId/ban
+ */
+router.post('/members/:userId/ban', async (req, res) => {
+    try {
+        const { guildId, userId } = req.params;
+        const { reason } = req.body;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found.' });
+
+        const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+        if (!member) return res.status(404).json({ error: 'Member not found in guild.' });
+
+        if (member.roles.highest.position >= guild.members.me.roles.highest.position) {
+            return res.status(403).json({ error: 'Cannot moderate user: Role position is higher than or equal to bot.' });
+        }
+
+        await member.ban({ reason: reason || 'Banned from Web Dashboard' });
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        const user = token ? await getDiscordUser(token).catch(() => null) : null;
+        const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+
+        const logger = require('../../utils/logger');
+        logger.logDashboardOrCommandAction(
+            guild,
+            'Dashboard Action - Member Banned',
+            [
+                { name: 'Administrator', value: userTag, inline: true },
+                { name: 'Target User', value: `${member.user.tag} (${member.user.id})`, inline: true },
+                { name: 'Reason', value: reason || 'No reason provided' }
+            ],
+            0xff0000
+        ).catch(() => null);
+
+        return res.json({ success: true, message: `Successfully banned ${member.user.tag}` });
+    } catch (e) {
+        console.error('Ban route error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/guilds/:guildId/applications
+ * Returns all application configurations for this guild.
+ */
+router.get('/applications', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const Application = require('../../database/models/Application');
+        const apps = await Application.findAll({
+            where: { guildId },
+            order: [['createdAt', 'DESC']]
+        });
+        res.json(apps);
+    } catch (e) {
+        console.error('Error fetching applications:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/applications
+ * Creates or updates an application configuration.
  */
 router.post('/applications', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { id, name, description, reviewChannelId, questions, isActive } = req.body;
+        const { id, name, description, reviewChannelId, questions, isActive, autoRoleId, acceptMessage, denyMessage } = req.body;
         const Application = require('../../database/models/Application');
 
         if (!name) return res.status(400).json({ error: 'Application Name is required.' });
@@ -3420,17 +3632,22 @@ router.post('/applications', async (req, res) => {
                 description,
                 reviewChannelId,
                 questions: questions || '[]',
-                isActive: isActive !== undefined ? isActive : app.isActive
+                isActive: isActive !== undefined ? isActive : app.isActive,
+                autoRoleId: autoRoleId || null,
+                acceptMessage: acceptMessage || null,
+                denyMessage: denyMessage || null
             });
         } else {
-            // If active and we want single active, handle it, but wait: multiple active are supported
             app = await Application.create({
                 guildId,
                 name,
                 description,
                 reviewChannelId,
                 questions: questions || '[]',
-                isActive: isActive !== undefined ? isActive : true
+                isActive: isActive !== undefined ? isActive : true,
+                autoRoleId: autoRoleId || null,
+                acceptMessage: acceptMessage || null,
+                denyMessage: denyMessage || null
             });
         }
 
@@ -3519,6 +3736,111 @@ router.post('/applications/:appId/send-panel', async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         console.error('Error sending application panel:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/guilds/:guildId/applications/:appId/submissions
+ * Returns all submitted applications for an application form.
+ */
+router.get('/applications/:appId/submissions', async (req, res) => {
+    try {
+        const { guildId, appId } = req.params;
+        const Application = require('../../database/models/Application');
+        const ApplicationSubmission = require('../../database/models/ApplicationSubmission');
+
+        const app = await Application.findOne({ where: { id: appId, guildId } });
+        if (!app) return res.status(404).json({ error: 'Application form not found.' });
+
+        const submissions = await ApplicationSubmission.findAll({
+            where: { guildId, appName: app.name },
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.json(submissions);
+    } catch (e) {
+        console.error('Error fetching submissions:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/applications/submissions/:subId/accept
+ * Accepts a submission directly from the web dashboard.
+ */
+router.post('/applications/submissions/:subId/accept', async (req, res) => {
+    try {
+        const { guildId, subId } = req.params;
+        const ApplicationSubmission = require('../../database/models/ApplicationSubmission');
+        const Application = require('../../database/models/Application');
+        const { PermissionFlagsBits } = require('discord.js');
+
+        const submission = await ApplicationSubmission.findOne({ where: { id: subId, guildId } });
+        if (!submission) return res.status(404).json({ error: 'Submission not found.' });
+
+        await submission.update({ status: 'APPROVED', reviewerId: req.user?.id || 'Dashboard Admin' });
+
+        const app = await Application.findOne({ where: { name: submission.appName, guildId } }).catch(() => null);
+
+        const client = req.client || require('../../index').client;
+        const guild = await client.guilds.fetch(guildId).catch(() => null);
+
+        if (guild && app && app.autoRoleId) {
+            const member = await guild.members.fetch(submission.userId).catch(() => null);
+            if (member && guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+                await member.roles.add(app.autoRoleId).catch(e => console.warn('[App Dashboard AutoRole Error]:', e.message));
+            }
+        }
+
+        try {
+            const applicant = await client.users.fetch(submission.userId).catch(() => null);
+            if (applicant && guild) {
+                const customMsg = app?.acceptMessage;
+                const statusMsg = customMsg || `🎉 Congratulations! Your application for **${submission.appName}** in **${guild.name}** has been **APPROVED**!`;
+                await applicant.send({ content: statusMsg }).catch(() => {});
+            }
+        } catch (dmErr) {}
+
+        res.json({ success: true, submission });
+    } catch (e) {
+        console.error('Error accepting submission from dashboard:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/applications/submissions/:subId/deny
+ * Denies a submission directly from the web dashboard.
+ */
+router.post('/applications/submissions/:subId/deny', async (req, res) => {
+    try {
+        const { guildId, subId } = req.params;
+        const ApplicationSubmission = require('../../database/models/ApplicationSubmission');
+        const Application = require('../../database/models/Application');
+
+        const submission = await ApplicationSubmission.findOne({ where: { id: subId, guildId } });
+        if (!submission) return res.status(404).json({ error: 'Submission not found.' });
+
+        await submission.update({ status: 'REJECTED', reviewerId: req.user?.id || 'Dashboard Admin' });
+
+        const app = await Application.findOne({ where: { name: submission.appName, guildId } }).catch(() => null);
+
+        const client = req.client || require('../../index').client;
+        const guild = await client.guilds.fetch(guildId).catch(() => null);
+
+        try {
+            const applicant = await client.users.fetch(submission.userId).catch(() => null);
+            if (applicant && guild) {
+                const customMsg = app?.denyMessage;
+                const statusMsg = customMsg || `Thank you for applying. Unfortunately, your application for **${submission.appName}** in **${guild.name}** has been **REJECTED** at this time.`;
+                await applicant.send({ content: statusMsg }).catch(() => {});
+            }
+        } catch (dmErr) {}
+
+        res.json({ success: true, submission });
+    } catch (e) {
+        console.error('Error denying submission from dashboard:', e);
         res.status(500).json({ error: e.message });
     }
 });

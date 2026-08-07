@@ -264,13 +264,24 @@ module.exports = {
             const status = isAccept ? 'APPROVED' : 'REJECTED';
             await submission.update({ status, reviewerId: interaction.user.id });
 
+            const Application = require('../database/models/Application');
+            const app = await Application.findOne({ where: { name: submission.appName, guildId: interaction.guildId } }).catch(() => null);
+
+            if (isAccept && app && app.autoRoleId) {
+                const member = await interaction.guild.members.fetch(submission.userId).catch(() => null);
+                if (member && interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+                    await member.roles.add(app.autoRoleId).catch(e => console.warn('[App AutoRole Error]:', e.message));
+                }
+            }
+
             // DM user notification
             try {
                 const applicant = await interaction.client.users.fetch(submission.userId).catch(() => null);
                 if (applicant) {
-                    const statusMsg = isAccept
+                    const customMsg = isAccept ? (app?.acceptMessage || null) : (app?.denyMessage || null);
+                    const statusMsg = customMsg || (isAccept
                         ? `🎉 Congratulations! Your application for **${submission.appName}** in **${interaction.guild.name}** has been **APPROVED**!`
-                        : `Thank you for applying. Unfortunately, your application for **${submission.appName}** in **${interaction.guild.name}** has been **REJECTED** at this time.`;
+                        : `Thank you for applying. Unfortunately, your application for **${submission.appName}** in **${interaction.guild.name}** has been **REJECTED** at this time.`);
                     await applicant.send({ content: statusMsg }).catch(() => {});
                 }
             } catch (dmErr) {}
@@ -849,6 +860,10 @@ module.exports = {
             const originalDeferReply = interaction.deferReply.bind(interaction);
             const originalEditReply = interaction.editReply.bind(interaction);
 
+            const isEphemeralCmd = command.ephemeral === true || 
+                                   ['moderation', 'setup'].includes(command.category) || 
+                                   ['ask', 'mycard', 'setjoinlink', 'poll-end', 'nora-admin', 'apply', 'verify'].includes(interaction.commandName);
+
             interaction.reply = async (options) => {
                 try {
                     if (interaction.deferred || interaction.replied) {
@@ -856,7 +871,7 @@ module.exports = {
                     }
                     return await originalReply(options);
                 } catch (err) {
-                    if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral) {
+                    if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
                         const payload = typeof options === 'string' ? { content: options } : { ...options };
                         if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
                         else if (!payload.content.includes(interaction.user.id)) payload.content = `👋 <@${interaction.user.id}> ${payload.content}`;
@@ -885,7 +900,7 @@ module.exports = {
                         if (retryRes) return retryRes;
                     }
                     // Channel Failover Delivery: If interaction token expired or edit failed, deliver directly to channel!
-                    if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral) {
+                    if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
                         const payload = typeof options === 'string' ? { content: options } : { ...options };
                         if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
                         else if (!payload.content.includes(interaction.user.id)) payload.content = `👋 <@${interaction.user.id}> ${payload.content}`;
@@ -896,7 +911,7 @@ module.exports = {
 
             try {
                 if (!command.showModal && !command.noAutoDefer && !interaction.deferred && !interaction.replied) {
-                    await interaction.deferReply({ ephemeral: command.ephemeral || false }).catch(() => {});
+                    await interaction.deferReply({ ephemeral: isEphemeralCmd }).catch(() => {});
                 }
                 await command.execute(interaction, settings);
             } catch (error) {

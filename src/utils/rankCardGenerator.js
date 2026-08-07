@@ -209,6 +209,9 @@ async function generateRankCard({
         borderSvg = '<rect x="0.75" y="0.75" width="798.5" height="218.5" rx="23.25" fill="none" stroke="' + borderColor + '" stroke-width="2" />';
     }
 
+    const svgBgFill = isAnimatedGif ? 'none' : bgColor;
+    const svgOverlayFill = isAnimatedGif ? 'rgba(10, 11, 16, 0.55)' : 'rgba(10, 11, 16, 0.45)';
+
     const svgString = `
     <svg width="800" height="220" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -218,9 +221,9 @@ async function generateRankCard({
             </linearGradient>
 
             <pattern id="bgPattern" width="800" height="220" patternUnits="userSpaceOnUse">
-                <rect width="800" height="220" fill="${bgColor}" />
-                ${customBgBase64 ? `<image href="${customBgBase64}" x="0" y="0" width="800" height="220" preserveAspectRatio="xMidYMid slice" />` : ''}
-                <rect width="800" height="220" fill="rgba(10, 11, 16, 0.45)" />
+                <rect width="800" height="220" fill="${svgBgFill}" />
+                ${(!isAnimatedGif && customBgBase64) ? `<image href="${customBgBase64}" x="0" y="0" width="800" height="220" preserveAspectRatio="xMidYMid slice" />` : ''}
+                <rect width="800" height="220" fill="${svgOverlayFill}" />
             </pattern>
         </defs>
 
@@ -231,11 +234,11 @@ async function generateRankCard({
         ${borderSvg}
 
         <!-- Avatar border placeholder -->
-        <circle cx="100" cy="110" r="64" fill="none" stroke="${borderColor}" stroke-width="2" />
+        <circle cx="100" cy="110" r="64" fill="none" stroke="${accentColor}" stroke-width="3" />
         ${!avatarPngBuffer ? `<circle cx="100" cy="110" r="60" fill="${bgColor}" /><text x="100" y="122" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="bold" fill="${accentColor}" text-anchor="middle">@</text>` : ''}
 
         <!-- Rank Badge -->
-        <rect x="640" y="35" width="120" height="36" rx="18" fill="rgba(10, 11, 16, 0.75)" stroke="${borderColor}" stroke-width="1.5" />
+        <rect x="640" y="35" width="120" height="36" rx="18" fill="rgba(10, 11, 16, 0.75)" stroke="${accentColor}" stroke-width="1.5" />
         <text x="700" y="59" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold" fill="#e4e4e7" text-anchor="middle">RANK #${rank}</text>
 
         <!-- Username -->
@@ -258,24 +261,22 @@ async function generateRankCard({
         .png({ compressionLevel: 8, quality: 85 })
         .toBuffer();
 
-    if (avatarPngBuffer) {
-        const composited = await sharp(basePngBuffer)
-            .composite([{ input: avatarPngBuffer, left: 40, top: 50 }])
-            .png({ compressionLevel: 8, quality: 85 })
-            .toBuffer();
+    const composited = avatarPngBuffer 
+        ? await sharp(basePngBuffer).composite([{ input: avatarPngBuffer, left: 40, top: 50 }]).png().toBuffer()
+        : basePngBuffer;
 
-        if (isAnimatedGif && animatedBgBuffer) {
-            try {
-                return await sharp(animatedBgBuffer, { animated: true })
-                    .composite([{ input: composited, tile: false }])
-                    .gif({ loop: 0 })
-                    .toBuffer();
-            } catch(compErr) {
-                console.error('Error compositing animated GIF rank card:', compErr.message);
-            }
+    if (isAnimatedGif && animatedBgBuffer) {
+        try {
+            return await sharp(animatedBgBuffer, { animated: true })
+                .composite([{ input: composited, tile: false }])
+                .gif({ loop: 0 })
+                .toBuffer();
+        } catch(compErr) {
+            console.error('Error compositing animated GIF rank card:', compErr.message);
         }
-        return composited;
     }
+
+    return composited;
 
     return basePngBuffer;
 }

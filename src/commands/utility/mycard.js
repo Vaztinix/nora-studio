@@ -8,6 +8,7 @@ const axios = require('axios');
 
 module.exports = {
     category: 'utility',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('mycard')
         .setDescription('View your complete profile and server data in one card.')

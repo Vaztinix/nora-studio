@@ -2726,7 +2726,7 @@
                         </p>
                     </div>
                 </div>
-                <button class="config-btn" style="width: auto; background: rgba(255,85,85,0.2); border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 8px 16px;" onclick="window.open('https://discord.gg/He2Q76H4qP', '_blank')">Appeal Suspension</button>
+                <button class="config-btn" style="width: auto; background: rgba(255,85,85,0.2); border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 8px 16px;" onclick="window.open('https://discord.gg/Uxb2tNAxtp', '_blank')">Appeal Suspension</button>
             </div>
             <div id="view-greeting" data-view-servers="true" class="view-panel active">
                 <div class="hero-banner" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);">
@@ -2913,13 +2913,13 @@
 
                                 <div id="user-rankcard-custom-color-container" style="display: none; align-items: center; gap: 12px; background: rgba(0,0,0,0.15); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
                                     <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">Rank Card Accent Color:</label>
-                                    <input type="color" id="user-pref-rankCardCustomColor" value="#7c3aed" style="width: 44px; height: 38px; cursor: pointer; border-radius: 6px; border: none; background: transparent;">
+                                    <input type="color" id="user-pref-rankCardCustomColor" value="#7c3aed" style="width: 44px; height: 38px; cursor: pointer; border-radius: 6px; border: none; background: transparent;" oninput="updateLiveRankCardPreview()" onchange="updateLiveRankCardPreview()">
                                 </div>
 
                                 <div id="user-rankcard-image-container" style="display: none; flex-direction: column; gap: 14px;">
                                     <div class="input-group" style="margin-bottom: 0;">
                                         <label style="font-size: 0.85rem; font-weight: 600; color: #fff;">GIF or Image Background URL</label>
-                                        <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Klipy GIF, Tenor, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;">
+                                        <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="Paste Klipy GIF, Tenor, Giphy, or direct image/GIF link..." style="width: 100%; box-sizing: border-box;" oninput="updateLiveRankCardPreview()">
                                     </div>
 
                                     <!-- Klipy & Discord Animated GIF Gallery Picker -->
@@ -2946,6 +2946,11 @@
                                             <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;" onclick="searchKlipyCategory('synthwave')">🌆 Synthwave</button>
                                         </div>
 
+
+
+
+
+                                        
                                         <div id="klipy-gif-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
                                             <!-- Dynamic Klipy GIF Thumbnails -->
                                         </div>
@@ -3200,8 +3205,19 @@
             <div id="role-rewards-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
                 <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
                     <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Level Role Rewards</h2>
-                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">Automatically assign roles to members when they reach specific levels.</p>
+                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 15px; line-height: 1.4;">Automatically assign roles to members when they reach specific levels.</p>
                     
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 15px;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Stack Milestone Roles</div>
+                            <div style="font-size: 0.72rem; color: var(--muted);">Keep previous level milestone roles when members level up</div>
+                        </div>
+                        <label class="switch small">
+                            <input type="checkbox" id="setting-roleRewardsStack" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
                     <div id="role-rewards-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 250px; overflow-y: auto;">
                         <!-- Dynamically populated rows -->
                     </div>
@@ -3210,6 +3226,24 @@
                     
                     <div style="display: flex; gap: 15px;">
                         <button class="config-btn" style="flex: 1;" onclick="document.getElementById('role-rewards-modal').style.display = 'none'">Close & Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- XP Multipliers Modal -->
+            <div id="role-multipliers-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+                <div class="modal-content" style="max-width: 550px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 25px; animation: fadeIn 0.3s ease-out; box-sizing: border-box;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Role & Channel XP Multipliers</h2>
+                    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">Configure custom XP multipliers for specific server roles or text/voice channels.</p>
+                    
+                    <div id="role-multipliers-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 260px; overflow-y: auto;">
+                        <!-- Dynamically populated multiplier rows -->
+                    </div>
+                    
+                    <button class="config-btn" style="width: 100%; margin-bottom: 15px;" onclick="addRoleMultiplier()"><i class="fas fa-plus"></i> Add Multiplier</button>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <button class="config-btn" style="flex: 1;" onclick="document.getElementById('role-multipliers-modal').style.display = 'none'">Close & Save</button>
                     </div>
                 </div>
             </div>
@@ -5221,7 +5255,7 @@
                                 <textarea id="setting-rr-panelDescription" placeholder="Description..." style="width: 100%; min-height: 80px; box-sizing: border-box;" oninput="updateRRPreview()">Select which notification roles you would like to receive. Click a button/reaction below to toggle!</textarea>
                             </div>
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
                                 <div class="input-group">
                                     <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Accent Color</label>
                                     <input type="color" id="setting-rr-panelColor" value="#5865F2" style="height: 42px; width: 100%; cursor: pointer; padding: 4px;" oninput="updateRRPreview()">
@@ -5230,6 +5264,14 @@
                                     <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Thumbnail Image URL</label>
                                     <input type="text" id="setting-rr-panelImage" placeholder="https://..." style="width: 100%; box-sizing: border-box;" oninput="updateRRPreview()">
                                 </div>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.25); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                                <div>
+                                    <label style="font-weight: 700; color: #fff; font-size: 0.88rem; display: block; margin: 0;">Single-Choice Mode</label>
+                                    <span style="font-size: 0.75rem; color: var(--muted);">Automatically removes previous reaction & role when reacting to a new emoji</span>
+                                </div>
+                                <label class="switch"><input type="checkbox" id="setting-rr-singleSelect"><span class="slider"></span></label>
                             </div>
 
                             <!-- Role Mapping Slots Header Buttons -->
@@ -5652,6 +5694,17 @@
                                             </div>
                                         </div>
 
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                            <div class="input-group">
+                                                <label style="font-weight: 600; color: #fff;">Custom Approval DM Message</label>
+                                                <textarea id="app-accept-msg" placeholder="Optional custom approval DM sent to applicant..." style="width: 100%; box-sizing: border-box; min-height: 60px; font-size: 0.82rem;"></textarea>
+                                            </div>
+                                            <div class="input-group">
+                                                <label style="font-weight: 600; color: #fff;">Custom Denial DM Message</label>
+                                                <textarea id="app-deny-msg" placeholder="Optional custom denial DM sent to applicant..." style="width: 100%; box-sizing: border-box; min-height: 60px; font-size: 0.82rem;"></textarea>
+                                            </div>
+                                        </div>
+
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 12px;">
                                             <h4 style="margin: 0; color: #fff; font-weight: 700;">Form Questions (Max 5)</h4>
                                             <button type="button" class="save-btn" style="width: auto; margin: 0; padding: 6px 14px; font-size: 0.75rem; background: #ffffff !important; color: #000000 !important; font-weight: 800; border-radius: 999px;" onclick="addBuilderQuestion()">+ Add Question</button>
@@ -5748,49 +5801,10 @@
                                 </div>
 
                                 <!-- Submissions List -->
-                                <div style="display: flex; flex-direction: column; gap: 14px;">
-                                    <!-- Pending Submission 1 -->
-                                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                            <div style="display: flex; align-items: center; gap: 12px;">
-                                                <img src="https://cdn.discordapp.com/embed/avatars/1.png" style="width: 42px; height: 42px; border-radius: 50%;">
-                                                <div>
-                                                    <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">CyberGamer99 <span style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">(ID: 9812450124)</span></div>
-                                                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Applied for: <strong>Staff Application</strong> • 15 minutes ago</div>
-                                                </div>
-                                            </div>
-                                            <div style="display: flex; gap: 8px;">
-                                                <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-size: 0.8rem; padding: 6px 16px; font-weight: 800; border-radius: 8px;" onclick="showToast('Application approved! Role assigned automatically.', 'success')"><i class="fas fa-check"></i> Approve & Assign Role</button>
-                                                <button class="config-btn" style="border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 6px 14px; border-radius: 8px;" onclick="showToast('Application denied.', 'info')"><i class="fas fa-times"></i> Deny</button>
-                                            </div>
-                                        </div>
-                                        <div style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; line-height: 1.5; color: #e4e4e7;">
-                                            <strong>Q1: Why do you want to join our staff team?</strong><br>
-                                            "I have over 3 years of moderation experience on high-volume Discord communities and love helping members solve problems cleanly."<br><br>
-                                            <strong>Q2: How many hours per week can you dedicate?</strong><br>
-                                            "Approximately 20-25 hours per week across evenings and weekends."
-                                        </div>
-                                    </div>
-
-                                    <!-- Pending Submission 2 -->
-                                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                            <div style="display: flex; align-items: center; gap: 12px;">
-                                                <img src="https://cdn.discordapp.com/embed/avatars/2.png" style="width: 42px; height: 42px; border-radius: 50%;">
-                                                <div>
-                                                    <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">SolarisX <span style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">(ID: 4120958102)</span></div>
-                                                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Applied for: <strong>Moderator Tryouts</strong> • 2 hours ago</div>
-                                                </div>
-                                            </div>
-                                            <div style="display: flex; gap: 8px;">
-                                                <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-size: 0.8rem; padding: 6px 16px; font-weight: 800; border-radius: 8px;" onclick="showToast('Application approved! Role assigned automatically.', 'success')"><i class="fas fa-check"></i> Approve & Assign Role</button>
-                                                <button class="config-btn" style="border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 6px 14px; border-radius: 8px;" onclick="showToast('Application denied.', 'info')"><i class="fas fa-times"></i> Deny</button>
-                                            </div>
-                                        </div>
-                                        <div style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; line-height: 1.5; color: #e4e4e7;">
-                                            <strong>Q1: What moderation tools are you familiar with?</strong><br>
-                                            "AutoMod filters, timeout scales, ticket handling, and log auditing."
-                                        </div>
+                                <div id="apps-submissions-container" style="display: flex; flex-direction: column; gap: 14px;">
+                                    <div style="text-align: center; padding: 30px; color: var(--muted);">
+                                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 10px; display: block;"></i>
+                                        Loading applicant submissions...
                                     </div>
                                 </div>
                             </div>
@@ -6327,34 +6341,29 @@
         // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
         // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
+            // 1. Server-injected value (set in .env as API_BASE_URL)
+            if (window.__NORA_API_BASE_URL__) {
+                return window.__NORA_API_BASE_URL__;
+            }
+
             const host = window.location.hostname;
 
-            // Local development overrides — target current running port or fallback to 3000
+            // 2. Localhost or same-origin server hosting
             if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
                 return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
                     ? window.location.origin 
                     : 'http://localhost:3000';
             }
 
-            // User-configured or offline-recovered override
-            const localOverride = localStorage.getItem('nora_api_url');
-            if (localOverride) {
-                // If localOverride is localhost or 127.0.0.1 on a non-localhost domain, PURGE IT IMMEDIATELY!
-                if (localOverride.includes('localhost') || localOverride.includes('127.0.0.1')) {
-                    localStorage.removeItem('nora_api_url');
-                } else if (localOverride.includes('vaztinix.dev') && !localOverride.includes('api.vaztinix.dev')) {
-                    // fall through to canonical
-                } else {
-                    return localOverride;
+            // 3. Same-domain hosting (e.g. vaztinix.dev)
+            if (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') {
+                if (host.includes('vaztinix.dev')) {
+                    return host.startsWith('api.') ? window.location.origin : 'https://api.vaztinix.dev';
                 }
+                return window.location.origin;
             }
 
-            // Server-injected value (set in .env as API_BASE_URL)
-            if (window.__NORA_API_BASE_URL__) {
-                return window.__NORA_API_BASE_URL__;
-            }
-
-            // Hard fallback to working production subdomain
+            // 4. Hard fallback to working production subdomain
             return 'https://api.vaztinix.dev';
         };
 
@@ -6363,9 +6372,9 @@
         let lastErrorTime = 0;
         // Need 6 consecutive failures before declaring offline
         // (dashboard makes 10+ concurrent calls on load; 2 was far too low)
-        const OFFLINE_FAILURE_THRESHOLD = 6;
+        const OFFLINE_FAILURE_THRESHOLD = 12;
         const ERROR_DECAY_MS = 10000; // Reset counter if no error for 10s
-        const FETCH_TIMEOUT_MS = 15000; // 15s timeout for non-telemetry fetches
+        const FETCH_TIMEOUT_MS = 20000; // 20s timeout for non-telemetry fetches
 
         window.fetch = async function(input, init) {
             let resolvedUrl = input;
@@ -7052,7 +7061,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'roleRewards', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels'];
 
 
 
@@ -7536,20 +7545,6 @@
         if (prefToastPosEl) {
             prefToastPosEl.value = localStorage.getItem('nora_toast_pos') || 'tr';
         }
-        updateToastPos();
-
-        window.getApiBaseUrl = function() {
-            const host = window.location.hostname;
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
-                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
-                    ? window.location.origin 
-                    : 'http://localhost:3000';
-            }
-            const localOverride = localStorage.getItem('nora_api_url');
-            if (localOverride) return localOverride;
-            return 'https://api.vaztinix.dev';
-        };
-
         async function safeFetch(url, options = {}) {
             const targetUrl = url.startsWith('http') ? url : (window.getApiBaseUrl() + url);
             const res = await fetch(targetUrl, options);
@@ -7790,6 +7785,16 @@
                 if (dmModBox) dmModBox.checked = !!d.prefs?.dmNotifModeration;
                 if (dmBroadBox) dmBroadBox.checked = !!d.prefs?.dmNotifBroadcasts;
                 if (typeof toggleDMNotifSubOptions === 'function') toggleDMNotifSubOptions();
+
+                const colorBox = document.getElementById('user-pref-rankCardCustomColor');
+                const bgBox = document.getElementById('user-pref-rankCardBackgroundImage');
+                if (colorBox && d.prefs?.rankCardCustomColor) colorBox.value = d.prefs.rankCardCustomColor;
+                if (bgBox && d.prefs?.rankCardBackgroundImage) bgBox.value = d.prefs.rankCardBackgroundImage;
+
+                const mode = d.prefs?.rankCardThemeMode || (d.prefs?.rankCardBackgroundImage ? 'image' : (d.prefs?.rankCardCustomColor ? 'custom' : 'preset'));
+                const radio = document.querySelector(`input[name="userRankCardThemeMode"][value="${mode}"]`);
+                if (radio) radio.checked = true;
+                if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
 
                 const deviceLang = localStorage.getItem('nora_language') || d.prefs?.language || d.prefs?.customTheme || 'en';
                 if (prefLangBox) prefLangBox.value = deviceLang;
@@ -8345,6 +8350,8 @@
             const progressBar = document.getElementById('live-rank-card-progress-bar');
             const nameEl = document.getElementById('live-rank-card-name');
             const avatarEl = document.getElementById('live-rank-card-avatar');
+            const levelBadgeEl = document.getElementById('live-rank-card-level-badge');
+            const rankValEl = document.getElementById('live-rank-card-rank-val');
 
             if (window.currentUser) {
                 if (nameEl) nameEl.textContent = '@' + (window.currentUser.username || 'User');
@@ -8355,10 +8362,16 @@
 
             if (!bgLayer) return;
 
+            const activeAccent = (mode === 'custom' || (mode === 'image' && customColor)) ? customColor : '#7c3aed';
+
+            if (avatarEl) avatarEl.style.borderColor = activeAccent;
+            if (levelBadgeEl) levelBadgeEl.style.color = activeAccent;
+            if (rankValEl) rankValEl.style.color = activeAccent;
+
             if (mode === 'image' && customBgUrl) {
                 bgLayer.style.backgroundImage = `url("${customBgUrl}")`;
                 bgLayer.style.backgroundColor = 'transparent';
-                if (progressBar) progressBar.style.background = `linear-gradient(90deg, #7c3aed, #3b82f6)`;
+                if (progressBar) progressBar.style.background = activeAccent;
             } else if (mode === 'custom') {
                 bgLayer.style.backgroundImage = 'none';
                 bgLayer.style.backgroundColor = customColor;
@@ -8367,6 +8380,9 @@
                 bgLayer.style.backgroundImage = 'none';
                 bgLayer.style.backgroundColor = '#1e1b4b';
                 if (progressBar) progressBar.style.background = 'linear-gradient(90deg, #7c3aed, #4f46e5)';
+                if (avatarEl) avatarEl.style.borderColor = 'var(--primary)';
+                if (levelBadgeEl) levelBadgeEl.style.color = '#a78bfa';
+                if (rankValEl) rankValEl.style.color = 'var(--primary)';
             }
         };
 
@@ -12593,22 +12609,29 @@
             document.getElementById('setting-robloxGroupBindings').value = JSON.stringify(data);
         }
 
-        function addRoleMultiplier(roleId = '', mult = '1.0') {
+        function addRoleMultiplier(targetId = '', mult = '1.5') {
             const container = document.getElementById('role-multipliers-list');
+            if (!container) return;
             const row = document.createElement('div');
             row.className = 'row-inputs';
             row.style.gap = '10px';
             row.style.marginBottom = '5px';
+
+            const rolesHtml = (window.guildRoles || []).map(r => `<option value="${r.id}" ${String(r.id) === String(targetId) ? 'selected' : ''}>Role: @${r.name}</option>`).join('');
+            const channelsHtml = (window.guildChannels || []).map(c => `<option value="${c.id}" ${String(c.id) === String(targetId) ? 'selected' : ''}>Channel: #${c.name}</option>`).join('');
+
             row.innerHTML = `
-                <select data-no-translate onchange="updateRoleMultipliersJson()" style="flex: 1;">
-                    <option value="">Select Role...</option>
-                    ${(window.guildRoles || []).map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''}>${r.name}</option>`).join('')}
+                <select data-no-translate onchange="updateRoleMultipliersJson()" style="flex: 1; font-size: 0.82rem;">
+                    <option value="">Select Role or Channel...</option>
+                    <optgroup label="Server Roles">${rolesHtml}</optgroup>
+                    <optgroup label="Channels">${channelsHtml}</optgroup>
                 </select>
-                <input type="number" step="0.1" value="${mult}" placeholder="Mult" style="flex: 0.3;" oninput="updateRoleMultipliersJson()">
+                <input type="number" step="0.1" min="0.1" max="10" value="${mult || '1.5'}" placeholder="Mult (e.g. 1.5)" style="flex: 0.35; font-size: 0.82rem;" oninput="updateRoleMultipliersJson()">
                 <button class="config-btn" style="width: auto; padding: 5px 10px; color: var(--danger); border-color: rgba(255,85,85,0.2);" onclick="this.parentElement.remove(); updateRoleMultipliersJson();">X</button>
             `;
             container.appendChild(row);
         }
+        window.addXpMultiplier = addRoleMultiplier;
 
         function updateRoleMultipliersJson() {
             const mults = {};
@@ -12660,24 +12683,28 @@
                     title: '🔔 Notification Preferences',
                     desc: 'Select which notification roles you would like to receive. Click a button/reaction below to toggle!',
                     color: '#5865F2',
+                    singleSelect: false,
                     emojis: ['📢', '🎁', '🎮', '🤖']
                 },
                 'colors': {
                     title: '🎨 Custom Color Roles',
                     desc: 'Choose your favorite username color on the server.',
                     color: '#ec4899',
+                    singleSelect: true,
                     emojis: ['🔴', '🔵', '🟢', '🟡']
                 },
                 'gaming': {
                     title: '🎮 Gaming Platforms',
                     desc: 'Select your primary gaming platforms to meet fellow players in the server.',
                     color: '#3b82f6',
+                    singleSelect: false,
                     emojis: ['💻', '🎮', '🎯', '📱']
                 },
                 'pronouns': {
                     title: '✨ Pronoun Roles',
                     desc: 'Select your preferred pronouns to display on your profile.',
                     color: '#a855f7',
+                    singleSelect: true,
                     emojis: ['✨', '💫', '🌟', '⭐']
                 }
             };
@@ -12688,6 +12715,9 @@
             if (titleInput) titleInput.value = data.title;
             if (descInput) descInput.value = data.desc;
             if (colorInput) colorInput.value = data.color;
+
+            const singleSelectInput = document.getElementById('setting-rr-singleSelect');
+            if (singleSelectInput) singleSelectInput.checked = !!data.singleSelect;
 
             // Apply emojis to existing slots
             data.emojis.forEach((emoji, idx) => {
@@ -12804,6 +12834,7 @@
             const description = document.getElementById('setting-rr-panelDescription').value;
             const color = document.getElementById('setting-rr-panelColor').value;
             const imageUrl = document.getElementById('setting-rr-panelImage').value;
+            const singleSelect = document.getElementById('setting-rr-singleSelect')?.checked || false;
 
             if (!channelId) {
                 showToast('Please select a destination channel!', 'error');
@@ -12831,6 +12862,7 @@
                 description,
                 color,
                 imageUrl,
+                singleSelect,
                 roles
             };
 
@@ -12854,60 +12886,7 @@
             }
         }
 
-        async function saveUserProfile() {
-            const t = sessionStorage.getItem('discord_token');
-            const robloxPublic = document.getElementById('user-pref-robloxPublic').checked;
-            const profilePublic = document.getElementById('user-pref-profilePublic').checked;
-            const bio = document.getElementById('user-pref-bio').value;
-            const language = document.getElementById('pref-language').value;
-            const dmNotificationsEnabled = document.getElementById('user-pref-dmNotificationsEnabled').checked;
-            const dmNotifLevels = document.getElementById('user-pref-dmNotifLevels').checked;
-            const dmNotifModeration = document.getElementById('user-pref-dmNotifModeration').checked;
-            const dmNotifBroadcasts = document.getElementById('user-pref-dmNotifBroadcasts').checked;
 
-            try {
-                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
-                    body: JSON.stringify({ 
-                        robloxPublic, 
-                        profilePublic, 
-                        bio, 
-                        language,
-                        dmNotificationsEnabled,
-                        dmNotifLevels,
-                        dmNotifModeration,
-                        dmNotifBroadcasts
-                    })
-                });
-                if (res.ok) {
-                    showToast('Profile updated globally!', 'success');
-                    // Update preview
-                    const bioPrev = document.getElementById('profile-preview-bio');
-                    const robloxVal = document.getElementById('profile-roblox-val');
-                    if (bioPrev) bioPrev.textContent = bio || 'No bio set.';
-                    if (robloxVal) {
-                        robloxVal.textContent = robloxPublic ? 'Linked' : 'Private';
-                        robloxVal.style.color = robloxPublic ? 'var(--primary)' : 'var(--muted)';
-                    }
-                    // Sync currentUser
-                    window.currentUser.prefs = { 
-                        ...window.currentUser.prefs, 
-                        robloxPublic, 
-                        profilePublic, 
-                        bio, 
-                        language,
-                        dmNotificationsEnabled,
-                        dmNotifLevels,
-                        dmNotifModeration,
-                        dmNotifBroadcasts
-                    };
-                }
-            } catch (e) {
-                showToast('Failed to sync profile.', 'error');
-            }
-        }
-        window.saveUserProfile = saveUserProfile;
 
         function toggleDMNotifSubOptions() {
             const master = document.getElementById('user-pref-dmNotificationsEnabled');
@@ -14885,6 +14864,11 @@
                 }
 
                 // Populate Role Rewards
+                const roleRewardsStackBox = document.getElementById('setting-roleRewardsStack');
+                if (roleRewardsStackBox) {
+                    roleRewardsStackBox.checked = s.roleRewardsStack !== false;
+                }
+
                 const roleRewardsList = document.getElementById('role-rewards-list');
                 if (roleRewardsList) {
                     roleRewardsList.innerHTML = '';
@@ -15651,6 +15635,10 @@
             if (btnBuilder) btnBuilder.classList.toggle('active', sub === 'builder');
             if (btnSubmissions) btnSubmissions.classList.toggle('active', sub === 'submissions');
             if (btnAnalytics) btnAnalytics.classList.toggle('active', sub === 'analytics');
+
+            if (sub === 'submissions' && typeof fetchSubmissions === 'function') {
+                fetchSubmissions();
+            }
         };
 
         window.updateAppBuilderPreview = function() {
@@ -15895,6 +15883,20 @@
                 reviewSelect.value = app.reviewChannelId;
             }
 
+            const autoRoleSelect = document.getElementById('app-auto-role');
+            if (autoRoleSelect) {
+                if (window.guildRoles) {
+                    autoRoleSelect.innerHTML = '<option value="">Select role to assign...</option>' + window.guildRoles.map(r => `<option value="${r.id}" ${app && app.autoRoleId === r.id ? 'selected' : ''}>@${escapeHtml(r.name)}</option>`).join('');
+                }
+                if (app && app.autoRoleId) autoRoleSelect.value = app.autoRoleId;
+            }
+
+            const acceptMsgEl = document.getElementById('app-accept-msg');
+            if (acceptMsgEl) acceptMsgEl.value = app ? (app.acceptMessage || '') : '';
+
+            const denyMsgEl = document.getElementById('app-deny-msg');
+            if (denyMsgEl) denyMsgEl.value = app ? (app.denyMessage || '') : '';
+
             // Populate Questions
             const qList = document.getElementById('app-questions-list');
             if (qList) {
@@ -15983,6 +15985,9 @@
                         name,
                         description,
                         reviewChannelId,
+                        autoRoleId: document.getElementById('app-auto-role')?.value || null,
+                        acceptMessage: document.getElementById('app-accept-msg')?.value || null,
+                        denyMessage: document.getElementById('app-deny-msg')?.value || null,
                         questions: JSON.stringify(questions),
                         isActive: true
                     })
@@ -16038,6 +16043,146 @@
                 }
             } catch (e) {
                 showToast(`Error: ${e.message}`, 'error');
+            }
+        };
+
+        window.fetchSubmissions = async function() {
+            if (!currentServerId) return;
+            const t = sessionStorage.getItem('discord_token');
+            const container = document.getElementById('apps-submissions-container');
+            if (!container) return;
+
+            if (!currentAppSets || currentAppSets.length === 0) {
+                await fetchApplications();
+            }
+
+            if (!currentAppSets || currentAppSets.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--muted);">
+                        <i class="fas fa-inbox" style="font-size: 2.2rem; margin-bottom: 12px; display: block;"></i>
+                        No application forms found. Create an application form first.
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                let allSubmissions = [];
+                for (const app of currentAppSets) {
+                    const res = await fetch(`/api/guilds/${currentServerId}/applications/${app.id}/submissions`, {
+                        headers: { Authorization: `Bearer ${t}` }
+                    });
+                    if (res.ok) {
+                        const subs = await res.json();
+                        allSubmissions.push(...subs);
+                    }
+                }
+
+                renderSubmissionsList(allSubmissions);
+            } catch (e) {
+                console.error('Error fetching submissions:', e);
+            }
+        };
+
+        function renderSubmissionsList(submissions) {
+            const container = document.getElementById('apps-submissions-container');
+            if (!container) return;
+
+            if (!submissions || submissions.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--muted); background: rgba(0,0,0,0.15); border-radius: 14px; border: 1px dashed rgba(255,255,255,0.08);">
+                        <i class="fas fa-check-circle" style="font-size: 2.2rem; color: #10b981; margin-bottom: 12px; display: block;"></i>
+                        No application submissions yet.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = submissions.map(sub => {
+                let answers = {};
+                try { answers = JSON.parse(sub.answers || '{}'); } catch(e) {}
+
+                const answersHtml = Object.entries(answers).map(([q, a]) => `
+                    <div style="margin-bottom: 8px;">
+                        <strong style="color: #b5bac1;">Q: ${escapeHtml(q)}</strong><br>
+                        <span style="color: #dbdee1;">${escapeHtml(a || 'No answer')}</span>
+                    </div>
+                `).join('');
+
+                const statusBadge = sub.status === 'APPROVED' 
+                    ? '<span class="badge stable" style="background: rgba(16,185,129,0.15); color: #10b981;">Approved</span>'
+                    : sub.status === 'REJECTED'
+                    ? '<span class="badge dev" style="background: rgba(239,68,68,0.15); color: #ef4444;">Denied</span>'
+                    : '<span class="badge" style="background: rgba(251,191,36,0.15); color: #fbbf24;">Pending</span>';
+
+                const isPending = sub.status === 'PENDING';
+
+                return `
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 42px; height: 42px; border-radius: 50%;">
+                                <div>
+                                    <div style="font-weight: 700; color: #fff; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                                        <span>${escapeHtml(sub.username)}</span>
+                                        <span style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">(ID: ${escapeHtml(sub.userId)})</span>
+                                        ${statusBadge}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Applied for: <strong>${escapeHtml(sub.appName)}</strong> • ${new Date(sub.createdAt).toLocaleString()}</div>
+                                </div>
+                            </div>
+                            ${isPending ? `
+                            <div style="display: flex; gap: 8px;">
+                                <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-size: 0.8rem; padding: 6px 16px; font-weight: 800; border-radius: 8px;" onclick="acceptDashboardSubmission('${sub.id}')"><i class="fas fa-check"></i> Approve & Assign Role</button>
+                                <button class="config-btn" style="border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 6px 14px; border-radius: 8px;" onclick="denyDashboardSubmission('${sub.id}')"><i class="fas fa-times"></i> Deny</button>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; line-height: 1.5;">
+                            ${answersHtml || 'No answers provided.'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.acceptDashboardSubmission = async function(subId) {
+            if (!currentServerId) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications/submissions/${subId}/accept`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Application approved! Role assigned & DM sent.', 'success');
+                    fetchSubmissions();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || 'Failed to approve submission.', 'error');
+                }
+            } catch (e) {
+                showToast('Error approving submission.', 'error');
+            }
+        };
+
+        window.denyDashboardSubmission = async function(subId) {
+            if (!currentServerId) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications/submissions/${subId}/deny`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Application denied. DM notification sent.', 'info');
+                    fetchSubmissions();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || 'Failed to deny submission.', 'error');
+                }
+            } catch (e) {
+                showToast('Error denying submission.', 'error');
             }
         };
 

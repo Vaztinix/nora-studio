@@ -3,6 +3,7 @@ const { handleError, handleSuccess } = require('../../utils/embeds');
 
 module.exports = {
     category: 'moderation',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('purge')
         .setDescription('Massively delete messages in this channel with advanced filtering.')

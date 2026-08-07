@@ -7,6 +7,7 @@ const robloxSystem = require('../../utils/robloxSystem');
 
 module.exports = {
     category: 'setup',
+    ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('verify')
         .setDescription('Verify your Roblox account to gain a role.')

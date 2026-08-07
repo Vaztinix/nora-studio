@@ -158,12 +158,13 @@ const requireGuildPermission = async (req, res, next) => {
             return res.status(403).json({ error: 'User is not in this guild or missing permissions.' });
         }
 
-        // Check for ADMINISTRATOR (0x8) or MANAGE_GUILD (0x20)
-        const permissions = BigInt(guild.permissions);
+        // Check for Server Owner, ADMINISTRATOR (0x8) or MANAGE_GUILD (0x20)
+        const isOwner = guild.owner === true;
+        const permissions = BigInt(guild.permissions || 0);
         const isAdmin = (permissions & BigInt(0x8)) === BigInt(0x8);
         const canManageGuild = (permissions & BigInt(0x20)) === BigInt(0x20);
 
-        if (isAdmin || canManageGuild) {
+        if (isOwner || isAdmin || canManageGuild) {
             // User has permission, proceed to next middleware/handler
             req.userGuild = guild;
             next();
