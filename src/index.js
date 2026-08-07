@@ -1,15 +1,21 @@
-require('dotenv').config();
-
-// Configure undici dispatcher for Node v25+ to prevent Cloudflare/Discord socket connection resets & AbortError
-try {
-    const { Agent, setGlobalDispatcher } = require('undici');
-    setGlobalDispatcher(new Agent({
-        keepAliveTimeout: 4000,
-        keepAliveMaxTimeout: 15000,
-        pipelining: 0,
-        connect: { timeout: 8000 }
-    }));
-} catch (e) {}
+// Automatic Time-Offset Compensator: Keeps Nora synchronized with Discord API servers
+global.timeOffsetMs = 0;
+async function syncTimeOffset() {
+    try {
+        const axios = require('axios');
+        const localBefore = Date.now();
+        const res = await axios.get('https://discord.com/api/v10/gateway', { timeout: 3000 }).catch(() => null);
+        const localAfter = Date.now();
+        if (res && res.headers && res.headers['date']) {
+            const discordServerTime = new Date(res.headers['date']).getTime();
+            const localTime = Math.round((localBefore + localAfter) / 2);
+            global.timeOffsetMs = discordServerTime - localTime;
+            console.log(`[Time Sync] Clock offset compensated: ${global.timeOffsetMs}ms against Discord Gateway.`);
+        }
+    } catch (e) {}
+}
+syncTimeOffset();
+setInterval(syncTimeOffset, 600000);
 
 const systemLogs = [];
 const MAX_SYSTEM_LOGS = 100;

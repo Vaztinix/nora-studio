@@ -844,37 +844,53 @@ module.exports = {
                 ).catch(() => null);
             }
 
-            // Monkey-patch reply methods to handle deferred/replied states gracefully
+            // Monkey-patch reply methods to handle deferred/replied states and channel failovers gracefully
             const originalReply = interaction.reply.bind(interaction);
             const originalDeferReply = interaction.deferReply.bind(interaction);
             const originalEditReply = interaction.editReply.bind(interaction);
 
             interaction.reply = async (options) => {
-                if (interaction.deferred || interaction.replied) {
-                    return await originalEditReply(options).catch(() => {});
+                try {
+                    if (interaction.deferred || interaction.replied) {
+                        return await originalEditReply(options);
+                    }
+                    return await originalReply(options);
+                } catch (err) {
+                    if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral) {
+                        const payload = typeof options === 'string' ? { content: options } : { ...options };
+                        if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
+                        else if (!payload.content.includes(interaction.user.id)) payload.content = `👋 <@${interaction.user.id}> ${payload.content}`;
+                        return await interaction.channel.send(payload).catch(() => {});
+                    }
                 }
-                return await originalReply(options);
             };
 
             interaction.deferReply = async (options) => {
                 if (interaction.deferred || interaction.replied) {
                     return;
                 }
-                return await originalDeferReply(options);
+                return await originalDeferReply(options).catch(() => {});
             };
 
             interaction.editReply = async (options) => {
                 if (!interaction.deferred && !interaction.replied) {
-                    return await originalReply(options);
+                    return await interaction.reply(options);
                 }
                 try {
                     return await originalEditReply(options);
                 } catch (err) {
                     if (err.code === 'UND_ERR_SOCKET' || err.message?.includes('other side closed') || err.code === 'ECONNRESET') {
                         console.warn('[System Network] Retrying editReply after socket reset...');
-                        return await originalEditReply(options).catch(() => {});
+                        const retryRes = await originalEditReply(options).catch(() => null);
+                        if (retryRes) return retryRes;
                     }
-                    throw err;
+                    // Channel Failover Delivery: If interaction token expired or edit failed, deliver directly to channel!
+                    if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral) {
+                        const payload = typeof options === 'string' ? { content: options } : { ...options };
+                        if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
+                        else if (!payload.content.includes(interaction.user.id)) payload.content = `👋 <@${interaction.user.id}> ${payload.content}`;
+                        return await interaction.channel.send(payload).catch(() => {});
+                    }
                 }
             };
 
