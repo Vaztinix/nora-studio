@@ -147,7 +147,7 @@ async function handleVerifyModalSubmit(interaction, settings) {
     const answer = interaction.fields.getTextInputValue('captcha_answer');
 
     if (answer.trim().toUpperCase() !== expectedAnswer) {
-        return interaction.editReply({ content: `❌ Verification failed. You must type the captcha **${expectedAnswer}** exactly as shown.` });
+        return interaction.editReply({ content: '❌ Verification failed. The CAPTCHA code entered was incorrect. Please try again.' });
     }
 
     const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
