@@ -561,6 +561,13 @@ async function checkShutdownRecovery() {
             if (data.shutdownAt) {
                 const now = Date.now();
                 const offlineMs = now - data.shutdownAt;
+                
+                // Suppress spammy alert if offline for less than 60 seconds (routine update or developer restart)
+                if (offlineMs < 60000) {
+                    console.log(`[Status Shark] Quick restart / update completed in ${Math.round(offlineMs / 1000)}s. Status webhook alert suppressed to prevent channel spam.`);
+                    return;
+                }
+
                 const totalSeconds = Math.floor(offlineMs / 1000);
                 const hours = Math.floor(totalSeconds / 3600);
                 const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -583,7 +590,6 @@ async function checkShutdownRecovery() {
                 console.log(`[Status Shark] Nora restored (${isUpdate ? 'Update Restart' : 'Power Restore'}) after ${readableDuration}`);
 
                 const unixUp = Math.floor(now / 1000);
-                const unixDown = Math.floor(data.shutdownAt / 1000);
                 const embed = {
                     title: titleText,
                     description: descText,
@@ -619,20 +625,6 @@ async function checkShutdownRecovery() {
 client.once('ready', () => {
     checkShutdownRecovery();
 });
-
-// Continuous Heartbeat: Updates .nora_last_shutdown.json immediately & every 15s in case of abrupt power off / kill
-function updateHeartbeat() {
-    if (!isShuttingDown) {
-        try {
-            fs.writeFileSync(LAST_SHUTDOWN_FILE, JSON.stringify({
-                shutdownAt: Date.now(),
-                reason: 'Abrupt OS Power Cut / Process Kill'
-            }));
-        } catch (e) {}
-    }
-}
-updateHeartbeat();
-setInterval(updateHeartbeat, 15000);
 
 // 2. Graceful Shutdown Alert Handler
 async function notifyGracefulShutdown(reason = 'PC Shutdown / OS Signal') {
