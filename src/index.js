@@ -3147,7 +3147,20 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[System] Web Dashboard and Webhook listener online at port ${PORT} (0.0.0.0)`);
+    console.log(`[System] Primary Web Dashboard listening on port ${PORT} (0.0.0.0)`);
+});
+
+// Secondary port listeners to guarantee Cloudflare Tunnel connectivity regardless of remote port mapping (8080, 5000, 8000)
+const ALT_PORTS = [8080, 5000, 8000];
+ALT_PORTS.forEach(altPort => {
+    if (altPort !== Number(PORT)) {
+        try {
+            const altServer = app.listen(altPort, '0.0.0.0', () => {
+                console.log(`[System] Secondary Tunnel port listener online at port ${altPort}`);
+            });
+            altServer.on('error', () => {});
+        } catch (e) {}
+    }
 });
 
 
