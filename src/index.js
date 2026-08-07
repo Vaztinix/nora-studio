@@ -961,16 +961,13 @@ const ALLOWED_ORIGINS = [
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (origin) {
-        const isAllowed = ALLOWED_ORIGINS.some(regex => regex.test(origin));
-        if (isAllowed) {
-            res.header('Access-Control-Allow-Origin', origin);
-        } else {
-            console.warn(`[CORS_BLOCK] CORS policy blocked origin: ${origin} on path: ${req.path}`);
-            return res.status(403).json({ error: 'CORS policy violation: Origin not allowed.' });
-        }
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+    } else {
+        res.header('Access-Control-Allow-Origin', '*');
     }
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
     }

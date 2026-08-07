@@ -6328,7 +6328,6 @@
         // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
             const host = window.location.hostname;
-            const port = window.location.port;
 
             // Local development overrides — target current running port or fallback to 3000
             if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
@@ -6340,8 +6339,10 @@
             // User-configured or offline-recovered override
             const localOverride = localStorage.getItem('nora_api_url');
             if (localOverride) {
-                // Ignore any invalid same-origin production site overrides (GitHub Pages doesn't have an API backend)
-                if (localOverride.includes('vaztinix.dev') && !localOverride.includes('api.vaztinix.dev')) {
+                // If localOverride is localhost or 127.0.0.1 on a non-localhost domain, PURGE IT IMMEDIATELY!
+                if (localOverride.includes('localhost') || localOverride.includes('127.0.0.1')) {
+                    localStorage.removeItem('nora_api_url');
+                } else if (localOverride.includes('vaztinix.dev') && !localOverride.includes('api.vaztinix.dev')) {
                     // fall through to canonical
                 } else {
                     return localOverride;
@@ -6615,8 +6616,9 @@
                     let recovered = await tryHealth(currentBase);
                     let recoveredUrl = currentBase;
 
-                    // Fallback 1: Try localhost if current base failed and is not localhost
-                    if (!recovered && currentBase !== 'http://localhost:3000') {
+                    // Fallback 1: Try localhost ONLY if running in local development
+                    const currentHost = window.location.hostname;
+                    if (!recovered && (currentHost === 'localhost' || currentHost === '127.0.0.1')) {
                         console.log('[Offline] Trying localhost fallback...');
                         recovered = await tryHealth('http://localhost:3000');
                         if (recovered) {
@@ -6626,9 +6628,9 @@
                         }
                     }
 
-                    // Fallback 2: if current base and localhost failed and it's NOT already the canonical URL,
+                    // Fallback 2: if current base failed and it's NOT already the canonical URL,
                     // try the canonical API endpoint (fixes phones with cached local-IP sessions)
-                    if (!recovered && currentBase !== CANONICAL_API && recoveredUrl !== 'http://localhost:3000') {
+                    if (!recovered && currentBase !== CANONICAL_API) {
                         console.log('[Offline] Primary API unreachable, trying canonical fallback...');
                         recovered = await tryHealth(CANONICAL_API);
                         if (recovered) {
