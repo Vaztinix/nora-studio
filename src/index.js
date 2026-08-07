@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 // Automatic Time-Offset Compensator: Keeps Nora synchronized with Discord API servers
 global.timeOffsetMs = 0;
 async function syncTimeOffset() {
@@ -467,7 +469,9 @@ runPreSyncMigrations().then(() => {
     }
     
     // Final check for token stability
-    client.login(process.env.TOKEN);
+    const cleanToken = (process.env.TOKEN || '').trim().replace(/^["']|["']$/g, '');
+    console.log(`[Token Debug] Attempting client.login with token length: ${cleanToken.length}, starts with: ${cleanToken.slice(0, 10)}...`);
+    client.login(cleanToken);
 }).catch(err => {
     console.error('Nora - Database Connection Failure:', err);
 });
