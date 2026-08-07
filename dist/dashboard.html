@@ -8410,7 +8410,7 @@
                 const nextOffset = (res && res.data && res.data.nextOffset) ? res.data.nextOffset : (currentKlipyOffset + results.length);
 
                 if (!append && results.length === 0) {
-                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: var(--muted); font-size: 0.85rem;">No GIFs found for "${currentKlipyQuery}". Try another search term!</div>`;
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: var(--muted); font-size: 0.85rem;">No GIFs found for "${escapeHtml(currentKlipyQuery)}". Try another search term!</div>`;
                     if (loadMoreBtn) loadMoreBtn.style.display = 'none';
                 } else {
                     renderKlipyGifThumbnails(results, append);
@@ -15808,11 +15808,131 @@
             updateAppBuilderPreview();
         };
 
+        let currentAppSets = [];
+
+        window.fetchApplications = async function() {
+            if (!currentServerId) return;
+            const t = sessionStorage.getItem('discord_token');
+            const reviewSelect = document.getElementById('app-review-channel');
+            if (reviewSelect && window.guildChannels) {
+                reviewSelect.innerHTML = '<option value="">Select review channel...</option>' + window.guildChannels.map(ch => 
+                    `<option value="${ch.id}">#${escapeHtml(ch.name)}</option>`
+                ).join('');
+            }
+
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications`, {
+                    headers: { Authorization: `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    currentAppSets = await res.json();
+                    renderAppSetsList(currentAppSets);
+                }
+            } catch (e) {
+                console.error('Error fetching applications:', e);
+            }
+        };
+
+        function renderAppSetsList(sets) {
+            const container = document.getElementById('app-sets-container');
+            if (!container) return;
+
+            if (!sets || sets.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.08); border-radius: 14px;">
+                        <i class="fas fa-file-signature" style="font-size: 2rem; color: var(--muted); margin-bottom: 10px; display: block;"></i>
+                        <p style="color: var(--muted); font-size: 0.88rem; margin: 0 0 12px 0;">No application forms created yet.</p>
+                        <button class="save-btn" style="width: auto; padding: 8px 18px; font-size: 0.8rem; background: #ffffff !important; color: #000 !important; font-weight: 800; border-radius: 999px;" onclick="showAppSetEditor(null)">+ Create Your First Application</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = sets.map(app => {
+                let questionCount = 0;
+                try { questionCount = JSON.parse(app.questions || '[]').length; } catch (e) {}
+
+                const reviewChannel = window.guildChannels ? window.guildChannels.find(c => c.id === app.reviewChannelId) : null;
+                const chName = reviewChannel ? `#${reviewChannel.name}` : (app.reviewChannelId ? `Channel ID: ${app.reviewChannelId}` : 'Not configured');
+
+                return `
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                <span>${escapeHtml(app.name)}</span>
+                                <span class="badge ${app.isActive ? 'stable' : 'dev'}" style="${app.isActive ? 'background: rgba(16, 185, 129, 0.15); color: #10b981;' : 'background: rgba(239, 68, 68, 0.15); color: #ef4444;'}">
+                                    ${app.isActive ? 'Active' : 'Disabled'}
+                                </span>
+                            </div>
+                            <div style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">Review Channel: ${escapeHtml(chName)} • Questions: ${questionCount}</div>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.78rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: #fff;" onclick="sendAppPanel('${app.id}')"><i class="fas fa-paper-plane"></i> Send Panel</button>
+                            <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.78rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: #fff;" onclick="showAppSetEditor('${app.id}')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.78rem; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="deleteAppSet('${app.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         window.showAppSetEditor = function(setId) {
             const listView = document.getElementById('app-sets-list-view');
             const editorView = document.getElementById('app-set-editor-view');
             if (listView) listView.style.display = 'none';
             if (editorView) editorView.style.display = 'flex';
+
+            const app = setId ? currentAppSets.find(a => String(a.id) === String(setId)) : null;
+
+            document.getElementById('app-set-id').value = app ? app.id : '';
+            document.getElementById('app-name').value = app ? app.name : 'New Application';
+            document.getElementById('app-desc').value = app ? (app.description || '') : 'Apply for server role! Please answer all questions accurately.';
+
+            const reviewSelect = document.getElementById('app-review-channel');
+            if (reviewSelect && app && app.reviewChannelId) {
+                reviewSelect.value = app.reviewChannelId;
+            }
+
+            // Populate Questions
+            const qList = document.getElementById('app-questions-list');
+            if (qList) {
+                qList.innerHTML = '';
+                let questions = [];
+                if (app && app.questions) {
+                    try { questions = JSON.parse(app.questions); } catch (e) {}
+                }
+                if (questions.length === 0) {
+                    questions = [{ label: 'Why do you want to apply?', type: 'paragraph', req: true }];
+                }
+
+                questions.forEach((q, idx) => {
+                    const labelStr = (q && typeof q === 'object') ? (q.label || '') : q;
+                    const typeStr = (q && typeof q === 'object') ? (q.type || 'paragraph') : 'paragraph';
+                    const reqBool = (q && typeof q === 'object') ? (q.req !== false && q.required !== false) : true;
+
+                    const card = document.createElement('div');
+                    card.className = 'app-question-card';
+                    card.style.cssText = 'background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;';
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; font-size: 0.82rem; color: #fff;">Question ${idx + 1}</span>
+                            <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 0.7rem; color: #ff5555; border-color: rgba(255,85,85,0.2);" onclick="this.closest('.app-question-card').remove(); updateAppBuilderPreview();">Remove</button>
+                        </div>
+                        <input type="text" class="q-label" value="${escapeHtml(labelStr)}" placeholder="Enter question..." style="width: 100%; font-size: 0.85rem;" oninput="updateAppBuilderPreview()">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select class="q-type" style="flex: 1; font-size: 0.8rem;" onchange="updateAppBuilderPreview()">
+                                <option value="paragraph" ${typeStr === 'paragraph' ? 'selected' : ''}>Paragraph Text (Long)</option>
+                                <option value="short" ${typeStr === 'short' ? 'selected' : ''}>Short Text (Single Line)</option>
+                            </select>
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); cursor: pointer; margin-bottom: 0;">
+                                <input type="checkbox" class="q-required" ${reqBool ? 'checked' : ''} onchange="updateAppBuilderPreview()"> Required
+                            </label>
+                        </div>
+                    `;
+                    qList.appendChild(card);
+                });
+            }
+
             updateAppBuilderPreview();
         };
 
@@ -15823,13 +15943,100 @@
             if (editorView) editorView.style.display = 'none';
         };
 
-        window.saveApplicationConfig = function() {
-            showToast('Application configuration saved successfully!', 'success');
-            hideAppSetEditor();
+        window.saveApplicationConfig = async function() {
+            if (!currentServerId) return;
+            const t = sessionStorage.getItem('discord_token');
+            const appId = document.getElementById('app-set-id')?.value || null;
+            const name = document.getElementById('app-name')?.value.trim();
+            const description = document.getElementById('app-desc')?.value.trim();
+            const reviewChannelId = document.getElementById('app-review-channel')?.value || null;
+
+            if (!name) {
+                return showToast('Application Name is required!', 'error');
+            }
+
+            const cards = document.querySelectorAll('.app-question-card');
+            const questions = [];
+            cards.forEach(c => {
+                const label = c.querySelector('.q-label')?.value.trim();
+                if (label) {
+                    questions.push({
+                        label,
+                        type: c.querySelector('.q-type')?.value || 'paragraph',
+                        required: c.querySelector('.q-required')?.checked !== false
+                    });
+                }
+            });
+
+            if (questions.length === 0) {
+                return showToast('At least one question is required!', 'error');
+            }
+
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({
+                        id: appId || undefined,
+                        name,
+                        description,
+                        reviewChannelId,
+                        questions: JSON.stringify(questions),
+                        isActive: true
+                    })
+                });
+
+                if (res.ok) {
+                    showToast('Application configuration saved successfully!', 'success');
+                    hideAppSetEditor();
+                    fetchApplications();
+                } else {
+                    const errData = await res.json();
+                    showToast(`Error: ${errData.error || 'Failed to save application'}`, 'error');
+                }
+            } catch (e) {
+                showToast(`Failed to save configuration: ${e.message}`, 'error');
+            }
         };
 
-        window.fetchApplications = function() {
-            updateAppBuilderPreview();
+        window.deleteAppSet = async function(appId) {
+            if (!confirm('Are you sure you want to delete this application form?')) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications/${appId}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    showToast('Application set deleted.', 'info');
+                    fetchApplications();
+                } else {
+                    showToast('Failed to delete application set.', 'error');
+                }
+            } catch (e) {
+                showToast(`Error: ${e.message}`, 'error');
+            }
+        };
+
+        window.sendAppPanel = async function(appId) {
+            const chId = prompt('Enter text channel ID to post the Application Button Panel (or leave blank to post to system channel):');
+            if (chId === null) return;
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`/api/guilds/${currentServerId}/applications/${appId}/send-panel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                    body: JSON.stringify({ channelId: chId.trim() || undefined })
+                });
+                if (res.ok) {
+                    showToast('Application panel posted to Discord channel!', 'success');
+                } else {
+                    const err = await res.json();
+                    showToast(`Failed to send panel: ${err.error || 'Unknown error'}`, 'error');
+                }
+            } catch (e) {
+                showToast(`Error: ${e.message}`, 'error');
+            }
         };
 
         function populateAutoresponderFormDropdowns() {

@@ -16,12 +16,21 @@ async function generateLeaderboard({ guildName, page, totalPages, users, bgColor
     const avatarPromises = users.map(async (u) => {
         if (u.avatarUrl) {
             try {
-                const response = await axios.get(u.avatarUrl, { responseType: 'arraybuffer', timeout: 3000 });
-                const pngBuffer = await sharp(response.data)
-                    .resize(48, 48)
-                    .png()
-                    .toBuffer();
-                return { userId: u.userId, base64: `data:image/png;base64,${pngBuffer.toString('base64')}` };
+                const response = await axios.get(u.avatarUrl, {
+                    responseType: 'arraybuffer',
+                    timeout: 2500,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    }
+                }).catch(() => null);
+
+                if (response && response.data) {
+                    const pngBuffer = await sharp(response.data)
+                        .resize(48, 48)
+                        .png()
+                        .toBuffer();
+                    return { userId: u.userId, base64: `data:image/png;base64,${pngBuffer.toString('base64')}` };
+                }
             } catch (e) {
                 // Silently ignore avatar fetch error and fallback
             }
@@ -123,7 +132,7 @@ async function generateLeaderboard({ guildName, page, totalPages, users, bgColor
     `.trim();
 
     return await sharp(Buffer.from(svgString))
-        .png()
+        .png({ compressionLevel: 8, quality: 85 })
         .toBuffer();
 }
 

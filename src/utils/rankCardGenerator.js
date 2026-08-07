@@ -95,20 +95,34 @@ async function generateRankCard({
     const rawShape = (userShape && userShape !== 'default') ? userShape : (serverShape || 'rounded-rect');
     const shape = ['rounded-rect', 'capsule', 'hexagon', 'diamond', 'classic'].includes(rawShape) ? rawShape : 'rounded-rect';
 
-    let avatarBase64 = '';
+    let avatarPngBuffer = null;
     if (showPfp && avatarUrl) {
         try {
-            const avatarRes = await Promise.race([
-                axios.get(avatarUrl, { responseType: 'arraybuffer', timeout: 1200 }),
-                new Promise((_, r) => setTimeout(() => r(new Error('Avatar fetch timeout')), 1200))
-            ]);
-            const pngBuffer = await sharp(avatarRes.data)
-                .resize(120, 120)
-                .png()
-                .toBuffer();
-            avatarBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+            const avatarRes = await axios.get(avatarUrl, {
+                responseType: 'arraybuffer',
+                timeout: 2500,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+            }).catch(() => null);
+
+            if (avatarRes && avatarRes.data) {
+                // Circle clip for avatar
+                const circleSvg = `<svg width="120" height="120"><circle cx="60" cy="60" r="60" fill="#fff"/></svg>`;
+                const circleMask = Buffer.from(circleSvg);
+
+                const resizedAvatar = await sharp(avatarRes.data)
+                    .resize(120, 120)
+                    .png()
+                    .toBuffer();
+
+                avatarPngBuffer = await sharp(resizedAvatar)
+                    .composite([{ input: circleMask, blend: 'dest-in' }])
+                    .png()
+                    .toBuffer();
+            }
         } catch (e) {
-            console.warn('[Rank Generator] Avatar fetch/processing fallback used:', e.message);
+            console.warn('[Rank Generator] Avatar fetch/processing error:', e.message);
         }
     }
 
@@ -120,7 +134,7 @@ async function generateRankCard({
         try {
             const resolvedUrl = await Promise.race([
                 resolveDirectMediaUrl(finalBgImage),
-                new Promise((_, r) => setTimeout(() => r(new Error('URL resolution timeout')), 1500))
+                new Promise((_, r) => setTimeout(() => r(new Error('URL resolution timeout')), 2000))
             ]);
 
             let rawBuffer;
@@ -129,36 +143,41 @@ async function generateRankCard({
                 rawBuffer = Buffer.from(base64Data, 'base64');
                 if (resolvedUrl.startsWith('data:image/gif')) isAnimatedGif = true;
             } else {
-                const bgRes = await Promise.race([
-                    axios.get(resolvedUrl, { responseType: 'arraybuffer', timeout: 1500 }),
-                    new Promise((_, r) => setTimeout(() => r(new Error('Background fetch timeout')), 1500))
-                ]);
-                rawBuffer = Buffer.from(bgRes.data);
-                const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
-                if (isGifHeader || resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')) {
-                    isAnimatedGif = true;
+                const bgRes = await axios.get(resolvedUrl, { 
+                    responseType: 'arraybuffer', 
+                    timeout: 2000,
+                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+                }).catch(() => null);
+                if (bgRes && bgRes.data) {
+                    rawBuffer = Buffer.from(bgRes.data);
+                    const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
+                    if (isGifHeader || resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')) {
+                        isAnimatedGif = true;
+                    }
                 }
             }
 
-            if (isAnimatedGif) {
-                try {
-                    animatedBgBuffer = await sharp(rawBuffer, { animated: true })
-                        .resize(800, 220, { fit: 'cover' })
-                        .toBuffer();
-                } catch(gifErr) {
-                    isAnimatedGif = false;
+            if (rawBuffer) {
+                if (isAnimatedGif) {
+                    try {
+                        animatedBgBuffer = await sharp(rawBuffer, { animated: true })
+                            .resize(800, 220, { fit: 'cover' })
+                            .toBuffer();
+                    } catch(gifErr) {
+                        isAnimatedGif = false;
+                        const pngBuffer = await sharp(rawBuffer)
+                            .resize(800, 220, { fit: 'cover' })
+                            .png()
+                            .toBuffer();
+                        customBgBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+                    }
+                } else {
                     const pngBuffer = await sharp(rawBuffer)
                         .resize(800, 220, { fit: 'cover' })
                         .png()
                         .toBuffer();
                     customBgBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
                 }
-            } else {
-                const pngBuffer = await sharp(rawBuffer)
-                    .resize(800, 220, { fit: 'cover' })
-                    .png()
-                    .toBuffer();
-                customBgBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
             }
         } catch (e) {
             console.warn('[Rank Generator] Custom background processing fallback used:', e.message);
@@ -197,10 +216,6 @@ async function generateRankCard({
                 <stop offset="0%" stop-color="${accentColor}" />
                 <stop offset="100%" stop-color="${accentColor}88" />
             </linearGradient>
-            
-            <clipPath id="avatarClip">
-                <circle cx="100" cy="110" r="60" />
-            </clipPath>
 
             <pattern id="bgPattern" width="800" height="220" patternUnits="userSpaceOnUse">
                 <rect width="800" height="220" fill="${bgColor}" />
@@ -215,27 +230,22 @@ async function generateRankCard({
         <!-- Shape Outline -->
         ${borderSvg}
 
-        <!-- Avatar border & image -->
+        <!-- Avatar border placeholder -->
         <circle cx="100" cy="110" r="64" fill="none" stroke="${borderColor}" stroke-width="2" />
-        ${avatarBase64 ? `
-        <image href="${avatarBase64}" x="40" y="50" width="120" height="120" clip-path="url(#avatarClip)" />
-        ` : `
-        <circle cx="100" cy="110" r="60" fill="${bgColor}" />
-        <text x="100" y="122" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="bold" fill="${accentColor}" text-anchor="middle">@</text>
-        `}
+        ${!avatarPngBuffer ? `<circle cx="100" cy="110" r="60" fill="${bgColor}" /><text x="100" y="122" font-family="sans-serif" font-size="36" font-weight="bold" fill="${accentColor}" text-anchor="middle">@</text>` : ''}
 
         <!-- Rank Badge -->
         <rect x="640" y="35" width="120" height="36" rx="18" fill="rgba(10, 11, 16, 0.75)" stroke="${borderColor}" stroke-width="1.5" />
-        <text x="700" y="59" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#e4e4e7" text-anchor="middle">RANK #${rank}</text>
+        <text x="700" y="59" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e4e4e7" text-anchor="middle">RANK #${rank}</text>
 
         <!-- Username -->
-        <text x="190" y="75" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="900" fill="#ffffff" letter-spacing="-0.5">@${username}</text>
+        <text x="190" y="75" font-family="sans-serif" font-size="38" font-weight="900" fill="#ffffff" letter-spacing="-0.5">@${username}</text>
 
         <!-- Level indicator -->
-        <text x="190" y="125" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="${accentColor}">LEVEL ${level}</text>
+        <text x="190" y="125" font-family="sans-serif" font-size="22" font-weight="bold" fill="${accentColor}">LEVEL ${level}</text>
 
         <!-- XP info -->
-        <text x="630" y="125" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="#a1a1aa" text-anchor="end">${currentXp.toLocaleString()} <tspan fill="#71717a">/ ${nextLevelXp.toLocaleString()} XP</tspan></text>
+        <text x="630" y="125" font-family="sans-serif" font-size="18" font-weight="bold" fill="#a1a1aa" text-anchor="end">${currentXp.toLocaleString()} <tspan fill="#71717a">/ ${nextLevelXp.toLocaleString()} XP</tspan></text>
 
         <!-- Progress Bar container -->
         <rect x="190" y="145" width="440" height="24" rx="12" fill="rgba(10, 11, 16, 0.65)" stroke="${borderColor}" stroke-width="1" />
@@ -244,23 +254,30 @@ async function generateRankCard({
     </svg>
     `.trim();
 
-    if (isAnimatedGif && animatedBgBuffer) {
-        try {
-            const overlaySvg = svgString.replace('fill="url(#bgPattern)"', 'fill="none"');
-            const overlayPng = await sharp(Buffer.from(overlaySvg)).png().toBuffer();
+    const basePngBuffer = await sharp(Buffer.from(svgString))
+        .png({ compressionLevel: 8, quality: 85 })
+        .toBuffer();
 
-            return await sharp(animatedBgBuffer, { animated: true })
-                .composite([{ input: overlayPng, tile: false }])
-                .gif({ loop: 0 })
-                .toBuffer();
-        } catch(compErr) {
-            console.error('Error compositing animated GIF rank card:', compErr.message);
+    if (avatarPngBuffer) {
+        const composited = await sharp(basePngBuffer)
+            .composite([{ input: avatarPngBuffer, left: 40, top: 50 }])
+            .png({ compressionLevel: 8, quality: 85 })
+            .toBuffer();
+
+        if (isAnimatedGif && animatedBgBuffer) {
+            try {
+                return await sharp(animatedBgBuffer, { animated: true })
+                    .composite([{ input: composited, tile: false }])
+                    .gif({ loop: 0 })
+                    .toBuffer();
+            } catch(compErr) {
+                console.error('Error compositing animated GIF rank card:', compErr.message);
+            }
         }
+        return composited;
     }
 
-    return await sharp(Buffer.from(svgString))
-        .png()
-        .toBuffer();
+    return basePngBuffer;
 }
 
 module.exports = {

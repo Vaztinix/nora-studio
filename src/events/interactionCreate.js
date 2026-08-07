@@ -757,14 +757,9 @@ module.exports = {
                 }
             }
 
-            // 🔓 Social Command Unlock: Whitelist specific commands from ALL feature-toggle and category blocks
+            // 🔓 Social Command Whitelist: Bypass category/toggle blocks for social tools
             const socialWhitelist = ['rank', 'leaderboard', 'mycard'];
             const isSocialCmd = socialWhitelist.includes(interaction.commandName.toLowerCase());
-
-            if (isSocialCmd) {
-                // Total Bypass: Skip all further permission/category/toggle checks for these social tools
-                return await command.execute(interaction, settings);
-            }
 
             const category = command.category;
             const restrictedCats = ['setup', 'moderation'];
@@ -809,7 +804,7 @@ module.exports = {
                 return handleError(interaction, 'Global Blackout', `The entire **${category}** module has been taken offline globally by the Nora Development Team.`);
             }
 
-            if (settings) {
+            if (settings && !isSocialCmd) {
                 if (category === 'moderation' && !settings.moderationEnabled) {
                     return handleError(interaction, 'Feature Disabled', 'Moderation features are currently disabled on this server. An administrator can enable them using `/setup dashboard`.');
                 }
@@ -852,10 +847,11 @@ module.exports = {
             // Monkey-patch reply methods to handle deferred/replied states gracefully
             const originalReply = interaction.reply.bind(interaction);
             const originalDeferReply = interaction.deferReply.bind(interaction);
+            const originalEditReply = interaction.editReply.bind(interaction);
 
             interaction.reply = async (options) => {
                 if (interaction.deferred || interaction.replied) {
-                    return await interaction.editReply(options);
+                    return await originalEditReply(options).catch(() => {});
                 }
                 return await originalReply(options);
             };
@@ -867,12 +863,36 @@ module.exports = {
                 return await originalDeferReply(options);
             };
 
+            interaction.editReply = async (options) => {
+                if (!interaction.deferred && !interaction.replied) {
+                    return await originalReply(options);
+                }
+                try {
+                    return await originalEditReply(options);
+                } catch (err) {
+                    if (err.code === 'UND_ERR_SOCKET' || err.message?.includes('other side closed') || err.code === 'ECONNRESET') {
+                        console.warn('[System Network] Retrying editReply after socket reset...');
+                        return await originalEditReply(options).catch(() => {});
+                    }
+                    throw err;
+                }
+            };
+
             try {
                 if (!command.showModal && !command.noAutoDefer && !interaction.deferred && !interaction.replied) {
                     await interaction.deferReply({ ephemeral: command.ephemeral || false }).catch(() => {});
                 }
                 await command.execute(interaction, settings);
             } catch (error) {
+                if (error.code === 'UND_ERR_SOCKET' || error.message?.includes('other side closed') || error.code === 'ECONNRESET') {
+                    console.warn('[System Network] Retrying command execution after socket reset...');
+                    try {
+                        await command.execute(interaction, settings);
+                        return;
+                    } catch (retryErr) {
+                        error = retryErr;
+                    }
+                }
                 const logger = require('../utils/logger');
                 await logger.logCommandError(interaction, error);
                 

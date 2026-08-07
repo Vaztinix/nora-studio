@@ -52,11 +52,11 @@ module.exports = {
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('app_select')
                 .setPlaceholder('Choose a position...')
-                .addChoices(
+                .addOptions(
                     apps.map(app => ({
                         label: app.name.slice(0, 100),
                         description: (app.description || 'Open position').slice(0, 100),
-                        value: app.id
+                        value: String(app.id)
                     }))
                 );
 

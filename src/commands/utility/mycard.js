@@ -160,18 +160,19 @@ module.exports = {
             let joinUrl = null;
 
             try {
-                const robloxUserRes = await axios.get(`https://users.roblox.com/v1/users/${robloxRecord.robloxId}`);
-                if (robloxUserRes.data) {
-                    username = `${robloxUserRes.data.displayName} (@${robloxUserRes.data.name})`;
-                }
-            } catch (e) {}
+                const [userResult, presenceResult] = await Promise.allSettled([
+                    axios.get(`https://users.roblox.com/v1/users/${robloxRecord.robloxId}`, { timeout: 1500 }),
+                    axios.post('https://presence.roblox.com/v1/presence/users', {
+                        userIds: [parseInt(robloxRecord.robloxId)]
+                    }, { timeout: 1500 })
+                ]);
 
-            try {
-                const presenceRes = await axios.post('https://presence.roblox.com/v1/presence/users', {
-                    userIds: [parseInt(robloxRecord.robloxId)]
-                });
-                if (presenceRes.data && presenceRes.data.userPresences && presenceRes.data.userPresences.length > 0) {
-                    const p = presenceRes.data.userPresences[0];
+                if (userResult.status === 'fulfilled' && userResult.value.data) {
+                    username = `${userResult.value.data.displayName} (@${userResult.value.data.name})`;
+                }
+
+                if (presenceResult.status === 'fulfilled' && presenceResult.value.data && presenceResult.value.data.userPresences?.length > 0) {
+                    const p = presenceResult.value.data.userPresences[0];
                     const type = p.userPresenceType; // 0: Offline, 1: Online, 2: InGame, 3: InStudio
                     if (type === 1) status = '🟢 Online on website';
                     else if (type === 2) {

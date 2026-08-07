@@ -250,8 +250,8 @@ require('./database/models/IpBan');
 
 const client = new Client({
     rest: {
-        retries: 4,
-        timeout: 15000
+        retries: 5,
+        timeout: 60000
     },
     intents: [
         GatewayIntentBits.Guilds,

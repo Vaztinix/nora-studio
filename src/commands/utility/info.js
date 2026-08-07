@@ -1,6 +1,6 @@
-const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const sharp = require('sharp');
-const os = require('os');
+const axios = require('axios');
 
 module.exports = {
     category: 'utility',
@@ -12,12 +12,10 @@ module.exports = {
         .setDMPermission(true),
 
     async execute(interaction) {
-        await interaction.deferReply({ ephemeral: false });
-
         const ping = interaction.client.ws.ping;
         const totalServers = interaction.client.guilds.cache.size;
         const shardCount = interaction.client.shard ? interaction.client.shard.count : 1;
-        const totalMembers = interaction.client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
+        const totalMembers = interaction.client.guilds.cache.reduce((acc, guild) => acc + (guild.memberCount || 0), 0);
 
         const memUsage = process.memoryUsage();
         const heapUsedMB = (memUsage.heapUsed / 1024 / 1024).toFixed(1);
@@ -25,6 +23,25 @@ module.exports = {
         const uptimeHours = Math.floor(interaction.client.uptime / (1000 * 60 * 60));
         const uptimeMins = Math.floor((interaction.client.uptime % (1000 * 60 * 60)) / (1000 * 60));
         const uptimeStr = `${uptimeHours}h ${uptimeMins}m`;
+
+        const linkRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setLabel('Nora Studio Website')
+                .setURL('https://vaztinix.dev')
+                .setStyle(ButtonStyle.Link),
+            new ButtonBuilder()
+                .setLabel('Add to Server')
+                .setURL(`https://discord.com/oauth2/authorize?client_id=${interaction.client.user.id}&permissions=1102464543799&integration_type=0&scope=bot+applications.commands`)
+                .setStyle(ButtonStyle.Link),
+            new ButtonBuilder()
+                .setLabel('Support HQ')
+                .setURL('https://discord.gg/8HwR7Yg3X5')
+                .setStyle(ButtonStyle.Link),
+            new ButtonBuilder()
+                .setLabel('Discord Store')
+                .setURL('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534')
+                .setStyle(ButtonStyle.Link)
+        );
 
         const svgCard = `
         <svg width="800" height="420" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
@@ -38,9 +55,6 @@ module.exports = {
                     <stop offset="0%" stop-color="#6366f1" />
                     <stop offset="100%" stop-color="#3b82f6" />
                 </linearGradient>
-                <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="10" stdDeviation="15" flood-color="#000000" flood-opacity="0.5"/>
-                </filter>
             </defs>
 
             <rect width="800" height="420" rx="24" fill="url(#bgGrad)"/>
@@ -92,32 +106,37 @@ module.exports = {
         `;
 
         try {
-            const imageBuffer = await Promise.race([
-                sharp(Buffer.from(svgCard)).png().toBuffer(),
-                new Promise((_, r) => setTimeout(() => r(new Error('Image render timed out')), 5000))
-            ]);
-            await interaction.editReply({
-                files: [{
-                    attachment: imageBuffer,
-                    name: 'nora-status-report.png'
-                }]
+            const basePng = await sharp(Buffer.from(svgCard)).png().toBuffer();
+            const attachment = new AttachmentBuilder(basePng, { name: 'nora-status-report.png' });
+            return await interaction.editReply({
+                files: [attachment],
+                components: [linkRow]
             });
         } catch (err) {
-            console.warn('[Info Command] Image rendering failed, sending fallback embed:', err.message);
-            const { EmbedBuilder } = require('discord.js');
-            const fallbackEmbed = new EmbedBuilder()
-                .setTitle('⚡ Nora Core Status')
-                .setDescription('REAL-TIME SYSTEM DIAGNOSTICS & METRICS')
+            console.warn('[Info Command] Image generation error, fallback embed used:', err.message);
+            const statusEmbed = new EmbedBuilder()
+                .setAuthor({ 
+                    name: 'Nora Core System Status • Real-Time Diagnostics', 
+                    iconURL: interaction.client.user.displayAvatarURL() 
+                })
+                .setTitle('🟢 ALL SYSTEMS OPERATIONAL')
                 .setColor(0x57acf2)
+                .setDescription('Nora Mainframe is fully synchronized and operational across all shards.')
                 .addFields(
-                    { name: '⚡ Latency', value: `\`${ping}ms\``, inline: true },
-                    { name: '🌐 Total Servers', value: `\`${totalServers}\``, inline: true },
-                    { name: '👥 Total Members', value: `\`${totalMembers.toLocaleString()}\``, inline: true },
-                    { name: '⏱️ System Uptime', value: `\`${uptimeStr}\``, inline: true },
-                    { name: '💾 Memory Heap', value: `\`${heapUsedMB} MB\``, inline: true },
-                    { name: '⚙️ Environment', value: `Node.js \`${process.version}\` | Discord.js \`v${require('discord.js').version}\``, inline: true }
-                );
-            await interaction.editReply({ embeds: [fallbackEmbed] }).catch(() => {});
+                    { name: '⚡ Latency & Shards', value: `\`${ping}ms\` • **Shard 0** / ${shardCount}`, inline: true },
+                    { name: '🌐 Server Reach', value: `\`${totalServers}\` Servers • \`${totalMembers.toLocaleString()}\` Members`, inline: true },
+                    { name: '⏱️ System Uptime', value: `\`${uptimeStr}\` (Operational)`, inline: true },
+                    { name: '💾 Memory Allocation', value: `\`${heapUsedMB} MB\` Heap RAM`, inline: true },
+                    { name: '⚙️ Platform Runtime', value: `Node.js \`${process.version}\` • Discord.js \`v${require('discord.js').version}\``, inline: true },
+                    { name: '🤖 AI Model Engine', value: `\`Gemini & Local Aura Engine\``, inline: true }
+                )
+                .setFooter({ text: 'Nora Assistant • vaztinix.dev', iconURL: interaction.client.user.displayAvatarURL() })
+                .setTimestamp();
+
+            return await interaction.editReply({
+                embeds: [statusEmbed],
+                components: [linkRow]
+            });
         }
     },
 };

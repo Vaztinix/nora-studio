@@ -70,7 +70,7 @@ module.exports = {
 
         try {
             if (interaction.replied || interaction.deferred) {
-                await interaction.editReply({ embeds: [embed], components }).catch(() => {});
+                await interaction.editReply({ embeds: [embed], components, files: [] }).catch(() => {});
             } else {
                 await interaction.reply({ embeds: [embed], components, ephemeral: true }).catch(() => {});
             }
@@ -93,7 +93,7 @@ module.exports = {
 
         try {
             if (interaction.replied || interaction.deferred) {
-                await interaction.editReply({ embeds: [embed], components }).catch(() => {});
+                await interaction.editReply({ embeds: [embed], components, files: [] }).catch(() => {});
             } else {
                 await interaction.reply({ embeds: [embed], components, ephemeral }).catch(() => {});
             }
@@ -114,7 +114,7 @@ module.exports = {
 
         try {
             if (interaction.replied || interaction.deferred) {
-                await interaction.editReply({ embeds: [embed], components }).catch(() => {});
+                await interaction.editReply({ embeds: [embed], components, files: [] }).catch(() => {});
             } else {
                 await interaction.reply({ embeds: [embed], components, ephemeral }).catch(() => {});
             }

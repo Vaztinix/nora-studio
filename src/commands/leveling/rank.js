@@ -47,6 +47,7 @@ module.exports = {
         let totalXpRaw = 0;
         let xpProgressInLevel = 0;
         let xpStepForLevelIncrement = 100;
+        let progressPercentage = 0;
         let rankIndex = higherCount + 1;
         const hasNoXp = !userLevel;
 
@@ -149,18 +150,17 @@ module.exports = {
 
             const isGifBuffer = imageBuffer.slice(0, 3).toString() === 'GIF';
             const fileName = isGifBuffer ? 'rank-card.gif' : 'rank-card.png';
+            const attachment = new AttachmentBuilder(imageBuffer, { name: fileName });
             await interaction.editReply({ 
                 content: hasNoXp ? `👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:` : null,
-                files: [{
-                    attachment: imageBuffer,
-                    name: fileName
-                }] 
+                files: [attachment] 
             });
         } catch (err) {
             console.error('Error generating rank card:', err);
             // Fallback: send simple text reply if generation fails
             await interaction.editReply({ 
-                content: `👋 **${target.username}** | Level **${currentLevel}** | Rank **#${rankIndex}** | XP **${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()}** (No XP earned yet)` 
+                content: `👋 **${target.username}** | Level **${currentLevel}** | Rank **#${rankIndex}** | XP **${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()}**`,
+                files: []
             });
         }
     },

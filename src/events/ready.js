@@ -9,75 +9,65 @@ module.exports = {
     async execute(client) {
         console.log(`[System] Ready! Initializing Nora Mainframe as ${client.user.tag}`);
 
-        // Initialize invite tracker cache
-        client.invites = new Map();
-        for (const guild of client.guilds.cache.values()) {
-            try {
-                const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
-                if (me && me.permissions.has('ManageGuild')) {
-                    const invites = await guild.invites.fetch().catch(() => null);
-                    if (invites) {
-                        client.invites.set(guild.id, new Map(invites.map(invite => [invite.code, invite.uses])));
-                        console.log(`[Invite Tracker] Cached ${invites.size} invites for server: ${guild.name}`);
-                    }
-                }
-            } catch (e) {
-                console.error(`[Invite Tracker] Failed to cache invites for server ${guild.name}:`, e.message);
-            }
-        }
-
-        try {
-            // 🔮 Optics Maintenance: Physically Set Banner on Startup - V18.0
-            const axios = require('axios');
-            const fs = require('fs');
-            const path = require('path');
-            const METADATA_PATH = path.join(__dirname, '..', '..', 'nora_metadata.json');
-
-            let metadata = { lastBannerUpdate: 0 };
-            if (fs.existsSync(METADATA_PATH)) {
-                try { metadata = JSON.parse(fs.readFileSync(METADATA_PATH)); } catch (e) { }
-            }
-
-            const now = Date.now();
-            const TEN_MINUTES = 10 * 60 * 1000;
-
-            if (now - metadata.lastBannerUpdate > TEN_MINUTES) {
-                const BANNER_URL = 'https://cdn.discordapp.com/attachments/1484684098994835579/1492306353916612728/Nora_Banner_UPD_680_x_240_px.gif?ex=69dada18&is=69d98898&hm=ee425538cef2762d6b919ac0b40bb472d82ee8fbab101de65a9e25ea72e897b2&';
-                const bannerRes = await axios.get(BANNER_URL, { responseType: 'arraybuffer' }).catch(() => null);
-                if (bannerRes && bannerRes.data) {
-                    await client.user.setBanner(bannerRes.data).catch(() => { });
-                    metadata.lastBannerUpdate = now;
-                    fs.writeFileSync(METADATA_PATH, JSON.stringify(metadata, null, 2));
-                    console.log(`[System Service] Global Identity & Nora Banner synchronized.`);
-                }
-            }
-        } catch (e) {
-            // Silently skip if image host is down to prevent log spam
-        }
-
-        // 🤖 Nora System Detection: Identity-Linked Status Engine - V17.5
-        // Navigation Status (Standard HQ Identity) - Updated to Corn Hub Latest & Dynamic Twitch
-        await updateBotStatus(client);
-        
-        // Dynamic Status Loop: Check stream status every 2 minutes
-        setInterval(() => updateBotStatus(client), 120000);
-
-        // Command Synchronization
+        // 1. 🌍 Immediate Global Command Sync: Register commands first before background operations
         const commands = client.commands.map(cmd => cmd.data.toJSON());
         const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
         try {
-            // 🌍 Global Command Sync: This ensures commands are available everywhere without duplication.
             await rest.put(
                 Routes.applicationCommands(client.user.id),
                 { body: commands },
             );
-            console.log(`[System Sync] Global Command Matrix synchronized. Badge eligibility: ACTIVE.`);
+            console.log(`[System Sync] Global Command Matrix synchronized. Badge eligibility: ACTIVE (${commands.length} commands).`);
+        } catch (error) {
+            console.error(`[System Fatal] Critical Sync Failure:`, error);
+        }
 
-            // 🧹 Duplicate Purge: Clear guild-local commands safely without triggering 429 rate limits
+        // 2. ⚡ Non-blocking Background Tasks (Invite caching, banner updates, status, duplicate purging)
+        (async () => {
+            // Initialize invite tracker cache in background
+            client.invites = new Map();
+            for (const guild of client.guilds.cache.values()) {
+                try {
+                    const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
+                    if (me && me.permissions.has('ManageGuild')) {
+                        const invites = await guild.invites.fetch().catch(() => null);
+                        if (invites) {
+                            client.invites.set(guild.id, new Map(invites.map(invite => [invite.code, invite.uses])));
+                        }
+                    }
+                } catch (e) {}
+            }
+            console.log(`[Invite Tracker] Cached invite states across ${client.invites.size} authorized servers.`);
+
+            // Optics Maintenance: Set Banner in background
+            try {
+                const axios = require('axios');
+                const fs = require('fs');
+                const path = require('path');
+                const METADATA_PATH = path.join(__dirname, '..', '..', 'nora_metadata.json');
+
+                let metadata = { lastBannerUpdate: 0 };
+                if (fs.existsSync(METADATA_PATH)) {
+                    try { metadata = JSON.parse(fs.readFileSync(METADATA_PATH)); } catch (e) { }
+                }
+
+                const now = Date.now();
+                const TEN_MINUTES = 10 * 60 * 1000;
+
+                if (now - metadata.lastBannerUpdate > TEN_MINUTES) {
+                    const BANNER_URL = 'https://cdn.discordapp.com/attachments/1484684098994835579/1492306353916612728/Nora_Banner_UPD_680_x_240_px.gif?ex=69dada18&is=69d98898&hm=ee425538cef2762d6b919ac0b40bb472d82ee8fbab101de65a9e25ea72e897b2&';
+                    const bannerRes = await axios.get(BANNER_URL, { responseType: 'arraybuffer', timeout: 4000 }).catch(() => null);
+                    if (bannerRes && bannerRes.data) {
+                        await client.user.setBanner(bannerRes.data).catch(() => { });
+                        metadata.lastBannerUpdate = now;
+                        fs.writeFileSync(METADATA_PATH, JSON.stringify(metadata, null, 2));
+                    }
+                }
+            } catch (e) {}
+
+            // Clear guild-local commands safely in background
             const guildsToPurge = Array.from(client.guilds.cache.keys());
-            console.log(`[System Sync] Verifying ${guildsToPurge.length} nodes for local command overrides...`);
-
             for (let i = 0; i < guildsToPurge.length; i += 5) {
                 const chunk = guildsToPurge.slice(i, i + 5);
                 await Promise.all(chunk.map(async (guildId) => {
@@ -92,14 +82,14 @@ module.exports = {
                     } catch (e) {}
                 }));
                 if (i + 5 < guildsToPurge.length) {
-                    await new Promise(r => setTimeout(r, 600));
+                    await new Promise(r => setTimeout(r, 400));
                 }
             }
+        })();
 
-            console.log(`[System Sync] Global consistency restored.`);
-        } catch (error) {
-            console.error(`[System Fatal] Critical Sync Failure:`, error);
-        }
+        // 🤖 Nora System Detection: Identity-Linked Status Engine
+        await updateBotStatus(client);
+        setInterval(() => updateBotStatus(client), 120000);
 
         // System Re-Sync: Award Catch-Up XP for downtime - V17.3
         try {
