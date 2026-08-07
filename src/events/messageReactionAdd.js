@@ -15,6 +15,14 @@ module.exports = {
                 return;
             }
         }
+        if (reaction.message && reaction.message.partial) {
+            try {
+                await reaction.message.fetch();
+            } catch (error) {
+                console.warn('[Reaction Add] Failed to fetch partial message:', error.message);
+            }
+        }
+
         const guild = reaction.message.guild;
         if (!guild) return;
 
@@ -165,12 +173,17 @@ module.exports = {
                             }
                         }
 
-                        // 2. Fetch all reactions on target message & remove user's reaction from other emojis
+                        // 2. Fetch fresh reactions on message and force-remove user from ALL OTHER emojis
                         try {
-                            await reaction.message.reactions.fetch().catch(() => {});
-                            for (const [rId, msgReaction] of reaction.message.reactions.cache) {
+                            const targetMsg = reaction.message.partial ? await reaction.message.fetch().catch(() => reaction.message) : reaction.message;
+                            const freshReactions = await targetMsg.reactions.fetch().catch(() => targetMsg.reactions.cache);
+                            
+                            for (const [rId, msgReaction] of freshReactions) {
                                 const rKey = msgReaction.emoji.id ? msgReaction.emoji.id : msgReaction.emoji.name;
-                                const isTargetEmoji = (rKey === emojiKey) || (msgReaction.emoji.toString() === rawEmojiStr);
+                                const isTargetEmoji = (rKey === emojiKey) || 
+                                                     (msgReaction.emoji.name === emojiKey) || 
+                                                     (msgReaction.emoji.toString() === rawEmojiStr);
+                                
                                 if (!isTargetEmoji) {
                                     await msgReaction.users.remove(user.id).catch(err => {
                                         if (err.code === 50013) {
@@ -179,7 +192,9 @@ module.exports = {
                                     });
                                 }
                             }
-                        } catch (e) {}
+                        } catch (e) {
+                            console.error('[Reaction Role SingleSelect] Reaction removal error:', e.message);
+                        }
                     }
 
                     const role = guild.roles.cache.get(match.roleId);
