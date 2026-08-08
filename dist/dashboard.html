@@ -8970,13 +8970,57 @@
             guilds.forEach(g => {
                 const card = document.createElement('div');
                 card.className = 'server-card vertical';
+                card.style.position = 'relative';
+
+                const isUnmanaged = g.isManaged === false;
+                const isNotConfigured = !g.hasNora;
+
                 if (g.hasNora) {
                     card.classList.add('configured');
                 }
-                
-                const btn = g.hasNora 
-                    ? '<button class="config-btn" style="width: 100%;">Manage Server</button>' 
-                    : `<button class="config-btn invite" style="width: 100%;" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')">Add to Server</button>`;
+
+                // 🔵 Blue Distinct Look for servers where Nora is NOT in the server
+                if (isNotConfigured) {
+                    card.style.background = 'linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 58, 138, 0.28))';
+                    card.style.border = '1px solid rgba(59, 130, 246, 0.45)';
+                    card.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.15)';
+                }
+
+                // 🔴 Red Accent for servers user cannot manage (Role Access Only)
+                if (isUnmanaged) {
+                    card.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+                }
+
+                // Top-right status badge
+                let badgeHtml = '';
+                if (isUnmanaged) {
+                    // 🔴 Red Lock Badge
+                    badgeHtml = `
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #ef4444; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);" title="Red Lock: You do not have Manage Server permissions in Discord">
+                            <i class="fas fa-lock" style="font-size: 0.72rem;"></i>
+                        </div>
+                    `;
+                } else if (isNotConfigured) {
+                    // 🔵 Blue Badge
+                    badgeHtml = `
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(59, 130, 246, 0.22); border: 1px solid rgba(59, 130, 246, 0.55); color: #60a5fa; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);" title="Blue: Nora is not in this server yet">
+                            <i class="fas fa-plus" style="font-size: 0.75rem;"></i>
+                        </div>
+                    `;
+                }
+
+                // Button rendering
+                let btn = '';
+                if (g.hasNora) {
+                    if (isUnmanaged) {
+                        btn = `<button class="config-btn" style="width: 100%; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; display: inline-flex; align-items: center; justify-content: center; gap: 6px;"><i class="fas fa-lock" style="color: #ef4444; font-size: 0.75rem;"></i> Manage Server</button>`;
+                    } else {
+                        btn = `<button class="config-btn" style="width: 100%;">Manage Server</button>`;
+                    }
+                } else {
+                    // 🔵 Blue Add to Server Button
+                    btn = `<button class="config-btn invite" style="width: 100%; background: linear-gradient(135deg, #2563eb, #1d4ed8) !important; color: #ffffff !important; font-weight: 700; border: none; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); display: inline-flex; align-items: center; justify-content: center; gap: 6px;" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')"><i class="fas fa-plus-circle"></i> Add to Server</button>`;
+                }
                 
                 let memberInfo = '';
                 if (g.hasNora) {
@@ -8985,10 +9029,11 @@
                         : '';
                     memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 4px;"><span>${g.memberCount} Members</span>${onlineStr}</div>`;
                 } else {
-                    memberInfo = `<p style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; text-align: center; margin-bottom: 0;">Not configured yet</p>`;
+                    memberInfo = `<p style="font-size: 0.75rem; color: #93c5fd; margin-top: 4px; text-align: center; margin-bottom: 0; font-weight: 600;">Not configured yet</p>`;
                 }
 
                 card.innerHTML = `
+                    ${badgeHtml}
                     <div style="display: flex; flex-direction: column; align-items: center; width: 100%; flex-grow: 1; justify-content: center; min-height: 0;">
                         <img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 60px; height: 60px; border-radius: 14px; margin-bottom: 12px; flex-shrink: 0;">
                         <h3>${escapeHtml(g.name)}</h3>
