@@ -562,8 +562,8 @@ async function checkShutdownRecovery() {
                 const now = Date.now();
                 const offlineMs = now - data.shutdownAt;
                 
-                // Suppress spammy alert if offline for less than 60 seconds (routine update or developer restart)
-                if (offlineMs < 60000) {
+                // Suppress status webhook alerts if offline for less than 3 minutes (routine update / developer restart)
+                if (offlineMs < 180000) {
                     console.log(`[Status Shark] Quick restart / update completed in ${Math.round(offlineMs / 1000)}s. Status webhook alert suppressed to prevent channel spam.`);
                     return;
                 }
@@ -631,7 +631,7 @@ async function notifyGracefulShutdown(reason = 'PC Shutdown / OS Signal') {
     if (isShuttingDown) return;
     isShuttingDown = true;
 
-    console.log(`[Status Shark] Intercepted OS shutdown signal (${reason}). Dispatching instant offline alert...`);
+    console.log(`[Status Shark] Intercepted OS shutdown signal (${reason}). Recording shutdown timestamp...`);
 
     const isUpdate = reason.toLowerCase().includes('update') || reason.toLowerCase().includes('deploy');
     const shutdownTimestamp = Date.now();
@@ -642,34 +642,6 @@ async function notifyGracefulShutdown(reason = 'PC Shutdown / OS Signal') {
             isUpdate: isUpdate
         }));
     } catch (e) {}
-
-    const unixTime = Math.floor(shutdownTimestamp / 1000);
-    const titleText = isUpdate ? '🔄 Nora Bot Restarting for System Update' : '🚨 Nora Bot Service Going Offline';
-    const descText = isUpdate ? '**Nora Bot** is briefly restarting to apply a software update.' : `**Nora Bot** is shutting down due to **${reason}**.`;
-    const embedColor = isUpdate ? 0x3498DB : 0xED4245; // Blue (0x3498DB) for update restart, Red (0xED4245) for offline
-    const footerText = isUpdate ? 'Status Shark • Software Update Monitor' : 'Status Shark • Local PC Power Monitor';
-    
-    const embed = {
-        title: titleText,
-        description: descText,
-        color: embedColor,
-        fields: [
-            {
-                name: isUpdate ? 'Restart Initiated At' : 'Offline Started At',
-                value: `<t:${unixTime}:F> (<t:${unixTime}:R>)`,
-                inline: true
-            },
-            {
-                name: 'Target Channel',
-                value: `<#${SHUTDOWN_WEBHOOK_CHANNEL}>`,
-                inline: true
-            }
-        ],
-        footer: { text: footerText },
-        timestamp: new Date(shutdownTimestamp).toISOString()
-    };
-
-    await sendStatusSharkAlert(embed);
 }
 
 // Attach OS Signal Interceptors (Triggers when Windows shuts down or node exits)
@@ -3197,6 +3169,20 @@ let cloudflareTunnelProcess = null;
 
 function startCloudflareTunnel() {
     try {
+        const tunnelPidFile = path.join(__dirname, '../.nora_tunnel.pid');
+        if (fs.existsSync(tunnelPidFile)) {
+            try {
+                const existingPid = parseInt(fs.readFileSync(tunnelPidFile, 'utf8').trim(), 10);
+                if (!isNaN(existingPid) && existingPid > 0) {
+                    process.kill(existingPid, 0);
+                    console.log(`[Cloudflare Tunnel] Active tunnel process detected (PID ${existingPid}). Maintaining continuous tunnel connection.`);
+                    return;
+                }
+            } catch (e) {
+                try { fs.unlinkSync(tunnelPidFile); } catch (err) {}
+            }
+        }
+
         const { exec } = require('child_process');
         const configFile = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
         const cmd = `cloudflared --config "${configFile}" tunnel run noraapi`;
@@ -3205,7 +3191,7 @@ function startCloudflareTunnel() {
 
         if (cloudflareTunnelProcess.pid) {
             try {
-                fs.writeFileSync(path.join(__dirname, '../.nora_tunnel.pid'), String(cloudflareTunnelProcess.pid));
+                fs.writeFileSync(tunnelPidFile, String(cloudflareTunnelProcess.pid));
             } catch (e) {}
         }
 

@@ -36,13 +36,8 @@ async function shutdownAll() {
 
     stopPid(PID_FILE, 'Nora Bot Core');
     stopPid(WATCHER_PID_FILE, 'Status Shark Watcher');
-    stopPid(path.join(__dirname, '../.nora_tunnel.pid'), 'Cloudflare Tunnel Process');
-
-    try {
-        if (process.platform === 'win32') {
-            execSync('wmic process where "name=\'cloudflared.exe\' and SessionId!=0" delete 2>nul', { stdio: 'ignore' });
-        }
-    } catch (e) {}
+    // Note: Cloudflare Tunnel (.nora_tunnel.pid) is intentionally preserved during software updates
+    // to maintain 100% continuous tunnel uptime and prevent 503 gateway monitor alerts.
 
     console.log('✅ Graceful shutdown completed.');
 }
