@@ -7301,15 +7301,14 @@
             }
         });
 
+        const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
+        window.CLIENT_ID = CLIENT_ID;
+        const REDIRECT_URI = encodeURIComponent(window.location.origin + (window.location.pathname.endsWith('/') && window.location.pathname.length > 1 ? window.location.pathname.slice(0, -1) : window.location.pathname || '/dashboard'));
+        window.REDIRECT_URI = REDIRECT_URI;
+
         function getDiscordLoginUrl() {
-            const clientId = window.__NORA_CLIENT_ID__ || "1375943730951098549";
-            const origin = window.location.origin;
-            let path = window.location.pathname || '/dashboard';
-            if (path.endsWith('/') && path.length > 1) {
-                path = path.slice(0, -1);
-            }
-            if (path === '/' || !path) path = '/dashboard';
-            const redirectUri = encodeURIComponent(origin + path);
+            const clientId = window.CLIENT_ID;
+            const redirectUri = window.REDIRECT_URI;
             return `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify+guilds`;
         }
 
