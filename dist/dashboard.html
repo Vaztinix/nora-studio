@@ -7301,15 +7301,23 @@
             }
         });
 
-        const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
-        const targetRedirectPath = (window.location.pathname && window.location.pathname !== '/') ? window.location.pathname : '/dashboard';
-        const REDIRECT_URI = encodeURIComponent(window.location.origin + targetRedirectPath);
-        const discordLoginURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify+guilds`;
-        
+        function getDiscordLoginUrl() {
+            const clientId = window.__NORA_CLIENT_ID__ || "1375943730951098549";
+            const origin = window.location.origin;
+            let path = window.location.pathname || '/dashboard';
+            if (path.endsWith('/') && path.length > 1) {
+                path = path.slice(0, -1);
+            }
+            if (path === '/' || !path) path = '/dashboard';
+            const redirectUri = encodeURIComponent(origin + path);
+            return `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify+guilds`;
+        }
+
         function redirectToDiscordLogin() {
-            window.location.href = discordLoginURL;
+            window.location.href = getDiscordLoginUrl();
         }
         window.redirectToDiscordLogin = redirectToDiscordLogin;
+        window.getDiscordLoginUrl = getDiscordLoginUrl;
 
         
         let authOverlay = null;
@@ -7478,8 +7486,8 @@
             const accessToken = fragment.get('access_token');
             const pairCode = fragment.get('pair');
             if (accessToken) { 
-                sessionStorage.setItem('discord_token', accessToken); 
-                localStorage.setItem('nora_discord_token', accessToken);
+                try { sessionStorage.setItem('discord_token', accessToken); } catch(e) {}
+                try { localStorage.setItem('nora_discord_token', accessToken); } catch(e) {}
                 window.history.replaceState(null, null, window.location.pathname); 
                 authenticateWithToken(accessToken); 
             } else if (pairCode) {
@@ -7490,20 +7498,21 @@
                 document.getElementById('pairing-code-input').value = pairCode;
                 submitPairingCode();
             } else { 
-                const tok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token'); 
+                let tok = null;
+                try { tok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token'); } catch(e) {}
                 if (tok) {
-                    sessionStorage.setItem('discord_token', tok);
+                    try { sessionStorage.setItem('discord_token', tok); } catch(e) {}
                     authenticateWithToken(tok); 
                 } else {
                     authOverlay.style.display = 'flex';
                     authOverlay.style.opacity = '1';
                     const userProfileBtn = document.getElementById('user-profile-btn');
-                    if (userProfileBtn) userProfileBtn.onclick = () => window.location.href = discordLoginURL;
+                    if (userProfileBtn) userProfileBtn.onclick = () => window.redirectToDiscordLogin();
                 }
             }
 
             const loginBtn = document.getElementById('login-btn');
-            if (loginBtn) loginBtn.onclick = () => window.location.href = discordLoginURL;
+            if (loginBtn) loginBtn.onclick = () => window.redirectToDiscordLogin();
             const logoutBtn = document.getElementById('logout-btn');
             if (logoutBtn) logoutBtn.onclick = () => { sessionStorage.clear(); localStorage.removeItem('nora_discord_token'); localStorage.removeItem('nora_last_user_id'); window.location.reload(); };
             const backToServersBtn = document.getElementById('back-to-servers');
