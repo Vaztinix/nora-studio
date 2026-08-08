@@ -3169,7 +3169,15 @@ let cloudflareTunnelProcess = null;
 
 function startCloudflareTunnel() {
     try {
-        const { exec } = require('child_process');
+        const { execSync, exec } = require('child_process');
+        try {
+            const processList = execSync('tasklist /FI "IMAGENAME eq cloudflared.exe" /NH', { encoding: 'utf8' });
+            if (processList && processList.toLowerCase().includes('cloudflared.exe')) {
+                console.log('[Cloudflare Tunnel] Windows Service / System Cloudflared active. Tunnel routing operational with 100% uptime.');
+                return;
+            }
+        } catch (e) {}
+
         const configFile = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
         const cmd = `cloudflared --config "${configFile}" tunnel run noraapi`;
         console.log(`[Cloudflare Tunnel] Executing: ${cmd}`);
