@@ -8597,6 +8597,39 @@
                 if (mode === 'image') loadCuratedKlipyGifs();
             }
             if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+        window.switchVerifySubnav = function(subnav) {
+            const discordBtn = document.getElementById('verify-subnav-discord');
+            const robloxBtn = document.getElementById('verify-subnav-roblox');
+            const discordSection = document.getElementById('verify-section-discord');
+            const robloxSection = document.getElementById('verify-section-roblox');
+
+            if (subnav === 'roblox') {
+                if (discordBtn) {
+                    discordBtn.classList.remove('active');
+                    discordBtn.style.background = 'rgba(255,255,255,0.04)';
+                    discordBtn.style.color = '#ccc';
+                }
+                if (robloxBtn) {
+                    robloxBtn.classList.add('active');
+                    robloxBtn.style.background = 'rgba(255,255,255,0.12)';
+                    robloxBtn.style.color = '#fff';
+                }
+                if (discordSection) discordSection.style.display = 'none';
+                if (robloxSection) robloxSection.style.display = 'flex';
+            } else {
+                if (robloxBtn) {
+                    robloxBtn.classList.remove('active');
+                    robloxBtn.style.background = 'rgba(255,255,255,0.04)';
+                    robloxBtn.style.color = '#ccc';
+                }
+                if (discordBtn) {
+                    discordBtn.classList.add('active');
+                    discordBtn.style.background = 'rgba(255,255,255,0.12)';
+                    discordBtn.style.color = '#fff';
+                }
+                if (robloxSection) robloxSection.style.display = 'none';
+                if (discordSection) discordSection.style.display = 'grid';
+            }
         };
 
         window.updateLiveRankCardPreview = function() {
