@@ -3197,11 +3197,17 @@ let cloudflareTunnelProcess = null;
 
 function startCloudflareTunnel() {
     try {
+        const { exec } = require('child_process');
         const configFile = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
         const cmd = `cloudflared --config "${configFile}" tunnel run noraapi`;
         console.log(`[Cloudflare Tunnel] Executing: ${cmd}`);
-        const { exec } = require('child_process');
         cloudflareTunnelProcess = exec(cmd);
+
+        if (cloudflareTunnelProcess.pid) {
+            try {
+                fs.writeFileSync(path.join(__dirname, '../.nora_tunnel.pid'), String(cloudflareTunnelProcess.pid));
+            } catch (e) {}
+        }
 
         cloudflareTunnelProcess.stdout.on('data', (data) => {
             const line = data.toString().trim();

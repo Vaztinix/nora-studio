@@ -36,10 +36,11 @@ async function shutdownAll() {
 
     stopPid(PID_FILE, 'Nora Bot Core');
     stopPid(WATCHER_PID_FILE, 'Status Shark Watcher');
+    stopPid(path.join(__dirname, '../.nora_tunnel.pid'), 'Cloudflare Tunnel Process');
 
     try {
         if (process.platform === 'win32') {
-            execSync('taskkill /F /IM cloudflared.exe /T 2>nul', { stdio: 'ignore' });
+            execSync('wmic process where "name=\'cloudflared.exe\' and SessionId!=0" delete 2>nul', { stdio: 'ignore' });
         }
     } catch (e) {}
 
