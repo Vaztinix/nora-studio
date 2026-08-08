@@ -3210,20 +3210,35 @@ function startCloudflareTunnel() {
     }
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[System] Primary Web Dashboard listening on port ${PORT} (0.0.0.0)`);
+// Bind HTTP Server to both IPv4 (0.0.0.0) and IPv6 (::) for 100% Cloudflare Tunnel compatibility
+const http = require('http');
+
+const primaryServer = http.createServer(app);
+primaryServer.listen(PORT, '::', () => {
+    console.log(`[System] Primary Web Dashboard listening on dual-stack IPv4/IPv6 port ${PORT}`);
     startCloudflareTunnel();
 });
+primaryServer.on('error', (err) => {
+    if (err.code === 'EADDRINUSE' || err.code === 'EAFNOSUPPORT') {
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`[System] Primary Web Dashboard listening on IPv4 port ${PORT} (0.0.0.0)`);
+            startCloudflareTunnel();
+        });
+    }
+});
 
-// Secondary port listeners to guarantee Cloudflare Tunnel connectivity regardless of remote port mapping
+// Secondary port listeners bound to dual-stack IPv6 (::) & IPv4 (0.0.0.0)
 const ALT_PORTS = [8080, 5000, 8000, 3001, 8081, 8001, 8888, 9000, 4000, 5001];
 ALT_PORTS.forEach(altPort => {
     if (altPort !== Number(PORT)) {
         try {
-            const altServer = app.listen(altPort, '0.0.0.0', () => {
-                console.log(`[System] Secondary Tunnel port listener online at port ${altPort}`);
+            const altServer = http.createServer(app);
+            altServer.listen(altPort, '::', () => {
+                console.log(`[System] Secondary Tunnel dual-stack port listener online at port ${altPort}`);
             });
-            altServer.on('error', () => {});
+            altServer.on('error', () => {
+                try { app.listen(altPort, '0.0.0.0'); } catch (e) {}
+            });
         } catch (e) {}
     }
 });
