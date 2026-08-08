@@ -1,4 +1,4 @@
-const { Events, EmbedBuilder } = require('discord.js');
+const { Events, EmbedBuilder, AuditLogEvent, PermissionFlagsBits } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 
 module.exports = {
@@ -8,28 +8,36 @@ module.exports = {
 
         try {
             const settings = await GuildSettings.findOne({ where: { guildId: channel.guild.id } });
-            if (!settings || !settings.logChannelCreates) return;
+            if (!settings) return;
 
             const loggerUtil = require('../utils/logger');
-            const logChannelId = loggerUtil.resolveLogChannelId(settings, 'channelCreates');
-            if (!logChannelId) return;
-
-            let logChannel = channel.guild.channels.cache.get(logChannelId);
-            if (!logChannel) logChannel = await channel.guild.channels.fetch(logChannelId).catch(() => null);
-            if (!logChannel) return;
-
             const channelType = channel.type === 4 ? 'Category' : (channel.type === 2 ? 'Voice Channel' : 'Text Channel');
 
             const embed = new EmbedBuilder()
                 .setTitle(`🆕 ${channelType} Created`)
-                .setColor(0x43b581)
+                .setColor(0x57F287)
                 .addFields(
-                    { name: 'Name', value: channel.type === 4 ? channel.name : `<#${channel.id}>`, inline: true },
+                    { name: 'Name', value: channel.type === 4 ? `**${channel.name}**` : `<#${channel.id}> (\`#${channel.name}\`)`, inline: true },
                     { name: 'ID', value: `\`${channel.id}\``, inline: true }
                 )
                 .setTimestamp();
 
-            await logChannel.send({ embeds: [embed] }).catch(e => console.error('[ChannelCreate] Failed to send log:', e.message));
+            // Try fetching audit log for executor
+            if (channel.guild.members.me.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
+                try {
+                    const auditLogs = await channel.guild.fetchAuditLogs({
+                        type: AuditLogEvent.ChannelCreate,
+                        limit: 1
+                    }).catch(() => null);
+
+                    const entry = auditLogs?.entries?.first();
+                    if (entry && entry.target?.id === channel.id && (Date.now() - entry.createdTimestamp < 5000)) {
+                        embed.addFields({ name: 'Created By', value: `<@${entry.executor.id}> (\`${entry.executor.tag}\`)`, inline: true });
+                    }
+                } catch (e) {}
+            }
+
+            await loggerUtil.sendEventLog(channel.guild, 'channelCreate', embed, settings);
         } catch (error) {
             console.error('[Logger] Error in ChannelCreate:', error);
         }

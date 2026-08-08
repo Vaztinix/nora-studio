@@ -138,24 +138,36 @@ class Logger {
                 'messageUpdate': 'logMessageEdits',
                 'memberJoin': 'logMemberJoins',
                 'memberLeave': 'logMemberLeaves',
+                'memberUpdate': 'logMemberUpdates',
                 'channelCreate': 'logChannelCreates',
+                'channelUpdate': 'logChannelEdits',
                 'channelDelete': 'logChannelDeletes',
                 'voiceJoin': 'logVoiceJoins',
                 'voiceLeave': 'logVoiceLeaves',
-                'automod': 'logAutomod'
+                'voiceMove': 'logVoiceMoves',
+                'automod': 'logAutomod',
+                'roleCreate': 'logRoleEvents',
+                'roleDelete': 'logRoleEvents',
+                'roleUpdate': 'logRoleEvents'
             };
             const toggleField = channelToggleMap[eventKey];
-            if (toggleField && settings[toggleField]) {
+            if (toggleField && (settings[toggleField] !== false)) {
                 const categoryMap = {
                     'messageDelete': 'messageDeletes',
                     'messageUpdate': 'messageEdits',
                     'memberJoin': 'memberJoins',
                     'memberLeave': 'memberLeaves',
+                    'memberUpdate': 'memberUpdates',
                     'channelCreate': 'channelCreates',
+                    'channelUpdate': 'channelEdits',
                     'channelDelete': 'channelDeletes',
                     'voiceJoin': 'voiceJoins',
                     'voiceLeave': 'voiceLeaves',
-                    'automod': 'automod'
+                    'voiceMove': 'voiceMoves',
+                    'automod': 'automod',
+                    'roleCreate': 'roles',
+                    'roleDelete': 'roles',
+                    'roleUpdate': 'roles'
                 };
                 const category = categoryMap[eventKey] || 'general';
                 const logChannelId = this.resolveLogChannelId(settings, category);

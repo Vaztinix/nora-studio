@@ -49,6 +49,24 @@ module.exports = {
                 return interaction.reply({ content: '❌ This application is no longer active or could not be found.', ephemeral: true });
             }
 
+            // Check if user already has a pending submission for this application position
+            const ApplicationSubmission = require('../database/models/ApplicationSubmission');
+            const existingPending = await ApplicationSubmission.findOne({
+                where: {
+                    guildId: interaction.guildId,
+                    userId: interaction.user.id,
+                    appName: app.name,
+                    status: 'PENDING'
+                }
+            }).catch(() => null);
+
+            if (existingPending) {
+                return interaction.reply({
+                    content: '⚠️ You already have a **PENDING** application submission for this position. Please wait until server staff reviews your submission.',
+                    ephemeral: true
+                });
+            }
+
             let questions = [];
             try {
                 questions = JSON.parse(app.questions || '[]');
