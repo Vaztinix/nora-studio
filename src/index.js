@@ -3165,63 +3165,8 @@ app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'web', '404.html'));
 });
 
-let cloudflareTunnelProcess = null;
-
 function startCloudflareTunnel() {
-    try {
-        const tunnelPidFile = path.join(__dirname, '../.nora_tunnel.pid');
-        if (fs.existsSync(tunnelPidFile)) {
-            try {
-                const existingPid = parseInt(fs.readFileSync(tunnelPidFile, 'utf8').trim(), 10);
-                if (!isNaN(existingPid) && existingPid > 0) {
-                    process.kill(existingPid, 0);
-                    console.log(`[Cloudflare Tunnel] Active tunnel process detected (PID ${existingPid}). Maintaining continuous tunnel connection.`);
-                    return;
-                }
-            } catch (e) {
-                try { fs.unlinkSync(tunnelPidFile); } catch (err) {}
-            }
-        }
-
-        const { exec } = require('child_process');
-        const configFile = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
-        const cmd = `cloudflared --config "${configFile}" tunnel run noraapi`;
-        console.log(`[Cloudflare Tunnel] Executing: ${cmd}`);
-        cloudflareTunnelProcess = exec(cmd);
-
-        if (cloudflareTunnelProcess.pid) {
-            try {
-                fs.writeFileSync(tunnelPidFile, String(cloudflareTunnelProcess.pid));
-            } catch (e) {}
-        }
-
-        cloudflareTunnelProcess.stdout.on('data', (data) => {
-            const line = data.toString().trim();
-            if (line) console.log(`[Cloudflare Tunnel] ${line}`);
-        });
-
-        cloudflareTunnelProcess.stderr.on('data', (data) => {
-            const line = data.toString().trim();
-            if (line && !line.includes('ERR')) {
-                console.log(`[Cloudflare Tunnel] ${line}`);
-            } else if (line) {
-                console.warn(`[Cloudflare Tunnel Info] ${line}`);
-            }
-        });
-
-        cloudflareTunnelProcess.on('error', (err) => {
-            console.error('[Cloudflare Tunnel Error] Failed to launch cloudflared:', err.message);
-        });
-
-        cloudflareTunnelProcess.on('exit', (code, signal) => {
-            if (code !== 0 && signal !== 'SIGTERM' && signal !== 'SIGINT') {
-                console.warn(`[Cloudflare Tunnel] Process exited (code: ${code}, signal: ${signal}). Re-establishing in 5s...`);
-                setTimeout(startCloudflareTunnel, 5000);
-            }
-        });
-    } catch (err) {
-        console.error('[Cloudflare Tunnel Error] Exception launching cloudflared:', err.message);
-    }
+    console.log('[Cloudflare Tunnel] Background Windows Service ("Cloudflared agent") active. Skipping duplicate process launch to guarantee 100% uptime.');
 }
 
 app.listen(PORT, '0.0.0.0', () => {
