@@ -2496,45 +2496,271 @@
     
 </style>
 
+        <style>
+            @keyframes expandFromSaveBtn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.88) translateY(-10px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+            }
+            .unsaved-popup-card {
+                box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 25px rgba(88, 101, 242, 0.25) !important;
+            }
+        </style>
+
         <script>
             window.isFormDirty = false;
-            window.markFormDirty = function() {
-                window.isFormDirty = true;
-                const bar = document.getElementById('unsaved-changes-bar');
-                if (bar) bar.style.display = 'flex';
+            window.unsavedChangeHistory = []; // Tracks field IDs in order of recent user edits
+
+            function formatSettingKeyLabel(key, el) {
+                const labelMap = {
+                    prefix: 'Bot Prefix',
+                    language: 'Dashboard Language',
+                    automodProfanity: 'Profanity Filter',
+                    automodLinks: 'Link Filter',
+                    automodInvites: 'Discord Invites Filter',
+                    automodSpam: 'Spam Detection',
+                    automodCaps: 'CAPS Lock Filter',
+                    antiSpamMuteDuration: 'Anti-Spam Mute Duration',
+                    welcomeChannelId: 'Welcome Channel',
+                    welcomeMessage: 'Welcome Message',
+                    leaveChannelId: 'Leave Channel',
+                    boostChannelId: 'Boost Channel',
+                    verifyRoleId: 'Verification Granted Roles',
+                    verifyChannelId: 'Verification Channel',
+                    ticketCategoryId: 'Ticket Category',
+                    ticketLogChannelId: 'Ticket Logs Channel',
+                    levelUpChannelId: 'Level Up Channel',
+                    levelUpMessage: 'Level Up Message',
+                    xpRate: 'XP Rate Multiplier',
+                    countingChannelId: 'Counting Game Channel',
+                    starboardChannelId: 'Starboard Channel',
+                    starboardThreshold: 'Starboard Threshold',
+                    loggingChannelId: 'Master Logging Channel',
+                    autoresponderTrigger: 'Autoresponder Pattern',
+                    roleSelectionMode: 'Role Selection Mode'
+                };
+                if (labelMap[key]) return labelMap[key];
+
+                if (el && el.labels && el.labels.length > 0) {
+                    const txt = el.labels[0].textContent.trim();
+                    if (txt && txt.length < 35) return txt;
+                }
+                if (el) {
+                    const parentCard = el.closest('.config-card, .panel, .card');
+                    if (parentCard) {
+                        const titleEl = parentCard.querySelector('h3, h4, .card-title, label');
+                        if (titleEl && titleEl.textContent.trim()) {
+                            const cardTitle = titleEl.textContent.trim();
+                            if (cardTitle.length < 35) return cardTitle;
+                        }
+                    }
+                }
+                return key
+                    .replace(/([A-Z])/g, ' $1')
+                    .replace(/^./, str => str.toUpperCase())
+                    .replace(/_([a-z])/g, (_, letter) => ' ' + letter.toUpperCase())
+                    .trim();
+            }
+
+            function formatSettingValDisplay(key, val) {
+                if (val === true) return 'Enabled';
+                if (val === false) return 'Disabled';
+                if (val === "" || val === null || val === undefined) return 'None';
+                const s = String(val);
+                return s.length > 22 ? s.substring(0, 20) + '...' : s;
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            window.computeFormDiffs = function() {
+                const diffs = [];
+                const oldState = window.previousSettings || {};
+                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode'];
+
+                KEYS_ARRAY.forEach(k => {
+                    const el = document.getElementById('setting-' + k);
+                    if (!el) return;
+                    let val = el.type === 'checkbox' ? el.checked : el.value;
+                    if (el.type === 'number') {
+                        if (val !== "") {
+                            val = parseInt(val, 10);
+                            if (k === 'spamInterval') val = val * 1000;
+                            if (k === 'antiSpamMuteDuration') val = val * 60000;
+                        } else {
+                            val = null;
+                        }
+                    }
+                    if (k === 'customBlockedContexts' || k === 'countingBlacklistedUsers' || k === 'starboardIgnoredChannels') {
+                        if (typeof val === 'string' && !val.trim().startsWith('[')) {
+                            const arr = val.split(',').map(s => s.trim()).filter(Boolean);
+                            val = JSON.stringify(arr);
+                        }
+                    }
+
+                    let oldVal = oldState[k];
+                    if (oldVal === null || oldVal === undefined) oldVal = "";
+                    if (val === null || val === undefined) val = "";
+
+                    if (String(oldVal) !== String(val)) {
+                        const label = formatSettingKeyLabel(k, el);
+                        const oldStr = formatSettingValDisplay(k, oldVal);
+                        const newStr = formatSettingValDisplay(k, val);
+                        diffs.push({ fieldId: 'setting-' + k, key: k, label, oldStr, newStr });
+                    }
+                });
+
+                // Also check split log selects if present
+                const splitSelects = document.querySelectorAll('.split-log-select');
+                splitSelects.forEach(select => {
+                    const category = select.getAttribute('data-category');
+                    const oldLC = oldState.loggingChannels || {};
+                    const oldVal = oldLC[category] || '';
+                    const newVal = select.value || '';
+                    if (oldVal !== newVal) {
+                        diffs.push({
+                            fieldId: select.id || ('split-log-' + category),
+                            key: 'log_' + category,
+                            label: 'Log Category: ' + category,
+                            oldStr: oldVal || 'Master Channel',
+                            newStr: newVal || 'Master Channel'
+                        });
+                    }
+                });
+
+                return diffs;
             };
+
+            window.updateUnsavedChangesPopup = function() {
+                const bar = document.getElementById('unsaved-changes-bar');
+                const saveBtn = document.getElementById('save-settings-btn');
+                if (!bar) return;
+
+                const diffs = window.computeFormDiffs();
+
+                if (diffs.length === 0) {
+                    window.isFormDirty = false;
+                    bar.style.display = 'none';
+                    if (saveBtn) {
+                        saveBtn.disabled = true;
+                        saveBtn.classList.add('disabled');
+                    }
+                    return;
+                }
+
+                window.isFormDirty = true;
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('disabled');
+                }
+
+                // Sort diffs: put most recent user edits first
+                diffs.sort((a, b) => {
+                    const idxA = window.unsavedChangeHistory.indexOf(a.fieldId);
+                    const idxB = window.unsavedChangeHistory.indexOf(b.fieldId);
+                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if (idxA !== -1) return -1;
+                    if (idxB !== -1) return 1;
+                    return 0;
+                });
+
+                const top3 = diffs.slice(0, 3);
+                const remainingCount = diffs.length - 3;
+
+                const countEl = document.getElementById('unsaved-count');
+                if (countEl) countEl.textContent = diffs.length;
+
+                const listEl = document.getElementById('unsaved-changes-recent-list');
+                if (listEl) {
+                    listEl.innerHTML = '';
+                    top3.forEach(item => {
+                        const row = document.createElement('div');
+                        row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 6px 10px; border-radius: 8px;';
+                        row.innerHTML = `
+                            <div style="min-width: 0; flex: 1;">
+                                <div style="font-weight: 700; color: #fff; font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.label)}</div>
+                                <div style="font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    <span style="color: #ef4444;">${escapeHtml(item.oldStr)}</span> → <span style="color: #10b981; font-weight: 600;">${escapeHtml(item.newStr)}</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-edit" style="color: #5865f2; font-size: 0.75rem; flex-shrink: 0;"></i>
+                        `;
+                        listEl.appendChild(row);
+                    });
+                }
+
+                const moreEl = document.getElementById('unsaved-changes-more-indicator');
+                if (moreEl) {
+                    if (remainingCount > 0) {
+                        moreEl.style.display = 'block';
+                        moreEl.textContent = `+ ${remainingCount} more change${remainingCount > 1 ? 's' : ''} (Click Save Data to view all)`;
+                    } else {
+                        moreEl.style.display = 'none';
+                    }
+                }
+
+                bar.style.display = 'flex';
+            };
+
+            window.markFormDirty = function(fieldId) {
+                window.isFormDirty = true;
+                if (fieldId) {
+                    window.unsavedChangeHistory = [fieldId, ...window.unsavedChangeHistory.filter(f => f !== fieldId)];
+                }
+                window.updateUnsavedChangesPopup();
+            };
+
             window.markFormClean = function() {
                 window.isFormDirty = false;
+                window.unsavedChangeHistory = [];
                 const bar = document.getElementById('unsaved-changes-bar');
                 if (bar) bar.style.display = 'none';
+                const saveBtn = document.getElementById('save-settings-btn');
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.classList.add('disabled');
+                }
             };
+
             window.revertUnsavedChanges = function() {
-                if (typeof refreshAllDashboardData === 'function') {
+                if (typeof fetchSettings === 'function' && typeof currentServerId !== 'undefined' && currentServerId) {
+                    fetchSettings(currentServerId, true);
+                } else if (typeof refreshAllDashboardData === 'function') {
                     refreshAllDashboardData('HARD_OVERWRITE');
                 }
                 window.markFormClean();
                 if (typeof showToast === 'function') showToast('Reverted unsaved changes to server state.', 'info');
             };
+
             window.saveCurrentTabSettings = function() {
                 if (typeof saveSettings === 'function') {
                     saveSettings();
                 }
             };
 
-
             document.addEventListener('DOMContentLoaded', () => {
                 const configContainer = document.getElementById('view-config');
                 if (configContainer) {
-                    configContainer.addEventListener('input', (e) => {
-                        if (e.target.id && (e.target.id.startsWith('setting-') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
-                            window.markFormDirty();
+                    const handleConfigEdit = (e) => {
+                        const target = e.target;
+                        if (target && target.id && (target.id.startsWith('setting-') || target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA' || target.classList.contains('split-log-select') || target.id.startsWith('cmd-'))) {
+                            window.markFormDirty(target.id);
                         }
-                    });
-                    configContainer.addEventListener('change', (e) => {
-                        if (e.target.id && (e.target.id.startsWith('setting-') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
-                            window.markFormDirty();
-                        }
-                    });
+                    };
+                    configContainer.addEventListener('input', handleConfigEdit);
+                    configContainer.addEventListener('change', handleConfigEdit);
                 }
             });
         </script>
@@ -3480,18 +3706,6 @@
             </div>
 
             <div id="view-config" style="display: none;">
-        <!-- Floating Unsaved Changes Guard Banner -->
-        <div id="unsaved-changes-bar" style="display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(18, 18, 24, 0.96); border: 1px solid var(--primary); padding: 12px 24px; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 99999; align-items: center; gap: 20px; backdrop-filter: blur(16px); animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-            <div style="display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.88rem; font-weight: 700;">
-                <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.1rem;"></i>
-                <span>Careful — you have unsaved configuration changes!</span>
-            </div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <button type="button" class="config-btn" onclick="revertUnsavedChanges()" style="padding: 6px 14px; font-size: 0.8rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #ccc;">Discard</button>
-                <button type="button" class="config-btn primary" onclick="saveCurrentTabSettings()" style="padding: 8px 20px; font-size: 0.82rem; background: #5865f2; color: #ffffff; font-weight: 800; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.5);">Save Changes</button>
-
-            </div>
-        </div>
                 <div class="config-header">
                     <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
                         <button class="back-link" id="back-to-servers">← Back to Servers</button>
@@ -3500,11 +3714,41 @@
                             <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p></div>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; gap: 8px; align-items: center; position: relative;">
                         <button class="config-btn" id="reload-config-btn" onclick="manualReloadConfig()" style="width: auto; padding: 10px 14px;" title="Reload Configuration From Server"><i class="fas fa-sync-alt" id="reload-config-icon" style="margin-right: 6px;"></i> Reload Config</button>
                         <button class="config-btn" id="undo-btn" onclick="undoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-undo" style="margin-right: 6px;"></i> Undo</button>
                         <button class="config-btn" id="redo-btn" onclick="redoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-redo" style="margin-right: 6px;"></i> Redo</button>
-                        <button class="save-btn disabled" id="save-settings-btn" onclick="saveSettings()" disabled>Save Data</button>
+                        
+                        <div id="save-data-btn-wrapper" style="position: relative; display: inline-block;">
+                            <button class="save-btn disabled" id="save-settings-btn" onclick="saveSettings()" disabled style="display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-save"></i> Save Data
+                            </button>
+
+                            <!-- Unsaved Changes Popup attached directly below & expanding from Save Data Button -->
+                            <div id="unsaved-changes-bar" class="unsaved-popup-card" style="display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 340px; background: rgba(16, 16, 22, 0.98); border: 1px solid rgba(255, 255, 255, 0.15); padding: 14px; border-radius: 14px; box-shadow: 0 16px 45px rgba(0,0,0,0.85), 0 0 25px rgba(88, 101, 242, 0.25); z-index: 99999; backdrop-filter: blur(24px); transform-origin: top right; animation: expandFromSaveBtn 0.25s cubic-bezier(0.16, 1, 0.3, 1); flex-direction: column; gap: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; color: #fff; font-size: 0.82rem; font-weight: 800;">
+                                        <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 0.95rem;"></i>
+                                        <span>Unsaved Changes (<span id="unsaved-count">0</span>)</span>
+                                    </div>
+                                    <button type="button" onclick="revertUnsavedChanges()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #bbb; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(239,68,68,0.2)'; this.style.borderColor='rgba(239,68,68,0.4)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.12)'; this.style.color='#bbb';" title="Discard all unsaved modifications">Discard</button>
+                                </div>
+                                
+                                <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 700; margin-bottom: 6px;">Top Recent Edits</div>
+                                
+                                <div id="unsaved-changes-recent-list" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
+                                    <!-- Top 3 Most Recent Changes Rendered Here -->
+                                </div>
+                                
+                                <div id="unsaved-changes-more-indicator" style="font-size: 0.73rem; color: #a5b4fc; background: rgba(88, 101, 242, 0.15); border: 1px dashed rgba(88, 101, 242, 0.3); padding: 6px 10px; border-radius: 8px; text-align: center; font-weight: 600; margin-bottom: 10px; display: none; cursor: pointer;" onclick="saveCurrentTabSettings()" title="Click Save Data to view all modifications">
+                                    <!-- + X more changes... Click Save Data to view all -->
+                                </div>
+                                
+                                <button type="button" class="config-btn primary" onclick="saveCurrentTabSettings()" style="width: 100%; padding: 9px; font-size: 0.82rem; background: #5865f2; color: #ffffff; font-weight: 800; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4); text-align: center; justify-content: center; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-save"></i> Save Data & Review All
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
