@@ -3169,18 +3169,10 @@ let cloudflareTunnelProcess = null;
 
 function startCloudflareTunnel() {
     try {
-        const { execSync, exec } = require('child_process');
-        try {
-            const processList = execSync('tasklist /FI "IMAGENAME eq cloudflared.exe" /NH', { encoding: 'utf8' });
-            if (processList && processList.toLowerCase().includes('cloudflared.exe')) {
-                console.log('[Cloudflare Tunnel] Windows Service / System Cloudflared active. Tunnel routing operational with 100% uptime.');
-                return;
-            }
-        } catch (e) {}
-
-        const configFile = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
-        const cmd = `cloudflared --config "${configFile}" tunnel run noraapi`;
-        console.log(`[Cloudflare Tunnel] Executing: ${cmd}`);
+        const { exec } = require('child_process');
+        const token = "eyJhIjoiNTk0Nzk4OWE0OTlmODZjNDZhY2ZhNTRjMmRmODFkZjYiLCJ0IjoiNzIzMzI4NDgtYTg2OC00Y2ZjLTgzZjgtMmZkYTMzZDlmODY1IiwicyI6IjNZNzkrRnhMcU5GRmsrdUcvRVhiM1hWT1luUTBWR00zWm5FRldjK1dYcmc9In0=";
+        const cmd = `cloudflared tunnel run --token ${token}`;
+        console.log(`[Cloudflare Tunnel] Executing HA tunnel connector...`);
         cloudflareTunnelProcess = exec(cmd);
 
         if (cloudflareTunnelProcess.pid) {
@@ -3223,8 +3215,8 @@ app.listen(PORT, '0.0.0.0', () => {
     startCloudflareTunnel();
 });
 
-// Secondary port listeners to guarantee Cloudflare Tunnel connectivity regardless of remote port mapping (8080, 5000, 8000)
-const ALT_PORTS = [8080, 5000, 8000];
+// Secondary port listeners to guarantee Cloudflare Tunnel connectivity regardless of remote port mapping
+const ALT_PORTS = [8080, 5000, 8000, 3001, 8081, 8001, 8888, 9000, 4000, 5001];
 ALT_PORTS.forEach(altPort => {
     if (altPort !== Number(PORT)) {
         try {
