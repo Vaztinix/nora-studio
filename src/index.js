@@ -775,6 +775,7 @@ app.use((req, res, next) => {
 
 // Payload size limit to prevent memory exhaustion/large body attacks (increased to 10mb for base64 image uploads)
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // In-Memory IP Rate Limiter
 const ipRequests = new Map();
@@ -792,6 +793,30 @@ setInterval(() => {
         }
     }
 }, 60000);
+
+const rateLimit = require('express-rate-limit');
+
+const globalApiRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests from this IP. Please try again later.' },
+    keyGenerator: (req) => getRealIP(req),
+    skip: (req) => req.path === '/health' || req.path === '/api/health'
+});
+
+const authRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many authentication attempts. Please wait 15 minutes.' },
+    keyGenerator: (req) => getRealIP(req)
+});
+
+app.use('/api/', globalApiRateLimiter);
+app.use(['/api/user/me', '/api/auth/pair', '/api/auth/invalidate', '/api/owner/'], authRateLimiter);
 
 const ipRateLimiter = (req, res, next) => {
     const ip = getRealIP(req); // Use real visitor IP, not Cloudflare edge node IP

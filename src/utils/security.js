@@ -214,5 +214,49 @@ module.exports = {
         if (typeof val === 'string') return val;
         if (typeof val === 'number') return String(val);
         return fallback;
+    },
+
+    /**
+     * Escapes HTML entities to prevent DOM XSS vulnerabilities.
+     * @param {string} str
+     * @returns {string}
+     */
+    escapeHtml: (str) => {
+        if (typeof str !== 'string') return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    },
+
+    /**
+     * Validates an external URL to prevent Server-Side Request Forgery (SSRF).
+     * Rejects non-HTTP(S) protocols and private/internal IP ranges.
+     * @param {string} urlStr
+     * @returns {boolean}
+     */
+    validateExternalUrl: (urlStr) => {
+        try {
+            if (!urlStr || typeof urlStr !== 'string') return false;
+            const parsed = new URL(urlStr);
+            if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+                return false;
+            }
+            const host = parsed.hostname.toLowerCase();
+            if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '::1' || host === '[::1]' || host === '169.254.169.254') {
+                return false;
+            }
+            if (/^(127\.|10\.|169\.254\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(host)) {
+                return false;
+            }
+            if (/^(fc00|fd00|fe80)/i.test(host)) {
+                return false;
+            }
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 };

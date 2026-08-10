@@ -119,7 +119,7 @@ async function resolveChannelId(input) {
 
         return null;
     } catch (error) {
-        console.error('[YouTube Resolver] Error resolving handle/URL %s:', input, error.message);
+        console.error(`[YouTube Resolver] Error resolving handle/URL ${input}:`, error.message);
         return null;
     }
 }
@@ -335,10 +335,10 @@ async function manageWebSubSubscriptions(callbackUrl, channelIds) {
                 console.log(`[WebSub Manager] Subscription request sent for Channel: ${channelId}`);
             } else {
                 const text = await response.text();
-                console.error('[WebSub Manager] Failed subscribing to Channel %s. Status: %s', channelId, response.status);
+                console.error(`[WebSub Manager] Failed subscribing to Channel ${channelId}. Status: ${response.status}`);
             }
         } catch (error) {
-            console.error('[WebSub Manager] Connection error subscribing to Channel %s:', channelId, error.message);
+            console.error(`[WebSub Manager] Connection error subscribing to Channel ${channelId}:`, error.message);
         }
     }
 }

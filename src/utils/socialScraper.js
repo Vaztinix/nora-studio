@@ -24,7 +24,7 @@ async function getYoutubeChannelId(handle) {
         const match = html.match(/\/channel\/(UC[a-zA-Z0-9_-]{22})/);
         return match ? match[1] : null;
     } catch (e) {
-        console.error('Error resolving YouTube handle @%s:', handle, e.message);
+        console.error(`Error resolving YouTube handle @${handle}:`, e.message);
         return null;
     }
 }
