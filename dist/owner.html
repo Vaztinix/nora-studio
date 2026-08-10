@@ -486,15 +486,29 @@
 
     <script>
         window.getApiBaseUrl = function() {
+            if (window.__NORA_API_BASE_URL__) {
+                return window.__NORA_API_BASE_URL__;
+            }
+
+            const savedUrl = localStorage.getItem('nora_api_url');
+            if (savedUrl && typeof savedUrl === 'string' && savedUrl.startsWith('http')) {
+                return savedUrl;
+            }
+
             const host = window.location.hostname;
             const port = window.location.port;
+
             if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
-                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
-                    ? window.location.origin 
-                    : 'http://localhost:3000';
+                if (window.location.protocol.startsWith('http') && (port === '3000' || (!port && window.location.protocol === 'http:'))) {
+                    return window.location.origin;
+                }
+                return 'http://localhost:3000';
             }
-            const localOverride = localStorage.getItem('nora_api_url');
-            if (localOverride) return localOverride;
+
+            if (host === 'api.vaztinix.dev' || host.startsWith('api.')) {
+                return window.location.origin;
+            }
+
             return 'https://api.vaztinix.dev';
         };
 
@@ -576,11 +590,13 @@
                 loadAdminDeskData();
             } catch (e) {
                 console.error('[Verification Error]:', e);
-                localStorage.removeItem('nora_admin_token');
-                document.getElementById('lock-screen').style.display = 'flex';
+                if (e.status === 401) {
+                    localStorage.removeItem('nora_admin_token');
+                    document.getElementById('lock-screen').style.display = 'flex';
+                }
                 if (errAlert) {
                     errAlert.style.display = 'block';
-                    errAlert.textContent = `Access Denied: ${e.message}`;
+                    errAlert.textContent = `Access Error: ${e.message}`;
                 }
             }
         }

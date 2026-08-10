@@ -26,8 +26,10 @@ module.exports = {
 
         // Get guild settings
         const settings = await settingsCache.get(message.guild.id);
+        if (!settings) return;
         
-        if (!settings.spamDetectionEnabled) return;
+        if (!settings.spamDetectionEnabled && !settings.automodSpam) return;
+        if (!settings.moderationEnabled && !settings.autoModActive) return;
 
         // Admins and Managers bypass anti-spam
         if (message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) return;

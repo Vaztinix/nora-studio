@@ -6603,24 +6603,29 @@
                 return window.__NORA_API_BASE_URL__;
             }
 
-            const host = window.location.hostname;
-
-            // 2. Localhost or same-origin server hosting
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
-                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
-                    ? window.location.origin 
-                    : 'http://localhost:3000';
+            // 2. Check localStorage override (e.g. set by self-healing or user settings)
+            const savedUrl = localStorage.getItem('nora_api_url');
+            if (savedUrl && typeof savedUrl === 'string' && savedUrl.startsWith('http')) {
+                return savedUrl;
             }
 
-            // 3. Same-domain hosting (e.g. vaztinix.dev)
-            if (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') {
-                if (host.includes('vaztinix.dev')) {
-                    return host.startsWith('api.') ? window.location.origin : 'https://api.vaztinix.dev';
+            const host = window.location.hostname;
+            const port = window.location.port;
+
+            // 3. Localhost or 127.0.0.1 or local file
+            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
+                if (window.location.protocol.startsWith('http') && (port === '3000' || (!port && window.location.protocol === 'http:'))) {
+                    return window.location.origin;
                 }
+                return 'http://localhost:3000';
+            }
+
+            // 4. Same-origin if on api.vaztinix.dev or any api. subdomain
+            if (host === 'api.vaztinix.dev' || host.startsWith('api.')) {
                 return window.location.origin;
             }
 
-            // 4. Hard fallback to working production subdomain
+            // 5. Canonical live production API endpoint for all static frontend domains
             return 'https://api.vaztinix.dev';
         };
 
@@ -6833,10 +6838,11 @@
             stopOfflinePolling();
             showToast('Connection restored! Session automatically recovered.', 'success');
 
-            const tok = sessionStorage.getItem('discord_token');
+            const tok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || localStorage.getItem('discord_token');
             if (tok) {
+                try { sessionStorage.setItem('discord_token', tok); } catch(e) {}
                 authenticateWithToken(tok);
-            } else {
+            } else if (!window.currentUser) {
                 const authOverlay = document.getElementById('auth-overlay');
                 if (authOverlay) {
                     authOverlay.style.display = 'flex';
@@ -6858,7 +6864,7 @@
                     clearTimeout(hcTimeout);
                     if (res.ok) {
                         const data = await res.json().catch(() => ({}));
-                        return data.status === 'ok';
+                        return data.status === 'ok' || data.status === 'degraded' || !!data.status;
                     }
                 } catch (e) {
                     clearTimeout(hcTimeout);
@@ -8175,14 +8181,17 @@
                 }
             } catch (e) { 
                 console.error('Authentication Error:', e);
-                showToast(`Auth Fault: ${e.message || 'Unknown'}`, 'error');
                 
-                // If it is a connection error (Failed to fetch), trigger the offline overlay to poll/switch API base URL
-                if (e.message && (e.message.includes('Failed to fetch') || e.message.includes('NetworkError') || e.status === 502 || e.status === 503 || e.status === 504)) {
+                // If error is due to API offline, network error, server error, or non-401 failure, DO NOT LOG USER OUT!
+                if (e.status !== 401) {
+                    console.warn('[Nora Auth] API is offline or unreachable. Retaining user session in offline mode.');
                     if (typeof triggerApiOffline === 'function') triggerApiOffline();
+                    return; // Retain tokens & session so user remains logged in once API is back online!
                 }
                 
-                // On auth failure, invalidate invalid tokens and reveal auth overlay so user can re-authenticate
+                showToast(`Auth Fault: ${e.message || 'Unknown'}`, 'error');
+                
+                // Only wipe tokens if explicitly rejected by 401 Unauthorized
                 sessionStorage.removeItem('discord_token');
                 localStorage.removeItem('nora_discord_token');
                 localStorage.removeItem('nora_last_user_id');

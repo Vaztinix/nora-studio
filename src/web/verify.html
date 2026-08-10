@@ -649,9 +649,11 @@
                     }, 1500);
                 }
 
-                sessionStorage.removeItem('discord_token');
-                document.getElementById('view-auth').style.display = 'block';
-                document.getElementById('view-main').style.display = 'none';
+                if (err.status === 401) {
+                    sessionStorage.removeItem('discord_token');
+                    document.getElementById('view-auth').style.display = 'block';
+                    document.getElementById('view-main').style.display = 'none';
+                }
             } finally {
                 toggleLoading(false);
             }
@@ -711,7 +713,6 @@
                         guildId: guildId || undefined
                     })
                 });
-
                 const data = await res.json();
                 if (!res.ok) {
                     throw new Error(data.error || 'Verification failed');

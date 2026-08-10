@@ -16,7 +16,7 @@ module.exports = {
 
         try {
             const settings = await settingsCache.get(message.guild.id);
-            if (!settings || !settings.moderationEnabled) return;
+            if (!settings || (!settings.moderationEnabled && !settings.autoModActive)) return;
 
             // Run the adaptive natural-language text analysis
             const res = analyzeMessage(message.content);

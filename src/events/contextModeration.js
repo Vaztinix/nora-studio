@@ -16,6 +16,9 @@ module.exports = {
             const settings = await settingsCache.get(message.guild.id);
             if (!settings) return;
 
+            // Skip AutoMod if moderation & AutoMod are disabled for this server
+            if (!settings.moderationEnabled && !settings.autoModActive) return;
+
             // Check immune roles
             if (settings.automodImmuneRoles && message.member) {
                 try {

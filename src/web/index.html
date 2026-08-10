@@ -1487,10 +1487,15 @@
             document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
         })();
 
-        // ===== STATUS SHARK: WEBPAGE DISCORD & BOT DOWNTIME MONITOR =====
+        // ===== WEBPAGE DISCORD & BOT DOWNTIME MONITOR =====
         (function() {
             const WEBHOOK_URL = ''; // Configured via env or proxy
-            const HEALTH_ENDPOINT = '/api/health';
+            const getApiBase = () => {
+                if (typeof window.getApiBaseUrl === 'function') return window.getApiBaseUrl();
+                const host = window.location.hostname;
+                if (host === 'localhost' || host === '127.0.0.1') return window.location.origin;
+                return 'https://api.vaztinix.dev';
+            };
             const CHECK_INTERVAL = 45000; // 45 seconds
 
             let isDown = false;
@@ -1499,7 +1504,8 @@
             async function checkHealth() {
                 const now = Date.now();
                 try {
-                    const res = await fetch(HEALTH_ENDPOINT, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+                    const healthUrl = getApiBase() + '/api/health';
+                    const res = await fetch(healthUrl, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     
                     // RECOVERY DETECTED
@@ -1513,14 +1519,14 @@
                         isDown = false;
                         downSince = null;
                         
-                        console.log('[Status Shark Web Monitor] Bot recovered after ' + durationStr);
+                        console.log('[System Web Monitor] Bot recovered after ' + durationStr);
                     }
                 } catch (err) {
                     // DOWNTIME DETECTED
                     if (!isDown) {
                         isDown = true;
                         downSince = now;
-                        console.warn('[Status Shark Web Monitor] Bot Health Check Failed! Bot is offline.');
+                        console.warn('[System Web Monitor] Bot Health Check Failed! Bot is offline.');
                     }
                 }
             }

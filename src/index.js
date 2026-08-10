@@ -1,4 +1,5 @@
 require('dotenv').config();
+const crypto = require('crypto');
 
 // Automatic Time-Offset Compensator: Keeps Nora synchronized with Discord API servers
 global.timeOffsetMs = 0;
@@ -57,7 +58,6 @@ const path = require('path');
 
 // ─── Single Instance Lock Protection & PID Registration ───
 const PID_FILE = path.join(__dirname, '../.nora.pid');
-const WATCHER_PID_FILE = path.join(__dirname, '../.nora_watcher.pid');
 
 try {
     if (fs.existsSync(PID_FILE)) {
@@ -482,191 +482,9 @@ runPreSyncMigrations().then(() => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 🚨 LOCAL SHUTDOWN & RECOVERY ALERT SYSTEM
-// Transmits instant offline alert when PC initiates shutdown/reboot,
-// and sends recovery duration alert when PC boots back up!
-// ─────────────────────────────────────────────────────────────────────────────
-const { spawnSync } = require('child_process');
-const axios = require('axios');
-const DEFAULT_SHUTDOWN_WEBHOOK = 'https://discord.com/api/webhooks/1533295606590734456/NvUr7PcEGXp_hf7zGYtbRTm-hKl9r1AcQ3DzeVdPTVIwR5xAmTNTkNehc6GYLkon_F3p';
-const SHUTDOWN_WEBHOOK_CHANNEL = '1533291837173792859';
-const LAST_SHUTDOWN_FILE = path.join(__dirname, '../.nora_last_shutdown.json');
-let isShuttingDown = false;
-
-
-// Helper to deliver alerts via HTTP Webhook POST (works without Discord Bot Client)
-function sendStatusSharkAlert(embed) {
-    const webhookUrl = process.env.SHUTDOWN_WEBHOOK_URL || process.env.DISCORD_STATUS_WEBHOOK_URL || DEFAULT_SHUTDOWN_WEBHOOK;
-    
-    // 1. Fast Synchronous curl.exe Delivery (Guarantees packet sends before OS power off / exit)
-    if (webhookUrl) {
-        try {
-            const payload = JSON.stringify({
-                username: 'Status Shark',
-                avatar_url: 'https://nora.vaztinix.com/nora.png',
-                embeds: [embed]
-            });
-            const res = spawnSync('curl.exe', [
-                '-s', '-X', 'POST',
-                '-H', 'Content-Type: application/json',
-                '-d', payload,
-                '--max-time', '4',
-                webhookUrl
-            ], { encoding: 'utf8', timeout: 5000 });
-            if (res.status === 0) {
-                console.log('[Status Shark] Alert delivered via fast sync curl.exe Webhook!');
-                return true;
-            }
-        } catch (e) {
-            console.error('[Status Shark] Sync curl Webhook POST failed:', e.message);
-        }
-
-        // 2. Async Axios Fallback
-        try {
-            axios.post(webhookUrl, {
-                username: 'Status Shark',
-                avatar_url: 'https://nora.vaztinix.com/nora.png',
-                embeds: [embed]
-            }, {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: 5000
-            }).catch(e => console.error('[Status Shark] HTTP Webhook POST fallback error:', e.message));
-        } catch (e) {}
-    }
-
-    // 3. Fallback via Bot Client Channel Send
-    try {
-        let channel = client?.channels?.cache?.get(SHUTDOWN_WEBHOOK_CHANNEL);
-        if (channel && typeof channel.send === 'function') {
-            channel.send({ embeds: [embed] }).catch(() => null);
-            console.log('[Status Shark] Alert delivered via Discord Bot Channel!');
-            return true;
-        }
-    } catch (err) {
-        console.error('[Status Shark] Failed to deliver alert via Bot Channel:', err.message);
-    }
-    return false;
-}
-
-// 1. Startup Boot Recovery Check (Triggers when bot is logged in & ready)
-async function checkShutdownRecovery() {
-    try {
-        if (fs.existsSync(LAST_SHUTDOWN_FILE)) {
-            const rawData = fs.readFileSync(LAST_SHUTDOWN_FILE, 'utf8');
-            const data = JSON.parse(rawData);
-            if (fs.existsSync(LAST_SHUTDOWN_FILE)) {
-                try { fs.unlinkSync(LAST_SHUTDOWN_FILE); } catch (e) {}
-            }
-
-            if (data.shutdownAt) {
-                const now = Date.now();
-                const offlineMs = now - data.shutdownAt;
-                
-                // Suppress status webhook alerts if offline for less than 3 minutes (routine update / developer restart)
-                if (offlineMs < 180000) {
-                    console.log(`[Status Shark] Quick restart / update completed in ${Math.round(offlineMs / 1000)}s. Status webhook alert suppressed to prevent channel spam.`);
-                    return;
-                }
-
-                const totalSeconds = Math.floor(offlineMs / 1000);
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
-                
-                const durationParts = [];
-                if (hours > 0) durationParts.push(`${hours}h`);
-                if (minutes > 0) durationParts.push(`${minutes}m`);
-                if (seconds > 0 || durationParts.length === 0) durationParts.push(`${seconds}s`);
-                const readableDuration = durationParts.join(' ');
-
-                const isUpdate = data.isUpdate || (data.reason && (data.reason.toLowerCase().includes('update') || data.reason.toLowerCase().includes('deploy')));
-                const titleText = isUpdate ? '🔄 Nora Bot System Update Complete & Online' : '✅ Nora Bot Service Restored & Online';
-                const descText = isUpdate 
-                    ? `**Nora Bot** was restarted for a **Software Update** and is now back online and fully operational.`
-                    : `**Nora Bot** is back online and operational following **${data.reason || 'PC Reboot / Shutdown'}**.`;
-                const embedColor = isUpdate ? 0x3498DB : 0x57F287; // Blue (0x3498DB) for system update, Green (0x57F287) for power restore
-                const footerText = isUpdate ? 'Status Shark • Software Update Monitor' : 'Status Shark • Local PC Power Monitor';
-
-                console.log(`[Status Shark] Nora restored (${isUpdate ? 'Update Restart' : 'Power Restore'}) after ${readableDuration}`);
-
-                const unixUp = Math.floor(now / 1000);
-                const embed = {
-                    title: titleText,
-                    description: descText,
-                    color: embedColor,
-                    fields: [
-                        {
-                            name: 'Status Event',
-                            value: isUpdate ? '`Software Update / Code Deployment`' : `\`${data.reason || 'PC Restart'}\``,
-                            inline: true
-                        },
-                        {
-                            name: 'Restart Duration',
-                            value: `**${readableDuration}**`,
-                            inline: true
-                        },
-                        {
-                            name: 'Restored At',
-                            value: `<t:${unixUp}:F>`,
-                            inline: false
-                        }
-                    ],
-                    footer: { text: footerText },
-                    timestamp: new Date(now).toISOString()
-                };
-                await sendStatusSharkAlert(embed);
-            }
-        }
-    } catch (e) {
-        console.error('[Status Shark] Error checking last shutdown record:', e.message);
-    }
-}
-
-client.once('ready', () => {
-    checkShutdownRecovery();
-});
-
-// 2. Graceful Shutdown Alert Handler
-async function notifyGracefulShutdown(reason = 'PC Shutdown / OS Signal') {
-    if (isShuttingDown) return;
-    isShuttingDown = true;
-
-    console.log(`[Status Shark] Intercepted OS shutdown signal (${reason}). Recording shutdown timestamp...`);
-
-    const isUpdate = reason.toLowerCase().includes('update') || reason.toLowerCase().includes('deploy');
-    const shutdownTimestamp = Date.now();
-    try {
-        fs.writeFileSync(LAST_SHUTDOWN_FILE, JSON.stringify({
-            shutdownAt: shutdownTimestamp,
-            reason: reason,
-            isUpdate: isUpdate
-        }));
-    } catch (e) {}
-}
-
-// Attach OS Signal Interceptors (Triggers when Windows shuts down or node exits)
-process.on('SIGHUP', async () => {
-    await notifyGracefulShutdown('PC Shutdown / Windows OS Signal');
-    process.exit(0);
-});
-process.on('SIGINT', async () => {
-    await notifyGracefulShutdown('Manual Ctrl+C / Stop Signal');
-    process.exit(0);
-});
-process.on('SIGTERM', async () => {
-    await notifyGracefulShutdown('System / OS Shutdown Signal');
-    process.exit(0);
-});
-process.on('SIGBREAK', async () => {
-    await notifyGracefulShutdown('Console / OS Shutdown Signal');
-    process.exit(0);
-});
-process.on('message', async (msg) => {
-    if (msg === 'shutdown') {
-        await notifyGracefulShutdown('System Command Shutdown');
-        process.exit(0);
-    }
-});
+// Attach OS Signal Interceptors
+process.on('SIGINT', () => process.exit(0));
+process.on('SIGTERM', () => process.exit(0));
 
 // Global Error Handling to prevent the bot from going offline on minor errors
 process.on('unhandledRejection', (reason, promise) => {
@@ -1445,7 +1263,7 @@ app.post('/api/notifications/clear', async (req, res) => {
     }
 });
 
-// Health check endpoints (Used by Cloudflare Tunnels, Cloudflare Edge, Status Shark, and dashboard)
+// Health check endpoints (Used by Cloudflare Tunnels, Cloudflare Edge, and dashboard)
 const healthHandler = (req, res) => {
     const isBotReady = client && client.ws && client.ws.status === 0;
     res.json({
@@ -1705,13 +1523,23 @@ app.get('/api/user/me', async (req, res) => {
                 const discordToken = session.discordToken || token;
                 const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
                     headers: { Authorization: `Bearer ${discordToken}` }
-                }).catch(() => null);
-                if (!userRes) {
-                    await session.destroy();
-                    return res.status(401).json({ error: 'Unauthorized' });
+                }).catch((err) => ({ error: err }));
+                
+                if (userRes && userRes.error) {
+                    const errResp = userRes.error.response;
+                    if (errResp && errResp.status === 401) {
+                        await session.destroy();
+                        return res.status(401).json({ error: 'Unauthorized' });
+                    }
+                    if (cachedUser) {
+                        user = cachedUser.user;
+                    } else {
+                        return res.status(503).json({ error: 'Discord API temporarily unreachable. Retrying...' });
+                    }
+                } else {
+                    user = userRes.data;
+                    discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
                 }
-                user = userRes.data;
-                discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
             }
         } else {
             // If the token is a custom session format but not found/expired, reject immediately
@@ -1727,10 +1555,22 @@ app.get('/api/user/me', async (req, res) => {
             } else {
                 const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
                     headers: { Authorization: `Bearer ${token}` }
-                }).catch(() => null);
-                if (!userRes) return res.status(401).json({ error: 'Unauthorized' });
-                user = userRes.data;
-                discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
+                }).catch((err) => ({ error: err }));
+
+                if (userRes && userRes.error) {
+                    const errResp = userRes.error.response;
+                    if (errResp && errResp.status === 401) {
+                        return res.status(401).json({ error: 'Unauthorized' });
+                    }
+                    if (cachedUser) {
+                        user = cachedUser.user;
+                    } else {
+                        return res.status(503).json({ error: 'Discord API temporarily unreachable. Retrying...' });
+                    }
+                } else {
+                    user = userRes.data;
+                    discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
+                }
             }
             
             // GeoIP lookup (skipped for local loopbacks)
@@ -3166,34 +3006,64 @@ app.use((req, res) => {
 });
 
 let cloudflareTunnelProcess = null;
+const TUNNEL_PID_FILE = path.join(__dirname, '../.nora_tunnel.pid');
 
 function startCloudflareTunnel() {
     try {
-        const { exec } = require('child_process');
+        const { spawn, execSync } = require('child_process');
+        
+        // Check if an existing managed tunnel connector process is already running
+        if (fs.existsSync(TUNNEL_PID_FILE)) {
+            const oldTunnelPidStr = fs.readFileSync(TUNNEL_PID_FILE, 'utf8').trim();
+            const oldTunnelPid = parseInt(oldTunnelPidStr, 10);
+            if (!isNaN(oldTunnelPid) && oldTunnelPid > 0) {
+                let isAlive = false;
+                try {
+                    process.kill(oldTunnelPid, 0);
+                    isAlive = true;
+                } catch (e) {}
+
+                if (isAlive) {
+                    console.log(`[Cloudflare Tunnel] Active managed tunnel connector process (PID ${oldTunnelPid}) is already running.`);
+                    return;
+                }
+            }
+        }
+
+        const configPath = 'C:\\ProgramData\\cloudflared\\config.yml';
         const token = "eyJhIjoiNTk0Nzk4OWE0OTlmODZjNDZhY2ZhNTRjMmRmODFkZjYiLCJ0IjoiNzIzMzI4NDgtYTg2OC00Y2ZjLTgzZjgtMmZkYTMzZDlmODY1IiwicyI6IjNZNzkrRnhMcU5GRmsrdUcvRVhiM1hWT1luUTBWR00zWm5FRldjK1dYcmc9In0=";
-        const cmd = `cloudflared tunnel run --token ${token}`;
-        console.log(`[Cloudflare Tunnel] Executing HA tunnel connector...`);
-        cloudflareTunnelProcess = exec(cmd);
+        
+        let args = ['tunnel', 'run', '--token', token];
+        if (fs.existsSync(configPath)) {
+            args = ['--config', configPath, 'tunnel', 'run'];
+        }
+        
+        console.log(`[Cloudflare Tunnel] Executing HA tunnel connector using ${fs.existsSync(configPath) ? 'local config.yml' : 'token'}...`);
+        cloudflareTunnelProcess = spawn('cloudflared', args, { windowsHide: true });
 
         if (cloudflareTunnelProcess.pid) {
             try {
-                fs.writeFileSync(path.join(__dirname, '../.nora_tunnel.pid'), String(cloudflareTunnelProcess.pid));
+                fs.writeFileSync(TUNNEL_PID_FILE, String(cloudflareTunnelProcess.pid));
             } catch (e) {}
         }
 
-        cloudflareTunnelProcess.stdout.on('data', (data) => {
-            const line = data.toString().trim();
-            if (line) console.log(`[Cloudflare Tunnel] ${line}`);
-        });
+        if (cloudflareTunnelProcess.stdout) {
+            cloudflareTunnelProcess.stdout.on('data', (data) => {
+                const line = data.toString().trim();
+                if (line) console.log(`[Cloudflare Tunnel] ${line}`);
+            });
+        }
 
-        cloudflareTunnelProcess.stderr.on('data', (data) => {
-            const line = data.toString().trim();
-            if (line && !line.includes('ERR')) {
-                console.log(`[Cloudflare Tunnel] ${line}`);
-            } else if (line) {
-                console.warn(`[Cloudflare Tunnel Info] ${line}`);
-            }
-        });
+        if (cloudflareTunnelProcess.stderr) {
+            cloudflareTunnelProcess.stderr.on('data', (data) => {
+                const line = data.toString().trim();
+                if (line && !line.includes('ERR')) {
+                    console.log(`[Cloudflare Tunnel] ${line}`);
+                } else if (line) {
+                    console.warn(`[Cloudflare Tunnel Info] ${line}`);
+                }
+            });
+        }
 
         cloudflareTunnelProcess.on('error', (err) => {
             console.error('[Cloudflare Tunnel Error] Failed to launch cloudflared:', err.message);
@@ -3210,35 +3080,44 @@ function startCloudflareTunnel() {
     }
 }
 
-// Bind HTTP Server to both IPv4 (0.0.0.0) and IPv6 (::) for 100% Cloudflare Tunnel compatibility
+// Bind HTTP Server to both IPv4 (0.0.0.0) AND IPv6 (::1) explicitly for 100% Cloudflare Tunnel compatibility
 const http = require('http');
 
-const primaryServer = http.createServer(app);
-primaryServer.listen(PORT, '::', () => {
-    console.log(`[System] Primary Web Dashboard listening on dual-stack IPv4/IPv6 port ${PORT}`);
+const mainServer = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[System] Primary Web Dashboard listening on IPv4 port ${PORT} (0.0.0.0)`);
     startCloudflareTunnel();
 });
-primaryServer.on('error', (err) => {
-    if (err.code === 'EADDRINUSE' || err.code === 'EAFNOSUPPORT') {
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`[System] Primary Web Dashboard listening on IPv4 port ${PORT} (0.0.0.0)`);
-            startCloudflareTunnel();
-        });
+mainServer.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`[System Error] Port ${PORT} is already in use by another process!`);
+    } else {
+        console.error('[System Error] Primary Web Dashboard server error:', err.message);
     }
 });
 
-// Secondary port listeners bound to dual-stack IPv6 (::) & IPv4 (0.0.0.0)
+try {
+    const v6Server = http.createServer(app);
+    v6Server.listen(PORT, '::1', () => {
+        console.log(`[System] Primary Web Dashboard listening on IPv6 loopback port ${PORT} (::1)`);
+    });
+    v6Server.on('error', () => {});
+} catch (e) {}
+
+// Secondary port listeners bound to IPv4 (0.0.0.0) & IPv6 (::1)
 const ALT_PORTS = [8080, 5000, 8000, 3001, 8081, 8001, 8888, 9000, 4000, 5001];
 ALT_PORTS.forEach(altPort => {
     if (altPort !== Number(PORT)) {
         try {
-            const altServer = http.createServer(app);
-            altServer.listen(altPort, '::', () => {
-                console.log(`[System] Secondary Tunnel dual-stack port listener online at port ${altPort}`);
+            const altV4 = app.listen(altPort, '0.0.0.0', () => {
+                console.log(`[System] Secondary Tunnel IPv4 listener online at port ${altPort}`);
             });
-            altServer.on('error', () => {
-                try { app.listen(altPort, '0.0.0.0'); } catch (e) {}
+            altV4.on('error', () => {});
+            
+            const altV6 = http.createServer(app);
+            altV6.listen(altPort, '::1', () => {
+                console.log(`[System] Secondary Tunnel IPv6 listener online at port ${altPort}`);
             });
+            altV6.on('error', () => {});
         } catch (e) {}
     }
 });

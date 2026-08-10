@@ -11,6 +11,7 @@ scratch/
 .nora_neural_weights/
 
 # Logs and backups
+*.pid
 *.log
 bot_log*.txt
 dev_chatlog_deleted.txt

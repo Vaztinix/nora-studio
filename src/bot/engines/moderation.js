@@ -35,11 +35,40 @@ const DIRECT_TARGETING_INDICATORS = [
 async function assessMessageThreatContext(guildConfig, messageInstance) {
     if (!guildConfig) return { actionRequired: false };
 
+    // 1. MASTER TOGGLE CHECK:
+    // If BOTH moderationEnabled AND autoModActive are disabled/false, do NOT moderate chat!
+    const isModerationEnabled = Boolean(guildConfig.moderationEnabled);
+    const isAutoModActive = Boolean(guildConfig.autoModActive);
+
+    if (!isModerationEnabled && !isAutoModActive) {
+        return { actionRequired: false };
+    }
+
+    // 2. FEATURE TOGGLE CHECKS:
+    const isProfanityActive = Boolean(guildConfig.automodProfanity || isAutoModActive);
+    const isSlursActive = Boolean(guildConfig.automodSlurs || isAutoModActive);
+    const isScamActive = Boolean(guildConfig.automodScam || guildConfig.automodHardcore || guildConfig.automodSpam || isAutoModActive);
+    const isMentionsActive = parseInt(guildConfig.automodMentions || 0, 10) > 0;
+    
+    let customWords = [];
+    try {
+        customWords = JSON.parse(guildConfig.customBlockedContexts || '[]');
+        if (!Array.isArray(customWords)) customWords = [];
+    } catch (e) {
+        customWords = [];
+    }
+    const hasCustomWords = customWords.length > 0;
+
+    // If NO sub-filters or custom words are active at all, skip moderation!
+    if (!isProfanityActive && !isSlursActive && !isScamActive && !isMentionsActive && !hasCustomWords) {
+        return { actionRequired: false };
+    }
+
     const rawText = messageInstance.content ? messageInstance.content.toLowerCase() : '';
 
     // 1. MENTION LIMITING CHECK
-    const mentionLimit = parseInt(guildConfig.automodMentions || 0, 10);
-    if (mentionLimit > 0) {
+    if (isMentionsActive) {
+        const mentionLimit = parseInt(guildConfig.automodMentions || 0, 10);
         const userMentions = messageInstance.mentions?.users?.size || 0;
         const roleMentions = messageInstance.mentions?.roles?.size || 0;
         const everyoneMention = messageInstance.mentions?.everyone ? 1 : 0;
@@ -56,7 +85,7 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
     }
 
     // 2. SCAM & PHISHING CHECK
-    if (guildConfig.automodScam || guildConfig.automodHardcore || guildConfig.automodSpam) {
+    if (isScamActive) {
         for (const pattern of SCAM_PHISHING_PATTERNS) {
             if (pattern.test(rawText)) {
                 return {
@@ -70,17 +99,10 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
     }
 
     // 3. CUSTOM BLOCKED CONTEXTS & WORDS
-    let customWords = [];
-    try {
-        customWords = JSON.parse(guildConfig.customBlockedContexts || '[]');
-    } catch (e) {
-        customWords = [];
-    }
-
     let customMatch = null;
-    if (Array.isArray(customWords)) {
+    if (hasCustomWords) {
         for (const word of customWords) {
-            if (word && rawText.includes(word.toLowerCase())) {
+            if (word && typeof word === 'string' && rawText.includes(word.toLowerCase())) {
                 customMatch = word;
                 break;
             }
@@ -89,7 +111,7 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
 
     // 4. PROFANITY & HATE SPEECH CHECK
     let matchedSlur = null;
-    if (guildConfig.automodSlurs || guildConfig.autoModActive) {
+    if (isSlursActive) {
         for (const pattern of SEVERE_SLUR_PATTERNS) {
             const match = rawText.match(pattern);
             if (match) {
@@ -100,16 +122,18 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
     }
 
     let matchedHarassment = null;
-    for (const pattern of TOXIC_HARASSMENT_PATTERNS) {
-        const match = rawText.match(pattern);
-        if (match) {
-            matchedHarassment = match[0];
-            break;
+    if (isSlursActive || isProfanityActive || isAutoModActive || guildConfig.automodHardcore) {
+        for (const pattern of TOXIC_HARASSMENT_PATTERNS) {
+            const match = rawText.match(pattern);
+            if (match) {
+                matchedHarassment = match[0];
+                break;
+            }
         }
     }
 
     let matchedProfanity = null;
-    if (guildConfig.automodProfanity || guildConfig.autoModActive) {
+    if (isProfanityActive) {
         for (const pattern of GENERAL_PROFANITY_PATTERNS) {
             const match = rawText.match(pattern);
             if (match) {
@@ -128,7 +152,7 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
     const hasMentions = (messageInstance.mentions?.users?.size || 0) > 0 || (messageInstance.mentions?.roles?.size || 0) > 0;
     const isDirectlyTargeted = DIRECT_TARGETING_INDICATORS.some(pat => pat.test(rawText));
     const characterSpamDetected = /(.)\1{5,}/.test(rawText);
-    const isSevereViolation = Boolean(matchedSlur || matchedHarassment);
+    const isSevereViolation = Boolean(matchedSlur || matchedHarassment || customMatch);
 
     if (hasMentions || isDirectlyTargeted || characterSpamDetected || isSevereViolation) {
         return {
@@ -141,7 +165,7 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
 
     // Casual expression (e.g. swearing in conversation without targeting someone)
     return {
-        actionRequired: guildConfig.automodProfanity || !guildConfig.useDefaultSafetyRules,
+        actionRequired: isProfanityActive,
         contextClassification: "CASUAL_EXPRESSION",
         recommendedAction: "DISPATCH_EPHEMERAL_NOTICE",
         reason: `Conversational use of flagged word [${violationTerm}].`
