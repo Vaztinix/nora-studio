@@ -503,11 +503,22 @@ process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
 
 // Global Error Handling to prevent the bot from going offline on minor errors
+const logger = require('./utils/logger');
+
+client.once('ready', () => {
+    logger.setClient(client);
+});
+
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    const err = reason instanceof Error ? reason : new Error(String(reason || 'Unhandled Rejection'));
+    logger.error('Unhandled Rejection', err);
 });
+
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
+    const err = error instanceof Error ? error : new Error(String(error || 'Uncaught Exception'));
+    logger.error('Uncaught Exception', err);
 });
 
 const express = require('express');
