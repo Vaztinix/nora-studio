@@ -9410,14 +9410,79 @@
                 }
 
             } catch (e) {
-                console.error(e);
-                showToast(`Failed to load servers: ${e.message || 'Unknown error'}`, 'error');
+                console.error('[Guild Sync Error]', e);
                 const container = document.getElementById('guilds-container');
-                if (container) container.innerHTML = `<p style="color: #ff5555; font-weight: 600;">Failed to load servers: ${e.message || 'Unknown error'}. Please try refreshing or logging in again.</p>`;
+                renderGuildsErrorState(container, e.message || 'Unknown network error');
             } finally {
                 toggleLoading(false);
             }
         }
+
+        let autoRetryTimer = null;
+        let retryCountdownSec = 5;
+
+        function renderGuildsErrorState(container, errMessage) {
+            if (!container) return;
+            if (autoRetryTimer) clearInterval(autoRetryTimer);
+            retryCountdownSec = 5;
+
+            const isSocketHiccup = errMessage && (
+                errMessage.includes('socket hang up') ||
+                errMessage.includes('ECONNRESET') ||
+                errMessage.includes('fetch failed') ||
+                errMessage.includes('502') || errMessage.includes('504')
+            );
+
+            const displayNotice = isSocketHiccup
+                ? 'Discord API experienced a temporary connection hiccup (socket hang up). Nora is auto-retrying in the background.'
+                : escapeHtml(errMessage || 'Unable to sync servers from Discord.');
+
+            container.innerHTML = `
+                <div style="grid-column: 1/-1; margin: 30px auto; max-width: 680px; width: 100%; background: rgba(20, 15, 28, 0.7); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 16px; backdrop-filter: blur(16px); padding: 32px 28px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.4); transition: all 0.3s ease;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                        <i class="fas fa-plug" style="color: #ff4757; font-size: 1.5rem;"></i>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; color: #ffffff; font-size: 1.25rem; font-weight: 700;">Server Sync Disrupted</h3>
+                    <p style="margin: 0 0 20px 0; color: var(--muted); font-size: 0.88rem; line-height: 1.5;">
+                        ${displayNotice}
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                        <button onclick="retryGuildsSync(this)" style="background: linear-gradient(135deg, #7C3AED, #6D28D9); color: #fff; border: none; padding: 10px 22px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); transition: all 0.2s;">
+                            <i class="fas fa-sync-alt" id="retry-sync-spinner"></i> Retry Sync Now
+                        </button>
+                        <span id="auto-retry-badge" style="font-size: 0.78rem; color: var(--muted); background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border);">
+                            <i class="fas fa-clock" style="color: #7C3AED;"></i> Auto-retrying in <strong id="retry-sec-counter" style="color: #fff;">5</strong>s
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            autoRetryTimer = setInterval(() => {
+                retryCountdownSec--;
+                const secEl = document.getElementById('retry-sec-counter');
+                if (secEl) secEl.textContent = retryCountdownSec;
+                if (retryCountdownSec <= 0) {
+                    clearInterval(autoRetryTimer);
+                    autoRetryTimer = null;
+                    if (typeof fetchUserGuilds === 'function') {
+                        fetchUserGuilds();
+                    }
+                }
+            }, 1000);
+        }
+
+        window.retryGuildsSync = function(btn) {
+            if (autoRetryTimer) {
+                clearInterval(autoRetryTimer);
+                autoRetryTimer = null;
+            }
+            const spinner = document.getElementById('retry-sync-spinner');
+            if (spinner) spinner.classList.add('fa-spin');
+            if (btn) btn.style.opacity = '0.7';
+            if (typeof fetchUserGuilds === 'function') {
+                fetchUserGuilds();
+            }
+        };
 
         window.unlinkBot = async function(botId) {
             if (!confirm('Are you sure you want to unlink this bot? This will delete all webhook tracking connections.')) return;

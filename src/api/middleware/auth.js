@@ -65,30 +65,64 @@ const getCachedUserGuilds = async (token) => {
     }
 
     const fetchPromise = (async () => {
-        try {
-            const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-                headers: { Authorization: `Bearer ${resolvedToken}` }
-            });
+        let lastError;
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+                    headers: { Authorization: `Bearer ${resolvedToken}` },
+                    timeout: 6000
+                });
 
-            if (!response.ok) {
-                if (response.status === 429 && cached) {
-                    console.warn('[Auth Middleware] Discord Rate Limit hit (429). Reusing expired cache.');
-                    return cached.guilds;
+                if (!response.ok) {
+                    if (response.status === 429 && cached) {
+                        console.warn('[Auth Middleware] Discord Rate Limit hit (429). Reusing expired cache.');
+                        return cached.guilds;
+                    }
+                    if ([502, 503, 504].includes(response.status) && attempt < maxRetries) {
+                        console.warn(`[Auth Middleware] Discord API 5xx (${response.status}) on attempt ${attempt}/${maxRetries}. Retrying...`);
+                        await new Promise(r => setTimeout(r, attempt * 300));
+                        continue;
+                    }
+                    const err = new Error(`Discord API returned ${response.status}`);
+                    err.status = response.status;
+                    throw err;
                 }
-                const err = new Error(`Discord API returned ${response.status}`);
-                err.status = response.status;
-                throw err;
-            }
 
-            const guilds = await response.json();
-            guildsCache.set(resolvedToken, {
-                guilds,
-                expires: Date.now() + CACHE_TTL
-            });
-            return guilds;
-        } finally {
-            activeRequests.delete(resolvedToken);
+                const guilds = await response.json();
+                guildsCache.set(resolvedToken, {
+                    guilds,
+                    expires: Date.now() + CACHE_TTL
+                });
+                return guilds;
+            } catch (err) {
+                lastError = err;
+                const isSocketOrNetError = err.message && (
+                    err.message.includes('socket hang up') ||
+                    err.message.includes('ECONNRESET') ||
+                    err.message.includes('ETIMEDOUT') ||
+                    err.message.includes('fetch failed')
+                );
+                if (isSocketOrNetError && attempt < maxRetries) {
+                    console.warn(`[Auth Middleware] Discord socket/network hiccup (${err.message}) on attempt ${attempt}/${maxRetries}. Retrying...`);
+                    await new Promise(r => setTimeout(r, attempt * 300));
+                    continue;
+                }
+                break;
+            } finally {
+                if (attempt === maxRetries || !lastError) {
+                    activeRequests.delete(resolvedToken);
+                }
+            }
         }
+
+        // If all retries failed but we have a cached guild list, return it gracefully
+        if (cached && cached.guilds) {
+            console.warn('[Auth Middleware] Retries exhausted due to network hiccup. Gracefully serving cached guilds.');
+            return cached.guilds;
+        }
+
+        throw lastError || new Error('Failed to fetch Discord guilds');
     })();
 
     activeRequests.set(resolvedToken, fetchPromise);
