@@ -1,5 +1,6 @@
 require('dotenv').config();
 const crypto = require('crypto');
+const logger = require('./utils/logger');
 
 // Automatic Time-Offset Compensator: Keeps Nora synchronized with Discord API servers
 global.timeOffsetMs = 0;
@@ -504,7 +505,6 @@ process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
 
 // Global Error Handling to prevent the bot from going offline on minor errors
-const logger = require('./utils/logger');
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
