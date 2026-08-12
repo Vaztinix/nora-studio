@@ -242,6 +242,11 @@ async function buildMyCardPayload({ interaction, targetUser }) {
         console.error('[ID Card Image Gen Error]:', e);
     }
 
+    let color = 0x06B6D4; // Standard Cyan
+    if (isOwner || isPremium) color = 0xFFD700; // Gold
+    else if (isPromoter) color = 0xFF007A; // Pink
+    else if (member && member.permissions && member.permissions.has(PermissionFlagsBits.ManageGuild)) color = 0x3B82F6; // Blue
+
     const embed = new EmbedBuilder()
         .setAuthor({ 
             name: `${targetUser.username}'s Personal Digital ID Card ${isPremium ? '⭐' : ''}`, 
