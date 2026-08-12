@@ -226,7 +226,7 @@ async function buildMyCardPayload({ interaction, targetUser }) {
             rank: isDM ? 'N/A' : serverRank,
             isPremium,
             isOwner,
-            isPromoter,
+            isPromoter: isPromoting,
             clearance: permissionText,
             joinedAt: rawJoined,
             createdAt: rawCreated,
@@ -244,7 +244,7 @@ async function buildMyCardPayload({ interaction, targetUser }) {
 
     let color = 0x06B6D4; // Standard Cyan
     if (isOwner || isPremium) color = 0xFFD700; // Gold
-    else if (isPromoter) color = 0xFF007A; // Pink
+    else if (isPromoting) color = 0xFF007A; // Pink
     else if (member && member.permissions && member.permissions.has(PermissionFlagsBits.ManageGuild)) color = 0x3B82F6; // Blue
 
     const embed = new EmbedBuilder()
