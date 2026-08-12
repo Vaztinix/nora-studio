@@ -81,7 +81,8 @@ function sendCountingHelpEmbed(message, guildData) {
             `• **You cannot count twice in a row!** Another member must count next.\n` +
             `• Mathematical expressions are supported (e.g., \`1+1\`, \`5*2\`, \`10-3\`).\n` +
             `• Making a mistake or double-counting resets the count to **0**, but preserves your server's high score best!\n\n` +
-            `**⭐ Checkmark Reactions:**\n` +
+            `**⭐ Checkmark & Milestone Reactions:**\n` +
+            `• 💯 **100 Milestone**: Special reaction when hitting **100**!\n` +
             `• ✅ **Green Checkmark**: Valid count (working towards server record).\n` +
             `• ☑️ **Blue Checkmark**: **NEW SERVER RECORD / BEST SCORE!** (Exceeds server high score!)\n\n` +
             `**📊 Server Counting Stats:**\n` +
@@ -190,9 +191,12 @@ module.exports = {
         queueSave();
 
         // Reactions:
+        // 💯 Emoji for count hitting 100 (or 100 milestones!)
         // Blue Checkmark (☑️) for NEW BEST per server!
         // Green Checkmark (✅) for normal correct count (working towards record)
-        if (isNewBest) {
+        if (expectedNext === 100 || (expectedNext > 0 && expectedNext % 100 === 0)) {
+            await message.react('💯').catch(() => { });
+        } else if (isNewBest) {
             await message.react('☑️').catch(() => { });
         } else {
             await message.react('✅').catch(() => { });
