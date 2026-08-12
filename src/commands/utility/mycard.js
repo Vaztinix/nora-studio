@@ -206,18 +206,48 @@ async function buildMyCardPayload({ interaction, targetUser }) {
         targetPrefs.rankCardThemeMode === 'image' ? 'Custom Canvas' : 'Server Preset'
     ) : 'Default Dark Theme';
 
-    let color = 0x06B6D4; // Standard Cyan
-    if (isOwner || isPremium) color = 0xFFD700; // Gold
-    else if (isPromoting) color = 0xFF007A; // Pink
-    else if (member && member.permissions.has(PermissionFlagsBits.ManageGuild)) color = 0x3B82F6; // Blue
+    // Generate Custom Digital ID Card Image Pass
+    const { generateUserIdCard } = require('../../utils/rankCardGenerator');
+    let cardAttachment = null;
+    try {
+        const robloxText = robloxRecord ? `@${robloxRecord.robloxId}` : 'Not Verified';
+        const rawJoined = member && member.joinedAt ? member.joinedAt.toLocaleDateString() : 'N/A';
+        const rawCreated = targetUser.createdAt.toLocaleDateString();
+
+        const cardBuffer = await generateUserIdCard({
+            username: targetUser.username,
+            userId: targetUser.id,
+            guildName: isDM ? 'Direct Messages' : interaction.guild.name,
+            avatarUrl: targetUser.displayAvatarURL({ extension: 'png', size: 512 }),
+            level: isDM ? 0 : level,
+            currentXp: xp,
+            nextLevelXp,
+            totalXp: totalXpRaw,
+            rank: isDM ? 'N/A' : serverRank,
+            isPremium,
+            isOwner,
+            isPromoter,
+            clearance: permissionText,
+            joinedAt: rawJoined,
+            createdAt: rawCreated,
+            bio: targetPrefs?.bio || '',
+            robloxText,
+            badges: badgesList,
+            accentColor: targetPrefs?.rankCardCustomColor || '#7c3aed'
+        });
+
+        const { AttachmentBuilder } = require('discord.js');
+        cardAttachment = new AttachmentBuilder(cardBuffer, { name: 'nora-id-card.png' });
+    } catch (e) {
+        console.error('[ID Card Image Gen Error]:', e);
+    }
 
     const embed = new EmbedBuilder()
         .setAuthor({ 
-            name: `${targetUser.username}'s Member Card ${isPremium ? '⭐' : ''}`, 
+            name: `${targetUser.username}'s Personal Digital ID Card ${isPremium ? '⭐' : ''}`, 
             iconURL: targetUser.displayAvatarURL({ dynamic: true }) 
         })
         .setColor(color)
-        .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 1024 }))
         .setDescription(`>>> ${bioDisplay}`)
         .addFields(
             {
@@ -252,6 +282,10 @@ async function buildMyCardPayload({ interaction, targetUser }) {
         })
         .setTimestamp();
 
+    if (cardAttachment) {
+        embed.setImage('attachment://nora-id-card.png');
+    }
+
     // Action Row Buttons
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -277,7 +311,7 @@ async function buildMyCardPayload({ interaction, targetUser }) {
         );
     }
 
-    return { embeds: [embed], components: [row] };
+    return { embeds: [embed], files: cardAttachment ? [cardAttachment] : [], components: [row] };
 }
 
 module.exports = {
