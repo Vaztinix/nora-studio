@@ -156,8 +156,8 @@ module.exports = {
             return { success: false, reason: 'empty' };
         }
 
-        // 1. Prevent commands
-        if (/^[/!?.#$&-]/.test(content)) {
+        // 1. Prevent commands (excluding punctuation like . or ?)
+        if (/^[/!#$&-]/.test(content)) {
             return { success: false, reason: 'command' };
         }
 
@@ -184,6 +184,9 @@ module.exports = {
             return { success: false, reason: 'consecutive', message: 'You cannot submit two words in a row! Wait for someone else.' };
         }
 
+        // Detect if word ends with period or is a single period "."
+        const isStoryEnd = word === '.' || word.endsWith('.');
+
         // Add valid word entry
         const entry = {
             word,
@@ -202,6 +205,7 @@ module.exports = {
             word,
             wordCount: session.words.length,
             lastUserId: user.id,
+            isStoryEnd,
             story: formatStory(session.words)
         };
     },

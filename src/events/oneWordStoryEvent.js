@@ -7,9 +7,9 @@ module.exports = {
     async execute(message, client) {
         if (!message.guild || !message.author || message.author.bot) return;
 
-        // Skip bot commands and command prefixes
+        // Skip bot commands and command prefixes (excluding punctuation like . or ?)
         const content = message.content.trim();
-        if (!content || /^[!/?.#$&-]/.test(content)) return;
+        if (!content || /^[/!#$&-]/.test(content)) return;
 
         const settings = await settingsCache.get(message.guild.id);
         if (!settings || settings.oneWordStoryEnabled === false) return;
@@ -26,20 +26,24 @@ module.exports = {
                 await message.react('✅');
             } catch (e) {}
 
-            // Auto-finish if max words limit is reached
-            if (settings.oneWordStoryMaxWords > 0 && result.wordCount >= settings.oneWordStoryMaxWords) {
+            // Auto-finish if story end period (.) is submitted or max words limit is reached
+            const isWordLimitReached = settings.oneWordStoryMaxWords > 0 && result.wordCount >= settings.oneWordStoryMaxWords;
+            if (result.isStoryEnd || isWordLimitReached) {
                 const endResult = await oneWordStoryManager.endGame(message.guild.id, message.channel.id);
                 if (endResult.success) {
                     const { EmbedBuilder } = require('discord.js');
+                    const topList = endResult.topContributors.slice(0, 5).map((c, idx) => `${idx + 1}. **${c.username}**: ${c.count} words`).join('\n') || 'None';
+
                     const embed = new EmbedBuilder()
                         .setTitle('📖 One Word Story Completed!')
-                        .setDescription(`The story has reached its word limit of **${settings.oneWordStoryMaxWords} words**!\n\n**Full Story:**\n>>> ${endResult.story}`)
+                        .setDescription(`**Completed Story:**\n>>> ${endResult.story}`)
                         .setColor('#00b4d8')
                         .addFields(
                             { name: 'Total Words', value: `${endResult.wordCount}`, inline: true },
-                            { name: 'Contributors', value: `${endResult.contributorsCount}`, inline: true }
+                            { name: 'Contributors', value: `${endResult.contributorsCount}`, inline: true },
+                            { name: 'Top Authors', value: topList, inline: false }
                         )
-                        .setFooter({ text: 'Nora One Word Story Game' })
+                        .setFooter({ text: `Ended by ${message.author.username}` })
                         .setTimestamp();
 
                     await message.channel.send({ embeds: [embed] }).catch(() => {});
