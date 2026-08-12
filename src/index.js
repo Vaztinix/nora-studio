@@ -2992,6 +2992,46 @@ app.get('/legal', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('legal.html'));
 });
 
+// Robots.txt & Sitemap.xml for Google Search Engine Indexing
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send(`User-agent: *
+Allow: /
+Allow: /team
+Allow: /docs
+Allow: /legal
+Allow: /me
+Allow: /install
+Sitemap: https://vaztinix.dev/sitemap.xml`);
+});
+
+app.get('/sitemap.xml', (req, res) => {
+    res.type('application/xml');
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://vaztinix.dev/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://vaztinix.dev/team</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://vaztinix.dev/docs</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vaztinix.dev/legal</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>`);
+});
+
 // GET /api/logs returns the buffered console output (Owner Only)
 // Uses session lookup instead of a live Discord API call to avoid connection hangs on every terminal poll
 app.get('/api/logs', ipRateLimiter, async (req, res) => {
