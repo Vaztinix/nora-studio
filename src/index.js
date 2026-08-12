@@ -281,6 +281,7 @@ const client = new Client({
 });
 
 client.commands = new Collection();
+logger.setClient(client);
 
 // Execute handlers
 const commandHandler = require('./handlers/commandHandler');
@@ -504,10 +505,6 @@ process.on('SIGTERM', () => process.exit(0));
 
 // Global Error Handling to prevent the bot from going offline on minor errors
 const logger = require('./utils/logger');
-
-client.once('ready', () => {
-    logger.setClient(client);
-});
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
