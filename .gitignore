@@ -7,6 +7,7 @@ node_modules/
 *.sqlite.bak
 *.bak
 countingData.json
+oneWordStoryData.json
 scratch/
 .nora_neural_weights/
 

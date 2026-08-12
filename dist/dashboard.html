@@ -2887,7 +2887,24 @@
                 <button onclick="showTab('prefs')" class="global-nav-btn" data-tab="prefs"><i class="fas fa-cog"></i> Settings</button>
             </div>
         </div>
-        <div class="topbar-actions" style="display: flex; align-items: center; gap: 20px;">
+        <div class="topbar-actions" style="display: flex; align-items: center; gap: 15px;">
+            <!-- Auto-Refresh Control Manager Widget -->
+            <div id="auto-refresh-widget" style="display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 3px 10px; font-size: 0.78rem; color: #8b90a5;">
+                <button id="manual-refresh-btn" onclick="triggerManualRefresh()" style="background: none; border: none; color: #8b90a5; cursor: pointer; padding: 2px 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Refresh Page & API Data Now">
+                    <i id="refresh-icon" class="fas fa-sync-alt" style="font-size: 0.75rem;"></i>
+                </button>
+                <span id="refresh-countdown-text" style="font-size: 0.75rem; font-weight: 600; min-width: 42px; text-align: center; color: #8b90a5;">30s</span>
+                <select id="auto-refresh-select" onchange="handleAutoRefreshChange(this.value)" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: #fff; font-size: 0.75rem; padding: 2px 6px; cursor: pointer; outline: none;">
+                    <option value="0">Off (Manual)</option>
+                    <option value="5" id="opt-refresh-5">5s (Instant 👑)</option>
+                    <option value="10" id="opt-refresh-10">10s (👑)</option>
+                    <option value="15" id="opt-refresh-15">15s (👑)</option>
+                    <option value="30" selected>30s (Default)</option>
+                    <option value="60">1m</option>
+                    <option value="300">5m</option>
+                    <option value="600">10m</option>
+                </select>
+            </div>
             <!-- Systems Operational Status -->
             <div style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #8b90a5;">
                 <div style="width: 6px; height: 6px; background: #2ea043; border-radius: 50%;"></div>
@@ -3584,6 +3601,21 @@
                                 <span>Nora Standard Member</span>
                                 <i class="fab fa-discord" style="color: #fff;"></i>
                             </div>
+                        </div>
+
+                        <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Auto-Refresh & API Frequency</label>
+                            <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 10px;">Control how often page info and live API metrics update automatically.</p>
+                            <select id="setting-auto-refresh-pref" onchange="handleAutoRefreshChange(this.value)" style="width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.88rem; outline: none;">
+                                <option value="0">Off (Manual Refresh Only)</option>
+                                <option value="5" id="opt-pref-refresh-5">5 Seconds (Instant / Live 👑)</option>
+                                <option value="10" id="opt-pref-refresh-10">10 Seconds (👑 Premium)</option>
+                                <option value="15" id="opt-pref-refresh-15">15 Seconds (👑 Premium)</option>
+                                <option value="30" selected>30 Seconds (Standard / Default)</option>
+                                <option value="60">1 Minute</option>
+                                <option value="300">5 Minutes</option>
+                                <option value="600">10 Minutes</option>
+                            </select>
                         </div>
 
                         <div style="margin-bottom: 25px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
@@ -5212,6 +5244,35 @@
                         <div class="input-group" style="margin-top: 15px;">
                             <label>Counting Blacklisted Users (Comma-separated IDs)</label>
                             <input type="text" id="setting-countingBlacklistedUsers" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 25px 0;">
+
+                        <h4><i class="fas fa-book-open" style="color: var(--primary);"></i> One Word Story Game</h4>
+                        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px;">A collaborative game where server members build stories one word at a time.</p>
+
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Enable One Word Story Game</h4>
+                                <p>Allow members to play the story game in your server.</p>
+                            </div>
+                            <input type="checkbox" id="setting-oneWordStoryEnabled">
+                        </div>
+
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="row-info">
+                                <h4>Dedicated Story Channel</h4>
+                                <p>Optional: Assign a specific channel where messages are treated as story turns.</p>
+                            </div>
+                            <select id="setting-oneWordStoryChannelId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;"><option value="">Select channel (Optional)...</option></select>
+                        </div>
+
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="row-info">
+                                <h4>Allow Consecutive Turns</h4>
+                                <p>Allow the same user to submit multiple words in a row without waiting for others.</p>
+                            </div>
+                            <input type="checkbox" id="setting-oneWordStoryAllowConsecutive">
                         </div>
                     </div>
                 </div>
@@ -7331,7 +7392,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords'];
 
 
 
@@ -7657,29 +7718,171 @@
         }
 
 
-        let periodicRefreshInterval = null;
+        let refreshSecondsRemaining = 30;
+        let refreshCountdownTimer = null;
+        let currentAutoRefreshInterval = 30;
+
+        function isUserPremium() {
+            if (typeof currentServerIsPremium !== 'undefined' && currentServerIsPremium) return true;
+            if (typeof window.userIsPremium !== 'undefined' && window.userIsPremium) return true;
+            const userRole = sessionStorage.getItem('user_role');
+            if (userRole === 'owner' || userRole === 'premium') return true;
+            const storedPremium = localStorage.getItem('nora_user_is_premium');
+            return storedPremium === 'true';
+        }
+
+        function initAutoRefreshSystem() {
+            const saved = localStorage.getItem('nora_auto_refresh_interval');
+            let interval = saved !== null ? parseInt(saved, 10) : 30;
+            if (isNaN(interval) || interval < 0) interval = 30;
+
+            const isPrem = isUserPremium();
+            if (interval > 0 && interval < 30 && !isPrem) {
+                interval = 30;
+                localStorage.setItem('nora_auto_refresh_interval', '30');
+            }
+
+            currentAutoRefreshInterval = interval;
+
+            const topSel = document.getElementById('auto-refresh-select');
+            if (topSel) topSel.value = String(interval);
+            const prefSel = document.getElementById('setting-auto-refresh-pref');
+            if (prefSel) prefSel.value = String(interval);
+
+            resetRefreshTimer();
+        }
+
         function startPeriodicRefresh() {
-            if (periodicRefreshInterval) clearInterval(periodicRefreshInterval);
-            
-            periodicRefreshInterval = setInterval(async () => {
-                const t = sessionStorage.getItem('discord_token');
-                if (!t || !currentServerId) return;
-                
+            initAutoRefreshSystem();
+        }
+
+        function handleAutoRefreshChange(val) {
+            const intervalSec = parseInt(val, 10);
+            const isPrem = isUserPremium();
+
+            if (intervalSec > 0 && intervalSec < 30 && !isPrem) {
+                if (typeof showToast === 'function') {
+                    showToast('Premium Required', 'Auto-refresh intervals under 30s (5s, 10s, 15s) are exclusive to Nora Premium.', 'warning');
+                } else {
+                    alert('Auto-refresh intervals under 30s require Nora Premium.');
+                }
+
+                const topSel = document.getElementById('auto-refresh-select');
+                if (topSel) topSel.value = '30';
+                const prefSel = document.getElementById('setting-auto-refresh-pref');
+                if (prefSel) prefSel.value = '30';
+
+                currentAutoRefreshInterval = 30;
+                localStorage.setItem('nora_auto_refresh_interval', '30');
+                resetRefreshTimer();
+                return;
+            }
+
+            currentAutoRefreshInterval = intervalSec;
+            localStorage.setItem('nora_auto_refresh_interval', String(intervalSec));
+
+            const topSel = document.getElementById('auto-refresh-select');
+            if (topSel) topSel.value = String(intervalSec);
+            const prefSel = document.getElementById('setting-auto-refresh-pref');
+            if (prefSel) prefSel.value = String(intervalSec);
+
+            resetRefreshTimer();
+
+            if (typeof showToast === 'function') {
+                if (intervalSec === 0) {
+                    showToast('Auto-Refresh Disabled', 'Automatic background data updates are paused.', 'info');
+                } else {
+                    const label = intervalSec >= 60 ? `${Math.floor(intervalSec / 60)} min` : `${intervalSec} sec`;
+                    showToast('Interval Updated', `Dashboard info & API data will reload every ${label}.`, 'success');
+                }
+            }
+        }
+
+        function resetRefreshTimer() {
+            if (refreshCountdownTimer) clearInterval(refreshCountdownTimer);
+            refreshSecondsRemaining = currentAutoRefreshInterval;
+
+            updateRefreshCountdownUI();
+
+            if (currentAutoRefreshInterval <= 0) return;
+
+            refreshCountdownTimer = setInterval(async () => {
+                refreshSecondsRemaining--;
+
+                if (refreshSecondsRemaining <= 0) {
+                    refreshSecondsRemaining = currentAutoRefreshInterval;
+                    await executeAutoRefreshData();
+                }
+
+                updateRefreshCountdownUI();
+            }, 1000);
+        }
+
+        async function executeAutoRefreshData() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+
+            const refreshIcon = document.getElementById('refresh-icon');
+            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+            try {
                 const viewConfig = document.getElementById('view-config');
                 if (viewConfig && viewConfig.style.display === 'block') {
                     if (typeof isUserEditing === 'function' && isUserEditing()) {
-                        logToTerminal('Skipping background refresh: user is editing a field.', 'REFRESH_SKIP');
-                        return;
+                        logToTerminal('Skipping auto refresh: user is editing a field.', 'REFRESH_SKIP');
+                    } else if (currentServerId) {
+                        logToTerminal(`Executing auto-refresh (${currentAutoRefreshInterval}s interval) for server: ${currentServerId}`, 'REFRESH_START');
+                        if (typeof refreshAllDashboardData === 'function') await refreshAllDashboardData(true);
                     }
-                    logToTerminal(`Periodic background refresh for server: ${currentServerId}`, 'REFRESH_START');
-                    await refreshAllDashboardData(true);
                 }
-                
+
                 const viewPrefs = document.getElementById('view-prefs');
                 if (viewPrefs && viewPrefs.style.display === 'block') {
-                    await fetchSessions(true);
+                    if (typeof fetchSessions === 'function') await fetchSessions(true);
                 }
-            }, 30000);
+
+                const viewServers = document.getElementById('view-servers');
+                if (viewServers && viewServers.style.display === 'block') {
+                    if (typeof fetchGuilds === 'function') await fetchGuilds(token, true);
+                }
+            } catch (e) {
+                console.error('[Auto Refresh Exec Fault]:', e);
+            } finally {
+                setTimeout(() => {
+                    if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                }, 600);
+            }
+        }
+
+        async function triggerManualRefresh() {
+            const refreshIcon = document.getElementById('refresh-icon');
+            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+            if (typeof showToast === 'function') {
+                showToast('Refreshing Data...', 'Updating all page info and live API metrics.', 'info');
+            }
+
+            await executeAutoRefreshData();
+            resetRefreshTimer();
+        }
+
+        function updateRefreshCountdownUI() {
+            const textEl = document.getElementById('refresh-countdown-text');
+            if (!textEl) return;
+
+            if (currentAutoRefreshInterval <= 0) {
+                textEl.textContent = 'Off';
+                textEl.style.color = '#8b90a5';
+            } else {
+                if (currentAutoRefreshInterval >= 60 && refreshSecondsRemaining >= 60) {
+                    const mins = Math.floor(refreshSecondsRemaining / 60);
+                    const secs = refreshSecondsRemaining % 60;
+                    textEl.textContent = `${mins}m ${secs}s`;
+                } else {
+                    textEl.textContent = `${refreshSecondsRemaining}s`;
+                }
+                textEl.style.color = refreshSecondsRemaining <= 5 ? 'var(--primary)' : '#8b90a5';
+            }
         }
 
         // Setup Toast Container Click and Expand Logic
@@ -12316,6 +12519,7 @@
                     'setting-ticketChannelId',
                     'setting-robloxVerifyChannelId',
                     'setting-inviteTrackerChannelId',
+                    'setting-oneWordStoryChannelId',
                     'rr-channelId',
                     'new-feed-channel',
                     'send-app-channel-select'

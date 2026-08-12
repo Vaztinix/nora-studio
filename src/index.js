@@ -376,6 +376,18 @@ runPreSyncMigrations().then(() => {
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardIgnoredChannels` TEXT DEFAULT '[]';");
     } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryEnabled` TINYINT(1) DEFAULT 1;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryChannelId` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAllowConsecutive` TINYINT(1) DEFAULT 0;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryMaxWords` INTEGER DEFAULT 0;");
+    } catch (e) {}
 
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");

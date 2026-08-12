@@ -27,7 +27,47 @@ module.exports = {
                 .addRoleOption(option =>
                     option.setName('role')
                         .setDescription('The role to grant verified members')
-                        .setRequired(true))),
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('starboard')
+                .setDescription('Configure Starboard settings for this server.')
+                .addBooleanOption(option =>
+                    option.setName('enabled')
+                        .setDescription('Enable or disable the Starboard system')
+                        .setRequired(false))
+                .addChannelOption(option =>
+                    option.setName('channel')
+                        .setDescription('The channel where starred messages will be posted')
+                        .addChannelTypes(ChannelType.GuildText)
+                        .setRequired(false))
+                .addIntegerOption(option =>
+                    option.setName('threshold')
+                        .setDescription('Number of reactions required to feature a message (default: 3)')
+                        .setMinValue(1)
+                        .setMaxValue(100)
+                        .setRequired(false))
+                .addStringOption(option =>
+                    option.setName('emoji')
+                        .setDescription('Reaction emoji to trigger starboard (default: ⭐)')
+                        .setRequired(false)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('onewordstory')
+                .setDescription('Configure One Word Story game settings for this server.')
+                .addBooleanOption(option =>
+                    option.setName('enabled')
+                        .setDescription('Enable or disable the One Word Story game')
+                        .setRequired(false))
+                .addChannelOption(option =>
+                    option.setName('channel')
+                        .setDescription('Dedicated channel for the game')
+                        .addChannelTypes(ChannelType.GuildText)
+                        .setRequired(false))
+                .addBooleanOption(option =>
+                    option.setName('consecutive')
+                        .setDescription('Allow the same user to post multiple words in a row')
+                        .setRequired(false))),
 
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
@@ -38,6 +78,10 @@ module.exports = {
                 return await this.runDashboard(interaction, settings);
             } else if (subcommand === 'roblox') {
                 return await this.runRobloxSetup(interaction, settings);
+            } else if (subcommand === 'starboard') {
+                return await this.runStarboardSetup(interaction, settings);
+            } else if (subcommand === 'onewordstory') {
+                return await this.runOneWordStorySetup(interaction, settings);
             }
         } catch (err) {
             console.error(`Error executing /setup ${subcommand}:`, err);
@@ -61,7 +105,80 @@ module.exports = {
         );
     },
 
-    async runDashboard(interaction, settings) {
+    async runStarboardSetup(interaction, settings) {
+        const enabled = interaction.options.getBoolean('enabled');
+        const channel = interaction.options.getChannel('channel');
+        const threshold = interaction.options.getInteger('threshold');
+        const emoji = interaction.options.getString('emoji');
+
+        let updated = false;
+
+        if (enabled !== null) {
+            settings.starboardEnabled = enabled;
+            updated = true;
+        }
+        if (channel) {
+            settings.starboardChannelId = channel.id;
+            updated = true;
+        }
+        if (threshold !== null) {
+            settings.starboardThreshold = threshold;
+            updated = true;
+        }
+        if (emoji) {
+            settings.starboardEmoji = emoji.trim();
+            updated = true;
+        }
+
+        if (updated) {
+            await settings.save();
+            settingsCache.invalidate(interaction.guild.id);
+            return await handleSuccess(
+                interaction,
+                'Starboard Setup Updated',
+                `**Status:** ${settings.starboardEnabled ? 'ENABLED' : 'DISABLED'}\n**Channel:** ${settings.starboardChannelId ? `<#${settings.starboardChannelId}>` : 'Not set'}\n**Threshold:** ${settings.starboardThreshold} reactions\n**Emoji:** ${settings.starboardEmoji}`
+            );
+        }
+
+        return await this.runDashboard(interaction, settings, 'view_starboard');
+    },
+
+    async runOneWordStorySetup(interaction, settings) {
+        const enabled = interaction.options.getBoolean('enabled');
+        const channel = interaction.options.getChannel('channel');
+        const consecutive = interaction.options.getBoolean('consecutive');
+
+        let updated = false;
+
+        if (enabled !== null) {
+            settings.oneWordStoryEnabled = enabled;
+            updated = true;
+        }
+        if (channel) {
+            settings.oneWordStoryChannelId = channel.id;
+            updated = true;
+        }
+        if (consecutive !== null) {
+            settings.oneWordStoryAllowConsecutive = consecutive;
+            updated = true;
+        }
+
+        if (updated) {
+            await settings.save();
+            settingsCache.invalidate(interaction.guild.id);
+            return await handleSuccess(
+                interaction,
+                'One Word Story Setup Updated',
+                `**Status:** ${settings.oneWordStoryEnabled ? 'ENABLED' : 'DISABLED'}\n` +
+                `**Channel:** ${settings.oneWordStoryChannelId ? `<#${settings.oneWordStoryChannelId}>` : 'Any channel'}\n` +
+                `**Consecutive Turns:** ${settings.oneWordStoryAllowConsecutive ? 'Allowed' : 'Disabled (strictly enforced)'}`
+            );
+        }
+
+        return await this.runDashboard(interaction, settings, 'view_onewordstory');
+    },
+
+    async runDashboard(interaction, settings, initialViewName = 'main') {
         const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
 
         const Autoresponder = require('../../database/models/Autoresponder');
@@ -105,6 +222,8 @@ module.exports = {
                     { label: 'Spam Control', value: 'view_antispam', description: 'Prevent users from flooding chat.' },
                     { label: 'Member Logs', value: 'view_logging', description: 'Keep track of joins, leaves, and edits.' },
                     { label: 'Leveling & XP', value: 'view_levels', description: 'Reward active chatters with ranks.' },
+                    { label: 'Starboard System', value: 'view_starboard', description: 'Community star voting and post highlighting.' },
+                    { label: 'One Word Story Game', value: 'view_onewordstory', description: 'Collaborative word-by-word story game.' },
                     { label: 'Strikes & Bans', value: 'view_warnings', description: 'Manage how users are punished for bad behavior.' },
                     { label: 'Support Tickets', value: 'view_ticketing', description: 'Help members with a private ticket system.' },
                     { label: 'Join Verification', value: 'view_verify', description: 'Verify new members before they join.' },
@@ -353,6 +472,57 @@ module.exports = {
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
+            // --- STARBOARD ---
+            if (viewName === 'view_starboard') {
+                embed.setTitle('Starboard System')
+                     .setDescription('Community voting system. When members react to messages with the trigger emoji, Nora will automatically repost them to the designated starboard channel.')
+                     .addFields(
+                        { name: 'Status', value: settings.starboardEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Channel', value: settings.starboardChannelId ? `<#${settings.starboardChannelId}>` : 'None', inline: true },
+                        { name: 'Threshold', value: `${settings.starboardThreshold || 3} reactions`, inline: true },
+                        { name: 'Emoji', value: settings.starboardEmoji || '⭐', inline: true },
+                        { name: 'Webhook Mode', value: settings.starboardWebhookEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Embed Color', value: settings.starboardEmbedColor || '#ffac33', inline: true }
+                     );
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_starboard_webhook_toggle').setLabel('Toggle Webhook Mode').setStyle(settings.starboardWebhookEnabled ? ButtonStyle.Success : ButtonStyle.Secondary)
+                );
+                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_starboard_channel').setPlaceholder('Select Starboard Channel...').setChannelTypes(ChannelType.GuildText));
+                const rowC = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_starboard_threshold').setPlaceholder('Reaction Threshold...').addOptions([
+                    { label: '1 Reaction', value: '1', default: settings.starboardThreshold === 1 },
+                    { label: '2 Reactions', value: '2', default: settings.starboardThreshold === 2 },
+                    { label: '3 Reactions (Default)', value: '3', default: settings.starboardThreshold === 3 },
+                    { label: '5 Reactions', value: '5', default: settings.starboardThreshold === 5 },
+                    { label: '10 Reactions', value: '10', default: settings.starboardThreshold === 10 }
+                ]));
+                const rowD = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_starboard_emoji').setPlaceholder('Trigger Emoji...').addOptions([
+                    { label: '⭐ Star (Default)', value: '⭐', default: settings.starboardEmoji === '⭐' },
+                    { label: '🌟 Glowing Star', value: '🌟', default: settings.starboardEmoji === '🌟' },
+                    { label: '❤️ Heart', value: '❤️', default: settings.starboardEmoji === '❤️' },
+                    { label: '🔥 Fire', value: '🔥', default: settings.starboardEmoji === '🔥' },
+                    { label: '👍 Thumbs Up', value: '👍', default: settings.starboardEmoji === '👍' }
+                ]));
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
+            }
+
+            // --- ONE WORD STORY ---
+            if (viewName === 'view_onewordstory') {
+                embed.setTitle('One Word Story Game')
+                     .setDescription('Collaborative word-by-word story building game. Members take turns contributing single words to write a story together.')
+                     .addFields(
+                        { name: 'Status', value: settings.oneWordStoryEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Dedicated Channel', value: settings.oneWordStoryChannelId ? `<#${settings.oneWordStoryChannelId}>` : 'Any channel (via `/onewordstory`)', inline: true },
+                        { name: 'Consecutive Turns', value: settings.oneWordStoryAllowConsecutive ? '🟢 Allowed' : '🔴 Disabled (strictly enforced)', inline: true }
+                     );
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_onewordstory_toggle').setLabel(settings.oneWordStoryEnabled !== false ? 'Disable Game' : 'Enable Game').setStyle(settings.oneWordStoryEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_onewordstory_consecutive_toggle').setLabel(settings.oneWordStoryAllowConsecutive ? 'Disable Consecutive Turns' : 'Allow Consecutive Turns').setStyle(settings.oneWordStoryAllowConsecutive ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                );
+                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_onewordstory_channel').setPlaceholder('Select Dedicated Story Channel...').setChannelTypes(ChannelType.GuildText));
+                return { embeds: [embed], components: [rowA, rowB, backRow] };
+            }
+
             // --- SELF ROLES ---
             if (viewName === 'view_selfroles') {
                 embed.setTitle('Self Roles Panel Builder')
@@ -385,7 +555,7 @@ module.exports = {
             return { embeds: [embed], components: [backRow] };
         };
 
-        const initialView = buildDashboard('main');
+        const initialView = buildDashboard(initialViewName);
         let response;
         if (interaction.deferred || interaction.replied) {
             response = await interaction.editReply({ ...initialView, ephemeral: true });
@@ -416,6 +586,18 @@ module.exports = {
 
                 let update = false;
                 let sync = null;
+
+                // Starboard
+                if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }
+                if (i.customId === 'action_starboard_webhook_toggle') { settings.starboardWebhookEnabled = !settings.starboardWebhookEnabled; update = true; }
+                if (i.customId === 'action_starboard_channel') { settings.starboardChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_starboard_threshold') { settings.starboardThreshold = parseInt(i.values[0]); update = true; }
+                if (i.customId === 'action_starboard_emoji') { settings.starboardEmoji = i.values[0]; update = true; }
+
+                // One Word Story
+                if (i.customId === 'action_onewordstory_toggle') { settings.oneWordStoryEnabled = !settings.oneWordStoryEnabled; update = true; }
+                if (i.customId === 'action_onewordstory_consecutive_toggle') { settings.oneWordStoryAllowConsecutive = !settings.oneWordStoryAllowConsecutive; update = true; }
+                if (i.customId === 'action_onewordstory_channel') { settings.oneWordStoryChannelId = i.values[0]; update = true; }
 
                 // Anti-Raid
                 if (i.customId === 'action_antiraid_toggle') { settings.antiRaidEnabled = !settings.antiRaidEnabled; update = true; }

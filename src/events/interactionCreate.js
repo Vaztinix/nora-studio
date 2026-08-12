@@ -671,6 +671,76 @@ module.exports = {
             }
         }
 
+        // 📖 Handle One Word Story End Button
+        if (interaction.isButton() && interaction.customId.startsWith('onewordstory_end_btn_')) {
+            try {
+                const oneWordStoryManager = require('../utils/oneWordStoryManager');
+                const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
+                const targetChannelId = interaction.customId.replace('onewordstory_end_btn_', '');
+                const activeGame = await oneWordStoryManager.getActiveGame(targetChannelId);
+
+                if (!activeGame) {
+                    return await interaction.reply({
+                        content: '⚠️ There is no active One Word Story game running in this channel.',
+                        ephemeral: true
+                    });
+                }
+
+                const isStaff = interaction.member && interaction.member.permissions ? interaction.member.permissions.has(PermissionFlagsBits.ManageGuild) : false;
+                const isCreator = activeGame.startedBy === interaction.user.id;
+
+                if (!isStaff && !isCreator) {
+                    return await interaction.reply({
+                        content: '⚠️ Only server staff (Manage Server) or the user who started the game can end it.',
+                        ephemeral: true
+                    });
+                }
+
+                const result = await oneWordStoryManager.endGame(interaction.guild.id, targetChannelId);
+                if (!result.success) {
+                    return await interaction.reply({
+                        content: `⚠️ Error ending game: ${result.error}`,
+                        ephemeral: true
+                    });
+                }
+
+                const topList = result.topContributors.slice(0, 5).map((c, idx) => `${idx + 1}. **${c.username}**: ${c.count} words`).join('\n') || 'None';
+
+                const endEmbed = new EmbedBuilder()
+                    .setTitle('📖 One Word Story Completed!')
+                    .setDescription(`**Completed Story:**\n>>> ${result.story}`)
+                    .setColor('#00b4d8')
+                    .addFields(
+                        { name: 'Total Words', value: `${result.wordCount}`, inline: true },
+                        { name: 'Contributors', value: `${result.contributorsCount}`, inline: true },
+                        { name: 'Top Authors', value: topList, inline: false }
+                    )
+                    .setFooter({ text: `Ended by ${interaction.user.tag}` })
+                    .setTimestamp();
+
+                // Update original start button to disabled state
+                try {
+                    const disabledRow = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(interaction.customId)
+                            .setLabel('Story Completed')
+                            .setStyle(ButtonStyle.Secondary)
+                            .setDisabled(true)
+                    );
+                    await interaction.message.edit({ components: [disabledRow] }).catch(() => {});
+                } catch (e) {}
+
+                return await interaction.reply({ embeds: [endEmbed] });
+            } catch (err) {
+                console.error('[One Word Story Button Handler Error]:', err);
+                return await interaction.reply({
+                    content: '⚠️ An error occurred while ending the story game.',
+                    ephemeral: true
+                }).catch(() => {});
+            }
+        }
+
         // Handle standard Commands
         if (!interaction.isChatInputCommand()) return;
 

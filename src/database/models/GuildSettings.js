@@ -731,6 +731,25 @@ const GuildSettings = sequelize.define('GuildSettings', {
     serverCardShape: {
         type: DataTypes.STRING,
         defaultValue: 'rounded-rect' // 'rounded-rect', 'capsule', 'hexagon', 'diamond', 'classic'
+    },
+
+    // ---- One Word Story Game Settings ----
+    oneWordStoryEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    oneWordStoryChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    oneWordStoryAllowConsecutive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    oneWordStoryMaxWords: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 });
 

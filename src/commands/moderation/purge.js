@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, Collection } = require('discord.js');
 const { handleError, handleSuccess } = require('../../utils/embeds');
 
 module.exports = {
@@ -11,10 +11,15 @@ module.exports = {
         .setDMPermission(false)
         .addIntegerOption(opt => 
             opt.setName('amount')
-            .setDescription('Total messages to scan (Max 100)')
+            .setDescription('Total messages to scan (Max 250)')
             .setRequired(true)
             .setMinValue(1)
-            .setMaxValue(100)
+            .setMaxValue(250)
+        )
+        .addStringOption(opt => 
+            opt.setName('contains')
+            .setDescription('Only delete messages containing a specific word or phrase')
+            .setRequired(false)
         )
         .addStringOption(opt => 
             opt.setName('filter')
@@ -36,6 +41,7 @@ module.exports = {
 
     async execute(interaction) {
         const amount = interaction.options.getInteger('amount');
+        const contains = interaction.options.getString('contains');
         const filter = interaction.options.getString('filter') || 'all';
         const target = interaction.options.getUser('target');
 
@@ -43,16 +49,36 @@ module.exports = {
             return handleError(interaction, 'Bot Permission Error', 'I lack the **Manage Messages** physical permission. Please update my roles.');
         }
 
-        if (amount < 1 || amount > 100) {
-            return handleError(interaction, 'Input Error', 'The amount to scan must be strictly between 1 and 100.');
+        if (amount < 1 || amount > 250) {
+            return handleError(interaction, 'Input Error', 'The amount to scan must be strictly between 1 and 250.');
         }
 
         await interaction.deferReply({ ephemeral: true });
 
         try {
-            // Fetch the pool of messages
-            const messages = await interaction.channel.messages.fetch({ limit: amount });
-            
+            // Fetch the pool of messages in batches (Discord fetch limit is 100 per request)
+            let messages = new Collection();
+            let remaining = amount;
+            let lastId = null;
+
+            while (remaining > 0) {
+                const fetchLimit = Math.min(remaining, 100);
+                const options = { limit: fetchLimit };
+                if (lastId) options.before = lastId;
+
+                const batch = await interaction.channel.messages.fetch(options);
+                if (batch.size === 0) break;
+
+                for (const [id, msg] of batch) {
+                    messages.set(id, msg);
+                }
+
+                lastId = batch.lastKey();
+                remaining -= batch.size;
+
+                if (batch.size < fetchLimit) break;
+            }
+
             // Apply filtering logic
             let toDelete = messages;
 
@@ -65,6 +91,12 @@ module.exports = {
                 toDelete = messages.filter(m => !m.author.bot);
             }
 
+            // Word / Keyword filter
+            if (contains) {
+                const keyword = contains.toLowerCase();
+                toDelete = toDelete.filter(m => m.content && m.content.toLowerCase().includes(keyword));
+            }
+
             // Exclude messages older than 14 days (Discord bulk delete limit)
             const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
             toDelete = toDelete.filter(m => m.createdTimestamp > fourteenDaysAgo);
@@ -73,22 +105,29 @@ module.exports = {
                 return interaction.editReply({ content: 'I scanned the specified range but found zero messages that matched your filter.' });
             }
 
-            // Bulk Delete: Nora can only delete messages younger than 14 days
-            const deleted = await interaction.channel.bulkDelete(toDelete, true);
-            
-            const count = deleted.size;
+            // Bulk Delete in chunks of 100 (Discord limit per bulkDelete operation)
+            const toDeleteArray = Array.from(toDelete.values());
+            let totalDeleted = 0;
+
+            for (let i = 0; i < toDeleteArray.length; i += 100) {
+                const chunk = toDeleteArray.slice(i, i + 100);
+                const deletedBatch = await interaction.channel.bulkDelete(chunk, true);
+                totalDeleted += deletedBatch.size;
+            }
+
             const targetStr = target ? `<@${target.id}>` : (filter === 'all' ? 'everyone' : filter);
+            const wordFilterStr = contains ? ` containing **"${contains}"**` : '';
 
             const embed = new EmbedBuilder()
                 .setTitle('Purge Successful')
-                .setDescription(`Successfully cleared **${count}** messages from **${targetStr}** in the last **${amount}** messages scanned.`)
+                .setDescription(`Successfully cleared **${totalDeleted}** messages${wordFilterStr} from **${targetStr}** in the last **${messages.size}** messages scanned.`)
                 .setColor(0x57acf2)
                 .setTimestamp();
 
             await interaction.editReply({ embeds: [embed] });
 
             // Optional Logging: If server logging is enabled, we track this action
-            console.log(`[Moderation] ${interaction.user.tag} purged ${count} messages from ${targetStr} in #${interaction.channel.name}`);
+            console.log(`[Moderation] ${interaction.user.tag} purged ${totalDeleted} messages from ${targetStr} in #${interaction.channel.name}`);
 
         } catch (error) {
             console.error('[Purge Fault]:', error);
