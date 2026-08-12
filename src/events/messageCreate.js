@@ -24,7 +24,22 @@ module.exports = {
         }
         const guildChannels = client.channelActivity[message.guild.id] || {};
         guildChannels[message.channel.id] = (guildChannels[message.channel.id] || 0) + 1;
-        client.channelActivity[message.guild.id] = guildChannels;
+        // 🔢 Prefix Command Listener: n!help / c!help for Counting
+        const msgTrimmed = message.content.toLowerCase().trim();
+        if (['n!help', 'c!help', 'n!help counting', 'c!help counting', '!help counting', 'n!counting', 'c!counting'].includes(msgTrimmed)) {
+            const { sendCountingHelpEmbed } = require('./countingSystem');
+            const fs = require('fs').promises;
+            const path = require('path');
+            try {
+                const dataPath = path.join(__dirname, '..', '..', 'countingData.json');
+                const rawData = await fs.readFile(dataPath, 'utf8').catch(() => '{}');
+                const parsed = JSON.parse(rawData);
+                const guildData = parsed[message.guild.id] || { currentCount: 0, lastUserId: null, highScore: 0 };
+                return sendCountingHelpEmbed(message, guildData);
+            } catch (e) {
+                return sendCountingHelpEmbed(message, { currentCount: 0, lastUserId: null, highScore: 0 });
+            }
+        }
 
         // 🤖 Autoresponder Hook
         try {

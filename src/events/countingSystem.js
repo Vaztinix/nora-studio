@@ -66,8 +66,40 @@ function queueSave() {
     }, 1000); // 1-second debounce delay
 }
 
+function sendCountingHelpEmbed(message, guildData) {
+    const { EmbedBuilder } = require('discord.js');
+    const currentCount = guildData ? (guildData.currentCount || 0) : 0;
+    const highScore = guildData ? (guildData.highScore || 0) : 0;
+    const nextNumber = currentCount + 1;
+
+    const embed = new EmbedBuilder()
+        .setTitle('🔢 Nora Counting Game Guide')
+        .setDescription(
+            `Welcome to **Nora Counting**! Work together with your server members to count as high as possible.\n\n` +
+            `**📖 Rules:**\n` +
+            `• Count up sequentially starting from **1** (or current number **${nextNumber}**).\n` +
+            `• **You cannot count twice in a row!** Another member must count next.\n` +
+            `• Mathematical expressions are supported (e.g., \`1+1\`, \`5*2\`, \`10-3\`).\n` +
+            `• Making a mistake or double-counting resets the count to **0**, but preserves your server's high score best!\n\n` +
+            `**⭐ Checkmark Reactions:**\n` +
+            `• ✅ **Green Checkmark**: Valid count (working towards server record).\n` +
+            `• ☑️ **Blue Checkmark**: **NEW SERVER RECORD / BEST SCORE!** (Exceeds server high score!)\n\n` +
+            `**📊 Server Counting Stats:**\n` +
+            `• **Current Count:** \`${currentCount}\`\n` +
+            `• **Server High Score Best:** \`${highScore}\`\n` +
+            `• **Next Required Count:** \`${nextNumber}\`\n\n` +
+            `*Use \`n!help\` or \`c!help\` anytime for counting guidance.*`
+        )
+        .setColor(0x4F46E5)
+        .setFooter({ text: 'Nora Counting System' })
+        .setTimestamp();
+
+    return message.reply({ embeds: [embed] }).catch(() => {});
+}
+
 module.exports = {
     name: Events.MessageCreate,
+    sendCountingHelpEmbed,
     async execute(message, client) {
         if (!message.guild || !message.author || message.author.bot) return;
 
@@ -101,8 +133,17 @@ module.exports = {
         }
 
         const allData = await loadCountingData();
-        const guildData = allData[message.guild.id] || { currentCount: 0, lastUserId: null };
+        const guildData = allData[message.guild.id] || { currentCount: 0, lastUserId: null, highScore: 0 };
         const expectedNext = guildData.currentCount + 1;
+
+        // Check for help commands in counting channel (n!help, c!help, !help, n!counting, c!counting)
+        const contentLower = message.content.toLowerCase().trim();
+        if ([
+            'n!help', 'c!help', '!help', 'n!counting', 'c!counting', 
+            'n!help counting', 'c!help counting', '!help counting', '/help counting'
+        ].includes(contentLower)) {
+            return sendCountingHelpEmbed(message, guildData);
+        }
 
         // 3. Evaluate expression using evaluateCountingInput
         const { evaluateCountingInput } = require('../bot/engines/counter');
@@ -119,26 +160,43 @@ module.exports = {
                 return;
             }
 
-            await message.reply({ content: `You ruined it, <@${message.author.id}>! The next number was ${expectedNext}. The count is reset back to 0.` });
-            allData[message.guild.id] = { currentCount: 0, lastUserId: null };
+            const highScore = guildData.highScore || 0;
+            await message.reply({ content: `You ruined it, <@${message.author.id}>! The next number was **${expectedNext}**. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` or \`c!help\` for counting rules.*` });
+            allData[message.guild.id] = { currentCount: 0, lastUserId: null, highScore };
             queueSave();
             return;
         }
 
         // Rule: No double-counting in a row on this specific server
         if (guildData.lastUserId === message.author.id) {
-            await message.reply({ content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to 0.` });
-            allData[message.guild.id] = { currentCount: 0, lastUserId: null };
+            const highScore = guildData.highScore || 0;
+            await message.reply({ content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` or \`c!help\` for counting rules.*` });
+            allData[message.guild.id] = { currentCount: 0, lastUserId: null, highScore };
             queueSave();
             return;
         }
 
         // Success!
+        const currentHighScore = guildData.highScore || 0;
+        const isNewBest = expectedNext > currentHighScore;
+
+        if (isNewBest) {
+            guildData.highScore = expectedNext;
+        }
+
         guildData.currentCount = expectedNext;
         guildData.lastUserId = message.author.id;
         allData[message.guild.id] = guildData;
         queueSave();
-        await message.react('✅').catch(() => { });
+
+        // Reactions:
+        // Blue Checkmark (☑️) for NEW BEST per server!
+        // Green Checkmark (✅) for normal correct count (working towards record)
+        if (isNewBest) {
+            await message.react('☑️').catch(() => { });
+        } else {
+            await message.react('✅').catch(() => { });
+        }
 
         // Award XP for successful count
         try {
