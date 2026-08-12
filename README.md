@@ -68,6 +68,62 @@ flowchart TD
 
 ---
 
+## 🚀 Self-Hosting Guide
+
+For detailed documentation, see the full [SELF_HOSTING.md](SELF_HOSTING.md) guide.
+
+### 📋 Prerequisites
+- **Node.js** `v18.0.0` or higher ([Node.js Download](https://nodejs.org/))
+- **Git** installed on your system
+- **Discord Bot Token** from [Discord Developer Portal](https://discord.com/developers/applications)
+
+### 🛠️ Quick Start
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Vaztinix/nora-studio.git
+cd nora-studio
+
+# 2. Install dependencies
+npm install
+
+# 3. Create environment file
+cp .env.example .env
+```
+
+Open `.env` in a text editor and fill in your Bot Token:
+```env
+PORT=3000
+TOKEN=your_discord_bot_token_here
+API_BASE_URL=http://localhost:3000
+```
+
+#### 4. Privileged Gateway Intents
+In the [Discord Developer Portal](https://discord.com/developers/applications), select your bot, go to **Bot** -> **Privileged Gateway Intents**, and turn ON:
+- [x] **Server Members Intent** (`GUILD_MEMBERS`)
+- [x] **Presence Intent** (`GUILD_PRESENCES`)
+- [x] **Message Content Intent** (`MESSAGE_CONTENT`)
+
+#### 5. Build and Launch
+```bash
+# Build production web dashboard assets
+npm run build
+
+# Start Nora Bot & Dashboard
+npm start
+```
+Once initialized, access your local dashboard at `http://localhost:3000`.
+
+#### 6. 24/7 Production Hosting with PM2
+```bash
+npm install -g pm2
+pm2 start src/index.js --name "nora-studio"
+pm2 save
+pm2 startup
+```
+
+---
+
 ## Privacy-First Philosophy
 
 Nora is built around complete user sovereignty. Server administrators and individual members maintain total control over their data:
