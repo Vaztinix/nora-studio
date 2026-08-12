@@ -119,7 +119,7 @@ async function resolveChannelId(input) {
 
         return null;
     } catch (error) {
-        console.error(`[YouTube Resolver] Error resolving handle/URL ${input}:`, error.message);
+        console.error('[YouTube Resolver] Error resolving handle/URL:', String(input || '').slice(0, 100), error.message);
         return null;
     }
 }

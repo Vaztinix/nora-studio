@@ -185,10 +185,14 @@ async function fetchRoblox(url, options = {}) {
         throw new Error('Invalid or unsafe URL requested for Roblox API');
     }
     const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+        throw new Error('Invalid URL protocol requested for Roblox API');
+    }
     const host = parsedUrl.hostname.toLowerCase();
     if (!host.endsWith('.roblox.com') && host !== 'roblox.com') {
         throw new Error('Invalid host requested for Roblox API');
     }
+    const safeUrl = parsedUrl.href;
     let lastError = null;
     for (let i = 0; i < retries; i++) {
         try {
@@ -199,7 +203,7 @@ async function fetchRoblox(url, options = {}) {
             const fetchOptions = { ...options };
             delete fetchOptions.retries;
             delete fetchOptions.timeout;
-            const res = await fetch(url, { ...fetchOptions, signal: controller.signal });
+            const res = await fetch(safeUrl, { ...fetchOptions, signal: controller.signal });
             clearTimeout(timeoutId);
             // If Roblox returns 429, back off exponentially before retrying
             if (res.status === 429) {
@@ -523,14 +527,35 @@ app.set('trust proxy', true);
 // Conceal technology stack
 app.disable('x-powered-by');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 🌐 DYNAMIC CORS ORIGIN VALIDATOR
+// ─────────────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+    /^http:\/\/localhost(:\d+)?$/,
+    /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+    /^https:\/\/vaztinix\.github\.io$/,
+    /^https:\/\/vaztinix\.dev$/,
+    /^https:\/\/.*\.vaztinix\.dev$/,
+    /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
+    /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
+    /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
+    /^https?:\/\/.*\.local(:\d+)?$/
+];
+
+function isAllowedOrigin(origin) {
+    if (!origin || typeof origin !== 'string') return false;
+    return ALLOWED_ORIGINS.some(pattern => pattern.test(origin));
+}
+
 // Universal CORS Middleware — Must run FIRST before any route or security check
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin) {
+    if (origin && isAllowedOrigin(origin)) {
         res.header('Access-Control-Allow-Origin', origin);
         res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Vary', 'Origin');
     } else {
-        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Origin', 'https://vaztinix.dev');
     }
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma');
@@ -750,37 +775,6 @@ app.use((req, res, next) => {
             "frame-src 'none'; " +
             "object-src 'none';"
         );
-    }
-    next();
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 🌐 DYNAMIC CORS ORIGIN VALIDATOR
-// ─────────────────────────────────────────────────────────────────────────────
-const ALLOWED_ORIGINS = [
-    /^http:\/\/localhost(:\d+)?$/,
-    /^http:\/\/127\.0\.0\.1(:\d+)?$/,
-    /^https:\/\/vaztinix\.github\.io$/,
-    /^https:\/\/vaztinix\.dev$/,
-    /^https:\/\/.*\.vaztinix\.dev$/,
-    /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
-    /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
-    /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
-    /^https?:\/\/.*\.local(:\d+)?$/
-];
-
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin) {
-        res.header('Access-Control-Allow-Origin', origin);
-        res.header('Access-Control-Allow-Credentials', 'true');
-    } else {
-        res.header('Access-Control-Allow-Origin', '*');
-    }
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
     }
     next();
 });

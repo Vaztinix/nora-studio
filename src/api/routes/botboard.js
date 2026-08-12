@@ -7,16 +7,27 @@ const GuildSettings = require('../../database/models/GuildSettings');
 /**
  * Dispatch embed message to target Discord webhook or channel
  */
+/**
+ * Dispatch embed message to target Discord webhook or channel
+ */
 async function dispatchBotBoardEmbed(client, targetUrlOrChannel, embed) {
-    if (!targetUrlOrChannel) return false;
+    if (!targetUrlOrChannel || typeof targetUrlOrChannel !== 'string') return false;
     try {
         if (targetUrlOrChannel.startsWith('http://') || targetUrlOrChannel.startsWith('https://')) {
+            const parsed = new URL(targetUrlOrChannel);
+            const isDiscordWebhook = (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
+                ['discord.com', 'canary.discord.com', 'ptb.discord.com'].includes(parsed.hostname.toLowerCase()) &&
+                parsed.pathname.startsWith('/api/webhooks/');
+            if (!isDiscordWebhook) {
+                console.warn('[BotBoard Webhook Security] Blocked non-Discord webhook dispatch target:', parsed.hostname);
+                return false;
+            }
             // Direct Discord Webhook POST
-            await axios.post(targetUrlOrChannel, {
+            await axios.post(parsed.href, {
                 embeds: [embed.toJSON()]
-            });
+            }, { timeout: 5000 });
             return true;
-        } else if (client && client.channels) {
+        } else if (/^\d{17,20}$/.test(targetUrlOrChannel) && client && client.channels) {
             // Channel ID lookup
             const channel = await client.channels.fetch(targetUrlOrChannel).catch(() => null);
             if (channel && channel.send) {
@@ -42,8 +53,9 @@ function buildBotBoardEmbed(payload) {
     const embed = new EmbedBuilder().setTimestamp();
 
     if (event === 'new_review') {
-        const rating = review.rating || 5;
-        const stars = '⭐'.repeat(Math.min(5, Math.max(1, rating)));
+        const rawRating = Number(review.rating);
+        const rating = (!isNaN(rawRating) && isFinite(rawRating)) ? Math.min(5, Math.max(1, Math.floor(rawRating))) : 5;
+        const stars = '⭐'.repeat(rating);
         const reviewer = review.reviewer || 'Anonymous';
         const body = review.body || 'Great bot!';
         const url = review.url || 'https://botboard.gg';
@@ -93,7 +105,8 @@ module.exports = function(client) {
     router.post('/', async (req, res) => {
         try {
             const payload = req.body || {};
-            console.log(`[BotBoard Webhook Incoming] Event="${payload.event}" Data:`, JSON.stringify(payload.data || {}).slice(0, 150));
+            const safeEvent = String(payload.event || 'unknown').replace(/[^\w-]/g, '');
+            console.log('[BotBoard Webhook Incoming] Event:', safeEvent);
 
             // Respond quickly with 200 OK to BotBoard servers
             res.json({ status: 'success', message: 'Webhook event processed.' });

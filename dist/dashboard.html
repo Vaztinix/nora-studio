@@ -2575,6 +2575,15 @@
                 return s.length > 22 ? s.substring(0, 20) + '...' : s;
             }
 
+            function sanitizeUrl(url) {
+                if (!url) return '';
+                const u = String(url).trim();
+                if (/^(https?:\/\/|\/|data:image\/)/i.test(u)) {
+                    return u;
+                }
+                return '';
+            }
+
             function escapeHtml(str) {
                 if (!str) return '';
                 return String(str)
@@ -2582,7 +2591,8 @@
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
+                    .replace(/'/g, '&#039;')
+                    .replace(/`/g, '&#096;');
             }
 
             window.computeFormDiffs = function() {
@@ -6644,6 +6654,15 @@
 
 
     <script>
+        function sanitizeUrl(url) {
+            if (!url) return '';
+            const u = String(url).trim();
+            if (/^(https?:\/\/|\/|data:image\/)/i.test(u)) {
+                return u;
+            }
+            return '';
+        }
+
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -6651,7 +6670,8 @@
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
+                .replace(/'/g, '&#039;')
+                .replace(/`/g, '&#096;');
         }
         let notifications = [];
         let newNotifCount = 0;
@@ -12749,7 +12769,7 @@
             const embedFooter = document.getElementById('broadcast-embed-footer').value;
 
             document.getElementById('preview-name').textContent = name;
-            document.getElementById('preview-avatar').src = avatar;
+            document.getElementById('preview-avatar').src = sanitizeUrl(avatar) || 'nora.png';
             document.getElementById('preview-text').textContent = content;
             
             const embedEl = document.getElementById('preview-embed');
@@ -12770,14 +12790,14 @@
                 descEl.style.display = embedDesc ? 'block' : 'none';
                 
                 if (embedImage) {
-                    imgEl.src = embedImage;
+                    imgEl.src = sanitizeUrl(embedImage);
                     imgEl.style.display = 'block';
                 } else {
                     imgEl.style.display = 'none';
                 }
 
                 if (embedThumbnail) {
-                    thumbEl.src = embedThumbnail;
+                    thumbEl.src = sanitizeUrl(embedThumbnail);
                     thumbEl.style.display = 'block';
                 } else {
                     thumbEl.style.display = 'none';
@@ -12915,13 +12935,13 @@
                     .replace(/{count}/g, threshold)
                     .replace(/{channel}/g, `#${channelName}`);
 
-                if (countEl) countEl.innerHTML = templateText;
+                if (countEl) countEl.textContent = templateText;
 
                 // Webhook overrides
                 const isWebhook = webhookEnabled ? webhookEnabled.checked : false;
                 if (isWebhook) {
                     if (botnameEl) botnameEl.textContent = (webhookName && webhookName.value) ? webhookName.value : 'Nora Starboard';
-                    if (avatarEl) avatarEl.src = (webhookAvatar && webhookAvatar.value) ? webhookAvatar.value : 'nora.png';
+                    if (avatarEl) avatarEl.src = sanitizeUrl((webhookAvatar && webhookAvatar.value) ? webhookAvatar.value : 'nora.png') || 'nora.png';
                 } else {
                     if (botnameEl) botnameEl.textContent = 'Nora';
                     if (avatarEl) avatarEl.src = 'nora.png';
@@ -13320,7 +13340,7 @@
 
             const imgEl = document.getElementById('rr-preview-image');
             if (imgVal.trim()) {
-                imgEl.src = imgVal.trim();
+                imgEl.src = sanitizeUrl(imgVal.trim());
                 imgEl.style.display = 'block';
             } else {
                 imgEl.style.display = 'none';
@@ -13329,7 +13349,7 @@
             // Sync bot avatar
             const avatarEl = document.getElementById('rr-preview-bot-avatar');
             if (window.currentGuild && window.currentGuild.icon) {
-                avatarEl.src = window.currentGuild.icon;
+                avatarEl.src = sanitizeUrl(window.currentGuild.icon);
             } else {
                 avatarEl.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
             }
@@ -13344,12 +13364,12 @@
                 const eInput = row.querySelector('.rr-emoji-input') || row.querySelector('input[type="text"]');
                 if (rSelect && rSelect.value && eInput && eInput.value.trim()) {
                     const emoji = eInput.value.trim();
-                    let displayEmoji = emoji;
+                    let displayEmoji = escapeHtml(emoji);
                     const customMatch = emoji.match(/^<a?:([a-zA-Z0-9_]+):([0-9]+)>$/);
                     if (customMatch) {
                         const anim = emoji.startsWith('<a:');
                         const ext = anim ? 'gif' : 'png';
-                        displayEmoji = `<img src="https://cdn.discordapp.com/emojis/${customMatch[2]}.${ext}" style="width: 16px; height: 16px; vertical-align: middle; object-fit: contain;" alt="${customMatch[1]}">`;
+                        displayEmoji = `<img src="https://cdn.discordapp.com/emojis/${customMatch[2]}.${ext}" style="width: 16px; height: 16px; vertical-align: middle; object-fit: contain;" alt="${escapeHtml(customMatch[1])}">`;
                     }
                     const badge = document.createElement('div');
                     badge.style.display = 'flex';
@@ -14332,7 +14352,7 @@
             const el = document.getElementById('setting-topggWebhookAvatar');
             const val = el ? el.value : '';
             const preview = document.getElementById('topgg-avatar-preview');
-            if (preview) preview.src = val || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            if (preview) preview.src = sanitizeUrl(val) || 'https://cdn.discordapp.com/embed/avatars/0.png';
         }
 
         function _applyRoles(roles) {
@@ -16158,7 +16178,7 @@
             // Render Header Count
             const countEl = document.getElementById('starboard-preview-count');
             if (countEl) {
-                countEl.innerHTML = `${emoji} ${threshold} | #general`;
+                countEl.textContent = `${emoji} ${threshold} | #general`;
             }
 
             // Render Bot Name & Avatar
@@ -16166,7 +16186,7 @@
             const avatarEl = document.getElementById('starboard-preview-avatar');
             if (nameEl) nameEl.textContent = webhookEnabled && webhookName ? webhookName : 'Nora';
             if (avatarEl && webhookEnabled && webhookAvatar) {
-                avatarEl.src = webhookAvatar;
+                avatarEl.src = sanitizeUrl(webhookAvatar) || 'nora.png';
             } else if (avatarEl) {
                 avatarEl.src = 'nora.png';
             }
@@ -16223,18 +16243,19 @@
                         const label = rawLabel.substring(0, 45);
                         const type = card.querySelector('.q-type')?.value || 'paragraph';
                         const isRequired = card.querySelector('.q-required')?.checked !== false;
-                        const placeholder = card.querySelector('.q-placeholder')?.value || (type === 'paragraph' ? 'Enter detailed answer...' : 'Enter answer...');
-                        
+                        const rawPlaceholder = card.querySelector('.q-placeholder')?.value || (type === 'paragraph' ? 'Enter detailed answer...' : 'Enter answer...');
+                        const placeholder = rawPlaceholder.substring(0, 100);
+
                         const div = document.createElement('div');
                         div.style.cssText = 'display: flex; flex-direction: column; gap: 6px; text-align: left;';
                         div.innerHTML = `
                             <label style="font-size: 0.72rem; font-weight: 700; color: #b5bac1; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center;">
-                                <span>${label}</span>
+                                <span>${escapeHtml(label)}</span>
                                 ${isRequired ? '<span style="color: #fa5252; margin-left: 3px; font-weight: 800;">*</span>' : ''}
                             </label>
                             ${type === 'paragraph' 
-                                ? `<textarea placeholder="${placeholder}" style="background: #111214; border: 1px solid #1e1f22; color: #dbdee1; border-radius: 4px; padding: 10px 12px; font-size: 0.875rem; min-height: 70px; resize: none; outline: none; font-family: inherit; transition: border-color 0.2s;" onfocus="this.style.borderColor='#ffffff'" onblur="this.style.borderColor='#1e1f22'"></textarea>`
-                                : `<input type="text" placeholder="${placeholder}" style="background: #111214; border: 1px solid #1e1f22; color: #dbdee1; border-radius: 4px; padding: 10px 12px; font-size: 0.875rem; outline: none; font-family: inherit; transition: border-color 0.2s;" onfocus="this.style.borderColor='#ffffff'" onblur="this.style.borderColor='#1e1f22'">`
+                                ? `<textarea placeholder="${escapeHtml(placeholder)}" style="background: #111214; border: 1px solid #1e1f22; color: #dbdee1; border-radius: 4px; padding: 10px 12px; font-size: 0.875rem; min-height: 70px; resize: none; outline: none; font-family: inherit; transition: border-color 0.2s;" onfocus="this.style.borderColor='#ffffff'" onblur="this.style.borderColor='#1e1f22'"></textarea>`
+                                : `<input type="text" placeholder="${escapeHtml(placeholder)}" style="background: #111214; border: 1px solid #1e1f22; color: #dbdee1; border-radius: 4px; padding: 10px 12px; font-size: 0.875rem; outline: none; font-family: inherit; transition: border-color 0.2s;" onfocus="this.style.borderColor='#ffffff'" onblur="this.style.borderColor='#1e1f22'">`
                             }
                         `;
                         fieldsEl.appendChild(div);
