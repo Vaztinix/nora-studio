@@ -590,7 +590,19 @@ module.exports = {
                 settingsCache.invalidate(interaction.guildId);
                 return interaction.reply({ content: "Preference updated! I've switched to the **Privacy-First Local** engine for future messages in this guild. This is my most secure mode! You can always change this back in `/setup dashboard`.", ephemeral: true });
             }
-            return; // Exit safely
+        }
+
+        // 🔄 Handle /mycard Live Refresh Button
+        if (interaction.isButton() && interaction.customId.startsWith('mycard_refresh_')) {
+            const targetId = interaction.customId.replace('mycard_refresh_', '');
+            try {
+                const targetUser = await interaction.client.users.fetch(targetId).catch(() => interaction.user);
+                const { buildMyCardPayload } = require('../commands/utility/mycard');
+                const payload = await buildMyCardPayload({ interaction, targetUser });
+                return await interaction.update(payload);
+            } catch (e) {
+                return await interaction.reply({ content: '⚠️ Failed to refresh card stats. Please try running `/mycard` again.', ephemeral: true });
+            }
         }
 
         // 🗑️ Handle Self-Wipe Leveling Data Confirmation
