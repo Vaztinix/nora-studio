@@ -334,26 +334,31 @@ module.exports = {
     async execute(interaction) {
         const target = interaction.options.getUser('target') || interaction.user;
 
-        // Privacy Check: mycard is always private (Ephemeral)
-        await interaction.deferReply({ ephemeral: true });
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferReply({ ephemeral: true }).catch(() => {});
+        }
 
         // We only exclude Nora herself from the profile system.
         if (target.id === interaction.client.user.id) {
             return handleError(interaction, 'Action Denied', 'I do not have a profile card; I am your assistant!');
         }
 
-        // Fetch UserPrefs
-        const targetPrefs = await UserPrefs.findOne({ where: { userId: target.id } });
-        
-        // Hand complete privacy control back to the user regarding what info is hidden or shared
-        if (targetPrefs && !targetPrefs.profilePublic && target.id !== interaction.user.id) {
-            return interaction.editReply({
-                content: '🔒 **Private Profile:** This profile has been set to private by the user.',
-                ephemeral: true
-            });
-        }
+        try {
+            // Fetch UserPrefs
+            const targetPrefs = await UserPrefs.findOne({ where: { userId: target.id } });
+            
+            // Hand complete privacy control back to the user regarding what info is hidden or shared
+            if (targetPrefs && !targetPrefs.profilePublic && target.id !== interaction.user.id) {
+                return interaction.editReply({
+                    content: '🔒 **Private Profile:** This profile has been set to private by the user.'
+                });
+            }
 
-        const payload = await buildMyCardPayload({ interaction, targetUser: target });
-        await interaction.editReply(payload);
+            const payload = await buildMyCardPayload({ interaction, targetUser: target });
+            await interaction.editReply(payload);
+        } catch (err) {
+            console.error('[MyCard Command Error]', err);
+            await handleError(interaction, 'Profile Error', 'An error occurred while building your profile card. Please try again.');
+        }
     },
 };

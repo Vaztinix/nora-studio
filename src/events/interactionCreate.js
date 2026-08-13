@@ -596,12 +596,13 @@ module.exports = {
         if (interaction.isButton() && interaction.customId.startsWith('mycard_refresh_')) {
             const targetId = interaction.customId.replace('mycard_refresh_', '');
             try {
+                await interaction.deferUpdate().catch(() => {});
                 const targetUser = await interaction.client.users.fetch(targetId).catch(() => interaction.user);
                 const { buildMyCardPayload } = require('../commands/utility/mycard');
                 const payload = await buildMyCardPayload({ interaction, targetUser });
-                return await interaction.update(payload);
+                return await interaction.editReply(payload);
             } catch (e) {
-                return await interaction.reply({ content: '⚠️ Failed to refresh card stats. Please try running `/mycard` again.', ephemeral: true });
+                return await interaction.followUp({ content: '⚠️ Failed to refresh card stats. Please try running `/mycard` again.', ephemeral: true }).catch(() => {});
             }
         }
 

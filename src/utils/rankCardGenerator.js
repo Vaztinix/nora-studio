@@ -1,43 +1,58 @@
-const axios = require('axios');
 const sharp = require('sharp');
 
 /**
- * Generates a beautiful rank card image buffer using a custom premium layout.
- * @param {Object} options
- * @param {string} options.username
- * @param {number} options.level
- * @param {number} options.currentXp
- * @param {number} options.nextLevelXp
- * @param {number} options.rank
- * @param {string} options.avatarUrl
- * @param {boolean} [options.showPfp=true]
- * @returns {Promise<Buffer>} PNG Image buffer
-async function resolveDirectMediaUrl(url) {
+ * Fast, non-blocking image buffer fetcher using native fetch and AbortController timeout.
+ * Completely eliminates axios socket hanging/blocking on avatar or media fetches.
+ */
+async function fetchImageBuffer(url, timeoutMs = 1500) {
+    if (!url || typeof url !== 'string') return null;
+    if (url.startsWith('data:image')) {
+        try {
+            const base64Data = url.split(',')[1];
+            return Buffer.from(base64Data, 'base64');
+        } catch (e) {
+            return null;
+        }
+    }
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        const res = await fetch(url, {
+            signal: controller.signal,
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+        });
+        clearTimeout(timeoutId);
+        if (!res.ok) return null;
+        const arrayBuf = await res.arrayBuffer();
+        return Buffer.from(arrayBuf);
+    } catch (e) {
+        return null;
+    }
+}
+
+async function resolveDirectMediaUrl(url, timeoutMs = 1500) {
     if (!url || typeof url !== 'string') return url;
     if (url.startsWith('data:image')) return url;
 
     const lower = url.toLowerCase();
-    // If direct image extension, return as is
     if (lower.match(/\.(gif|jpg|jpeg|png|webp)($|\?)/i)) {
         return url;
     }
 
     if (url.startsWith('http://') || url.startsWith('https://')) {
         try {
-            const htmlRes = await axios.get(url, { 
-                timeout: 5000, 
-                headers: { 
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' 
-                } 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            const res = await fetch(url, {
+                signal: controller.signal,
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
             });
+            clearTimeout(timeoutId);
+            if (!res.ok) return url;
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('image/')) return url;
 
-            const contentType = htmlRes.headers['content-type'] || '';
-            if (contentType.includes('image/')) {
-                return url;
-            }
-
-            const html = String(htmlRes.data);
-            
+            const html = await res.text();
             const patterns = [
                 /<meta\s+property=["']og:image:secure_url["']\s+content=["']([^"']+)["']/i,
                 /<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i,
@@ -61,9 +76,7 @@ async function resolveDirectMediaUrl(url) {
                     }
                 }
             }
-        } catch (e) {
-            console.error('Error resolving webpage GIF link:', e.message);
-        }
+        } catch (e) {}
     }
     return url;
 }
@@ -98,20 +111,13 @@ async function generateRankCard({
     let avatarPngBuffer = null;
     if (showPfp && avatarUrl) {
         try {
-            const avatarRes = await axios.get(avatarUrl, {
-                responseType: 'arraybuffer',
-                timeout: 2500,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                }
-            }).catch(() => null);
-
-            if (avatarRes && avatarRes.data) {
+            const rawAvatar = await fetchImageBuffer(avatarUrl, 1500);
+            if (rawAvatar) {
                 // Circle clip for avatar
                 const circleSvg = `<svg width="120" height="120"><circle cx="60" cy="60" r="60" fill="#fff"/></svg>`;
                 const circleMask = Buffer.from(circleSvg);
 
-                const resizedAvatar = await sharp(avatarRes.data)
+                const resizedAvatar = await sharp(rawAvatar)
                     .resize(120, 120)
                     .png()
                     .toBuffer();
@@ -133,31 +139,17 @@ async function generateRankCard({
     if (finalBgImage) {
         try {
             const resolvedUrl = await Promise.race([
-                resolveDirectMediaUrl(finalBgImage),
-                new Promise((_, r) => setTimeout(() => r(new Error('URL resolution timeout')), 2000))
+                resolveDirectMediaUrl(finalBgImage, 1500),
+                new Promise((r) => setTimeout(() => r(finalBgImage), 1500))
             ]);
 
-            let rawBuffer;
-            if (resolvedUrl.startsWith('data:image')) {
-                const base64Data = resolvedUrl.split(',')[1];
-                rawBuffer = Buffer.from(base64Data, 'base64');
-                if (resolvedUrl.startsWith('data:image/gif')) isAnimatedGif = true;
-            } else {
-                const bgRes = await axios.get(resolvedUrl, { 
-                    responseType: 'arraybuffer', 
-                    timeout: 2000,
-                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-                }).catch(() => null);
-                if (bgRes && bgRes.data) {
-                    rawBuffer = Buffer.from(bgRes.data);
-                    const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
-                    if (isGifHeader || resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')) {
-                        isAnimatedGif = true;
-                    }
-                }
-            }
-
+            let rawBuffer = await fetchImageBuffer(resolvedUrl, 1500);
             if (rawBuffer) {
+                const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
+                if (isGifHeader || (typeof resolvedUrl === 'string' && (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')))) {
+                    isAnimatedGif = true;
+                }
+
                 if (isAnimatedGif) {
                     try {
                         animatedBgBuffer = await sharp(rawBuffer, { animated: true })
@@ -309,19 +301,12 @@ async function generateUserIdCard({
     let avatarPngBuffer = null;
     if (avatarUrl) {
         try {
-            const avatarRes = await axios.get(avatarUrl, {
-                responseType: 'arraybuffer',
-                timeout: 3000,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
-            }).catch(() => null);
-
-            if (avatarRes && avatarRes.data) {
+            const rawAvatar = await fetchImageBuffer(avatarUrl, 1500);
+            if (rawAvatar) {
                 const maskSvg = `<svg width="140" height="140"><rect width="140" height="140" rx="18" fill="#fff"/></svg>`;
                 const maskBuffer = Buffer.from(maskSvg);
 
-                const resizedAvatar = await sharp(avatarRes.data)
+                const resizedAvatar = await sharp(rawAvatar)
                     .resize(140, 140)
                     .png()
                     .toBuffer();
