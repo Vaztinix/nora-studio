@@ -305,24 +305,47 @@ module.exports = {
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
-            // --- MEMBER LOGS ---
+            // --- MEMBER LOGS & SECTION ROUTING ---
             if (viewName === 'view_logging') {
-                embed.setTitle('Member Logs')
-                     .setDescription(`Logs are sent to: ${settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : 'None'}`)
+                let logChannels = {};
+                if (typeof settings.loggingChannels === 'object' && settings.loggingChannels !== null) {
+                    logChannels = settings.loggingChannels;
+                } else if (typeof settings.loggingChannels === 'string') {
+                    try { logChannels = JSON.parse(settings.loggingChannels); } catch(e) { logChannels = {}; }
+                }
+
+                const activeSection = settings.selectedLogCategory || 'default';
+                const categoryLabels = {
+                    default: '⚙️ Default Fallback Log Channel',
+                    messages: '💬 Message Logs (Edits & Deletes)',
+                    members: '👥 Member Logs (Joins, Leaves & Boosts)',
+                    channels: '📁 Channel Logs (Creates, Edits & Deletes)',
+                    voice: '🎙️ Voice Logs (Joins, Leaves & Moves)',
+                    automod: '🛡️ AutoMod & Safety Logs'
+                };
+
+                const defaultChStr = settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*';
+
+                embed.setTitle('Server Logging & Channel Routing')
+                     .setDescription(
+                        `**Current Target for Selected Category:** ${categoryLabels[activeSection] || 'Default'}\n` +
+                        `Assign different channels to different log sections below.`
+                     )
                      .addFields(
+                          { name: '⚙️ Default Fallback', value: defaultChStr, inline: true },
+                          { name: '💬 Message Logs', value: logChannels.messages ? `<#${logChannels.messages}>` : `*(Fallback)*`, inline: true },
+                          { name: '👥 Member Logs', value: logChannels.members ? `<#${logChannels.members}>` : `*(Fallback)*`, inline: true },
+                          { name: '📁 Channel Logs', value: logChannels.channels ? `<#${logChannels.channels}>` : `*(Fallback)*`, inline: true },
+                          { name: '🎙️ Voice Logs', value: logChannels.voice ? `<#${logChannels.voice}>` : `*(Fallback)*`, inline: true },
+                          { name: '🛡️ AutoMod Logs', value: logChannels.automod ? `<#${logChannels.automod}>` : `*(Fallback)*`, inline: true },
                           { name: 'Member Joins', value: settings.logMemberJoins ? '🟢 On' : '🔴 Off', inline: true },
                           { name: 'Member Leaves', value: settings.logMemberLeaves ? '🟢 On' : '🔴 Off', inline: true },
                           { name: 'Message Edits', value: settings.logMessageEdits ? '🟢 On' : '🔴 Off', inline: true },
                           { name: 'Message Deletes', value: settings.logMessageDeletes ? '🟢 On' : '🔴 Off', inline: true },
                           { name: 'AutoMod Blocked', value: settings.logAutomod ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Channel Creates', value: settings.logChannelCreates ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Channel Edits', value: settings.logChannelEdits ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Channel Deletes', value: settings.logChannelDeletes ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Voice Joins', value: settings.logVoiceJoins ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Voice Leaves', value: settings.logVoiceLeaves ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Voice Moves', value: settings.logVoiceMoves ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Server Boosts', value: settings.logMemberBoosts ? '🟢 On' : '🔴 Off', inline: true }
+                          { name: 'Channel Creates', value: settings.logChannelCreates ? '🟢 On' : '🔴 Off', inline: true }
                      );
+
                 const rowA = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder()
                         .setCustomId('action_log_toggle')
@@ -344,8 +367,29 @@ module.exports = {
                             { label: 'Server Boosts', value: 'logMemberBoosts', description: 'Log when the server is boosted.', default: !!settings.logMemberBoosts }
                         ])
                 );
-                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_log_channel').setPlaceholder('Select Log Channel...').setChannelTypes(ChannelType.GuildText));
-                return { embeds: [embed], components: [rowA, rowB, backRow] };
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('action_log_part_select')
+                        .setPlaceholder(`1️⃣ Select Log Part: ${categoryLabels[activeSection] || 'Default'}`)
+                        .addOptions([
+                            { label: 'Default / Master Fallback', value: 'default', description: 'Master log channel used when a specific section is unassigned.', default: activeSection === 'default' },
+                            { label: 'Message Logs', value: 'messages', description: 'Dedicated channel for Message Edits & Deletes.', default: activeSection === 'messages' },
+                            { label: 'Member Logs', value: 'members', description: 'Dedicated channel for Member Joins, Leaves & Boosts.', default: activeSection === 'members' },
+                            { label: 'Channel Logs', value: 'channels', description: 'Dedicated channel for Channel Creates, Edits & Deletes.', default: activeSection === 'channels' },
+                            { label: 'Voice Logs', value: 'voice', description: 'Dedicated channel for Voice Joins, Leaves & Moves.', default: activeSection === 'voice' },
+                            { label: 'AutoMod & Safety Logs', value: 'automod', description: 'Dedicated channel for AutoMod & Safety Blocks.', default: activeCategory === 'automod' }
+                        ])
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId('action_log_channel')
+                        .setPlaceholder(`2️⃣ Select Target Channel for ${categoryLabels[activeSection] || 'Default'}...`)
+                        .setChannelTypes(ChannelType.GuildText)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
             }
 
             // --- LEVELING ---
@@ -627,8 +671,30 @@ module.exports = {
                 if (i.customId === 'action_antispam_interval') { settings.spamInterval = parseInt(i.values[0]); update = true; }
                 if (i.customId === 'action_antispam_mute') { settings.antiSpamMuteDuration = parseInt(i.values[0]); update = true; }
 
-                // Logging
-                if (i.customId === 'action_log_channel') { settings.loggingChannelId = i.values[0]; update = true; }
+                // Logging & Section Channel Routing
+                if (i.customId === 'action_log_part_select') {
+                    settings.selectedLogCategory = i.values[0];
+                    update = true;
+                }
+                if (i.customId === 'action_log_channel') {
+                    const selectedCategory = settings.selectedLogCategory || 'default';
+                    const targetChannelId = i.values[0];
+
+                    if (selectedCategory === 'default') {
+                        settings.loggingChannelId = targetChannelId;
+                    } else {
+                        let currentMap = {};
+                        if (typeof settings.loggingChannels === 'object' && settings.loggingChannels !== null) {
+                            currentMap = { ...settings.loggingChannels };
+                        } else if (typeof settings.loggingChannels === 'string') {
+                            try { currentMap = JSON.parse(settings.loggingChannels); } catch(e) { currentMap = {}; }
+                        }
+                        currentMap[selectedCategory] = targetChannelId;
+                        settings.loggingChannels = currentMap;
+                        if (typeof settings.changed === 'function') settings.changed('loggingChannels', true);
+                    }
+                    update = true;
+                }
                 if (i.customId === 'action_log_toggle') {
                     const values = i.values;
                     const logFields = [

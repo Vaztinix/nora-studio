@@ -71,10 +71,12 @@ module.exports = {
             }
 
             // Dispatch alert to the staff logging channel
-            if (settings.loggingChannelId) {
-                let logChannel = message.guild.channels.cache.get(settings.loggingChannelId);
+            const loggerUtil = require('../utils/logger');
+            const targetLogId = loggerUtil.resolveLogChannelId(settings, 'automod');
+            if (targetLogId) {
+                let logChannel = message.guild.channels.cache.get(targetLogId);
                 if (!logChannel) {
-                    logChannel = await message.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+                    logChannel = await message.guild.channels.fetch(targetLogId).catch(() => null);
                 }
                 if (logChannel) {
                     const embed = new EmbedBuilder()

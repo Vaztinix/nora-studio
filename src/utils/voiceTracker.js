@@ -67,9 +67,11 @@ module.exports = {
                                     soloTracker.delete(key);
 
                                     // Log the event to configured logging channel
-                                    if (settings.loggingChannelId) {
-                                        let logChannel = guild.channels.cache.get(settings.loggingChannelId);
-                                        if (!logChannel) logChannel = await guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+                                    const loggerUtil = require('./logger');
+                                    const targetLogId = loggerUtil.resolveLogChannelId(settings, 'voice');
+                                    if (targetLogId) {
+                                        let logChannel = guild.channels.cache.get(targetLogId);
+                                        if (!logChannel) logChannel = await guild.channels.fetch(targetLogId).catch(() => null);
 
                                         if (logChannel) {
                                             const embed = new EmbedBuilder()

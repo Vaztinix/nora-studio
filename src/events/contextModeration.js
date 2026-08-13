@@ -48,9 +48,11 @@ module.exports = {
                 setTimeout(() => notice.delete().catch(() => {}), 5000);
 
                 // Dispatch log to staff channel
-                if (settings.loggingChannelId) {
-                    const logChannel = message.guild.channels.cache.get(settings.loggingChannelId) 
-                        || await message.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+                const loggerUtil = require('../utils/logger');
+                const automodLogId = loggerUtil.resolveLogChannelId(settings, 'automod');
+                if (automodLogId) {
+                    const logChannel = message.guild.channels.cache.get(automodLogId) 
+                        || await message.guild.channels.fetch(automodLogId).catch(() => null);
                     if (logChannel) {
                         const embed = new EmbedBuilder()
                             .setTitle('🛡️ AutoMod V2: Mention Limit Exceeded')
@@ -97,9 +99,10 @@ module.exports = {
                 }
 
                 // Dispatch log to staff channel
-                if (settings.loggingChannelId) {
-                    const logChannel = message.guild.channels.cache.get(settings.loggingChannelId) 
-                        || await message.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+                const automodLogId3 = loggerUtil.resolveLogChannelId(settings, 'automod');
+                if (automodLogId3) {
+                    const logChannel = message.guild.channels.cache.get(automodLogId3) 
+                        || await message.guild.channels.fetch(automodLogId3).catch(() => null);
                     if (logChannel) {
                         const embed = new EmbedBuilder()
                             .setTitle('🛡️ AutoMod V2: Targeted Harassment / Slur Violation')
@@ -122,9 +125,10 @@ module.exports = {
                     setTimeout(() => temp.delete().catch(() => {}), 3000);
                 }
 
-                if (settings.loggingChannelId) {
-                    const logChannel = message.guild.channels.cache.get(settings.loggingChannelId) 
-                        || await message.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+                const automodLogId2 = loggerUtil.resolveLogChannelId(settings, 'automod');
+                if (automodLogId2) {
+                    const logChannel = message.guild.channels.cache.get(automodLogId2) 
+                        || await message.guild.channels.fetch(automodLogId2).catch(() => null);
                     if (logChannel) {
                         const embed = new EmbedBuilder()
                             .setTitle('🛡️ AutoMod V2: Casual Language Filter')

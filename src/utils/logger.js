@@ -142,24 +142,46 @@ class Logger {
     resolveLogChannelId(settings, category) {
         if (!settings) return null;
         
-        if (settings.loggingChannels) {
-            let channelsObj = settings.loggingChannels;
-            if (typeof channelsObj === 'string') {
-                try {
-                    channelsObj = JSON.parse(channelsObj);
-                } catch (e) {
-                    channelsObj = {};
-                }
-            }
-            if (channelsObj && channelsObj[category]) {
-                if (channelsObj[category] === 'none') {
-                    return null;
-                }
-                return channelsObj[category];
+        let channelsObj = settings.loggingChannels;
+        if (typeof channelsObj === 'string') {
+            try {
+                channelsObj = JSON.parse(channelsObj);
+            } catch (e) {
+                channelsObj = {};
             }
         }
 
-        return settings.loggingChannelId;
+        if (channelsObj && typeof channelsObj === 'object') {
+            // 1. Direct category match e.g. 'messages', 'members', 'channels', 'voice', 'automod', 'moderation'
+            if (channelsObj[category] && channelsObj[category] !== 'none') {
+                return channelsObj[category];
+            }
+
+            // 2. Event key to section group mapping
+            const groupMap = {
+                messageEdits: 'messages',
+                messageDeletes: 'messages',
+                memberJoins: 'members',
+                memberLeaves: 'members',
+                memberUpdates: 'members',
+                memberBoosts: 'members',
+                channelCreates: 'channels',
+                channelEdits: 'channels',
+                channelDeletes: 'channels',
+                voiceJoins: 'voice',
+                voiceLeaves: 'voice',
+                voiceMoves: 'voice',
+                automod: 'automod',
+                roles: 'roles',
+                moderation: 'moderation'
+            };
+            const group = groupMap[category];
+            if (group && channelsObj[group] && channelsObj[group] !== 'none') {
+                return channelsObj[group];
+            }
+        }
+
+        return settings.loggingChannelId || null;
     }
 
     /**

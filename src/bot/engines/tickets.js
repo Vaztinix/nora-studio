@@ -58,9 +58,11 @@ async function closeTicket(channel, ticket, settings, closedByUserId, closedByTa
     }
 
     // Send to Server Logging Channel
-    if (settings.loggingChannelId) {
-        const logChannel = channel.guild.channels.cache.get(settings.loggingChannelId)
-            || await channel.guild.channels.fetch(settings.loggingChannelId).catch(() => null);
+    const loggerUtil = require('../../utils/logger');
+    const targetLogId = loggerUtil.resolveLogChannelId(settings, 'moderation');
+    if (targetLogId) {
+        const logChannel = channel.guild.channels.cache.get(targetLogId)
+            || await channel.guild.channels.fetch(targetLogId).catch(() => null);
         if (logChannel) {
             const embed = new EmbedBuilder()
                 .setTitle('🎫 Ticket Closed & Transcribed')

@@ -77,6 +77,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.JSON,
         defaultValue: {}
     },
+    selectedLogCategory: {
+        type: DataTypes.STRING,
+        defaultValue: 'default'
+    },
     logMessageEdits: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
