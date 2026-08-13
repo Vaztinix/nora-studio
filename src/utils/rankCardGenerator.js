@@ -204,6 +204,8 @@ async function generateRankCard({
     const svgBgFill = isAnimatedGif ? 'none' : bgColor;
     const svgOverlayFill = isAnimatedGif ? 'rgba(10, 11, 16, 0.55)' : 'rgba(10, 11, 16, 0.45)';
 
+    const safeUsername = String(username || 'User').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
     const svgString = `
     <svg width="800" height="220" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -234,7 +236,7 @@ async function generateRankCard({
         <text x="700" y="59" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold" fill="#e4e4e7" text-anchor="middle">RANK #${rank}</text>
 
         <!-- Username -->
-        <text x="190" y="75" font-family="Segoe UI, Arial, sans-serif" font-size="38" font-weight="900" fill="#ffffff" letter-spacing="-0.5">@${username}</text>
+        <text x="190" y="75" font-family="Segoe UI, Arial, sans-serif" font-size="38" font-weight="900" fill="#ffffff" letter-spacing="-0.5">@${safeUsername}</text>
 
         <!-- Level indicator -->
         <text x="190" y="125" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="bold" fill="${accentColor}">LEVEL ${level}</text>
