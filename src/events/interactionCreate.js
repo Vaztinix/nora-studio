@@ -655,25 +655,57 @@ module.exports = {
             return interaction.reply({ content: 'Operation cancelled. Your data remains intact.', ephemeral: true });
         }
 
-        // 🎟️ Handle Giveaway Entry Button (User Request)
+        // 🎟️ Handle Giveaway Entry Button
         if (interaction.isButton() && interaction.customId === 'giveaway_enter') {
             try {
                 const Giveaway = require('../database/models/Giveaway');
+                const { buildGiveawayComponents } = require('../utils/giveawayManager');
+                
                 const g = await Giveaway.findOne({ where: { messageId: interaction.message.id, ended: false } });
                 const replySafely = async (content) => {
                     if (interaction.deferred || interaction.replied) return await interaction.editReply({ content });
                     return await interaction.reply({ content, ephemeral: true });
                 };
 
-                if (!g) return await replySafely('This giveaway is already ended or invalid!');
+                if (!g) return await replySafely('⚠️ This giveaway has already ended or is no longer valid!');
 
                 const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
                 if (g.requiredRoleId && (!member || !member.roles.cache.has(g.requiredRoleId))) {
-                    return await replySafely(`You need the <@&${g.requiredRoleId}> role to enter this giveaway!`);
+                    return await replySafely(`❌ You must have the <@&${g.requiredRoleId}> role to enter this giveaway!`);
                 }
 
-                await interaction.message.react('🎉').catch(() => {});
-                return await replySafely('You have entered the giveaway. Good luck.');
+                let participants = [];
+                try {
+                    participants = JSON.parse(g.participants || '[]');
+                } catch (e) {
+                    participants = [];
+                }
+
+                const userId = interaction.user.id;
+                let isEntering = false;
+
+                if (participants.includes(userId)) {
+                    // Remove entry (toggle off)
+                    participants = participants.filter(id => id !== userId);
+                    isEntering = false;
+                } else {
+                    // Add entry
+                    participants.push(userId);
+                    isEntering = true;
+                }
+
+                g.participants = JSON.stringify(participants);
+                await g.save();
+
+                // Dynamically update the giveaway button label with current entry count
+                const updatedComponents = buildGiveawayComponents(false, participants.length);
+                await interaction.message.edit({ components: updatedComponents }).catch(() => {});
+
+                if (isEntering) {
+                    return await replySafely(`🎉 You have entered the giveaway for **${g.title}**! Good luck! (Total Entries: ${participants.length})`);
+                } else {
+                    return await replySafely(`🗑️ You have left the giveaway for **${g.title}**. (Total Entries: ${participants.length})`);
+                }
             } catch (err) {
                 console.error('[Giveaway Handler Error]:', err);
                 const msg = '⚠️ Failed to process giveaway entry. Please try again.';

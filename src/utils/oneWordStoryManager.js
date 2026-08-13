@@ -100,6 +100,7 @@ module.exports = {
             startedAt: new Date().toISOString(),
             words: [],
             lastUserId: null,
+            sentenceCount: 0,
             active: true
         };
 
@@ -136,6 +137,7 @@ module.exports = {
             success: true,
             story: storyText,
             wordCount: session.words.length,
+            sentenceCount: session.sentenceCount || 0,
             contributorsCount: Object.keys(contributorMap).length,
             topContributors,
             startedAt: session.startedAt,
@@ -143,7 +145,7 @@ module.exports = {
         };
     },
 
-    async processWord(channelId, rawContent, user, allowConsecutive = false) {
+    async processWord(channelId, rawContent, user, allowConsecutive = false, targetMaxSentences = 10) {
         await loadStoryData();
         const session = storyData[channelId];
 
@@ -184,8 +186,14 @@ module.exports = {
             return { success: false, reason: 'consecutive', message: 'You cannot submit two words in a row! Wait for someone else.' };
         }
 
-        // Detect if word ends with period or is a single period "."
-        const isStoryEnd = word === '.' || word.endsWith('.');
+        // Detect if word ends with period or is a single period "." -> counts as 1 sentence
+        const isSentenceEnd = word === '.' || word.endsWith('.');
+        if (isSentenceEnd) {
+            session.sentenceCount = (session.sentenceCount || 0) + 1;
+        }
+
+        const maxSentences = targetMaxSentences || 10;
+        const isStoryEnd = (session.sentenceCount >= maxSentences);
 
         // Add valid word entry
         const entry = {
@@ -204,7 +212,9 @@ module.exports = {
             success: true,
             word,
             wordCount: session.words.length,
+            sentenceCount: session.sentenceCount || 0,
             lastUserId: user.id,
+            isSentenceEnd,
             isStoryEnd,
             story: formatStory(session.words)
         };

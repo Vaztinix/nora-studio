@@ -19,16 +19,23 @@ module.exports = {
         if (!activeGame) return;
 
         const allowConsecutive = !!settings.oneWordStoryAllowConsecutive;
-        const result = await oneWordStoryManager.processWord(message.channel.id, content, message.author, allowConsecutive);
+        const maxSentences = settings.oneWordStoryMaxSentences || 10;
+        const result = await oneWordStoryManager.processWord(message.channel.id, content, message.author, allowConsecutive, maxSentences);
 
         if (result.success) {
             try {
-                await message.react('✅');
+                if (result.isSentenceEnd && !result.isStoryEnd) {
+                    await message.react('📝');
+                } else {
+                    await message.react('✅');
+                }
             } catch (e) {}
 
-            // Auto-finish if story end period (.) is submitted or max words limit is reached
+            // Auto-finish if 10 sentences completed or max words limit reached
             const isWordLimitReached = settings.oneWordStoryMaxWords > 0 && result.wordCount >= settings.oneWordStoryMaxWords;
-            if (result.isStoryEnd || isWordLimitReached) {
+            const isSentenceLimitReached = result.sentenceCount >= maxSentences;
+
+            if (result.isStoryEnd || isSentenceLimitReached || isWordLimitReached) {
                 const endResult = await oneWordStoryManager.endGame(message.guild.id, message.channel.id);
                 if (endResult.success) {
                     const { EmbedBuilder } = require('discord.js');
@@ -40,10 +47,11 @@ module.exports = {
                         .setColor('#00b4d8')
                         .addFields(
                             { name: 'Total Words', value: `${endResult.wordCount}`, inline: true },
+                            { name: 'Sentences', value: `${endResult.sentenceCount || maxSentences}`, inline: true },
                             { name: 'Contributors', value: `${endResult.contributorsCount}`, inline: true },
                             { name: 'Top Authors', value: topList, inline: false }
                         )
-                        .setFooter({ text: `Ended by ${message.author.username}` })
+                        .setFooter({ text: `Reached ${endResult.sentenceCount || maxSentences} sentence story milestone 🎯` })
                         .setTimestamp();
 
                     await message.channel.send({ embeds: [embed] }).catch(() => {});

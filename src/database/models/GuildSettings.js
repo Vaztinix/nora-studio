@@ -750,6 +750,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
     oneWordStoryMaxWords: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    oneWordStoryMaxSentences: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10
     }
 });
 

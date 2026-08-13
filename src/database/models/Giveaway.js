@@ -44,6 +44,18 @@ const Giveaway = sequelize.define('Giveaway', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    imageUrl: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    participants: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    winners: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
     ended: {
         type: DataTypes.BOOLEAN,
         defaultValue: false

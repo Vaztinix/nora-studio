@@ -7412,7 +7412,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences'];
 
 
 
@@ -7745,6 +7745,8 @@
         function isUserPremium() {
             if (typeof currentServerIsPremium !== 'undefined' && currentServerIsPremium) return true;
             if (typeof window.userIsPremium !== 'undefined' && window.userIsPremium) return true;
+            if (typeof window.userHasAnyPremium !== 'undefined' && window.userHasAnyPremium) return true;
+            if (typeof window.currentUser !== 'undefined' && (window.currentUser?.isPremium || window.currentUser?.noraPremium || window.currentUser?.isOwner || window.currentUser?.premium)) return true;
             const userRole = sessionStorage.getItem('user_role');
             if (userRole === 'owner' || userRole === 'premium') return true;
             const storedPremium = localStorage.getItem('nora_user_is_premium');
@@ -7929,7 +7931,8 @@
         });
 
         function toggleLoading(show) {
-            document.getElementById('loading-overlay').style.display = show ? 'grid' : 'none';
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) overlay.style.display = show ? 'grid' : 'none';
         }
 
         function updateLegacyVerification() {
@@ -8200,9 +8203,13 @@
                         prefPremium.innerHTML = '<span style="color: var(--muted);">Standard User</span>';
                     }
                 }
-                if ((d.noraPremium || d.isOwner) && typeof window.updatePremiumUI === 'function') {
+                if (d.noraPremium || d.isOwner || d.isPremium || d.premium) {
+                    window.userIsPremium = true;
                     window.userHasAnyPremium = true;
-                    window.updatePremiumUI(true);
+                    localStorage.setItem('nora_user_is_premium', 'true');
+                    if (typeof window.updatePremiumUI === 'function') {
+                        window.updatePremiumUI(true);
+                    }
                 }
 
                 const premiumStatusEl = document.getElementById('premium-center-status');
@@ -9633,12 +9640,15 @@
                 });
 
                 pendingSavePayload = payload;
-                document.getElementById('save-confirmation-modal').style.display = 'flex';
+                const saveModal = document.getElementById('save-confirmation-modal');
+                if (saveModal) saveModal.style.display = 'flex';
+                else executeSaveSettings(payload);
             }
         }
 
         window.cancelSaveSettings = function() {
-            document.getElementById('save-confirmation-modal').style.display = 'none';
+            const saveModal = document.getElementById('save-confirmation-modal');
+            if (saveModal) saveModal.style.display = 'none';
             pendingSavePayload = null;
         };
 
@@ -9647,7 +9657,8 @@
             if (checkbox && checkbox.checked) {
                 localStorage.setItem('skip_save_confirm', 'true');
             }
-            document.getElementById('save-confirmation-modal').style.display = 'none';
+            const saveModal = document.getElementById('save-confirmation-modal');
+            if (saveModal) saveModal.style.display = 'none';
             if (pendingSavePayload) {
                 executeSaveSettings(pendingSavePayload);
             }
@@ -9655,9 +9666,11 @@
 
         async function executeSaveSettings(payload) {
             const saveBtn = document.getElementById('save-settings-btn');
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
+            const originalText = saveBtn ? saveBtn.textContent : 'Save Data';
+            if (saveBtn) {
+                saveBtn.textContent = 'Saving...';
+                saveBtn.disabled = true;
+            }
 
             const t = sessionStorage.getItem('discord_token');
             logToTerminal(`Attempting to save settings for ${currentServerId}`, 'SAVE_START', payload);
@@ -9712,8 +9725,10 @@
                 showToast('Failed to save settings.', 'error');
                 addNotification('Save Error', e.message, 'error');
             } finally {
-                saveBtn.textContent = originalText;
-                saveBtn.disabled = false;
+                if (saveBtn) {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                }
             }
         }
 
@@ -17074,30 +17089,46 @@
             }
         };
 
-        window.addRobloxGroupBinding = function() {
+        window.updateRobloxGroupsJson = function() {
+            const data = [];
+            const rows = document.querySelectorAll('#roblox-group-list .roblox-group-row, #roblox-group-list .row-inputs');
+            rows.forEach(r => {
+                const inputs = r.querySelectorAll('input');
+                const gid = inputs[0] ? inputs[0].value : '';
+                const rnk = inputs[1] ? inputs[1].value : '';
+                const selectEl = r.querySelector('select');
+                const role = selectEl ? selectEl.value : '';
+                if (gid && rnk && role) data.push({ groupId: gid, rank: parseInt(rnk, 10), roleId: role });
+            });
+            const hidden = document.getElementById('setting-robloxGroupBindings');
+            if (hidden) hidden.value = JSON.stringify(data);
+        };
+
+        window.addRobloxGroupBinding = function(groupId = '', rank = '', roleId = '') {
             const container = document.getElementById('roblox-group-list');
             if (!container) return;
             
             const row = document.createElement('div');
-            row.className = 'roblox-group-row';
-            row.style.cssText = 'display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);';
+            row.className = 'roblox-group-row row-inputs';
+            row.style.cssText = 'display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;';
             
             let rolesOptions = '<option value="">Select Discord Role...</option>';
             if (window.guildRoles) {
-                rolesOptions += window.guildRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+                rolesOptions += window.guildRoles.map(r => `<option value="${r.id}" ${String(r.id) === String(roleId) ? 'selected' : ''}>${r.name}</option>`).join('');
             }
 
             row.innerHTML = `
-                <input type="text" class="rgb-group-id" placeholder="Roblox Group ID" style="width: 140px; padding: 8px 10px; font-size: 0.85rem;">
-                <input type="number" class="rgb-min-rank" placeholder="Min Rank (1-255)" style="width: 130px; padding: 8px 10px; font-size: 0.85rem;">
-                <select class="rgb-role-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;">
+                <input type="text" class="rgb-group-id" value="${groupId}" placeholder="Roblox Group ID" style="width: 140px; padding: 8px 10px; font-size: 0.85rem;" oninput="updateRobloxGroupsJson()">
+                <input type="number" class="rgb-min-rank" value="${rank}" placeholder="Min Rank (1-255)" style="width: 130px; padding: 8px 10px; font-size: 0.85rem;" oninput="updateRobloxGroupsJson()">
+                <select class="rgb-role-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;" onchange="updateRobloxGroupsJson()">
                     ${rolesOptions}
                 </select>
-                <button type="button" onclick="this.closest('.roblox-group-row').remove();" style="background: rgba(239, 68, 68, 0.2) !important; color: #FCA5A5 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; font-weight: 700 !important; font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                <button type="button" onclick="this.closest('.roblox-group-row').remove(); updateRobloxGroupsJson();" style="background: rgba(239, 68, 68, 0.2) !important; color: #FCA5A5 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; font-weight: 700 !important; font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                     <i class="fas fa-trash-alt"></i> Remove Row
                 </button>
             `;
             container.appendChild(row);
+            updateRobloxGroupsJson();
         };
 
         window.removeLastRobloxGroupBinding = function() {

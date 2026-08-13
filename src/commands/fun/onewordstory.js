@@ -61,6 +61,7 @@ module.exports = {
             }
 
             const allowConsecutive = !!settings.oneWordStoryAllowConsecutive;
+            const maxSentences = settings.oneWordStoryMaxSentences || 10;
 
             const startEmbed = new EmbedBuilder()
                 .setTitle('📖 One Word Story — Game Started!')
@@ -70,7 +71,8 @@ module.exports = {
                     '1️⃣ Send **exactly ONE word** per message.\n' +
                     `2️⃣ ${allowConsecutive ? 'Consecutive turns allowed.' : 'You **cannot** post twice in a row — wait for someone else!'}\n` +
                     '3️⃣ No mentions (`@everyone`/`<@user>`), links, or commands.\n' +
-                    '4️⃣ Nora will react with ✅ for valid words and ❌ for invalid turns.\n\n' +
+                    '4️⃣ Add a period (`.`) at the end of a word or as a single message to **complete a sentence** (reacts with 📝).\n' +
+                    `5️⃣ Story automatically finishes and compiles after **${maxSentences} sentences**!\n\n` +
                     '**Start the story now by typing the first word below!**'
                 )
                 .setColor('#7c3aed')
@@ -117,6 +119,7 @@ module.exports = {
                 .setColor('#00b4d8')
                 .addFields(
                     { name: 'Total Words', value: `${result.wordCount}`, inline: true },
+                    { name: 'Total Sentences', value: `${result.sentenceCount || 0}`, inline: true },
                     { name: 'Contributors', value: `${result.contributorsCount}`, inline: true },
                     { name: 'Top Authors', value: topList, inline: false }
                 )
@@ -133,6 +136,7 @@ module.exports = {
             }
 
             const storyText = await oneWordStoryManager.getStoryFormatted(targetChannel.id);
+            const maxSentences = settings.oneWordStoryMaxSentences || 10;
 
             const storyEmbed = new EmbedBuilder()
                 .setTitle('📖 One Word Story in Progress')
@@ -140,6 +144,7 @@ module.exports = {
                 .setColor('#57acf2')
                 .addFields(
                     { name: 'Word Count', value: `${activeGame.words.length}`, inline: true },
+                    { name: 'Sentences Completed', value: `${activeGame.sentenceCount || 0} / ${maxSentences}`, inline: true },
                     { name: 'Last Contributor', value: activeGame.lastUserId ? `<@${activeGame.lastUserId}>` : 'None', inline: true }
                 )
                 .setFooter({ text: 'Nora One Word Story Game' })
@@ -149,6 +154,7 @@ module.exports = {
         }
 
         if (subcommand === 'rules') {
+            const maxSentences = settings.oneWordStoryMaxSentences || 10;
             const rulesEmbed = new EmbedBuilder()
                 .setTitle('📖 One Word Story — Rules')
                 .setDescription(
@@ -159,8 +165,9 @@ module.exports = {
                     '1. Exactly **1 word** per message.\n' +
                     '2. No consecutive messages by the same player (unless configured).\n' +
                     '3. No `@everyone`, user mentions, links, or bot commands.\n' +
-                    '4. Nora reacts with ✅ for valid words and ❌ for broken rules.\n' +
-                    '5. Anyone with Manage Server or the game host can run `/onewordstory end` to finish and publish the full story!'
+                    '4. End a sentence by adding a period (`.`) to a word or as a single message (reacts with 📝).\n' +
+                    `5. Once **${maxSentences} sentences** are completed, Nora puts the entire story together and posts it!\n` +
+                    '6. Anyone with Manage Server or the game host can also run `/onewordstory end` to finish early.'
                 )
                 .setColor('#7c3aed');
 

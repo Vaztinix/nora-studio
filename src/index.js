@@ -394,6 +394,9 @@ runPreSyncMigrations().then(() => {
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryMaxWords` INTEGER DEFAULT 0;");
     } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryMaxSentences` INTEGER DEFAULT 10;");
+    } catch (e) {}
 
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");
@@ -424,6 +427,17 @@ runPreSyncMigrations().then(() => {
     } catch (e) {}
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `terminationReason` TEXT DEFAULT NULL;");
+    } catch (e) {}
+
+    // ---- Giveaway Table Schema Adjustments ----
+    try {
+        await sequelize.query("ALTER TABLE `Giveaways` ADD COLUMN `imageUrl` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `Giveaways` ADD COLUMN `participants` TEXT DEFAULT '[]';");
+    } catch (e) {}
+    try {
+        await sequelize.query("ALTER TABLE `Giveaways` ADD COLUMN `winners` TEXT DEFAULT '[]';");
     } catch (e) {}
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotificationsEnabled` TINYINT(1) DEFAULT 0;");
