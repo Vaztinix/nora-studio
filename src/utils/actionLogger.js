@@ -57,7 +57,7 @@ async function logServerAction({ guildId, req, action, details }) {
             ipAddress: typeof ipAddress === 'string' ? ipAddress.split(',')[0].trim() : null
         });
     } catch (error) {
-        console.error(`[ActionLogger] Error recording action log for guild ${guildId}:`, error);
+        console.error('[ActionLogger] Error recording action log for guild %s:', String(guildId), error);
     }
 }
 

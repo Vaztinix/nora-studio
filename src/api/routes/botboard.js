@@ -15,15 +15,17 @@ async function dispatchBotBoardEmbed(client, targetUrlOrChannel, embed) {
     try {
         if (targetUrlOrChannel.startsWith('http://') || targetUrlOrChannel.startsWith('https://')) {
             const parsed = new URL(targetUrlOrChannel);
-            const isDiscordWebhook = (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
-                ['discord.com', 'canary.discord.com', 'ptb.discord.com'].includes(parsed.hostname.toLowerCase()) &&
+            const hostname = parsed.hostname.toLowerCase();
+            const isDiscordWebhook = parsed.protocol === 'https:' &&
+                ['discord.com', 'canary.discord.com', 'ptb.discord.com'].includes(hostname) &&
                 parsed.pathname.startsWith('/api/webhooks/');
             if (!isDiscordWebhook) {
-                console.warn('[BotBoard Webhook Security] Blocked non-Discord webhook dispatch target:', parsed.hostname);
+                console.warn('[BotBoard Webhook Security] Blocked non-Discord webhook dispatch target:', hostname);
                 return false;
             }
-            // Direct Discord Webhook POST
-            await axios.post(parsed.href, {
+            // Reconstruct safe target URL explicitly to satisfy static analysis
+            const safeWebhookUrl = `https://${hostname}${parsed.pathname}`;
+            await axios.post(safeWebhookUrl, {
                 embeds: [embed.toJSON()]
             }, { timeout: 5000 });
             return true;
@@ -53,9 +55,10 @@ function buildBotBoardEmbed(payload) {
     const embed = new EmbedBuilder().setTimestamp();
 
     if (event === 'new_review') {
-        const rawRating = Number(review.rating);
-        const rating = (!isNaN(rawRating) && isFinite(rawRating)) ? Math.min(5, Math.max(1, Math.floor(rawRating))) : 5;
-        const stars = '⭐'.repeat(rating);
+        const rawRating = parseInt(review.rating, 10);
+        const rating = (!isNaN(rawRating) && isFinite(rawRating)) ? Math.min(5, Math.max(1, rawRating)) : 5;
+        const starMap = ['', '⭐', '⭐⭐', '⭐⭐⭐', '⭐⭐⭐⭐', '⭐⭐⭐⭐⭐'];
+        const stars = starMap[rating] || '⭐⭐⭐⭐⭐';
         const reviewer = review.reviewer || 'Anonymous';
         const body = review.body || 'Great bot!';
         const url = review.url || 'https://botboard.gg';

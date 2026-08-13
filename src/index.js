@@ -186,14 +186,15 @@ async function fetchRoblox(url, options = {}) {
         throw new Error('Invalid or unsafe URL requested for Roblox API');
     }
     const parsedUrl = new URL(url);
-    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+    if (parsedUrl.protocol !== 'https:') {
         throw new Error('Invalid URL protocol requested for Roblox API');
     }
     const host = parsedUrl.hostname.toLowerCase();
     if (!host.endsWith('.roblox.com') && host !== 'roblox.com') {
         throw new Error('Invalid host requested for Roblox API');
     }
-    const safeUrl = parsedUrl.href;
+    // Reconstruct safe URL from validated components to satisfy static analysis
+    const safeTarget = `https://${host}${parsedUrl.pathname}${parsedUrl.search}`;
     let lastError = null;
     for (let i = 0; i < retries; i++) {
         try {
@@ -204,7 +205,7 @@ async function fetchRoblox(url, options = {}) {
             const fetchOptions = { ...options };
             delete fetchOptions.retries;
             delete fetchOptions.timeout;
-            const res = await fetch(safeUrl, { ...fetchOptions, signal: controller.signal });
+            const res = await fetch(safeTarget, { ...fetchOptions, signal: controller.signal });
             clearTimeout(timeoutId);
             // If Roblox returns 429, back off exponentially before retrying
             if (res.status === 429) {

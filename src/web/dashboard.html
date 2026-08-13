@@ -11416,7 +11416,7 @@
                             
                             let title = 'System Event';
                             if (l.message.includes(']')) {
-                                title = l.message.split(']')[0].replace('[', '');
+                                title = l.message.split(']')[0].replace(/\[/g, '');
                             } else if (l.type === 'ERROR') {
                                 title = 'System Error';
                             }
@@ -13444,13 +13444,6 @@
                 const eInput = row.querySelector('.rr-emoji-input') || row.querySelector('input[type="text"]');
                 if (rSelect && rSelect.value && eInput && eInput.value.trim()) {
                     const emoji = eInput.value.trim();
-                    let displayEmoji = escapeHtml(emoji);
-                    const customMatch = emoji.match(/^<a?:([a-zA-Z0-9_]+):([0-9]+)>$/);
-                    if (customMatch) {
-                        const anim = emoji.startsWith('<a:');
-                        const ext = anim ? 'gif' : 'png';
-                        displayEmoji = `<img src="https://cdn.discordapp.com/emojis/${customMatch[2]}.${ext}" style="width: 16px; height: 16px; vertical-align: middle; object-fit: contain;" alt="${escapeHtml(customMatch[1])}">`;
-                    }
                     const badge = document.createElement('div');
                     badge.style.display = 'flex';
                     badge.style.alignItems = 'center';
@@ -13463,7 +13456,35 @@
                     badge.style.userSelect = 'none';
                     badge.style.fontSize = '0.85rem';
                     badge.style.color = '#b5bac1';
-                    badge.innerHTML = `<span class="rr-badge-emoji" style="display: flex; align-items: center; justify-content: center;">${displayEmoji}</span><span class="rr-badge-count">1</span>`;
+
+                    const emojiSpan = document.createElement('span');
+                    emojiSpan.className = 'rr-badge-emoji';
+                    emojiSpan.style.display = 'flex';
+                    emojiSpan.style.alignItems = 'center';
+                    emojiSpan.style.justifyContent = 'center';
+
+                    const customMatch = emoji.match(/^<a?:([a-zA-Z0-9_]+):([0-9]+)>$/);
+                    if (customMatch) {
+                        const anim = emoji.startsWith('<a:');
+                        const ext = anim ? 'gif' : 'png';
+                        const img = document.createElement('img');
+                        img.src = `https://cdn.discordapp.com/emojis/${customMatch[2]}.${ext}`;
+                        img.style.width = '16px';
+                        img.style.height = '16px';
+                        img.style.verticalAlign = 'middle';
+                        img.style.objectFit = 'contain';
+                        img.alt = customMatch[1];
+                        emojiSpan.appendChild(img);
+                    } else {
+                        emojiSpan.textContent = emoji;
+                    }
+
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'rr-badge-count';
+                    countSpan.textContent = '1';
+
+                    badge.appendChild(emojiSpan);
+                    badge.appendChild(countSpan);
                     
                     badge.onclick = () => {
                         const countEl = badge.querySelector('.rr-badge-count');
@@ -14416,15 +14437,22 @@
 
         function handleTopggAvatarUpload(input) {
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (!file.type.startsWith('image/')) {
+                    return showToast('Please select a valid image file.', 'error');
+                }
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const el = document.getElementById('setting-topggWebhookAvatar');
-                    if (el) el.value = e.target.result;
-                    const preview = document.getElementById('topgg-avatar-preview');
-                    if (preview) preview.src = e.target.result;
-                    showToast('Avatar uploaded! Save settings to apply.', 'info');
+                    const result = e.target ? e.target.result : null;
+                    if (typeof result === 'string' && result.startsWith('data:image/')) {
+                        const el = document.getElementById('setting-topggWebhookAvatar');
+                        if (el) el.value = result;
+                        const preview = document.getElementById('topgg-avatar-preview');
+                        if (preview) preview.src = result;
+                        showToast('Avatar uploaded! Save settings to apply.', 'info');
+                    }
                 };
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
 
