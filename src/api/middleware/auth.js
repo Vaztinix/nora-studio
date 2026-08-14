@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 // Simple in-memory cache for Discord guilds to prevent 429 Rate Limits
 const guildsCache = new Map();
 const activeRequests = new Map(); // token -> Promise
-const CACHE_TTL = 60 * 1000; // 60 seconds cache
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache to prevent Discord 429 Rate Limits
 
 const resolveDiscordToken = async (token) => {
     if (token && token.startsWith('nora_sess_')) {
@@ -75,13 +75,13 @@ const getCachedUserGuilds = async (token) => {
                 });
 
                 if (!response.ok) {
-                    if (response.status === 429 && cached) {
-                        console.warn('[Auth Middleware] Discord Rate Limit hit (429). Reusing expired cache.');
+                    if (cached && cached.guilds) {
+                        console.warn(`[Auth Middleware] Discord API ${response.status}. Serving cached guilds.`);
                         return cached.guilds;
                     }
-                    if ([502, 503, 504].includes(response.status) && attempt < maxRetries) {
-                        console.warn(`[Auth Middleware] Discord API 5xx (${response.status}) on attempt ${attempt}/${maxRetries}. Retrying...`);
-                        await new Promise(r => setTimeout(r, attempt * 300));
+                    if ([502, 503, 504, 429].includes(response.status) && attempt < maxRetries) {
+                        console.warn(`[Auth Middleware] Discord API ${response.status} on attempt ${attempt}/${maxRetries}. Retrying...`);
+                        await new Promise(r => setTimeout(r, attempt * 400));
                         continue;
                     }
                     const err = new Error(`Discord API returned ${response.status}`);
@@ -120,6 +120,11 @@ const getCachedUserGuilds = async (token) => {
         if (cached && cached.guilds) {
             console.warn('[Auth Middleware] Retries exhausted due to network hiccup. Gracefully serving cached guilds.');
             return cached.guilds;
+        }
+
+        if (lastError && lastError.status === 429) {
+            console.warn('[Auth Middleware] Discord 429 rate limit hit without cache. Returning empty list to prevent crash.');
+            return [];
         }
 
         throw lastError || new Error('Failed to fetch Discord guilds');

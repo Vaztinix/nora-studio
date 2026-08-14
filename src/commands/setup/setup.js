@@ -78,6 +78,9 @@ module.exports = {
                         .setRequired(false))),
 
     async execute(interaction) {
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferReply({ ephemeral: true }).catch(() => {});
+        }
         const subcommand = interaction.options.getSubcommand();
         const settings = await settingsCache.get(interaction.guild.id);
 
@@ -924,7 +927,7 @@ module.exports = {
                         const row = new ActionRowBuilder();
                         let loaded = 0;
                         for (const rId of roleStrs) {
-                            const role = i.guild.roles.cache.get(rId);
+                            const role = i.guild.roles.cache.get(rId) || await i.guild.roles.fetch(rId).catch(() => null);
                             if (role) {
                                 row.addComponents(new ButtonBuilder().setCustomId(`selfrole_assign_${role.id}`).setLabel(role.name).setStyle(ButtonStyle.Secondary));
                                 loaded++;
