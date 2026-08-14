@@ -9,6 +9,10 @@ module.exports = {
     async execute(client) {
         console.log(`[System] Ready! Initializing Nora Mainframe as ${client.user.tag}`);
 
+        // Initialize Animated Cool Name & Status system
+        const { startNameAnimator } = require('../utils/nameAnimator');
+        startNameAnimator(client);
+
         // 1. 🌍 Immediate Global Command Sync: Register commands first before background operations
         const commands = client.commands.map(cmd => cmd.data.toJSON());
 

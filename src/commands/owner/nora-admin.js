@@ -24,6 +24,14 @@ module.exports = {
                     opt.setName('title')
                         .setDescription('Custom title for the site alert / push notification')
                         .setRequired(false))
+        )
+        .addSubcommand(sub =>
+            sub.setName('setname')
+                .setDescription('Update Nora\'s Discord Username to a custom or cool font name (Owner only)')
+                .addStringOption(opt =>
+                    opt.setName('name')
+                        .setDescription('The new name / cool font for Nora (e.g. 𝗡𝗼𝗿𝗮 ✦)')
+                        .setRequired(true))
         ),
 
     async execute(interaction) {
