@@ -62,5 +62,9 @@
     "@hono/node-server": "^2.0.5",
     "hono": "^4.13.0",
     "js-yaml": "^5.2.3"
+  },
+  "optionalDependencies": {
+    "@emnapi/core": "^1.11.3",
+    "@emnapi/runtime": "^1.11.3"
   }
 }
