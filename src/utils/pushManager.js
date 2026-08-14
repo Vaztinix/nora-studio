@@ -172,6 +172,7 @@ async function broadcastSiteAlert(title, message, type = 'announcement', authorI
 module.exports = {
     getVapidPublicKey,
     saveSubscription,
+    sendPushNotification,
     sendPushToUser,
     broadcastPushNotification,
     broadcastSiteAlert
