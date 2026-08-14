@@ -7019,6 +7019,39 @@
             }
         }
 
+        window.forceReconnectNow = async function() {
+            const statusEl = document.getElementById('offline-retry-status');
+            if (statusEl) statusEl.innerHTML = '<span style="color:#00d2ff; font-weight:700;">Testing API Connection...</span>';
+
+            const CANONICAL_API = 'https://api.vaztinix.dev';
+            let recovered = await tryHealth(CANONICAL_API);
+            if (!recovered) recovered = await tryHealth(window.getApiBaseUrl());
+
+            if (recovered) {
+                consecutiveNetworkErrors = 0;
+                window.triggerApiOnline();
+            } else {
+                if (statusEl) statusEl.innerHTML = '<span style="color:var(--danger,#ff4a4a); font-weight:700;">API still unreachable. Retrying...</span>';
+                setTimeout(() => {
+                    if (statusEl && window.isApiOffline) {
+                        statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s';
+                    }
+                }, 1500);
+            }
+        };
+
+        // Auto-reconnect on screen wake / tab focus (tablet & mobile battery saver recovery)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && window.isApiOffline) {
+                window.forceReconnectNow();
+            }
+        });
+        window.addEventListener('focus', () => {
+            if (window.isApiOffline) {
+                window.forceReconnectNow();
+            }
+        });
+
         window.toggleApiConfig = function(e) {
             if (e) e.preventDefault();
             const container = document.getElementById('api-config-container');
@@ -17372,9 +17405,13 @@
                 Unable to reach the Nora API. This can happen due to a <strong style="color:#fff;">temporary service outage, API maintenance, or weak local connections</strong>. The dashboard will reconnect automatically once the connection is established.
             </p>
             <p style="color: rgba(138,159,196,0.6); font-size: 0.8rem; margin-bottom: 24px;">If the service is down, we are likely working to restore it as quickly as possible.</p>
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 20px; width: 100%; justify-content: center;">
                 <div style="border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary, #00d2ff); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;"></div>
-                <span style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s</span>
+                <span id="offline-retry-status" style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s</span>
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;">
+                <button onclick="if(window.forceReconnectNow) window.forceReconnectNow();" style="background: var(--primary, #00d2ff); border: none; border-radius: 12px; color: #0b0f1a; font-size: 0.85rem; font-weight: 700; padding: 12px 20px; cursor: pointer; flex: 1; min-width: 140px; box-shadow: 0 0 15px var(--primary-glow); transition: all 0.2s ease;">⚡ Reconnect Now</button>
+                <button onclick="window.location.reload();" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: #fff; font-size: 0.85rem; font-weight: 600; padding: 12px 20px; cursor: pointer; flex: 1; min-width: 140px; transition: all 0.2s ease;">🔄 Refresh Page</button>
             </div>
         </div>
     </div>
