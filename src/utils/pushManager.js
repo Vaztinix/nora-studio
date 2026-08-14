@@ -118,7 +118,6 @@ async function broadcastPushNotification(payload) {
 async function broadcastSiteAlert(title, message, type = 'announcement', authorId = '1214048435632603137') {
     const SiteAlert = require('../database/models/SiteAlert');
     const Notification = require('../database/models/Notification');
-    const UserLevel = require('../database/models/UserLevel');
 
     const alertRecord = await SiteAlert.create({
         title: title || '📢 Nora Site Announcement',
@@ -136,37 +135,16 @@ async function broadcastSiteAlert(title, message, type = 'announcement', authorI
     };
     const sentPushCount = await broadcastPushNotification(pushPayload);
 
-    const allUsers = await UserLevel.findAll({ attributes: ['userId'], group: ['userId'] }).catch(() => []);
-    const notificationsToCreate = [
-        {
-            userId: 'global',
-            title: title || '📢 Nora Site Announcement',
-            content: message,
-            type: type === 'warning' ? 'warning' : 'special',
-            read: false,
-            isSpecial: true,
-            isOwnerAction: true
-        }
-    ];
-
-    if (allUsers && allUsers.length > 0) {
-        allUsers.forEach(u => {
-            notificationsToCreate.push({
-                userId: u.userId,
-                title: title || '📢 Nora Site Announcement',
-                content: message,
-                type: type === 'warning' ? 'warning' : 'special',
-                read: false,
-                isSpecial: true,
-                isOwnerAction: true
-            });
-        });
-    }
-
-    for (let i = 0; i < notificationsToCreate.length; i += 500) {
-        const chunk = notificationsToCreate.slice(i, i + 500);
-        await Notification.bulkCreate(chunk).catch(() => {});
-    }
+    // Create a single global notification entry for the notification center
+    await Notification.create({
+        userId: 'global',
+        title: title || '📢 Nora Site Announcement',
+        content: message,
+        type: type === 'warning' ? 'warning' : 'special',
+        read: false,
+        isSpecial: true,
+        isOwnerAction: true
+    }).catch(() => {});
 
     return { alertRecord, sentPushCount };
 }

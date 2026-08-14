@@ -21,17 +21,25 @@ router.get('/', async (req, res) => {
         const userId = req.query.userId || req.headers['x-user-id'];
         const { Op } = require('sequelize');
 
-        const notifications = await Notification.findAll({
+        const rawNotifications = await Notification.findAll({
             where: {
                 [Op.or]: [
                     { userId: userId || 'anonymous' },
-                    { isOwnerAction: true },
-                    { isSpecial: true }
+                    { userId: 'global' }
                 ]
             },
             order: [['createdAt', 'DESC']],
             limit: 50
         }).catch(() => []);
+
+        // Deduplicate notifications by title, content, and type
+        const seen = new Set();
+        const notifications = rawNotifications.filter(n => {
+            const key = `${n.title}|${n.content}|${n.type}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
 
         res.json({ notifications });
     } catch (err) {
