@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nora Studio | Manager</title>
     <link rel="icon" type="image/png" href="nora.png">
+    <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="/translate.js"></script>
@@ -10095,10 +10096,173 @@
             return item;
         }
 
+        // ─────────────────────────────────────────────────────────────────────────────
+        // 🔔 PWA SERVICE WORKER, WEB PUSH & OWNER SITE ALERTS SYSTEM
+        // ─────────────────────────────────────────────────────────────────────────────
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        async function initServiceWorkerAndPush() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+                    console.log('[Nora PWA] Service Worker active:', reg.scope);
+                    
+                    // Auto-subscribe if notification permission is already granted
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        subscribeToWebPush(true);
+                    }
+                } catch (e) {
+                    console.error('[Nora PWA] Service worker registration error:', e);
+                }
+            }
+            loadSiteAlerts();
+            setInterval(loadSiteAlerts, 60000); // Check site alerts every minute
+        }
+
+        async function subscribeToWebPush(silent = false) {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                if (!silent) showToast('Web Push Notifications are not supported by this browser.', 'error');
+                return false;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    if (!silent) showToast('Push Notification permission was denied.', 'warning');
+                    return false;
+                }
+
+                const reg = await navigator.serviceWorker.ready;
+                const keyRes = await fetch('/api/notifications/vapid-key');
+                const keyData = await keyRes.json();
+
+                if (!keyData || !keyData.publicKey) {
+                    if (!silent) showToast('Could not retrieve Web Push VAPID key.', 'error');
+                    return false;
+                }
+
+                const applicationServerKey = urlBase64ToUint8Array(keyData.publicKey);
+                let sub = await reg.pushManager.getSubscription();
+
+                if (!sub) {
+                    sub = await reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey
+                    });
+                }
+
+                const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
+                await fetch('/api/notifications/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subscription: sub, userId: currentUserId })
+                });
+
+                if (!silent) showToast('🔔 Web Push Notifications successfully enabled!', 'success');
+                return true;
+            } catch (err) {
+                console.error('[Push Subscription Error]:', err);
+                if (!silent) showToast('Failed to enable push notifications: ' + err.message, 'error');
+                return false;
+            }
+        }
+
+        async function loadSiteAlerts() {
+            try {
+                const res = await fetch('/api/notifications/site-alerts');
+                const data = await res.json();
+                if (data && data.alerts && data.alerts.length > 0) {
+                    const active = data.alerts[0];
+                    const dismissedKey = 'dismissed_site_alert_' + active.id;
+                    if (!localStorage.getItem(dismissedKey)) {
+                        renderSiteAlertBanner(active);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function renderSiteAlertBanner(alert) {
+            const existing = document.getElementById('site-alert-top-banner');
+            if (existing) existing.remove();
+
+            const banner = document.createElement('div');
+            banner.id = 'site-alert-top-banner';
+            banner.setAttribute('data-no-translate', 'true');
+
+            const colorMap = {
+                announcement: '#7C3AED',
+                warning: '#EF4444',
+                info: '#3B82F6',
+                success: '#10B981'
+            };
+            const accentColor = colorMap[alert.type] || '#7C3AED';
+
+            banner.style.cssText = `
+                background: linear-gradient(90deg, rgba(124, 58, 237, 0.25), rgba(15, 23, 42, 0.95));
+                border-bottom: 2px solid ${accentColor};
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                padding: 12px 24px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                color: #fff;
+                font-size: 0.9rem;
+                position: sticky;
+                top: 0;
+                z-index: 99999;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                animation: slideDownIn 0.3s ease;
+            `;
+
+            banner.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                    <span style="background: ${accentColor}; color: #fff; padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-bullhorn"></i> ${alert.title || 'SITE ANNOUNCEMENT'}
+                    </span>
+                    <span style="font-weight: 500; line-height: 1.4;">${alert.message}</span>
+                </div>
+                <button style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; font-weight: 600;" onclick="localStorage.setItem('dismissed_site_alert_${alert.id}', 'true'); document.getElementById('site-alert-top-banner').remove();">Dismiss</button>
+            `;
+
+            const mainNav = document.querySelector('nav') || document.body.firstChild;
+            if (mainNav && mainNav.parentNode) {
+                mainNav.parentNode.insertBefore(banner, mainNav);
+            } else {
+                document.body.prepend(banner);
+            }
+        }
+
+        window.addEventListener('load', initServiceWorkerAndPush);
+
         let reminders = [];
 
-        function loadReminders() {
+        async function loadReminders() {
             try {
+                const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : null;
+                if (currentUserId) {
+                    const res = await fetch('/api/notifications/reminders?userId=' + currentUserId);
+                    const data = await res.json();
+                    if (data && data.reminders) {
+                        reminders = data.reminders.map(r => ({
+                            id: r.id,
+                            message: r.message,
+                            triggerTime: parseInt(r.triggerTime, 10)
+                        })).filter(r => r.triggerTime > Date.now());
+                        renderReminders();
+                        startReminderTimers();
+                        return;
+                    }
+                }
                 const saved = localStorage.getItem('nora_reminders');
                 if (saved) {
                     reminders = JSON.parse(saved);
@@ -10113,7 +10277,7 @@
             localStorage.setItem('nora_reminders', JSON.stringify(reminders));
         }
 
-        function scheduleReminder() {
+        async function scheduleReminder() {
             const msgInput = document.getElementById('reminder-msg');
             const delaySelect = document.getElementById('reminder-delay');
             if (!msgInput || !delaySelect) return;
@@ -10121,8 +10285,29 @@
             const message = msgInput.value.trim();
             if (!message) return showToast('Please enter a reminder message!', 'error');
 
-            const delayMinutes = parseInt(delaySelect.value);
+            const delayMinutes = parseInt(delaySelect.value, 10);
             const triggerTime = Date.now() + delayMinutes * 60000;
+            const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
+
+            // Post to server API for Web Push & background scheduler delivery
+            try {
+                await fetch('/api/notifications/reminders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUserId,
+                        message,
+                        delayMinutes
+                    })
+                });
+            } catch (e) {
+                console.error('[Reminders API Error]:', e);
+            }
+
+            // Prompt for Web Push permission if not granted
+            if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                subscribeToWebPush();
+            }
 
             const reminder = {
                 id: Date.now() + Math.random().toString(36).substr(2, 5),
@@ -10136,7 +10321,7 @@
             startReminderTimers();
 
             msgInput.value = '';
-            showToast('Reminder successfully scheduled!', 'success');
+            showToast('⏰ Reminder scheduled! Web Push notifications will alert you when due.', 'success');
             
             addNotification(
                 'Reminder Set',

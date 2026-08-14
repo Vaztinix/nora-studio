@@ -12,6 +12,18 @@ module.exports = {
         .addSubcommand(sub =>
             sub.setName('backup')
                 .setDescription('Generate a physical JSON export of all system leveling and configuration data.')
+        )
+        .addSubcommand(sub =>
+            sub.setName('broadcast')
+                .setDescription('Broadcast a custom site alert message to all dashboard users (Owner only)')
+                .addStringOption(opt =>
+                    opt.setName('message')
+                        .setDescription('The alert message content to broadcast to all site users')
+                        .setRequired(true))
+                .addStringOption(opt =>
+                    opt.setName('title')
+                        .setDescription('Custom title for the site alert / push notification')
+                        .setRequired(false))
         ),
 
     async execute(interaction) {
@@ -66,6 +78,42 @@ module.exports = {
                 .setTimestamp();
 
             await interaction.editReply({ embeds: [embed], files: [attachment] });
+        } else if (subcommand === 'broadcast') {
+            await interaction.deferReply({ ephemeral: true });
+
+            const message = interaction.options.getString('message');
+            const title = interaction.options.getString('title') || '📢 Nora Site Announcement';
+
+            const SiteAlert = require('../../database/models/SiteAlert');
+            const pushManager = require('../../utils/pushManager');
+
+            const alertRecord = await SiteAlert.create({
+                title,
+                message,
+                type: 'announcement',
+                authorId: interaction.user.id,
+                isActive: true
+            });
+
+            const sentPushCount = await pushManager.broadcastPushNotification({
+                title,
+                body: message,
+                icon: '/favicon.ico',
+                data: { url: '/dashboard' }
+            });
+
+            const embed = new EmbedBuilder()
+                .setTitle('🚀 Site Broadcast Published')
+                .setDescription(`Your alert message has been published to the web dashboard and pushed to active Web App subscribers.`)
+                .setColor(0x7C3AED)
+                .addFields(
+                    { name: 'Title', value: `\`${title}\``, inline: true },
+                    { name: 'Web Push Deliveries', value: `**${sentPushCount}** device(s)`, inline: true },
+                    { name: 'Message', value: `"${message}"`, inline: false }
+                )
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [embed] });
         }
     },
 };

@@ -1187,6 +1187,17 @@ app.get('/api/public/user/:userId', async (req, res) => {
 });
 
 
+// Serve Service Worker & PWA Manifest at root paths
+app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.sendFile(path.join(__dirname, 'web/sw.js'));
+});
+app.get('/manifest.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.sendFile(path.join(__dirname, 'web/manifest.json'));
+});
+
 // Serve static assets (JS, CSS, images) — dashboard.html itself is handled above
 app.use(express.static(path.join(__dirname, '../dist'), {
     maxAge: '1d',
@@ -1201,6 +1212,13 @@ app.use(express.static(path.join(__dirname, 'web'), {
     }
 }));
 
+// Mount API Routers
+const notificationsRouter = require('./api/routes/notifications');
+app.use('/api/notifications', notificationsRouter);
+
+// Initialize Reminder Scheduler Loop
+const { initReminderScheduler } = require('./utils/reminderScheduler');
+initReminderScheduler(client);
 
 // Mount the API Router for settings
 const settingsRouter = require('./api/routes/settings');
