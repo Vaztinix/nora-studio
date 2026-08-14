@@ -10181,7 +10181,8 @@
                 }
 
                 const reg = await navigator.serviceWorker.ready;
-                const keyRes = await fetch('/api/notifications/vapid-key');
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const keyRes = await fetch(apiBase + '/api/notifications/vapid-key');
                 const keyData = await keyRes.json();
 
                 if (!keyData || !keyData.publicKey) {
@@ -10200,7 +10201,7 @@
                 }
 
                 const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
-                await fetch('/api/notifications/subscribe', {
+                await fetch(apiBase + '/api/notifications/subscribe', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ subscription: sub, userId: currentUserId })
@@ -10217,7 +10218,8 @@
 
         async function loadSiteAlerts() {
             try {
-                const res = await fetch('/api/notifications/site-alerts');
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const res = await fetch(apiBase + '/api/notifications/site-alerts');
                 const data = await res.json();
                 if (data && data.alerts && data.alerts.length > 0) {
                     const active = data.alerts[0];
@@ -10287,9 +10289,10 @@
 
         async function loadReminders() {
             try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
                 const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : null;
                 if (currentUserId) {
-                    const res = await fetch('/api/notifications/reminders?userId=' + currentUserId);
+                    const res = await fetch(apiBase + '/api/notifications/reminders?userId=' + currentUserId);
                     const data = await res.json();
                     if (data && data.reminders) {
                         reminders = data.reminders.map(r => ({
@@ -10330,7 +10333,8 @@
 
             // Post to server API for Web Push & background scheduler delivery
             try {
-                await fetch('/api/notifications/reminders', {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                await fetch(apiBase + '/api/notifications/reminders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

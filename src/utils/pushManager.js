@@ -1,14 +1,34 @@
+const fs = require('fs');
+const path = require('path');
 const webpush = require('web-push');
 const PushSubscription = require('../database/models/PushSubscription');
 
-// Generate or load VAPID Keys dynamically
+const VAPID_FILE = path.join(__dirname, '../../.vapid_keys.json');
+
+// Generate or load VAPID Keys dynamically with persistent file fallback
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-    try {
-        const vapidKeys = webpush.generateVAPIDKeys();
-        process.env.VAPID_PUBLIC_KEY = vapidKeys.publicKey;
-        process.env.VAPID_PRIVATE_KEY = vapidKeys.privateKey;
-    } catch (e) {
-        console.error('[PushManager] Failed to generate VAPID keys:', e.message);
+    if (fs.existsSync(VAPID_FILE)) {
+        try {
+            const saved = JSON.parse(fs.readFileSync(VAPID_FILE, 'utf8'));
+            if (saved.publicKey && saved.privateKey) {
+                process.env.VAPID_PUBLIC_KEY = saved.publicKey;
+                process.env.VAPID_PRIVATE_KEY = saved.privateKey;
+                console.log('[PushManager] Loaded persistent VAPID keys from file.');
+            }
+        } catch (e) {
+            console.error('[PushManager] Error reading .vapid_keys.json:', e.message);
+        }
+    }
+    if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+        try {
+            const vapidKeys = webpush.generateVAPIDKeys();
+            process.env.VAPID_PUBLIC_KEY = vapidKeys.publicKey;
+            process.env.VAPID_PRIVATE_KEY = vapidKeys.privateKey;
+            fs.writeFileSync(VAPID_FILE, JSON.stringify(vapidKeys, null, 2), 'utf8');
+            console.log('[PushManager] Generated & persisted new VAPID keys to file.');
+        } catch (e) {
+            console.error('[PushManager] Failed to generate VAPID keys:', e.message);
+        }
     }
 }
 
