@@ -499,24 +499,25 @@ module.exports = {
 
         // Handle Dynamic Self Roles List
         if (interaction.isButton() && interaction.customId.startsWith('selfrole_assign_')) {
+            await interaction.deferReply({ ephemeral: true }).catch(() => {});
             const targetRoleId = interaction.customId.replace('selfrole_assign_', '');
             
             const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
             if (!member) {
-                return interaction.reply({ content: 'Failed to access your member profile.', ephemeral: true });
+                return interaction.editReply({ content: 'Failed to access your member profile.' });
             }
 
             try {
                 if (member.roles.cache.has(targetRoleId)) {
                     await member.roles.remove(targetRoleId);
-                    return interaction.reply({ content: `Removed the <@&${targetRoleId}> role.`, ephemeral: true });
+                    return interaction.editReply({ content: `Removed the <@&${targetRoleId}> role.` });
                 } else {
                     await member.roles.add(targetRoleId);
-                    return interaction.reply({ content: `Assigned the <@&${targetRoleId}> role to you!`, ephemeral: true });
+                    return interaction.editReply({ content: `Assigned the <@&${targetRoleId}> role to you!` });
                 }
             } catch (error) {
                 console.error('Dynamic Self Role Error:', error);
-                return interaction.reply({ content: 'I am lacking physical permissions to assign that role, or the role is higher than mine. Please notify an admin.', ephemeral: true });
+                return interaction.editReply({ content: 'I am lacking physical permissions to assign that role, or the role is higher than mine. Please notify an admin.' });
             }
         }
 
