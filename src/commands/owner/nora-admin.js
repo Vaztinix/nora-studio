@@ -107,6 +107,31 @@ module.exports = {
                 .setTimestamp();
 
             await interaction.editReply({ embeds: [embed] });
+        } else if (subcommand === 'setname') {
+            await interaction.deferReply({ ephemeral: true });
+
+            const newName = interaction.options.getString('name');
+            const { Routes } = require('discord.js');
+
+            try {
+                await interaction.client.rest.patch(Routes.user(), {
+                    body: { global_name: newName }
+                });
+
+                const { updateAllGuildNicknames } = require('../../utils/nameAnimator');
+                await updateAllGuildNicknames(interaction.client, newName);
+
+                const embed = new EmbedBuilder()
+                    .setTitle('✨ Bot Name & Font Updated')
+                    .setDescription(`Nora's Global Display Name and Server Nickname have been updated.`)
+                    .setColor(0x10B981)
+                    .addFields({ name: 'New Name', value: `\`${newName}\``, inline: true })
+                    .setTimestamp();
+
+                await interaction.editReply({ embeds: [embed] });
+            } catch (err) {
+                await interaction.editReply({ content: `❌ Failed to update name: ${err.message}` });
+            }
         }
     },
 };

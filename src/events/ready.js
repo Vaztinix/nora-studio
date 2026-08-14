@@ -13,6 +13,16 @@ module.exports = {
         const { startNameAnimator } = require('../utils/nameAnimator');
         startNameAnimator(client);
 
+        // Update Bot Global Display Name to Cat Bot font style (𝗡𝗼𝗿𝗮 𝗕𝗼𝘁 / 𝗡𝗼𝗿𝗮)
+        try {
+            await client.rest.patch(Routes.user(), {
+                body: { global_name: '𝗡𝗼𝗿𝗮 𝗕𝗼𝘁' }
+            });
+            console.log('[System] Updated Bot Global Display Name to: 𝗡𝗼𝗿𝗮 𝗕𝗼𝘁');
+        } catch (err) {
+            console.log('[System] Global display name update info:', err.message);
+        }
+
         // 1. 🌍 Immediate Global Command Sync: Register commands first before background operations
         const commands = client.commands.map(cmd => cmd.data.toJSON());
 
