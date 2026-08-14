@@ -13,26 +13,41 @@ module.exports = {
             const loggerUtil = require('../utils/logger');
             
             const author = message.author;
+            const member = message.member;
+
+            const authorTag = author ? (author.discriminator && author.discriminator !== '0' ? `${author.username}#${author.discriminator}` : author.tag) : 'Uncached User';
+            const displayName = member?.displayName || author?.globalName || author?.username || 'Unknown';
+            const authorFormatted = author ? `${authorTag} (@${displayName})` : 'Unknown User';
+
+            const createdTimeUnix = Math.floor((message.createdTimestamp || Date.now()) / 1000);
+
+            const description = [
+                `**Channel:** <#${message.channel.id}> (${message.channel.name})`,
+                `**Message ID:** ${message.id}`,
+                `**Message author:** ${authorFormatted}`,
+                `**Message created:** <t:${createdTimeUnix}:R>`
+            ].join('\n');
+
+            let contentText = message.content ? message.content.substring(0, 1024) : '*Empty/Embed*';
+
+            if (message.attachments && message.attachments.size > 0) {
+                const attachUrls = message.attachments.map(a => a.url).join('\n');
+                contentText += `\n${attachUrls}`;
+                if (contentText.length > 1024) contentText = contentText.substring(0, 1021) + '...';
+            }
+
             const embed = new EmbedBuilder()
-                .setTitle('🗑️ Message Deleted')
+                .setTitle('Message deleted')
                 .setAuthor({
                     name: author ? author.tag : 'Uncached User',
-                    iconURL: author ? author.displayAvatarURL({ dynamic: true }) : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                    iconURL: author ? author.displayAvatarURL({ dynamic: true }) : undefined
                 })
                 .setColor(0xED4245)
+                .setDescription(description)
                 .addFields(
-                    { name: 'Channel', value: `<#${message.channel.id}> (\`#${message.channel.name}\`)`, inline: true },
-                    { name: 'Author', value: author ? `<@${author.id}> (\`${author.id}\`)` : 'Unknown', inline: true },
-                    { name: 'Content', value: message.content ? (message.content.substring(0, 1024) || '*Empty/Embed*') : '*Unknown Content (Uncached)*' }
+                    { name: 'Deleted Message', value: contentText, inline: false }
                 )
-                .setFooter({ text: `Message ID: ${message.id}` })
                 .setTimestamp();
-
-            // Log attachments if present
-            if (message.attachments && message.attachments.size > 0) {
-                const attachList = message.attachments.map(a => `[${a.name}](${a.url})`).join('\n');
-                embed.addFields({ name: 'Attachments', value: attachList.substring(0, 1024) || '*File Attached*', inline: false });
-            }
 
             // Try fetching audit logs for moderator deletion
             if (message.guild.members.me.permissions.has(PermissionFlagsBits.ViewAuditLog)) {

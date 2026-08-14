@@ -204,7 +204,7 @@ async function generateRankCard({
     const svgBgFill = isAnimatedGif ? 'none' : bgColor;
     const svgOverlayFill = isAnimatedGif ? 'rgba(10, 11, 16, 0.55)' : 'rgba(10, 11, 16, 0.45)';
 
-    const safeUsername = String(username || 'User').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    const safeUsername = String(username || 'User').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
     const svgString = `
     <svg width="800" height="220" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">

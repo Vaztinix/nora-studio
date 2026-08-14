@@ -67,6 +67,9 @@ async function generateLeaderboard({ guildName, page, totalPages, users, bgColor
         else if (u.rank === 2) rankColor = '#9ca3af'; // Silver
         else if (u.rank === 3) rankColor = '#d97706'; // Bronze
 
+        const safeUsername = String(u.username || 'User').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const safeGuildName = String(guildName || 'Leaderboard').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
         svgRows += `
         <!-- Row Divider -->
         ${index > 0 ? `<line x1="40" y1="${yOffset}" x2="760" y2="${yOffset}" stroke="${borderColor}" stroke-width="1" />` : ''}
@@ -87,7 +90,7 @@ async function generateLeaderboard({ guildName, page, totalPages, users, bgColor
 
         <!-- Rank & Username -->
         <text x="130" y="${yOffset + 42}" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="${rankColor}">#${u.rank}</text>
-        <text x="190" y="${yOffset + 42}" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">@${u.username}</text>
+        <text x="190" y="${yOffset + 42}" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">@${safeUsername}</text>
 
         <!-- Level & XP -->
         <text x="760" y="${yOffset + 42}" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="bold" fill="#a1a1aa" text-anchor="end">
@@ -100,6 +103,8 @@ async function generateLeaderboard({ guildName, page, totalPages, users, bgColor
         ${barWidth > 0 ? `<rect x="190" y="${yOffset + 54}" width="${barWidth}" height="4" rx="2" fill="url(#progressGrad)" />` : ''}
         `;
     });
+
+    const safeGuildHeader = String(guildName || 'Leaderboard').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
     const svgString = `
     <svg width="800" height="${totalHeight}" viewBox="0 0 800 ${totalHeight}" xmlns="http://www.w3.org/2000/svg">
@@ -119,7 +124,7 @@ async function generateLeaderboard({ guildName, page, totalPages, users, bgColor
 
         <!-- Header -->
         <text x="40" y="38" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff" letter-spacing="-0.5">LEADERBOARD</text>
-        <text x="40" y="58" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold" fill="${accentColor}">${guildName.toUpperCase()}</text>
+        <text x="40" y="58" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold" fill="${accentColor}">${safeGuildHeader.toUpperCase()}</text>
         
         <text x="760" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold" fill="#52525b" text-anchor="end">PAGE ${page} OF ${totalPages}</text>
 

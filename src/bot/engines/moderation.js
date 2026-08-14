@@ -36,18 +36,18 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
     if (!guildConfig) return { actionRequired: false };
 
     // 1. MASTER TOGGLE CHECK:
-    // If BOTH moderationEnabled AND autoModActive are disabled/false, do NOT moderate chat!
+    // If autoModActive is false OR moderationEnabled is false, do NOT moderate chat!
     const isModerationEnabled = Boolean(guildConfig.moderationEnabled);
     const isAutoModActive = Boolean(guildConfig.autoModActive);
 
-    if (!isModerationEnabled && !isAutoModActive) {
+    if (!isModerationEnabled || !isAutoModActive) {
         return { actionRequired: false };
     }
 
     // 2. FEATURE TOGGLE CHECKS:
-    const isProfanityActive = Boolean(guildConfig.automodProfanity || isAutoModActive);
-    const isSlursActive = Boolean(guildConfig.automodSlurs || isAutoModActive);
-    const isScamActive = Boolean(guildConfig.automodScam || guildConfig.automodHardcore || guildConfig.automodSpam || isAutoModActive);
+    const isProfanityActive = Boolean(guildConfig.automodProfanity);
+    const isSlursActive = Boolean(guildConfig.automodSlurs !== false);
+    const isScamActive = Boolean(guildConfig.automodScam || guildConfig.automodHardcore || guildConfig.automodSpam);
     const isMentionsActive = parseInt(guildConfig.automodMentions || 0, 10) > 0;
     
     let customWords = [];
@@ -164,8 +164,9 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
     }
 
     // Casual expression (e.g. swearing in conversation without targeting someone)
+    const isStrictProfanity = Boolean(guildConfig.automodStrictProfanity);
     return {
-        actionRequired: isProfanityActive,
+        actionRequired: isStrictProfanity,
         contextClassification: "CASUAL_EXPRESSION",
         recommendedAction: "DISPATCH_EPHEMERAL_NOTICE",
         reason: `Conversational use of flagged word [${violationTerm}].`

@@ -1027,10 +1027,17 @@ module.exports = {
                 try {
                     return await originalEditReply(options);
                 } catch (err) {
+                    console.error('[System Network] interaction.editReply failed:', err);
                     if (err.code === 'UND_ERR_SOCKET' || err.message?.includes('other side closed') || err.code === 'ECONNRESET') {
                         console.warn('[System Network] Retrying editReply after socket reset...');
                         const retryRes = await originalEditReply(options).catch(() => null);
                         if (retryRes) return retryRes;
+                    }
+                    // Try one more clean originalEditReply attempt
+                    try {
+                        return await originalEditReply(options);
+                    } catch (finalErr) {
+                        console.error('[System Network] Final editReply attempt failed:', finalErr);
                     }
                     // Channel Failover Delivery: If interaction token expired or edit failed, deliver directly to channel!
                     if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
@@ -1044,7 +1051,8 @@ module.exports = {
 
             try {
                 if (!command.showModal && !command.noAutoDefer && !interaction.deferred && !interaction.replied) {
-                    await interaction.deferReply({ ephemeral: isEphemeralCmd }).catch(() => {});
+                    const { MessageFlags } = require('discord.js');
+                    await interaction.deferReply(isEphemeralCmd ? { flags: MessageFlags.Ephemeral } : {}).catch(() => {});
                 }
                 await command.execute(interaction, settings);
             } catch (error) {

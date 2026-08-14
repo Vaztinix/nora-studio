@@ -15,21 +15,48 @@ module.exports = {
             const loggerUtil = require('../utils/logger');
             
             const author = oldMessage.author || newMessage.author;
+            const member = oldMessage.member || newMessage.member;
+
+            const authorTag = author ? (author.discriminator && author.discriminator !== '0' ? `${author.username}#${author.discriminator}` : author.tag) : 'Uncached User';
+            const displayName = member?.displayName || author?.globalName || author?.username || 'Unknown';
+            const authorFormatted = author ? `${authorTag} (@${displayName})` : 'Unknown User';
+
+            const createdTimeUnix = Math.floor((oldMessage.createdTimestamp || newMessage.createdTimestamp || Date.now()) / 1000);
+
+            const description = [
+                `**Channel:** <#${oldMessage.channel.id}> (${oldMessage.channel.name})`,
+                `**Message ID:** ${newMessage.id}`,
+                `**Message author:** ${authorFormatted}`,
+                `**Message created:** <t:${createdTimeUnix}:R>`
+            ].join('\n');
+
+            let beforeText = oldMessage.content ? oldMessage.content.substring(0, 1024) : '*Empty/Embed*';
+            let afterText = newMessage.content ? newMessage.content.substring(0, 1024) : '*Empty/Embed*';
+
+            if (oldMessage.attachments && oldMessage.attachments.size > 0) {
+                const attachUrls = oldMessage.attachments.map(a => a.url).join('\n');
+                beforeText += `\n${attachUrls}`;
+                if (beforeText.length > 1024) beforeText = beforeText.substring(0, 1021) + '...';
+            }
+
+            if (newMessage.attachments && newMessage.attachments.size > 0) {
+                const attachUrls = newMessage.attachments.map(a => a.url).join('\n');
+                afterText += `\n${attachUrls}`;
+                if (afterText.length > 1024) afterText = afterText.substring(0, 1021) + '...';
+            }
+
             const embed = new EmbedBuilder()
-                .setTitle('✏️ Message Edited')
+                .setTitle('Message edited')
                 .setAuthor({
                     name: author ? author.tag : 'Uncached User',
-                    iconURL: author ? author.displayAvatarURL({ dynamic: true }) : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                    iconURL: author ? author.displayAvatarURL({ dynamic: true }) : undefined
                 })
                 .setColor(0xFEE75C)
+                .setDescription(description)
                 .addFields(
-                    { name: 'Channel', value: `<#${oldMessage.channel.id}> (\`#${oldMessage.channel.name}\`)`, inline: true },
-                    { name: 'Author', value: author ? `<@${author.id}> (\`${author.id}\`)` : 'Unknown', inline: true },
-                    { name: 'Before', value: oldMessage.content ? (oldMessage.content.substring(0, 1024) || '*Empty*') : '*Empty/Embed*', inline: false },
-                    { name: 'After', value: newMessage.content ? (newMessage.content.substring(0, 1024) || '*Empty*') : '*Empty/Embed*', inline: false },
-                    { name: 'Message Link', value: `[🔗 Jump to Message](${newMessage.url})`, inline: false }
+                    { name: 'Before', value: beforeText, inline: false },
+                    { name: 'After', value: afterText, inline: false }
                 )
-                .setFooter({ text: `Message ID: ${newMessage.id}` })
                 .setTimestamp();
 
             await loggerUtil.sendEventLog(oldMessage.guild, 'messageUpdate', embed, settings);

@@ -18,6 +18,10 @@ module.exports = {
                 .setDescription('Open the interactive settings menu dashboard for managing Nora.'))
         .addSubcommand(subcommand =>
             subcommand
+                .setName('automod')
+                .setDescription('Configure Discord native AutoMod rules and chat safety settings.'))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('roblox')
                 .setDescription('Configure Roblox verification settings for this server.')
                 .addBooleanOption(option =>
@@ -76,6 +80,8 @@ module.exports = {
         try {
             if (subcommand === 'dashboard') {
                 return await this.runDashboard(interaction, settings);
+            } else if (subcommand === 'automod') {
+                return await this.runDashboard(interaction, settings, 'view_automod');
             } else if (subcommand === 'roblox') {
                 return await this.runRobloxSetup(interaction, settings);
             } else if (subcommand === 'starboard') {
@@ -218,8 +224,7 @@ module.exports = {
                      .setDescription('Configure how Nora works in your server. Most features are automated for simplicity.');
                 const menu = new StringSelectMenuBuilder().setCustomId('config_main').setPlaceholder('Choose a category...').addOptions([
                     { label: 'Safety & Anti-Raid', value: 'view_antiraid', description: 'Stop bot raids and new accounts.' },
-                    { label: 'Chat Safety (AutoMod)', value: 'view_automod', description: 'Filter bad words and scam links automatically.' },
-                    { label: 'Spam Control', value: 'view_antispam', description: 'Prevent users from flooding chat.' },
+                    { label: 'Chat Safety (AutoMod)', value: 'view_automod', description: 'Filter bad words, spam, and scam links via Discord AutoMod.' },
                     { label: 'Member Logs', value: 'view_logging', description: 'Keep track of joins, leaves, and edits.' },
                     { label: 'Leveling & XP', value: 'view_levels', description: 'Reward active chatters with ranks.' },
                     { label: 'Starboard System', value: 'view_starboard', description: 'Community star voting and post highlighting.' },
@@ -267,43 +272,57 @@ module.exports = {
 
             // --- CHAT SAFETY ---
             if (viewName === 'view_automod') {
+                const on  = (v) => v ? '🟢 Blocked' : '🔴 Allowed';
                 embed.setTitle('Chat Safety (AutoMod)')
-                     .setDescription('Discord will automatically block messages that break these rules.')
+                     .setDescription('All rules are enforced by **Discord\'s native AutoMod engine** — zero false positives, zero delay.\n\nToggle each rule to create or remove it from your server\'s AutoMod rules.')
                      .addFields(
-                        { name: 'Bad Language', value: settings.automodProfanity ? 'Blocked' : 'Allowed', inline: true },
-                        { name: 'Spam Links', value: settings.automodScam ? 'Blocked' : 'Allowed', inline: true },
-                        { name: 'Spam Text', value: settings.automodSpam ? 'Blocked' : 'Allowed', inline: true },
-                        { name: 'Hardcore Media', value: settings.automodHardcore ? 'Blocked' : 'Allowed', inline: true },
-                        { name: 'Mention Limit', value: settings.automodMentions > 0 ? `${settings.automodMentions} max` : 'Off', inline: true }
+                        { name: '🔤 Profanity', value: on(settings.automodProfanity), inline: true },
+                        { name: '🔞 Sexual Content', value: on(settings.automodSexual), inline: true },
+                        { name: '🚫 Slurs', value: on(settings.automodSlurs), inline: true },
+                        { name: '🔗 Scam Links', value: on(settings.automodScam), inline: true },
+                        { name: '💬 Text Spam', value: on(settings.automodSpam), inline: true },
+                        { name: '🔞 Hardcore Media', value: on(settings.automodHardcore), inline: true },
+                        { name: '📢 Mention Spam', value: settings.automodMentions > 0 ? `🟢 Max ${settings.automodMentions}` : '🔴 Off', inline: true },
+                        { name: '🛡️ Bypass Roles', value: (() => { try { const r = JSON.parse(settings.automodImmuneRoles || '[]'); return r.length ? r.map(id => `<@&${id}>`).join(', ') : '*None*'; } catch { return '*None*'; } })(), inline: true }
                      );
-                const rowA = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_automod_profanity').setLabel('Toggle Bad Words').setStyle(settings.automodProfanity ? ButtonStyle.Success : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_automod_scam').setLabel('Toggle Scam').setStyle(settings.automodScam ? ButtonStyle.Success : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_automod_spam').setLabel('Toggle Text Spam').setStyle(settings.automodSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_automod_hardcore').setLabel('Toggle Hardcore').setStyle(settings.automodHardcore ? ButtonStyle.Success : ButtonStyle.Secondary)
-                );
-                const rowB = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_automod_mentions').setPlaceholder('Block Mention Spam at...').addOptions([{label:'Off',value:'0'},{label:'5 Mentions',value:'5'},{label:'10 Mentions',value:'10'}]));
-                const rowC = new ActionRowBuilder().addComponents(new RoleSelectMenuBuilder().setCustomId('action_automod_immune').setPlaceholder('Select Bypass Roles...').setMinValues(0).setMaxValues(20));
-                
-                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
-            }
 
-            // --- SPAM CONTROL ---
-            if (viewName === 'view_antispam') {
-                embed.setTitle('Spam Control')
-                     .setDescription('Stops users from typing too many messages too quickly.')
-                     .addFields(
-                        { name: 'Status', value: settings.spamDetectionEnabled ? 'Enabled' : 'Disabled', inline: true },
-                        { name: 'Sensitivity', value: `${settings.spamThreshold} msgs`, inline: true },
-                        { name: 'Window', value: `${settings.spamInterval / 1000} secs`, inline: true },
-                        { name: 'Mute', value: `${settings.antiSpamMuteDuration / 60000} mins`, inline: true }
-                     );
-                const rowA = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_antispam_toggle').setLabel(settings.spamDetectionEnabled ? 'Disable' : 'Enable').setStyle(settings.spamDetectionEnabled ? ButtonStyle.Danger : ButtonStyle.Success));
-                const rowB = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_antispam_threshold').setPlaceholder('How strict?').addOptions([{label:'Strict (3 msgs)',value:'3'},{label:'Normal (5 msgs)',value:'5'},{label:'Relaxed (8 msgs)',value:'8'}]));
-                const rowC = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_antispam_interval').setPlaceholder('Time window...').addOptions([{label:'3 Seconds',value:'3000'},{label:'5 Seconds',value:'5000'},{label:'10 Seconds',value:'10000'}]));
-                const rowD = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_antispam_mute').setPlaceholder('Mute duration...').addOptions([{label:'1 Minute',value:'60000'},{label:'5 Minutes',value:'300000'},{label:'1 Hour',value:'3600000'}]));
+                // Row A: Preset word filters (all go into one Discord KeywordPreset rule)
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_automod_profanity').setLabel('Profanity').setStyle(settings.automodProfanity ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_sexual').setLabel('Sexual Content').setStyle(settings.automodSexual ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_slurs').setLabel('Slurs').setStyle(settings.automodSlurs ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_scam').setLabel('Scam Links').setStyle(settings.automodScam ? ButtonStyle.Success : ButtonStyle.Secondary)
+                );
+
+                // Row B: Keyword/Spam rule toggles
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_automod_spam').setLabel('Text Spam').setStyle(settings.automodSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_hardcore').setLabel('Hardcore Media').setStyle(settings.automodHardcore ? ButtonStyle.Success : ButtonStyle.Secondary)
+                );
+
+                // Row C: Mention spam threshold
+                const rowC = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder().setCustomId('action_automod_mentions').setPlaceholder('Mention Spam Limit...').addOptions([
+                        { label: 'Off — No limit', value: '0', default: settings.automodMentions === 0 },
+                        { label: '3 Mentions max', value: '3', default: settings.automodMentions === 3 },
+                        { label: '5 Mentions max', value: '5', default: settings.automodMentions === 5 },
+                        { label: '10 Mentions max', value: '10', default: settings.automodMentions === 10 },
+                        { label: '15 Mentions max', value: '15', default: settings.automodMentions === 15 },
+                        { label: '20 Mentions max', value: '20', default: settings.automodMentions === 20 },
+                    ])
+                );
+
+                // Row D: Bypass roles
+                const rowD = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_automod_immune').setPlaceholder('Select Bypass Roles...').setMinValues(0).setMaxValues(20)
+                );
+
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
+
+            // view_antispam is retired — spam detection now handled by Discord's native AutoMod engine
+            if (viewName === 'view_antispam') return buildDashboard('view_automod');
+
 
             // --- MEMBER LOGS & SECTION ROUTING ---
             if (viewName === 'view_logging') {
@@ -314,7 +333,7 @@ module.exports = {
                     try { logChannels = JSON.parse(settings.loggingChannels); } catch(e) { logChannels = {}; }
                 }
 
-                const activeSection = settings.selectedLogCategory || 'default';
+                const activeSection = state.selectedLogCategory || settings.selectedLogCategory || 'default';
                 const categoryLabels = {
                     default: '⚙️ Default Fallback Log Channel',
                     messages: '💬 Message Logs (Edits & Deletes)',
@@ -378,7 +397,7 @@ module.exports = {
                             { label: 'Member Logs', value: 'members', description: 'Dedicated channel for Member Joins, Leaves & Boosts.', default: activeSection === 'members' },
                             { label: 'Channel Logs', value: 'channels', description: 'Dedicated channel for Channel Creates, Edits & Deletes.', default: activeSection === 'channels' },
                             { label: 'Voice Logs', value: 'voice', description: 'Dedicated channel for Voice Joins, Leaves & Moves.', default: activeSection === 'voice' },
-                            { label: 'AutoMod & Safety Logs', value: 'automod', description: 'Dedicated channel for AutoMod & Safety Blocks.', default: activeCategory === 'automod' }
+                            { label: 'AutoMod & Safety Logs', value: 'automod', description: 'Dedicated channel for AutoMod & Safety Blocks.', default: activeSection === 'automod' }
                         ])
                 );
 
@@ -652,32 +671,26 @@ module.exports = {
                 if (i.customId === 'action_accountage_minage') { settings.minAccountAge = parseInt(i.values[0]); update = true; }
                 if (i.customId === 'action_antiraid_action') { settings.antiRaidAction = i.values[0]; update = true; }
 
-                // AutoMod
-                if (i.customId === 'action_automod_profanity') { 
-                    settings.automodProfanity = !settings.automodProfanity; 
-                    settings.automodSexual = settings.automodProfanity;
-                    settings.automodSlurs = settings.automodProfanity;
-                    update = true; sync = 'profanity'; 
-                }
-                if (i.customId === 'action_automod_scam') { settings.automodScam = !settings.automodScam; update = true; sync = 'scam'; }
-                if (i.customId === 'action_automod_spam') { settings.automodSpam = !settings.automodSpam; update = true; sync = 'spam'; }
-                if (i.customId === 'action_automod_hardcore') { settings.automodHardcore = !settings.automodHardcore; update = true; sync = 'hardcore'; }
-                if (i.customId === 'action_automod_mentions') { settings.automodMentions = parseInt(i.values[0]); update = true; sync = 'mentions'; }
-                if (i.customId === 'action_automod_immune') { settings.automodImmuneRoles = JSON.stringify(i.values); update = true; sync = 'all'; }
+                // AutoMod — independent toggle per rule type
+                if (i.customId === 'action_automod_profanity') { settings.automodProfanity = !settings.automodProfanity; update = true; sync = 'profanity'; }
+                if (i.customId === 'action_automod_sexual')    { settings.automodSexual = !settings.automodSexual; update = true; sync = 'profanity'; }
+                if (i.customId === 'action_automod_slurs')     { settings.automodSlurs = !settings.automodSlurs; update = true; sync = 'profanity'; }
+                if (i.customId === 'action_automod_scam')      { settings.automodScam = !settings.automodScam; update = true; sync = 'scam'; }
+                if (i.customId === 'action_automod_spam')      { settings.automodSpam = !settings.automodSpam; update = true; sync = 'spam'; }
+                if (i.customId === 'action_automod_hardcore')  { settings.automodHardcore = !settings.automodHardcore; update = true; sync = 'hardcore'; }
+                if (i.customId === 'action_automod_mentions')  { settings.automodMentions = parseInt(i.values[0]); update = true; sync = 'mentions'; }
+                if (i.customId === 'action_automod_immune')    { settings.automodImmuneRoles = JSON.stringify(i.values); update = true; sync = 'all'; }
 
-                // Anti-Spam
-                if (i.customId === 'action_antispam_toggle') { settings.spamDetectionEnabled = !settings.spamDetectionEnabled; update = true; }
-                if (i.customId === 'action_antispam_threshold') { settings.spamThreshold = parseInt(i.values[0]); update = true; }
-                if (i.customId === 'action_antispam_interval') { settings.spamInterval = parseInt(i.values[0]); update = true; }
-                if (i.customId === 'action_antispam_mute') { settings.antiSpamMuteDuration = parseInt(i.values[0]); update = true; }
+                // Anti-Spam (legacy handlers removed — fully managed by Discord native AutoMod)
 
                 // Logging & Section Channel Routing
                 if (i.customId === 'action_log_part_select') {
+                    state.selectedLogCategory = i.values[0];
                     settings.selectedLogCategory = i.values[0];
-                    update = true;
+                    return i.update(buildDashboard('view_logging'));
                 }
                 if (i.customId === 'action_log_channel') {
-                    const selectedCategory = settings.selectedLogCategory || 'default';
+                    const selectedCategory = state.selectedLogCategory || settings.selectedLogCategory || 'default';
                     const targetChannelId = i.values[0];
 
                     if (selectedCategory === 'default') {
@@ -908,6 +921,7 @@ module.exports = {
                             let isRuleEnabled = true;
                             if (sync === 'profanity') isRuleEnabled = settings.automodProfanity;
                             if (sync === 'scam') isRuleEnabled = settings.automodScam;
+                            if (sync === 'spam') isRuleEnabled = settings.automodSpam;
                             if (sync === 'hardcore') isRuleEnabled = settings.automodHardcore;
                             if (sync === 'mentions') isRuleEnabled = settings.automodMentions > 0;
                             await syncAutoModRule(i.guild, sync, isRuleEnabled, settings.automodMentions, settings);

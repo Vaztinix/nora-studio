@@ -11,10 +11,9 @@ module.exports = {
 
         // 1. 🌍 Immediate Global Command Sync: Register commands first before background operations
         const commands = client.commands.map(cmd => cmd.data.toJSON());
-        const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
         try {
-            await rest.put(
+            await client.rest.put(
                 Routes.applicationCommands(client.user.id),
                 { body: commands },
             );

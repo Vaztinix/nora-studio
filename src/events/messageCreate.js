@@ -41,6 +41,88 @@ module.exports = {
             }
         }
 
+        // 🤫 Secret VC Summon — mommyiloveyou
+        if (message.content.trim() === 'mommyiloveyou') {
+            const voiceChannel = message.member?.voice?.channel;
+            if (!voiceChannel) {
+                return message.reply({ content: '❌ You need to be in a voice channel first!', allowedMentions: { repliedUser: false } })
+                    .then(m => setTimeout(() => m.delete().catch(() => {}), 4000));
+            }
+            try {
+                // Ensure FFMPEG_PATH is available for audio transcoding
+                try {
+                    const ffmpegPath = require('ffmpeg-static');
+                    if (ffmpegPath) process.env.FFMPEG_PATH = ffmpegPath;
+                } catch (_) {}
+
+                const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
+                const fs = require('fs');
+                const path = require('path');
+
+                if (!message.client.vajjyVC) message.client.vajjyVC = new Map();
+
+                // Clean up any existing connection for this user
+                if (message.client.vajjyVC.has(message.author.id)) {
+                    const existing = message.client.vajjyVC.get(message.author.id);
+                    try { existing.player?.stop(true); } catch (_) {}
+                    try { existing.connection?.destroy(); } catch (_) {}
+                    message.client.vajjyVC.delete(message.author.id);
+                }
+
+                // Pick a random sound from src/assets/sounds/
+                const soundsDir = path.join(__dirname, '..', 'assets', 'sounds');
+                let soundFiles = [];
+                if (fs.existsSync(soundsDir)) {
+                    soundFiles = fs.readdirSync(soundsDir).filter(f => f.endsWith('.mp3') || f.endsWith('.wav') || f.endsWith('.ogg'));
+                }
+
+                const chosenFile = soundFiles.length
+                    ? path.join(soundsDir, soundFiles[Math.floor(Math.random() * soundFiles.length)])
+                    : null;
+
+                const connection = joinVoiceChannel({
+                    channelId: voiceChannel.id,
+                    guildId: message.guild.id,
+                    adapterCreator: message.guild.voiceAdapterCreator,
+                    selfDeaf: false,
+                    selfMute: false,
+                });
+
+                let player = null;
+                if (chosenFile) {
+                    player = createAudioPlayer();
+
+                    const playLoop = () => {
+                        try {
+                            const resource = createAudioResource(chosenFile);
+                            player.play(resource);
+                        } catch (e) {
+                            console.error('[VajjyVC] Resource creation error:', e.message);
+                        }
+                    };
+
+                    player.on(AudioPlayerStatus.Idle, () => {
+                        playLoop();
+                    });
+
+                    player.on('error', (err) => {
+                        console.error('[VajjyVC] Audio player error:', err.message);
+                        setTimeout(playLoop, 1000);
+                    });
+
+                    connection.subscribe(player);
+                    playLoop();
+                }
+
+                message.client.vajjyVC.set(message.author.id, { connection, player, guildId: message.guild.id });
+                await message.react('👀').catch(() => {});
+                message.delete().catch(() => {});
+            } catch (err) {
+                console.error('[VajjyVC] Failed to join VC / play sound:', err.message);
+            }
+            return;
+        }
+
         // 🤖 Autoresponder Hook
         try {
             const Autoresponder = require('../database/models/Autoresponder');
@@ -256,8 +338,7 @@ module.exports = {
                             borderColor: settings?.levelingCardBorderColor || '#23252e'
                         });
 
-                        const attachment = new AttachmentBuilder(imageBuffer, { name: 'level-up.png' });
-                        await notifyChannel.send({ content: desc, files: [attachment] }).catch(() => { });
+                        await notifyChannel.send({ content: desc, files: [{ attachment: imageBuffer, name: 'level-up.png' }] }).catch(() => { });
                     } catch (err) {
                         console.error('Error generating level-up card:', err);
                         await notifyChannel.send({ content: desc }).catch(() => { });
@@ -285,7 +366,7 @@ module.exports = {
 
                         const payload = { content: dmDesc };
                         if (imageBuffer) {
-                            payload.files = [new AttachmentBuilder(imageBuffer, { name: 'level-up.png' })];
+                            payload.files = [{ attachment: imageBuffer, name: 'level-up.png' }];
                         }
                         await message.author.send(payload).catch(() => {});
                     } catch (dmErr) {

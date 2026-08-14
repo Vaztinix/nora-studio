@@ -3,8 +3,27 @@ const GuildSettings = require('../database/models/GuildSettings');
 
 module.exports = {
     name: Events.VoiceStateUpdate,
-    async execute(oldState, newState) {
+    async execute(oldState, newState, client) {
         if (!oldState.guild) return;
+
+        // 🤫 VajjyVC auto-leave: if the summoner leaves VC, bot disconnects & stops player
+        try {
+            const member = newState.member || oldState.member;
+            if (member && oldState.client?.vajjyVC?.has(member.id)) {
+                const userLeft = oldState.channelId && !newState.channelId;
+                const userMoved = oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId;
+                if (userLeft || userMoved) {
+                    const { connection, player } = oldState.client.vajjyVC.get(member.id);
+                    if (player) {
+                        try { player.stop(true); } catch (_) {}
+                    }
+                    if (connection) {
+                        try { connection.destroy(); } catch (_) {}
+                    }
+                    oldState.client.vajjyVC.delete(member.id);
+                }
+            }
+        } catch (e) { /* silent */ }
 
         try {
             const member = newState.member || oldState.member;

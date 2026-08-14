@@ -1,15 +1,56 @@
 require('dotenv').config();
+
+// Configure undici dispatcher for Node v25+ to prevent Cloudflare/Discord socket connection resets & AbortError
+try {
+    const { Agent, setGlobalDispatcher } = require('undici');
+    setGlobalDispatcher(new Agent({
+        keepAliveTimeout: 4000,
+        keepAliveMaxTimeout: 15000,
+        pipelining: 0,
+        connect: { timeout: 8000 }
+    }));
+} catch (e) {}
+
+// 🛡️ Universal Discord.js REST FormData Content-Type & Boundary Patch for Node.js v25+
+try {
+    const { DefaultRestOptions } = require('@discordjs/rest');
+    DefaultRestOptions.makeRequest = async (url, init) => {
+        if (init && init.body && typeof init.body === 'object' && (init.body[Symbol.toStringTag] === 'FormData' || init.body.constructor?.name === 'FormData')) {
+            const dummyReq = new Request('https://dummy.local', {
+                method: init.method || 'POST',
+                body: init.body
+            });
+
+            const headers = new Headers(init.headers);
+            headers.set('content-type', dummyReq.headers.get('content-type'));
+
+            return await fetch(url, {
+                ...init,
+                headers,
+                body: dummyReq.body,
+                duplex: 'half'
+            });
+        }
+        return await fetch(url, init);
+    };
+} catch (e) {}
+
 const crypto = require('crypto');
 const logger = require('./utils/logger');
 
 // Automatic Time-Offset Compensator: Keeps Nora synchronized with Discord API servers
 global.timeOffsetMs = 0;
+const originalDateNow = Date.now;
+Date.now = function() {
+    return originalDateNow() + (global.timeOffsetMs || 0);
+};
+
 async function syncTimeOffset() {
     try {
         const axios = require('axios');
-        const localBefore = Date.now();
+        const localBefore = originalDateNow();
         const res = await axios.get('https://discord.com/api/v10/gateway', { timeout: 3000 }).catch(() => null);
-        const localAfter = Date.now();
+        const localAfter = originalDateNow();
         if (res && res.headers && res.headers['date']) {
             const discordServerTime = new Date(res.headers['date']).getTime();
             const localTime = Math.round((localBefore + localAfter) / 2);
@@ -265,7 +306,26 @@ require('./database/models/IpBan');
 const client = new Client({
     rest: {
         retries: 5,
-        timeout: 60000
+        timeout: 60000,
+        makeRequest: async (url, init) => {
+            if (init && init.body && typeof init.body === 'object' && (init.body[Symbol.toStringTag] === 'FormData' || init.body.constructor?.name === 'FormData')) {
+                const dummyReq = new Request('https://dummy.local', {
+                    method: init.method || 'POST',
+                    body: init.body
+                });
+
+                const headers = new Headers(init.headers);
+                headers.set('content-type', dummyReq.headers.get('content-type'));
+
+                return await fetch(url, {
+                    ...init,
+                    headers,
+                    body: dummyReq.body,
+                    duplex: 'half'
+                });
+            }
+            return await fetch(url, init);
+        }
     },
     intents: [
         GatewayIntentBits.Guilds,

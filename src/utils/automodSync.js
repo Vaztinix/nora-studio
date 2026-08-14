@@ -114,6 +114,7 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
     const names = {
         'mentions': '[NORA] Block Mention Spam',
         'scam': '[NORA] Block Scam Links',
+        'spam': '[NORA] Block Message Spam',
         'hardcore': '[NORA] Strict Content Filter (Regex)'
     };
 
@@ -133,6 +134,10 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
         case 'mentions':
             triggerType = AutoModerationRuleTriggerType.MentionSpam;
             triggerMetadata = { mentionTotalLimit: threshold || 5 };
+            break;
+        case 'spam':
+            triggerType = AutoModerationRuleTriggerType.Spam;
+            triggerMetadata = {};
             break;
         case 'scam':
             triggerType = AutoModerationRuleTriggerType.Keyword;
@@ -184,6 +189,7 @@ async function syncAllAutoModRules(guild, settings = null) {
     const results = [];
     results.push(await syncAutoModRule(guild, 'profanity', true, 0, settings));
     results.push(await syncAutoModRule(guild, 'scam', settings.automodScam, 0, settings));
+    results.push(await syncAutoModRule(guild, 'spam', settings.automodSpam, 0, settings));
     results.push(await syncAutoModRule(guild, 'hardcore', settings.automodHardcore, 0, settings));
     results.push(await syncAutoModRule(guild, 'mentions', settings.automodMentions > 0, settings.automodMentions, settings));
 

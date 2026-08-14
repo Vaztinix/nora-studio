@@ -106,13 +106,37 @@ module.exports = {
             }
 
             // Bulk Delete in chunks of 100 (Discord limit per bulkDelete operation)
+            // Note: interaction reply messages (webhook messages with buttons) cannot be bulk-deleted.
+            // We individually delete any messages that bulkDelete misses.
             const toDeleteArray = Array.from(toDelete.values());
             let totalDeleted = 0;
 
             for (let i = 0; i < toDeleteArray.length; i += 100) {
                 const chunk = toDeleteArray.slice(i, i + 100);
-                const deletedBatch = await interaction.channel.bulkDelete(chunk, true);
-                totalDeleted += deletedBatch.size;
+                try {
+                    const deletedBatch = await interaction.channel.bulkDelete(chunk, true);
+                    totalDeleted += deletedBatch.size;
+
+                    // Find messages skipped by bulkDelete (interaction responses, messages with components, or older msgs)
+                    const deletedIds = new Set(deletedBatch.keys());
+                    const skipped = chunk.filter(m => !deletedIds.has(m.id));
+                    for (const msg of skipped) {
+                        try {
+                            await msg.delete();
+                            totalDeleted++;
+                        } catch (e) {
+                            // Message may already be gone or undeletable — skip silently
+                        }
+                    }
+                } catch (bulkErr) {
+                    // If entire bulkDelete fails, fall back to individual deletes
+                    for (const msg of chunk) {
+                        try {
+                            await msg.delete();
+                            totalDeleted++;
+                        } catch (e) {}
+                    }
+                }
             }
 
             const targetStr = target ? `<@${target.id}>` : (filter === 'all' ? 'everyone' : filter);

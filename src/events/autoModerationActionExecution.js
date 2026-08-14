@@ -1,95 +1,68 @@
-const { Events, EmbedBuilder } = require('discord.js');
+const { Events, EmbedBuilder, AutoModerationRuleTriggerType, AutoModerationActionType } = require('discord.js');
+const settingsCache = require('../utils/settingsCache');
+const loggerUtil = require('../utils/logger');
+
+// Map trigger types to readable labels
+const TRIGGER_LABELS = {
+    [AutoModerationRuleTriggerType.Keyword]:       'Keyword / Regex Match',
+    [AutoModerationRuleTriggerType.KeywordPreset]: 'Preset Word Filter',
+    [AutoModerationRuleTriggerType.MentionSpam]:   'Mention Spam',
+    [AutoModerationRuleTriggerType.Spam]:          'Spam Detected',
+};
+
+const ACTION_LABELS = {
+    [AutoModerationActionType.BlockMessage]:   '🚫 Message Blocked',
+    [AutoModerationActionType.SendAlertMessage]: '📢 Alert Sent',
+    [AutoModerationActionType.Timeout]:         '⏱️ User Timed Out',
+};
 
 module.exports = {
     name: Events.AutoModerationActionExecution,
-    async execute(autoModerationActionExecution) {
-        const guild = autoModerationActionExecution.guild;
-        const GuildSettings = require('../database/models/GuildSettings');
-
-        const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
-        if (!settings || !settings.logAutomod) return;
-        const loggerUtil = require('../utils/logger');
-        const logChannelId = loggerUtil.resolveLogChannelId(settings, 'automod');
-        if (!logChannelId) return;
-
-        const logChannel = guild.channels.cache.get(logChannelId) || await guild.channels.fetch(logChannelId).catch(() => null);
-        if (!logChannel) return;
-
-        const { action, userId, channelId, matchedKeyword, matchedContent, ruleName } = autoModerationActionExecution;
-
-        // Ignore native "Send Alert Message" actions to prevent duplicate logs in Nora's custom system
-        if (action.type === 2) return;
-
-        // AutoMod Immunity Bypass
-        const { parseImmuneRoles } = require('../utils/automodSync');
-        const immuneRoles = parseImmuneRoles(settings.automodImmuneRoles);
-        const member = await guild.members.fetch(userId).catch(() => null);
-        
-        if (member && immuneRoles.some(roleId => member.roles.cache.has(roleId))) {
-            if (action.type === 3) await member.timeout(null, 'AutoMod Immunity Override').catch(() => {});
-            return;
-        }
-
-        let descriptiveAction = 'Restricted';
-        if (action.type === 1) descriptiveAction = 'Message Blocked';
-        if (action.type === 2) descriptiveAction = 'Alert Sent';
-        if (action.type === 3) descriptiveAction = 'User Timed Out';
-
-        const Warning = require('../database/models/Warning');
-        try {
-            await Warning.create({
-                userId: userId,
-                guildId: guild.id,
-                moderatorId: guild.client.user.id,
-                reason: `AutoMod: ${ruleName || 'Filter'} (${matchedKeyword || 'Filtered Content'})`
-            });
-
-            const warningCount = await Warning.count({
-                where: { userId, guildId: guild.id }
-            });
-
-            if (settings.warningAction !== 'none' && warningCount >= settings.warningThreshold) {
-                if (member && member.moderatable) {
-                    if (settings.warningAction === 'kick') {
-                        await member.kick(`Warning threshold hit (${warningCount} warnings) via AutoMod`);
-                        descriptiveAction += ' & Kicked (Threshold)';
-                    } else if (settings.warningAction === 'ban') {
-                        await member.ban({ reason: `Warning threshold hit (${warningCount} warnings) via AutoMod` });
-                        descriptiveAction += ' & Banned (Threshold)';
-                    } else if (settings.warningAction === 'timeout') {
-                        const duration = settings.antiSpamMuteDuration || 60000;
-                        await member.timeout(duration, `Warning threshold hit (${warningCount} warnings) via AutoMod`);
-                        descriptiveAction += ' & Timed Out (Threshold)';
-                    }
-                }
-            }
-        } catch (err) {
-            console.error('AutoMod Warning Action Failed:', err);
-        }
-
-        const embed = new EmbedBuilder()
-            .setTitle(`🛡️ Nora Shield: ${ruleName || 'Auto-Mod Filter'}`)
-            .setColor(0x57acf2)
-            .addFields(
-                { name: 'Subject', value: `<@${userId}>`, inline: true },
-                { name: 'Location', value: channelId ? `<#${channelId}>` : 'Unknown', inline: true },
-                { name: 'Resolution', value: descriptiveAction, inline: true }
-            )
-            .setTimestamp();
-
-        if (matchedKeyword) {
-            embed.addFields({ name: 'Filtered Term', value: `\`${matchedKeyword}\``, inline: true });
-        }
-
-        if (matchedContent) {
-            const snippet = matchedContent.length > 1024 ? matchedContent.substring(0, 1021) + '...' : matchedContent;
-            embed.addFields({ name: 'Context Snippet', value: `\`\`\`${snippet}\`\`\``, inline: false });
-        }
+    async execute(execution, client) {
+        if (!execution.guild) return;
 
         try {
-            await logChannel.send({ embeds: [embed] });
+            const settings = await settingsCache.get(execution.guild.id);
+            if (!settings) return;
+            if (!settings.logAutomod) return;
+
+            const user = execution.user;
+            const channel = execution.channel;
+
+            // Rule metadata
+            const triggerLabel = TRIGGER_LABELS[execution.ruleTriggerType] ?? `Rule Type ${execution.ruleTriggerType}`;
+            const actionLabel  = ACTION_LABELS[execution.action?.type] ?? 'Unknown Action';
+
+            const ruleName       = execution.ruleName       ?? 'Unknown Rule';
+            const matchedKeyword = execution.matchedKeyword ?? null;
+            const matchedContent = execution.matchedContent ?? null;
+            const alertMessage   = execution.alertSystemMessage ?? null;
+
+            const descLines = [
+                `**User:** ${user ? `${user.username} (<@${user.id}>)` : 'Unknown User'}`,
+                `**Channel:** ${channel ? `<#${channel.id}>` : 'Unknown Channel'}`,
+                `**Rule:** \`${ruleName}\``,
+                `**Trigger:** ${triggerLabel}`,
+                `**Action:** ${actionLabel}`,
+            ];
+
+            if (matchedKeyword) descLines.push(`**Matched Keyword:** \`${matchedKeyword}\``);
+            if (matchedContent) descLines.push(`**Matched Content:**\n\`\`\`${matchedContent.substring(0, 400)}\`\`\``);
+            if (alertMessage)   descLines.push(`**Alert Message:** ${alertMessage}`);
+
+            const embed = new EmbedBuilder()
+                .setAuthor({
+                    name: user ? `${user.username} (${user.id})` : 'Unknown User',
+                    iconURL: user?.displayAvatarURL({ dynamic: true }) ?? undefined,
+                })
+                .setTitle('🛡️ Discord AutoMod Triggered')
+                .setColor(0xED4245)
+                .setDescription(descLines.join('\n'))
+                .setTimestamp();
+
+            await loggerUtil.sendEventLog(execution.guild, 'automod', embed, settings);
         } catch (error) {
-            console.error('Failed to log automod action:', error);
+            console.error('[AutoMod Event] Error in AutoModerationActionExecution:', error);
         }
     },
 };

@@ -4,6 +4,7 @@ const axios = require('axios');
 
 module.exports = {
     category: 'utility',
+    noAutoDefer: true,
     data: new SlashCommandBuilder()
         .setName('info')
         .setDescription('View Nora\'s official core status report card.')
@@ -12,7 +13,15 @@ module.exports = {
         .setDMPermission(true),
 
     async execute(interaction) {
-        const ping = interaction.client.ws.ping;
+        // Measure deferReply round-trip — 100% clock-skew-proof
+        const t0 = Date.now();
+        await interaction.deferReply();
+        const deferPing = Date.now() - t0;
+
+        // Prefer ws.ping (ongoing heartbeat) if it's valid, otherwise use deferReply round-trip
+        const wsPing = interaction.client.ws.ping;
+        const ping = (wsPing > 0) ? wsPing : deferPing;
+
         const totalServers = interaction.client.guilds.cache.size;
         const shardCount = interaction.client.shard ? interaction.client.shard.count : 1;
         const totalMembers = interaction.client.guilds.cache.reduce((acc, guild) => acc + (guild.memberCount || 0), 0);
@@ -20,9 +29,11 @@ module.exports = {
         const memUsage = process.memoryUsage();
         const heapUsedMB = (memUsage.heapUsed / 1024 / 1024).toFixed(1);
 
-        const uptimeHours = Math.floor(interaction.client.uptime / (1000 * 60 * 60));
-        const uptimeMins = Math.floor((interaction.client.uptime % (1000 * 60 * 60)) / (1000 * 60));
-        const uptimeStr = `${uptimeHours}h ${uptimeMins}m`;
+        // process.uptime() is always accurate from Node process start
+        const uptimeSecs = Math.floor(process.uptime());
+        const uptimeHours = Math.floor(uptimeSecs / 3600);
+        const uptimeMins = Math.floor((uptimeSecs % 3600) / 60);
+        const uptimeStr = uptimeHours > 0 ? `${uptimeHours}h ${uptimeMins}m` : `${uptimeMins}m`;
 
         const linkRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -107,9 +118,8 @@ module.exports = {
 
         try {
             const basePng = await sharp(Buffer.from(svgCard)).png().toBuffer();
-            const attachment = new AttachmentBuilder(basePng, { name: 'nora-status-report.png' });
             return await interaction.editReply({
-                files: [attachment],
+                files: [{ attachment: basePng, name: 'nora-status-report.png' }],
                 components: [linkRow]
             });
         } catch (err) {

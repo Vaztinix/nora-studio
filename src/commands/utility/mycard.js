@@ -236,8 +236,7 @@ async function buildMyCardPayload({ interaction, targetUser }) {
             accentColor: targetPrefs?.rankCardCustomColor || '#7c3aed'
         });
 
-        const { AttachmentBuilder } = require('discord.js');
-        cardAttachment = new AttachmentBuilder(cardBuffer, { name: 'nora-id-card.png' });
+        cardAttachment = cardBuffer ? { attachment: cardBuffer, name: 'nora-id-card.png' } : null;
     } catch (e) {
         console.error('[ID Card Image Gen Error]:', e);
     }

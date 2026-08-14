@@ -108,10 +108,9 @@ module.exports = {
                         new Promise((_, r) => setTimeout(() => r(new Error('Image render timeout')), 5000))
                     ]);
 
-                    const attachment = new AttachmentBuilder(imageBuffer, { name: `leaderboard-p${clampedPage}.png` });
                     return {
                         content: statsText,
-                        files: [attachment],
+                        files: [{ attachment: imageBuffer, name: `leaderboard-p${clampedPage}.png` }],
                         components: [paginationRow]
                     };
                 }
