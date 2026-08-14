@@ -908,16 +908,23 @@ module.exports = {
                     );
                     await i.showModal(modal);
 
+                    let submitted;
                     try {
-                        const submitted = await i.awaitModalSubmit({ time: 300000, filter: x => x.user.id === interaction.user.id && x.customId === 'modal_selfroles_build' });
+                        submitted = await i.awaitModalSubmit({ time: 300000, filter: x => x.user.id === interaction.user.id && x.customId === 'modal_selfroles_build' });
                         await submitted.deferReply({ ephemeral: true }).catch(() => {});
                         
                         const title = submitted.fields.getTextInputValue('sr_title');
                         const desc = submitted.fields.getTextInputValue('sr_desc');
-                        const roleStrs = submitted.fields.getTextInputValue('sr_roles').split(',').map(r => r.trim()).filter(r => r.length > 5);
+                        const rawRoleInput = submitted.fields.getTextInputValue('sr_roles');
+                        const roleStrs = rawRoleInput.split(',').map(r => r.trim()).filter(r => r.length > 0);
 
                         if (roleStrs.length > 5 || roleStrs.length === 0) {
-                            return submitted.editReply({ content: '⚠️ You must provide between 1 and 5 Role IDs.' }).catch(() => {});
+                            return await submitted.editReply({ content: '⚠️ You must provide between 1 and 5 valid numeric Role IDs (comma-separated).' }).catch(() => {});
+                        }
+
+                        const targetChannel = i.channel || interaction.channel || (i.channelId ? await i.guild.channels.fetch(i.channelId).catch(() => null) : null);
+                        if (!targetChannel) {
+                            return await submitted.editReply({ content: '⚠️ Could not determine the channel to spawn the self-roles panel.' }).catch(() => {});
                         }
 
                         const panelEmbed = new EmbedBuilder()
@@ -928,7 +935,9 @@ module.exports = {
                         const row = new ActionRowBuilder();
                         let loaded = 0;
                         for (const rId of roleStrs) {
-                            const role = i.guild.roles.cache.get(rId) || await i.guild.roles.fetch(rId).catch(() => null);
+                            const cleanId = rId.replace(/[^0-9]/g, '');
+                            if (!cleanId) continue;
+                            const role = i.guild.roles.cache.get(cleanId) || await i.guild.roles.fetch(cleanId).catch(() => null);
                             if (role) {
                                 row.addComponents(new ButtonBuilder().setCustomId(`selfrole_assign_${role.id}`).setLabel(role.name).setStyle(ButtonStyle.Secondary));
                                 loaded++;
@@ -936,13 +945,23 @@ module.exports = {
                         }
 
                         if (loaded === 0) {
-                            return submitted.editReply({ content: '⚠️ Could not find any of those Role IDs in this server.' }).catch(() => {});
+                            return await submitted.editReply({ content: '⚠️ Could not find any of those Role IDs in this server. Make sure you provided valid numeric Role IDs.' }).catch(() => {});
                         }
 
-                        await i.channel.send({ embeds: [panelEmbed], components: [row] });
-                        return submitted.editReply({ content: 'Self-roles panel successfully spawned!' }).catch(() => {});
+                        await targetChannel.send({ embeds: [panelEmbed], components: [row] });
+                        return await submitted.editReply({ content: '✅ Self-roles panel successfully spawned!' }).catch(() => {});
                     } catch (e) {
-                        return; // modal timeout or other error silently dies
+                        console.error('Self Roles Builder Modal Error:', e);
+                        if (submitted) {
+                            const errText = e.code === 50013 || (e.message && e.message.includes('Permissions'))
+                                ? '⚠️ Nora lacks Send Messages / Embed Links permissions in this channel.'
+                                : `⚠️ Could not spawn panel: ${e.message || 'Unknown error'}`;
+                            if (submitted.deferred || submitted.replied) {
+                                await submitted.editReply({ content: errText }).catch(() => {});
+                            } else {
+                                await submitted.reply({ content: errText, ephemeral: true }).catch(() => {});
+                            }
+                        }
                     }
                 }
 
