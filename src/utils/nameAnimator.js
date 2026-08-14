@@ -31,13 +31,34 @@ function nextFrame() {
     return getCurrentFrame();
 }
 
+async function updateAllGuildNicknames(client, nickname) {
+    const targetName = nickname || '𝗡𝗼𝗿𝗮';
+    for (const guild of client.guilds.cache.values()) {
+        try {
+            const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
+            if (me) {
+                if (me.nickname !== targetName) {
+                    await me.setNickname(targetName).catch(err => {
+                        console.log(`[Name Animator] Could not set nickname in ${guild.name}:`, err.message);
+                    });
+                }
+            }
+        } catch (e) {}
+    }
+}
+
 /**
  * Start the Nickname & Status Animation Loop
  */
 function startNameAnimator(client) {
-    console.log('[Name Animator] Starting Nora Animated Name system...');
+    console.log('[Name Animator] Setting Nora cool bold font name (𝗡𝗼𝗿𝗮) across servers...');
 
-    // 1. Status Activity Animation every 12 seconds
+    // 1. Immediate sync on startup
+    setTimeout(() => {
+        updateAllGuildNicknames(client, '𝗡𝗼𝗿𝗮');
+    }, 3000);
+
+    // 2. Status Activity Animation every 12 seconds
     setInterval(() => {
         const frame = nextFrame();
         if (client.user) {
@@ -54,25 +75,17 @@ function startNameAnimator(client) {
         }
     }, 12000);
 
-    // 2. Server Nickname Animation every 3 minutes (respecting Discord guild rate limits)
-    setInterval(async () => {
+    // 3. Server Nickname Sync every 60 seconds
+    setInterval(() => {
         const frame = getCurrentFrame();
-        for (const guild of client.guilds.cache.values()) {
-            try {
-                const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
-                if (me && me.permissions.has('ChangeNickname')) {
-                    if (me.nickname !== frame) {
-                        await me.setNickname(frame).catch(() => {});
-                    }
-                }
-            } catch (e) {}
-        }
-    }, 180000);
+        updateAllGuildNicknames(client, frame);
+    }, 60000);
 }
 
 module.exports = {
     ANIMATED_FRAMES,
     getCurrentFrame,
     nextFrame,
-    startNameAnimator
+    startNameAnimator,
+    updateAllGuildNicknames
 };
