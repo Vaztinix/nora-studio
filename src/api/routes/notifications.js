@@ -69,15 +69,22 @@ router.post('/subscribe', async (req, res) => {
  */
 router.post('/test-push', async (req, res) => {
     try {
-        const { userId, endpoint } = req.body || {};
+        const { userId, endpoint, subscription } = req.body || {};
         const PushSubscription = require('../../database/models/PushSubscription');
         
+        if (subscription && subscription.endpoint && subscription.keys) {
+            await pushManager.saveSubscription(userId || 'anonymous', subscription);
+        }
+
         let subRecord;
-        if (endpoint) {
-            subRecord = await PushSubscription.findOne({ where: { endpoint } });
-        } else if (userId && userId !== 'anonymous') {
+        if (endpoint || (subscription && subscription.endpoint)) {
+            const targetEndpoint = endpoint || (subscription && subscription.endpoint);
+            subRecord = await PushSubscription.findOne({ where: { endpoint: targetEndpoint } });
+        }
+        if (!subRecord && userId && userId !== 'anonymous') {
             subRecord = await PushSubscription.findOne({ where: { userId }, order: [['updatedAt', 'DESC']] });
-        } else {
+        }
+        if (!subRecord) {
             subRecord = await PushSubscription.findOne({ order: [['updatedAt', 'DESC']] });
         }
 

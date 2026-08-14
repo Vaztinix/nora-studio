@@ -10204,10 +10204,11 @@
                 }
 
                 const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
+                const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
                 await fetch(apiBase + '/api/notifications/subscribe', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subscription: sub, userId: currentUserId })
+                    body: JSON.stringify({ subscription: subPayload, userId: currentUserId })
                 });
 
                 if (!silent) showToast('🔔 Web Push Notifications successfully enabled!', 'success');
@@ -10223,12 +10224,16 @@
 
         async function testWebPushNotification() {
             try {
+                const reg = await navigator.serviceWorker.ready.catch(() => null);
+                let sub = reg ? await reg.pushManager.getSubscription().catch(() => null) : null;
                 const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
                 const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
+                const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
+
                 const res = await fetch(apiBase + '/api/notifications/test-push', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: currentUserId })
+                    body: JSON.stringify({ userId: currentUserId, subscription: subPayload, endpoint: sub ? sub.endpoint : null })
                 });
                 const data = await res.json();
                 if (res.ok) {
