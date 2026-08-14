@@ -108,9 +108,11 @@ module.exports = {
                         new Promise((_, r) => setTimeout(() => r(new Error('Image render timeout')), 5000))
                     ]);
 
+                    const { AttachmentBuilder } = require('discord.js');
+                    const attachment = new AttachmentBuilder(imageBuffer, { name: `leaderboard-p${clampedPage}.png` });
                     return {
                         content: statsText,
-                        files: [{ attachment: imageBuffer, name: `leaderboard-p${clampedPage}.png` }],
+                        files: [attachment],
                         components: [paginationRow]
                     };
                 }

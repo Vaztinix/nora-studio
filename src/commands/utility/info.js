@@ -118,8 +118,18 @@ module.exports = {
 
         try {
             const basePng = await sharp(Buffer.from(svgCard)).png().toBuffer();
+            const { AttachmentBuilder } = require('discord.js');
+            const attachment = new AttachmentBuilder(basePng, { name: 'nora-status-report.png' });
+            const embed = new EmbedBuilder()
+                .setAuthor({ name: 'Nora Core System Status • Real-Time Diagnostics', iconURL: interaction.client.user.displayAvatarURL() })
+                .setColor(0x7C3AED)
+                .setImage('attachment://nora-status-report.png')
+                .setTimestamp();
+
             return await interaction.editReply({
-                files: [{ attachment: basePng, name: 'nora-status-report.png' }],
+                content: '📊 **Nora Core System Status & Real-Time Diagnostics**',
+                embeds: [embed],
+                files: [attachment],
                 components: [linkRow]
             });
         } catch (err) {

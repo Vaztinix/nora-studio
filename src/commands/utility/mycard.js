@@ -315,12 +315,12 @@ async function buildMyCardPayload({ interaction, targetUser }) {
         );
     }
 
-    return { embeds: [embed], files: cardAttachment ? [cardAttachment] : [], components: [row] };
+    return { content: `📇 **${targetUser.username}**'s Official Nora Digital ID Card`, embeds: [embed], files: cardAttachment ? [cardAttachment] : [], components: [row] };
 }
 
 module.exports = {
     category: 'utility',
-    ephemeral: true,
+    ephemeral: false,
     buildMyCardPayload,
     data: new SlashCommandBuilder()
         .setName('mycard')
@@ -334,7 +334,7 @@ module.exports = {
         const target = interaction.options.getUser('target') || interaction.user;
 
         if (!interaction.deferred && !interaction.replied) {
-            await interaction.deferReply({ ephemeral: true }).catch(() => {});
+            await interaction.deferReply().catch(() => {});
         }
 
         // We only exclude Nora herself from the profile system.

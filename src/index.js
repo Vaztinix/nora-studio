@@ -11,27 +11,20 @@ try {
     }));
 } catch (e) {}
 
-// 🛡️ Universal Discord.js REST FormData Content-Type & Boundary Patch for Node.js v25+
+// 🛡️ Enable duplex: 'half' & automatic multipart boundary resolution for Node.js v25+
 try {
     const { DefaultRestOptions } = require('@discordjs/rest');
     DefaultRestOptions.makeRequest = async (url, init) => {
-        if (init && init.body && typeof init.body === 'object' && (init.body[Symbol.toStringTag] === 'FormData' || init.body.constructor?.name === 'FormData')) {
-            const dummyReq = new Request('https://dummy.local', {
-                method: init.method || 'POST',
-                body: init.body
-            });
-
-            const headers = new Headers(init.headers);
-            headers.set('content-type', dummyReq.headers.get('content-type'));
-
-            return await fetch(url, {
-                ...init,
-                headers,
-                body: dummyReq.body,
-                duplex: 'half'
-            });
+        const isFormData = init && init.body && typeof init.body === 'object' && (init.body[Symbol.toStringTag] === 'FormData' || init.body.constructor?.name === 'FormData');
+        const headers = new Headers(init?.headers);
+        if (isFormData) {
+            headers.delete('content-type');
         }
-        return await fetch(url, init);
+        return await fetch(url, {
+            ...init,
+            headers,
+            duplex: isFormData ? 'half' : undefined
+        });
     };
 } catch (e) {}
 
