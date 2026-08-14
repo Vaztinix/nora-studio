@@ -6905,13 +6905,14 @@
                 overlay.style.display = 'flex';
                 const statusEl = document.getElementById('offline-retry-status');
                 if (statusEl) {
-                    statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s';
+                    statusEl.innerHTML = 'Testing connection...';
                 }
             }
 
             if (!isOfflinePolling) {
                 startOfflinePolling();
             }
+            window.forceReconnectNow();
         };
 
         window.triggerApiOnline = function() {
