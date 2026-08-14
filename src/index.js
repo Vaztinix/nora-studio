@@ -629,6 +629,7 @@ const ALLOWED_ORIGINS = [
     /^https:\/\/vaztinix\.github\.io$/,
     /^https:\/\/vaztinix\.dev$/,
     /^https:\/\/.*\.vaztinix\.dev$/,
+    /^https:\/\/.*\.pages\.dev$/,
     /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
     /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
     /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
@@ -664,6 +665,7 @@ app.use((req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const ALLOWED_HOSTS = [
     /^(.*\.)?vaztinix\.dev(:\d+)?$/i,
+    /^(.*\.)?pages\.dev(:\d+)?$/i,
     /^localhost(:\d+)?$/i,
     /^127\.0\.0\.1(:\d+)?$/i,
     /^192\.168\.\d+\.\d+(:\d+)?$/,

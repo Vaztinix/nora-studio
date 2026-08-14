@@ -910,13 +910,14 @@ module.exports = {
 
                     try {
                         const submitted = await i.awaitModalSubmit({ time: 300000, filter: x => x.user.id === interaction.user.id && x.customId === 'modal_selfroles_build' });
+                        await submitted.deferReply({ ephemeral: true }).catch(() => {});
                         
                         const title = submitted.fields.getTextInputValue('sr_title');
                         const desc = submitted.fields.getTextInputValue('sr_desc');
                         const roleStrs = submitted.fields.getTextInputValue('sr_roles').split(',').map(r => r.trim()).filter(r => r.length > 5);
 
                         if (roleStrs.length > 5 || roleStrs.length === 0) {
-                            return submitted.reply({ content: '⚠️ You must provide between 1 and 5 Role IDs.', ephemeral: true });
+                            return submitted.editReply({ content: '⚠️ You must provide between 1 and 5 Role IDs.' }).catch(() => {});
                         }
 
                         const panelEmbed = new EmbedBuilder()
@@ -935,11 +936,11 @@ module.exports = {
                         }
 
                         if (loaded === 0) {
-                            return submitted.reply({ content: '⚠️ Could not find any of those Role IDs in this server.', ephemeral: true });
+                            return submitted.editReply({ content: '⚠️ Could not find any of those Role IDs in this server.' }).catch(() => {});
                         }
 
                         await i.channel.send({ embeds: [panelEmbed], components: [row] });
-                        return submitted.reply({ content: 'Self-roles panel successfully spawned!', ephemeral: true });
+                        return submitted.editReply({ content: 'Self-roles panel successfully spawned!' }).catch(() => {});
                     } catch (e) {
                         return; // modal timeout or other error silently dies
                     }
