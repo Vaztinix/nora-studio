@@ -6685,13 +6685,19 @@
                 return window.__NORA_API_BASE_URL__;
             }
 
-            // 2. Check localStorage override (e.g. set by self-healing or user settings)
+            const host = window.location.hostname;
+
+            // 2. Check localStorage override (only allow http:// on localhost, require https:// on production)
             const savedUrl = localStorage.getItem('nora_api_url');
             if (savedUrl && typeof savedUrl === 'string' && savedUrl.startsWith('http')) {
-                return savedUrl;
+                if (host === 'localhost' || host === '127.0.0.1' || savedUrl.startsWith('https://')) {
+                    return savedUrl;
+                } else {
+                    // Purge stale http://localhost overrides on external devices
+                    localStorage.removeItem('nora_api_url');
+                }
             }
 
-            const host = window.location.hostname;
             const port = window.location.port;
 
             // 3. Localhost or 127.0.0.1 or local file
