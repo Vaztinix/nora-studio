@@ -13,12 +13,12 @@ module.exports = {
         const { startNameAnimator } = require('../utils/nameAnimator');
         startNameAnimator(client);
 
-        // Update Bot Global Display Name to Cat Bot font style (𝗡𝗼𝗿𝗮 𝗕𝗼𝘁 / 𝗡𝗼𝗿𝗮)
+        // Update Bot Global Display Name to Cat Bot font style (𝗡𝗼𝗿𝗮)
         try {
             await client.rest.patch(Routes.user(), {
-                body: { global_name: '𝗡𝗼𝗿𝗮 𝗕𝗼𝘁' }
+                body: { global_name: '𝗡𝗼𝗿𝗮' }
             });
-            console.log('[System] Updated Bot Global Display Name to: 𝗡𝗼𝗿𝗮 𝗕𝗼𝘁');
+            console.log('[System] Updated Bot Global Display Name to: 𝗡𝗼𝗿𝗮');
         } catch (err) {
             console.log('[System] Global display name update info:', err.message);
         }

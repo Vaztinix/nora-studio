@@ -36,12 +36,11 @@ async function updateAllGuildNicknames(client, nickname) {
     for (const guild of client.guilds.cache.values()) {
         try {
             const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
-            if (me) {
-                if (me.nickname !== targetName) {
-                    await me.setNickname(targetName).catch(err => {
-                        console.log(`[Name Animator] Could not set nickname in ${guild.name}:`, err.message);
-                    });
-                }
+            if (me && me.nickname && me.nickname !== targetName) {
+                // Reset nickname if it's plain text so global_name (𝗡𝗼𝗿𝗮) displays automatically
+                await me.setNickname(targetName).catch(async () => {
+                    await me.setNickname(null).catch(() => {});
+                });
             }
         } catch (e) {}
     }
