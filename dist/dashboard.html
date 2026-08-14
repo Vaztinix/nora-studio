@@ -10164,6 +10164,7 @@
                 }
             }
             loadSiteAlerts();
+            renderPushNotificationWidget();
             setInterval(loadSiteAlerts, 60000); // Check site alerts every minute
         }
 
@@ -10177,6 +10178,7 @@
                 const permission = await Notification.requestPermission();
                 if (permission !== 'granted') {
                     if (!silent) showToast('Push Notification permission was denied.', 'warning');
+                    renderPushNotificationWidget();
                     return false;
                 }
 
@@ -10208,12 +10210,98 @@
                 });
 
                 if (!silent) showToast('🔔 Web Push Notifications successfully enabled!', 'success');
+                renderPushNotificationWidget();
                 return true;
             } catch (err) {
                 console.error('[Push Subscription Error]:', err);
                 if (!silent) showToast('Failed to enable push notifications: ' + err.message, 'error');
+                renderPushNotificationWidget();
                 return false;
             }
+        }
+
+        async function testWebPushNotification() {
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
+                const res = await fetch(apiBase + '/api/notifications/test-push', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUserId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('🚀 Test Web Push sent! Check your system notification center.', 'success');
+                } else {
+                    showToast(data.error || 'Failed to send test Web Push notification.', 'error');
+                }
+            } catch (e) {
+                showToast('Error testing Web Push: ' + e.message, 'error');
+            }
+        }
+
+        function renderPushNotificationWidget() {
+            const existing = document.getElementById('web-push-control-widget');
+            if (existing) existing.remove();
+
+            const isGranted = ('Notification' in window) && Notification.permission === 'granted';
+            const isDenied = ('Notification' in window) && Notification.permission === 'denied';
+
+            const widget = document.createElement('div');
+            widget.id = 'web-push-control-widget';
+            widget.setAttribute('data-no-translate', 'true');
+            widget.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                z-index: 99990;
+                background: rgba(15, 23, 42, 0.92);
+                border: 1px solid rgba(124, 58, 237, 0.35);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border-radius: 16px;
+                padding: 14px 18px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                color: #fff;
+                font-family: 'Inter', sans-serif;
+                font-size: 0.85rem;
+                transition: all 0.3s ease;
+                max-width: calc(100vw - 32px);
+            `;
+
+            const statusBadge = isGranted
+                ? `<span style="background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.4); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-check-circle"></i> Active</span>`
+                : isDenied
+                ? `<span style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-ban"></i> Blocked</span>`
+                : `<span style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-bell"></i> Available</span>`;
+
+            const actionBtn = isGranted
+                ? `<button id="test-push-btn" onclick="testWebPushNotification()" style="background: rgba(124,58,237,0.25); border: 1px solid rgba(124,58,237,0.5); color: #c084fc; border-radius: 10px; padding: 6px 14px; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-paper-plane"></i> Test Push</button>`
+                : isDenied
+                ? `<button disabled style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #64748b; border-radius: 10px; padding: 6px 14px; font-weight: 600; font-size: 0.78rem; cursor: not-allowed;"><i class="fas fa-lock"></i> Unblock in Browser</button>`
+                : `<button id="enable-push-btn" onclick="subscribeToWebPush()" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; color: #ffffff; border-radius: 10px; padding: 7px 16px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(124,58,237,0.4); display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-bell"></i> Enable Push Notifications</button>`;
+
+            widget.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-mobile-alt" style="font-size: 1.1rem; color: #a855f7;"></i>
+                    <div style="display: flex; flex-direction: column;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <strong style="font-weight: 700; color: #fff;">Web Push Alerts</strong>
+                            ${statusBadge}
+                        </div>
+                        <span style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Mobile, Tablet & Desktop Live Notifications</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    ${actionBtn}
+                    <button onclick="document.getElementById('web-push-control-widget').remove()" style="background: transparent; border: none; color: #64748b; font-size: 0.9rem; cursor: pointer; padding: 4px;"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+
+            document.body.appendChild(widget);
         }
 
         async function loadSiteAlerts() {
