@@ -934,12 +934,14 @@ module.exports = {
 
                         const row = new ActionRowBuilder();
                         let loaded = 0;
+                        const addedRoles = new Set();
                         for (const rId of roleStrs) {
                             const cleanId = rId.replace(/[^0-9]/g, '');
-                            if (!cleanId) continue;
+                            if (!cleanId || addedRoles.has(cleanId)) continue;
                             const role = i.guild.roles.cache.get(cleanId) || await i.guild.roles.fetch(cleanId).catch(() => null);
                             if (role) {
                                 row.addComponents(new ButtonBuilder().setCustomId(`selfrole_assign_${role.id}`).setLabel(role.name).setStyle(ButtonStyle.Secondary));
+                                addedRoles.add(cleanId);
                                 loaded++;
                             }
                         }
