@@ -20,7 +20,6 @@
     "@top-gg/sdk": "^3.1.3",
     "@xenova/transformers": "^2.0.1",
     "axios": "^1.14.0",
-    "ddg-web-search": "^1.0.2",
     "discord-rpc": "^4.0.1",
     "discord.js": "^14.26.2",
     "dotenv": "^17.4.0",
