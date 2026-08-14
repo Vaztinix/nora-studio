@@ -150,6 +150,17 @@ module.exports = {
             console.error('[Top.gg Auto-Post Startup Error]:', err);
         }
 
+        // BotBoard.gg Auto-Post Scheduler: runs on startup and every 30 minutes
+        try {
+            const { postToBotBoard } = require('../utils/botboardPoster');
+            await postToBotBoard(client, true);
+            setInterval(async () => {
+                await postToBotBoard(client, true);
+            }, 1800000);
+        } catch (err) {
+            console.error('[BotBoard.gg Auto-Post Startup Error]:', err);
+        }
+
         console.log(`[System Check] Keeping an eye on things! Heartbeat active.`);
     },
 };

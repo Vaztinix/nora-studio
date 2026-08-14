@@ -68,12 +68,14 @@ module.exports = {
         // Log to Master HQ Logistics Webhook
         await logEvent(guild, 'join');
 
-        // Post server count to Top.gg
+        // Post server count to Top.gg & BotBoard.gg
         try {
             const { postToTopgg } = require('../utils/topggPoster');
             await postToTopgg(guild.client);
+            const { postToBotBoard } = require('../utils/botboardPoster');
+            await postToBotBoard(guild.client);
         } catch (err) {
-            console.error('[Top.gg Join Poster Error]:', err);
+            console.error('[Stats Join Poster Error]:', err);
         }
     },
 };

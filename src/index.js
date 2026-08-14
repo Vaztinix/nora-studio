@@ -1211,41 +1211,14 @@ app.use('/api/guilds/:guildId', guildsRouter);
 
 // Mount BotBoard.gg Webhook Router
 const botboardRouter = require('./api/routes/botboard')(client);
-app.use(['/api/webhooks/botboard', '/api/botboard'], botboardRouter);
+app.use(['/webhooks/botboard', '/api/webhooks/botboard', '/api/botboard'], botboardRouter);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 📈 BOTBOARD.GG STATS AUTO-POSTER (Co-exists alongside Top.gg)
 // ─────────────────────────────────────────────────────────────────────────────
-async function postBotBoardStats() {
-    try {
-        const token = process.env.BOTBOARD_API_TOKEN;
-        if (!token) return;
-
-        const serverCount = client.guilds ? client.guilds.cache.size : 0;
-        if (serverCount <= 0) return;
-
-        const botId = client.user ? client.user.id : '1375943730951098549';
-        await axios.post(`https://botboard.gg/api/v1/bots/${botId}/stats`, {
-            server_count: serverCount
-        }, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            timeout: 10000
-        });
-        console.log(`[BotBoard Poster] Successfully posted live server count of ${serverCount} to BotBoard.gg.`);
-    } catch (err) {
-        if (err.response && err.response.status === 404) {
-            // Unregistered on BotBoard API yet
-        } else {
-            console.warn(`[BotBoard Poster Warning] Failed to post server count to BotBoard.gg:`, err.message);
-        }
-    }
-}
-
-setInterval(postBotBoardStats, 15 * 60 * 1000);
-setTimeout(postBotBoardStats, 12000);
+const { postToBotBoard } = require('./utils/botboardPoster');
+setInterval(() => postToBotBoard(client, true), 30 * 60 * 1000);
+setTimeout(() => postToBotBoard(client, true), 10000);
 
 // Mount the API path for global token invalidation
 app.post('/api/auth/invalidate', async (req, res) => {
