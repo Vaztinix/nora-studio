@@ -309,6 +309,296 @@ async function handleTicketSubmit(interaction, settings) {
 }
 
 /**
+ * Adds a user to the active ticket channel.
+ */
+async function handleTicketUserAdd(interaction, targetUser) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) {
+        return interaction.reply({ content: '⚠️ This command must be used inside an active ticket channel.', ephemeral: true });
+    }
+
+    try {
+        await interaction.channel.permissionOverwrites.edit(targetUser.id, {
+            ViewChannel: true,
+            SendMessages: true,
+            ReadMessageHistory: true
+        });
+
+        const embed = new EmbedBuilder()
+            .setTitle('👤 User Added to Ticket')
+            .setDescription(`Successfully added <@${targetUser.id}> (\`${targetUser.tag}\`) to this ticket.`)
+            .setColor(0x43b581)
+            .setTimestamp();
+
+        return interaction.reply({ embeds: [embed] });
+    } catch (err) {
+        console.error('[Tickets Engine] Error adding user to ticket:', err);
+        return interaction.reply({ content: `❌ Failed to add user: ${err.message}`, ephemeral: true });
+    }
+}
+
+/**
+ * Removes a user from the active ticket channel.
+ */
+async function handleTicketUserRemove(interaction, targetUser) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) {
+        return interaction.reply({ content: '⚠️ This command must be used inside an active ticket channel.', ephemeral: true });
+    }
+
+    if (targetUser.id === ticket.ownerId) {
+        return interaction.reply({ content: '❌ You cannot remove the ticket creator from their own ticket.', ephemeral: true });
+    }
+
+    try {
+        await interaction.channel.permissionOverwrites.delete(targetUser.id).catch(async () => {
+            await interaction.channel.permissionOverwrites.edit(targetUser.id, { ViewChannel: false });
+        });
+
+        const embed = new EmbedBuilder()
+            .setTitle('👤 User Removed from Ticket')
+            .setDescription(`Successfully removed <@${targetUser.id}> (\`${targetUser.tag}\`) from this ticket.`)
+            .setColor(0xed4245)
+            .setTimestamp();
+
+        return interaction.reply({ embeds: [embed] });
+    } catch (err) {
+        console.error('[Tickets Engine] Error removing user from ticket:', err);
+        return interaction.reply({ content: `❌ Failed to remove user: ${err.message}`, ephemeral: true });
+    }
+}
+
+/**
+ * Claims an active ticket for a staff member.
+ */
+async function handleTicketClaim(interaction) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) {
+        return interaction.reply({ content: '⚠️ This command must be used inside an active ticket channel.', ephemeral: true });
+    }
+
+    if (ticket.claimedByUserId) {
+        return interaction.reply({ content: `⚠️ This ticket is already claimed by <@${ticket.claimedByUserId}>.`, ephemeral: true });
+    }
+
+    try {
+        ticket.claimedByUserId = interaction.user.id;
+        await ticket.save();
+
+        await interaction.channel.setTopic(`Ticket Channel | Claimed by ${interaction.user.tag}`).catch(() => {});
+
+        const embed = new EmbedBuilder()
+            .setTitle('🎫 Ticket Claimed')
+            .setDescription(`This ticket has been claimed by <@${interaction.user.id}>! They will be handling your request.`)
+            .setColor(0x57acf2)
+            .setTimestamp();
+
+        return interaction.reply({ embeds: [embed] });
+    } catch (err) {
+        console.error('[Tickets Engine] Error claiming ticket:', err);
+        return interaction.reply({ content: `❌ Failed to claim ticket: ${err.message}`, ephemeral: true });
+    }
+}
+
+/**
+ * Unclaims an active ticket.
+ */
+async function handleTicketUnclaim(interaction) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) {
+        return interaction.reply({ content: '⚠️ This command must be used inside an active ticket channel.', ephemeral: true });
+    }
+
+    if (!ticket.claimedByUserId) {
+        return interaction.reply({ content: '⚠️ This ticket is not currently claimed.', ephemeral: true });
+    }
+
+    const isClaimer = interaction.user.id === ticket.claimedByUserId;
+    const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) || interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
+
+    if (!isClaimer && !isAdmin) {
+        return interaction.reply({ content: '❌ Only the staff member who claimed this ticket or an Admin can unclaim it.', ephemeral: true });
+    }
+
+    try {
+        ticket.claimedByUserId = null;
+        await ticket.save();
+
+        await interaction.channel.setTopic(`Ticket Channel | Unclaimed`).catch(() => {});
+
+        const embed = new EmbedBuilder()
+            .setTitle('🔓 Ticket Unclaimed')
+            .setDescription(`This ticket has been unclaimed by <@${interaction.user.id}> and is now open for any available staff member.`)
+            .setColor(0xfaa61a)
+            .setTimestamp();
+
+        return interaction.reply({ embeds: [embed] });
+    } catch (err) {
+        console.error('[Tickets Engine] Error unclaiming ticket:', err);
+        return interaction.reply({ content: `❌ Failed to unclaim ticket: ${err.message}`, ephemeral: true });
+    }
+}
+
+/**
+ * Renames the current ticket channel.
+ */
+async function handleTicketRename(interaction, newName) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) {
+        return interaction.reply({ content: '⚠️ This command must be used inside an active ticket channel.', ephemeral: true });
+    }
+
+    const safeName = newName.toLowerCase().replace(/[^a-z0-9_-]/g, '-').slice(0, 32);
+    if (!safeName) {
+        return interaction.reply({ content: '⚠️ Please provide a valid channel name.', ephemeral: true });
+    }
+
+    try {
+        const oldName = interaction.channel.name;
+        await interaction.channel.setName(safeName);
+
+        const embed = new EmbedBuilder()
+            .setTitle('✏️ Ticket Renamed')
+            .setDescription(`Channel renamed from \`#${oldName}\` to \`#${safeName}\`.`)
+            .setColor(0x57acf2)
+            .setTimestamp();
+
+        return interaction.reply({ embeds: [embed] });
+    } catch (err) {
+        console.error('[Tickets Engine] Error renaming ticket:', err);
+        return interaction.reply({ content: `❌ Failed to rename channel: ${err.message}`, ephemeral: true });
+    }
+}
+
+/**
+ * Opens a ticket via command.
+ */
+async function handleTicketOpenCommand(interaction, settings, topic = 'General', reason = 'No reason provided') {
+    try {
+        let ticketNum = (settings.ticketLastNumber || 0) + 1;
+        await settings.update({ ticketLastNumber: ticketNum });
+
+        const settingsCache = require('../../utils/settingsCache');
+        settingsCache.invalidate(interaction.guildId);
+
+        const paddedNumber = String(ticketNum).padStart(4, '0');
+        const safeName = `ticket-${paddedNumber}`;
+
+        const permissionOverwrites = [
+            {
+                id: interaction.guild.id,
+                deny: [PermissionFlagsBits.ViewChannel],
+            },
+            {
+                id: interaction.user.id,
+                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory],
+            },
+            {
+                id: interaction.client.user.id,
+                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles],
+            }
+        ];
+
+        if (settings?.ticketSupportRoleId) {
+            permissionOverwrites.push({
+                id: settings.ticketSupportRoleId,
+                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory]
+            });
+        }
+
+        const ticketChannel = await interaction.guild.channels.create({
+            name: safeName,
+            type: ChannelType.GuildText,
+            parent: settings?.ticketCategoryId || null,
+            permissionOverwrites
+        });
+
+        const capturedIntake = {
+            'Topic': topic,
+            'Reason': reason
+        };
+
+        await ActiveTicket.create({
+            guildId: interaction.guildId,
+            channelId: ticketChannel.id,
+            ownerId: interaction.user.id,
+            isOpen: true,
+            capturedIntake: JSON.stringify(capturedIntake)
+        });
+
+        await TicketHistory.create({
+            guildId: interaction.guildId,
+            channelId: ticketChannel.id,
+            ownerId: interaction.user.id,
+            status: 'open',
+            topic: topic,
+            openTime: new Date(),
+            intakeResponses: JSON.stringify(capturedIntake)
+        }).catch(err => console.error('Failed to log ticket to TicketHistory:', err));
+
+        const embed = new EmbedBuilder()
+            .setTitle(`🎫 Support Ticket: ${topic}`)
+            .setDescription(`Thank you for opening a ticket! A staff member will assist you shortly.`)
+            .addFields(
+                { name: 'Topic', value: topic, inline: true },
+                { name: 'Reason', value: reason, inline: true }
+            )
+            .setColor(0xffffff)
+            .setTimestamp();
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`ticket_close_${interaction.user.id}`)
+                .setLabel('Close Ticket')
+                .setStyle(ButtonStyle.Danger)
+        );
+
+        await ticketChannel.send({
+            content: `<@${interaction.user.id}> ${settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : ''}`,
+            embeds: [embed],
+            components: [row]
+        });
+
+        return interaction.reply({ content: `✅ Ticket created! Head over to <#${ticketChannel.id}>.`, ephemeral: true });
+    } catch (err) {
+        console.error('[Tickets Engine] Error opening ticket command:', err);
+        return interaction.reply({ content: `❌ Failed to create ticket: ${err.message}`, ephemeral: true });
+    }
+}
+
+/**
+ * Sets the auto-close exclusion state for an active ticket.
+ */
+async function handleTicketAutocloseExclude(interaction, enabledState) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) {
+        return interaction.reply({ content: '⚠️ This command must be used inside an active ticket channel.', ephemeral: true });
+    }
+
+    const shouldExclude = enabledState !== null ? enabledState : !ticket.excludeAutoClose;
+
+    try {
+        ticket.excludeAutoClose = shouldExclude;
+        await ticket.save();
+
+        const embed = new EmbedBuilder()
+            .setTitle('🛡️ Auto-Close Exclude Updated')
+            .setDescription(
+                shouldExclude
+                    ? '🟢 This ticket is now **EXCLUDED** from automatic 24-hour inactivity closure.'
+                    : '🔴 This ticket is no longer excluded and will follow standard server auto-archive rules.'
+            )
+            .setColor(shouldExclude ? 0x43b581 : 0xed4245)
+            .setTimestamp();
+
+        return interaction.reply({ embeds: [embed] });
+    } catch (err) {
+        console.error('[Tickets Engine] Error setting autoclose-exclude:', err);
+        return interaction.reply({ content: `❌ Failed to update auto-close exclusion: ${err.message}`, ephemeral: true });
+    }
+}
+
+/**
  * Automatically archives inactive tickets.
  */
 async function autoArchiveTickets(client) {
@@ -318,6 +608,8 @@ async function autoArchiveTickets(client) {
 
         for (const ticket of activeTickets) {
             try {
+                if (ticket.excludeAutoClose) continue;
+
                 const guild = client.guilds.cache.get(ticket.guildId) || await client.guilds.fetch(ticket.guildId).catch(() => null);
                 if (!guild) continue;
 
@@ -354,5 +646,12 @@ module.exports = {
     handleTicketClose,
     handleTicketButton,
     handleTicketSubmit,
-    autoArchiveTickets
+    autoArchiveTickets,
+    handleTicketUserAdd,
+    handleTicketUserRemove,
+    handleTicketClaim,
+    handleTicketUnclaim,
+    handleTicketRename,
+    handleTicketOpenCommand,
+    handleTicketAutocloseExclude
 };

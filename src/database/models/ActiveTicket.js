@@ -27,6 +27,14 @@ const ActiveTicket = sequelize.define('ActiveTicket', {
     capturedIntake: {
         type: DataTypes.TEXT, // Stored as a JSON string
         allowNull: true
+    },
+    claimedByUserId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    excludeAutoClose: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 

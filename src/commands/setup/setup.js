@@ -22,6 +22,10 @@ module.exports = {
                 .setDescription('Configure Discord native AutoMod rules and chat safety settings.'))
         .addSubcommand(subcommand =>
             subcommand
+                .setName('ticket')
+                .setDescription('Configure Support Ticket system settings and spawn ticket panels.'))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('roblox')
                 .setDescription('Configure Roblox verification settings for this server.')
                 .addBooleanOption(option =>
@@ -82,6 +86,8 @@ module.exports = {
                 return await this.runDashboard(interaction, settings);
             } else if (subcommand === 'automod') {
                 return await this.runDashboard(interaction, settings, 'view_automod');
+            } else if (subcommand === 'ticket') {
+                return await this.runDashboard(interaction, settings, 'view_ticketing');
             } else if (subcommand === 'roblox') {
                 return await this.runRobloxSetup(interaction, settings);
             } else if (subcommand === 'starboard') {
@@ -494,12 +500,53 @@ module.exports = {
 
             // --- TICKETING ---
             if (viewName === 'view_ticketing') {
-                embed.setTitle('Support Tickets')
-                     .setDescription(`Current Ticket Category: ${settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : 'None'}\nTicket Spawn Channel: ${settings.ticketChannelId ? `<#${settings.ticketChannelId}>` : 'First suitable text channel'}`);
-                const row = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_ticket_category').setPlaceholder('Select Ticket Category...').setChannelTypes(ChannelType.GuildCategory));
-                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_ticket_channel').setPlaceholder('Select Spawn Channel...').setChannelTypes(ChannelType.GuildText));
-                const rowC = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_ticket_spawn').setLabel('Spawn Ticket Panel').setStyle(ButtonStyle.Success));
-                return { embeds: [embed], components: [row, rowB, rowC, backRow] };
+                embed.setTitle('Support Tickets & Panel System')
+                     .setDescription('Configure how tickets are created, assigned, and managed in your server.')
+                     .addFields(
+                        { name: '📁 Category', value: settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : 'None', inline: true },
+                        { name: '📢 Spawn Channel', value: settings.ticketChannelId ? `<#${settings.ticketChannelId}>` : 'Current channel', inline: true },
+                        { name: '🛡️ Support Staff Role', value: settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : 'None (Admins only)', inline: true },
+                        { name: '⏰ 24h Auto-Archive', value: settings.ticketAutoArchive ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: '📝 Panel Title', value: settings.ticketPanelTitle || 'Support Center', inline: true },
+                        { name: '📄 Panel Description', value: settings.ticketPanelDesc ? 'Customized' : 'Default', inline: true }
+                     );
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId('action_ticket_category')
+                        .setPlaceholder('1️⃣ Select Ticket Category...')
+                        .setChannelTypes(ChannelType.GuildCategory)
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId('action_ticket_channel')
+                        .setPlaceholder('2️⃣ Select Panel Spawn Channel...')
+                        .setChannelTypes(ChannelType.GuildText)
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder()
+                        .setCustomId('action_ticket_support_role')
+                        .setPlaceholder('3️⃣ Select Support Staff Role...')
+                );
+
+                const rowD = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('action_ticket_autoarchive_toggle')
+                        .setLabel(settings.ticketAutoArchive ? 'Disable 24h Auto-Close' : 'Enable 24h Auto-Close')
+                        .setStyle(settings.ticketAutoArchive ? ButtonStyle.Danger : ButtonStyle.Secondary),
+                    new ButtonBuilder()
+                        .setCustomId('action_ticket_customize_panel')
+                        .setLabel('Customize Panel Text')
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('action_ticket_spawn')
+                        .setLabel('Spawn Ticket Panel')
+                        .setStyle(ButtonStyle.Success)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
             // --- VERIFY ---
@@ -734,14 +781,54 @@ module.exports = {
                 // Ticketing
                 if (i.customId === 'action_ticket_category') { settings.ticketCategoryId = i.values[0]; update = true; }
                 if (i.customId === 'action_ticket_channel') { settings.ticketChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_ticket_support_role') { settings.ticketSupportRoleId = i.values[0]; update = true; }
+                if (i.customId === 'action_ticket_autoarchive_toggle') { settings.ticketAutoArchive = !settings.ticketAutoArchive; update = true; }
+                if (i.customId === 'action_ticket_customize_panel') {
+                    const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+                    const modal = new ModalBuilder().setCustomId('modal_ticket_customize_panel').setTitle('Customize Ticket Panel');
+
+                    modal.addComponents(
+                        new ActionRowBuilder().addComponents(
+                            new TextInputBuilder()
+                                .setCustomId('panel_title')
+                                .setLabel('Panel Title')
+                                .setStyle(TextInputStyle.Short)
+                                .setRequired(true)
+                                .setValue(settings.ticketPanelTitle || 'Support Center')
+                        ),
+                        new ActionRowBuilder().addComponents(
+                            new TextInputBuilder()
+                                .setCustomId('panel_desc')
+                                .setLabel('Panel Description')
+                                .setStyle(TextInputStyle.Paragraph)
+                                .setRequired(true)
+                                .setValue(settings.ticketPanelDesc || 'Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.')
+                        )
+                    );
+                    await i.showModal(modal);
+
+                    try {
+                        const submitted = await i.awaitModalSubmit({ time: 300000, filter: x => x.user.id === interaction.user.id && x.customId === 'modal_ticket_customize_panel' });
+                        settings.ticketPanelTitle = submitted.fields.getTextInputValue('panel_title');
+                        settings.ticketPanelDesc = submitted.fields.getTextInputValue('panel_desc');
+                        await settings.save();
+                        settingsCache.invalidate(interaction.guild.id);
+                        return submitted.update(buildDashboard('view_ticketing'));
+                    } catch (e) {
+                        return;
+                    }
+                }
                 if (i.customId === 'action_ticket_spawn') {
                     if (!settings.ticketCategoryId) return i.reply({ content: '⚠️ You must select a Ticket Category above first!', ephemeral: true });
                     const targetChannelId = settings.ticketChannelId || i.channel.id;
                     const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
                     
+                    const panelTitle = settings.ticketPanelTitle || 'Support Center';
+                    const panelDesc = settings.ticketPanelDesc || 'Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.';
+
                     const pEmbed = new EmbedBuilder()
-                        .setTitle('Support Center')
-                        .setDescription('Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.')
+                        .setTitle(panelTitle)
+                        .setDescription(panelDesc)
                         .setColor(getRoleColor(interaction))
                         .setFooter({ text: 'Support Ticketing System' });
 

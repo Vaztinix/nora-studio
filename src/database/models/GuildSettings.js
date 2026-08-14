@@ -145,6 +145,26 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    ticketChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    ticketSupportRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    ticketFormInputs: {
+        type: DataTypes.TEXT, // Stored as a JSON string array of input definitions
+        allowNull: true
+    },
+    ticketPanelTitle: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    ticketPanelDesc: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
     ticketAutoArchive: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
