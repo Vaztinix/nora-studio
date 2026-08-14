@@ -14,6 +14,32 @@ router.get('/vapid-key', (req, res) => {
 });
 
 /**
+ * GET User Notifications & Broadcasts
+ */
+router.get('/', async (req, res) => {
+    try {
+        const userId = req.query.userId || req.headers['x-user-id'];
+        const { Op } = require('sequelize');
+
+        const notifications = await Notification.findAll({
+            where: {
+                [Op.or]: [
+                    { userId: userId || 'anonymous' },
+                    { isOwnerAction: true },
+                    { isSpecial: true }
+                ]
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 50
+        }).catch(() => []);
+
+        res.json({ notifications });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * POST Subscribe to Web Push Notifications
  */
 router.post('/subscribe', async (req, res) => {

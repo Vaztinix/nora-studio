@@ -84,23 +84,8 @@ module.exports = {
             const message = interaction.options.getString('message');
             const title = interaction.options.getString('title') || '📢 Nora Site Announcement';
 
-            const SiteAlert = require('../../database/models/SiteAlert');
-            const pushManager = require('../../utils/pushManager');
-
-            const alertRecord = await SiteAlert.create({
-                title,
-                message,
-                type: 'announcement',
-                authorId: interaction.user.id,
-                isActive: true
-            });
-
-            const sentPushCount = await pushManager.broadcastPushNotification({
-                title,
-                body: message,
-                icon: '/favicon.ico',
-                data: { url: '/dashboard' }
-            });
+            const { broadcastSiteAlert } = require('../../utils/pushManager');
+            const { sentPushCount } = await broadcastSiteAlert(title, message, 'announcement', interaction.user.id);
 
             const embed = new EmbedBuilder()
                 .setTitle('🚀 Site Broadcast Published')

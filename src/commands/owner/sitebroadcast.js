@@ -45,43 +45,8 @@ module.exports = {
         const type = interaction.options.getString('type') || 'announcement';
 
         try {
-            // 1. Create active SiteAlert record for dashboard banner display
-            const alertRecord = await SiteAlert.create({
-                title,
-                message,
-                type,
-                authorId: interaction.user.id,
-                isActive: true
-            });
-
-            // 2. Broadcast Web Push Notification to all PWA / web app subscribers
-            const pushPayload = {
-                title,
-                body: message,
-                icon: '/favicon.ico',
-                data: { url: '/dashboard' }
-            };
-            const sentPushCount = await pushManager.broadcastPushNotification(pushPayload);
-
-            // 3. Create a global Notification record for dashboard user bell centers
-            const UserLevel = require('../../database/models/UserLevel');
-            const allUsers = await UserLevel.findAll({ attributes: ['userId'], group: ['userId'] }).catch(() => []);
-            if (allUsers && allUsers.length > 0) {
-                const notificationsToCreate = allUsers.map(u => ({
-                    userId: u.userId,
-                    title,
-                    content: message,
-                    type: type === 'warning' ? 'warning' : 'special',
-                    read: false,
-                    isSpecial: true,
-                    isOwnerAction: true
-                }));
-                // Bulk insert in chunks of 500
-                for (let i = 0; i < notificationsToCreate.length; i += 500) {
-                    const chunk = notificationsToCreate.slice(i, i + 500);
-                    await Notification.bulkCreate(chunk).catch(() => {});
-                }
-            }
+            const { broadcastSiteAlert } = require('../../utils/pushManager');
+            const { alertRecord, sentPushCount } = await broadcastSiteAlert(title, message, type, interaction.user.id);
 
             const embed = new EmbedBuilder()
                 .setTitle('🚀 Site Broadcast Published Successfully!')
