@@ -362,6 +362,13 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `acceptMessage` TEXT NULL;"); } catch (e) {}
     try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `denyMessage` TEXT NULL;"); } catch (e) {}
     try { await sequelize.query("ALTER TABLE `ReactionRoles` ADD COLUMN `singleSelect` TINYINT(1) DEFAULT 0;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketChannelId` VARCHAR(255) NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketSupportRoleId` VARCHAR(255) NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketFormInputs` TEXT NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketPanelTitle` VARCHAR(255) NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketPanelDesc` TEXT NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `ActiveTickets` ADD COLUMN `claimedByUserId` VARCHAR(255) NULL;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `ActiveTickets` ADD COLUMN `excludeAutoClose` TINYINT(1) DEFAULT 0;"); } catch (e) {}
 }
 
 runPreSyncMigrations().then(() => {
