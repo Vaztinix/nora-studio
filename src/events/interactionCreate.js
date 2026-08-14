@@ -367,6 +367,21 @@ module.exports = {
             return;
         }
 
+        // Handle Ticket Claim / Unclaim Button Action
+        if (interaction.isButton() && interaction.customId === 'ticket_claim_btn') {
+            const ticketsEngine = require('../bot/engines/tickets');
+            const settings = await settingsCache.get(interaction.guildId);
+            await ticketsEngine.handleTicketClaimButton(interaction, settings);
+            return;
+        }
+
+        if (interaction.isButton() && interaction.customId === 'ticket_unclaim_btn') {
+            const ticketsEngine = require('../bot/engines/tickets');
+            const settings = await settingsCache.get(interaction.guildId);
+            await ticketsEngine.handleTicketUnclaimButton(interaction, settings);
+            return;
+        }
+
         // Handle Ticket Spawn Panel Button Click (Pop Modals)
         if (interaction.isButton() && interaction.customId.startsWith('ticket_') && !interaction.customId.startsWith('ticket_close')) {
             const ticketsEngine = require('../bot/engines/tickets');

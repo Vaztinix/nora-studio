@@ -290,8 +290,14 @@ async function handleTicketSubmit(interaction, settings) {
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
+                .setCustomId('ticket_claim_btn')
+                .setLabel('Claim Ticket')
+                .setEmoji('🙋')
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
                 .setCustomId(`ticket_close_${interaction.user.id}`)
                 .setLabel('Close Ticket')
+                .setEmoji('🔒')
                 .setStyle(ButtonStyle.Danger)
         );
 
@@ -369,6 +375,156 @@ async function handleTicketUserRemove(interaction, targetUser) {
 }
 
 /**
+ * Helper to update header embed components in ticket channel.
+ */
+async function updateHeaderButtons(channel, ownerId, isClaimed, claimerTag) {
+    try {
+        const messages = await channel.messages.fetch({ limit: 15 }).catch(() => null);
+        if (!messages) return;
+        const targetMsg = messages.find(m => m.components && m.components.length > 0 && m.components[0].components.some(c => c.customId && c.customId.startsWith('ticket_')));
+        if (targetMsg) {
+            const newRow = new ActionRowBuilder().addComponents(
+                isClaimed
+                    ? new ButtonBuilder()
+                        .setCustomId('ticket_unclaim_btn')
+                        .setLabel(`Unclaim Ticket (${claimerTag})`)
+                        .setEmoji('🔓')
+                        .setStyle(ButtonStyle.Secondary)
+                    : new ButtonBuilder()
+                        .setCustomId('ticket_claim_btn')
+                        .setLabel('Claim Ticket')
+                        .setEmoji('🙋')
+                        .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setCustomId(`ticket_close_${ownerId}`)
+                    .setLabel('Close Ticket')
+                    .setEmoji('🔒')
+                    .setStyle(ButtonStyle.Danger)
+            );
+            await targetMsg.edit({ components: [newRow] }).catch(() => {});
+        }
+    } catch (e) {
+        console.error('[Tickets Engine] Error updating header buttons:', e);
+    }
+}
+
+/**
+ * Handles claim button click on ticket header embed.
+ */
+async function handleTicketClaimButton(interaction, settings) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) {
+        return interaction.reply({ content: '⚠️ Could not resolve this ticket in database.', ephemeral: true });
+    }
+
+    const isSupport = settings?.ticketSupportRoleId && interaction.member?.roles.cache.has(settings.ticketSupportRoleId);
+    const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.ManageChannels) || interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) || interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
+
+    if (!isSupport && !isAdmin) {
+        return interaction.reply({ content: '⛔ Only Support staff can claim tickets.', ephemeral: true });
+    }
+
+    if (ticket.claimedByUserId) {
+        return interaction.reply({ content: `⚠️ This ticket is already claimed by <@${ticket.claimedByUserId}>.`, ephemeral: true });
+    }
+
+    try {
+        ticket.claimedByUserId = interaction.user.id;
+        await ticket.save();
+
+        await interaction.channel.setTopic(`Ticket Channel | Claimed by ${interaction.user.tag}`).catch(() => {});
+
+        const newRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('ticket_unclaim_btn')
+                .setLabel(`Unclaim Ticket (${interaction.user.username})`)
+                .setEmoji('🔓')
+                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder()
+                .setCustomId(`ticket_close_${ticket.ownerId}`)
+                .setLabel('Close Ticket')
+                .setEmoji('🔒')
+                .setStyle(ButtonStyle.Danger)
+        );
+
+        await interaction.update({ components: [newRow] });
+
+        const embed = new EmbedBuilder()
+            .setTitle('🎫 Ticket Claimed')
+            .setDescription(`This ticket has been claimed by <@${interaction.user.id}>! They will be handling your request.`)
+            .setColor(0x57acf2)
+            .setTimestamp();
+
+        await interaction.followUp({ embeds: [embed] }).catch(() => {});
+    } catch (err) {
+        console.error('[Tickets Engine] Error claiming ticket via button:', err);
+        if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ content: `❌ Failed to claim ticket: ${err.message}`, ephemeral: true }).catch(() => {});
+        } else {
+            await interaction.reply({ content: `❌ Failed to claim ticket: ${err.message}`, ephemeral: true }).catch(() => {});
+        }
+    }
+}
+
+/**
+ * Handles unclaim button click on ticket header embed.
+ */
+async function handleTicketUnclaimButton(interaction, settings) {
+    const ticket = await ActiveTicket.findOne({ where: { channelId: interaction.channelId } });
+    if (!ticket) {
+        return interaction.reply({ content: '⚠️ Could not resolve this ticket in database.', ephemeral: true });
+    }
+
+    if (!ticket.claimedByUserId) {
+        return interaction.reply({ content: '⚠️ This ticket is not currently claimed.', ephemeral: true });
+    }
+
+    const isClaimer = interaction.user.id === ticket.claimedByUserId;
+    const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) || interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
+
+    if (!isClaimer && !isAdmin) {
+        return interaction.reply({ content: `❌ Only <@${ticket.claimedByUserId}> (or an Administrator) can unclaim this ticket.`, ephemeral: true });
+    }
+
+    try {
+        ticket.claimedByUserId = null;
+        await ticket.save();
+
+        await interaction.channel.setTopic(`Ticket Channel | Unclaimed`).catch(() => {});
+
+        const newRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('ticket_claim_btn')
+                .setLabel('Claim Ticket')
+                .setEmoji('🙋')
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+                .setCustomId(`ticket_close_${ticket.ownerId}`)
+                .setLabel('Close Ticket')
+                .setEmoji('🔒')
+                .setStyle(ButtonStyle.Danger)
+        );
+
+        await interaction.update({ components: [newRow] });
+
+        const embed = new EmbedBuilder()
+            .setTitle('🔓 Ticket Unclaimed')
+            .setDescription(`This ticket has been unclaimed by <@${interaction.user.id}> and is now open for any available staff member.`)
+            .setColor(0xfaa61a)
+            .setTimestamp();
+
+        await interaction.followUp({ embeds: [embed] }).catch(() => {});
+    } catch (err) {
+        console.error('[Tickets Engine] Error unclaiming ticket via button:', err);
+        if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ content: `❌ Failed to unclaim ticket: ${err.message}`, ephemeral: true }).catch(() => {});
+        } else {
+            await interaction.reply({ content: `❌ Failed to unclaim ticket: ${err.message}`, ephemeral: true }).catch(() => {});
+        }
+    }
+}
+
+/**
  * Claims an active ticket for a staff member.
  */
 async function handleTicketClaim(interaction) {
@@ -386,6 +542,7 @@ async function handleTicketClaim(interaction) {
         await ticket.save();
 
         await interaction.channel.setTopic(`Ticket Channel | Claimed by ${interaction.user.tag}`).catch(() => {});
+        await updateHeaderButtons(interaction.channel, ticket.ownerId, true, interaction.user.username);
 
         const embed = new EmbedBuilder()
             .setTitle('🎫 Ticket Claimed')
@@ -425,6 +582,7 @@ async function handleTicketUnclaim(interaction) {
         await ticket.save();
 
         await interaction.channel.setTopic(`Ticket Channel | Unclaimed`).catch(() => {});
+        await updateHeaderButtons(interaction.channel, ticket.ownerId, false, null);
 
         const embed = new EmbedBuilder()
             .setTitle('🔓 Ticket Unclaimed')
@@ -548,8 +706,14 @@ async function handleTicketOpenCommand(interaction, settings, topic = 'General',
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
+                .setCustomId('ticket_claim_btn')
+                .setLabel('Claim Ticket')
+                .setEmoji('🙋')
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
                 .setCustomId(`ticket_close_${interaction.user.id}`)
                 .setLabel('Close Ticket')
+                .setEmoji('🔒')
                 .setStyle(ButtonStyle.Danger)
         );
 
@@ -651,6 +815,8 @@ module.exports = {
     handleTicketUserRemove,
     handleTicketClaim,
     handleTicketUnclaim,
+    handleTicketClaimButton,
+    handleTicketUnclaimButton,
     handleTicketRename,
     handleTicketOpenCommand,
     handleTicketAutocloseExclude
