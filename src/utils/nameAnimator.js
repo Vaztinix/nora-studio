@@ -1,90 +1,62 @@
 /**
- * Animated Name & Presence Controller for Nora
- * Cycles cool styled fonts and glowing symbols for Nora's server nickname and presence status.
+ * Static Bold Font & Presence Controller for Nora
+ * Keeps a clean static bold font name (𝗡𝗼𝗿𝗮) without server nickname spam or audit log alerts.
  */
 
-const ANIMATED_FRAMES = [
-    '✦ 𝗡𝗼𝗿𝗮 ✦',
-    '⚡ 𝗡𝗼𝗿𝗮 ⚡',
-    '⬡ 𝗡𝗼𝗿𝗮 ⬡',
-    '❖ 𝗡𝗼𝗿𝗮 ❖',
-    '🪐 𝗡𝗼𝗿𝗮 🪐',
-    '✨ 𝗡𝗼𝗿𝗮 ✨',
-    '◈ 𝗡𝗼𝗿𝗮 ◈',
-    '✵ 𝗡𝗼𝗿𝗮 ✵'
+const STATUS_FRAMES = [
+    '𝗡𝗼𝗿𝗮 | https://vaztinix.dev',
+    '𝗡𝗼𝗿𝗮 | /help',
+    '𝗡𝗼𝗿𝗮 | Privacy First AI & Moderation'
 ];
 
 let frameIndex = 0;
 
-/**
- * Get the current animated name frame.
- */
-function getCurrentFrame() {
-    return ANIMATED_FRAMES[frameIndex % ANIMATED_FRAMES.length];
+function nextStatusFrame() {
+    frameIndex = (frameIndex + 1) % STATUS_FRAMES.length;
+    return STATUS_FRAMES[frameIndex];
 }
 
 /**
- * Advance to next frame.
- */
-function nextFrame() {
-    frameIndex = (frameIndex + 1) % ANIMATED_FRAMES.length;
-    return getCurrentFrame();
-}
-
-async function updateAllGuildNicknames(client, nickname) {
-    const targetName = nickname || '𝗡𝗼𝗿𝗮';
-    for (const guild of client.guilds.cache.values()) {
-        try {
-            const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
-            if (me && me.nickname && me.nickname !== targetName) {
-                // Reset nickname if it's plain text so global_name (𝗡𝗼𝗿𝗮) displays automatically
-                await me.setNickname(targetName).catch(async () => {
-                    await me.setNickname(null).catch(() => {});
-                });
-            }
-        } catch (e) {}
-    }
-}
-
-/**
- * Start the Nickname & Status Animation Loop
+ * Start the Presence Controller (No Nickname Loop = Zero Audit Log Alerts)
  */
 function startNameAnimator(client) {
-    console.log('[Name Animator] Setting Nora cool bold font name (𝗡𝗼𝗿𝗮) across servers...');
+    console.log('[Presence Controller] Active with clean static bold font (𝗡𝗼𝗿𝗮).');
 
-    // 1. Immediate sync on startup
-    setTimeout(() => {
-        updateAllGuildNicknames(client, '𝗡𝗼𝗿𝗮');
-    }, 3000);
+    // Single static nickname check on startup to reset any custom nicknames if needed (runs once only)
+    setTimeout(async () => {
+        for (const guild of client.guilds.cache.values()) {
+            try {
+                const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
+                if (me && me.nickname) {
+                    // Reset nickname so Global Display Name (𝗡𝗼𝗿𝗮) shows without server nickname override logs
+                    await me.setNickname(null).catch(() => {});
+                }
+            } catch (e) {}
+        }
+    }, 5000);
 
-    // 2. Status Activity Animation every 12 seconds
+    // Status Activity Rotation every 30 seconds (Presence state only, zero audit logs)
     setInterval(() => {
-        const frame = nextFrame();
+        const statusText = nextStatusFrame();
         if (client.user) {
             client.user.setPresence({
                 activities: [
                     {
-                        name: frame,
+                        name: 'Nora',
+                        type: 0 // Playing
+                    },
+                    {
+                        name: 'Custom Status',
                         type: 4, // Custom Status
-                        state: `${frame} | https://vaztinix.dev`
+                        state: statusText
                     }
                 ],
                 status: 'online'
             });
         }
-    }, 12000);
-
-    // 3. Server Nickname Sync every 60 seconds
-    setInterval(() => {
-        const frame = getCurrentFrame();
-        updateAllGuildNicknames(client, frame);
-    }, 60000);
+    }, 30000);
 }
 
 module.exports = {
-    ANIMATED_FRAMES,
-    getCurrentFrame,
-    nextFrame,
-    startNameAnimator,
-    updateAllGuildNicknames
+    startNameAnimator
 };
