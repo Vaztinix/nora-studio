@@ -118,14 +118,11 @@ module.exports = {
                     body: { global_name: newName }
                 });
 
-                const { updateAllGuildNicknames } = require('../../utils/nameAnimator');
-                await updateAllGuildNicknames(interaction.client, newName);
-
                 const embed = new EmbedBuilder()
                     .setTitle('✨ Bot Name & Font Updated')
-                    .setDescription(`Nora's Global Display Name and Server Nickname have been updated.`)
+                    .setDescription(`Nora's Global Display Name has been updated across Discord.`)
                     .setColor(0x10B981)
-                    .addFields({ name: 'New Name', value: `\`${newName}\``, inline: true })
+                    .addFields({ name: 'New Display Name', value: `\`${newName}\``, inline: true })
                     .setTimestamp();
 
                 await interaction.editReply({ embeds: [embed] });
