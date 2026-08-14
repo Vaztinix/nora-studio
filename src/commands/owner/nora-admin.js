@@ -32,6 +32,28 @@ module.exports = {
                     opt.setName('name')
                         .setDescription('The new name / cool font for Nora (e.g. 𝗡𝗼𝗿𝗮 ✦)')
                         .setRequired(true))
+        )
+        .addSubcommand(sub =>
+            sub.setName('statusflag')
+                .setDescription('Publish a status incident flag on vaztinix.dev/status (Owner only)')
+                .addStringOption(opt =>
+                    opt.setName('title')
+                        .setDescription('Incident summary title')
+                        .setRequired(true))
+                .addStringOption(opt =>
+                    opt.setName('message')
+                        .setDescription('Detailed operational note')
+                        .setRequired(true))
+                .addStringOption(opt =>
+                    opt.setName('severity')
+                        .setDescription('Severity level')
+                        .setRequired(true)
+                        .addChoices(
+                            { name: 'Info / Note', value: 'info' },
+                            { name: 'Degraded Performance', value: 'degraded' },
+                            { name: 'Service Outage', value: 'outage' },
+                            { name: 'Scheduled Maintenance', value: 'maintenance' }
+                        ))
         ),
 
     async execute(interaction) {
@@ -129,6 +151,36 @@ module.exports = {
             } catch (err) {
                 await interaction.editReply({ content: `❌ Failed to update name: ${err.message}` });
             }
+        } else if (subcommand === 'statusflag') {
+            await interaction.deferReply({ ephemeral: true });
+
+            const title = interaction.options.getString('title');
+            const message = interaction.options.getString('message');
+            const severity = interaction.options.getString('severity');
+            const StatusFlag = require('../../database/models/StatusFlag');
+
+            const flag = await StatusFlag.create({
+                title,
+                message,
+                severity,
+                shardId: 0,
+                author: `${interaction.user.username} (Owner)`,
+                isResolved: false
+            });
+
+            const embed = new EmbedBuilder()
+                .setTitle('🚨 Status Flag Published')
+                .setDescription(`Published operational note to [vaztinix.dev/status](https://vaztinix.dev/status).`)
+                .setColor(0x7C3AED)
+                .addFields(
+                    { name: 'Flag ID', value: `\`#${flag.id}\``, inline: true },
+                    { name: 'Severity', value: `\`${severity.toUpperCase()}\``, inline: true },
+                    { name: 'Title', value: title, inline: false },
+                    { name: 'Message', value: message, inline: false }
+                )
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [embed] });
         }
     },
 };

@@ -22,6 +22,21 @@ module.exports = {
 
             if (diffMins < 5) return; // Ignore micro-reboots under 5 mins
 
+            // Automatically log status incident flag for downtime > 5 mins
+            try {
+                const StatusFlag = require('../database/models/StatusFlag');
+                await StatusFlag.create({
+                    title: `Automatic Gateway Downtime Note (${diffMins}m)`,
+                    message: `Automated monitor recorded ${diffMins} minutes of gateway downtime before successful reconnection.`,
+                    severity: 'degraded',
+                    shardId: 0,
+                    author: 'System Auto-Monitor',
+                    isResolved: true,
+                    resolvedAt: new Date(),
+                    resolutionNote: 'System connection re-established and catch-up sync completed.'
+                });
+            } catch (e) {}
+
             // Cap catch-up at 60 mins to prevent extreme XP inflation
             const catchUpMins = Math.min(diffMins, 60);
             const intervalsMissed = Math.floor(catchUpMins / 5);

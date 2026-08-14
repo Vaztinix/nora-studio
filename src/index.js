@@ -1197,6 +1197,9 @@ app.get('/manifest.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.sendFile(path.join(__dirname, 'web/manifest.json'));
 });
+app.get('/status', (req, res) => {
+    res.sendFile(path.join(__dirname, 'web/status.html'));
+});
 
 // Serve static assets (JS, CSS, images) — dashboard.html itself is handled above
 app.use(express.static(path.join(__dirname, '../dist'), {
@@ -1215,6 +1218,9 @@ app.use(express.static(path.join(__dirname, 'web'), {
 // Mount API Routers
 const notificationsRouter = require('./api/routes/notifications');
 app.use('/api/notifications', notificationsRouter);
+
+const statusRouter = require('./api/routes/status')(client);
+app.use('/api/status', statusRouter);
 
 // Initialize Reminder Scheduler Loop
 const { initReminderScheduler } = require('./utils/reminderScheduler');
