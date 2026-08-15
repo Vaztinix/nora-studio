@@ -87,10 +87,11 @@ async function resolveDirectMediaUrl(url, timeoutMs = 1500) {
  */
 async function generateRankCard({ 
     username, 
-    level, 
-    currentXp, 
+    level = 0, 
+    currentXp = 0, 
     nextLevelXp, 
-    rank, 
+    requiredXp = 100,
+    rank = 1, 
     avatarUrl, 
     showPfp = true, 
     bgColor = '#111217', 
@@ -103,6 +104,8 @@ async function generateRankCard({
     serverCustomBg = null,
     serverShape = 'rounded-rect'
 }) {
+    const finalNextLevelXp = Number(nextLevelXp || requiredXp) || 100;
+    const finalCurrentXp = Number(currentXp) || 0;
     // Member changes ALWAYS overwrite server changes
     const finalBgImage = userCustomBg || serverCustomBg || null;
     const rawShape = (userShape && userShape !== 'default') ? userShape : (serverShape || 'rounded-rect');
@@ -176,7 +179,7 @@ async function generateRankCard({
         }
     }
 
-    const progressPercent = Math.min(100, Math.max(0, (currentXp / nextLevelXp) * 100));
+    const progressPercent = Math.min(100, Math.max(0, (finalCurrentXp / Math.max(1, finalNextLevelXp)) * 100));
     const barWidth = Math.round((progressPercent / 100) * 440);
 
     // Dynamic Shape Clips
@@ -242,7 +245,7 @@ async function generateRankCard({
         <text x="190" y="125" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="bold" fill="${accentColor}">LEVEL ${level}</text>
 
         <!-- XP info -->
-        <text x="630" y="125" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="#a1a1aa" text-anchor="end">${currentXp.toLocaleString()} <tspan fill="#71717a">/ ${nextLevelXp.toLocaleString()} XP</tspan></text>
+        <text x="630" y="125" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold" fill="#a1a1aa" text-anchor="end">${finalCurrentXp.toLocaleString()} <tspan fill="#71717a">/ ${finalNextLevelXp.toLocaleString()} XP</tspan></text>
 
         <!-- Progress Bar container -->
         <rect x="190" y="145" width="440" height="24" rx="12" fill="rgba(10, 11, 16, 0.65)" stroke="${borderColor}" stroke-width="1" />
