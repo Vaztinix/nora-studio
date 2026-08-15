@@ -2,19 +2,13 @@ require('dotenv').config();
 
 
 
-// 🛡️ Enable duplex: 'half' & automatic multipart boundary resolution for Node.js v25+
+// 🛡️ Enable duplex: 'half' for Node.js v25+ native fetch streaming
 try {
     const { DefaultRestOptions } = require('@discordjs/rest');
     DefaultRestOptions.makeRequest = async (url, init) => {
-        const isFormData = init && init.body && typeof init.body === 'object' && (init.body[Symbol.toStringTag] === 'FormData' || init.body.constructor?.name === 'FormData');
-        const headers = new Headers(init?.headers);
-        if (isFormData) {
-            headers.delete('content-type');
-        }
         return await fetch(url, {
             ...init,
-            headers,
-            duplex: isFormData ? 'half' : undefined
+            duplex: 'half'
         });
     };
 } catch (e) {}
