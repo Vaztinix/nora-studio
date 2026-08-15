@@ -2,28 +2,56 @@ require('dotenv').config();
 
 
 
-// 🛡️ Enable duplex: 'half' & robust multipart FormData extraction for Node.js v25+
+// 🛡️ Reliable HTTP adapter for Node.js v25+ to prevent multipart stream truncation and webhook PATCH hangs
 try {
+    const axios = require('axios');
     const { DefaultRestOptions } = require('@discordjs/rest');
     DefaultRestOptions.makeRequest = async (url, init) => {
+        const isFormData = init?.body && typeof init.body === 'object' && (init.body[Symbol.toStringTag] === 'FormData' || init.body.constructor?.name === 'FormData');
+        
         let body = init?.body;
-        let headers = new Headers(init?.headers);
+        let headers = { ...(init?.headers || {}) };
 
-        if (body && typeof body === 'object' && (body[Symbol.toStringTag] === 'FormData' || body.constructor?.name === 'FormData')) {
+        if (isFormData) {
             const dummyRes = new Response(body);
             const contentType = dummyRes.headers.get('content-type');
             if (contentType) {
-                headers.set('content-type', contentType);
+                headers['content-type'] = contentType;
             }
-            body = await dummyRes.arrayBuffer();
+            body = Buffer.from(await dummyRes.arrayBuffer());
         }
 
-        return await fetch(url, {
-            ...init,
+        const response = await axios({
+            url,
+            method: init.method || 'GET',
             headers,
-            body,
-            duplex: 'half'
+            data: body,
+            responseType: 'arraybuffer',
+            validateStatus: () => true
         });
+
+        const respHeaders = new Headers();
+        for (const [k, v] of Object.entries(response.headers)) {
+            if (Array.isArray(v)) {
+                v.forEach(val => respHeaders.append(k, val));
+            } else if (v != null) {
+                respHeaders.set(k, String(v));
+            }
+        }
+
+        const buffer = Buffer.from(response.data);
+
+        return {
+            body: buffer,
+            arrayBuffer: async () => buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
+            json: async () => JSON.parse(buffer.toString('utf8')),
+            text: async () => buffer.toString('utf8'),
+            get bodyUsed() { return false; },
+            headers: respHeaders,
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.status >= 200 && response.status < 300
+        };
     };
 } catch (e) {}
 
