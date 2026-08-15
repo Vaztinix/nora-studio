@@ -1029,14 +1029,22 @@ module.exports = {
                 }
             };
 
+            let activeDeferPromise = null;
+
             interaction.deferReply = async (options) => {
                 if (interaction.deferred || interaction.replied) {
                     return;
                 }
-                return await originalDeferReply(options).catch(() => {});
+                if (!activeDeferPromise) {
+                    activeDeferPromise = originalDeferReply(options).catch(() => {});
+                }
+                return await activeDeferPromise;
             };
 
             interaction.editReply = async (options) => {
+                if (activeDeferPromise) {
+                    await activeDeferPromise;
+                }
                 if (!interaction.deferred && !interaction.replied) {
                     return await interaction.reply(options);
                 }

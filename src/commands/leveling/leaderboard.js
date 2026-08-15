@@ -110,8 +110,16 @@ module.exports = {
 
                     const { AttachmentBuilder } = require('discord.js');
                     const attachment = new AttachmentBuilder(imageBuffer, { name: `leaderboard-p${clampedPage}.png` });
+                    const embed = new EmbedBuilder()
+                        .setTitle(`🏆 Server XP Leaderboard — ${interaction.guild.name}`)
+                        .setColor(0x7C3AED)
+                        .setImage(`attachment://leaderboard-p${clampedPage}.png`)
+                        .setFooter({ text: `Page ${clampedPage} of ${totalPages} • Total Members Tracked: ${count}` })
+                        .setTimestamp();
+
                     return {
                         content: statsText,
+                        embeds: [embed],
                         files: [attachment],
                         components: [paginationRow]
                     };
