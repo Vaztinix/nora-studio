@@ -2,12 +2,26 @@ require('dotenv').config();
 
 
 
-// 🛡️ Enable duplex: 'half' for Node.js v25+ native fetch streaming
+// 🛡️ Enable duplex: 'half' & robust multipart FormData extraction for Node.js v25+
 try {
     const { DefaultRestOptions } = require('@discordjs/rest');
     DefaultRestOptions.makeRequest = async (url, init) => {
+        let body = init?.body;
+        let headers = new Headers(init?.headers);
+
+        if (body && typeof body === 'object' && (body[Symbol.toStringTag] === 'FormData' || body.constructor?.name === 'FormData')) {
+            const dummyRes = new Response(body);
+            const contentType = dummyRes.headers.get('content-type');
+            if (contentType) {
+                headers.set('content-type', contentType);
+            }
+            body = await dummyRes.arrayBuffer();
+        }
+
         return await fetch(url, {
             ...init,
+            headers,
+            body,
             duplex: 'half'
         });
     };

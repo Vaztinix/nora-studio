@@ -830,10 +830,13 @@ module.exports = {
         };
 
         interaction.reply = async (options) => {
+            if (activeDeferPromise) {
+                await activeDeferPromise;
+            }
+            if (interaction.deferred || interaction.replied) {
+                return await interaction.editReply(options);
+            }
             try {
-                if (interaction.deferred || interaction.replied) {
-                    return await interaction.editReply(options);
-                }
                 return await originalReply(options);
             } catch (err) {
                 console.error('[Interaction Reply Error]:', err);
