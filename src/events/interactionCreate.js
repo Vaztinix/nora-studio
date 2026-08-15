@@ -829,27 +829,9 @@ module.exports = {
             return await activeDeferPromise;
         };
 
-        interaction.reply = async (options) => {
-            if (activeDeferPromise) {
-                await activeDeferPromise;
-            }
-            if (interaction.deferred || interaction.replied) {
-                return await interaction.editReply(options);
-            }
-            try {
-                return await originalReply(options);
-            } catch (err) {
-                console.error('[Interaction Reply Error]:', err);
-                return await interaction.editReply(options).catch(() => {});
-            }
-        };
-
         interaction.editReply = async (options) => {
             if (activeDeferPromise) {
                 await activeDeferPromise;
-            }
-            if (!interaction.deferred && !interaction.replied) {
-                return await originalReply(options);
             }
             try {
                 return await originalEditReply(options);
@@ -861,6 +843,10 @@ module.exports = {
                     console.error('[System Network] retry editReply failed:', retryErr);
                 }
             }
+        };
+
+        interaction.reply = async (options) => {
+            return await interaction.editReply(options);
         };
 
         // ⚡ INSTANT DEFERRAL (<10ms) to beat Discord's 3-second Gateway interaction timeout
