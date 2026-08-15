@@ -808,6 +808,70 @@ module.exports = {
         const command = client.commands.get(interaction.commandName);
         if (!command) return;
 
+        // Monkey-patch reply methods immediately so deferral happens in <10ms
+        const originalReply = interaction.reply.bind(interaction);
+        const originalDeferReply = interaction.deferReply.bind(interaction);
+        const originalEditReply = interaction.editReply.bind(interaction);
+
+        const isEphemeralCmd = command.ephemeral === true || 
+                               ['moderation', 'setup'].includes(command.category) || 
+                               ['ask', 'mycard', 'setjoinlink', 'poll-end', 'nora-admin', 'apply', 'verify'].includes(interaction.commandName);
+
+        let activeDeferPromise = null;
+
+        interaction.deferReply = async (options) => {
+            if (interaction.deferred || interaction.replied) {
+                return;
+            }
+            if (!activeDeferPromise) {
+                activeDeferPromise = originalDeferReply(options).catch(() => {});
+            }
+            return await activeDeferPromise;
+        };
+
+        interaction.reply = async (options) => {
+            try {
+                if (interaction.deferred || interaction.replied) {
+                    return await interaction.editReply(options);
+                }
+                return await originalReply(options);
+            } catch (err) {
+                console.error('[Interaction Reply Error]:', err);
+                return await interaction.editReply(options).catch(() => {});
+            }
+        };
+
+        interaction.editReply = async (options) => {
+            if (activeDeferPromise) {
+                await activeDeferPromise;
+            }
+            if (!interaction.deferred && !interaction.replied) {
+                return await originalReply(options);
+            }
+            try {
+                return await originalEditReply(options);
+            } catch (err) {
+                console.error('[System Network] interaction.editReply failed:', err);
+                try {
+                    return await interaction.followUp(options);
+                } catch (followErr) {
+                    console.error('[System Network] followUp failover failed:', followErr);
+                }
+                if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
+                    const payload = typeof options === 'string' ? { content: options } : { ...options };
+                    if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
+                    else if (!payload.content.includes(interaction.user.id)) payload.content = `👋 <@${interaction.user.id}> ${payload.content}`;
+                    return await interaction.channel.send(payload).catch(() => {});
+                }
+            }
+        };
+
+        // ⚡ INSTANT DEFERRAL (<10ms) to beat Discord's 3-second Gateway interaction timeout
+        if (!command.showModal && !interaction.deferred && !interaction.replied) {
+            const { MessageFlags } = require('discord.js');
+            activeDeferPromise = originalDeferReply(isEphemeralCmd ? { flags: MessageFlags.Ephemeral } : {}).catch(() => {});
+        }
+
         // 💎 Early Access Command Check
         if (command.earlyAccess || interaction.commandName === 'ask') {
             let userHasPremium = true;
@@ -1004,76 +1068,7 @@ module.exports = {
                 ).catch(() => null);
             }
 
-            // Monkey-patch reply methods to handle deferred/replied states and channel failovers gracefully
-            const originalReply = interaction.reply.bind(interaction);
-            const originalDeferReply = interaction.deferReply.bind(interaction);
-            const originalEditReply = interaction.editReply.bind(interaction);
-
-            const isEphemeralCmd = command.ephemeral === true || 
-                                   ['moderation', 'setup'].includes(command.category) || 
-                                   ['ask', 'mycard', 'setjoinlink', 'poll-end', 'nora-admin', 'apply', 'verify'].includes(interaction.commandName);
-
-            interaction.reply = async (options) => {
-                try {
-                    if (interaction.deferred || interaction.replied) {
-                        return await originalEditReply(options);
-                    }
-                    return await originalReply(options);
-                } catch (err) {
-                    console.error('[Interaction Reply Error]:', err);
-                    if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
-                        const payload = typeof options === 'string' ? { content: options } : { ...options };
-                        if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
-                        else if (!payload.content.includes(interaction.user.id)) payload.content = `👋 <@${interaction.user.id}> ${payload.content}`;
-                        return await interaction.channel.send(payload).catch(() => {});
-                    }
-                }
-            };
-
-            let activeDeferPromise = null;
-
-            interaction.deferReply = async (options) => {
-                if (interaction.deferred || interaction.replied) {
-                    return;
-                }
-                if (!activeDeferPromise) {
-                    activeDeferPromise = originalDeferReply(options).catch(() => {});
-                }
-                return await activeDeferPromise;
-            };
-
-            interaction.editReply = async (options) => {
-                if (activeDeferPromise) {
-                    await activeDeferPromise;
-                }
-                if (!interaction.deferred && !interaction.replied) {
-                    return await interaction.reply(options);
-                }
-                try {
-                    return await originalEditReply(options);
-                } catch (err) {
-                    console.error('[System Network] interaction.editReply failed:', err);
-                    // Automatic followUp failover (POST request accepts new attachments cleanly)
-                    try {
-                        return await interaction.followUp(options);
-                    } catch (followErr) {
-                        console.error('[System Network] followUp failover failed:', followErr);
-                    }
-                    // Channel Failover Delivery: If interaction token expired or edit failed, deliver directly to channel!
-                    if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
-                        const payload = typeof options === 'string' ? { content: options } : { ...options };
-                        if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
-                        else if (!payload.content.includes(interaction.user.id)) payload.content = `👋 <@${interaction.user.id}> ${payload.content}`;
-                        return await interaction.channel.send(payload).catch(() => {});
-                    }
-                }
-            };
-
             try {
-                if (!command.showModal && !command.noAutoDefer && !interaction.deferred && !interaction.replied) {
-                    const { MessageFlags } = require('discord.js');
-                    await interaction.deferReply(isEphemeralCmd ? { flags: MessageFlags.Ephemeral } : {}).catch(() => {});
-                }
                 await command.execute(interaction, settings);
             } catch (error) {
                 if (error.code === 'UND_ERR_SOCKET' || error.message?.includes('other side closed') || error.code === 'ECONNRESET') {
