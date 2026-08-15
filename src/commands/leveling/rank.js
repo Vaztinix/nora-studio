@@ -5,6 +5,7 @@ const { handleError } = require('../../utils/embeds');
 // Rank command implementation
 module.exports = {
     category: 'leveling',
+    noAutoDefer: true,
     data: new SlashCommandBuilder()
         .setName('rank')
         .setDescription("Check your or another user's rank with a beautiful card.")
@@ -15,9 +16,6 @@ module.exports = {
         .setDefaultMemberPermissions(null),
 
     async execute(interaction) {
-        // Defer reply immediately so Discord interaction token never expires (3s timeout protection)
-        await interaction.deferReply().catch(() => {});
-
         const { checkAndAwardEgg } = require('../../utils/easterEggSystem');
         checkAndAwardEgg(interaction, 9);
 
@@ -26,7 +24,7 @@ module.exports = {
 
         // We only exclude Nora herself from the rank system to avoid self-tracking.
         if (target.id === interaction.client.user.id) {
-            return interaction.editReply({
+            return interaction.reply({
                 content: '⚠️ **Nora is Supreme:** I do not have a rank profile; I am simply here to assist you!'
             });
         }
@@ -167,7 +165,7 @@ module.exports = {
                 embed.setDescription(`👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:`);
             }
 
-            await interaction.editReply({ 
+            await interaction.reply({ 
                 content: hasNoXp 
                     ? `👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:` 
                     : `📊 **${target.username}**'s Official Rank Card`,
@@ -177,7 +175,7 @@ module.exports = {
         } catch (err) {
             console.error('Error generating rank card:', err);
             // Fallback: send simple text reply if generation fails
-            await interaction.editReply({ 
+            await interaction.reply({ 
                 content: `👋 **${target.username}** | Level **${currentLevel}** | Rank **#${rankIndex}** | XP **${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()}**`,
                 files: []
             });

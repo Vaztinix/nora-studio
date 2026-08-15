@@ -320,6 +320,7 @@ async function buildMyCardPayload({ interaction, targetUser }) {
 
 module.exports = {
     category: 'utility',
+    noAutoDefer: true,
     ephemeral: false,
     buildMyCardPayload,
     data: new SlashCommandBuilder()
@@ -333,10 +334,6 @@ module.exports = {
     async execute(interaction) {
         const target = interaction.options.getUser('target') || interaction.user;
 
-        if (!interaction.deferred && !interaction.replied) {
-            await interaction.deferReply().catch(() => {});
-        }
-
         // We only exclude Nora herself from the profile system.
         if (target.id === interaction.client.user.id) {
             return handleError(interaction, 'Action Denied', 'I do not have a profile card; I am your assistant!');
@@ -348,13 +345,13 @@ module.exports = {
             
             // Hand complete privacy control back to the user regarding what info is hidden or shared
             if (targetPrefs && !targetPrefs.profilePublic && target.id !== interaction.user.id) {
-                return interaction.editReply({
+                return interaction.reply({
                     content: '🔒 **Private Profile:** This profile has been set to private by the user.'
                 });
             }
 
             const payload = await buildMyCardPayload({ interaction, targetUser: target });
-            await interaction.editReply(payload);
+            await interaction.reply(payload);
         } catch (err) {
             console.error('[MyCard Command Error]', err);
             await handleError(interaction, 'Profile Error', 'An error occurred while building your profile card. Please try again.');

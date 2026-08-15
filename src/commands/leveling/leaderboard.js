@@ -4,6 +4,7 @@ const { handleError } = require('../../utils/embeds');
 
 module.exports = {
     category: 'leveling',
+    noAutoDefer: true,
     data: new SlashCommandBuilder()
         .setName('leaderboard')
         .setDescription('View the most active users in the server with rankings and XP progression.')
@@ -151,7 +152,7 @@ module.exports = {
         };
 
         const initialPayload = await renderPage(currentPage);
-        const responseMsg = await interaction.editReply(initialPayload);
+        const responseMsg = await interaction.reply(initialPayload);
 
         // Interactive Button Collector (60s active duration)
         if (responseMsg && typeof responseMsg.createMessageComponentCollector === 'function') {

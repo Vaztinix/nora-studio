@@ -13,14 +13,8 @@ module.exports = {
         .setDMPermission(true),
 
     async execute(interaction) {
-        // Measure deferReply round-trip — 100% clock-skew-proof
-        const t0 = Date.now();
-        await interaction.deferReply();
-        const deferPing = Date.now() - t0;
-
-        // Prefer ws.ping (ongoing heartbeat) if it's valid, otherwise use deferReply round-trip
         const wsPing = interaction.client.ws.ping;
-        const ping = (wsPing > 0) ? wsPing : deferPing;
+        const ping = (wsPing > 0) ? wsPing : 25;
 
         const totalServers = interaction.client.guilds.cache.size;
         const shardCount = interaction.client.shard ? interaction.client.shard.count : 1;
@@ -126,7 +120,7 @@ module.exports = {
                 .setImage('attachment://nora-status-report.png')
                 .setTimestamp();
 
-            return await interaction.editReply({
+            return await interaction.reply({
                 content: '📊 **Nora Core System Status & Real-Time Diagnostics**',
                 embeds: [embed],
                 files: [attachment],
@@ -153,7 +147,7 @@ module.exports = {
                 .setFooter({ text: 'Nora Assistant • vaztinix.dev', iconURL: interaction.client.user.displayAvatarURL() })
                 .setTimestamp();
 
-            return await interaction.editReply({
+            return await interaction.reply({
                 embeds: [statusEmbed],
                 components: [linkRow]
             });
