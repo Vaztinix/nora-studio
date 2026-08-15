@@ -1,15 +1,6 @@
 require('dotenv').config();
 
-// Configure undici dispatcher for Node v25+ to prevent Cloudflare/Discord socket connection resets & AbortError
-try {
-    const { Agent, setGlobalDispatcher } = require('undici');
-    setGlobalDispatcher(new Agent({
-        keepAliveTimeout: 4000,
-        keepAliveMaxTimeout: 15000,
-        pipelining: 0,
-        connect: { timeout: 8000 }
-    }));
-} catch (e) {}
+
 
 // 🛡️ Enable duplex: 'half' & automatic multipart boundary resolution for Node.js v25+
 try {

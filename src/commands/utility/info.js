@@ -13,6 +13,7 @@ module.exports = {
         .setDMPermission(true),
 
     async execute(interaction) {
+        await interaction.deferReply().catch(() => {});
         const wsPing = interaction.client.ws.ping;
         const ping = (wsPing > 0) ? wsPing : 25;
 
@@ -120,7 +121,7 @@ module.exports = {
                 .setImage('attachment://nora-status-report.png')
                 .setTimestamp();
 
-            return await interaction.reply({
+            return await interaction.editReply({
                 content: '📊 **Nora Core System Status & Real-Time Diagnostics**',
                 embeds: [embed],
                 files: [attachment],
@@ -147,7 +148,7 @@ module.exports = {
                 .setFooter({ text: 'Nora Assistant • vaztinix.dev', iconURL: interaction.client.user.displayAvatarURL() })
                 .setTimestamp();
 
-            return await interaction.reply({
+            return await interaction.editReply({
                 embeds: [statusEmbed],
                 components: [linkRow]
             });

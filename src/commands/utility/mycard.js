@@ -332,6 +332,7 @@ module.exports = {
         .setDefaultMemberPermissions(null),
 
     async execute(interaction) {
+        await interaction.deferReply().catch(() => {});
         const target = interaction.options.getUser('target') || interaction.user;
 
         // We only exclude Nora herself from the profile system.
@@ -345,13 +346,13 @@ module.exports = {
             
             // Hand complete privacy control back to the user regarding what info is hidden or shared
             if (targetPrefs && !targetPrefs.profilePublic && target.id !== interaction.user.id) {
-                return interaction.reply({
+                return interaction.editReply({
                     content: '🔒 **Private Profile:** This profile has been set to private by the user.'
                 });
             }
 
             const payload = await buildMyCardPayload({ interaction, targetUser: target });
-            await interaction.reply(payload);
+            await interaction.editReply(payload);
         } catch (err) {
             console.error('[MyCard Command Error]', err);
             await handleError(interaction, 'Profile Error', 'An error occurred while building your profile card. Please try again.');

@@ -18,6 +18,7 @@ module.exports = {
         .setDefaultMemberPermissions(null),
     
     async execute(interaction) {
+        await interaction.deferReply().catch(() => {});
         let currentPage = interaction.options.getInteger('page') || 1;
         const usersPerPage = 10;
 
@@ -152,7 +153,7 @@ module.exports = {
         };
 
         const initialPayload = await renderPage(currentPage);
-        const responseMsg = await interaction.reply(initialPayload);
+        const responseMsg = await interaction.editReply(initialPayload);
 
         // Interactive Button Collector (60s active duration)
         if (responseMsg && typeof responseMsg.createMessageComponentCollector === 'function') {

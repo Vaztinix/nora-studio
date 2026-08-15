@@ -1020,6 +1020,7 @@ module.exports = {
                     }
                     return await originalReply(options);
                 } catch (err) {
+                    console.error('[Interaction Reply Error]:', err);
                     if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
                         const payload = typeof options === 'string' ? { content: options } : { ...options };
                         if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
@@ -1052,16 +1053,11 @@ module.exports = {
                     return await originalEditReply(options);
                 } catch (err) {
                     console.error('[System Network] interaction.editReply failed:', err);
-                    if (err.code === 'UND_ERR_SOCKET' || err.message?.includes('other side closed') || err.code === 'ECONNRESET') {
-                        console.warn('[System Network] Retrying editReply after socket reset...');
-                        const retryRes = await originalEditReply(options).catch(() => null);
-                        if (retryRes) return retryRes;
-                    }
-                    // Try one more clean originalEditReply attempt
+                    // Automatic followUp failover (POST request accepts new attachments cleanly)
                     try {
-                        return await originalEditReply(options);
-                    } catch (finalErr) {
-                        console.error('[System Network] Final editReply attempt failed:', finalErr);
+                        return await interaction.followUp(options);
+                    } catch (followErr) {
+                        console.error('[System Network] followUp failover failed:', followErr);
                     }
                     // Channel Failover Delivery: If interaction token expired or edit failed, deliver directly to channel!
                     if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
