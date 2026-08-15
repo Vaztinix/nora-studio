@@ -856,15 +856,9 @@ module.exports = {
             } catch (err) {
                 console.error('[System Network] interaction.editReply failed:', err);
                 try {
-                    return await interaction.followUp(options);
-                } catch (followErr) {
-                    console.error('[System Network] followUp failover failed:', followErr);
-                }
-                if (interaction.channel && typeof interaction.channel.send === 'function' && !options?.ephemeral && !interaction.ephemeral && !isEphemeralCmd) {
-                    const payload = typeof options === 'string' ? { content: options } : { ...options };
-                    if (!payload.content) payload.content = `👋 <@${interaction.user.id}>`;
-                    else if (!payload.content.includes(interaction.user.id)) payload.content = `👋 <@${interaction.user.id}> ${payload.content}`;
-                    return await interaction.channel.send(payload).catch(() => {});
+                    return await originalEditReply(options);
+                } catch (retryErr) {
+                    console.error('[System Network] retry editReply failed:', retryErr);
                 }
             }
         };
