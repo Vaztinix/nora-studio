@@ -117,7 +117,6 @@ module.exports = {
             const attachment = new AttachmentBuilder(basePng, { name: 'nora-status-report.png' });
 
             return await interaction.editReply({
-                content: '📊 **Nora Core System Status & Real-Time Diagnostics**',
                 files: [attachment],
                 components: [linkRow]
             });

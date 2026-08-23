@@ -66,6 +66,20 @@ function queueSave() {
     }, 1000); // 1-second debounce delay
 }
 
+async function safeReplyOrSend(message, payload) {
+    if (!message || !message.channel) return null;
+    try {
+        if (message.system) {
+            return await message.channel.send(payload).catch(() => null);
+        }
+        return await message.reply(payload).catch(async () => {
+            return await message.channel.send(payload).catch(() => null);
+        });
+    } catch (_) {
+        return null;
+    }
+}
+
 function sendCountingHelpEmbed(message, guildData) {
     const { EmbedBuilder } = require('discord.js');
     const currentCount = guildData ? (guildData.currentCount || 0) : 0;
@@ -95,14 +109,14 @@ function sendCountingHelpEmbed(message, guildData) {
         .setFooter({ text: 'Nora Counting System' })
         .setTimestamp();
 
-    return message.reply({ embeds: [embed] }).catch(() => {});
+    return safeReplyOrSend(message, { embeds: [embed] });
 }
 
 module.exports = {
     name: Events.MessageCreate,
     sendCountingHelpEmbed,
     async execute(message, client) {
-        if (!message.guild || !message.author || message.author.bot) return;
+        if (!message.guild || !message.author || message.author.bot || message.system) return;
 
         const settings = await settingsCache.get(message.guild.id);
         if (!settings || !settings.countingChannelId || message.channel.id !== settings.countingChannelId) return;
@@ -127,7 +141,7 @@ module.exports = {
             whitelistedRoles = JSON.parse(settings.countingWhitelistedRoles || '[]');
         } catch (e) { }
         if (whitelistedRoles.length > 0) {
-            const hasRole = message.member?.roles.cache.some(role => whitelistedRoles.includes(role.id));
+            const hasRole = message.member?.roles?.cache?.some(role => whitelistedRoles.includes(role.id));
             if (!hasRole) {
                 return; // Silently drop
             }
@@ -162,7 +176,7 @@ module.exports = {
             }
 
             const highScore = guildData.highScore || 0;
-            await message.reply({ content: `You ruined it, <@${message.author.id}>! The next number was **${expectedNext}**. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` or \`c!help\` for counting rules.*` });
+            await safeReplyOrSend(message, { content: `You ruined it, <@${message.author.id}>! The next number was **${expectedNext}**. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` or \`c!help\` for counting rules.*` });
             allData[message.guild.id] = { currentCount: 0, lastUserId: null, highScore };
             queueSave();
             return;
@@ -171,7 +185,7 @@ module.exports = {
         // Rule: No double-counting in a row on this specific server
         if (guildData.lastUserId === message.author.id) {
             const highScore = guildData.highScore || 0;
-            await message.reply({ content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` or \`c!help\` for counting rules.*` });
+            await safeReplyOrSend(message, { content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` or \`c!help\` for counting rules.*` });
             allData[message.guild.id] = { currentCount: 0, lastUserId: null, highScore };
             queueSave();
             return;

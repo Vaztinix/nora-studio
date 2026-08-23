@@ -3,57 +3,117 @@ require('dotenv').config();
 
 
 // 🛡️ Reliable HTTP adapter for Node.js v25+ to prevent multipart stream truncation and webhook PATCH hangs
-try {
-    const axios = require('axios');
-    const { DefaultRestOptions } = require('@discordjs/rest');
-    DefaultRestOptions.makeRequest = async (url, init) => {
-        const isFormData = init?.body && typeof init.body === 'object' && (init.body[Symbol.toStringTag] === 'FormData' || init.body.constructor?.name === 'FormData');
-        
-        let body = init?.body;
-        let headers = { ...(init?.headers || {}) };
+const undici = require('undici');
+const { DefaultRestOptions } = require('@discordjs/rest');
 
-        if (isFormData) {
-            const dummyRes = new Response(body);
-            const contentType = dummyRes.headers.get('content-type');
-            if (contentType) {
-                headers['content-type'] = contentType;
+const discordAgent = new undici.Agent({
+    keepAliveTimeout: 15000,
+    keepAliveMaxTimeout: 30000,
+    pipelining: 0
+});
+
+const sanitizeUrl = (rawUrl) => {
+    try {
+        return String(rawUrl).replace(/\/webhooks\/\d+\/[^\/]+/, '/webhooks/[REDACTED_ID]/[REDACTED_TOKEN]');
+    } catch (e) {
+        return '[URL_PARSE_ERROR]';
+    }
+};
+
+const sanitizeHeaders = (rawHeaders) => {
+    const sanitized = { ...(rawHeaders || {}) };
+    if (sanitized.authorization || sanitized.Authorization) {
+        sanitized.authorization = '[REDACTED_AUTH]';
+        delete sanitized.Authorization;
+    }
+    return sanitized;
+};
+
+const serializeFormData = async (formData) => {
+    const boundary = '----NoraBoundary' + crypto.randomBytes(12).toString('hex');
+    const chunks = [];
+
+    for (const [key, value] of formData.entries()) {
+        if (typeof value === 'string') {
+            chunks.push(Buffer.from(
+                `--${boundary}\r\n` +
+                `Content-Disposition: form-data; name="${key}"\r\n` +
+                `Content-Type: application/json\r\n\r\n` +
+                `${value}\r\n`
+            ));
+        } else if (value && typeof value === 'object') {
+            const filename = value.name || 'file.png';
+            const contentType = value.type || 'application/octet-stream';
+            let fileBuf = Buffer.alloc(0);
+            if (Buffer.isBuffer(value)) {
+                fileBuf = value;
+            } else if (value.stream && typeof value.stream === 'function') {
+                const streamChunks = [];
+                for await (const chunk of value.stream()) {
+                    streamChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+                }
+                fileBuf = Buffer.concat(streamChunks);
+            } else if (value.arrayBuffer && typeof value.arrayBuffer === 'function') {
+                const ab = await value.arrayBuffer();
+                fileBuf = Buffer.from(ab);
+            } else {
+                fileBuf = Buffer.from(String(value));
             }
-            body = Buffer.from(await dummyRes.arrayBuffer());
+            chunks.push(Buffer.from(
+                `--${boundary}\r\n` +
+                `Content-Disposition: form-data; name="${key}"; filename="${filename}"\r\n` +
+                `Content-Type: ${contentType}\r\n\r\n`
+            ));
+            chunks.push(fileBuf);
+            chunks.push(Buffer.from('\r\n'));
         }
+    }
+    chunks.push(Buffer.from(`--${boundary}--\r\n`));
 
-        const response = await axios({
-            url,
-            method: init.method || 'GET',
-            headers,
-            data: body,
-            responseType: 'arraybuffer',
-            validateStatus: () => true
-        });
-
-        const respHeaders = new Headers();
-        for (const [k, v] of Object.entries(response.headers)) {
-            if (Array.isArray(v)) {
-                v.forEach(val => respHeaders.append(k, val));
-            } else if (v != null) {
-                respHeaders.set(k, String(v));
-            }
-        }
-
-        const buffer = Buffer.from(response.data);
-
-        return {
-            body: buffer,
-            arrayBuffer: async () => buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
-            json: async () => JSON.parse(buffer.toString('utf8')),
-            text: async () => buffer.toString('utf8'),
-            get bodyUsed() { return false; },
-            headers: respHeaders,
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.status >= 200 && response.status < 300
-        };
+    const finalBuf = Buffer.concat(chunks);
+    return {
+        buffer: finalBuf,
+        contentType: `multipart/form-data; boundary=${boundary}`,
+        contentLength: finalBuf.length
     };
-} catch (e) {}
+};
+
+const discordMakeRequest = async (url, init) => {
+    let body = init?.body;
+    const headers = { ...(init?.headers || {}) };
+
+    if (body && typeof body === 'object' && typeof body.entries === 'function') {
+        const serialized = await serializeFormData(body);
+        body = serialized.buffer;
+        headers['content-type'] = serialized.contentType;
+        headers['content-length'] = String(serialized.contentLength);
+    } else if (typeof body === 'string' && !headers['content-type'] && !headers['Content-Type']) {
+        headers['content-type'] = 'application/json';
+    }
+
+    const res = await undici.request(url, {
+        ...init,
+        headers,
+        body,
+        dispatcher: discordAgent
+    });
+
+    return {
+        body: res.body,
+        async arrayBuffer() { return res.body.arrayBuffer(); },
+        async json() { return res.body.json(); },
+        async text() { return res.body.text(); },
+        get bodyUsed() { return res.body.bodyUsed; },
+        headers: new undici.Headers(res.headers),
+        status: res.statusCode,
+        statusText: require('http').STATUS_CODES[res.statusCode] || '',
+        ok: res.statusCode >= 200 && res.statusCode < 300
+    };
+};
+
+try {
+    DefaultRestOptions.makeRequest = discordMakeRequest;
+} catch (e) { }
 
 const crypto = require('crypto');
 const logger = require('./utils/logger');
@@ -61,7 +121,7 @@ const logger = require('./utils/logger');
 // Automatic Time-Offset Compensator: Keeps Nora synchronized with Discord API servers
 global.timeOffsetMs = 0;
 const originalDateNow = Date.now;
-Date.now = function() {
+Date.now = function () {
     return originalDateNow() + (global.timeOffsetMs || 0);
 };
 
@@ -77,7 +137,7 @@ async function syncTimeOffset() {
             global.timeOffsetMs = discordServerTime - localTime;
             console.log(`[Time Sync] Clock offset compensated: ${global.timeOffsetMs}ms against Discord Gateway.`);
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 syncTimeOffset();
 setInterval(syncTimeOffset, 600000);
@@ -138,15 +198,15 @@ try {
                 console.log(`[Single Instance Lock] Terminating existing background Nora instance (PID ${oldPid}) to prevent duplicate bot instances...`);
                 try {
                     process.kill(oldPid, 'SIGKILL');
-                } catch (err) {}
+                } catch (err) { }
                 try {
                     const { execSync } = require('child_process');
                     execSync(`taskkill /F /PID ${oldPid} 2>nul || exit 0`, { stdio: 'ignore' });
-                } catch (err) {}
-                
+                } catch (err) { }
+
                 // Synchronous wait to ensure socket/file lock release
                 const start = Date.now();
-                while (Date.now() - start < 600) {}
+                while (Date.now() - start < 600) { }
             }
         }
     }
@@ -326,26 +386,8 @@ require('./database/models/IpBan');
 const client = new Client({
     rest: {
         retries: 5,
-        timeout: 60000,
-        makeRequest: async (url, init) => {
-            if (init && init.body && typeof init.body === 'object' && (init.body[Symbol.toStringTag] === 'FormData' || init.body.constructor?.name === 'FormData')) {
-                const dummyReq = new Request('https://dummy.local', {
-                    method: init.method || 'POST',
-                    body: init.body
-                });
-
-                const headers = new Headers(init.headers);
-                headers.set('content-type', dummyReq.headers.get('content-type'));
-
-                return await fetch(url, {
-                    ...init,
-                    headers,
-                    body: dummyReq.body,
-                    duplex: 'half'
-                });
-            }
-            return await fetch(url, init);
-        }
+        timeout: 30000,
+        makeRequest: discordMakeRequest
     },
     intents: [
         GatewayIntentBits.Guilds,
@@ -374,192 +416,192 @@ eventHandler(client);
 
 // Sync database and login with high-stability index handling
 async function runPreSyncMigrations() {
-    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `inviteRewards` TEXT DEFAULT '[]';"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `inviteXpReward` INTEGER DEFAULT 50;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `UserLevels` ADD COLUMN `invitesCount` INTEGER DEFAULT 0;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `roleRewardsStack` TINYINT(1) DEFAULT 1;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `autoRoleId` VARCHAR(255) NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `acceptMessage` TEXT NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `denyMessage` TEXT NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `ReactionRoles` ADD COLUMN `singleSelect` TINYINT(1) DEFAULT 0;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketChannelId` VARCHAR(255) NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketSupportRoleId` VARCHAR(255) NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketFormInputs` TEXT NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketPanelTitle` VARCHAR(255) NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketPanelDesc` TEXT NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `ActiveTickets` ADD COLUMN `claimedByUserId` VARCHAR(255) NULL;"); } catch (e) {}
-    try { await sequelize.query("ALTER TABLE `ActiveTickets` ADD COLUMN `excludeAutoClose` TINYINT(1) DEFAULT 0;"); } catch (e) {}
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `inviteRewards` TEXT DEFAULT '[]';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `inviteXpReward` INTEGER DEFAULT 50;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `UserLevels` ADD COLUMN `invitesCount` INTEGER DEFAULT 0;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `roleRewardsStack` TINYINT(1) DEFAULT 1;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `autoRoleId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `acceptMessage` TEXT NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `Applications` ADD COLUMN `denyMessage` TEXT NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `ReactionRoles` ADD COLUMN `singleSelect` TINYINT(1) DEFAULT 0;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketChannelId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketSupportRoleId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketFormInputs` TEXT NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketPanelTitle` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketPanelDesc` TEXT NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `ActiveTickets` ADD COLUMN `claimedByUserId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `ActiveTickets` ADD COLUMN `excludeAutoClose` TINYINT(1) DEFAULT 0;"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {
     return sequelize.sync();
 }).then(async () => {
     console.log('Nora - Database Synchronized (Leveling Indices Healthy)');
-    
+
     // Safely add columns to ContentFeeds if they don't exist
     try {
         await sequelize.query("ALTER TABLE `ContentFeeds` ADD COLUMN `lastVideoId` VARCHAR(255) NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `ContentFeeds` ADD COLUMN `channelId` VARCHAR(255) NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `ContentFeeds` ADD COLUMN `isLive` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `isEmbed` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoreStaffAndBots` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoredChannels` TEXT DEFAULT '[]';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `ignoredRoles` TEXT DEFAULT '[]';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `allowedRoles` TEXT DEFAULT '[]';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `reactionRoleNotifyDm` TINYINT(1) DEFAULT 1;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `welcomeRoleId` VARCHAR(255) DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     // ---- Starboard Migrations ----
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardEnabled` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardChannelId` VARCHAR(255) DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardThreshold` INTEGER DEFAULT 3;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardEmoji` VARCHAR(255) DEFAULT '⭐';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardWebhookEnabled` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardWebhookName` VARCHAR(255) DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardWebhookAvatar` VARCHAR(255) DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardEmbedColor` VARCHAR(255) DEFAULT '#ffac33';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardMessageTemplate` VARCHAR(255) DEFAULT '{emoji} **{count}** | {channel}';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBgColor` VARCHAR(255) DEFAULT '#111217';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardAccentColor` VARCHAR(255) DEFAULT '#7c3aed';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBorderColor` VARCHAR(255) DEFAULT '#23252e';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `levelingCardBackgroundImage` TEXT DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardIgnoredChannels` TEXT DEFAULT '[]';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryEnabled` TINYINT(1) DEFAULT 1;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryChannelId` VARCHAR(255) DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAllowConsecutive` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryMaxWords` INTEGER DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryMaxSentences` INTEGER DEFAULT 10;");
-    } catch (e) {}
+    } catch (e) { }
 
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketLastNumber` INTEGER DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessGameMin` INTEGER DEFAULT 1;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessGameMax` INTEGER DEFAULT 100;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `rpsMinBet` INTEGER DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `rpsMaxBet` INTEGER DEFAULT 10000;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `webhookLogFilters` TEXT DEFAULT '[\"messageDelete\",\"messageUpdate\",\"memberJoin\",\"memberLeave\",\"channelCreate\",\"channelDelete\",\"voiceJoin\",\"voiceLeave\"]';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `webhookLogColor` VARCHAR(255) DEFAULT '#ff5555';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `isTerminated` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `terminationReason` TEXT DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
 
     // ---- Giveaway Table Schema Adjustments ----
     try {
         await sequelize.query("ALTER TABLE `Giveaways` ADD COLUMN `imageUrl` VARCHAR(255) DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `Giveaways` ADD COLUMN `participants` TEXT DEFAULT '[]';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `Giveaways` ADD COLUMN `winners` TEXT DEFAULT '[]';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `selectedLogCategory` VARCHAR(255) DEFAULT 'default';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotificationsEnabled` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifLevels` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifModeration` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotifBroadcasts` TINYINT(1) DEFAULT 0;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `displayName` VARCHAR(255) DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `showAvatarInRankCard` TINYINT(1) DEFAULT 1;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `rankCardThemeMode` VARCHAR(255) DEFAULT 'preset';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `rankCardCustomColor` VARCHAR(255) DEFAULT '#4f46e5';");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `rankCardBackgroundImage` TEXT DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `tempBlacklistExpiresAt` DATETIME DEFAULT NULL;");
-    } catch (e) {}
+    } catch (e) { }
 
 
     // 🛡️ Nora System Persistence (System Backup) - V17.2
@@ -573,7 +615,7 @@ runPreSyncMigrations().then(() => {
     require('./utils/tempBanManager').startTempBanManager(client);
     require('./utils/tempRoleManager').startTempRoleManager(client);
     require('./utils/socialScraper').init(client);
-    
+
     // Auto-renew WebSub subscriptions on startup and then every 24 hours
     try {
         const ContentFeed = require('./database/models/ContentFeed');
@@ -595,7 +637,7 @@ runPreSyncMigrations().then(() => {
     } catch (renewError) {
         console.error('Failed scheduling WebSub renewals:', renewError.message);
     }
-    
+
     // Final check for token stability
     const cleanToken = (process.env.TOKEN || '').trim().replace(/^["']|["']$/g, '');
     console.log(`[Token Debug] Attempting client.login with token length: ${cleanToken.length}, starts with: ${cleanToken.slice(0, 10)}...`);
@@ -703,7 +745,7 @@ const PATTERN_EXPLOIT_REGEX = /(\.\.[\/\\]|union\s+select|drop\s+table|informati
 app.use((req, res, next) => {
     const ua = req.headers['user-agent'] || '';
     const rawUrl = req.originalUrl || req.url || '';
-    
+
     if (MALICIOUS_CRAWLER_UA_REGEX.test(ua)) {
         console.warn(`[SECURITY BLOCKED] Malicious crawler detected: User-Agent="${ua}" IP=${req.ip} URL=${rawUrl}`);
         return res.status(403).json({ error: 'Access Denied: Unsafe crawler signature detected.', status: 403 });
@@ -799,10 +841,10 @@ const FAIL2BAN_BAN_DURATION_MS = 15 * 60 * 1000; // ...triggers a 15 minute ban
 // Resolve the real visitor IP — prefer CF-Connecting-IP over req.ip
 const getRealIP = (req) => {
     return req.headers['cf-connecting-ip'] ||
-           req.headers['x-real-ip'] ||
-           (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-           req.ip ||
-           'unknown';
+        req.headers['x-real-ip'] ||
+        (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+        req.ip ||
+        'unknown';
 };
 
 // Clean up expired Fail2ban records every 5 minutes
@@ -853,14 +895,14 @@ app.use(async (req, res, next) => {
 const recordFail2ban404 = (ip) => {
     const now = Date.now();
     const entry = fail2banMap.get(ip) || { count: 0, firstSeen: now, bannedUntil: null };
-    
+
     // Reset window if expired
     if (now - entry.firstSeen > FAIL2BAN_WINDOW_MS) {
         entry.count = 0;
         entry.firstSeen = now;
         entry.bannedUntil = null;
     }
-    
+
     entry.count++;
     if (entry.count >= FAIL2BAN_MAX_404S) {
         entry.bannedUntil = now + FAIL2BAN_BAN_DURATION_MS;
@@ -942,19 +984,19 @@ app.use(['/api/user/me', '/api/auth/pair', '/api/auth/invalidate', '/api/owner/'
 const ipRateLimiter = (req, res, next) => {
     const ip = getRealIP(req); // Use real visitor IP, not Cloudflare edge node IP
     const now = Date.now();
-    
+
     if (!ipRequests.has(ip)) {
         ipRequests.set(ip, []);
     }
-    
+
     const timestamps = ipRequests.get(ip);
     const activeTimestamps = timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
-    
+
     if (activeTimestamps.length >= MAX_REQUESTS_PER_WINDOW) {
         console.warn(`[API_RATE_LIMIT] IP ${ip} exceeded rate limit. Active requests: ${activeTimestamps.length}`);
         return res.status(429).json({ error: 'Too many requests. Please slow down.' });
     }
-    
+
     activeTimestamps.push(now);
     ipRequests.set(ip, activeTimestamps);
     next();
@@ -1066,7 +1108,7 @@ function serveDashboard(req, res) {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
-    const webPath  = path.join(__dirname, 'web/dashboard.html');
+    const webPath = path.join(__dirname, 'web/dashboard.html');
     const distPath = path.join(__dirname, '../dist/dashboard.html');
     const filePath = fs.existsSync(webPath) ? webPath : distPath;
 
@@ -1092,7 +1134,7 @@ function serveVerify(req, res) {
     res.setHeader('Expires', '0');
 
     const distPath = path.join(__dirname, '../dist/verify.html');
-    const webPath  = path.join(__dirname, 'web/verify.html');
+    const webPath = path.join(__dirname, 'web/verify.html');
     const filePath = fs.existsSync(distPath) ? distPath : webPath;
 
     try {
@@ -1116,7 +1158,7 @@ function serveOwner(req, res) {
     res.setHeader('Expires', '0');
 
     const distPath = path.join(__dirname, '../dist/owner.html');
-    const webPath  = path.join(__dirname, 'web/owner.html');
+    const webPath = path.join(__dirname, 'web/owner.html');
     const filePath = fs.existsSync(distPath) ? distPath : webPath;
 
     try {
@@ -1142,11 +1184,11 @@ app.get(['/me', '/me.html'], ipRateLimiter, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    
+
     const distPath = path.join(__dirname, '../dist/me.html');
-    const webPath  = path.join(__dirname, 'web/me.html');
+    const webPath = path.join(__dirname, 'web/me.html');
     const filePath = fs.existsSync(distPath) ? distPath : webPath;
-    
+
     if (fs.existsSync(filePath)) {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.sendFile(filePath);
@@ -1159,11 +1201,11 @@ app.get(['/billing', '/billing-faq', '/billing-faq.html'], ipRateLimiter, (req, 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    
+
     const distPath = path.join(__dirname, '../dist/billing-faq.html');
-    const webPath  = path.join(__dirname, 'web/billing-faq.html');
+    const webPath = path.join(__dirname, 'web/billing-faq.html');
     const filePath = fs.existsSync(distPath) ? distPath : webPath;
-    
+
     if (fs.existsSync(filePath)) {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.sendFile(filePath);
@@ -1273,13 +1315,13 @@ app.post('/api/auth/invalidate', async (req, res) => {
         return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
     }
     const token = authHeader.split(' ')[1];
-    
+
     try {
         const crypto = require('crypto');
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
         const Session = require('./database/models/Session');
         const UserPrefs = require('./database/models/UserPrefs');
-        
+
         // Find current session
         const session = await Session.findByPk(tokenHash);
         let userId = null;
@@ -1292,17 +1334,17 @@ app.post('/api/auth/invalidate', async (req, res) => {
             if (!discordUser) return res.status(401).json({ error: 'Invalid token' });
             userId = discordUser.id;
         }
-        
+
         // Generate new marker UUID
         const newGenerationMarker = require('uuid').v4();
-        
+
         // Update user prefs
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId } });
         await prefs.update({ sessionGenerationMarker: newGenerationMarker });
-        
+
         // Destroy all sessions for this user
         await Session.destroy({ where: { userId } });
-        
+
         res.json({
             success: true,
             message: 'Global tokens invalidated. Redirecting secondary instances securely.',
@@ -1466,18 +1508,18 @@ setInterval(() => {
 const clientLogRateLimiter = (req, res, next) => {
     const ip = getRealIP(req); // Use real visitor IP, not Cloudflare edge node IP
     const now = Date.now();
-    
+
     if (!clientLogRequests.has(ip)) {
         clientLogRequests.set(ip, []);
     }
-    
+
     const timestamps = clientLogRequests.get(ip);
     const activeTimestamps = timestamps.filter(ts => now - ts < CLIENT_LOG_WINDOW_MS);
-    
+
     if (activeTimestamps.length >= MAX_CLIENT_LOGS_PER_WINDOW) {
         return res.status(429).json({ error: 'Too many log submissions. Slow down.' });
     }
-    
+
     activeTimestamps.push(now);
     clientLogRequests.set(ip, activeTimestamps);
     next();
@@ -1609,10 +1651,10 @@ const handleRouteError = (res, e, routeName) => {
     console.error(`Error in ${routeName}:`, e);
     const isRateLimit = e.status === 429 || (e.message && e.message.includes('429'));
     const status = e.message === 'Invalid token' ? 401 : (isRateLimit ? 429 : 500);
-    return res.status(status).json({ 
-        error: isRateLimit 
-            ? 'Discord API rate limit reached. Discord allows only a limited number of requests per minute. Please wait a few seconds and try again.' 
-            : (status === 401 ? 'Unauthorized' : e.message) 
+    return res.status(status).json({
+        error: isRateLimit
+            ? 'Discord API rate limit reached. Discord allows only a limited number of requests per minute. Please wait a few seconds and try again.'
+            : (status === 401 ? 'Unauthorized' : e.message)
     });
 };
 
@@ -1621,7 +1663,7 @@ app.get('/api/user/me', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
-    
+
     if (token === 'nora_mock_token') {
         return res.json({
             id: '1214048435632603137',
@@ -1632,22 +1674,22 @@ app.get('/api/user/me', async (req, res) => {
             isOwner: true
         });
     }
-    
+
     const crypto = require('crypto');
     const axios = require('axios');
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     const clientIp = getRealIP(req);
-    
+
     try {
         const Session = require('./database/models/Session');
         const UserPrefs = require('./database/models/UserPrefs');
-        
+
         let session = await Session.findByPk(tokenHash);
         if (session && new Date() > new Date(session.expiresAt)) {
             await session.destroy();
             session = null;
         }
-        
+
         let user = null;
         if (session) {
             // Check session hardening
@@ -1656,7 +1698,7 @@ app.get('/api/user/me', async (req, res) => {
                 await session.destroy();
                 return res.status(403).json({ error: 'Session Hardening: IP mismatch. Session terminated.' });
             }
-            
+
             // Check if Discord token is still valid (using cache if possible)
             const cacheKey = tokenHash;
             const cachedUser = discordUserCache.get(cacheKey);
@@ -1667,7 +1709,7 @@ app.get('/api/user/me', async (req, res) => {
                 const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
                     headers: { Authorization: `Bearer ${discordToken}` }
                 }).catch((err) => ({ error: err }));
-                
+
                 if (userRes && userRes.error) {
                     const errResp = userRes.error.response;
                     if (errResp && errResp.status === 401) {
@@ -1689,7 +1731,7 @@ app.get('/api/user/me', async (req, res) => {
             if (token.startsWith('nora_sess_')) {
                 return res.status(401).json({ error: 'Unauthorized' });
             }
-            
+
             // Fetch user info from Discord using axios (with cache check)
             const cacheKey = tokenHash;
             const cachedUser = discordUserCache.get(cacheKey);
@@ -1715,7 +1757,7 @@ app.get('/api/user/me', async (req, res) => {
                     discordUserCache.set(cacheKey, { user, timestamp: Date.now() });
                 }
             }
-            
+
             // GeoIP lookup (skipped for local loopbacks)
             let location = 'Unknown Location';
             const isLocalIp = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === 'localhost' || clientIp.startsWith('192.168.') || clientIp.startsWith('10.') || clientIp.startsWith('::ffff:127.0.0.1');
@@ -1728,11 +1770,11 @@ app.get('/api/user/me', async (req, res) => {
                             location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
                         }
                     }
-                } catch (e) {}
+                } catch (e) { }
             } else {
                 location = 'Localhost Development';
             }
-            
+
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             if (!prefs.sessionGenerationMarker) {
                 prefs.sessionGenerationMarker = require('uuid').v4();
@@ -1751,7 +1793,7 @@ app.get('/api/user/me', async (req, res) => {
             });
 
         }
-        
+
         // Construct full CDN avatar URL
         if (user.avatar) {
             const isAnimated = user.avatar.startsWith('a_');
@@ -1773,13 +1815,13 @@ app.get('/api/user/me', async (req, res) => {
                         isOwner = true;
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
         user.isOwner = isOwner;
 
         // Fetch user preferences/badges from DB
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
-        
+
         const isTerminated = prefs.isTerminated || (prefs.tempBlacklistExpiresAt && new Date() < new Date(prefs.tempBlacklistExpiresAt));
         if (isTerminated) {
             try {
@@ -1862,14 +1904,14 @@ app.get('/api/klipy/search', async (req, res) => {
         const endpoint = isTrending
             ? `https://api.giphy.com/v1/gifs/trending?api_key=dc6zaTOxFJmzC&limit=30&offset=${offset}`
             : `https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(q)}&limit=30&offset=${offset}`;
-        
+
         const response = await axios.get(endpoint, { timeout: 6000 });
         const results = (response.data?.data || []).map(item => ({
             id: item.id,
             name: item.title || q,
             url: `https://media.giphy.com/media/${item.id}/giphy.gif`
         })).filter(r => r.url);
-        
+
         res.json({ success: true, results, nextOffset: offset + results.length });
     } catch (e) {
         res.json({ success: false, results: [], nextOffset: 0 });
@@ -1884,7 +1926,7 @@ app.post('/api/user/profile', async (req, res) => {
         const user = await getDiscordUser(token);
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
-        
+
         const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts, displayName, showAvatarInRankCard, rankCardThemeMode, rankCardCustomColor, rankCardBackgroundImage, teamCardDisplayName, teamCardDescription, teamCardBadges, teamCardLinks } = req.body;
 
         if (teamCardDisplayName !== undefined || teamCardDescription !== undefined || teamCardLinks !== undefined) {
@@ -1930,7 +1972,7 @@ app.post('/api/user/prefs', async (req, res) => {
         const user = await getDiscordUser(token);
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
-        
+
         const { sessionHardened } = req.body;
         if (sessionHardened !== undefined) prefs.sessionHardened = sessionHardened;
         await prefs.save();
@@ -2071,13 +2113,13 @@ app.post('/api/auth/pairing-code', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        
+
         // Generate a unique 6-digit code
         let code;
         do {
             code = crypto.randomInt(100000, 1000000).toString();
         } while (pairingCodes.has(code));
-        
+
         const ua = req.headers['user-agent'] || '';
         const { deviceName } = req.body || {};
         pairingCodes.set(code, {
@@ -2090,7 +2132,7 @@ app.post('/api/auth/pairing-code', async (req, res) => {
                 ip: req.ip
             }
         });
-        
+
         res.json({ success: true, code });
     } catch (e) {
         handleRouteError(res, e, '/api/auth/pairing-code');
@@ -2107,7 +2149,7 @@ setInterval(() => {
         if (now > pending.expiresAt) {
             try {
                 pending.res.status(408).json({ error: 'Pairing request timed out. Primary device did not confirm.' });
-            } catch (e) {}
+            } catch (e) { }
             pendingPairings.delete(userId);
         }
     }
@@ -2118,15 +2160,15 @@ app.post('/api/auth/pair', async (req, res) => {
     try {
         const { code } = req.body;
         if (!code) return res.status(400).json({ error: 'Code is required' });
-        
+
         const cleanCode = code.toString().trim();
         const data = pairingCodes.get(cleanCode);
-        
+
         if (!data || Date.now() > data.expiresAt) {
             if (data) pairingCodes.delete(cleanCode);
             return res.status(400).json({ error: 'Invalid or expired pairing code' });
         }
-        
+
         // Record the secondary device info
         const ua = req.headers['user-agent'] || '';
         const { deviceName } = req.body || {};
@@ -2135,7 +2177,7 @@ app.post('/api/auth/pair', async (req, res) => {
             userAgent: ua,
             ip: req.ip
         };
-        
+
         // Intercept and hold in pending state (Operational rule: thread safety/ordering)
         const pendingData = {
             res,
@@ -2150,7 +2192,7 @@ app.post('/api/auth/pair', async (req, res) => {
         if (existingPending) {
             try {
                 existingPending.res.status(408).json({ error: 'New pairing request initiated' });
-            } catch (e) {}
+            } catch (e) { }
             pendingPairings.delete(data.userId);
         }
 
@@ -2171,21 +2213,21 @@ app.post('/api/auth/pair/confirm', async (req, res) => {
     try {
         const user = await getDiscordUser(token);
         const { confirm } = req.body; // true or false
-        
+
         const pending = pendingPairings.get(user.id);
         if (!pending) {
             return res.status(404).json({ error: 'No pending pairing request found' });
         }
-        
+
         // Clean up code and pending list
         pairingCodes.delete(pending.code);
         pendingPairings.delete(user.id);
-        
+
         if (confirm) {
             const crypto = require('crypto');
             const secondaryToken = 'nora_sess_' + crypto.randomBytes(32).toString('hex');
             const secondaryTokenHash = crypto.createHash('sha256').update(secondaryToken).digest('hex');
-            
+
             const Session = require('./database/models/Session');
             let location = 'Unknown Location';
             try {
@@ -2194,8 +2236,8 @@ app.post('/api/auth/pair/confirm', async (req, res) => {
                 if (geo.data && geo.data.status === 'success') {
                     location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
                 }
-            } catch (e) {}
-            
+            } catch (e) { }
+
             const UserPrefs = require('./database/models/UserPrefs');
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             if (!prefs.sessionGenerationMarker) {
@@ -2213,13 +2255,13 @@ app.post('/api/auth/pair/confirm', async (req, res) => {
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
                 sessionGenerationMarker: prefs.sessionGenerationMarker
             });
-            
+
             pending.res.json({
                 success: true,
                 token: secondaryToken,
                 deviceName: pending.secondaryDevice.name
             });
-            
+
             res.json({ success: true, message: 'Pairing request confirmed' });
         } else {
             pending.res.status(403).json({ error: 'Pairing request denied by owner' });
@@ -2240,13 +2282,13 @@ app.get('/api/auth/paired-devices', async (req, res) => {
         const user = await getDiscordUser(token);
         const Session = require('./database/models/Session');
         const sessions = await Session.findAll({ where: { userId: user.id } });
-        
+
         const crypto = require('crypto');
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-        
+
         const currentUA = req.headers['user-agent'] || '';
         const isCurrent = (s) => s.id === tokenHash;
-        
+
         const devices = sessions.map(s => {
             const role = s.id === tokenHash ? 'primary' : 'secondary';
             return {
@@ -2286,7 +2328,7 @@ app.post('/api/auth/paired-devices/disconnect', async (req, res) => {
     try {
         const user = await getDiscordUser(token);
         const { sessionId } = req.body || {};
-        
+
         const Session = require('./database/models/Session');
         const crypto = require('crypto');
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -2338,7 +2380,7 @@ app.get('/api/user/guilds', async (req, res) => {
 
         const { getCachedUserGuilds } = require('./api/middleware/auth');
         const guilds = await getCachedUserGuilds(token);
-        
+
         // Filter guilds where user has Administrator (0x8) or Manage Guild (0x20) or is owner OR the bot is present
         const filteredGuilds = guilds.filter(g => {
             const perms = BigInt(g.permissions);
@@ -2361,7 +2403,7 @@ app.get('/api/user/guilds', async (req, res) => {
                     isUserBotOwner = true;
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
         const APP_OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
         if (APP_OWNER_IDS.includes(user.id)) {
             isUserBotOwner = true;
@@ -2370,11 +2412,11 @@ app.get('/api/user/guilds', async (req, res) => {
         const managedGuilds = filteredGuilds.map(g => {
             const perms = BigInt(g.permissions);
             const isManaged = (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
-            
+
             const isCached = req.client.guilds.cache.has(g.id);
             const hasSettings = settingsMap.has(g.id);
             const hasNora = isCached || hasSettings;
-            
+
             if (!isCached) {
                 // Log caching issues for guilds the user has access to
                 console.log(`[Guild Sync Info] Bot is not cached in guild: ${g.name} (${g.id}). Available bot cache size: ${req.client.guilds.cache.size}`);
@@ -2383,7 +2425,7 @@ app.get('/api/user/guilds', async (req, res) => {
             const settings = settingsMap.get(g.id);
 
             const isPremiumSettings = settings ? (!!settings.isPremium || !!settings.isManualPremium) : false;
-            
+
             let isOwnerPremium = false;
             if (liveGuild) {
                 if (liveGuild.ownerId === '1214048435632603137' || liveGuild.ownerId === '1366229304257544213') {
@@ -2411,7 +2453,7 @@ app.get('/api/user/guilds', async (req, res) => {
                 isManaged
             };
         });
-        
+
         res.json(managedGuilds);
     } catch (e) {
         handleRouteError(res, e, '/api/user/guilds');
@@ -2425,12 +2467,12 @@ app.get('/api/user/roblox', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        const record = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } }) || 
-                       await RobloxVerify.findOne({ where: { userId: user.id, status: 'VERIFIED' } }) || 
-                       await RobloxVerify.findOne({ where: { userId: user.id } });
-                       
+        const record = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } }) ||
+            await RobloxVerify.findOne({ where: { userId: user.id, status: 'VERIFIED' } }) ||
+            await RobloxVerify.findOne({ where: { userId: user.id } });
+
         if (!record) return res.json({ linked: false });
-        
+
         let username = record.robloxId;
         if (/^\d+$/.test(record.robloxId)) {
             try {
@@ -2443,7 +2485,7 @@ app.get('/api/user/roblox', async (req, res) => {
                 console.error('Failed to fetch Roblox username by ID:', e);
             }
         }
-        
+
         res.json({ linked: true, status: record.status, robloxId: record.robloxId, robloxUsername: username, verifyCode: record.verifyCode, isActive: record.isActive });
     } catch (e) {
         handleRouteError(res, e, '/api/user/roblox');
@@ -2457,7 +2499,7 @@ app.get('/api/user/roblox/accounts', async (req, res) => {
     try {
         const user = await getDiscordUser(token);
         const records = await RobloxVerify.findAll({ where: { userId: user.id } });
-        
+
         const userIds = records.map(r => parseInt(r.robloxId)).filter(id => !isNaN(id));
         let profileMap = new Map();
         if (userIds.length > 0) {
@@ -2545,7 +2587,7 @@ app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
                         }
 
                         let groupBindings = [];
-                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
+                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) { }
                         if (groupBindings.length > 0) {
                             await robloxSystem.syncRobloxRolesWithBackoff(member, robloxId, groupBindings);
                         }
@@ -2578,7 +2620,7 @@ app.get('/api/user/roblox/oauth-link', async (req, res) => {
         const user = await getDiscordUser(token);
         const state = crypto.randomBytes(8).toString('hex');
         robloxStateMap.set(state, { userId: user.id, token });
-        
+
         // Timeout to clean up state after 15 minutes
         setTimeout(() => robloxStateMap.delete(state), 15 * 60 * 1000);
 
@@ -2609,7 +2651,7 @@ app.post('/api/auth/roblox/mock-authorize-submit', express.urlencoded({ extended
     }
     const code = 'mock_code_' + crypto.randomBytes(6).toString('hex');
     robloxMockCodes.set(code, { robloxId, robloxUsername });
-    
+
     // Timeout mock code after 5 minutes
     setTimeout(() => robloxMockCodes.delete(code), 5 * 60 * 1000);
 
@@ -2657,10 +2699,10 @@ app.get('/api/public/roblox/search', async (req, res) => {
 app.get('/api/user/roblox/callback', async (req, res) => {
     const { code, state } = req.query;
     if (!state) return res.status(400).send('Missing state parameter');
-    
+
     const session = robloxStateMap.get(state);
     if (!session) return res.status(400).send('Invalid or expired verification session');
-    
+
     try {
         let robloxId, robloxUsername;
 
@@ -2697,7 +2739,7 @@ app.get('/api/user/roblox/callback', async (req, res) => {
             });
             if (!userInfoResponse.ok) throw new Error('Failed to retrieve Roblox user information');
             const userInfo = await userInfoResponse.json();
-            
+
             robloxId = userInfo.sub;
             robloxUsername = userInfo.preferred_username || userInfo.nickname || `RobloxUser_${robloxId}`;
         }
@@ -2726,7 +2768,7 @@ app.get('/api/user/roblox/callback', async (req, res) => {
                 robloxId: { [require('sequelize').Op.ne]: robloxId.toString() }
             }
         });
-        
+
         record.isActive = true;
         await record.save();
 
@@ -2734,7 +2776,7 @@ app.get('/api/user/roblox/callback', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: session.userId } });
         let handles = [];
-        try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) {}
+        try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) { }
         if (!handles.includes(record.robloxId)) {
             handles.push(record.robloxId);
             await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
@@ -2753,10 +2795,10 @@ app.get('/api/user/roblox/callback', async (req, res) => {
                     if (settings && settings.robloxVerifyEnabled) {
                         if (settings.robloxVerifyRoleId) {
                             const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
-                            if (role) await member.roles.add(role).catch(() => {});
+                            if (role) await member.roles.add(role).catch(() => { });
                         }
                         let groupBindings = [];
-                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
+                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) { }
                         if (groupBindings.length > 0) {
                             await robloxSystem.syncRobloxRolesWithBackoff(member, record.robloxId, groupBindings);
                         }
@@ -2800,7 +2842,7 @@ app.get('/api/user/roblox/profile/:robloxId', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const { robloxId } = req.params;
-    
+
     // Check cache (1 hour TTL)
     const cached = robloxTelemetryCache.get(robloxId);
     if (cached && (Date.now() - cached.timestamp < 60 * 60 * 1000)) {
@@ -2857,14 +2899,14 @@ app.post('/api/user/roblox/unlink', async (req, res) => {
     const { robloxId } = req.body || {};
     try {
         const user = await getDiscordUser(token);
-        
+
         if (robloxId) {
             await RobloxVerify.destroy({ where: { userId: user.id, robloxId } });
-            
+
             const UserPrefs = require('./database/models/UserPrefs');
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             let handles = [];
-            try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) {}
+            try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) { }
             handles = handles.filter(h => h !== robloxId);
             await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
 
@@ -2890,7 +2932,7 @@ app.post('/api/user/roblox/unlink', async (req, res) => {
 
 app.get('/api/user/roblox/avatar', async (req, res) => {
     const userId = req.query.userId || '1';
-    
+
     // Check cache first — avoids hitting Roblox API entirely
     const cached = getCachedAvatar(userId);
     if (cached) {
@@ -2898,7 +2940,7 @@ app.get('/api/user/roblox/avatar', async (req, res) => {
         res.setHeader('X-Cache', 'HIT');
         return res.redirect(cached);
     }
-    
+
     try {
         const robloxRes = await fetchRoblox(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`);
         if (robloxRes.ok) {
@@ -2927,15 +2969,15 @@ app.get('/api/user/roblox/presence', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         const user = await getDiscordUser(token);
-        const record = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } }) || 
-                       await RobloxVerify.findOne({ where: { userId: user.id, status: 'VERIFIED' } });
-        
+        const record = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } }) ||
+            await RobloxVerify.findOne({ where: { userId: user.id, status: 'VERIFIED' } });
+
         if (!record || record.status !== 'VERIFIED') {
             return res.json({ error: 'Not linked' });
         }
-        
+
         let robloxId = record.robloxId;
-        
+
         if (!/^\d+$/.test(robloxId)) {
             try {
                 const searchRes = await fetchRoblox('https://users.roblox.com/v1/usernames/users', {
@@ -2960,7 +3002,7 @@ app.get('/api/user/roblox/presence', async (req, res) => {
                 return res.json({ error: 'Error resolving username' });
             }
         }
-        
+
         // 1, 2, 3: Fetch profile, avatar (if not cached), and presence in parallel
         let displayName = record.robloxId;
         let username = record.robloxId;
@@ -3043,7 +3085,7 @@ app.get('/api/user/roblox/presence', async (req, res) => {
         } catch (err) {
             console.error('General error during parallel Roblox fetches:', err);
         }
-        
+
         res.json({
             username,
             displayName,
@@ -3194,8 +3236,8 @@ const TUNNEL_PID_FILE = path.join(__dirname, '../.nora_tunnel.pid');
 function startCloudflareTunnel() {
     try {
         const { spawn, execSync } = require('child_process');
-        
-        // Check if an existing managed tunnel connector process is already running
+
+        // Check if an existing managed tunnel connector process is already running via PID file
         if (fs.existsSync(TUNNEL_PID_FILE)) {
             const oldTunnelPidStr = fs.readFileSync(TUNNEL_PID_FILE, 'utf8').trim();
             const oldTunnelPid = parseInt(oldTunnelPidStr, 10);
@@ -3204,7 +3246,7 @@ function startCloudflareTunnel() {
                 try {
                     process.kill(oldTunnelPid, 0);
                     isAlive = true;
-                } catch (e) {}
+                } catch (e) { }
 
                 if (isAlive) {
                     console.log(`[Cloudflare Tunnel] Active managed tunnel connector process (PID ${oldTunnelPid}) is already running.`);
@@ -3213,21 +3255,16 @@ function startCloudflareTunnel() {
             }
         }
 
-        const configPath = 'C:\\ProgramData\\cloudflared\\config.yml';
         const token = "eyJhIjoiNTk0Nzk4OWE0OTlmODZjNDZhY2ZhNTRjMmRmODFkZjYiLCJ0IjoiNzIzMzI4NDgtYTg2OC00Y2ZjLTgzZjgtMmZkYTMzZDlmODY1IiwicyI6IjNZNzkrRnhMcU5GRmsrdUcvRVhiM1hWT1luUTBWR00zWm5FRldjK1dYcmc9In0=";
-        
-        let args = ['tunnel', 'run', '--token', token];
-        if (fs.existsSync(configPath)) {
-            args = ['--config', configPath, 'tunnel', 'run'];
-        }
-        
-        console.log(`[Cloudflare Tunnel] Executing HA tunnel connector using ${fs.existsSync(configPath) ? 'local config.yml' : 'token'}...`);
+        const args = ['tunnel', 'run', '--token', token];
+
+        console.log(`[Cloudflare Tunnel] Executing cloudflared tunnel with remote token...`);
         cloudflareTunnelProcess = spawn('cloudflared', args, { windowsHide: true });
 
         if (cloudflareTunnelProcess.pid) {
             try {
                 fs.writeFileSync(TUNNEL_PID_FILE, String(cloudflareTunnelProcess.pid));
-            } catch (e) {}
+            } catch (e) { }
         }
 
         if (cloudflareTunnelProcess.stdout) {
@@ -3253,8 +3290,10 @@ function startCloudflareTunnel() {
         });
 
         cloudflareTunnelProcess.on('exit', (code, signal) => {
+            cloudflareTunnelProcess = null;
+            try { fs.unlinkSync(TUNNEL_PID_FILE); } catch (e) { }
             if (code !== 0 && signal !== 'SIGTERM' && signal !== 'SIGINT') {
-                console.warn(`[Cloudflare Tunnel] Process exited (code: ${code}, signal: ${signal}). Re-establishing in 5s...`);
+                console.warn(`[Cloudflare Tunnel] Process exited (code: ${code}, signal: ${signal}). Checking to re-establish in 5s...`);
                 setTimeout(startCloudflareTunnel, 5000);
             }
         });
@@ -3283,8 +3322,8 @@ try {
     v6Server.listen(PORT, '::1', () => {
         console.log(`[System] Primary Web Dashboard listening on IPv6 loopback port ${PORT} (::1)`);
     });
-    v6Server.on('error', () => {});
-} catch (e) {}
+    v6Server.on('error', () => { });
+} catch (e) { }
 
 // Secondary port listeners bound to IPv4 (0.0.0.0) & IPv6 (::1)
 const ALT_PORTS = [8080, 5000, 8000, 3001, 8081, 8001, 8888, 9000, 4000, 5001];
@@ -3294,14 +3333,14 @@ ALT_PORTS.forEach(altPort => {
             const altV4 = app.listen(altPort, '0.0.0.0', () => {
                 console.log(`[System] Secondary Tunnel IPv4 listener online at port ${altPort}`);
             });
-            altV4.on('error', () => {});
-            
+            altV4.on('error', () => { });
+
             const altV6 = http.createServer(app);
             altV6.listen(altPort, '::1', () => {
                 console.log(`[System] Secondary Tunnel IPv6 listener online at port ${altPort}`);
             });
-            altV6.on('error', () => {});
-        } catch (e) {}
+            altV6.on('error', () => { });
+        } catch (e) { }
     }
 });
 

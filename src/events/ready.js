@@ -100,9 +100,7 @@ module.exports = {
             }
         })();
 
-        // 🤖 Nora System Detection: Identity-Linked Status Engine
-        await updateBotStatus(client);
-        setInterval(() => updateBotStatus(client), 120000);
+        // 🤖 Nora System Detection: Identity-Linked Status Engine initialized by startNameAnimator
 
         // System Re-Sync: Award Catch-Up XP for downtime - V17.3
         try {

@@ -2,25 +2,28 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { handleError, handleSuccess } = require('../../utils/embeds');
 const TempRole = require('../../database/models/TempRole');
 const Case = require('../../database/models/Case');
+const { processBulkRole, handleViewOperations, handleCancelOperation } = require('../../utils/bulkRoleProcessor');
 
 module.exports = {
     category: 'moderation',
     data: new SlashCommandBuilder()
         .setName('role')
-        .setDescription("Manage a user's roles with extensive hierarchy checks.")
+        .setDescription("Manage roles individually or in bulk with extensive hierarchy checks.")
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
         .setDMPermission(false)
         .addSubcommand(sub => 
             sub.setName('add')
-            .setDescription('Add a role to a user')
-            .addUserOption(opt => opt.setName('target').setDescription('The user').setRequired(true))
-            .addRoleOption(opt => opt.setName('role').setDescription('The role').setRequired(true))
+            .setDescription('Add a role to a single user')
+            .addUserOption(opt => opt.setName('target').setDescription('The user to give the role to').setRequired(true))
+            .addRoleOption(opt => opt.setName('role').setDescription('The role to assign').setRequired(true))
+            .addStringOption(opt => opt.setName('reason').setDescription('Reason for the audit log').setRequired(false))
         )
         .addSubcommand(sub => 
             sub.setName('remove')
-            .setDescription('Remove a role from a user')
-            .addUserOption(opt => opt.setName('target').setDescription('The user').setRequired(true))
-            .addRoleOption(opt => opt.setName('role').setDescription('The role').setRequired(true))
+            .setDescription('Remove a role from a single user')
+            .addUserOption(opt => opt.setName('target').setDescription('The user to remove the role from').setRequired(true))
+            .addRoleOption(opt => opt.setName('role').setDescription('The role to remove').setRequired(true))
+            .addStringOption(opt => opt.setName('reason').setDescription('Reason for the audit log').setRequired(false))
         )
         .addSubcommand(sub =>
             sub.setName('temp')
@@ -28,13 +31,81 @@ module.exports = {
             .addUserOption(opt => opt.setName('target').setDescription('The user').setRequired(true))
             .addRoleOption(opt => opt.setName('role').setDescription('The role').setRequired(true))
             .addStringOption(opt => opt.setName('duration').setDescription('Duration (e.g. 30m, 2h, 1d)').setRequired(true))
+            .addStringOption(opt => opt.setName('reason').setDescription('Reason for the audit log').setRequired(false))
+        )
+        .addSubcommand(sub =>
+            sub.setName('bulk-add')
+            .setDescription('Bulk assign a role to multiple members based on filter criteria')
+            .addRoleOption(opt => opt.setName('role').setDescription('The role to bulk assign').setRequired(true))
+            .addStringOption(opt => 
+                opt.setName('filter')
+                .setDescription('Which members to target')
+                .setRequired(true)
+                .addChoices(
+                    { name: '👥 All Members (Humans & Bots)', value: 'all' },
+                    { name: '👤 Humans Only (No Bots)', value: 'humans' },
+                    { name: '🤖 Bots Only', value: 'bots' },
+                    { name: '✅ Members With a Specific Role', value: 'has_role' },
+                    { name: '❌ Members Without a Specific Role', value: 'lacks_role' }
+                )
+            )
+            .addRoleOption(opt => opt.setName('filter_role').setDescription('Role to check if using "Members With/Without a Specific Role"').setRequired(false))
+            .addStringOption(opt => opt.setName('reason').setDescription('Reason for the audit log').setRequired(false))
+        )
+        .addSubcommand(sub =>
+            sub.setName('bulk-remove')
+            .setDescription('Bulk remove a role from multiple members based on filter criteria')
+            .addRoleOption(opt => opt.setName('role').setDescription('The role to bulk remove').setRequired(true))
+            .addStringOption(opt => 
+                opt.setName('filter')
+                .setDescription('Which members to target')
+                .setRequired(true)
+                .addChoices(
+                    { name: '👥 All Members (Humans & Bots)', value: 'all' },
+                    { name: '👤 Humans Only (No Bots)', value: 'humans' },
+                    { name: '🤖 Bots Only', value: 'bots' },
+                    { name: '✅ Members With a Specific Role', value: 'has_role' },
+                    { name: '❌ Members Without a Specific Role', value: 'lacks_role' }
+                )
+            )
+            .addRoleOption(opt => opt.setName('filter_role').setDescription('Role to check if using "Members With/Without a Specific Role"').setRequired(false))
+            .addStringOption(opt => opt.setName('reason').setDescription('Reason for the audit log').setRequired(false))
+        )
+        .addSubcommand(sub =>
+            sub.setName('bulk-view')
+            .setDescription('View active bulk operations or recent history in this server')
+        )
+        .addSubcommand(sub =>
+            sub.setName('bulk-cancel')
+            .setDescription('Cancel an ongoing bulk role operation in this server')
         ),
     
     async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
+        const subcommand = interaction.options.getSubcommand();
+
+        if (subcommand === 'bulk-view') {
+            return await handleViewOperations(interaction);
+        }
+
+        if (subcommand === 'bulk-cancel') {
+            return await handleCancelOperation(interaction);
+        }
+
+        if (subcommand === 'bulk-add' || subcommand === 'bulk-remove') {
+            return await processBulkRole({
+                interaction,
+                isAdd: subcommand === 'bulk-add',
+                role: interaction.options.getRole('role'),
+                filter: interaction.options.getString('filter') || 'all',
+                filterRole: interaction.options.getRole('filter_role'),
+                customReason: interaction.options.getString('reason')
+            });
+        }
+
         const target = interaction.options.getUser('target');
         const role = interaction.options.getRole('role');
-        const subcommand = interaction.options.getSubcommand();
+        const customReason = interaction.options.getString('reason');
         const member = await interaction.guild.members.fetch(target.id).catch(() => null);
 
         if (!member) {
@@ -66,30 +137,30 @@ module.exports = {
                 if (member.roles.cache.has(role.id)) {
                     return handleError(interaction, 'Already Has Role', `The user <@${target.id}> already has the ${role} role.`);
                 }
-                await member.roles.add(role);
+                await member.roles.add(role, customReason || `Role added by ${interaction.user.tag}`);
                 const caseRecord = await Case.create({
                     guildId: interaction.guild.id,
                     userId: target.id,
                     moderatorId: interaction.user.id,
                     type: 'ROLE_ADD',
-                    reason: `Role ${role.name} added`,
+                    reason: customReason || `Role ${role.name} added`,
                     status: 'active'
                 });
-                await handleSuccess(interaction, 'Role Added', `Successfully added ${role} to **${target.tag}**. (Case #${caseRecord.id})`);
+                await handleSuccess(interaction, 'Role Added', `Successfully added ${role} to **${target.tag}**.\n**Reason**: \`${customReason || 'No reason provided'}\` (Case #${caseRecord.id})`);
             } else if (subcommand === 'remove') {
                 if (!member.roles.cache.has(role.id)) {
                     return handleError(interaction, "Doesn't Have Role", `The user <@${target.id}> does not have the ${role} role.`);
                 }
-                await member.roles.remove(role);
+                await member.roles.remove(role, customReason || `Role removed by ${interaction.user.tag}`);
                 const caseRecord = await Case.create({
                     guildId: interaction.guild.id,
                     userId: target.id,
                     moderatorId: interaction.user.id,
                     type: 'ROLE_REMOVE',
-                    reason: `Role ${role.name} removed`,
+                    reason: customReason || `Role ${role.name} removed`,
                     status: 'active'
                 });
-                await handleSuccess(interaction, 'Role Removed', `Successfully removed ${role} from **${target.tag}**. (Case #${caseRecord.id})`);
+                await handleSuccess(interaction, 'Role Removed', `Successfully removed ${role} from **${target.tag}**.\n**Reason**: \`${customReason || 'No reason provided'}\` (Case #${caseRecord.id})`);
             } else if (subcommand === 'temp') {
                 const durationStr = interaction.options.getString('duration');
                 const durationMs = parseDuration(durationStr);
@@ -101,7 +172,7 @@ module.exports = {
                     return handleError(interaction, 'Already Has Role', `The user <@${target.id}> already has the ${role} role.`);
                 }
 
-                await member.roles.add(role);
+                await member.roles.add(role, customReason || `Temp role (${durationStr}) by ${interaction.user.tag}`);
 
                 const removeTime = new Date(Date.now() + durationMs);
                 await TempRole.create({
@@ -116,12 +187,12 @@ module.exports = {
                     userId: target.id,
                     moderatorId: interaction.user.id,
                     type: 'ROLE_ADD',
-                    reason: `Temporarily given role ${role.name} for ${durationStr}`,
+                    reason: customReason ? `${customReason} (Temp: ${durationStr})` : `Temporarily given role ${role.name} for ${durationStr}`,
                     status: 'active',
                     duration: durationMs
                 });
 
-                await handleSuccess(interaction, 'Role Temporarily Added', `Successfully gave role ${role} to **${target.tag}** temporarily for ${durationStr}. (Case #${caseRecord.id})`);
+                await handleSuccess(interaction, 'Role Temporarily Added', `Successfully gave role ${role} to **${target.tag}** temporarily for **${durationStr}**.\n**Reason**: \`${customReason || 'No reason provided'}\` (Case #${caseRecord.id})`);
             }
         } catch (error) {
             console.error(error);

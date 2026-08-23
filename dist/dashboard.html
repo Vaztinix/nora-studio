@@ -3662,6 +3662,71 @@
                             <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.2); background: rgba(255,85,85,0.02); font-size: 0.8rem;" onclick="clearGlobalData()">Purge My Global Data</button>
                         </div>
                     </div>
+
+                    <!-- Notification & Web Push Alerts Card -->
+                    <div class="panel" style="margin-top: 24px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-bell" style="color: #a855f7;"></i> Notification Preferences & Web Push Alerts
+                        </h3>
+                        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Configure real-time device push notifications, security alerts, and browser audio chime preferences.</p>
+
+                        <!-- Push Status Hero Card inside Settings -->
+                        <div id="settings-push-status-card" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 16px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-mobile-alt" style="font-size: 1.3rem; color: #a855f7;"></i>
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <strong style="font-size: 1rem; font-weight: 700; color: #fff;">Web Push Alerts</strong>
+                                        <span id="settings-push-status-badge"></span>
+                                    </div>
+                                    <span style="font-size: 0.78rem; color: #94a3b8; margin-top: 3px;">Mobile, Tablet & Desktop Live Notifications</span>
+                                </div>
+                            </div>
+                            <div id="settings-push-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <!-- Populated dynamically by updateSettingsPushUI -->
+                            </div>
+                        </div>
+
+                        <!-- Notification Category Toggles -->
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+                            <!-- Toggle: System & Security Announcements -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                                <div>
+                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-bullhorn" style="color: #3b82f6;"></i> System Announcements & Critical Alerts
+                                    </strong>
+                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Receive broadcast alerts, maintenance warnings, and high-priority incident notifications.</p>
+                                </div>
+                                <input type="checkbox" id="pref-notif-system" checked onchange="saveNotificationToggles()" style="width: 20px; height: 20px; accent-color: #a855f7; cursor: pointer;">
+                            </div>
+
+                            <!-- Toggle: Moderation & Anti-Raid Events -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                                <div>
+                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-shield-alt" style="color: #ef4444;"></i> Moderation & Security Incident Events
+                                    </strong>
+                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Get notified when AutoMod blocks unauthorized actions or triggers anti-raid lockdowns.</p>
+                                </div>
+                                <input type="checkbox" id="pref-notif-mod" checked onchange="saveNotificationToggles()" style="width: 20px; height: 20px; accent-color: #a855f7; cursor: pointer;">
+                            </div>
+
+                            <!-- Toggle: Audio Chime -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                                <div>
+                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-volume-up" style="color: #10b981;"></i> Notification Audio Chimes
+                                    </strong>
+                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Play a subtle chime sound when real-time updates and push alerts are delivered.</p>
+                                </div>
+                                <input type="checkbox" id="pref-notif-sound" checked onchange="saveNotificationToggles()" style="width: 20px; height: 20px; accent-color: #a855f7; cursor: pointer;">
+                            </div>
+                        </div>
+
+                        <button class="save-btn" style="width: 100%; padding: 13px; background: #ffffff; color: #000000; font-weight: 700;" onclick="saveNotificationPrefsAction()">Save Notification Settings</button>
+                    </div>
                 </div>
             </div>
 
@@ -6722,9 +6787,9 @@
         let lastErrorTime = 0;
         // Need 6 consecutive failures before declaring offline
         // (dashboard makes 10+ concurrent calls on load; 2 was far too low)
-        const OFFLINE_FAILURE_THRESHOLD = 12;
-        const ERROR_DECAY_MS = 10000; // Reset counter if no error for 10s
-        const FETCH_TIMEOUT_MS = 20000; // 20s timeout for non-telemetry fetches
+        const OFFLINE_FAILURE_THRESHOLD = 30;
+        const ERROR_DECAY_MS = 8000; // Reset counter if no error for 8s
+        const FETCH_TIMEOUT_MS = 25000; // 25s timeout for non-telemetry fetches
 
         window.fetch = async function(input, init) {
             let resolvedUrl = input;
@@ -6888,31 +6953,48 @@
         window.isApiOffline = false;
         let isOfflinePolling = false;
         let countdownInterval = null;
+        let offlineDebounceTimer = null;
 
-        window.triggerApiOffline = function() {
+        window.triggerApiOffline = async function() {
             if (window.isApiOffline) return;
-            window.isApiOffline = true;
-            consecutiveNetworkErrors = 0; // Reset so recovery isn't fighting old count
 
-            // Stop terminal feed while offline to avoid flooding the error counter
-            if (typeof terminalFeedInterval !== 'undefined' && terminalFeedInterval) {
-                clearInterval(terminalFeedInterval);
-                terminalFeedInterval = null;
-            }
-
-            const overlay = document.getElementById('api-offline-overlay');
-            if (overlay) {
-                overlay.style.display = 'flex';
-                const statusEl = document.getElementById('offline-retry-status');
-                if (statusEl) {
-                    statusEl.innerHTML = 'Testing connection...';
+            // Proactively probe health BEFORE showing any blocking modal
+            try {
+                const testBase = window.getApiBaseUrl();
+                const probeRes = await originalFetch(testBase + '/api/health', { cache: 'no-store' }).catch(() => null);
+                if (probeRes && probeRes.ok) {
+                    consecutiveNetworkErrors = 0;
+                    return; // API is actually healthy! Do not show offline modal
                 }
-            }
+            } catch (e) {}
 
-            if (!isOfflinePolling) {
-                startOfflinePolling();
-            }
-            window.forceReconnectNow();
+            if (offlineDebounceTimer) return;
+            offlineDebounceTimer = setTimeout(() => {
+                offlineDebounceTimer = null;
+                if (consecutiveNetworkErrors < OFFLINE_FAILURE_THRESHOLD) return;
+
+                window.isApiOffline = true;
+                consecutiveNetworkErrors = 0;
+
+                if (typeof terminalFeedInterval !== 'undefined' && terminalFeedInterval) {
+                    clearInterval(terminalFeedInterval);
+                    terminalFeedInterval = null;
+                }
+
+                const overlay = document.getElementById('api-offline-overlay');
+                if (overlay) {
+                    overlay.style.display = 'flex';
+                    const statusEl = document.getElementById('offline-retry-status');
+                    if (statusEl) {
+                        statusEl.innerHTML = 'Testing connection...';
+                    }
+                }
+
+                if (!isOfflinePolling) {
+                    startOfflinePolling();
+                }
+                window.forceReconnectNow();
+            }, 3000); // 3 second debounce to absorb momentary hiccups
         };
 
         window.triggerApiOnline = function() {
@@ -6946,14 +7028,15 @@
             const CANONICAL_API = 'https://api.vaztinix.dev';
 
             async function tryHealth(url) {
+                if (!url) return false;
+                const cleanUrl = String(url).replace(/\/$/, '');
                 const hc = new AbortController();
-                const hcTimeout = setTimeout(() => hc.abort(), 8000);
+                const hcTimeout = setTimeout(() => hc.abort(), 6000);
                 try {
-                    const res = await originalFetch(url + '/api/health', { cache: 'no-store', signal: hc.signal });
+                    const res = await originalFetch(cleanUrl + '/api/health', { cache: 'no-store', signal: hc.signal });
                     clearTimeout(hcTimeout);
-                    if (res.ok) {
-                        const data = await res.json().catch(() => ({}));
-                        return data.status === 'ok' || data.status === 'degraded' || !!data.status;
+                    if (res.status >= 200 && res.status < 400) {
+                        return true;
                     }
                 } catch (e) {
                     clearTimeout(hcTimeout);
@@ -6971,46 +7054,33 @@
                         statusEl.innerHTML = 'Checking connection...';
                     }
 
-                    const currentBase = window.getApiBaseUrl();
+                    const targets = [
+                        window.getApiBaseUrl(),
+                        'https://api.vaztinix.dev',
+                        window.location.origin,
+                        'http://localhost:3000'
+                    ].filter(Boolean);
 
-                    // First: try the current API base URL
-                    let recovered = await tryHealth(currentBase);
-                    let recoveredUrl = currentBase;
-
-                    // Fallback 1: Try localhost ONLY if running in local development
-                    const currentHost = window.location.hostname;
-                    if (!recovered && (currentHost === 'localhost' || currentHost === '127.0.0.1')) {
-                        console.log('[Offline] Trying localhost fallback...');
-                        recovered = await tryHealth('http://localhost:3000');
-                        if (recovered) {
-                            recoveredUrl = 'http://localhost:3000';
-                            localStorage.setItem('nora_api_url', 'http://localhost:3000');
-                            console.log('[Offline] Localhost fallback succeeded — saved as API URL');
+                    let recoveredUrl = null;
+                    for (const target of targets) {
+                        if (await tryHealth(target)) {
+                            recoveredUrl = target;
+                            break;
                         }
                     }
 
-                    // Fallback 2: if current base failed and it's NOT already the canonical URL,
-                    // try the canonical API endpoint (fixes phones with cached local-IP sessions)
-                    if (!recovered && currentBase !== CANONICAL_API) {
-                        console.log('[Offline] Primary API unreachable, trying canonical fallback...');
-                        recovered = await tryHealth(CANONICAL_API);
-                        if (recovered) {
-                            recoveredUrl = CANONICAL_API;
-                            localStorage.setItem('nora_api_url', CANONICAL_API);
-                            console.log('[Offline] Canonical fallback succeeded — saved as API URL');
+                    if (recoveredUrl) {
+                        if (recoveredUrl !== 'http://localhost:3000' || window.location.hostname === 'localhost') {
+                            localStorage.setItem('nora_api_url', recoveredUrl);
                         }
-                    }
-
-                    if (recovered) {
                         consecutiveNetworkErrors = 0;
                         triggerApiOnline();
                         return;
                     }
 
-                    console.log('[Offline] Health check failed, retrying...');
-                    secondsLeft = 3;
+                    secondsLeft = 2;
                     if (statusEl) {
-                        statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s';
+                        statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">2</span>s';
                     }
                 } else {
                     if (cdEl) cdEl.textContent = secondsLeft;
@@ -7030,21 +7100,30 @@
             const statusEl = document.getElementById('offline-retry-status');
             if (statusEl) statusEl.innerHTML = '<span style="color:#00d2ff; font-weight:700;">Testing API Connection...</span>';
 
-            const CANONICAL_API = 'https://api.vaztinix.dev';
-            let recovered = await tryHealth(CANONICAL_API);
-            if (!recovered) recovered = await tryHealth(window.getApiBaseUrl());
+            const targets = [
+                window.getApiBaseUrl(),
+                'https://api.vaztinix.dev',
+                window.location.origin,
+                'http://localhost:3000'
+            ].filter(Boolean);
 
-            if (recovered) {
-                consecutiveNetworkErrors = 0;
-                window.triggerApiOnline();
-            } else {
-                if (statusEl) statusEl.innerHTML = '<span style="color:var(--danger,#ff4a4a); font-weight:700;">API still unreachable. Retrying...</span>';
-                setTimeout(() => {
-                    if (statusEl && window.isApiOffline) {
-                        statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s';
+            for (const target of targets) {
+                if (await tryHealth(target)) {
+                    if (target !== 'http://localhost:3000' || window.location.hostname === 'localhost') {
+                        localStorage.setItem('nora_api_url', target);
                     }
-                }, 1500);
+                    consecutiveNetworkErrors = 0;
+                    window.triggerApiOnline();
+                    return;
+                }
             }
+
+            if (statusEl) statusEl.innerHTML = '<span style="color:var(--danger,#ff4a4a); font-weight:700;">API still unreachable. Retrying...</span>';
+            setTimeout(() => {
+                if (statusEl && window.isApiOffline) {
+                    statusEl.innerHTML = 'Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">2</span>s';
+                }
+            }, 1200);
         };
 
         // Auto-reconnect on screen wake / tab focus (tablet & mobile battery saver recovery)
@@ -9427,35 +9506,110 @@
             renderAllGuilds(filtered);
         }
 
-        async function fetchGuilds(t) {
-            logToTerminal('Fetching user guilds...', 'GUILD_FETCH');
-            toggleLoading(true);
+        async function fetchGuilds(t, silent = false) {
+            if (!t) t = localStorage.getItem('token') || localStorage.getItem('discord_token');
+            if (!t) return;
+
+            // 1. Instant Cache-First Restoration: Render cached servers immediately if available
             try {
-                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/guilds', { headers: { Authorization: `Bearer ${t}` } });
-                const guilds = await res.json();
-                
-                if (guilds.error) {
-                    throw new Error(guilds.error);
+                if (!window.userGuilds || !window.userGuilds.length) {
+                    const cachedStr = localStorage.getItem('nora_cached_guilds');
+                    if (cachedStr) {
+                        const cached = JSON.parse(cachedStr);
+                        if (Array.isArray(cached) && cached.length) {
+                            window.userGuilds = cached;
+                            renderAllGuilds(cached);
+                            const activeCount = cached.filter(g => g.hasNora).length;
+                            const inactiveCount = cached.length - activeCount;
+                            const activeEl = document.getElementById('servers-count-active');
+                            const inactiveEl = document.getElementById('servers-count-not-config');
+                            if (activeEl) activeEl.textContent = `${activeCount} Active`;
+                            if (inactiveEl) inactiveEl.textContent = `${inactiveCount} Not Configured`;
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            logToTerminal('Fetching user guilds...', 'GUILD_FETCH');
+            if (!silent && (!window.userGuilds || !window.userGuilds.length)) {
+                toggleLoading(true);
+            }
+
+            let lastError = null;
+            let guilds = null;
+
+            // 2. Resilient Multi-endpoint retry loop with exponential backoff
+            const endpoints = [
+                (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : ''),
+                'https://api.vaztinix.dev',
+                ''
+            ];
+            const uniqueEndpoints = [...new Set(endpoints)];
+
+            for (let attempt = 0; attempt < 3; attempt++) {
+                for (const base of uniqueEndpoints) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 9000);
+                        const res = await fetch(base + '/api/user/guilds', {
+                            headers: { Authorization: `Bearer ${t}` },
+                            cache: 'no-store',
+                            signal: controller.signal
+                        });
+                        clearTimeout(timeoutId);
+
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (Array.isArray(data)) {
+                                guilds = data;
+                                break;
+                            } else if (data && data.error) {
+                                lastError = new Error(data.error);
+                            }
+                        } else {
+                            lastError = new Error(`HTTP ${res.status}`);
+                        }
+                    } catch (err) {
+                        lastError = err;
+                    }
+                }
+                if (guilds) break;
+                await new Promise(r => setTimeout(r, 600 * (attempt + 1)));
+            }
+
+            try {
+                if (guilds && Array.isArray(guilds)) {
+                    logToTerminal(`Fetched ${guilds.length} guilds.`, 'GUILD_SUCCESS');
+                    window.userGuilds = guilds;
+                    localStorage.setItem('nora_cached_guilds', JSON.stringify(guilds));
+
+                    // Calculate stats
+                    const activeCount = guilds.filter(g => g.hasNora).length;
+                    const inactiveCount = guilds.length - activeCount;
+
+                    const activeEl = document.getElementById('servers-count-active');
+                    const inactiveEl = document.getElementById('servers-count-not-config');
+                    if (activeEl) activeEl.textContent = `${activeCount} Active`;
+                    if (inactiveEl) inactiveEl.textContent = `${inactiveCount} Not Configured`;
+
+                    renderAllGuilds(guilds);
+
+                    window.userHasAnyPremium = guilds.some(g => g.isPremium);
+                    if (typeof window.updatePremiumUI === 'function') {
+                        window.updatePremiumUI(window.userHasAnyPremium);
+                    }
+                    return;
                 }
 
-                logToTerminal(`Fetched ${guilds.length} guilds.`, 'GUILD_SUCCESS');
-                window.userGuilds = guilds;
-                
-                // Calculate stats
-                const activeCount = guilds.filter(g => g.hasNora).length;
-                const inactiveCount = guilds.length - activeCount;
-                
-                const activeEl = document.getElementById('servers-count-active');
-                const inactiveEl = document.getElementById('servers-count-not-config');
-                if (activeEl) activeEl.textContent = `${activeCount} Active`;
-                if (inactiveEl) inactiveEl.textContent = `${inactiveCount} Not Configured`;
-
-                renderAllGuilds(guilds);
-
-                window.userHasAnyPremium = guilds.some(g => g.isPremium);
-                if (typeof window.updatePremiumUI === 'function') {
-                    window.updatePremiumUI(window.userHasAnyPremium);
+                // If fetch failed: check if we already have guilds in cache
+                if (window.userGuilds && window.userGuilds.length) {
+                    console.warn('[Guild Sync] Background refresh failed, preserving cached server list:', lastError);
+                    setTimeout(() => fetchGuilds(t, true), 8000);
+                    return;
                 }
+
+                // No cache available and all retries failed -> render error state
+                throw lastError || new Error('Unable to connect to server sync API');
 
             } catch (e) {
                 console.error('[Guild Sync Error]', e);
@@ -10166,6 +10320,7 @@
             }
             loadSiteAlerts();
             renderPushNotificationWidget();
+            loadNotificationToggles();
             setInterval(loadSiteAlerts, 60000); // Check site alerts every minute
         }
 
@@ -10308,7 +10463,70 @@
             `;
 
             document.body.appendChild(widget);
+            updateSettingsPushUI();
         }
+
+        function updateSettingsPushUI() {
+            const statusBadgeEl = document.getElementById('settings-push-status-badge');
+            const actionsEl = document.getElementById('settings-push-actions');
+            if (!statusBadgeEl || !actionsEl) return;
+
+            const isGranted = ('Notification' in window) && Notification.permission === 'granted';
+            const isDenied = ('Notification' in window) && Notification.permission === 'denied';
+
+            if (isGranted) {
+                statusBadgeEl.innerHTML = `<span style="background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.4); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-check-circle"></i> Active</span>`;
+                actionsEl.innerHTML = `
+                    <button onclick="testWebPushNotification()" style="background: rgba(124,58,237,0.25); border: 1px solid rgba(124,58,237,0.5); color: #c084fc; border-radius: 10px; padding: 7px 16px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-paper-plane"></i> Test Push</button>
+                    <button onclick="subscribeToWebPush()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 10px; padding: 7px 14px; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-sync-alt"></i> Re-Sync</button>
+                `;
+            } else if (isDenied) {
+                statusBadgeEl.innerHTML = `<span style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-ban"></i> Blocked</span>`;
+                actionsEl.innerHTML = `
+                    <button disabled style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #64748b; border-radius: 10px; padding: 7px 14px; font-weight: 600; font-size: 0.8rem; cursor: not-allowed;"><i class="fas fa-lock"></i> Unblock in Browser Settings</button>
+                `;
+            } else {
+                statusBadgeEl.innerHTML = `<span style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-bell"></i> Available</span>`;
+                actionsEl.innerHTML = `
+                    <button onclick="subscribeToWebPush()" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; color: #ffffff; border-radius: 10px; padding: 8px 18px; font-weight: 800; font-size: 0.82rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(124,58,237,0.4); display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-bell"></i> Enable Push Notifications</button>
+                `;
+            }
+        }
+
+        window.saveNotificationToggles = function() {
+            try {
+                const sysEl = document.getElementById('pref-notif-system');
+                const modEl = document.getElementById('pref-notif-mod');
+                const sndEl = document.getElementById('pref-notif-sound');
+                const prefs = {
+                    system: sysEl ? sysEl.checked : true,
+                    moderation: modEl ? modEl.checked : true,
+                    sound: sndEl ? sndEl.checked : true
+                };
+                localStorage.setItem('nora_notif_prefs', JSON.stringify(prefs));
+            } catch (e) {}
+        };
+
+        window.loadNotificationToggles = function() {
+            try {
+                const saved = localStorage.getItem('nora_notif_prefs');
+                if (saved) {
+                    const prefs = JSON.parse(saved);
+                    const sysEl = document.getElementById('pref-notif-system');
+                    const modEl = document.getElementById('pref-notif-mod');
+                    const sndEl = document.getElementById('pref-notif-sound');
+                    if (sysEl && prefs.system !== undefined) sysEl.checked = prefs.system;
+                    if (modEl && prefs.moderation !== undefined) modEl.checked = prefs.moderation;
+                    if (sndEl && prefs.sound !== undefined) sndEl.checked = prefs.sound;
+                }
+            } catch (e) {}
+            updateSettingsPushUI();
+        };
+
+        window.saveNotificationPrefsAction = function() {
+            saveNotificationToggles();
+            showToast('🔔 Notification settings updated successfully!', 'success');
+        };
 
         async function loadSiteAlerts() {
             try {
@@ -17501,21 +17719,18 @@
     <div id="session-expired-overlay" style="display: none !important; pointer-events: none !important; visibility: hidden !important;"></div>
 
     <!-- API Connection Offline Overlay -->
-    <div id="api-offline-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 21000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div id="api-offline-overlay" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 21000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;" onclick="if(event.target===this) this.style.display='none';">
+        <div style="position: relative; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 40px; border-radius: 24px; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+            <button onclick="document.getElementById('api-offline-overlay').style.display='none';" style="position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; padding: 6px;" title="Dismiss">&times;</button>
             <div class="pulse-offline-dot" style="width: 24px; height: 24px; background: var(--danger, #ff4a4a); border-radius: 50%; margin: 0 auto 20px; box-shadow: 0 0 20px var(--danger, #ff4a4a); animation: offlinePulse 1.5s infinite;"></div>
             <h2 style="font-size: 1.8rem; margin-bottom: 12px; color: #fff; font-weight: 800;">Connection Failed</h2>
             <p style="color: var(--muted, #8a9fc4); font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px;">
                 Unable to reach the Nora API. This can happen due to a <strong style="color:#fff;">temporary service outage, API maintenance, or weak local connections</strong>. The dashboard will reconnect automatically once the connection is established.
             </p>
             <p style="color: rgba(138,159,196,0.6); font-size: 0.8rem; margin-bottom: 24px;">If the service is down, we are likely working to restore it as quickly as possible.</p>
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 20px; width: 100%; justify-content: center;">
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; margin-top: 8px; width: 100%; justify-content: center;">
                 <div style="border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary, #00d2ff); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;"></div>
-                <span id="offline-retry-status" style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">3</span>s</span>
-            </div>
-            <div style="display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;">
-                <button onclick="if(window.forceReconnectNow) window.forceReconnectNow();" style="background: var(--primary, #00d2ff); border: none; border-radius: 12px; color: #0b0f1a; font-size: 0.85rem; font-weight: 700; padding: 12px 20px; cursor: pointer; flex: 1; min-width: 140px; box-shadow: 0 0 15px var(--primary-glow); transition: all 0.2s ease;">⚡ Reconnect Now</button>
-                <button onclick="window.location.reload();" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: #fff; font-size: 0.85rem; font-weight: 600; padding: 12px 20px; cursor: pointer; flex: 1; min-width: 140px; transition: all 0.2s ease;">🔄 Refresh Page</button>
+                <span id="offline-retry-status" style="color: #fff; font-size: 0.9rem; font-weight: 600;">Retrying in <span id="offline-countdown" style="color: var(--primary, #00d2ff);">2</span>s</span>
             </div>
         </div>
     </div>

@@ -833,16 +833,7 @@ module.exports = {
             if (activeDeferPromise) {
                 await activeDeferPromise;
             }
-            try {
-                return await originalEditReply(options);
-            } catch (err) {
-                console.error('[System Network] interaction.editReply failed:', err);
-                try {
-                    return await originalEditReply(options);
-                } catch (retryErr) {
-                    console.error('[System Network] retry editReply failed:', retryErr);
-                }
-            }
+            return await originalEditReply(options);
         };
 
         interaction.reply = async (options) => {

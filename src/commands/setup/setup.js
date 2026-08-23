@@ -75,6 +75,25 @@ module.exports = {
                 .addBooleanOption(option =>
                     option.setName('consecutive')
                         .setDescription('Allow the same user to post multiple words in a row')
+                        .setRequired(false)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('counting')
+                .setDescription('Configure or disable the Counting game system.')
+                .addBooleanOption(option =>
+                    option.setName('enabled')
+                        .setDescription('Enable or disable the Counting game')
+                        .setRequired(false))
+                .addChannelOption(option =>
+                    option.setName('channel')
+                        .setDescription('Dedicated channel for the Counting game')
+                        .addChannelTypes(ChannelType.GuildText)
+                        .setRequired(false))
+                .addIntegerOption(option =>
+                    option.setName('xp_reward')
+                        .setDescription('XP reward granted per valid count (default: 15)')
+                        .setMinValue(0)
+                        .setMaxValue(500)
                         .setRequired(false))),
 
     async execute(interaction) {
@@ -97,6 +116,8 @@ module.exports = {
                 return await this.runStarboardSetup(interaction, settings);
             } else if (subcommand === 'onewordstory') {
                 return await this.runOneWordStorySetup(interaction, settings);
+            } else if (subcommand === 'counting') {
+                return await this.runCountingSetup(interaction, settings);
             }
         } catch (err) {
             console.error(`Error executing /setup ${subcommand}:`, err);
@@ -191,6 +212,49 @@ module.exports = {
         }
 
         return await this.runDashboard(interaction, settings, 'view_onewordstory');
+    },
+
+    async runCountingSetup(interaction, settings) {
+        const enabled = interaction.options.getBoolean('enabled');
+        const channel = interaction.options.getChannel('channel');
+        const xpReward = interaction.options.getInteger('xp_reward');
+
+        let updated = false;
+
+        if (enabled === false) {
+            settings.countingChannelId = null;
+            updated = true;
+        } else if (enabled === true) {
+            if (channel) {
+                settings.countingChannelId = channel.id;
+            } else if (!settings.countingChannelId) {
+                settings.countingChannelId = interaction.channelId;
+            }
+            updated = true;
+        } else if (channel) {
+            settings.countingChannelId = channel.id;
+            updated = true;
+        }
+
+        if (xpReward !== null) {
+            settings.countingChannelXpReward = xpReward;
+            updated = true;
+        }
+
+        if (updated) {
+            await settings.save();
+            settingsCache.invalidate(interaction.guild.id);
+            const isEnabled = Boolean(settings.countingChannelId);
+            return await handleSuccess(
+                interaction,
+                'Counting Game Setup Updated',
+                `**Status:** ${isEnabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n` +
+                `**Channel:** ${settings.countingChannelId ? `<#${settings.countingChannelId}>` : '*None (Disabled)*'}\n` +
+                `**XP Reward per Count:** ${settings.countingChannelXpReward !== undefined ? settings.countingChannelXpReward : 15} XP`
+            );
+        }
+
+        return await this.runDashboard(interaction, settings, 'view_extras');
     },
 
     async runDashboard(interaction, settings, initialViewName = 'main') {
@@ -650,16 +714,19 @@ module.exports = {
                 embed.setTitle('Fun & Games')
                      .setDescription('Additional fun features for your server.')
                      .addFields(
-                        { name: 'Welcomer', value: settings.welcomerEnabled ? 'Enabled' : 'Disabled', inline: true },
+                        { name: 'Welcomer', value: settings.welcomerEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
                         { name: 'Welcome Ch.', value: settings.welcomeChannelId ? `<#${settings.welcomeChannelId}>` : 'None', inline: true },
-                        { name: 'Counting Ch.', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : 'None', inline: true },
+                        { name: 'Counting Game', value: settings.countingChannelId ? `🟢 <#${settings.countingChannelId}>` : '🔴 Disabled', inline: true },
                         { name: 'Vote Log', value: settings.voteLogChannelId ? `<#${settings.voteLogChannelId}>` : 'None', inline: true },
                         { name: 'Autoresponder', value: `${state.autoresponderCount} trigger(s)`, inline: true },
                         { name: 'YouTube Alerts', value: `${state.youtubeFeedCount} channel(s)`, inline: true }
                      );
-                const rowA = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_welcomer_toggle').setLabel(settings.welcomerEnabled ? 'Disable Welcomer' : 'Enable Welcomer').setStyle(settings.welcomerEnabled ? ButtonStyle.Danger : ButtonStyle.Success));
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_welcomer_toggle').setLabel(settings.welcomerEnabled ? 'Disable Welcomer' : 'Enable Welcomer').setStyle(settings.welcomerEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_counting_toggle').setLabel(settings.countingChannelId ? 'Disable Counting' : 'Enable Counting (This Ch.)').setStyle(settings.countingChannelId ? ButtonStyle.Danger : ButtonStyle.Success)
+                );
                 const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_welcome_channel').setPlaceholder('Select Welcome Channel...').setChannelTypes(ChannelType.GuildText));
-                const rowC = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_counting_channel').setPlaceholder('Select Counting Channel...').setChannelTypes(ChannelType.GuildText));
+                const rowC = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_counting_channel').setPlaceholder('Select / Change Counting Channel...').setChannelTypes(ChannelType.GuildText));
                 const rowD = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_votelog_channel').setPlaceholder('Select Vote Log Channel...').setChannelTypes(ChannelType.GuildText));
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
@@ -970,6 +1037,14 @@ module.exports = {
                 // Extras
                 if (i.customId === 'action_welcomer_toggle') { settings.welcomerEnabled = !settings.welcomerEnabled; update = true; }
                 if (i.customId === 'action_welcome_channel') { settings.welcomeChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_counting_toggle') {
+                    if (settings.countingChannelId) {
+                        settings.countingChannelId = null;
+                    } else {
+                        settings.countingChannelId = i.channelId;
+                    }
+                    update = true;
+                }
                 if (i.customId === 'action_counting_channel') { settings.countingChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_votelog_channel') { settings.voteLogChannelId = i.values[0]; update = true; }
 

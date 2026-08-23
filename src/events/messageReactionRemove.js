@@ -82,42 +82,85 @@ module.exports = {
 
         // ---- Reaction Role Removal Integration ----
         const ReactionRole = require('../database/models/ReactionRole');
+        const { matchesEmoji, checkAndConsumeSuppression, enqueueRoleAction } = require('../utils/reactionRoleHelper');
+
         const emojiKey = reaction.emoji.id ? reaction.emoji.id : reaction.emoji.name;
+        const rawEmojiStr = reaction.emoji.toString();
+
+        // Check if this reaction removal was initiated by Nora (e.g. Single-Select mode)
+        if (checkAndConsumeSuppression(reaction.message.id, user.id, emojiKey) || 
+            checkAndConsumeSuppression(reaction.message.id, user.id, rawEmojiStr)) {
+            return;
+        }
 
         try {
-            const match = await ReactionRole.findOne({
+            const allMessageMappings = await ReactionRole.findAll({
                 where: {
                     guildId: guild.id,
-                    messageId: reaction.message.id,
-                    emoji: emojiKey
+                    messageId: reaction.message.id
                 }
             });
 
-            if (match) {
-                const member = await guild.members.fetch(user.id).catch(() => null);
-                if (member) {
-                    const role = guild.roles.cache.get(match.roleId);
-                    if (role) {
-                        const botHighest = guild.members.me.roles.highest.position;
-                        if (role.position < botHighest) {
-                            await member.roles.remove(role).catch(err => {
-                                console.error(`[Reaction Role Remove] Failed to remove role ${role.name} from ${member.user.tag}:`, err.message);
-                            });
+            if (!allMessageMappings || allMessageMappings.length === 0) return;
 
-                            const GuildSettings = require('../database/models/GuildSettings');
-                            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
-                            if (!settings || settings.reactionRoleNotifyDm !== false) {
-                                const { EmbedBuilder } = require('discord.js');
-                                const dmEmbed = new EmbedBuilder()
-                                    .setTitle('Role Removed')
-                                    .setDescription(`The **${role.name}** role was removed from you in **${guild.name}** because you unreacted.`)
-                                    .setColor(0xEF4444);
-                                await user.send({ embeds: [dmEmbed] }).catch(() => {});
+            const match = allMessageMappings.find(m => matchesEmoji(reaction.emoji, m.emoji));
+            if (!match) return;
+
+            await enqueueRoleAction(guild.id, user.id, async () => {
+                const member = await guild.members.fetch(user.id).catch(() => null);
+                if (!member) return;
+
+                // Check if user still has the role
+                if (!member.roles.cache.has(match.roleId)) return;
+
+                // Check if the user has another active reaction on this message that grants the same role
+                try {
+                    const targetMsg = reaction.message.partial ? await reaction.message.fetch().catch(() => reaction.message) : reaction.message;
+                    const freshReactions = await targetMsg.reactions.fetch().catch(() => targetMsg.reactions.cache);
+
+                    let hasOtherGrantingReaction = false;
+                    for (const [rId, msgReaction] of freshReactions) {
+                        const isThisRemovedEmoji = matchesEmoji(msgReaction.emoji, match.emoji) || matchesEmoji(msgReaction.emoji, reaction.emoji);
+                        if (!isThisRemovedEmoji) {
+                            const otherMapping = allMessageMappings.find(m => m.roleId === match.roleId && matchesEmoji(msgReaction.emoji, m.emoji));
+                            if (otherMapping) {
+                                const usersReacted = await msgReaction.users.fetch().catch(() => msgReaction.users.cache);
+                                if (usersReacted && usersReacted.has(user.id)) {
+                                    hasOtherGrantingReaction = true;
+                                    break;
+                                }
                             }
                         }
                     }
+
+                    if (hasOtherGrantingReaction) {
+                        return; // Keep role because member still has another qualifying reaction
+                    }
+                } catch (e) {
+                    console.error('[Reaction Remove Check Error]:', e.message);
                 }
-            }
+
+                const role = guild.roles.cache.get(match.roleId) || await guild.roles.fetch(match.roleId).catch(() => null);
+                if (role) {
+                    const botHighest = guild.members.me.roles.highest.position;
+                    if (role.position < botHighest) {
+                        await member.roles.remove(role).catch(err => {
+                            console.error(`[Reaction Role Remove] Failed to remove role ${role.name} from ${member.user.tag}:`, err.message);
+                        });
+
+                        const GuildSettings = require('../database/models/GuildSettings');
+                        const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+                        if (!settings || settings.reactionRoleNotifyDm !== false) {
+                            const { EmbedBuilder } = require('discord.js');
+                            const dmEmbed = new EmbedBuilder()
+                                .setTitle('Role Removed')
+                                .setDescription(`The **${role.name}** role was removed from you in **${guild.name}** because you unreacted.`)
+                                .setColor(0xEF4444);
+                            await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                        }
+                    }
+                }
+            });
         } catch (error) {
             console.error('[Reaction Remove Error] Fault:', error);
         }
