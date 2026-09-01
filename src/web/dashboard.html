@@ -7558,7 +7558,21 @@
         window.redirectToDiscordLogin = redirectToDiscordLogin;
         window.getDiscordLoginUrl = getDiscordLoginUrl;
 
-        
+        // Instant Token Capture from URL Hash (preserves token before DOM parsing)
+        try {
+            if (window.location.hash && window.location.hash.includes('access_token=')) {
+                const urlFragment = new URLSearchParams(window.location.hash.slice(1));
+                const earlyToken = urlFragment.get('access_token');
+                if (earlyToken) {
+                    sessionStorage.setItem('discord_token', earlyToken);
+                    localStorage.setItem('discord_token', earlyToken);
+                    localStorage.setItem('nora_discord_token', earlyToken);
+                }
+            }
+        } catch (e) {
+            console.warn('[Token Parse Notice]:', e);
+        }
+
         let authOverlay = null;
         let viewServers, viewConfig, viewPrefs, viewNotifications, viewProfile;
         let currentServerId = null;

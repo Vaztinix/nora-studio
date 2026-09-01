@@ -1808,23 +1808,26 @@ app.get('/api/user/me', async (req, res) => {
                 location = 'Localhost Development';
             }
 
-            const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
-            if (!prefs.sessionGenerationMarker) {
-                prefs.sessionGenerationMarker = require('uuid').v4();
-                await prefs.save();
+            try {
+                const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+                if (!prefs.sessionGenerationMarker) {
+                    prefs.sessionGenerationMarker = require('uuid').v4();
+                    await prefs.save();
+                }
+
+                await Session.upsert({
+                    id: tokenHash,
+                    userId: user.id,
+                    discordToken: token,
+                    ipAddress: clientIp,
+                    userAgent: req.headers['user-agent'] || 'Unknown',
+                    location: location,
+                    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    sessionGenerationMarker: prefs.sessionGenerationMarker
+                });
+            } catch (sessErr) {
+                console.warn('[Session Storage Notice]:', sessErr.message);
             }
-
-            session = await Session.create({
-                id: tokenHash,
-                userId: user.id,
-                discordToken: token,
-                ipAddress: clientIp,
-                userAgent: req.headers['user-agent'] || 'Unknown',
-                location: location,
-                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                sessionGenerationMarker: prefs.sessionGenerationMarker
-            });
-
         }
 
         // Construct full CDN avatar URL
