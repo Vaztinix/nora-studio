@@ -7722,6 +7722,7 @@
             const pairCode = fragment.get('pair');
             if (accessToken) { 
                 try { sessionStorage.setItem('discord_token', accessToken); } catch(e) {}
+                try { localStorage.setItem('discord_token', accessToken); } catch(e) {}
                 try { localStorage.setItem('nora_discord_token', accessToken); } catch(e) {}
                 window.history.replaceState(null, null, window.location.pathname); 
                 authenticateWithToken(accessToken); 
@@ -7734,9 +7735,10 @@
                 submitPairingCode();
             } else { 
                 let tok = null;
-                try { tok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token'); } catch(e) {}
+                try { tok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || localStorage.getItem('discord_token'); } catch(e) {}
                 if (tok) {
                     try { sessionStorage.setItem('discord_token', tok); } catch(e) {}
+                    try { localStorage.setItem('discord_token', tok); } catch(e) {}
                     authenticateWithToken(tok); 
                 } else {
                     authOverlay.style.display = 'flex';
@@ -9536,7 +9538,7 @@
         }
 
         async function fetchGuilds(t, silent = false) {
-            if (!t) t = localStorage.getItem('token') || localStorage.getItem('discord_token');
+            if (!t) t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || localStorage.getItem('token');
             if (!t) return;
 
             // 1. Instant Cache-First Restoration: Render cached servers immediately if available
