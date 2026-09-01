@@ -7681,15 +7681,7 @@
                     try {
                         const clone = response.clone();
                         const errText = await clone.text();
-                        originalFetch(window.getApiBaseUrl() + '/api/logs/client', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                message: `HTTP Error ${response.status} on ${input}`,
-                                level: 'FETCH_ERROR',
-                                context: { status: response.status, statusText: response.statusText, response: errText.substring(0, 300) }
-                            })
-                        }).catch(() => {});
+                        /* client telemetry suppressed on connection notice */
                     } catch (e) {}
                 }
                 return response;
@@ -7730,15 +7722,7 @@
                         }
                     }
 
-                    originalFetch(window.getApiBaseUrl() + '/api/logs/client', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            message: `Network Error on ${input}: ${err.message}`,
-                            level: 'FETCH_ERROR',
-                            context: { stack: err.stack }
-                        })
-                    }).catch(() => {});
+                    /* client telemetry suppressed on connection notice */
                 }
                 throw err;
             }
@@ -10326,7 +10310,12 @@
                 card.innerHTML = `
                     ${badgeHtml}
                     <div style="display: flex; flex-direction: column; align-items: center; width: 100%; flex-grow: 1; justify-content: center; min-height: 0;">
-                        <img src="${g.icon}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 60px; height: 60px; border-radius: 14px; margin-bottom: 12px; flex-shrink: 0;">
+                        ${(() => {
+                        const iconSrc = (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http')) 
+                            ? g.icon 
+                            : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png');
+                        return `<img src="${iconSrc}" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';" style="width: 60px; height: 60px; border-radius: 14px; margin-bottom: 12px; flex-shrink: 0; object-fit: cover;">`;
+                    })()}
                         <h3>${escapeHtml(g.name)}</h3>
                         ${memberInfo}
                     </div>
@@ -10454,7 +10443,7 @@
                             guilds = rawGuilds.map(g => ({
                                 id: g.id,
                                 name: g.name,
-                                icon: g.icon,
+                                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png',
                                 owner: g.owner,
                                 permissions: g.permissions,
                                 hasNora: false
@@ -18488,7 +18477,12 @@
             
             listContainer.innerHTML = activeGuilds.map(g => `
                 <div class="sidebar-dropdown-item" onclick="selectServerFromSidebar('${g.id}')" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                    <img src="${g.icon}" style="width: 24px; height: 24px; border-radius: 4px;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                    ${(() => {
+                        const iconSrc = (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http')) 
+                            ? g.icon 
+                            : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png');
+                        return `<img src="${iconSrc}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">`;
+                    })()}
                     <span style="font-size: 0.8rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">${g.name}</span>
                 </div>
             `).join('');
