@@ -1027,7 +1027,7 @@
             }
 
             // Official production configurations (subdomain runs the API, apex domain is static pages)
-            return 'https://api.vaztinix.dev';
+            return (window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:3000');
         };
 
         const originalFetch = window.fetch;

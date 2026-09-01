@@ -509,7 +509,7 @@
                 return window.location.origin;
             }
 
-            return 'https://api.vaztinix.dev';
+            return (window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:3000');
         };
 
         // Check OAuth Implicit Token

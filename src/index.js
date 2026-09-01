@@ -1124,7 +1124,7 @@ app.use((req, res, next) => {
 // Serve dashboard.html dynamically — inject the correct API base URL from config
 // This is the ONLY reliable way to ensure every device on any network gets the right URL.
 // No hostname guessing, no localStorage dependency — the server tells the client.
-const DASHBOARD_API_BASE = (process.env.API_BASE_URL || 'https://api.vaztinix.dev').replace(/\/$/, '');
+const DASHBOARD_API_BASE = (process.env.API_BASE_URL || '').replace(/\/$/, '');
 console.log(`[Config] Dashboard API base URL: ${DASHBOARD_API_BASE}`);
 
 function getResolvedClientId() {

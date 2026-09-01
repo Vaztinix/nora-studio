@@ -537,7 +537,7 @@
                 return window.__NORA_API_BASE_URL__;
             }
 
-            return 'https://api.vaztinix.dev';
+            return (window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:3000');
         };
 
         let currentUser = null;
