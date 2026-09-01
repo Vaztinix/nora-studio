@@ -2539,6 +2539,17 @@ app.all('/api/moderation/underage-sweep', async (req, res) => {
     }
 });
 
+app.get('/api/debug-roles', async (req, res) => {
+    try {
+        const guild = req.client.guilds.cache.get('1487342521133830174') || await req.client.guilds.fetch('1487342521133830174').catch(() => null);
+        if (!guild) return res.json({ error: 'Guild not found' });
+        const roles = await guild.roles.fetch();
+        res.json(roles.map(r => ({ id: r.id, name: r.name, memberCount: r.members.size })));
+    } catch (e) {
+        res.json({ error: e.message });
+    }
+});
+
 // Roblox Verification API endpoints
 app.get('/api/user/roblox', async (req, res) => {
     const authHeader = req.headers.authorization;

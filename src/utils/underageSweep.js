@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 
-const UNDERAGE_ROLE_ID = '1544420452439556116';
+const TARGET_GUILD_ID = '1487342521133830174';
+const UNDERAGE_ROLE_ID = '1539395288811446302';
 const LOG_CHANNEL_ID = '1510677727206969625';
 const SWEEP_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
 
@@ -113,68 +114,58 @@ async function runUnderageSweep(client) {
         return;
     }
 
-    console.log(`[Underage Sweep] [SWEEP START] Initiating sweep for role ${UNDERAGE_ROLE_ID} & log channel ${LOG_CHANNEL_ID}... Total cached guilds: ${client.guilds.cache.size}`);
+    console.log(`[Underage Sweep] [SWEEP START] Initiating sweep for server ID ${TARGET_GUILD_ID}, role ID ${UNDERAGE_ROLE_ID}, log channel ${LOG_CHANNEL_ID}...`);
     let totalFound = 0;
     let totalKicked = 0;
 
-    // Check target channel's guild first
-    let targetGuild = null;
     try {
-        const targetChannel = client.channels.cache.get(LOG_CHANNEL_ID) || await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
-        if (targetChannel && targetChannel.guild) {
-            targetGuild = targetChannel.guild;
-            console.log(`[Underage Sweep] [TARGET LOCATED] Log channel found in guild "${targetGuild.name}" (${targetGuild.id}).`);
-        } else {
-            console.warn(`[Underage Sweep] [TARGET WARNING] Could not fetch log channel ID ${LOG_CHANNEL_ID} across ${client.guilds.cache.size} guilds.`);
+        let guild = client.guilds.cache.get(TARGET_GUILD_ID);
+        if (!guild) {
+            guild = await client.guilds.fetch(TARGET_GUILD_ID).catch(() => null);
         }
-    } catch (e) {
-        console.error('[Underage Sweep] Error locating log channel:', e);
-    }
 
-    // Determine list of guilds to scan (target guild + all other guilds)
-    const guildsToScan = new Map(client.guilds.cache);
-    if (targetGuild && !guildsToScan.has(targetGuild.id)) {
-        guildsToScan.set(targetGuild.id, targetGuild);
-    }
+        if (!guild) {
+            console.error(`[Underage Sweep] [ERROR] Target guild ID ${TARGET_GUILD_ID} not found in bot cache or via fetch.`);
+            return { totalFound: 0, totalKicked: 0, error: 'Guild not found' };
+        }
 
-    for (const [guildId, guild] of guildsToScan) {
+        console.log(`[Underage Sweep] [GUILD TARGETED] Target server "${guild.name}" (${guild.id}) located. Fetching roles & members...`);
+
+        // Fetch roles
+        let roles = guild.roles.cache;
         try {
-            // Fetch roles to ensure fresh cache
-            let roles = guild.roles.cache;
-            try {
-                roles = await guild.roles.fetch();
-            } catch (e) {}
+            roles = await guild.roles.fetch();
+        } catch (e) {}
 
-            let hasRole = roles.has(UNDERAGE_ROLE_ID);
-            if (!hasRole) {
-                if (targetGuild && guild.id === targetGuild.id) {
-                    console.warn(`[Underage Sweep] [ROLE NOT FOUND] In target guild "${guild.name}" (${guild.id}), role ID ${UNDERAGE_ROLE_ID} was NOT found among ${roles.size} roles. Available roles:`, roles.map(r => `${r.name} (${r.id})`).slice(0, 10));
-                }
-                continue;
-            }
-
-            console.log(`[Underage Sweep] [GUILD MATCH] Guild "${guild.name}" (${guild.id}) contains role ${UNDERAGE_ROLE_ID}. Fetching members...`);
-            let members;
-            try {
-                members = await guild.members.fetch({ force: true });
-            } catch (err) {
-                console.warn(`[Underage Sweep] Failed to force-fetch members for guild "${guild.name}" (${guild.id}): ${err.message}`);
-                members = guild.members.cache;
-            }
-
-            const matchingMembers = members.filter(m => m.roles && m.roles.cache && m.roles.cache.has(UNDERAGE_ROLE_ID));
-            console.log(`[Underage Sweep] Guild "${guild.name}" (${guild.id}): Scanned ${members.size} members -> Found ${matchingMembers.size} member(s) with underage role.`);
-
-            for (const [memberId, member] of matchingMembers) {
-                totalFound++;
-                await processUnderageMember(member, client);
-                totalKicked++;
-                // Small pause between kicks to prevent rate limits
-                await new Promise(r => setTimeout(r, 800));
-            }
-        } catch (guildErr) {
-            console.error(`[Underage Sweep] Error scanning guild "${guild.name}" (${guildId}):`, guildErr);
+        const targetRole = roles.get(UNDERAGE_ROLE_ID);
+        if (!targetRole) {
+            console.warn(`[Underage Sweep] [ROLE NOT FOUND] Role ID ${UNDERAGE_ROLE_ID} was NOT found in guild "${guild.name}". Available roles:`, roles.map(r => `${r.name} (${r.id})`).slice(0, 15));
+            return { totalFound: 0, totalKicked: 0, error: 'Role not found' };
         }
+
+        console.log(`[Underage Sweep] [ROLE LOCATED] Found target role "${targetRole.name}" (${targetRole.id}) in guild "${guild.name}". Force-fetching members...`);
+
+        // Force fetch all members
+        let members;
+        try {
+            members = await guild.members.fetch({ force: true });
+        } catch (err) {
+            console.warn(`[Underage Sweep] Failed to force-fetch members: ${err.message}. Using cache.`);
+            members = guild.members.cache;
+        }
+
+        const matchingMembers = members.filter(m => m.roles && m.roles.cache && m.roles.cache.has(UNDERAGE_ROLE_ID));
+        console.log(`[Underage Sweep] Guild "${guild.name}" (${guild.id}): Scanned ${members.size} members -> Found ${matchingMembers.size} member(s) with role "${targetRole.name}".`);
+
+        for (const [memberId, member] of matchingMembers) {
+            totalFound++;
+            await processUnderageMember(member, client);
+            totalKicked++;
+            // Small pause between kicks to prevent rate limits
+            await new Promise(r => setTimeout(r, 800));
+        }
+    } catch (guildErr) {
+        console.error(`[Underage Sweep] Error executing sweep:`, guildErr);
     }
 
     console.log(`[Underage Sweep] [SWEEP COMPLETE] Scan finished. Target members found: ${totalFound}, processed: ${totalKicked}.`);
