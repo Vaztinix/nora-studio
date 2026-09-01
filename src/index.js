@@ -986,27 +986,29 @@ const rateLimit = require('express-rate-limit');
 
 const globalApiRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 300,
+    max: 3000, // 3000 requests per 15 mins for smooth dashboard polling
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests from this IP. Please try again later.' },
     keyGenerator: (req) => getRealIP(req),
-    skip: (req) => req.path === '/health' || req.path === '/api/health'
+    skip: (req) => req.method === 'OPTIONS' || req.path === '/health' || req.path === '/api/health'
 });
 
 const authRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 500,
+    max: 2000,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many authentication attempts. Please wait 15 minutes.' },
-    keyGenerator: (req) => getRealIP(req)
+    keyGenerator: (req) => getRealIP(req),
+    skip: (req) => req.method === 'OPTIONS'
 });
 
 app.use('/api/', globalApiRateLimiter);
 app.use(['/api/user/me', '/api/auth/pair', '/api/auth/invalidate', '/api/owner/'], authRateLimiter);
 
 const ipRateLimiter = (req, res, next) => {
+    if (req.method === 'OPTIONS' || req.path === '/health' || req.path === '/api/health') return next();
     const ip = getRealIP(req); // Use real visitor IP, not Cloudflare edge node IP
     const now = Date.now();
 
@@ -1028,7 +1030,7 @@ const ipRateLimiter = (req, res, next) => {
 };
 
 app.use((req, res, next) => {
-    if (req.path === '/health' || req.path === '/api/health') return next();
+    if (req.method === 'OPTIONS' || req.path === '/health' || req.path === '/api/health') return next();
     ipRateLimiter(req, res, next);
 });
 
