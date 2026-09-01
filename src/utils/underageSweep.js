@@ -109,6 +109,8 @@ async function processUnderageMember(member, client) {
     }
 }
 
+let isSweepRunning = false;
+
 /**
  * Execute a sweep across all guilds looking for members with the underage role.
  * @param {import('discord.js').Client} client
@@ -118,6 +120,12 @@ async function runUnderageSweep(client) {
         console.log('[Underage Sweep] [SWEEP SKIP] Bot client is not ready yet.');
         return;
     }
+
+    if (isSweepRunning) {
+        console.log('[Underage Sweep] [SWEEP SKIP] A sweep is already actively running. Skipping concurrent request.');
+        return { totalFound: 0, totalKicked: 0, error: 'Sweep in progress' };
+    }
+    isSweepRunning = true;
 
     console.log(`[Underage Sweep] [SWEEP START] Initiating sweep for server ID ${TARGET_GUILD_ID}, role ID ${UNDERAGE_ROLE_ID}, log channel ${LOG_CHANNEL_ID}...`);
     let totalFound = 0;
@@ -171,6 +179,8 @@ async function runUnderageSweep(client) {
         }
     } catch (guildErr) {
         console.error(`[Underage Sweep] Error executing sweep:`, guildErr);
+    } finally {
+        isSweepRunning = false;
     }
 
     console.log(`[Underage Sweep] [SWEEP COMPLETE] Scan finished. Target members found: ${totalFound}, processed: ${totalKicked}.`);
