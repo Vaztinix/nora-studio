@@ -2579,9 +2579,14 @@
             function sanitizeUrl(url) {
                 if (!url) return '';
                 const u = String(url).trim();
-                if (/^(https?:\/\/|\/|data:image\/)/i.test(u)) {
-                    return u;
-                }
+                if (u.startsWith('data:image/')) return u;
+                if (u.startsWith('/') && !u.startsWith('//') && !u.startsWith('/\\')) return u;
+                try {
+                    const parsed = new URL(u, window.location.origin);
+                    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                        return parsed.href;
+                    }
+                } catch (e) {}
                 return '';
             }
 
@@ -6752,9 +6757,14 @@
         function sanitizeUrl(url) {
             if (!url) return '';
             const u = String(url).trim();
-            if (/^(https?:\/\/|\/|data:image\/)/i.test(u)) {
-                return u;
-            }
+            if (u.startsWith('data:image/')) return u;
+            if (u.startsWith('/') && !u.startsWith('//') && !u.startsWith('/\\')) return u;
+            try {
+                const parsed = new URL(u, window.location.origin);
+                if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                    return parsed.href;
+                }
+            } catch (e) {}
             return '';
         }
 

@@ -302,6 +302,19 @@ function setCachedAvatar(userId, url) {
 async function fetchRoblox(url, options = {}) {
     const retries = options.retries !== undefined ? options.retries : 2;
     const timeoutMs = options.timeout !== undefined ? options.timeout : 3000;
+    const ALLOWED_ROBLOX_HOSTS = new Set([
+        'users.roblox.com',
+        'thumbnails.roblox.com',
+        'groups.roblox.com',
+        'friends.roblox.com',
+        'economy.roblox.com',
+        'apis.roblox.com',
+        'presence.roblox.com',
+        'inventory.roblox.com',
+        'auth.roblox.com',
+        'roblox.com',
+        'www.roblox.com'
+    ]);
     const { validateExternalUrl } = require('./utils/security');
     if (!validateExternalUrl(url)) {
         throw new Error('Invalid or unsafe URL requested for Roblox API');
@@ -311,10 +324,10 @@ async function fetchRoblox(url, options = {}) {
         throw new Error('Invalid URL protocol requested for Roblox API');
     }
     const host = parsedUrl.hostname.toLowerCase();
-    if (!host.endsWith('.roblox.com') && host !== 'roblox.com') {
+    if (!ALLOWED_ROBLOX_HOSTS.has(host)) {
         throw new Error('Invalid host requested for Roblox API');
     }
-    // Reconstruct safe URL from validated components to satisfy static analysis
+    // Reconstruct safe URL strictly from validated origin and clean path components
     const safeTarget = `https://${host}${parsedUrl.pathname}${parsedUrl.search}`;
     let lastError = null;
     for (let i = 0; i < retries; i++) {
@@ -730,10 +743,12 @@ function isAllowedOrigin(origin) {
 // Universal CORS Middleware — Must run FIRST before any route or security check
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin) {
+    if (origin && isAllowedOrigin(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Vary', 'Origin');
+    } else if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', 'null');
     } else {
         res.setHeader('Access-Control-Allow-Origin', '*');
     }

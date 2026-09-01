@@ -16,15 +16,15 @@ async function dispatchBotBoardEmbed(client, targetUrlOrChannel, embed) {
         if (targetUrlOrChannel.startsWith('http://') || targetUrlOrChannel.startsWith('https://')) {
             const parsed = new URL(targetUrlOrChannel);
             const hostname = parsed.hostname.toLowerCase();
-            const isDiscordWebhook = parsed.protocol === 'https:' &&
-                ['discord.com', 'canary.discord.com', 'ptb.discord.com'].includes(hostname) &&
-                parsed.pathname.startsWith('/api/webhooks/');
-            if (!isDiscordWebhook) {
-                console.warn('[BotBoard Webhook Security] Blocked non-Discord webhook dispatch target:', hostname);
+            const ALLOWED_DISCORD_HOSTS = new Set(['discord.com', 'canary.discord.com', 'ptb.discord.com', 'discordapp.com']);
+            const webhookMatch = parsed.pathname.match(/^\/api\/webhooks\/(\d{17,21})\/([A-Za-z0-9_-]+)$/);
+            
+            if (parsed.protocol !== 'https:' || !ALLOWED_DISCORD_HOSTS.has(hostname) || !webhookMatch) {
+                console.warn('[BotBoard Webhook Security] Blocked invalid or non-Discord webhook dispatch target:', hostname);
                 return false;
             }
-            // Reconstruct safe target URL explicitly to satisfy static analysis
-            const safeWebhookUrl = `https://${hostname}${parsed.pathname}`;
+            // Explicitly reconstruct safe webhook URL from validated components
+            const safeWebhookUrl = `https://${hostname}/api/webhooks/${webhookMatch[1]}/${webhookMatch[2]}`;
             await axios.post(safeWebhookUrl, {
                 embeds: [embed.toJSON()]
             }, { timeout: 5000 });
