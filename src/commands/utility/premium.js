@@ -63,7 +63,7 @@ module.exports = {
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
-                .setLabel('⭐ Upgrade to Premium ($4.99/mo)')
+                .setLabel('⭐ Upgrade to Premium ($1.99/mo)')
                 .setStyle(ButtonStyle.Link)
                 .setURL('https://vaztinix.dev/dashboard'),
             new ButtonBuilder()

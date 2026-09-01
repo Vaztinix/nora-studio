@@ -319,7 +319,7 @@ module.exports = {
                     );
             } else if (category === 'premium') {
                 embed.setTitle('💎 Nora Studio Premium Benefits')
-                    .setDescription('Supercharge your server with maximum automation power, instant sync speed, and custom branding for just $4.99/mo!')
+                    .setDescription('Supercharge your server with maximum automation power, instant sync speed, and custom branding for just $1.99/mo!')
                     .addFields(
                         { name: '⚡ Real-Time Roblox Rank Sync', value: 'Zero polling delay! Rank changes and verification roles update instantly.' },
                         { name: '🤖 Nora AI Co-Pilot', value: 'Powered by Gemini 2.5 & GPT-4o for 24/7 AI server assistance & custom personas.' },
