@@ -60,6 +60,21 @@
             };
         })();
 
+        // INSTANT PRE-RENDER AUTH OVERLAY SUPPRESSION
+        (function() {
+            try {
+                const urlHash = window.location.hash || '';
+                const hasUrlToken = urlHash.includes('access_token=');
+                const storedToken = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || localStorage.getItem('discord_token');
+                if (hasUrlToken || storedToken) {
+                    const style = document.createElement('style');
+                    style.id = 'nora-auth-early-hide';
+                    style.textContent = '#auth-overlay { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
+                    document.head.appendChild(style);
+                }
+            } catch(e) {}
+        })();
+
         // PURE MONOCHROME WHITE THEME ENFORCEMENT
         (function() {
             localStorage.setItem('nora_theme_color', '#ffffff');
@@ -7769,8 +7784,16 @@
                     try { localStorage.setItem('discord_token', tok); } catch(e) {}
                     authenticateWithToken(tok); 
                 } else {
-                    authOverlay.style.display = 'flex';
-                    authOverlay.style.opacity = '1';
+                    const earlyHide = document.getElementById('nora-auth-early-hide');
+                    if (earlyHide) earlyHide.remove();
+
+                    const elAuth = authOverlay || document.getElementById('auth-overlay');
+                    if (elAuth) {
+                        elAuth.style.setProperty('display', 'flex', 'important');
+                        elAuth.style.setProperty('opacity', '1', 'important');
+                        elAuth.style.setProperty('visibility', 'visible', 'important');
+                        elAuth.style.setProperty('pointer-events', 'auto', 'important');
+                    }
                     const userProfileBtn = document.getElementById('user-profile-btn');
                     if (userProfileBtn) userProfileBtn.onclick = () => window.redirectToDiscordLogin();
                 }
@@ -8571,8 +8594,10 @@
                 
                 const elAuth = authOverlay || document.getElementById('auth-overlay');
                 if (elAuth) {
-                    elAuth.style.opacity = '0'; 
-                    elAuth.style.display = 'none'; 
+                    elAuth.style.setProperty('display', 'none', 'important');
+                    elAuth.style.setProperty('opacity', '0', 'important');
+                    elAuth.style.setProperty('visibility', 'hidden', 'important');
+                    elAuth.style.setProperty('pointer-events', 'none', 'important');
                 }
                 const sideEl = document.querySelector('.sidebar');
                 if (sideEl) sideEl.style.display = 'flex';
@@ -8594,10 +8619,15 @@
                     window.currentUser = null;
                     showToast('Discord session expired. Please tap Login with Discord.', 'warning');
                     
+                    const earlyHide = document.getElementById('nora-auth-early-hide');
+                    if (earlyHide) earlyHide.remove();
+
                     const elAuth = authOverlay || document.getElementById('auth-overlay');
                     if (elAuth) {
-                        elAuth.style.opacity = '1'; 
-                        elAuth.style.display = 'flex';
+                        elAuth.style.setProperty('display', 'flex', 'important');
+                        elAuth.style.setProperty('opacity', '1', 'important');
+                        elAuth.style.setProperty('visibility', 'visible', 'important');
+                        elAuth.style.setProperty('pointer-events', 'auto', 'important');
                     }
                 } else {
                     console.info('[Nora Auth]: Preserving token and retrying session handshake in 3s...');
