@@ -7538,6 +7538,7 @@
         });
 
         const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
+        window.CLIENT_ID = CLIENT_ID;
         const REDIRECT_URI = encodeURIComponent(
             (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
                 ? `${window.location.origin}/dashboard`
@@ -7546,8 +7547,8 @@
         window.REDIRECT_URI = REDIRECT_URI;
 
         function getDiscordLoginUrl() {
-            const clientId = window.CLIENT_ID;
-            const redirectUri = window.REDIRECT_URI;
+            const clientId = window.CLIENT_ID || CLIENT_ID || "1375943730951098549";
+            const redirectUri = window.REDIRECT_URI || REDIRECT_URI;
             return `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify+guilds`;
         }
 
@@ -8566,18 +8567,16 @@
                     if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
                 }
             } catch (e) { 
-                console.error('[Nora Auth Error]:', e);
-                
+                console.warn('[Nora Auth]: Token validation unsuccessful:', e.message);
+                sessionStorage.removeItem('discord_token');
+                localStorage.removeItem('discord_token');
+                localStorage.removeItem('nora_discord_token');
+                localStorage.removeItem('nora_last_user_id');
+                localStorage.removeItem('nora_auth');
+                window.currentUser = null;
+
                 if (e.status === 401) {
                     showToast('Discord session expired. Please tap Login with Discord.', 'warning');
-                    sessionStorage.removeItem('discord_token');
-                    localStorage.removeItem('discord_token');
-                    localStorage.removeItem('nora_discord_token');
-                    localStorage.removeItem('nora_last_user_id');
-                    localStorage.removeItem('nora_auth');
-                    window.currentUser = null;
-                } else {
-                    showToast(`API Connection Notice: ${e.message || 'Connecting...'}`, 'info');
                 }
                 
                 const elAuth = authOverlay || document.getElementById('auth-overlay');
