@@ -9531,8 +9531,8 @@
                     container.appendChild(card);
                 });
             } catch (e) {
-                console.error('[Roblox Status Load Error]:', e);
-                console.warn('[Roblox Status Load Notice]:', e.message);
+                /* silent roblox sync notice */
+                /* silent notice */
             }
         }
 
@@ -9821,7 +9821,7 @@
                     if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
                 }
             } catch (e) {
-                console.error('[Fetch Profile Error]:', e);
+                /* silent profile sync notice */
             }
         }
         window.fetchUserProfile = fetchUserProfile;
@@ -10391,7 +10391,15 @@
                 if (!window.userGuilds || !window.userGuilds.length) {
                     const cachedStr = localStorage.getItem('nora_cached_guilds');
                     if (cachedStr) {
-                        const cached = JSON.parse(cachedStr);
+                        let cached = JSON.parse(cachedStr);
+                        if (Array.isArray(cached)) {
+                            cached = cached.map(g => ({
+                                ...g,
+                                icon: (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http'))
+                                    ? g.icon
+                                    : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png')
+                            }));
+                        }
                         if (Array.isArray(cached) && cached.length) {
                             window.userGuilds = cached;
                             renderAllGuilds(cached);
