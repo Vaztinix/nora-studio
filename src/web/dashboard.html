@@ -8593,12 +8593,20 @@
                     localStorage.removeItem('nora_auth');
                     window.currentUser = null;
                     showToast('Discord session expired. Please tap Login with Discord.', 'warning');
-                }
-                
-                const elAuth = authOverlay || document.getElementById('auth-overlay');
-                if (elAuth && !window.currentUser) {
-                    elAuth.style.opacity = '1'; 
-                    elAuth.style.display = 'flex';
+                    
+                    const elAuth = authOverlay || document.getElementById('auth-overlay');
+                    if (elAuth) {
+                        elAuth.style.opacity = '1'; 
+                        elAuth.style.display = 'flex';
+                    }
+                } else {
+                    console.info('[Nora Auth]: Preserving token and retrying session handshake in 3s...');
+                    setTimeout(() => {
+                        const activeTok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || localStorage.getItem('discord_token');
+                        if (activeTok && !window.currentUser) {
+                            authenticateWithToken(activeTok);
+                        }
+                    }, 3000);
                 }
             } finally {
                 toggleLoading(false);
@@ -11412,8 +11420,13 @@
                     }
                 } else if (tabId === 'servers') {
                     document.body.classList.remove('in-config');
-                    [viewConfig, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
-                    viewServers.style.display = 'block';
+                    const targetServers = viewServers || document.getElementById('view-greeting');
+                    const targetConfig = viewConfig || document.getElementById('view-config');
+                    const targetPrefs = viewPrefs || document.getElementById('view-prefs');
+                    const targetNotifs = viewNotifications || document.getElementById('view-notifications');
+                    const targetProfile = viewProfile || document.getElementById('view-profile');
+                    [targetConfig, targetPrefs, targetNotifs, targetProfile].forEach(v => { if (v && v.style) v.style.display = 'none'; });
+                    if (targetServers && targetServers.style) targetServers.style.display = 'block';
                     document.querySelectorAll('.right-server-item').forEach(item => item.classList.remove('selected'));
                     
                     // Highlight active global nav topbar tab
@@ -11422,9 +11435,14 @@
                     if (activeBtn) activeBtn.classList.add('active');
                 } else {
                     document.body.classList.remove('in-config');
-                    const views = [viewServers, viewConfig, viewPrefs, viewNotifications, viewProfile];
+                    const targetServers = viewServers || document.getElementById('view-greeting');
+                    const targetConfig = viewConfig || document.getElementById('view-config');
+                    const targetPrefs = viewPrefs || document.getElementById('view-prefs');
+                    const targetNotifs = viewNotifications || document.getElementById('view-notifications');
+                    const targetProfile = viewProfile || document.getElementById('view-profile');
+                    const views = [targetServers, targetConfig, targetPrefs, targetNotifs, targetProfile];
                     views.forEach(v => {
-                        if (v) {
+                        if (v && v.style) {
                             v.style.display = 'none';
                             v.classList.remove('view-transition');
                         }
@@ -11436,7 +11454,7 @@
                     if (activeBtn) activeBtn.classList.add('active');
                     
                     const content = document.getElementById(tabId === 'members' ? 'view-config' : 'view-' + tabId);
-                    if (content) {
+                    if (content && content.style) {
                         content.style.display = 'block';
                         void content.offsetWidth; // Trigger reflow
                         content.classList.add('view-transition');
