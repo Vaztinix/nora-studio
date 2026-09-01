@@ -7357,13 +7357,18 @@
                 }
             }
 
-            // 3. Any HTTP/HTTPS website origin (vaztinix.dev, localhost, etc.)
-            if (window.location.protocol.startsWith('http')) {
+            // 3. Localhost or 127.0.0.1 or local file
+            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
+                return 'http://localhost:3000';
+            }
+
+            // 4. Same-origin if on api.vaztinix.dev
+            if (host === 'api.vaztinix.dev') {
                 return window.location.origin;
             }
 
-            // 4. Fallback for local files
-            return 'http://localhost:3000';
+            // 5. Canonical production API endpoint for vaztinix.dev frontend
+            return 'https://api.vaztinix.dev';
         };
 
         const originalFetch = window.fetch;
