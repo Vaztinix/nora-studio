@@ -9297,7 +9297,7 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="position: relative;">
-                                    <img src="/api/user/roblox/avatar?userId=${acc.robloxId}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.src='/api/user/roblox/avatar?userId=1'">
+                                    <img src="${(typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '')}/api/user/roblox/avatar?userId=${acc.robloxId}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.onerror=null; this.src='nora.png';">
                                     ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">✓</div>' : ''}
                                 </div>
                                 <div>
