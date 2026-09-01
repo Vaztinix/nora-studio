@@ -8550,45 +8550,42 @@
                         elAuth.style.display = 'none'; 
                         const sideEl = document.querySelector('.sidebar');
                         if (sideEl) sideEl.style.display = 'flex';
+                        showTab('servers');
                         fetchGuilds(t); 
                         fetchRobloxStatus(t); 
                         if (typeof fetchUserProfile === 'function') fetchUserProfile();
                         if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
-                    }, 300);
+                    }, 250);
                 } else {
                     const sideEl = document.querySelector('.sidebar');
                     if (sideEl) sideEl.style.display = 'flex';
+                    showTab('servers');
                     fetchGuilds(t); 
                     fetchRobloxStatus(t); 
                     if (typeof fetchUserProfile === 'function') fetchUserProfile();
                     if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
                 }
             } catch (e) { 
-                console.error('Authentication Error:', e);
+                console.error('[Nora Auth Error]:', e);
                 
-                // If error is due to API offline, network error, server error, or non-401 failure, DO NOT LOG USER OUT!
-                if (e.status !== 401) {
-                    console.warn('[Nora Auth] API is offline or unreachable. Retaining user session in offline mode.');
-                    if (typeof triggerApiOffline === 'function') triggerApiOffline();
-                    return; // Retain tokens & session so user remains logged in once API is back online!
+                if (e.status === 401) {
+                    showToast('Discord session expired. Please tap Login with Discord.', 'warning');
+                    sessionStorage.removeItem('discord_token');
+                    localStorage.removeItem('discord_token');
+                    localStorage.removeItem('nora_discord_token');
+                    localStorage.removeItem('nora_last_user_id');
+                    localStorage.removeItem('nora_auth');
+                    window.currentUser = null;
+                } else {
+                    showToast(`API Connection Notice: ${e.message || 'Connecting...'}`, 'info');
                 }
                 
-                showToast(`Auth Fault: ${e.message || 'Unknown'}`, 'error');
-                
-                // Only wipe tokens if explicitly rejected by 401 Unauthorized
-                sessionStorage.removeItem('discord_token');
-                localStorage.removeItem('nora_discord_token');
-                localStorage.removeItem('nora_last_user_id');
-                localStorage.removeItem('nora_auth');
-                window.currentUser = null;
-                if (typeof loadNotifications === 'function') loadNotifications();
                 const elAuth = authOverlay || document.getElementById('auth-overlay');
                 if (elAuth) {
                     elAuth.style.opacity = '1'; 
                     elAuth.style.display = 'flex';
                 }
             } finally {
-
                 toggleLoading(false);
             }
         }
