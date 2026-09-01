@@ -91,6 +91,18 @@ module.exports = {
                 }
                 roleEmbed.setTimestamp();
                 await loggerUtil.sendEventLog(newMember.guild, 'memberUpdate', roleEmbed, settings);
+
+                // Check if the assigned role is the Underage Role (1544420452439556116)
+                if (addedRoles.has('1544420452439556116')) {
+                    try {
+                        const { processUnderageMember } = require('../utils/underageSweep');
+                        processUnderageMember(newMember, newMember.client).catch(err => {
+                            console.error('[Underage Sweep] Error processing member on role assign:', err);
+                        });
+                    } catch (err) {
+                        console.error('[Underage Sweep] Failed to invoke processUnderageMember:', err);
+                    }
+                }
             }
 
             // 4. Timeout Status Logging

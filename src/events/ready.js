@@ -173,6 +173,14 @@ module.exports = {
             console.error('[BotBoard.gg Auto-Post Startup Error]:', err);
         }
 
+        // Underage Member Sweep Scheduler: runs every 1 hour (plus initial 10s check)
+        try {
+            const { startUnderageSweepScheduler } = require('../utils/underageSweep');
+            startUnderageSweepScheduler(client);
+        } catch (err) {
+            console.error('[Underage Sweep Startup Error]:', err);
+        }
+
         console.log(`[System Check] Keeping an eye on things! Heartbeat active.`);
     },
 };
