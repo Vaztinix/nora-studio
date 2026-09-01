@@ -2433,6 +2433,16 @@ app.post('/api/auth/paired-devices/disconnect', async (req, res) => {
 });
 
 
+
+app.get('/api/bot/guild-ids', (req, res) => {
+    try {
+        const ids = req.client ? Array.from(req.client.guilds.cache.keys()) : [];
+        res.json({ success: true, guildIds: ids, total: ids.length });
+    } catch (e) {
+        res.json({ success: false, guildIds: [], total: 0 });
+    }
+});
+
 app.get('/api/user/guilds', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });

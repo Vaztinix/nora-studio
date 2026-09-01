@@ -10441,21 +10441,49 @@
             }
             if (!guilds || !guilds.length) {
                 try {
-                    console.info('[Nora Guilds]: Fallback fetching guilds directly from Discord API...');
-                    const dRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-                        headers: { Authorization: `Bearer ${t}` }
-                    });
-                    if (dRes.ok) {
+                    console.info('[Nora Guilds]: Fallback fetching and filtering guilds directly from Discord API...');
+                    const [dRes, botGuildsRes] = await Promise.all([
+                        fetch('https://discord.com/api/v10/users/@me/guilds', {
+                            headers: { Authorization: `Bearer ${t}` }
+                        }).catch(() => null),
+                        safeFetch('/api/bot/guild-ids').catch(() => null)
+                    ]);
+
+                    let activeBotGuildSet = new Set();
+                    if (botGuildsRes && botGuildsRes.data && Array.isArray(botGuildsRes.data.guildIds)) {
+                        activeBotGuildSet = new Set(botGuildsRes.data.guildIds);
+                    }
+
+                    if (dRes && dRes.ok) {
                         const rawGuilds = await dRes.json();
                         if (Array.isArray(rawGuilds)) {
-                            guilds = rawGuilds.map(g => ({
-                                id: g.id,
-                                name: g.name,
-                                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png',
-                                owner: g.owner,
-                                permissions: g.permissions,
-                                hasNora: false
-                            }));
+                            // Filter ONLY servers where user has Manage Guild (0x20), Admin (0x8), or is Owner
+                            const manageableGuilds = rawGuilds.filter(g => {
+                                if (g.owner === true) return true;
+                                try {
+                                    const perms = BigInt(g.permissions || '0');
+                                    const isAdmin = (perms & 0x8n) === 0x8n;
+                                    const isManager = (perms & 0x20n) === 0x20n;
+                                    return isAdmin || isManager;
+                                } catch (e) {
+                                    return false;
+                                }
+                            });
+
+                            guilds = manageableGuilds.map(g => {
+                                const hasNora = activeBotGuildSet.has(g.id);
+                                return {
+                                    id: g.id,
+                                    name: g.name,
+                                    icon: (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http'))
+                                        ? g.icon
+                                        : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png'),
+                                    owner: g.owner,
+                                    permissions: g.permissions,
+                                    hasNora: hasNora,
+                                    isManaged: true
+                                };
+                            });
                         }
                     }
                 } catch (e) {
