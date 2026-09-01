@@ -552,56 +552,63 @@
         }
 
         async function fetchStatusData() {
-            try {
-                const apiBase = getApiBaseUrl();
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000);
-                
-                const res = await fetch(apiBase + '/api/status/public', {
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
+            const endpoints = [
+                'https://api.vaztinix.dev/api/status/public',
+                'http://localhost:3000/api/status/public',
+                'http://127.0.0.1:3000/api/status/public'
+            ];
 
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                renderStatus(data);
-            } catch (err) {
-                console.warn('Status API unreachable, rendering offline state:', err.message);
-                renderStatus({
-                    systemStatus: 'outage',
-                    statusText: 'All Systems Offline',
-                    statusDesc: 'Unable to establish connection to Nora bot core and API gateway.',
-                    shards: [
-                        {
-                            id: 0,
-                            name: 'Shard #0 (Primary)',
-                            status: 'OFFLINE',
-                            pingMs: 0,
-                            guilds: 'Offline',
-                            users: 'Offline',
-                            uptimeSeconds: 0,
-                            memoryUsedMB: 0,
-                            memoryRssMB: 0,
-                            lastPingTimestamp: null
-                        }
-                    ],
-                    incidents: [
-                        {
-                            title: 'Backend Gateway Disconnected',
-                            message: 'The Nora bot instance or API server is currently stopped, restarting, or unreachable.',
-                            severity: 'outage',
-                            isResolved: false,
-                            author: 'Cluster Watchdog',
-                            createdAt: new Date().toISOString()
-                        }
-                    ],
-                    activeCount: 1,
-                    updatedAt: new Date().toISOString()
-                });
+            for (const ep of endpoints) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2500);
+                    const res = await fetch(ep, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (res.ok) {
+                        const data = await res.json();
+                        renderStatus(data);
+                        return;
+                    }
+                } catch (e) {
+                    // Try next endpoint
+                }
             }
+
+            // If all endpoints fail or time out, render true offline state
+            renderStatus({
+                systemStatus: 'outage',
+                statusText: 'All Systems Offline',
+                statusDesc: 'Unable to establish connection to Nora bot core and API gateway.',
+                shards: [
+                    {
+                        id: 0,
+                        name: 'Shard #0 (Primary)',
+                        status: 'OFFLINE',
+                        pingMs: 0,
+                        guilds: 'Offline',
+                        users: 'Offline',
+                        uptimeSeconds: 0,
+                        memoryUsedMB: 0,
+                        memoryRssMB: 0,
+                        lastPingTimestamp: null
+                    }
+                ],
+                incidents: [
+                    {
+                        title: 'Backend Gateway Disconnected',
+                        message: 'The Nora bot instance or API server is currently stopped, restarting, or unreachable.',
+                        severity: 'outage',
+                        isResolved: false,
+                        author: 'Cluster Watchdog',
+                        createdAt: new Date().toISOString()
+                    }
+                ],
+                activeCount: 1,
+                updatedAt: new Date().toISOString()
+            });
         }
 
-        function renderStatus(data) {
+                function renderStatus(data) {
             const hero = document.getElementById('status-hero-banner');
             const icon = document.getElementById('hero-status-icon');
             const title = document.getElementById('hero-status-title');
