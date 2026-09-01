@@ -295,6 +295,9 @@ module.exports = {
             if (!isOffCooldown) return;
 
             // Check for XP Multipliers (Role-based, Channel-based, Promoter)
+            const isGuildPremium = settings && (settings.isPremium || settings.isManualPremium || (settings.paidExpiresAt && new Date(settings.paidExpiresAt).getTime() > Date.now()));
+            const maxAllowedMultiplier = isGuildPremium ? 10.0 : 2.0;
+
             let multiplier = 1.0;
             if (settings?.promoterRoleId && message.member?.roles.cache.has(settings.promoterRoleId)) {
                 multiplier = Math.max(multiplier, 1.5);
@@ -324,11 +327,14 @@ module.exports = {
                 }
             }
 
+            // Cap at tier maximum (Free: 2.0x, Studio Plus: 10.0x)
+            multiplier = Math.min(multiplier, maxAllowedMultiplier);
+
             // Atomic Progress Processor
             const res = await NoraLeveling.addExperience(userLevel, null, multiplier);
             await userLevel.save();
 
-            // 🎭 Dynamic Role Reward Sync
+            // 🎭 Dynamic Role Reward Sync (Free: 5 roles, Studio Plus: 25 roles)
             if (settings && settings.roleRewards) {
                 try {
                     const rewards = JSON.parse(settings.roleRewards || '{}');
@@ -336,11 +342,14 @@ module.exports = {
                     if (member && message.guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
                         const myHighest = message.guild.members.me.roles.highest.position;
                         const shouldStack = settings.roleRewardsStack !== false; // Default true
+                        const maxRoleRewards = isGuildPremium ? 25 : 5;
 
-                        const sortedMilestones = Object.keys(rewards)
+                        const allMilestones = Object.keys(rewards)
                             .map(n => parseInt(n, 10))
                             .filter(n => !isNaN(n))
                             .sort((a, b) => a - b);
+
+                        const sortedMilestones = allMilestones.slice(0, maxRoleRewards);
 
                         const earnedMilestones = sortedMilestones.filter(m => userLevel.level >= m);
                         const highestEarnedLevel = earnedMilestones.length > 0 ? Math.max(...earnedMilestones) : null;

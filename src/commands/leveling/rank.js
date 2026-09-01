@@ -146,6 +146,7 @@ module.exports = {
                     bgColor: cardBgColor,
                     accentColor: cardAccent,
                     borderColor: settings?.levelingCardBorderColor || '#23252e',
+                    isPremium: targetIsPremium,
                     userCustomBg: cardUserBg
                 }),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 5000))

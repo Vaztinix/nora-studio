@@ -122,23 +122,33 @@ module.exports = {
             });
         } catch (err) {
             console.warn('[Info Command] Image generation error, fallback embed used:', err.message);
+            const { isPremium, getBenefits } = require('../../utils/premiumManager');
+            const premium = isPremium(interaction);
+            const benefits = getBenefits(premium);
+
             const statusEmbed = new EmbedBuilder()
                 .setAuthor({ 
                     name: 'Nora Core System Status • Real-Time Diagnostics', 
                     iconURL: interaction.client.user.displayAvatarURL() 
                 })
                 .setTitle('🟢 ALL SYSTEMS OPERATIONAL')
-                .setColor(0x57acf2)
-                .setDescription('Nora Mainframe is fully synchronized and operational across all shards.')
+                .setColor(premium ? 0xFFD700 : 0x57acf2)
+                .setDescription(
+                    `Nora Mainframe is fully synchronized and operational.\n` +
+                    `**Tier Status**: \`${benefits.tierName}\` (${benefits.tierPrice})\n` +
+                    (premium 
+                        ? `✨ **Active Studio Plus Perks**: 200 Autoresponder Slots • 10x Leveling Multipliers • 50% Cooldown Reduction • Pro Threat Shield • Custom Animated Rank Cards`
+                        : `⭐ **Upgrade to Studio Plus ($1.99/mo)** to unlock **200 Autoresponders**, **10x XP Multipliers**, and **50% faster cooldowns** in the Discord App Store!`)
+                )
                 .addFields(
                     { name: '⚡ Latency & Shards', value: `\`${ping}ms\` • **Shard 0** / ${shardCount}`, inline: true },
                     { name: '🌐 Server Reach', value: `\`${totalServers}\` Servers • \`${totalMembers.toLocaleString()}\` Members`, inline: true },
                     { name: '⏱️ System Uptime', value: `\`${uptimeStr}\` (Operational)`, inline: true },
                     { name: '💾 Memory Allocation', value: `\`${heapUsedMB} MB\` Heap RAM`, inline: true },
                     { name: '⚙️ Platform Runtime', value: `Node.js \`${process.version}\` • Discord.js \`v${require('discord.js').version}\``, inline: true },
-                    { name: '🤖 AI Model Engine', value: `\`Gemini & Local Aura Engine\``, inline: true }
+                    { name: '🤖 Verified Studio', value: `\`Nora Studio • vaztinix.dev\``, inline: true }
                 )
-                .setFooter({ text: 'Nora Assistant • vaztinix.dev', iconURL: interaction.client.user.displayAvatarURL() })
+                .setFooter({ text: 'Nora Assistant • Privacy-First Discord Automation', iconURL: interaction.client.user.displayAvatarURL() })
                 .setTimestamp();
 
             return await interaction.editReply({

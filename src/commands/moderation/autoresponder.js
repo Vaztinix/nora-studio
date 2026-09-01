@@ -53,9 +53,40 @@ module.exports = {
             const ignoredRoles = ignoredRole ? JSON.stringify([ignoredRole.id]) : '[]';
             const allowedRoles = allowedRole ? JSON.stringify([allowedRole.id]) : '[]';
 
-            await interaction.deferReply({ ephemeral: true });
+            const { isPremium, getBenefits } = require('../../utils/premiumManager');
+            const premium = isPremium(interaction);
+            const benefits = getBenefits(premium);
+
+            // 1. Role Filter check for Free tier
+            if (!premium && (ignoredRole || allowedRole)) {
+                return await handleError(
+                    interaction,
+                    'Studio Plus Exclusive',
+                    '🛡️ **Granular Role Ignored/Allowed Filters** are exclusive to **Studio Plus ($1.99/mo)**.\nUpgrade in the Discord App Store to unlock role filters and 200 trigger slots!'
+                );
+            }
+
+            // 2. Regex Match Type check for Free tier
+            if (matchType === 'regex' && !premium) {
+                return await handleError(
+                    interaction,
+                    'Studio Plus Exclusive',
+                    '⚡ **Regular Expression (Regex) Matching** is exclusive to **Studio Plus ($1.99/mo)**.\nUpgrade in the Discord App Store to unlock advanced regex pattern matching!'
+                );
+            }
 
             try {
+                const existingRecord = await Autoresponder.findOne({ where: { guildId, trigger } });
+                const currentCount = await Autoresponder.count({ where: { guildId } });
+
+                if (!existingRecord && currentCount >= benefits.autoresponderLimit) {
+                    return await handleError(
+                        interaction,
+                        'Autoresponder Limit Reached',
+                        `This server has reached its cap of **${benefits.autoresponderLimit}** autoresponder triggers.\n\n${!premium ? '🚀 **Upgrade to Studio Plus ($1.99/mo)** in the Discord App Store to expand your limit to **200 triggers**, unlock regex matching, and role filters!' : ''}`
+                    );
+                }
+
                 const [record, created] = await Autoresponder.findOrCreate({
                     where: { guildId, trigger },
                     defaults: { response, matchType, isEmbed: asEmbed, ignoredRoles, allowedRoles }
@@ -72,7 +103,7 @@ module.exports = {
                 return await handleSuccess(
                     interaction,
                     'Autoresponder Configured',
-                    `Successfully configured trigger!\n- **Trigger**: \`${trigger}\`\n- **Match Type**: \`${matchType}\`\n- **Embed Response**: \`${asEmbed ? 'Yes' : 'No'}\`\n- **Response**: ${response}${roleInfo}`
+                    `Successfully configured trigger!\n- **Trigger**: \`${trigger}\`\n- **Match Type**: \`${matchType}\`\n- **Embed Response**: \`${asEmbed ? 'Yes' : 'No'}\`\n- **Response**: ${response}${roleInfo}\n\n*Server Autoresponders: ${currentCount + (created ? 1 : 0)} / ${benefits.autoresponderLimit} slots used.*`
                 );
             } catch (error) {
                 console.error('[Autoresponder Add Command Error]:', error);

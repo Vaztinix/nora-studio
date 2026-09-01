@@ -97,6 +97,7 @@ async function generateRankCard({
     bgColor = '#111217', 
     accentColor = '#7c3aed', 
     borderColor = '#23252e',
+    isPremium = false,
     // Member image & shape (takes priority)
     userCustomBg = null,
     userShape = null,
@@ -149,7 +150,7 @@ async function generateRankCard({
             let rawBuffer = await fetchImageBuffer(resolvedUrl, 1500);
             if (rawBuffer) {
                 const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
-                if (isGifHeader || (typeof resolvedUrl === 'string' && (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')))) {
+                if (isPremium && (isGifHeader || (typeof resolvedUrl === 'string' && (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy'))))) {
                     isAnimatedGif = true;
                 }
 
