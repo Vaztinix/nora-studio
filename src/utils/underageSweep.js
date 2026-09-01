@@ -40,9 +40,14 @@ async function processUnderageMember(member, client) {
             .setFooter({ text: 'Discord Safety & Underage Policy Enforcement' })
             .setTimestamp();
 
-        await member.send({ embeds: [dmEmbed] });
+        // Ensure DM channel is open and send
+        const dmChannel = await user.createDM();
+        await dmChannel.send({ embeds: [dmEmbed] });
         dmDelivered = true;
-        console.log(`[Underage Sweep] [DM SUCCESS] Advisory DM successfully delivered to ${user.tag} (${user.id}).`);
+        console.log(`[Underage Sweep] [DM SUCCESS] Advisory DM successfully delivered to ${user.tag} (${user.id}). Waiting grace period before kick...`);
+        
+        // ⏳ Grace buffer so Discord push notification and message sync completely on user's device
+        await new Promise(r => setTimeout(r, 1500));
     } catch (dmErr) {
         dmErrorReason = dmErr.message || 'Direct Messages Closed / Blocked';
         console.warn(`[Underage Sweep] [DM FAILED] Could not send DM to ${user.tag} (${user.id}): ${dmErrorReason}`);
