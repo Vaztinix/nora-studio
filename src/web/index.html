@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
+            window.location.replace('/dashboard' + window.location.hash);
+        }
+    </script>
     <title>Nora Studio | Privacy-First, All-in-One Discord Automation Bot</title>
     <meta name="description" content="Nora Studio is a privacy-first, all-in-one Discord bot designed to keep your server secure, automated, and running smoothly. From robust Roblox integrations and leveling systems to secure verification and custom autoresponders, Nora handles all your server tasks while keeping your community's data safe and private.">
     <link rel="icon" type="image/png" href="nora.png">

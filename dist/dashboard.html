@@ -7538,8 +7538,11 @@
         });
 
         const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
-        window.CLIENT_ID = CLIENT_ID;
-        const REDIRECT_URI = encodeURIComponent(window.location.origin + (window.location.pathname.endsWith('/') && window.location.pathname.length > 1 ? window.location.pathname.slice(0, -1) : window.location.pathname || '/dashboard'));
+        const REDIRECT_URI = encodeURIComponent(
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? `${window.location.origin}/dashboard`
+                : 'https://vaztinix.dev/dashboard'
+        );
         window.REDIRECT_URI = REDIRECT_URI;
 
         function getDiscordLoginUrl() {
