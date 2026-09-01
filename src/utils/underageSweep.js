@@ -113,36 +113,57 @@ async function runUnderageSweep(client) {
         return;
     }
 
-    console.log(`[Underage Sweep] [SWEEP START] Initiating sweep for role ${UNDERAGE_ROLE_ID}... Total cached guilds: ${client.guilds.cache.size}`);
+    console.log(`[Underage Sweep] [SWEEP START] Initiating sweep for role ${UNDERAGE_ROLE_ID} & log channel ${LOG_CHANNEL_ID}... Total cached guilds: ${client.guilds.cache.size}`);
     let totalFound = 0;
     let totalKicked = 0;
 
-    for (const [guildId, guild] of client.guilds.cache) {
-        try {
-            // Check if guild has the target role
-            let hasRole = guild.roles.cache.has(UNDERAGE_ROLE_ID);
-            if (!hasRole) {
-                try {
-                    const fetchedRoles = await guild.roles.fetch();
-                    hasRole = fetchedRoles.has(UNDERAGE_ROLE_ID);
-                } catch (e) {
-                    hasRole = false;
-                }
-            }
+    // Check target channel's guild first
+    let targetGuild = null;
+    try {
+        const targetChannel = client.channels.cache.get(LOG_CHANNEL_ID) || await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+        if (targetChannel && targetChannel.guild) {
+            targetGuild = targetChannel.guild;
+            console.log(`[Underage Sweep] [TARGET LOCATED] Log channel found in guild "${targetGuild.name}" (${targetGuild.id}).`);
+        } else {
+            console.warn(`[Underage Sweep] [TARGET WARNING] Could not fetch log channel ID ${LOG_CHANNEL_ID} across ${client.guilds.cache.size} guilds.`);
+        }
+    } catch (e) {
+        console.error('[Underage Sweep] Error locating log channel:', e);
+    }
 
+    // Determine list of guilds to scan (target guild + all other guilds)
+    const guildsToScan = new Map(client.guilds.cache);
+    if (targetGuild && !guildsToScan.has(targetGuild.id)) {
+        guildsToScan.set(targetGuild.id, targetGuild);
+    }
+
+    for (const [guildId, guild] of guildsToScan) {
+        try {
+            // Fetch roles to ensure fresh cache
+            let roles = guild.roles.cache;
+            try {
+                roles = await guild.roles.fetch();
+            } catch (e) {}
+
+            let hasRole = roles.has(UNDERAGE_ROLE_ID);
             if (!hasRole) {
-                // Guild does not have this role, skip member fetch
+                if (targetGuild && guild.id === targetGuild.id) {
+                    console.warn(`[Underage Sweep] [ROLE NOT FOUND] In target guild "${guild.name}" (${guild.id}), role ID ${UNDERAGE_ROLE_ID} was NOT found among ${roles.size} roles. Available roles:`, roles.map(r => `${r.name} (${r.id})`).slice(0, 10));
+                }
                 continue;
             }
 
             console.log(`[Underage Sweep] [GUILD MATCH] Guild "${guild.name}" (${guild.id}) contains role ${UNDERAGE_ROLE_ID}. Fetching members...`);
-            const members = await guild.members.fetch().catch(err => {
-                console.warn(`[Underage Sweep] Failed to fetch members for guild "${guild.name}" (${guild.id}): ${err.message}`);
-                return guild.members.cache;
-            });
+            let members;
+            try {
+                members = await guild.members.fetch({ force: true });
+            } catch (err) {
+                console.warn(`[Underage Sweep] Failed to force-fetch members for guild "${guild.name}" (${guild.id}): ${err.message}`);
+                members = guild.members.cache;
+            }
 
-            const matchingMembers = members.filter(m => m.roles.cache.has(UNDERAGE_ROLE_ID));
-            console.log(`[Underage Sweep] Guild "${guild.name}" (${guild.id}): Found ${matchingMembers.size} member(s) with underage role.`);
+            const matchingMembers = members.filter(m => m.roles && m.roles.cache && m.roles.cache.has(UNDERAGE_ROLE_ID));
+            console.log(`[Underage Sweep] Guild "${guild.name}" (${guild.id}): Scanned ${members.size} members -> Found ${matchingMembers.size} member(s) with underage role.`);
 
             for (const [memberId, member] of matchingMembers) {
                 totalFound++;
