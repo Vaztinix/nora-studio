@@ -8544,43 +8544,35 @@
 
                 const expiredOverlay = document.getElementById('session-expired-overlay');
                 if (expiredOverlay) expiredOverlay.style.display = 'none';
+                
                 const elAuth = authOverlay || document.getElementById('auth-overlay');
                 if (elAuth) {
                     elAuth.style.opacity = '0'; 
-                    setTimeout(() => { 
-                        elAuth.style.display = 'none'; 
-                        const sideEl = document.querySelector('.sidebar');
-                        if (sideEl) sideEl.style.display = 'flex';
-                        showTab('servers');
-                        fetchGuilds(t); 
-                        fetchRobloxStatus(t); 
-                        if (typeof fetchUserProfile === 'function') fetchUserProfile();
-                        if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
-                    }, 250);
-                } else {
-                    const sideEl = document.querySelector('.sidebar');
-                    if (sideEl) sideEl.style.display = 'flex';
-                    showTab('servers');
-                    fetchGuilds(t); 
-                    fetchRobloxStatus(t); 
-                    if (typeof fetchUserProfile === 'function') fetchUserProfile();
-                    if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
+                    elAuth.style.display = 'none'; 
                 }
-            } catch (e) { 
-                console.warn('[Nora Auth]: Token validation unsuccessful:', e.message);
-                sessionStorage.removeItem('discord_token');
-                localStorage.removeItem('discord_token');
-                localStorage.removeItem('nora_discord_token');
-                localStorage.removeItem('nora_last_user_id');
-                localStorage.removeItem('nora_auth');
-                window.currentUser = null;
+                const sideEl = document.querySelector('.sidebar');
+                if (sideEl) sideEl.style.display = 'flex';
+                showTab('servers');
 
+                // Asynchronously synchronize auxiliary modules without risking the active authentication session
+                fetchGuilds(t).catch(err => console.warn('[Guilds Fetch]:', err.message)); 
+                fetchRobloxStatus(t).catch(err => console.warn('[Roblox Status]:', err.message)); 
+                if (typeof fetchUserProfile === 'function') fetchUserProfile().catch(err => console.warn('[Profile Fetch]:', err.message));
+                if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
+            } catch (e) { 
+                console.warn('[Nora Auth]: Session check failed:', e.message);
                 if (e.status === 401) {
+                    sessionStorage.removeItem('discord_token');
+                    localStorage.removeItem('discord_token');
+                    localStorage.removeItem('nora_discord_token');
+                    localStorage.removeItem('nora_last_user_id');
+                    localStorage.removeItem('nora_auth');
+                    window.currentUser = null;
                     showToast('Discord session expired. Please tap Login with Discord.', 'warning');
                 }
                 
                 const elAuth = authOverlay || document.getElementById('auth-overlay');
-                if (elAuth) {
+                if (elAuth && !window.currentUser) {
                     elAuth.style.opacity = '1'; 
                     elAuth.style.display = 'flex';
                 }
