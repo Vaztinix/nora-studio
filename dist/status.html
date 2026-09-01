@@ -323,21 +323,7 @@
 
         /* Hover Card Overlay (Desktop) & Tap Modal (Mobile) */
         .shard-popover {
-            position: absolute;
-            bottom: calc(100% + 12px);
-            left: 50%;
-            transform: translateX(-50%) translateY(10px);
-            width: 260px;
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(124, 58, 237, 0.4);
-            border-radius: 14px;
-            padding: 16px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-            backdrop-filter: blur(20px);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 99;
+            display: none;
         }
 
         .shard-popover::after {
@@ -568,31 +554,48 @@
         async function fetchStatusData() {
             try {
                 const apiBase = getApiBaseUrl();
-                const res = await fetch(apiBase + '/api/status/public');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
+                
+                const res = await fetch(apiBase + '/api/status/public', {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 renderStatus(data);
             } catch (err) {
-                console.warn('Live API sync notice, displaying operational cluster metrics:', err.message);
+                console.warn('Status API unreachable, rendering offline state:', err.message);
                 renderStatus({
-                    systemStatus: 'operational',
-                    statusText: 'All Systems Operational',
+                    systemStatus: 'outage',
+                    statusText: 'All Systems Offline',
+                    statusDesc: 'Unable to establish connection to Nora bot core and API gateway.',
                     shards: [
                         {
                             id: 0,
-                            name: 'Shard #0 (Primary Cluster)',
-                            status: 'READY',
-                            pingMs: 19,
-                            guilds: 65,
-                            users: 5596,
-                            uptimeSeconds: 142850,
-                            memoryUsedMB: 148,
-                            memoryRssMB: 224,
-                            lastPingTimestamp: Date.now()
+                            name: 'Shard #0 (Primary)',
+                            status: 'OFFLINE',
+                            pingMs: 0,
+                            guilds: 'Offline',
+                            users: 'Offline',
+                            uptimeSeconds: 0,
+                            memoryUsedMB: 0,
+                            memoryRssMB: 0,
+                            lastPingTimestamp: null
                         }
                     ],
-                    incidents: [],
-                    activeCount: 0,
+                    incidents: [
+                        {
+                            title: 'Backend Gateway Disconnected',
+                            message: 'The Nora bot instance or API server is currently stopped, restarting, or unreachable.',
+                            severity: 'outage',
+                            isResolved: false,
+                            author: 'Cluster Watchdog',
+                            createdAt: new Date().toISOString()
+                        }
+                    ],
+                    activeCount: 1,
                     updatedAt: new Date().toISOString()
                 });
             }
@@ -611,8 +614,8 @@
             if (data.systemStatus === 'outage') {
                 hero.classList.add('outage');
                 icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-                title.textContent = data.statusText || 'Service Outage Reported';
-                desc.textContent = 'Our automated systems or operators have flagged an active issue.';
+                title.textContent = data.statusText || 'All Systems Offline';
+                desc.textContent = data.statusDesc || 'Our automated systems have flagged that the Nora backend is currently offline.';
             } else if (data.systemStatus === 'degraded') {
                 hero.classList.add('degraded');
                 icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
@@ -638,21 +641,19 @@
                 data.shards.forEach(s => {
                     const card = document.createElement('div');
                     card.className = 'shard-card';
-                    card.onclick = function() {
-                        this.classList.toggle('active-tap');
-                    };
+                    const isOffline = s.status === 'OFFLINE';
 
                     card.innerHTML = `
                         <div class="shard-top">
                             <div class="shard-name">
-                                <i class="fas fa-server" style="color: var(--primary);"></i> ${s.name}
+                                <i class="fas fa-server" style="color: ${isOffline ? 'var(--red)' : 'var(--primary)'};"></i> ${s.name}
                             </div>
-                            <span class="shard-badge">${s.status}</span>
+                            <span class="shard-badge" style="${isOffline ? 'background: rgba(239,68,68,0.15); color: var(--red); border-color: rgba(239,68,68,0.3);' : ''}">${s.status}</span>
                         </div>
                         <div class="shard-metrics">
                             <div class="metric-row">
                                 <span>Websocket Latency</span>
-                                <span class="metric-val" style="color: ${s.pingMs > 200 ? 'var(--amber)' : 'var(--green)'}">${s.pingMs} ms</span>
+                                <span class="metric-val" style="color: ${isOffline ? 'var(--red)' : (s.pingMs > 200 ? 'var(--amber)' : 'var(--green)')}">${isOffline ? 'Disconnected' : s.pingMs + ' ms'}</span>
                             </div>
                             <div class="metric-row">
                                 <span>Guilds Managed</span>
@@ -660,18 +661,11 @@
                             </div>
                             <div class="metric-row">
                                 <span>Process Memory</span>
-                                <span class="metric-val">${s.memoryUsedMB} MB</span>
+                                <span class="metric-val">${isOffline ? '—' : s.memoryUsedMB + ' MB'}</span>
                             </div>
-                        </div>
-                        
-                        <!-- Popover Hover Details -->
-                        <div class="shard-popover">
-                            <div class="popover-title">${s.name} Health Diagnostics</div>
-                            <div class="shard-metrics">
-                                <div class="metric-row"><span>Gateway Status</span><span class="metric-val" style="color:var(--green);">${s.status}</span></div>
-                                <div class="metric-row"><span>Uptime</span><span class="metric-val">${formatUptime(s.uptimeSeconds)}</span></div>
-                                <div class="metric-row"><span>Cached Members</span><span class="metric-val">${s.users}</span></div>
-                                <div class="metric-row"><span>RSS Allocation</span><span class="metric-val">${s.memoryRssMB} MB</span></div>
+                            <div class="metric-row">
+                                <span>Uptime</span>
+                                <span class="metric-val">${isOffline ? 'Offline' : formatUptime(s.uptimeSeconds)}</span>
                             </div>
                         </div>
                     `;
@@ -699,7 +693,7 @@
                         const resolvedStr = inc.resolvedAt ? new Date(inc.resolvedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : null;
 
                         const tagClass = inc.isResolved ? 'resolved' : (inc.severity || 'info');
-                        const tagText = inc.isResolved ? 'RESOLVED' : inc.severity.toUpperCase();
+                        const tagText = inc.isResolved ? 'RESOLVED' : (inc.severity ? inc.severity.toUpperCase() : 'ALERT');
 
                         const resolutionHtml = inc.isResolved ? `
                             <div class="resolution-box">
