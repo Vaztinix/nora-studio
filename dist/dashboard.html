@@ -8801,7 +8801,8 @@
             prefToastPosEl.value = localStorage.getItem('nora_toast_pos') || 'tr';
         }
         async function safeFetch(url, options = {}) {
-            const targetUrl = url.startsWith('http') ? url : (window.getApiBaseUrl() + url);
+            const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : 'https://api.vaztinix.dev').replace(/\/$/, '');
+            const targetUrl = url.startsWith('http') ? url : (apiBase + (url.startsWith('/') ? '' : '/') + url);
             const res = await fetch(targetUrl, options);
             const text = await res.text();
             
