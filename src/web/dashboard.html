@@ -9568,43 +9568,22 @@
             let lastError = null;
             let guilds = null;
 
-            // 2. Resilient Multi-endpoint retry loop with exponential backoff
-            const endpoints = [
-                (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : ''),
-                'https://api.vaztinix.dev',
-                ''
-            ];
-            const uniqueEndpoints = [...new Set(endpoints)];
-
-            for (let attempt = 0; attempt < 3; attempt++) {
-                for (const base of uniqueEndpoints) {
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 9000);
-                        const res = await fetch(base + '/api/user/guilds', {
-                            headers: { Authorization: `Bearer ${t}` },
-                            cache: 'no-store',
-                            signal: controller.signal
-                        });
-                        clearTimeout(timeoutId);
-
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (Array.isArray(data)) {
-                                guilds = data;
-                                break;
-                            } else if (data && data.error) {
-                                lastError = new Error(data.error);
-                            }
-                        } else {
-                            lastError = new Error(`HTTP ${res.status}`);
-                        }
-                    } catch (err) {
-                        lastError = err;
+            for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                    const res = await safeFetch('/api/user/guilds', {
+                        headers: { Authorization: `Bearer ${t}` }
+                    });
+                    if (res && res.data && Array.isArray(res.data)) {
+                        guilds = res.data;
+                        break;
+                    } else if (res && res.data && res.data.error) {
+                        lastError = new Error(res.data.error);
                     }
+                } catch (err) {
+                    lastError = err;
                 }
                 if (guilds) break;
-                await new Promise(r => setTimeout(r, 600 * (attempt + 1)));
+                await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
             }
 
             try {
@@ -9696,8 +9675,9 @@
                 if (retryCountdownSec <= 0) {
                     clearInterval(autoRetryTimer);
                     autoRetryTimer = null;
-                    if (typeof fetchUserGuilds === 'function') {
-                        fetchUserGuilds();
+                    const tok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || localStorage.getItem('discord_token');
+                    if (typeof fetchGuilds === 'function' && tok) {
+                        fetchGuilds(tok);
                     }
                 }
             }, 1000);
@@ -9711,8 +9691,9 @@
             const spinner = document.getElementById('retry-sync-spinner');
             if (spinner) spinner.classList.add('fa-spin');
             if (btn) btn.style.opacity = '0.7';
-            if (typeof fetchUserGuilds === 'function') {
-                fetchUserGuilds();
+            const tok = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || localStorage.getItem('discord_token');
+            if (typeof fetchGuilds === 'function' && tok) {
+                fetchGuilds(tok);
             }
         };
 
@@ -10074,7 +10055,11 @@
             return 'nora_notifs_' + (window.currentUser ? window.currentUser.id : 'guest');
         }
 
+        let isFetchingNotifications = false;
         async function loadNotifications() {
+            if (isFetchingNotifications) return;
+            isFetchingNotifications = true;
+
             let localNotifs = [];
             const saved = localStorage.getItem(getNotifKey());
             if (saved) {
@@ -10085,6 +10070,7 @@
             if (!token) {
                 notifications = localNotifs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 renderNotifications();
+                setTimeout(() => { isFetchingNotifications = false; }, 3000);
                 return;
             }
 
@@ -10110,7 +10096,9 @@
                     }));
                 }
             } catch (e) {
-                console.error("Failed to fetch database notifications:", e);
+                console.warn("Notice: Database notifications check:", e.message);
+            } finally {
+                setTimeout(() => { isFetchingNotifications = false; }, 3000);
             }
 
             const mergedMap = new Map();
