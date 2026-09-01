@@ -27,13 +27,13 @@ async function processUnderageMember(member, client) {
             .setDescription(
                 `Hello <@${user.id}>,\n\n` +
                 `You have been removed from **${guild.name}** because you have been determined to be underage for Discord.\n\n` +
-                `You are strongly recommended to delete Discord and refrain from using the platform until you are at least **15 years of age** in accordance with safety guidelines.`
+                `You are strongly recommended to delete Discord and refrain from using the platform until you are at least **13 years of age** in accordance with Discord Terms of Service.`
             )
             .setColor(0xff4757)
             .addFields(
                 { name: 'Server', value: guild.name, inline: true },
                 { name: 'Enforcement Action', value: 'Server Kick', inline: true },
-                { name: 'Reason', value: 'Determined underage for Discord (Recommended minimum age: 15)', inline: false }
+                { name: 'Reason', value: 'Determined underage for Discord (Recommended minimum age: 13)', inline: false }
             )
             .setThumbnail(guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL())
             .setFooter({ text: 'Discord Safety & Underage Policy Enforcement' })
@@ -57,7 +57,7 @@ async function processUnderageMember(member, client) {
             kickErrorReason = 'Bot lacks permission or user role is higher than bot hierarchy';
             console.error(`[Underage Sweep] [KICK FAILED] Cannot kick ${user.tag} (${user.id}): ${kickErrorReason}`);
         } else {
-            await member.kick('Determined to be underage for Discord policy enforcement (Recommended to delete Discord until 15)');
+            await member.kick('Determined to be underage for Discord policy enforcement (Recommended to delete Discord until 13)');
             kickSuccess = true;
             console.log(`[Underage Sweep] [KICK SUCCESS] Successfully kicked ${user.tag} (${user.id}) from "${guild.name}".`);
         }
@@ -86,7 +86,7 @@ async function processUnderageMember(member, client) {
                     { name: '🏷️ Role Triggered', value: `<@&${UNDERAGE_ROLE_ID}>\n\`${UNDERAGE_ROLE_ID}\``, inline: true },
                     { name: '📨 DM Delivery', value: dmDelivered ? '✅ **Delivered**' : `⚠️ **Failed** (\`${dmErrorReason}\`)`, inline: true },
                     { name: '👢 Kick Status', value: kickSuccess ? '✅ **Kicked Successfully**' : `❌ **Failed** (\`${kickErrorReason}\`)`, inline: true },
-                    { name: '📋 Policy Action', value: 'Kicked (Underage for Discord - Advised to delete until 15)', inline: false },
+                    { name: '📋 Policy Action', value: 'Kicked (Underage for Discord - Advised to delete until 13)', inline: false },
                     { name: '📅 Account Created', value: `<t:${Math.floor(user.createdTimestamp / 1000)}:F> (<t:${Math.floor(user.createdTimestamp / 1000)}:R>)`, inline: true },
                     { name: '📥 Joined Server', value: member.joinedTimestamp ? `<t:${Math.floor(member.joinedTimestamp / 1000)}:F> (<t:${Math.floor(member.joinedTimestamp / 1000)}:R>)` : '*Unknown*', inline: true }
                 )
