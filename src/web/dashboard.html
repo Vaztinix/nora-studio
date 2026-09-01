@@ -3009,6 +3009,84 @@
             color: #ffffff !important;
         }
 
+        /* Light Mode Toast & Notification Popups Overrides */
+        body.theme-light .toast {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        body.theme-light .toast.info {
+            border-left: 4px solid #2563eb !important;
+        }
+
+        body.theme-light .toast.success {
+            border-left: 4px solid #10b981 !important;
+        }
+
+        body.theme-light .toast.error {
+            border-left: 4px solid #ef4444 !important;
+        }
+
+        body.theme-light .toast.warning {
+            border-left: 4px solid #f59e0b !important;
+        }
+
+        body.theme-light .toast-close-btn {
+            color: #64748b !important;
+        }
+
+        body.theme-light #web-push-control-widget {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+            color: #0f172a !important;
+        }
+
+        body.theme-light #web-push-control-widget strong {
+            color: #0f172a !important;
+        }
+
+        body.theme-light #web-push-control-widget span {
+            color: #475569 !important;
+        }
+
+        body.theme-light #web-push-control-widget button {
+            background: #f1f5f9 !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+
+        body.theme-light .modal,
+        body.theme-light .modal-content,
+        body.theme-light .notification-dropdown,
+        body.theme-light .notif-item,
+        body.theme-light .dropdown-menu {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #0f172a !important;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        body.theme-light .notif-item:hover {
+            background: #f8fafc !important;
+        }
+
+        body.theme-light .notif-item strong,
+        body.theme-light .modal h1,
+        body.theme-light .modal h2,
+        body.theme-light .modal h3 {
+            color: #0f172a !important;
+        }
+
+        body.theme-light .notif-item span,
+        body.theme-light .notif-item p,
+        body.theme-light .modal p {
+            color: #475569 !important;
+        }
+
+
         /* 📱 RESPONSIVE & MOBILE-FIRST UPGRADES */
         @media (max-width: 768px) {
             .topbar {
@@ -3624,7 +3702,7 @@
                         <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff;">Server Management</h2>
                         <p style="color: var(--muted); font-size: 0.85rem;">Manage your Discord servers with Nora</p>
                     </div>
-                    <button class="save-btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: #fff; padding: 8px 16px; font-size: 0.85rem;" onclick="inviteBot()">+ Invite Nora</button>
+                    <button class="config-btn" style="width: auto; background: var(--card-bg); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" onclick="inviteBot()"><i class="fas fa-plus"></i> Invite Nora</button>
                 </div>
 
                 <!-- Premium Callout Banner -->
