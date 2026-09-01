@@ -75,12 +75,18 @@
             } catch(e) {}
         })();
 
-        // PURE MONOCHROME WHITE THEME ENFORCEMENT
+        // DYNAMIC GLASS THEME INITIALIZATION (Dark & Light)
         (function() {
-            localStorage.setItem('nora_theme_color', '#ffffff');
-            document.documentElement.style.setProperty('--primary', '#ffffff');
-            document.documentElement.style.setProperty('--accent', 'rgba(255, 255, 255, 0.15)');
-            document.documentElement.style.setProperty('--bg-glow', 'rgba(255, 255, 255, 0.05)');
+            try {
+                const savedTheme = localStorage.getItem('nora_theme_mode') || 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.classList.add('theme-light');
+                    document.documentElement.classList.remove('theme-dark');
+                } else {
+                    document.documentElement.classList.add('theme-dark');
+                    document.documentElement.classList.remove('theme-light');
+                }
+            } catch(e) {}
         })();
     </script>
     <style>
@@ -2510,6 +2516,216 @@
             display: block !important;
         }
     
+
+        /* ==========================================================================
+           💎 ULTRA-PREMIUM GLASSMORPHISM & DUAL COLOR MODE (DARK / LIGHT) SYSTEM
+           ========================================================================== */
+        
+        /* DARK MODE ROOT (Deep Obsidian Frosted Glass) */
+        :root, body.theme-dark {
+            --bg: #090a12;
+            --sidebar-bg: rgba(13, 17, 28, 0.72);
+            --panel-bg: rgba(16, 21, 36, 0.65);
+            --card-bg: rgba(20, 27, 46, 0.6);
+            --card-hover: rgba(30, 41, 68, 0.75);
+            --topbar-bg: rgba(10, 13, 24, 0.78);
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.25);
+            --primary-hover: #7dd3fc;
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --muted: #64748b;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(56, 189, 248, 0.4);
+            --input-bg: rgba(5, 8, 18, 0.5);
+            --row-bg: rgba(255, 255, 255, 0.025);
+            --glow-1: rgba(56, 189, 248, 0.08);
+            --glow-2: rgba(168, 85, 247, 0.06);
+            --modal-bg: rgba(13, 17, 30, 0.88);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --color-scheme: dark;
+        }
+
+        /* LIGHT MODE (Crisp Translucent Daylight Frosted Glass) */
+        body.theme-light, html.theme-light body {
+            --bg: #f1f5f9;
+            --sidebar-bg: rgba(255, 255, 255, 0.85);
+            --panel-bg: rgba(255, 255, 255, 0.78);
+            --card-bg: rgba(255, 255, 255, 0.82);
+            --card-hover: rgba(255, 255, 255, 0.96);
+            --topbar-bg: rgba(255, 255, 255, 0.88);
+            --primary: #2563eb;
+            --primary-glow: rgba(37, 99, 235, 0.2);
+            --primary-hover: #1d4ed8;
+            --text: #0f172a;
+            --text-secondary: #334155;
+            --muted: #64748b;
+            --border: rgba(15, 23, 42, 0.09);
+            --border-hover: rgba(37, 99, 235, 0.45);
+            --input-bg: rgba(248, 250, 252, 0.9);
+            --row-bg: rgba(0, 0, 0, 0.02);
+            --glow-1: rgba(37, 99, 235, 0.06);
+            --glow-2: rgba(99, 102, 241, 0.04);
+            --modal-bg: rgba(255, 255, 255, 0.95);
+            --color-scheme: light;
+        }
+
+        /* Universal Glassmorphism Blur & Transparency Filter */
+        .panel, .card, .modal, .config-card, .server-card, .view-panel, .hero-banner, .topbar, .sidebar {
+            backdrop-filter: blur(24px) saturate(190%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+            transition: background 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                        border-color 0.3s ease, 
+                        color 0.3s ease, 
+                        box-shadow 0.3s ease, 
+                        transform 0.2s ease !important;
+        }
+
+        /* Light Mode Component Overrides */
+        body.theme-light {
+            background-color: var(--bg) !important;
+            color: var(--text) !important;
+        }
+
+        body.theme-light .topbar {
+            background: var(--topbar-bg) !important;
+            border-bottom: 1px solid var(--border) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+        }
+
+        body.theme-light .sidebar {
+            background: var(--sidebar-bg) !important;
+            border-right: 1px solid var(--border) !important;
+        }
+
+        body.theme-light .panel,
+        body.theme-light .card,
+        body.theme-light .modal,
+        body.theme-light .config-card,
+        body.theme-light .server-card,
+        body.theme-light .hero-banner {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+            color: var(--text) !important;
+        }
+
+        body.theme-light .server-card:hover,
+        body.theme-light .card:hover {
+            background: var(--card-hover) !important;
+            border-color: var(--border-hover) !important;
+            box-shadow: 0 14px 36px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+        }
+
+        body.theme-light h1,
+        body.theme-light h2,
+        body.theme-light h3,
+        body.theme-light h4,
+        body.theme-light h5,
+        body.theme-light strong,
+        body.theme-light label {
+            color: var(--text) !important;
+        }
+
+        body.theme-light p,
+        body.theme-light .text-muted,
+        body.theme-light .muted {
+            color: var(--muted) !important;
+        }
+
+        body.theme-light input,
+        body.theme-light select,
+        body.theme-light textarea {
+            background: var(--input-bg) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text) !important;
+        }
+
+        body.theme-light input:focus,
+        body.theme-light select:focus,
+        body.theme-light textarea:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px var(--primary-glow) !important;
+        }
+
+        body.theme-light .global-nav-btn {
+            color: var(--muted) !important;
+        }
+        body.theme-light .global-nav-btn:hover {
+            color: var(--text) !important;
+            background: rgba(0, 0, 0, 0.04) !important;
+        }
+        body.theme-light .global-nav-btn.active {
+            color: var(--primary) !important;
+            background: var(--primary-glow) !important;
+        }
+
+        body.theme-light #user-name-top {
+            color: var(--text) !important;
+        }
+
+        /* 📱 RESPONSIVE & MOBILE-FIRST UPGRADES */
+        @media (max-width: 768px) {
+            .topbar {
+                padding: 10px 14px !important;
+                gap: 8px !important;
+                flex-wrap: wrap !important;
+                height: auto !important;
+                min-height: 58px !important;
+            }
+            .brand span {
+                font-size: 1.05rem !important;
+            }
+            .topbar-actions {
+                gap: 8px !important;
+                flex-wrap: wrap !important;
+            }
+            #global-nav-links {
+                overflow-x: auto !important;
+                max-width: 100% !important;
+                padding: 4px 0 !important;
+                gap: 6px !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            #global-nav-links::-webkit-scrollbar {
+                display: none !important;
+            }
+            .global-nav-btn {
+                padding: 6px 12px !important;
+                font-size: 0.82rem !important;
+                white-space: nowrap !important;
+            }
+            .app-layout {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+                padding-top: 16px !important;
+            }
+            .server-grid {
+                grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)) !important;
+                gap: 12px !important;
+            }
+            .hero-banner {
+                padding: 24px 18px !important;
+                margin-bottom: 20px !important;
+                border-radius: 16px !important;
+            }
+            .hero-banner h1 {
+                font-size: 1.6rem !important;
+            }
+            .panel {
+                padding: 20px 16px !important;
+                border-radius: 16px !important;
+            }
+            .hide-on-mobile {
+                display: none !important;
+            }
+            .theme-select-card {
+                padding: 14px !important;
+            }
+        }
+
 </style>
 
         <style>
@@ -2918,7 +3134,12 @@
                 <button onclick="showTab('prefs')" class="global-nav-btn" data-tab="prefs"><i class="fas fa-cog"></i> Settings</button>
             </div>
         </div>
-        <div class="topbar-actions" style="display: flex; align-items: center; gap: 15px;">
+        <div class="topbar-actions" style="display: flex; align-items: center; gap: 12px;">
+            <!-- Quick Theme Switcher Button -->
+            <button id="quick-theme-toggle" onclick="toggleTheme()" class="global-nav-btn theme-toggle-btn" style="padding: 6px 12px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600;" title="Toggle Light / Dark Mode">
+                <i id="theme-toggle-icon" class="fas fa-moon" style="color: var(--primary);"></i>
+                <span id="theme-toggle-label" class="hide-on-mobile">Dark</span>
+            </button>
             <!-- Auto-Refresh Control Manager Widget -->
             <div id="auto-refresh-widget" style="display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 3px 10px; font-size: 0.78rem; color: #8b90a5;">
                 <button id="manual-refresh-btn" onclick="triggerManualRefresh()" style="background: none; border: none; color: #8b90a5; cursor: pointer; padding: 2px 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Refresh Page & API Data Now">
@@ -3593,6 +3814,45 @@
                 </div>
                 
                 <div style="max-width: 800px; margin: 0 auto;">
+                    <!-- Visual Theme & Transparency Customization Card -->
+                    <div class="panel" style="margin-bottom: 24px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-palette" style="color: var(--primary);"></i> Appearance & Color Modes
+                        </h3>
+                        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Choose between Dark Glass and Light Glass modes, featuring ultra-transparent frosted glass panels and high contrast.</p>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 15px;">
+                            <!-- Dark Mode Card -->
+                            <div id="theme-card-dark" onclick="selectThemeMode('dark')" style="border: 2px solid var(--primary); background: rgba(15, 23, 42, 0.7); border-radius: 16px; padding: 18px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; backdrop-filter: blur(12px);" class="theme-select-card">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1.1rem;">
+                                            <i class="fas fa-moon"></i>
+                                        </div>
+                                        <span style="font-size: 1rem; font-weight: 700; color: var(--text);">Dark Glass</span>
+                                    </div>
+                                    <div id="theme-radio-dark" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid #38bdf8; background: #38bdf8; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-check" style="font-size: 0.65rem; color: #000;"></i>
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4;">Deep obsidian frosted glass with glowing neon accents and low-light eye comfort.</p>
+                            </div>
+
+                            <!-- Light Mode Card -->
+                            <div id="theme-card-light" onclick="selectThemeMode('light')" style="border: 1px solid var(--border); background: rgba(255, 255, 255, 0.03); border-radius: 16px; padding: 18px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; backdrop-filter: blur(12px);" class="theme-select-card">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(37, 99, 235, 0.3); display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 1.1rem;">
+                                            <i class="fas fa-sun"></i>
+                                        </div>
+                                        <span style="font-size: 1rem; font-weight: 700; color: var(--text);">Light Glass</span>
+                                    </div>
+                                    <div id="theme-radio-light" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center;"></div>
+                                </div>
+                                <p style="font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4;">Crisp daylight frosted glass with optimal contrast, soft shadows, and clean readability.</p>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Personal Identity Card -->
                     <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                         <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-fingerprint" style="color: var(--primary);"></i> Personal Information</h3>
@@ -18786,6 +19046,103 @@
 
     </div>
 </div>
+
+
+<script>
+// Global Theme Mode Manager (Dark / Light Glass)
+function applyThemeMode(mode, save = true) {
+    if (mode !== 'light' && mode !== 'dark') mode = 'dark';
+    
+    if (mode === 'light') {
+        document.body.classList.remove('theme-dark');
+        document.body.classList.add('theme-light');
+        document.documentElement.classList.remove('theme-dark');
+        document.documentElement.classList.add('theme-light');
+    } else {
+        document.body.classList.remove('theme-light');
+        document.body.classList.add('theme-dark');
+        document.documentElement.classList.remove('theme-light');
+        document.documentElement.classList.add('theme-dark');
+    }
+    
+    if (save) {
+        localStorage.setItem('nora_theme_mode', mode);
+    }
+    
+    // Update topbar quick toggle icon & label
+    const toggleIcon = document.getElementById('theme-toggle-icon');
+    const toggleLabel = document.getElementById('theme-toggle-label');
+    if (toggleIcon) {
+        toggleIcon.className = mode === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+        toggleIcon.style.color = mode === 'light' ? '#2563eb' : '#38bdf8';
+    }
+    if (toggleLabel) {
+        toggleLabel.textContent = mode === 'light' ? 'Light' : 'Dark';
+    }
+    
+    // Update Settings page selection cards if present
+    const darkCard = document.getElementById('theme-card-dark');
+    const lightCard = document.getElementById('theme-card-light');
+    const darkRadio = document.getElementById('theme-radio-dark');
+    const lightRadio = document.getElementById('theme-radio-light');
+    
+    if (darkCard && lightCard) {
+        if (mode === 'dark') {
+            darkCard.style.borderColor = '#38bdf8';
+            darkCard.style.background = 'rgba(15, 23, 42, 0.7)';
+            lightCard.style.borderColor = 'var(--border)';
+            lightCard.style.background = 'rgba(255, 255, 255, 0.03)';
+            if (darkRadio) {
+                darkRadio.style.background = '#38bdf8';
+                darkRadio.style.borderColor = '#38bdf8';
+                darkRadio.innerHTML = '<i class="fas fa-check" style="font-size:0.65rem;color:#000;"></i>';
+            }
+            if (lightRadio) {
+                lightRadio.style.background = 'transparent';
+                lightRadio.style.borderColor = 'var(--border)';
+                lightRadio.innerHTML = '';
+            }
+        } else {
+            lightCard.style.borderColor = '#2563eb';
+            lightCard.style.background = 'rgba(255, 255, 255, 0.95)';
+            darkCard.style.borderColor = 'var(--border)';
+            darkCard.style.background = 'rgba(0, 0, 0, 0.05)';
+            if (lightRadio) {
+                lightRadio.style.background = '#2563eb';
+                lightRadio.style.borderColor = '#2563eb';
+                lightRadio.innerHTML = '<i class="fas fa-check" style="font-size:0.65rem;color:#fff;"></i>';
+            }
+            if (darkRadio) {
+                darkRadio.style.background = 'transparent';
+                darkRadio.style.borderColor = 'var(--border)';
+                darkRadio.innerHTML = '';
+            }
+        }
+    }
+}
+
+function toggleTheme() {
+    const currentMode = localStorage.getItem('nora_theme_mode') || 'dark';
+    const newMode = currentMode === 'light' ? 'dark' : 'light';
+    applyThemeMode(newMode, true);
+    if (typeof showToast === 'function') {
+        showToast(`Switched to ${newMode === 'light' ? 'Light Glass' : 'Dark Glass'} Mode`, 'info');
+    }
+}
+
+function selectThemeMode(mode) {
+    applyThemeMode(mode, true);
+    if (typeof showToast === 'function') {
+        showToast(`Theme updated to ${mode === 'light' ? 'Light Glass' : 'Dark Glass'}`, 'success');
+    }
+}
+
+// Auto-sync theme on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('nora_theme_mode') || 'dark';
+    applyThemeMode(savedTheme, false);
+});
+</script>
 
 </body>
 </html>
