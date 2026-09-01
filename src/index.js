@@ -2460,19 +2460,25 @@ app.get('/api/user/guilds', async (req, res) => {
             isUserBotOwner = true;
         }
 
-        const managedGuilds = filteredGuilds.map(g => {
+        const managedGuilds = await Promise.all(filteredGuilds.map(async (g) => {
             const perms = BigInt(g.permissions);
             const isManaged = (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
 
-            const isCached = req.client.guilds.cache.has(g.id);
-            const hasSettings = settingsMap.has(g.id);
-            const hasNora = isCached || hasSettings;
-
-            if (!isCached) {
-                // Log caching issues for guilds the user has access to
-                console.log(`[Guild Sync Info] Bot is not cached in guild: ${g.name} (${g.id}). Available bot cache size: ${req.client.guilds.cache.size}`);
+            let liveGuild = req.client.guilds.cache.get(g.id);
+            if (!liveGuild) {
+                try {
+                    liveGuild = await req.client.guilds.fetch(g.id).catch(() => null);
+                } catch (e) {
+                    liveGuild = null;
+                }
             }
-            const liveGuild = req.client.guilds.cache.get(g.id);
+
+            const hasSettings = settingsMap.has(g.id);
+            const hasNora = !!liveGuild || hasSettings;
+
+            if (!liveGuild) {
+                console.log(`[Guild Sync Info] Bot is not in guild: ${g.name} (${g.id}). Available bot cache size: ${req.client.guilds.cache.size}`);
+            }
             const settings = settingsMap.get(g.id);
 
             const isPremiumSettings = settings ? (!!settings.isPremium || !!settings.isManualPremium) : false;
@@ -2489,13 +2495,18 @@ app.get('/api/user/guilds', async (req, res) => {
 
             const isPremium = isPremiumSettings || isOwnerPremium || (settings && settings.paidExpiresAt && (new Date(settings.paidExpiresAt).getTime() + (settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0) > Date.now()));
 
+            let onlineCount = 0;
+            if (liveGuild && liveGuild.presences && liveGuild.presences.cache) {
+                onlineCount = liveGuild.presences.cache.filter(p => p.status !== 'offline').size;
+            }
+
             return {
                 id: g.id,
                 name: g.name,
                 icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
                 hasNora,
                 memberCount: liveGuild ? liveGuild.memberCount : 0,
-                onlineCount: liveGuild ? liveGuild.presences.cache.filter(p => p.status !== 'offline').size : 0,
+                onlineCount: onlineCount,
                 permissions: g.permissions,
                 topggVerified: false,
                 topggBotId: null,
@@ -2503,7 +2514,7 @@ app.get('/api/user/guilds', async (req, res) => {
                 isPremium,
                 isManaged
             };
-        });
+        }));
 
         res.json(managedGuilds);
     } catch (e) {
