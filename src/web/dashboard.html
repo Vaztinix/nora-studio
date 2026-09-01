@@ -8844,8 +8844,29 @@
             logToTerminal('Starting authentication flow...', 'AUTH_START');
             toggleLoading(true);
             try {
-                const { data: d, status } = await safeFetch('/api/user/me', { headers: { Authorization: `Bearer ${t}` } });
-                logToTerminal('Auth request complete', 'AUTH_RESP', { status, userId: d.id });
+                let d = null;
+                let status = 200;
+                try {
+                    const res = await safeFetch('/api/user/me', { headers: { Authorization: `Bearer ${t}` } });
+                    d = res.data;
+                    status = res.status;
+                } catch (apiErr) {
+                    console.warn('[Nora Auth]: Backend handshake warning, falling back to direct Discord API...', apiErr.message);
+                    try {
+                        const discordRes = await fetch('https://discord.com/api/v10/users/@me', {
+                            headers: { Authorization: `Bearer ${t}` }
+                        });
+                        if (discordRes.ok) {
+                            d = await discordRes.json();
+                            status = discordRes.status;
+                        } else {
+                            throw apiErr;
+                        }
+                    } catch (e) {
+                        throw apiErr;
+                    }
+                }
+                logToTerminal('Auth request complete', 'AUTH_RESP', { status, userId: d ? d.id : null });
                 
                 if (status === 403 && d.error === 'SESSION_LOCKED') {
                     document.getElementById('auth-overlay').innerHTML = `
@@ -10215,6 +10236,29 @@
                 }
                 if (guilds) break;
                 await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+            }
+            if (!guilds || !guilds.length) {
+                try {
+                    console.info('[Nora Guilds]: Fallback fetching guilds directly from Discord API...');
+                    const dRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+                        headers: { Authorization: `Bearer ${t}` }
+                    });
+                    if (dRes.ok) {
+                        const rawGuilds = await dRes.json();
+                        if (Array.isArray(rawGuilds)) {
+                            guilds = rawGuilds.map(g => ({
+                                id: g.id,
+                                name: g.name,
+                                icon: g.icon,
+                                owner: g.owner,
+                                permissions: g.permissions,
+                                hasNora: false
+                            }));
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[Nora Guilds]: Direct Discord fetch notice:', e.message);
+                }
             }
 
             try {
