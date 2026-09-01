@@ -38,20 +38,20 @@ module.exports = {
 
         // 2. ⚡ Non-blocking Background Tasks (Invite caching, banner updates, status, duplicate purging)
         (async () => {
-            // Initialize invite tracker cache in background
-            client.invites = new Map();
-            for (const guild of client.guilds.cache.values()) {
-                try {
-                    const me = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
-                    if (me && me.permissions.has('ManageGuild')) {
-                        const invites = await guild.invites.fetch().catch(() => null);
-                        if (invites) {
-                            client.invites.set(guild.id, new Map(invites.map(invite => [invite.code, invite.uses])));
-                        }
-                    }
-                } catch (e) {}
+            // Initialize always-on invite tracker cache in background
+            try {
+                const { initInviteCache } = require('../utils/inviteTracker');
+                await initInviteCache(client);
+            } catch (invInitErr) {
+                console.error('[Invite Tracker] Failed to initialize invite cache:', invInitErr.message);
             }
-            console.log(`[Invite Tracker] Cached invite states across ${client.invites.size} authorized servers.`);
+
+            // Initialize AFK cache
+            try {
+                await require('../utils/afkManager').loadAll();
+            } catch (e) {
+                console.error('[AFK Manager] Failed to initialize AFK cache on ready:', e.message);
+            }
 
             // Optics Maintenance: Set Banner in background
             try {

@@ -134,6 +134,31 @@ module.exports = {
             console.error('[Starboard Error] messageReactionAdd failed:', e.message);
         }
 
+        // ---- React Verification Integration ----
+        try {
+            const GuildSettings = require('../database/models/GuildSettings');
+            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+
+            if (settings && settings.verifyRoleId && (settings.verificationType === 'reaction' || settings.verifyMessageId)) {
+                const targetMsgId = settings.verifyMessageId;
+                const isTargetMessage = targetMsgId ? reaction.message.id === targetMsgId : (settings.verifyChannelId && reaction.message.channel.id === settings.verifyChannelId);
+
+                if (isTargetMessage) {
+                    const triggerEmoji = settings.verifyEmoji || '✅';
+                    const emojiName = reaction.emoji.id ? null : reaction.emoji.name;
+                    const emojiId = reaction.emoji.id;
+                    const isEmojiMatch = (emojiId && triggerEmoji.includes(emojiId)) || (emojiName && (triggerEmoji === emojiName || triggerEmoji.includes(emojiName)));
+
+                    if (isEmojiMatch) {
+                        const verifyEngine = require('../bot/engines/verify');
+                        await verifyEngine.handleReactionVerification(reaction, user, settings);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('[React Verify Error] messageReactionAdd failed:', e.message);
+        }
+
         // ---- Reaction Role Assignment Integration ----
         const { matchesEmoji, markSuppressed, enqueueRoleAction } = require('../utils/reactionRoleHelper');
 

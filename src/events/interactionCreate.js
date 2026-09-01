@@ -390,7 +390,14 @@ module.exports = {
             return;
         }
 
-        // Handle Verification Buttons (Anti-Bot Modal Upgrade)
+        // Handle Verification Buttons (Anti-Bot Modal Upgrade & 1-Click Verification)
+        if (interaction.isButton() && interaction.customId === 'verify_button_instant') {
+            const verifyEngine = require('../bot/engines/verify');
+            const settings = await settingsCache.get(interaction.guildId);
+            await verifyEngine.handleInstantButtonClick(interaction, settings);
+            return;
+        }
+
         if (interaction.isButton() && interaction.customId === 'verify_system_button') {
             const verifyEngine = require('../bot/engines/verify');
             const settings = await settingsCache.get(interaction.guildId);
@@ -758,7 +765,7 @@ module.exports = {
                     });
                 }
 
-                const result = await oneWordStoryManager.endGame(interaction.guild.id, targetChannelId);
+                const result = await oneWordStoryManager.endGame(interaction.guild.id, targetChannelId, true);
                 if (!result.success) {
                     return await interaction.reply({
                         content: `⚠️ Error ending game: ${result.error}`,
@@ -777,7 +784,7 @@ module.exports = {
                         { name: 'Contributors', value: `${result.contributorsCount}`, inline: true },
                         { name: 'Top Authors', value: topList, inline: false }
                     )
-                    .setFooter({ text: `Ended by ${interaction.user.tag}` })
+                    .setFooter({ text: `🛑 Force-ended by ${interaction.user.tag} — auto-restart cancelled` })
                     .setTimestamp();
 
                 // Update original start button to disabled state

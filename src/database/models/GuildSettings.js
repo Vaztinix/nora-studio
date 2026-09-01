@@ -260,6 +260,26 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    unverifiedRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    removeUnverifiedRoleOnVerify: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    verificationType: {
+        type: DataTypes.STRING,
+        defaultValue: 'captcha' // 'button', 'captcha', 'reaction', 'roblox'
+    },
+    verifyMessageId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    verifyEmoji: {
+        type: DataTypes.STRING,
+        defaultValue: '✅'
+    },
     // ---- Dynamic Logging Framework Extensions ----
     logChannelCreates: {
         type: DataTypes.BOOLEAN,
@@ -778,6 +798,28 @@ const GuildSettings = sequelize.define('GuildSettings', {
     oneWordStoryMaxSentences: {
         type: DataTypes.INTEGER,
         defaultValue: 10
+    },
+    oneWordStoryAutoRestart: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    oneWordStoryAutoRestartRounds: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1
+    },
+
+    // ---- AFK System Settings ----
+    afkEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    afkAutoNickname: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    afkCleanMessage: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     }
 });
 

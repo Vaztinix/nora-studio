@@ -85,8 +85,12 @@ module.exports = {
 
     async handleAdd(interaction) {
         const user = interaction.options.getUser('user');
-        const reason = interaction.options.getString('reason');
-        const severity = interaction.options.getString('severity') || 'medium';
+        if (!user) {
+            return await handleError(interaction, 'Missing User', 'Please mention a valid user or provide their User ID.');
+        }
+        const reason = interaction.options.getString('reason') || 'No reason provided';
+        const rawSeverity = interaction.options.getString('severity') || 'medium';
+        const severity = (SEVERITY_BADGES[rawSeverity.toLowerCase()] ? rawSeverity.toLowerCase() : 'medium');
         const member = interaction.guild.members.cache.get(user.id);
 
         // Self-warn guard

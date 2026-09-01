@@ -87,7 +87,7 @@ module.exports = {
         return session && session.active ? session : null;
     },
 
-    async startGame(guildId, channelId, userId) {
+    async startGame(guildId, channelId, userId, autoRestartRounds = 0) {
         await loadStoryData();
         if (storyData[channelId] && storyData[channelId].active) {
             return { success: false, error: 'A game is already in progress in this channel.' };
@@ -101,22 +101,26 @@ module.exports = {
             words: [],
             lastUserId: null,
             sentenceCount: 0,
-            active: true
+            active: true,
+            autoRestartRemaining: autoRestartRounds
         };
 
         queueSave();
         return { success: true, game: storyData[channelId] };
     },
 
-    async endGame(guildId, channelId) {
+    async endGame(guildId, channelId, forceStopped = false) {
         await loadStoryData();
         const session = storyData[channelId];
         if (!session || !session.active) {
             return { success: false, error: 'No active game session found in this channel.' };
         }
 
+        const autoRestartRemaining = forceStopped ? 0 : (session.autoRestartRemaining || 0);
+
         session.active = false;
         session.endedAt = new Date().toISOString();
+        session.autoRestartRemaining = 0;
 
         // Calculate contributor stats
         const contributorMap = {};
@@ -141,7 +145,9 @@ module.exports = {
             contributorsCount: Object.keys(contributorMap).length,
             topContributors,
             startedAt: session.startedAt,
-            endedAt: session.endedAt
+            endedAt: session.endedAt,
+            forceStopped,
+            autoRestartRemaining
         };
     },
 

@@ -231,78 +231,68 @@
                 <p class="subtitle">An inside look into Nora Studio's privacy-first Discord ecosystem</p>
 
                 <section>
-                    <p><strong>Nora Studio</strong> is a professional-grade Discord ecosystem engineered to provide elite AI-driven moderation, ticket workflows, and community engagement while maintaining an absolute commitment to user privacy. Following the <strong>v2.0 rebuild</strong>, the bot has been re-architected to support high-scale servers, cross-origin web sync configurations, and the <strong>Nora Studio</strong> web management dashboard.</p>
+                    <p><strong>Nora Studio</strong> is an all-in-one Discord community engagement, automation, and safety ecosystem engineered to provide enterprise-grade moderation, member verification, collaborative chat games, and leveling while maintaining an absolute commitment to user privacy. Following the <strong>v2.6 upgrade</strong>, Nora supports universal text prefix commands (<code>n!</code>), multi-mode verification engines, an AFK availability notifier, and the real-time <strong>Nora Studio</strong> web management dashboard.</p>
                 </section>
 
                 <section>
-                    <h2>1. Multi-Engine AI Architecture</h2>
-                    <p>Nora separates itself from standard moderation bots by offering a modular AI brain. This allows administrators to select the specific intelligence model that balances their server's needs for speed versus complex reasoning.</p>
+                    <h2>1. Dual-Execution Engine: Slash & Universal Prefix (n!)</h2>
+                    <p>Every command in Nora is accessible via both Discord Slash Commands (<code>/</code>) and standard chat text prefixes (<code>n!</code>, <code>n?</code>, or <code>@Nora</code>), giving your community maximum flexibility on mobile and desktop alike.</p>
                     <ul>
-                        <li><strong>Dual-AI Switching:</strong> Via the centralized settings hub, servers can alternate between ChatGPT and Gemini engines.</li>
-                        <li><strong>Aura AI (Native Engine):</strong> A custom-developed, lightweight model designed for "utility-first" responses. Aura handles mathematical calculations, simple queries, and rapid-fire interactions with low latency.</li>
-                        <li><strong>Contextual Auto-Moderation:</strong> Unlike legacy bots that use simple keyword filters, Nora’s AI analyzes the surrounding conversation context.</li>
+                        <li><strong>Zero-Latency Execution:</strong> Subcommands, arguments, and mentions (e.g. <code>n!warn @user spamming</code>, <code>n!afk studying</code>, <code>n!rank @user</code>) are resolved instantly.</li>
+                        <li><strong>Built-In Shorthand Aliases:</strong> Quick shortcuts like <code>n!h</code> (help), <code>n!p</code> (ping), <code>n!lb</code> (leaderboard), <code>n!card</code> (mycard), <code>n!story</code> (onewordstory), and <code>n!w</code> (warn).</li>
+                        <li><strong>Consistent Server-Side Security:</strong> Member permissions (e.g., Ban Members, Manage Guild) are strictly validated on both prefix and slash commands.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>2. The Consolidated /setup Control Hub</h2>
-                    <p>To improve security and reduce command clutter, Nora utilizes a unified, single-command setup console.</p>
+                    <h2>2. Multi-Mode Member Verification (v2.6)</h2>
+                    <p>Protect your community against raid bots, alt accounts, and spam rings with our 4-way verification engine, configurable in <code>/setup verify</code> or the web dashboard:</p>
                     <ul>
-                        <li><strong>Single /setup Slash Command:</strong> Typing `/setup dashboard` immediately opens a secure interactive Discord select dashboard menu. Administrators can quickly manage all module options without typing complex flags.</li>
-                        <li><strong>Owner-Only Premium Portal:</strong> Premium overrides (enabling, disabling, or removing guild premium status manually) are handled entirely within the setup menu.</li>
-                        <li><strong>Local Safety Settings:</strong> Change Safety & Anti-Raid sensitivity, configure Discord AutoMod rules, set spam detection windows, or specify log channels all inside a single UI message.</li>
+                        <li><strong>1-Click Instant Button:</strong> Frictionless single-click role grant for fast onboarding.</li>
+                        <li><strong>Anti-Bot Visual CAPTCHA:</strong> High-security distorted SVG/PNG code verification tested against automated bot scripts.</li>
+                        <li><strong>Emoji Reaction Verification:</strong> Classic pre-reacted embed message where adding a reaction grants the verified role.</li>
+                        <li><strong>Roblox Identity Linking:</strong> Cryptographic account verification syncing Roblox groups, ranks, and server roles.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>3. Dynamic Engagement & Custom Rank Cards (v2.3)</h2>
-                    <p>Nora utilizes a sophisticated Experience (XP) algorithm designed to encourage genuine interaction rather than chat spamming.</p>
+                    <h2>3. AFK & Availability Engine</h2>
+                    <p>Keep your members informed about chatter availability without chat spam:</p>
                     <ul>
-                        <li><strong>Voice Activity XP:</strong> Users earn XP for time spent in voice channels. To prevent farming, this system requires at least two users to be present in the channel.</li>
-                        <li><strong>Custom Rank Card Studio:</strong> Server administrators can fully customize generated rank and level-up card graphics with custom background colors, accent highlights, border colors, and direct file/URL background image uploads.</li>
-                        <li><strong>Refined Leveling Logic:</strong> Lightweight canvas rendering allows Nora to generate high-resolution custom rank cards in milliseconds without hitting API rate limits.</li>
+                        <li><strong>Instant Setup:</strong> Type <code>n!afk [reason]</code> or <code>/afk [reason]</code> to set your status.</li>
+                        <li><strong>Auto-Nickname Prefixing:</strong> Automatically prepends <code>[AFK]</code> to manageable members' server nicknames.</li>
+                        <li><strong>Mention Notifier & Auto-Cleanup:</strong> When someone pings an AFK user, Nora replies with their status and auto-deletes the notification to keep channels tidy.</li>
+                        <li><strong>Seamless Return:</strong> Simply typing a message in any channel immediately removes your AFK status and restores your original nickname.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>4. Privacy-First Data Protocol: "My Card"</h2>
-                    <p>Privacy is not a feature of Nora; it is the foundation. Nora is built on a "Zero-Access" architecture, meaning server data is isolated and protected.</p>
+                    <h2>4. Collaborative Community Games</h2>
+                    <p>Boost chat retention with cooperative server-wide mini-games:</p>
                     <ul>
-                        <li><strong>User Transparency:</strong> The `/mycard` command provides a real-time window into the bot's database. Users can see their server display name, roles, current level, and accumulated XP.</li>
-                        <li><strong>Permanent Deletion (The Kill Switch):</strong> Users have the sovereign right to their data. The "Erase Data" button on the user card performs an immediate, irreversible wipe of that user's leveling profile.</li>
-                        <li><strong>Data Isolation:</strong> Nora is designed so that the bot developers have no backend access to view private server content, logs, or user messages.</li>
+                        <li><strong>Sequential Counting:</strong> Math-checked sequential counting channel with high-score tracking, anti-double-counting protection, and bonus XP.</li>
+                        <li><strong>One Word Story:</strong> Multi-author collaborative storytelling with automated punctuation triggers, contributor leaderboards, and milestone archiving.</li>
+                        <li><strong>Rock Paper Scissors & Guessing:</strong> Quick interactive games against Nora with XP wagering.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>5. Consolidated Moderation & Roblox Verification</h2>
-                    <p>To reduce Discord command bloat and simplify server administration, Nora features consolidated warning and verification workflows, gated by strict permission checking.</p>
+                    <h2>5. Consolidated /setup Management Hub</h2>
+                    <p>Configure every module in your server from a single organized interface:</p>
                     <ul>
-                        <li><strong>Command Hiding:</strong> All moderation, administration, and configuration commands natively utilize Discord's Application Command Permission framework, which physically hides commands from users who lack the required permission levels (e.g. Moderate Members, Ban Members, Manage Guild, etc.).</li>
-                        <li><strong>Dynamic Help Menu:</strong> The `/help` command checks the user's active permissions in real-time, completely filtering out moderator-only categories and commands from non-moderators to maintain a clean, secure chat environment.</li>
-                        <li><strong>Unified Warning Management (/warn):</strong> Server moderators can manage warning actions through a single `/warn` command using subcommands to add, edit, list, delete, or clear warnings.</li>
-                        <li><strong>Case Management System (/case):</strong> Track, inspect, and manage server moderation actions dynamically.</li>
-                        <li><strong>One-Step Roblox Link (/verify):</strong> The legacy multi-command verification flow is replaced by the singular <code>/verify</code> command. Users link Roblox accounts and receive roles in a single fluid interaction.</li>
+                        <li><strong>Organized Module Dashboard:</strong> View active status (🟢 On / 🔴 Off) across Welcomer, Leveling, AutoMod, Logging, Games, Verification, and Tickets.</li>
+                        <li><strong>Direct Subcommand Routing:</strong> Fast jumpers like <code>/setup verify</code>, <code>/setup automod</code>, <code>/setup leveling</code>, and <code>/setup logging</code>.</li>
+                        <li><strong>Multi-Audit Log Routing:</strong> Direct dedicated log channels for deleted messages, member joins/leaves, voice states, and AutoMod triggers.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>6. Starboard v2.5 & Channel Filtering</h2>
-                    <p>The community Starboard engine automatically highlights top-reacted messages across the server.</p>
+                    <h2>6. Privacy-First Data Protocol: "My Card"</h2>
+                    <p>Privacy is not an afterthought; it is the foundation of Nora. Nora is built on a "Zero-Access" architecture:</p>
                     <ul>
-                        <li><strong>Custom Triggers & Thresholds:</strong> Configure custom reaction emojis (standard or custom guild emojis) and star count thresholds.</li>
-                        <li><strong>Branded Webhook Posts:</strong> Automatically post starboard highlights using custom bot names and profile pictures.</li>
-                        <li><strong>Ignored Channels Filter:</strong> Exclude specific channels (such as staff channels, bot commands, or announcement feeds) from Starboard reaction tracking via a multi-select channel dropdown.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2>7. Nora Studio Dashboard & Unsaved Guard</h2>
-                    <p>The web dashboard provides full real-time management across all server modules.</p>
-                    <ul>
-                        <li><strong>Real-Time Configuration Sync:</strong> Instantly inspect and modify AutoMod rules, Ticket panels, Leveling settings, and Webhook filters.</li>
-                        <li><strong>Unsaved Changes Protection:</strong> A floating floating notification guard prevents accidental navigation when configuration changes remain unsaved.</li>
-                        <li><strong>Team Role Cards & Owner Console:</strong> Manage authorized team members, view server health pulse, and monitor bot telemetry.</li>
+                        <li><strong>User Transparency:</strong> The <code>/mycard</code> or <code>n!mycard</code> command provides a real-time window into stored database records.</li>
+                        <li><strong>The Sovereign Data Kill Switch:</strong> The "Erase Data" button allows any member to immediately and permanently delete their leveling statistics, XP, and Roblox bindings across all Nora nodes.</li>
+                        <li><strong>Ephemeral Message Processing:</strong> Chat messages are processed in volatile memory for AutoMod and AI triggers and immediately discarded.</li>
                     </ul>
                 </section>
 

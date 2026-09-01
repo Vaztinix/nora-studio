@@ -266,100 +266,12 @@ module.exports = {
                 }
             }
 
-            // 4. --- Invite Tracker & Rewards Module ---
-            if (settings.inviteTrackerEnabled) {
-                try {
-                    const trackingChannel = settings.inviteTrackerChannelId ? member.guild.channels.cache.get(settings.inviteTrackerChannelId) : null;
-                    const newInvites = await member.guild.invites.fetch().catch(() => null);
-                    const cachedInvites = member.client.invites?.get(member.guild.id);
-                    
-                    let usedInvite = null;
-                    if (newInvites && cachedInvites) {
-                        for (const [code, invite] of newInvites.entries()) {
-                            const oldUses = cachedInvites.get(code) || 0;
-                            if (invite.uses > oldUses) {
-                                usedInvite = invite;
-                                break;
-                            }
-                        }
-                        
-                        // Update cache
-                        if (!member.client.invites) member.client.invites = new Map();
-                        member.client.invites.set(member.guild.id, new Map(newInvites.map(inv => [inv.code, inv.uses])));
-                    }
-
-                    let inviterUser = usedInvite ? usedInvite.inviter : null;
-                    let totalInvitesCount = 0;
-                    let rewardGrantedText = '';
-
-                    if (inviterUser && !inviterUser.bot && inviterUser.id !== member.id) {
-                        try {
-                            const UserLevel = require('../database/models/UserLevel');
-                            const [inviterLevel] = await UserLevel.findOrCreate({
-                                where: { userId: inviterUser.id, guildId: member.guild.id }
-                            });
-
-                            inviterLevel.invitesCount = (inviterLevel.invitesCount || 0) + 1;
-                            totalInvitesCount = inviterLevel.invitesCount;
-
-                            // Award XP for invite if configured
-                            const xpGain = settings.inviteXpReward !== undefined ? settings.inviteXpReward : 50;
-                            if (xpGain > 0) {
-                                inviterLevel.xp = (inviterLevel.xp || 0) + xpGain;
-                                inviterLevel.totalXp = (inviterLevel.totalXp || 0) + xpGain;
-                            }
-                            await inviterLevel.save();
-
-                            // Check Invite Rewards
-                            let rawRewards = settings.inviteRewards;
-                            if (typeof rawRewards === 'string') {
-                                try { rawRewards = JSON.parse(rawRewards); } catch (e) { rawRewards = []; }
-                            }
-                            if (Array.isArray(rawRewards) && rawRewards.length > 0) {
-                                const inviterMember = await member.guild.members.fetch(inviterUser.id).catch(() => null);
-                                if (inviterMember) {
-                                    for (const rewardRule of rawRewards) {
-                                        const reqInv = Number(rewardRule.reqInvites || rewardRule.invites || 0);
-                                        const rewardRoleId = rewardRule.roleId || rewardRule.role;
-                                        if (reqInv > 0 && totalInvitesCount >= reqInv && rewardRoleId) {
-                                            const roleToGrant = member.guild.roles.cache.get(rewardRoleId);
-                                            if (roleToGrant && !inviterMember.roles.cache.has(roleToGrant.id)) {
-                                                await inviterMember.roles.add(roleToGrant, `Nora Invite Rewards: Reached ${totalInvitesCount} invites`).catch(() => {});
-                                                rewardGrantedText += `\n🎉 **Invite Reward Unlocked:** Granted <@&${roleToGrant.id}> to <@${inviterUser.id}> for reaching **${reqInv} invites**!`;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } catch (invErr) {
-                            console.error('[Invite Reward Processing Error]:', invErr);
-                        }
-                    }
-
-                    if (trackingChannel) {
-                        let inviteInfo = `joined using a vanity link or unknown invite.`;
-                        if (usedInvite && inviterUser) {
-                            inviteInfo = `Invited by: <@${inviterUser.id}> (\`${inviterUser.username}\`, ID: \`${inviterUser.id}\`)\nInvite Link: [${usedInvite.code}](https://discord.gg/${usedInvite.code})\nInviter Total Invites: **${totalInvitesCount || usedInvite.uses}**${rewardGrantedText}`;
-                        }
-
-                        const accountAgeDays = Math.floor((Date.now() - member.user.createdTimestamp) / (1000 * 60 * 60 * 24));
-                        const accountAgeStr = accountAgeDays === 0 ? 'Today (New Account!)' : `${accountAgeDays} days ago (${new Date(member.user.createdTimestamp).toLocaleDateString()})`;
-
-                        const inviteEmbed = new EmbedBuilder()
-                            .setTitle('📥 Member Join & Invite Tracker')
-                            .setColor(0x57acf2)
-                            .setDescription(`**User:** <@${member.id}> (\`${member.user.username}\`, ID: \`${member.id}\`)\n\n**Invite Details:**\n${inviteInfo}`)
-                            .addFields(
-                                { name: 'Account Age', value: accountAgeStr, inline: true },
-                                { name: 'Join Position', value: `Member #${member.guild.memberCount}`, inline: true }
-                            )
-                            .setTimestamp()
-                            .setFooter({ text: `Member ID: ${member.id}`, iconURL: member.user.displayAvatarURL() });
-                        await trackingChannel.send({ embeds: [inviteEmbed] }).catch(() => {});
-                    }
-                } catch (inviteTrackErr) {
-                    console.error('[Invite Tracker Engine Error]:', inviteTrackErr.message);
-                }
+            // 4. --- Always-On Invite Tracker & Rewards Engine ---
+            try {
+                const inviteTracker = require('../utils/inviteTracker');
+                await inviteTracker.processMemberJoin(member, settings);
+            } catch (inviteTrackErr) {
+                console.error('[Invite Tracker Engine Error]:', inviteTrackErr.message);
             }
         } catch (error) {
             console.error('[Logger] Error in MemberJoin:', error);

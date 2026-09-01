@@ -24,21 +24,74 @@ module.exports = {
         }
         const guildChannels = client.channelActivity[message.guild.id] || {};
         guildChannels[message.channel.id] = (guildChannels[message.channel.id] || 0) + 1;
-        // 🔢 Prefix Command Listener: n!help / c!help for Counting
-        const msgTrimmed = message.content.toLowerCase().trim();
-        if (['n!help', 'c!help', 'n!help counting', 'c!help counting', '!help counting', 'n!counting', 'c!counting'].includes(msgTrimmed)) {
-            const { sendCountingHelpEmbed } = require('./countingSystem');
-            const fs = require('fs').promises;
-            const path = require('path');
-            try {
-                const dataPath = path.join(__dirname, '..', '..', 'countingData.json');
-                const rawData = await fs.readFile(dataPath, 'utf8').catch(() => '{}');
-                const parsed = JSON.parse(rawData);
-                const guildData = parsed[message.guild.id] || { currentCount: 0, lastUserId: null, highScore: 0 };
-                return sendCountingHelpEmbed(message, guildData);
-            } catch (e) {
-                return sendCountingHelpEmbed(message, { currentCount: 0, lastUserId: null, highScore: 0 });
+
+        // ⚡ Universal Prefix Command Engine (n!<command>, n?<command>, @Nora <command>)
+        const prefixCommandHandler = require('../utils/prefixCommandHandler');
+        const wasHandledByPrefix = await prefixCommandHandler.handlePrefixCommand(message, client);
+        if (wasHandledByPrefix) return;
+
+        // 💤 AFK System Handler
+        try {
+            const afkManager = require('../utils/afkManager');
+            const settingsCache = require('../utils/settingsCache');
+            const settings = await settingsCache.get(message.guild.id);
+            const isAfkEnabled = settings ? settings.afkEnabled !== false : true;
+
+            if (isAfkEnabled) {
+                // 1. Check if the message author was AFK
+                const authorAfk = afkManager.getAfk(message.guild.id, message.author.id);
+                if (authorAfk) {
+                    const elapsed = Date.now() - authorAfk.timestamp;
+                    // 5-second grace period: ignore messages typed immediately after setting AFK
+                    if (elapsed > 5000) {
+                        await afkManager.removeAfk(message.guild.id, message.author.id);
+
+                        // Restore original nickname if it was altered and member is manageable
+                        if (authorAfk.autoNicknameChanged && message.member && message.member.manageable) {
+                            try {
+                                await message.member.setNickname(authorAfk.originalNickname).catch(() => {});
+                            } catch (e) {}
+                        }
+
+                        const welcomeMsg = await message.reply({
+                            content: `👋 Welcome back ${message.author}, I removed your AFK. *(You were away <t:${Math.floor(authorAfk.timestamp / 1000)}:R>)*`,
+                            allowedMentions: { repliedUser: false }
+                        }).catch(() => null);
+
+                        if (welcomeMsg && (settings?.afkCleanMessage !== false)) {
+                            setTimeout(() => welcomeMsg.delete().catch(() => {}), 7000);
+                        }
+                    }
+                }
+
+                // 2. Check if the message mentioned any AFK users
+                if (message.mentions && message.mentions.users && message.mentions.users.size > 0) {
+                    for (const [mentionedId, mentionedUser] of message.mentions.users) {
+                        if (mentionedId === message.author.id || mentionedUser.bot) continue;
+
+                        const targetAfk = afkManager.getAfk(message.guild.id, mentionedId);
+                        if (targetAfk) {
+                            // Check 10s cooldown per user per channel
+                            if (afkManager.checkMentionCooldown(message.guild.id, mentionedId, message.channel.id)) {
+                                const targetMember = message.guild.members.cache.get(mentionedId);
+                                const displayName = targetMember ? targetMember.displayName.replace(/^\[AFK\]\s*/, '') : mentionedUser.username;
+                                const noticeContent = `💤 **${displayName}** is AFK: ${targetAfk.status} — <t:${Math.floor(targetAfk.timestamp / 1000)}:R>`;
+
+                                const noticeMsg = await message.channel.send({
+                                    content: noticeContent,
+                                    allowedMentions: { parse: [] } // Do not ping the AFK user again
+                                }).catch(() => null);
+
+                                if (noticeMsg && (settings?.afkCleanMessage !== false)) {
+                                    setTimeout(() => noticeMsg.delete().catch(() => {}), 10000);
+                                }
+                            }
+                        }
+                    }
+                }
             }
+        } catch (err) {
+            console.error('[AFK Event Error]:', err.message);
         }
 
         // 🤫 Secret VC Summon — mommyiloveyou

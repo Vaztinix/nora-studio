@@ -1,4 +1,15 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ChannelSelectMenuBuilder, RoleSelectMenuBuilder, ButtonBuilder, ButtonStyle, ComponentType, ChannelType } = require('discord.js');
+const { 
+    SlashCommandBuilder, 
+    PermissionFlagsBits, 
+    EmbedBuilder, 
+    ActionRowBuilder, 
+    StringSelectMenuBuilder, 
+    ChannelSelectMenuBuilder, 
+    RoleSelectMenuBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    ChannelType 
+} = require('discord.js');
 const GuildSettings = require('../../database/models/GuildSettings');
 const { handleError, handleSuccess } = require('../../utils/embeds');
 const { syncAutoModRule, syncAllAutoModRules } = require('../../utils/automodSync');
@@ -9,92 +20,48 @@ module.exports = {
     ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('setup')
-        .setDescription('Server setup and configuration system.')
+        .setDescription('Interactive server management and settings dashboard.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false)
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('dashboard')
-                .setDescription('Open the interactive settings menu dashboard for managing Nora.'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('automod')
-                .setDescription('Configure Discord native AutoMod rules and chat safety settings.'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('ticket')
-                .setDescription('Configure Support Ticket system settings and spawn ticket panels.'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('roblox')
-                .setDescription('Configure Roblox verification settings for this server.')
-                .addBooleanOption(option =>
-                    option.setName('enabled')
-                        .setDescription('Enable or disable Roblox verification')
-                        .setRequired(true))
-                .addRoleOption(option =>
-                    option.setName('role')
-                        .setDescription('The role to grant verified members')
-                        .setRequired(true)))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('starboard')
-                .setDescription('Configure Starboard settings for this server.')
-                .addBooleanOption(option =>
-                    option.setName('enabled')
-                        .setDescription('Enable or disable the Starboard system')
-                        .setRequired(false))
-                .addChannelOption(option =>
-                    option.setName('channel')
-                        .setDescription('The channel where starred messages will be posted')
-                        .addChannelTypes(ChannelType.GuildText)
-                        .setRequired(false))
-                .addIntegerOption(option =>
-                    option.setName('threshold')
-                        .setDescription('Number of reactions required to feature a message (default: 3)')
-                        .setMinValue(1)
-                        .setMaxValue(100)
-                        .setRequired(false))
-                .addStringOption(option =>
-                    option.setName('emoji')
-                        .setDescription('Reaction emoji to trigger starboard (default: ⭐)')
-                        .setRequired(false)))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('onewordstory')
-                .setDescription('Configure One Word Story game settings for this server.')
-                .addBooleanOption(option =>
-                    option.setName('enabled')
-                        .setDescription('Enable or disable the One Word Story game')
-                        .setRequired(false))
-                .addChannelOption(option =>
-                    option.setName('channel')
-                        .setDescription('Dedicated channel for the game')
-                        .addChannelTypes(ChannelType.GuildText)
-                        .setRequired(false))
-                .addBooleanOption(option =>
-                    option.setName('consecutive')
-                        .setDescription('Allow the same user to post multiple words in a row')
-                        .setRequired(false)))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('counting')
-                .setDescription('Configure or disable the Counting game system.')
-                .addBooleanOption(option =>
-                    option.setName('enabled')
-                        .setDescription('Enable or disable the Counting game')
-                        .setRequired(false))
-                .addChannelOption(option =>
-                    option.setName('channel')
-                        .setDescription('Dedicated channel for the Counting game')
-                        .addChannelTypes(ChannelType.GuildText)
-                        .setRequired(false))
-                .addIntegerOption(option =>
-                    option.setName('xp_reward')
-                        .setDescription('XP reward granted per valid count (default: 15)')
-                        .setMinValue(0)
-                        .setMaxValue(500)
-                        .setRequired(false))),
+        .addSubcommand(sub =>
+            sub.setName('dashboard')
+                .setDescription('Open the full interactive settings dashboard.'))
+        .addSubcommand(sub =>
+            sub.setName('automod')
+                .setDescription('Configure Discord native AutoMod rules and chat safety.'))
+        .addSubcommand(sub =>
+            sub.setName('welcomer')
+                .setDescription('Configure welcome cards, join messages, and auto-roles.'))
+        .addSubcommand(sub =>
+            sub.setName('leveling')
+                .setDescription('Configure chat/voice leveling, XP multipliers, and rank rewards.'))
+        .addSubcommand(sub =>
+            sub.setName('logging')
+                .setDescription('Configure server audit logs and multi-channel routing.'))
+        .addSubcommand(sub =>
+            sub.setName('games')
+                .setDescription('Configure community games (Counting, One Word Story, RPS, Guess).'))
+        .addSubcommand(sub =>
+            sub.setName('afk')
+                .setDescription('Configure server AFK settings and auto-nicknames.'))
+        .addSubcommand(sub =>
+            sub.setName('ticket')
+                .setDescription('Configure support ticket settings and spawn panels.'))
+        .addSubcommand(sub =>
+            sub.setName('verify')
+                .setDescription('Configure server verification types (Click, CAPTCHA, React, Roblox).'))
+        .addSubcommand(sub =>
+            sub.setName('roblox')
+                .setDescription('Configure Roblox verification and panel.'))
+        .addSubcommand(sub =>
+            sub.setName('starboard')
+                .setDescription('Configure Starboard reaction threshold and channel.'))
+        .addSubcommand(sub =>
+            sub.setName('onewordstory')
+                .setDescription('Configure One Word Story collaborative game.'))
+        .addSubcommand(sub =>
+            sub.setName('counting')
+                .setDescription('Configure sequential Counting game.')),
 
     async execute(interaction) {
         if (!interaction.deferred && !interaction.replied) {
@@ -103,158 +70,29 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
         const settings = await settingsCache.get(interaction.guild.id);
 
+        const routeMap = {
+            dashboard: 'main',
+            automod: 'view_automod',
+            welcomer: 'view_welcomer',
+            leveling: 'view_leveling',
+            logging: 'view_logging',
+            games: 'view_games',
+            afk: 'view_afk',
+            ticket: 'view_tickets',
+            verify: 'view_verify',
+            roblox: 'view_verify',
+            starboard: 'view_starboard',
+            onewordstory: 'view_onewordstory',
+            counting: 'view_counting'
+        };
+
+        const targetView = routeMap[subcommand] || 'main';
         try {
-            if (subcommand === 'dashboard') {
-                return await this.runDashboard(interaction, settings);
-            } else if (subcommand === 'automod') {
-                return await this.runDashboard(interaction, settings, 'view_automod');
-            } else if (subcommand === 'ticket') {
-                return await this.runDashboard(interaction, settings, 'view_ticketing');
-            } else if (subcommand === 'roblox') {
-                return await this.runRobloxSetup(interaction, settings);
-            } else if (subcommand === 'starboard') {
-                return await this.runStarboardSetup(interaction, settings);
-            } else if (subcommand === 'onewordstory') {
-                return await this.runOneWordStorySetup(interaction, settings);
-            } else if (subcommand === 'counting') {
-                return await this.runCountingSetup(interaction, settings);
-            }
+            return await this.runDashboard(interaction, settings, targetView);
         } catch (err) {
             console.error(`Error executing /setup ${subcommand}:`, err);
-            return await handleError(interaction, 'Execution Error', 'An error occurred while executing the setup command.');
+            return await handleError(interaction, 'Execution Error', 'An error occurred while launching the settings dashboard.');
         }
-    },
-
-    async runRobloxSetup(interaction, settings) {
-        const enabled = interaction.options.getBoolean('enabled');
-        const role = interaction.options.getRole('role');
-
-        settings.robloxVerifyEnabled = enabled;
-        settings.robloxVerifyRoleId = role.id;
-        await settings.save();
-        settingsCache.invalidate(interaction.guild.id);
-
-        return await handleSuccess(
-            interaction, 
-            'Roblox Setup Updated', 
-            `Roblox Verification is now **${enabled ? 'ENABLED' : 'DISABLED'}**.\nVerified members will receive the role <@&${role.id}>.`
-        );
-    },
-
-    async runStarboardSetup(interaction, settings) {
-        const enabled = interaction.options.getBoolean('enabled');
-        const channel = interaction.options.getChannel('channel');
-        const threshold = interaction.options.getInteger('threshold');
-        const emoji = interaction.options.getString('emoji');
-
-        let updated = false;
-
-        if (enabled !== null) {
-            settings.starboardEnabled = enabled;
-            updated = true;
-        }
-        if (channel) {
-            settings.starboardChannelId = channel.id;
-            updated = true;
-        }
-        if (threshold !== null) {
-            settings.starboardThreshold = threshold;
-            updated = true;
-        }
-        if (emoji) {
-            settings.starboardEmoji = emoji.trim();
-            updated = true;
-        }
-
-        if (updated) {
-            await settings.save();
-            settingsCache.invalidate(interaction.guild.id);
-            return await handleSuccess(
-                interaction,
-                'Starboard Setup Updated',
-                `**Status:** ${settings.starboardEnabled ? 'ENABLED' : 'DISABLED'}\n**Channel:** ${settings.starboardChannelId ? `<#${settings.starboardChannelId}>` : 'Not set'}\n**Threshold:** ${settings.starboardThreshold} reactions\n**Emoji:** ${settings.starboardEmoji}`
-            );
-        }
-
-        return await this.runDashboard(interaction, settings, 'view_starboard');
-    },
-
-    async runOneWordStorySetup(interaction, settings) {
-        const enabled = interaction.options.getBoolean('enabled');
-        const channel = interaction.options.getChannel('channel');
-        const consecutive = interaction.options.getBoolean('consecutive');
-
-        let updated = false;
-
-        if (enabled !== null) {
-            settings.oneWordStoryEnabled = enabled;
-            updated = true;
-        }
-        if (channel) {
-            settings.oneWordStoryChannelId = channel.id;
-            updated = true;
-        }
-        if (consecutive !== null) {
-            settings.oneWordStoryAllowConsecutive = consecutive;
-            updated = true;
-        }
-
-        if (updated) {
-            await settings.save();
-            settingsCache.invalidate(interaction.guild.id);
-            return await handleSuccess(
-                interaction,
-                'One Word Story Setup Updated',
-                `**Status:** ${settings.oneWordStoryEnabled ? 'ENABLED' : 'DISABLED'}\n` +
-                `**Channel:** ${settings.oneWordStoryChannelId ? `<#${settings.oneWordStoryChannelId}>` : 'Any channel'}\n` +
-                `**Consecutive Turns:** ${settings.oneWordStoryAllowConsecutive ? 'Allowed' : 'Disabled (strictly enforced)'}`
-            );
-        }
-
-        return await this.runDashboard(interaction, settings, 'view_onewordstory');
-    },
-
-    async runCountingSetup(interaction, settings) {
-        const enabled = interaction.options.getBoolean('enabled');
-        const channel = interaction.options.getChannel('channel');
-        const xpReward = interaction.options.getInteger('xp_reward');
-
-        let updated = false;
-
-        if (enabled === false) {
-            settings.countingChannelId = null;
-            updated = true;
-        } else if (enabled === true) {
-            if (channel) {
-                settings.countingChannelId = channel.id;
-            } else if (!settings.countingChannelId) {
-                settings.countingChannelId = interaction.channelId;
-            }
-            updated = true;
-        } else if (channel) {
-            settings.countingChannelId = channel.id;
-            updated = true;
-        }
-
-        if (xpReward !== null) {
-            settings.countingChannelXpReward = xpReward;
-            updated = true;
-        }
-
-        if (updated) {
-            await settings.save();
-            settingsCache.invalidate(interaction.guild.id);
-            const isEnabled = Boolean(settings.countingChannelId);
-            return await handleSuccess(
-                interaction,
-                'Counting Game Setup Updated',
-                `**Status:** ${isEnabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n` +
-                `**Channel:** ${settings.countingChannelId ? `<#${settings.countingChannelId}>` : '*None (Disabled)*'}\n` +
-                `**XP Reward per Count:** ${settings.countingChannelXpReward !== undefined ? settings.countingChannelXpReward : 15} XP`
-            );
-        }
-
-        return await this.runDashboard(interaction, settings, 'view_extras');
     },
 
     async runDashboard(interaction, settings, initialViewName = 'main') {
@@ -266,100 +104,168 @@ module.exports = {
         const youtubeFeedCount = await ContentFeed.count({ where: { guildId: interaction.guild.id, platform: 'YOUTUBE' } }).catch(() => 0);
 
         let state = {
-            rewardLevel: null,
-            verifyChannel: null,
-            verifyRole: null,
-            ticketCh: null,
-            currentView: 'main',
+            currentView: initialViewName || 'main',
+            selectedLogCategory: settings.selectedLogCategory || 'default',
             autoresponderCount,
             youtubeFeedCount
         };
 
         const getRoleColor = (interaction) => {
-            if (!interaction.guild) return 0x57acf2;
-            const color = interaction.guild.members.me.roles.highest.color;
-            return color === 0 ? 0x57acf2 : color;
+            if (!interaction.guild) return 0x7c3aed;
+            const color = interaction.guild.members.me?.roles?.highest?.color;
+            return (!color || color === 0) ? 0x7c3aed : color;
         };
 
         const buildDashboard = (viewName) => {
             const embed = new EmbedBuilder()
                 .setColor(getRoleColor(interaction))
                 .setTimestamp()
-                .setFooter({ text: `Nora Settings • ${interaction.guild.name}` });
+                .setFooter({ text: `Nora Dashboard • ${interaction.guild.name}` });
 
             const backRow = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('go_back').setLabel('Back to Menu').setStyle(ButtonStyle.Secondary)
+                new ButtonBuilder().setCustomId('go_back').setLabel('◀️ Main Menu').setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setLabel('🌐 Web Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
             );
 
-            // --- MAIN ---
+            // ==========================================
+            // 🏠 MAIN HUB
+            // ==========================================
             if (viewName === 'main') {
-                embed.setTitle('Nora Settings')
-                     .setDescription('Configure how Nora works in your server. Most features are automated for simplicity.');
-                const menu = new StringSelectMenuBuilder().setCustomId('config_main').setPlaceholder('Choose a category...').addOptions([
-                    { label: 'Safety & Anti-Raid', value: 'view_antiraid', description: 'Stop bot raids and new accounts.' },
-                    { label: 'Chat Safety (AutoMod)', value: 'view_automod', description: 'Filter bad words, spam, and scam links via Discord AutoMod.' },
-                    { label: 'Member Logs', value: 'view_logging', description: 'Keep track of joins, leaves, and edits.' },
-                    { label: 'Leveling & XP', value: 'view_levels', description: 'Reward active chatters with ranks.' },
-                    { label: 'Starboard System', value: 'view_starboard', description: 'Community star voting and post highlighting.' },
-                    { label: 'One Word Story Game', value: 'view_onewordstory', description: 'Collaborative word-by-word story game.' },
-                    { label: 'Strikes & Bans', value: 'view_warnings', description: 'Manage how users are punished for bad behavior.' },
-                    { label: 'Support Tickets', value: 'view_ticketing', description: 'Help members with a private ticket system.' },
-                    { label: 'Join Verification', value: 'view_verify', description: 'Verify new members before they join.' },
-                    { label: 'Roblox Verification', value: 'view_roblox', description: 'Configure Roblox integration and panel.' },
-                    { label: 'Self Roles', value: 'view_selfroles', description: 'Create interactive role panels.' },
-                    { label: 'Fun & Games', value: 'view_extras', description: 'Welcomer, Counting game, and more.' },
-                    { label: 'AI Settings', value: 'view_ai', description: 'Change Nora\'s AI engine and personality.' }
-                ]);
+                const autoModCount = [
+                    settings.automodProfanity, settings.automodSexual, settings.automodSlurs,
+                    settings.automodScam, settings.automodSpam, settings.automodHardcore,
+                    settings.automodMentions > 0
+                ].filter(Boolean).length;
+
+                embed.setTitle('⚙️ Nora Server Management Dashboard')
+                    .setDescription(
+                        `Welcome to the **${interaction.guild.name}** settings center!\n` +
+                        `Select a category from the menu below to configure features in real-time.`
+                    )
+                    .addFields(
+                        { 
+                            name: '🛡️ Safety & AutoMod', 
+                            value: `Anti-Raid: **${settings.antiRaidEnabled ? '🟢 On' : '🔴 Off'}**\nAutoMod: **${autoModCount}/7 Rules Active**\nLockdown: **${settings.lockdownMode ? '🔒 Active' : '🔓 Normal'}**`, 
+                            inline: true 
+                        },
+                        { 
+                            name: '👋 Welcomer & Verify', 
+                            value: `Welcomer: **${settings.welcomerEnabled ? '🟢 On' : '🔴 Off'}**\nAuto-Role: ${settings.welcomeRoleId ? `<@&${settings.welcomeRoleId}>` : '*None*'}\nVerification: **${settings.verifyRoleId ? '🟢 On' : '🔴 Off'}**`, 
+                            inline: true 
+                        },
+                        { 
+                            name: '🏆 Leveling & XP', 
+                            value: `Chat XP: **${settings.levelingEnabled ? '🟢 On' : '🔴 Off'}**\nLevel Alerts: **${settings.levelUpNotificationsEnabled !== false ? '🟢 On' : '🔴 Off'}**\nAlert Ch: ${settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : '*Current*'}`, 
+                            inline: true 
+                        },
+                        { 
+                            name: '📋 Audit Logging', 
+                            value: `Default Log: ${settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*'}\nRouted Chans: **${typeof settings.loggingChannels === 'object' ? Object.keys(settings.loggingChannels || {}).length : 0} active**`, 
+                            inline: true 
+                        },
+                        { 
+                            name: '🎮 Games & AFK', 
+                            value: `AFK System: **${settings.afkEnabled !== false ? '🟢 On' : '🔴 Off'}**\nCounting: ${settings.countingChannelId ? `<#${settings.countingChannelId}>` : '*Disabled*'}\nStarboard: **${settings.starboardEnabled ? '🟢 On' : '🔴 Off'}**`, 
+                            inline: true 
+                        },
+                        { 
+                            name: '🎫 Support & Utility', 
+                            value: `Tickets: ${settings.ticketCategoryId ? '🟢 Configured' : '🔴 Unset'}\nAutoresponders: **${state.autoresponderCount} rules**\nYouTube Feeds: **${state.youtubeFeedCount} active**`, 
+                            inline: true 
+                        }
+                    );
+
+                const menu = new StringSelectMenuBuilder()
+                    .setCustomId('config_main')
+                    .setPlaceholder('🚀 Select a category to configure...')
+                    .addOptions([
+                        { label: 'Safety & Anti-Raid', value: 'view_safety', description: 'Anti-raid, account age gate, photo check, lockdowns', emoji: '🛡️' },
+                        { label: 'Discord AutoMod Rules', value: 'view_automod', description: 'Zero-latency native filters for profanity, spam, and scam links', emoji: '🤖' },
+                        { label: 'Welcomer & Auto-Roles', value: 'view_welcomer', description: 'Custom welcome cards, join messages, and starter roles', emoji: '👋' },
+                        { label: 'Leveling & Experience', value: 'view_leveling', description: 'Chat & Voice XP, level-up notifications, and multipliers', emoji: '🏆' },
+                        { label: 'Server Logs & Routing', value: 'view_logging', description: 'Multi-channel audit logs for members, messages, and voice', emoji: '📋' },
+                        { label: 'Community Games & AFK', value: 'view_games', description: 'AFK module, Counting, One Word Story, and Starboard', emoji: '🎮' },
+                        { label: 'Join & Roblox Verification', value: 'view_verify', description: 'Human CAPTCHA gate and Roblox account linking', emoji: '✅' },
+                        { label: 'Support Ticket System', value: 'view_tickets', description: 'Private staff ticket categories, panels, and transcripts', emoji: '🎫' },
+                        { label: 'Self Roles & AI Engine', value: 'view_utility', description: 'Interactive button role panels and AI personality', emoji: '🎭' }
+                    ]);
+
                 if (APP_OWNER_IDS.includes(interaction.user.id)) {
                     menu.addOptions([
-                        { label: 'Dev Settings', value: 'view_dev', description: 'Reboot and sync database.' },
-                        { label: 'Premium Settings', value: 'view_premium', description: 'Configure override premium status for users and guilds.' }
+                        { label: 'Dev & Premium Overrides', value: 'view_dev', description: 'Bot owner tools, database sync, and premium grants', emoji: '👑' }
                     ]);
                 }
-                return { embeds: [embed], components: [new ActionRowBuilder().addComponents(menu)] };
+
+                const quickActions = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_quick_refresh').setLabel('🔄 Refresh Status').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setLabel('🌐 Open Web Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
+                );
+
+                return { embeds: [embed], components: [new ActionRowBuilder().addComponents(menu), quickActions] };
             }
 
-            // --- SAFETY & RAID ---
-            if (viewName === 'view_antiraid') {
-                embed.setTitle('Safety & Anti-Raid')
-                     .setDescription('Settings to prevent your server from being raided by bots.')
-                     .addFields(
-                        { name: 'Anti-Raid', value: settings.antiRaidEnabled ? 'Enabled' : 'Disabled', inline: true },
-                        { name: 'Lockdown', value: settings.lockdownMode ? 'Active' : 'Off', inline: true },
-                        { name: 'Photo Check', value: settings.requirePFP ? 'Required' : 'Optional', inline: true },
-                        { name: 'Age Gate', value: settings.minAccountAge > 0 ? `${settings.minAccountAge} days` : 'Off', inline: true },
-                        { name: 'Nick Filter', value: settings.nicknameRaidFilter ? 'Active' : 'Off', inline: true },
-                        { name: 'Action', value: settings.antiRaidAction, inline: true }
-                     );
+            // ==========================================
+            // 🛡️ SAFETY & ANTI-RAID
+            // ==========================================
+            if (viewName === 'view_safety') {
+                embed.setTitle('🛡️ Safety & Anti-Raid Settings')
+                    .setDescription('Configure protection against raids, malicious alt accounts, and mass bot joins.')
+                    .addFields(
+                        { name: 'Anti-Raid Engine', value: settings.antiRaidEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Server Lockdown', value: settings.lockdownMode ? '🔒 Active (Channels Locked)' : '🔓 Normal', inline: true },
+                        { name: 'Require Profile Picture', value: settings.requirePFP ? '🟢 Required (No Defaults)' : '🔴 Optional', inline: true },
+                        { name: 'Min Account Age', value: settings.minAccountAge > 0 ? `🟢 ${settings.minAccountAge} Day(s)` : '🔴 Disabled', inline: true },
+                        { name: 'Nickname Raid Filter', value: settings.nicknameRaidFilter ? '🟢 Active' : '🔴 Disabled', inline: true },
+                        { name: 'Raid Detection Action', value: `⚡ \`${settings.antiRaidAction || 'notify'}\``, inline: true }
+                    );
+
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_antiraid_toggle').setLabel(settings.antiRaidEnabled ? 'Disable Anti-Raid' : 'Enable Anti-Raid').setStyle(settings.antiRaidEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_lockdown_toggle').setLabel(settings.lockdownMode ? 'End Lockdown' : 'Start Lockdown').setStyle(settings.lockdownMode ? ButtonStyle.Success : ButtonStyle.Danger),
-                    new ButtonBuilder().setCustomId('action_pfp_toggle').setLabel('Toggle Photo Req').setStyle(settings.requirePFP ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_lockdown_toggle').setLabel(settings.lockdownMode ? 'Unlock Server' : 'Lockdown Server').setStyle(settings.lockdownMode ? ButtonStyle.Success : ButtonStyle.Danger),
+                    new ButtonBuilder().setCustomId('action_pfp_toggle').setLabel('Toggle PFP Check').setStyle(settings.requirePFP ? ButtonStyle.Success : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_nickfilter_toggle').setLabel('Toggle Nick Filter').setStyle(settings.nicknameRaidFilter ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
-                const rowB = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_antiraid_threshold').setPlaceholder('Sensitivity...').addOptions([{label:'Strict',value:'3'},{label:'Normal',value:'5'},{label:'Relaxed',value:'10'}]));
-                const rowC = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_accountage_minage').setPlaceholder('Minimum Account Age...').addOptions([{label:'Disabled',value:'0'},{label:'1 Day',value:'1'},{label:'7 Days',value:'7'},{label:'30 Days',value:'30'}]));
-                const rowD = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_antiraid_action').setPlaceholder('Action taken on raid detect...').addOptions([{label:'Notify Only',value:'notify'},{label:'Lockdown',value:'lockdown'},{label:'Kick New Users',value:'kick_new'}]));
-                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder().setCustomId('action_accountage_minage').setPlaceholder('Set Minimum Account Age...').addOptions([
+                        { label: 'Disabled (Allow all)', value: '0', default: settings.minAccountAge === 0 },
+                        { label: '1 Day Old', value: '1', default: settings.minAccountAge === 1 },
+                        { label: '3 Days Old', value: '3', default: settings.minAccountAge === 3 },
+                        { label: '7 Days Old', value: '7', default: settings.minAccountAge === 7 },
+                        { label: '14 Days Old', value: '14', default: settings.minAccountAge === 14 },
+                        { label: '30 Days Old', value: '30', default: settings.minAccountAge === 30 }
+                    ])
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder().setCustomId('action_antiraid_action').setPlaceholder('Action on Raid Detection...').addOptions([
+                        { label: 'Notify Staff Only', value: 'notify', default: settings.antiRaidAction === 'notify' },
+                        { label: 'Trigger Auto-Lockdown', value: 'lockdown', default: settings.antiRaidAction === 'lockdown' },
+                        { label: 'Kick Suspicious New Joiners', value: 'kick_new', default: settings.antiRaidAction === 'kick_new' }
+                    ])
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
             }
 
-            // --- CHAT SAFETY ---
+            // ==========================================
+            // 🤖 DISCORD AUTOMOD RULES
+            // ==========================================
             if (viewName === 'view_automod') {
-                const on  = (v) => v ? '🟢 Blocked' : '🔴 Allowed';
-                embed.setTitle('Chat Safety (AutoMod)')
-                     .setDescription('All rules are enforced by **Discord\'s native AutoMod engine** — zero false positives, zero delay.\n\nToggle each rule to create or remove it from your server\'s AutoMod rules.')
-                     .addFields(
-                        { name: '🔤 Profanity', value: on(settings.automodProfanity), inline: true },
+                const on = (v) => v ? '🟢 Blocked' : '🔴 Allowed';
+                embed.setTitle('🤖 Discord Native AutoMod Rules')
+                    .setDescription('Enforced directly by **Discord\'s native AutoMod engine** for instant, zero-latency protection.')
+                    .addFields(
+                        { name: '🔤 Profanity Filter', value: on(settings.automodProfanity), inline: true },
                         { name: '🔞 Sexual Content', value: on(settings.automodSexual), inline: true },
-                        { name: '🚫 Slurs', value: on(settings.automodSlurs), inline: true },
-                        { name: '🔗 Scam Links', value: on(settings.automodScam), inline: true },
-                        { name: '💬 Text Spam', value: on(settings.automodSpam), inline: true },
-                        { name: '🔞 Hardcore Media', value: on(settings.automodHardcore), inline: true },
-                        { name: '📢 Mention Spam', value: settings.automodMentions > 0 ? `🟢 Max ${settings.automodMentions}` : '🔴 Off', inline: true },
-                        { name: '🛡️ Bypass Roles', value: (() => { try { const r = JSON.parse(settings.automodImmuneRoles || '[]'); return r.length ? r.map(id => `<@&${id}>`).join(', ') : '*None*'; } catch { return '*None*'; } })(), inline: true }
-                     );
+                        { name: '🚫 Slurs & Hate Speech', value: on(settings.automodSlurs), inline: true },
+                        { name: '🔗 Scam / Phishing Links', value: on(settings.automodScam), inline: true },
+                        { name: '💬 Text Message Spam', value: on(settings.automodSpam), inline: true },
+                        { name: '🔞 Hardcore Media Filter', value: on(settings.automodHardcore), inline: true },
+                        { name: '📢 Mention Spam Limit', value: settings.automodMentions > 0 ? `🟢 Max ${settings.automodMentions}` : '🔴 Off', inline: true },
+                        { name: '🛡️ Immune Roles', value: (() => { try { const r = JSON.parse(settings.automodImmuneRoles || '[]'); return r.length ? r.map(id => `<@&${id}>`).join(', ') : '*None*'; } catch { return '*None*'; } })(), inline: true }
+                    );
 
-                // Row A: Preset word filters (all go into one Discord KeywordPreset rule)
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_automod_profanity').setLabel('Profanity').setStyle(settings.automodProfanity ? ButtonStyle.Success : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_automod_sexual').setLabel('Sexual Content').setStyle(settings.automodSexual ? ButtonStyle.Success : ButtonStyle.Secondary),
@@ -367,37 +273,89 @@ module.exports = {
                     new ButtonBuilder().setCustomId('action_automod_scam').setLabel('Scam Links').setStyle(settings.automodScam ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
 
-                // Row B: Keyword/Spam rule toggles
                 const rowB = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_automod_spam').setLabel('Text Spam').setStyle(settings.automodSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_automod_hardcore').setLabel('Hardcore Media').setStyle(settings.automodHardcore ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
 
-                // Row C: Mention spam threshold
                 const rowC = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder().setCustomId('action_automod_mentions').setPlaceholder('Mention Spam Limit...').addOptions([
-                        { label: 'Off — No limit', value: '0', default: settings.automodMentions === 0 },
+                        { label: 'Off (No limit)', value: '0', default: settings.automodMentions === 0 },
                         { label: '3 Mentions max', value: '3', default: settings.automodMentions === 3 },
                         { label: '5 Mentions max', value: '5', default: settings.automodMentions === 5 },
                         { label: '10 Mentions max', value: '10', default: settings.automodMentions === 10 },
-                        { label: '15 Mentions max', value: '15', default: settings.automodMentions === 15 },
-                        { label: '20 Mentions max', value: '20', default: settings.automodMentions === 20 },
+                        { label: '15 Mentions max', value: '15', default: settings.automodMentions === 15 }
                     ])
                 );
 
-                // Row D: Bypass roles
                 const rowD = new ActionRowBuilder().addComponents(
-                    new RoleSelectMenuBuilder().setCustomId('action_automod_immune').setPlaceholder('Select Bypass Roles...').setMinValues(0).setMaxValues(20)
+                    new RoleSelectMenuBuilder().setCustomId('action_automod_immune').setPlaceholder('Select AutoMod Immune / Bypass Roles...').setMinValues(0).setMaxValues(10)
                 );
 
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
-            // view_antispam is retired — spam detection now handled by Discord's native AutoMod engine
-            if (viewName === 'view_antispam') return buildDashboard('view_automod');
+            // ==========================================
+            // 👋 WELCOMER & AUTO-ROLES
+            // ==========================================
+            if (viewName === 'view_welcomer') {
+                embed.setTitle('👋 Welcomer & Starter Roles')
+                    .setDescription('Configure automated welcome cards, join channels, and starter roles for new members.')
+                    .addFields(
+                        { name: 'Welcomer System', value: settings.welcomerEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Welcome Channel', value: settings.welcomeChannelId ? `<#${settings.welcomeChannelId}>` : '*None*', inline: true },
+                        { name: 'Starter Auto-Role', value: settings.welcomeRoleId ? `<@&${settings.welcomeRoleId}>` : '*None*', inline: true },
+                        { name: 'Join DM Alerts', value: settings.welcomeDmEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Welcome Card Images', value: settings.levelingUseImages !== false ? '🟢 Image Card' : '📄 Text Only', inline: true }
+                    );
 
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_welcomer_toggle').setLabel(settings.welcomerEnabled ? 'Disable Welcomer' : 'Enable Welcomer').setStyle(settings.welcomerEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_welcomedm_toggle').setLabel(settings.welcomeDmEnabled ? 'Disable Join DM' : 'Enable Join DM').setStyle(settings.welcomeDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                );
 
-            // --- MEMBER LOGS & SECTION ROUTING ---
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_welcome_channel').setPlaceholder('Select Welcome Channel...').setChannelTypes(ChannelType.GuildText)
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_welcome_role').setPlaceholder('Select Starter Auto-Role...')
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+            }
+
+            // ==========================================
+            // 🏆 LEVELING & EXPERIENCE
+            // ==========================================
+            if (viewName === 'view_leveling') {
+                embed.setTitle('🏆 Leveling & XP Rewards')
+                    .setDescription('Reward active community members with Chat XP, Voice XP, custom rank cards, and level roles.')
+                    .addFields(
+                        { name: 'Chat Leveling', value: settings.levelingEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Level-Up Alerts', value: settings.levelUpNotificationsEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Level-Up Channel', value: settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : '*Current Channel*', inline: true },
+                        { name: 'Direct Message Alerts', value: settings.levelUpDmEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Rank Card Avatars', value: settings.levelingPfpEnabled !== false ? '🟢 Shown' : '🔴 Hidden', inline: true },
+                        { name: 'Voice XP Rate', value: `🎙️ ${settings.voiceXpRate || 10} XP / ${settings.voiceXpInterval || 300}s`, inline: true }
+                    );
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_leveling_toggle').setLabel(settings.levelingEnabled ? 'Disable Leveling' : 'Enable Leveling').setStyle(settings.levelingEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_levelalert_toggle').setLabel(settings.levelUpNotificationsEnabled !== false ? 'Disable Alerts' : 'Enable Alerts').setStyle(settings.levelUpNotificationsEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_leveldm_toggle').setLabel(settings.levelUpDmEnabled ? 'Disable DM Alerts' : 'Enable DM Alerts').setStyle(settings.levelUpDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_levelalert_channel').setPlaceholder('Select Dedicated Level-Up Channel...').setChannelTypes(ChannelType.GuildText)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, backRow] };
+            }
+
+            // ==========================================
+            // 📋 SERVER LOGGING & ROUTING
+            // ==========================================
             if (viewName === 'view_logging') {
                 let logChannels = {};
                 if (typeof settings.loggingChannels === 'object' && settings.loggingChannels !== null) {
@@ -406,333 +364,236 @@ module.exports = {
                     try { logChannels = JSON.parse(settings.loggingChannels); } catch(e) { logChannels = {}; }
                 }
 
-                const activeSection = state.selectedLogCategory || settings.selectedLogCategory || 'default';
+                const activeSection = state.selectedLogCategory || 'default';
                 const categoryLabels = {
                     default: '⚙️ Default Fallback Log Channel',
                     messages: '💬 Message Logs (Edits & Deletes)',
                     members: '👥 Member Logs (Joins, Leaves & Boosts)',
                     channels: '📁 Channel Logs (Creates, Edits & Deletes)',
                     voice: '🎙️ Voice Logs (Joins, Leaves & Moves)',
-                    automod: '🛡️ AutoMod & Safety Logs'
+                    automod: '🛡️ AutoMod & Security Logs'
                 };
 
-                const defaultChStr = settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*';
-
-                embed.setTitle('Server Logging & Channel Routing')
-                     .setDescription(
-                        `**Current Target for Selected Category:** ${categoryLabels[activeSection] || 'Default'}\n` +
-                        `Assign different channels to different log sections below.`
-                     )
-                     .addFields(
-                          { name: '⚙️ Default Fallback', value: defaultChStr, inline: true },
-                          { name: '💬 Message Logs', value: logChannels.messages ? `<#${logChannels.messages}>` : `*(Fallback)*`, inline: true },
-                          { name: '👥 Member Logs', value: logChannels.members ? `<#${logChannels.members}>` : `*(Fallback)*`, inline: true },
-                          { name: '📁 Channel Logs', value: logChannels.channels ? `<#${logChannels.channels}>` : `*(Fallback)*`, inline: true },
-                          { name: '🎙️ Voice Logs', value: logChannels.voice ? `<#${logChannels.voice}>` : `*(Fallback)*`, inline: true },
-                          { name: '🛡️ AutoMod Logs', value: logChannels.automod ? `<#${logChannels.automod}>` : `*(Fallback)*`, inline: true },
-                          { name: 'Member Joins', value: settings.logMemberJoins ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Member Leaves', value: settings.logMemberLeaves ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Message Edits', value: settings.logMessageEdits ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Message Deletes', value: settings.logMessageDeletes ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'AutoMod Blocked', value: settings.logAutomod ? '🟢 On' : '🔴 Off', inline: true },
-                          { name: 'Channel Creates', value: settings.logChannelCreates ? '🟢 On' : '🔴 Off', inline: true }
-                     );
+                embed.setTitle('📋 Audit Logging & Channel Routing')
+                    .setDescription(
+                        `**Configuring Category:** ${categoryLabels[activeSection] || 'Default Fallback'}\n` +
+                        `Select a category from the dropdown below, then choose the destination channel.`
+                    )
+                    .addFields(
+                        { name: '⚙️ Default Fallback', value: settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*', inline: true },
+                        { name: '💬 Messages Log', value: logChannels.messages ? `<#${logChannels.messages}>` : `*(Fallback)*`, inline: true },
+                        { name: '👥 Members Log', value: logChannels.members ? `<#${logChannels.members}>` : `*(Fallback)*`, inline: true },
+                        { name: '📁 Channels Log', value: logChannels.channels ? `<#${logChannels.channels}>` : `*(Fallback)*`, inline: true },
+                        { name: '🎙️ Voice Log', value: logChannels.voice ? `<#${logChannels.voice}>` : `*(Fallback)*`, inline: true },
+                        { name: '🛡️ AutoMod Log', value: logChannels.automod ? `<#${logChannels.automod}>` : `*(Fallback)*`, inline: true }
+                    );
 
                 const rowA = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder().setCustomId('action_log_part_select').setPlaceholder('Choose Log Category to Assign...').addOptions([
+                        { label: 'Default Fallback Channel', value: 'default', description: 'Catch-all channel for all unassigned log types', default: activeSection === 'default' },
+                        { label: 'Message Logs', value: 'messages', description: 'Edits, deletes, and bulk deletions', default: activeSection === 'messages' },
+                        { label: 'Member Logs', value: 'members', description: 'Joins, leaves, kicks, and boosts', default: activeSection === 'members' },
+                        { label: 'Channel Logs', value: 'channels', description: 'Channel creates, updates, and deletes', default: activeSection === 'channels' },
+                        { label: 'Voice Logs', value: 'voice', description: 'Voice joins, leaves, and moves', default: activeSection === 'voice' },
+                        { label: 'AutoMod Logs', value: 'automod', description: 'Blocked content, spam filters, and raids', default: activeSection === 'automod' }
+                    ])
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_log_channel').setPlaceholder(`Set channel for ${categoryLabels[activeSection]}...`).setChannelTypes(ChannelType.GuildText)
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder()
                         .setCustomId('action_log_toggle')
-                        .setPlaceholder('Configure Logging Events (Select Multiple)...')
+                        .setPlaceholder('Toggle Monitored Events (Select Multiple)...')
                         .setMinValues(0)
-                        .setMaxValues(12)
+                        .setMaxValues(8)
                         .addOptions([
-                            { label: 'Member Joins', value: 'logMemberJoins', description: 'Log when a user joins the server.', default: !!settings.logMemberJoins },
-                            { label: 'Member Leaves', value: 'logMemberLeaves', description: 'Log when a user leaves the server.', default: !!settings.logMemberLeaves },
-                            { label: 'Message Edits', value: 'logMessageEdits', description: 'Log message modifications.', default: !!settings.logMessageEdits },
-                            { label: 'Message Deletes', value: 'logMessageDeletes', description: 'Log message deletions.', default: !!settings.logMessageDeletes },
-                            { label: 'AutoMod Actions', value: 'logAutomod', description: 'Log messages blocked by AutoMod.', default: !!settings.logAutomod },
-                            { label: 'Channel Creates', value: 'logChannelCreates', description: 'Log when a channel is created.', default: !!settings.logChannelCreates },
-                            { label: 'Channel Edits', value: 'logChannelEdits', description: 'Log when a channel is updated.', default: !!settings.logChannelEdits },
-                            { label: 'Channel Deletes', value: 'logChannelDeletes', description: 'Log when a channel is deleted.', default: !!settings.logChannelDeletes },
-                            { label: 'Voice Joins', value: 'logVoiceJoins', description: 'Log when a user joins voice.', default: !!settings.logVoiceJoins },
-                            { label: 'Voice Leaves', value: 'logVoiceLeaves', description: 'Log when a user leaves voice.', default: !!settings.logVoiceLeaves },
-                            { label: 'Voice Moves', value: 'logVoiceMoves', description: 'Log when a user moves voice channels.', default: !!settings.logVoiceMoves },
-                            { label: 'Server Boosts', value: 'logMemberBoosts', description: 'Log when the server is boosted.', default: !!settings.logMemberBoosts }
+                            { label: 'Member Joins', value: 'logMemberJoins', description: 'Log when users join the server', default: !!settings.logMemberJoins },
+                            { label: 'Member Leaves', value: 'logMemberLeaves', description: 'Log when users leave the server', default: !!settings.logMemberLeaves },
+                            { label: 'Message Edits', value: 'logMessageEdits', description: 'Log edited message content', default: !!settings.logMessageEdits },
+                            { label: 'Message Deletes', value: 'logMessageDeletes', description: 'Log deleted messages', default: !!settings.logMessageDeletes },
+                            { label: 'AutoMod Violations', value: 'logAutomod', description: 'Log caught AutoMod actions', default: !!settings.logAutomod },
+                            { label: 'Channel Updates', value: 'logChannelEdits', description: 'Log channel creation & changes', default: !!settings.logChannelEdits },
+                            { label: 'Voice Activity', value: 'logVoiceJoins', description: 'Log VC joins, leaves, and moves', default: !!settings.logVoiceJoins },
+                            { label: 'Server Boosts', value: 'logMemberBoosts', description: 'Log when members boost the server', default: !!settings.logMemberBoosts }
                         ])
-                );
-
-                const rowB = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder()
-                        .setCustomId('action_log_part_select')
-                        .setPlaceholder(`1️⃣ Select Log Part: ${categoryLabels[activeSection] || 'Default'}`)
-                        .addOptions([
-                            { label: 'Default / Master Fallback', value: 'default', description: 'Master log channel used when a specific section is unassigned.', default: activeSection === 'default' },
-                            { label: 'Message Logs', value: 'messages', description: 'Dedicated channel for Message Edits & Deletes.', default: activeSection === 'messages' },
-                            { label: 'Member Logs', value: 'members', description: 'Dedicated channel for Member Joins, Leaves & Boosts.', default: activeSection === 'members' },
-                            { label: 'Channel Logs', value: 'channels', description: 'Dedicated channel for Channel Creates, Edits & Deletes.', default: activeSection === 'channels' },
-                            { label: 'Voice Logs', value: 'voice', description: 'Dedicated channel for Voice Joins, Leaves & Moves.', default: activeSection === 'voice' },
-                            { label: 'AutoMod & Safety Logs', value: 'automod', description: 'Dedicated channel for AutoMod & Safety Blocks.', default: activeSection === 'automod' }
-                        ])
-                );
-
-                const rowC = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder()
-                        .setCustomId('action_log_channel')
-                        .setPlaceholder(`2️⃣ Select Target Channel for ${categoryLabels[activeSection] || 'Default'}...`)
-                        .setChannelTypes(ChannelType.GuildText)
                 );
 
                 return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
             }
 
-            // --- LEVELING ---
-            if (viewName === 'view_levels') {
-                embed.setTitle('Leveling & XP')
-                     .setDescription('Users gain XP by chatting (15-25 XP/min) and being active in voice (50 XP every 5 min).')
-                     .addFields(
-                        { name: 'Level Alerts', value: settings.levelUpNotificationsEnabled ? 'On' : 'Off', inline: true },
-                        { name: 'Alert Channel', value: settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : 'Current Channel', inline: true },
-                        { name: 'Voice XP Rate', value: '50 XP per 300s (5 min)', inline: true }
-                     );
-                const rowA = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_leveling_toggle').setLabel(settings.levelingEnabled ? 'Disable XP' : 'Enable XP').setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder().setCustomId('action_levelalert_toggle').setLabel('Toggle Alerts').setStyle(ButtonStyle.Secondary)
-                );
-                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_levelalert_channel').setPlaceholder('Select Level Up Channel...').setChannelTypes(ChannelType.GuildText));
-                return { embeds: [embed], components: [rowA, rowB, backRow] };
-            }
-
-            // --- AI SETTINGS ---
-            if (viewName === 'view_ai') {
-                embed.setTitle('AI Engine')
-                     .setDescription(`Active Engine: **${settings.aiPreference}**\n\n⚠️ **Notice:** The AI Engines feature is temporarily disabled.`);
-                const row = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_ai_pref').setPlaceholder('Choose Nora\'s Brain...').setDisabled(true).addOptions([
-                    {label:'Built-in Logic (Free) [Disabled]',value:'LOCAL'},
-                    {label:'Gemini (Google) [Disabled]',value:'BUILT_IN'},
-                    {label:'ChatGPT (OpenAI) [Disabled]',value:'OPENAI'}
-                ]));
-                return { embeds: [embed], components: [row, backRow] };
-            }
-
-            // --- DEV SETTINGS ---
-            if (viewName === 'view_dev') {
-                embed.setTitle('Developer Operations')
-                     .setDescription('High-level administrative commands for the bot owner.')
-                     .setColor(getRoleColor(interaction));
-                const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('dev_reboot').setLabel('Force Reboot').setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder().setCustomId('dev_dbsync').setLabel('Sync Database').setStyle(ButtonStyle.Primary)
-                );
-                return { embeds: [embed], components: [row, backRow] };
-            }
-
-            // --- PREMIUM SETTINGS ---
-            if (viewName === 'view_premium') {
-                embed.setTitle('Premium Management (Owner Only)')
-                     .setDescription('Configure manual/override premium status for users and guilds.')
-                     .setColor(getRoleColor(interaction));
-                const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('premium_enable_btn').setLabel('Enable Premium').setStyle(ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('premium_disable_btn').setLabel('Disable Premium').setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder().setCustomId('premium_remove_btn').setLabel('Remove Premium').setStyle(ButtonStyle.Secondary)
-                );
-                return { embeds: [embed], components: [row, backRow] };
-            }
-
-            // --- WARNINGS ---
-            if (viewName === 'view_warnings') {
-                embed.setTitle('Strikes & Bans')
-                     .setDescription('Manage how users are punished for bad behavior.')
-                     .addFields(
-                        { name: 'Max Warnings', value: settings.warningThreshold > 0 ? `${settings.warningThreshold}` : 'Off', inline: true },
-                        { name: 'Action', value: settings.warningAction, inline: true }
-                     );
-                const rowA = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder().setCustomId('action_warning_thresh').setPlaceholder('Number of warnings...').addOptions([
-                        {label:'1 Warning',value:'1'},
-                        {label:'3 Warnings',value:'3'},
-                        {label:'5 Warnings',value:'5'},
-                        {label:'10 Warnings',value:'10'}
-                    ])
-                );
-                const rowB = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder().setCustomId('action_warning_action').setPlaceholder('Action on max warnings...').addOptions([
-                        {label:'None',value:'none'},
-                        {label:'Kick',value:'kick'},
-                        {label:'Ban',value:'ban'},
-                        {label:'Timeout',value:'timeout'}
-                    ])
-                );
-                return { embeds: [embed], components: [rowA, rowB, backRow] };
-            }
-
-            // --- TICKETING ---
-            if (viewName === 'view_ticketing') {
-                embed.setTitle('Support Tickets & Panel System')
-                     .setDescription('Configure how tickets are created, assigned, and managed in your server.')
-                     .addFields(
-                        { name: '📁 Category', value: settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : 'None', inline: true },
-                        { name: '📢 Spawn Channel', value: settings.ticketChannelId ? `<#${settings.ticketChannelId}>` : 'Current channel', inline: true },
-                        { name: '🛡️ Support Staff Role', value: settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : 'None (Admins only)', inline: true },
-                        { name: '⏰ 24h Auto-Archive', value: settings.ticketAutoArchive ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: '📝 Panel Title', value: settings.ticketPanelTitle || 'Support Center', inline: true },
-                        { name: '📄 Panel Description', value: settings.ticketPanelDesc ? 'Customized' : 'Default', inline: true }
-                     );
+            // ==========================================
+            // 🎮 COMMUNITY GAMES, STARBOARD & AFK
+            // ==========================================
+            if (viewName === 'view_games') {
+                embed.setTitle('🎮 Community Games, Starboard & AFK')
+                    .setDescription('Configure interactive server games and community features.')
+                    .addFields(
+                        { name: '💤 AFK System', value: settings.afkEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: '🔢 Counting Game', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : '🔴 Disabled', inline: true },
+                        { name: '📖 One Word Story', value: settings.oneWordStoryEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: '⭐ Starboard', value: settings.starboardEnabled ? `<#${settings.starboardChannelId || 'Unset'}>` : '🔴 Disabled', inline: true },
+                        { name: '🎲 Number Guessing', value: settings.guessGameEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: '✂️ Rock Paper Scissors', value: settings.rpsGameEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true }
+                    );
 
                 const rowA = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder()
-                        .setCustomId('action_ticket_category')
-                        .setPlaceholder('1️⃣ Select Ticket Category...')
-                        .setChannelTypes(ChannelType.GuildCategory)
+                    new ButtonBuilder().setCustomId('action_afk_toggle').setLabel(settings.afkEnabled !== false ? 'Disable AFK' : 'Enable AFK').setStyle(settings.afkEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_onewordstory_toggle').setLabel(settings.oneWordStoryEnabled !== false ? 'Disable Story' : 'Enable Story').setStyle(settings.oneWordStoryEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder()
-                        .setCustomId('action_ticket_channel')
-                        .setPlaceholder('2️⃣ Select Panel Spawn Channel...')
-                        .setChannelTypes(ChannelType.GuildText)
+                    new ChannelSelectMenuBuilder().setCustomId('action_counting_channel').setPlaceholder('Select / Change Counting Channel...').setChannelTypes(ChannelType.GuildText)
                 );
 
                 const rowC = new ActionRowBuilder().addComponents(
-                    new RoleSelectMenuBuilder()
-                        .setCustomId('action_ticket_support_role')
-                        .setPlaceholder('3️⃣ Select Support Staff Role...')
+                    new ChannelSelectMenuBuilder().setCustomId('action_starboard_channel').setPlaceholder('Select Starboard Channel...').setChannelTypes(ChannelType.GuildText)
                 );
 
-                const rowD = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder()
-                        .setCustomId('action_ticket_autoarchive_toggle')
-                        .setLabel(settings.ticketAutoArchive ? 'Disable 24h Auto-Close' : 'Enable 24h Auto-Close')
-                        .setStyle(settings.ticketAutoArchive ? ButtonStyle.Danger : ButtonStyle.Secondary),
-                    new ButtonBuilder()
-                        .setCustomId('action_ticket_customize_panel')
-                        .setLabel('Customize Panel Text')
-                        .setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder()
-                        .setCustomId('action_ticket_spawn')
-                        .setLabel('Spawn Ticket Panel')
-                        .setStyle(ButtonStyle.Success)
-                );
-
-                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
+                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
             }
 
-            // --- VERIFY ---
+            // ==========================================
+            // ✅ MULTI-MODE MEMBER VERIFICATION
+            // ==========================================
             if (viewName === 'view_verify') {
-                const rolesDisplay = settings.verifyRoleId ? settings.verifyRoleId.split(',').map(id => `<@&${id}>`).join(' ') : 'None';
-                embed.setTitle('Join Verification')
-                     .setDescription('Require new members to verify themselves before accessing the server.')
-                     .addFields(
-                          { name: 'Verify Channel', value: settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : 'Current Channel', inline: true },
-                          { name: 'Verified Roles', value: rolesDisplay, inline: false }
-                      );
-                const rowA = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_verify_channel').setPlaceholder('Select Custom Verify Channel...').setChannelTypes(ChannelType.GuildText));
-                const rowB = new ActionRowBuilder().addComponents(new RoleSelectMenuBuilder().setCustomId('action_verify_role').setPlaceholder('Select Verified Role(s)...').setMinValues(1).setMaxValues(5));
-                const rowC = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_verify_spawn').setLabel('Spawn Verify Panel').setStyle(ButtonStyle.Success));
+                const currentType = settings.verificationType || 'captcha';
+                const typeLabels = {
+                    button: '🔘 Click to Verify (1-Click Button)',
+                    captcha: '🔒 CAPTCHA Verification (Anti-Bot Code)',
+                    reaction: `⭐ React Verification (${settings.verifyEmoji || '✅'})`,
+                    roblox: '🎮 Roblox Account Verification'
+                };
+
+                embed.setTitle('✅ Multi-Mode Member Verification')
+                    .setDescription(
+                        `Configure server entry verification. Nora supports **4 different verification types**:\n` +
+                        `• **🔘 Click to Verify:** Simple 1-click button for instant access.\n` +
+                        `• **🔒 CAPTCHA:** Distorted image security code to block raids and userbots.\n` +
+                        `• **⭐ React:** Reaction emoji on a welcome/rules message.\n` +
+                        `• **🎮 Roblox:** Verifies and links Roblox accounts for role sync.`
+                    )
+                    .addFields(
+                        { name: 'Active Verification Type', value: `**${typeLabels[currentType] || '🔒 CAPTCHA'}**`, inline: true },
+                        { name: 'Verification Channel', value: settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : '*None (Will use current)*', inline: true },
+                        { name: 'Verified Role(s)', value: settings.verifyRoleId ? settings.verifyRoleId.split(',').map(id => `<@&${id}>`).join(' ') : '*None (Required)*', inline: true },
+                        { name: 'Reaction Emoji', value: `${settings.verifyEmoji || '✅'} *(React mode)*`, inline: true },
+                        { name: 'Roblox Module', value: settings.robloxVerifyEnabled ? '🟢 Active' : '🔴 Off', inline: true },
+                        { name: 'Active Panel Message', value: settings.verifyMessageId ? `\`${settings.verifyMessageId}\`` : '*Not spawned yet*', inline: true }
+                    );
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('action_verify_type')
+                        .setPlaceholder('Choose Active Verification Type...')
+                        .addOptions([
+                            { label: 'Click to Verify (1-Click Button)', value: 'button', description: 'Immediate 1-click instant verification button', emoji: '🔘', default: currentType === 'button' },
+                            { label: 'CAPTCHA Verification (Anti-Bot)', value: 'captcha', description: 'Visual distorted image security code test', emoji: '🔒', default: currentType === 'captcha' },
+                            { label: 'React Verification (Emoji)', value: 'reaction', description: 'React with an emoji to gain access', emoji: '⭐', default: currentType === 'reaction' },
+                            { label: 'Roblox Account Verification', value: 'roblox', description: 'Link Roblox profile to Discord server', emoji: '🎮', default: currentType === 'roblox' }
+                        ])
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_verify_spawn_button').setLabel('Spawn 1-Click Panel').setStyle(ButtonStyle.Success).setEmoji('🔘'),
+                    new ButtonBuilder().setCustomId('action_verify_spawn_captcha').setLabel('Spawn CAPTCHA Panel').setStyle(ButtonStyle.Primary).setEmoji('🔒'),
+                    new ButtonBuilder().setCustomId('action_verify_spawn_reaction').setLabel('Spawn React Panel').setStyle(ButtonStyle.Secondary).setEmoji('⭐'),
+                    new ButtonBuilder().setCustomId('action_verify_spawn_roblox').setLabel('Spawn Roblox Panel').setStyle(ButtonStyle.Secondary).setEmoji('🎮')
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_verify_channel').setPlaceholder('Select Destination Verification Channel...').setChannelTypes(ChannelType.GuildText)
+                );
+
+                const rowD = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_verify_role').setPlaceholder('Select Role(s) Granted Upon Verification...').setMinValues(1).setMaxValues(5)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
+            }
+
+            // ==========================================
+            // 🎫 SUPPORT TICKETS
+            // ==========================================
+            if (viewName === 'view_tickets') {
+                embed.setTitle('🎫 Support Ticket System')
+                    .setDescription('Configure private support tickets with customizable panel titles, descriptions, and staff roles.')
+                    .addFields(
+                        { name: 'Parent Category', value: settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : '🔴 Unset', inline: true },
+                        { name: 'Panel Channel', value: settings.ticketChannelId ? `<#${settings.ticketChannelId}>` : '🔴 Unset', inline: true },
+                        { name: 'Support Staff Role', value: settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : '🔴 Unset', inline: true },
+                        { name: 'Auto-Archive', value: settings.ticketAutoArchive ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Tickets Created', value: `#${settings.ticketLastNumber || 0}`, inline: true }
+                    );
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_ticket_spawn').setLabel('Spawn Ticket Panel').setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_ticket_customize_panel').setLabel('Edit Panel Text').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('action_ticket_autoarchive_toggle').setLabel(settings.ticketAutoArchive ? 'Disable Auto-Archive' : 'Enable Auto-Archive').setStyle(settings.ticketAutoArchive ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_ticket_category').setPlaceholder('Select Parent Ticket Category...').setChannelTypes(ChannelType.GuildCategory)
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_ticket_support_role').setPlaceholder('Select Support Staff Role...')
+                );
+
                 return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
             }
 
-            // --- ROBLOX ---
-            if (viewName === 'view_roblox') {
-                embed.setTitle('Roblox Verification')
-                     .setDescription('Configure Roblox integration and panel spawning.')
-                     .addFields(
-                          { name: 'Status', value: settings.robloxVerifyEnabled ? 'Enabled' : 'Disabled', inline: true },
-                          { name: 'Verified Role', value: settings.robloxVerifyRoleId ? `<@&${settings.robloxVerifyRoleId}>` : 'None', inline: true },
-                          { name: 'Spawn Channel', value: settings.robloxVerifyChannelId ? `<#${settings.robloxVerifyChannelId}>` : 'First text channel', inline: true }
-                      );
-                const rowA = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_roblox_toggle').setLabel(settings.robloxVerifyEnabled ? 'Disable Roblox Verify' : 'Enable Roblox Verify').setStyle(settings.robloxVerifyEnabled ? ButtonStyle.Danger : ButtonStyle.Success));
-                const rowB = new ActionRowBuilder().addComponents(new RoleSelectMenuBuilder().setCustomId('action_roblox_role').setPlaceholder('Select Roblox Verified Role...'));
-                const rowC = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_roblox_channel').setPlaceholder('Select Spawn Channel...').setChannelTypes(ChannelType.GuildText));
-                const rowD = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_roblox_spawn').setLabel('Spawn Roblox Verify Panel').setStyle(ButtonStyle.Success)
-                );
-                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
-            }
+            // ==========================================
+            // 🎭 SELF ROLES, AUTORESPONDERS & AI
+            // ==========================================
+            if (viewName === 'view_utility') {
+                embed.setTitle('🎭 Self Roles, Autoresponders & AI')
+                    .setDescription('Configure interactive role panels, keyword auto-replies, and AI persona.')
+                    .addFields(
+                        { name: 'Autoresponder Triggers', value: `🤖 **${state.autoresponderCount} rule(s) configured**`, inline: true },
+                        { name: 'YouTube Alerts', value: `📺 **${state.youtubeFeedCount} channel(s) tracked**`, inline: true },
+                        { name: 'AI Engine Preference', value: `🧠 \`${settings.aiPreference || 'gemini'}\``, inline: true }
+                    );
 
-            // --- STARBOARD ---
-            if (viewName === 'view_starboard') {
-                embed.setTitle('Starboard System')
-                     .setDescription('Community voting system. When members react to messages with the trigger emoji, Nora will automatically repost them to the designated starboard channel.')
-                     .addFields(
-                        { name: 'Status', value: settings.starboardEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Channel', value: settings.starboardChannelId ? `<#${settings.starboardChannelId}>` : 'None', inline: true },
-                        { name: 'Threshold', value: `${settings.starboardThreshold || 3} reactions`, inline: true },
-                        { name: 'Emoji', value: settings.starboardEmoji || '⭐', inline: true },
-                        { name: 'Webhook Mode', value: settings.starboardWebhookEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Embed Color', value: settings.starboardEmbedColor || '#ffac33', inline: true }
-                     );
                 const rowA = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_starboard_webhook_toggle').setLabel('Toggle Webhook Mode').setStyle(settings.starboardWebhookEnabled ? ButtonStyle.Success : ButtonStyle.Secondary)
+                    new ButtonBuilder().setCustomId('action_selfroles_build').setLabel('Build Self-Roles Panel').setStyle(ButtonStyle.Success)
                 );
-                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_starboard_channel').setPlaceholder('Select Starboard Channel...').setChannelTypes(ChannelType.GuildText));
-                const rowC = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_starboard_threshold').setPlaceholder('Reaction Threshold...').addOptions([
-                    { label: '1 Reaction', value: '1', default: settings.starboardThreshold === 1 },
-                    { label: '2 Reactions', value: '2', default: settings.starboardThreshold === 2 },
-                    { label: '3 Reactions (Default)', value: '3', default: settings.starboardThreshold === 3 },
-                    { label: '5 Reactions', value: '5', default: settings.starboardThreshold === 5 },
-                    { label: '10 Reactions', value: '10', default: settings.starboardThreshold === 10 }
-                ]));
-                const rowD = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('action_starboard_emoji').setPlaceholder('Trigger Emoji...').addOptions([
-                    { label: '⭐ Star (Default)', value: '⭐', default: settings.starboardEmoji === '⭐' },
-                    { label: '🌟 Glowing Star', value: '🌟', default: settings.starboardEmoji === '🌟' },
-                    { label: '❤️ Heart', value: '❤️', default: settings.starboardEmoji === '❤️' },
-                    { label: '🔥 Fire', value: '🔥', default: settings.starboardEmoji === '🔥' },
-                    { label: '👍 Thumbs Up', value: '👍', default: settings.starboardEmoji === '👍' }
-                ]));
-                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
-            }
 
-            // --- ONE WORD STORY ---
-            if (viewName === 'view_onewordstory') {
-                embed.setTitle('One Word Story Game')
-                     .setDescription('Collaborative word-by-word story building game. Members take turns contributing single words to write a story together.')
-                     .addFields(
-                        { name: 'Status', value: settings.oneWordStoryEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Dedicated Channel', value: settings.oneWordStoryChannelId ? `<#${settings.oneWordStoryChannelId}>` : 'Any channel (via `/onewordstory`)', inline: true },
-                        { name: 'Consecutive Turns', value: settings.oneWordStoryAllowConsecutive ? '🟢 Allowed' : '🔴 Disabled (strictly enforced)', inline: true }
-                     );
-                const rowA = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_onewordstory_toggle').setLabel(settings.oneWordStoryEnabled !== false ? 'Disable Game' : 'Enable Game').setStyle(settings.oneWordStoryEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_onewordstory_consecutive_toggle').setLabel(settings.oneWordStoryAllowConsecutive ? 'Disable Consecutive Turns' : 'Allow Consecutive Turns').setStyle(settings.oneWordStoryAllowConsecutive ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                const rowB = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder().setCustomId('action_ai_pref').setPlaceholder('Change Nora AI Engine Preference...').addOptions([
+                        { label: 'Google Gemini 2.5 Flash (Default, Ultra-Fast)', value: 'gemini', default: settings.aiPreference === 'gemini' },
+                        { label: 'OpenAI GPT-4o Mini', value: 'openai', default: settings.aiPreference === 'openai' },
+                        { label: 'Anthropic Claude 3.5 Haiku', value: 'claude', default: settings.aiPreference === 'claude' }
+                    ])
                 );
-                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_onewordstory_channel').setPlaceholder('Select Dedicated Story Channel...').setChannelTypes(ChannelType.GuildText));
+
                 return { embeds: [embed], components: [rowA, rowB, backRow] };
             }
 
-            // --- SELF ROLES ---
-            if (viewName === 'view_selfroles') {
-                embed.setTitle('Self Roles Panel Builder')
-                     .setDescription('Drop an interactive panel in this channel for users to assign themselves roles.')
-                     .addFields({ name: 'Instructions', value: 'Click the button below to open the Builder. You will need the IDs of the roles you want to offer.' });
-                const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('action_selfroles_build').setLabel('Build Panel Here').setStyle(ButtonStyle.Success));
-                return { embeds: [embed], components: [row, backRow] };
-            }
+            // ==========================================
+            // 👑 DEV & PREMIUM OVERRIDES (Bot Owner)
+            // ==========================================
+            if (viewName === 'view_dev' && APP_OWNER_IDS.includes(interaction.user.id)) {
+                embed.setTitle('👑 Nora Developer & Host Controls')
+                    .setDescription('Direct system controls for bot maintainers.')
+                    .addFields(
+                        { name: 'Bot Process', value: `PID: \`${process.pid}\``, inline: true },
+                        { name: 'Guilds Cached', value: `\`${interaction.client.guilds.cache.size}\``, inline: true }
+                    );
 
-            // --- EXTRAS ---
-            if (viewName === 'view_extras') {
-                embed.setTitle('Fun & Games')
-                     .setDescription('Additional fun features for your server.')
-                     .addFields(
-                        { name: 'Welcomer', value: settings.welcomerEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Welcome Ch.', value: settings.welcomeChannelId ? `<#${settings.welcomeChannelId}>` : 'None', inline: true },
-                        { name: 'Counting Game', value: settings.countingChannelId ? `🟢 <#${settings.countingChannelId}>` : '🔴 Disabled', inline: true },
-                        { name: 'Vote Log', value: settings.voteLogChannelId ? `<#${settings.voteLogChannelId}>` : 'None', inline: true },
-                        { name: 'Autoresponder', value: `${state.autoresponderCount} trigger(s)`, inline: true },
-                        { name: 'YouTube Alerts', value: `${state.youtubeFeedCount} channel(s)`, inline: true }
-                     );
                 const rowA = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_welcomer_toggle').setLabel(settings.welcomerEnabled ? 'Disable Welcomer' : 'Enable Welcomer').setStyle(settings.welcomerEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_counting_toggle').setLabel(settings.countingChannelId ? 'Disable Counting' : 'Enable Counting (This Ch.)').setStyle(settings.countingChannelId ? ButtonStyle.Danger : ButtonStyle.Success)
+                    new ButtonBuilder().setCustomId('dev_reboot').setLabel('Reboot Nora Core').setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder().setCustomId('dev_dbsync').setLabel('Force DB Sync (Alter)').setStyle(ButtonStyle.Primary)
                 );
-                const rowB = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_welcome_channel').setPlaceholder('Select Welcome Channel...').setChannelTypes(ChannelType.GuildText));
-                const rowC = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_counting_channel').setPlaceholder('Select / Change Counting Channel...').setChannelTypes(ChannelType.GuildText));
-                const rowD = new ActionRowBuilder().addComponents(new ChannelSelectMenuBuilder().setCustomId('action_votelog_channel').setPlaceholder('Select Vote Log Channel...').setChannelTypes(ChannelType.GuildText));
-                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
+
+                return { embeds: [embed], components: [rowA, backRow] };
             }
 
-            embed.setTitle('Under Construction').setDescription('This menu is currently being built. Check back soon!');
-            return { embeds: [embed], components: [backRow] };
+            // Fallback
+            return buildDashboard('main');
         };
 
         const initialView = buildDashboard(initialViewName);
@@ -743,15 +604,26 @@ module.exports = {
             response = await interaction.reply({ ...initialView, ephemeral: true });
         }
 
-        const collector = response.createMessageComponentCollector({ time: 600000 });
+        const targetMessage = response || await interaction.fetchReply?.().catch(() => null);
+        if (!targetMessage || typeof targetMessage.createMessageComponentCollector !== 'function') {
+            return;
+        }
+
+        const collector = targetMessage.createMessageComponentCollector({ time: 600000 });
 
         collector.on('collect', async i => {
             try {
-                if (i.user.id !== interaction.user.id) return i.reply({ content: 'Not your menu.', ephemeral: true });
+                if (i.user.id !== interaction.user.id) {
+                    return i.reply({ content: '⚠️ This settings dashboard is controlled by another user.', ephemeral: true });
+                }
 
                 // Refresh counts dynamically
                 state.autoresponderCount = await Autoresponder.count({ where: { guildId: interaction.guild.id } }).catch(() => 0);
                 state.youtubeFeedCount = await ContentFeed.count({ where: { guildId: interaction.guild.id, platform: 'YOUTUBE' } }).catch(() => 0);
+
+                if (i.customId === 'action_quick_refresh') {
+                    return i.update(buildDashboard('main'));
+                }
 
                 if (i.customId === 'config_main' || i.customId.startsWith('view_')) {
                     const view = i.customId.startsWith('view_') ? i.customId : i.values[0];
@@ -767,49 +639,52 @@ module.exports = {
                 let update = false;
                 let sync = null;
 
-                // Starboard
-                if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }
-                if (i.customId === 'action_starboard_webhook_toggle') { settings.starboardWebhookEnabled = !settings.starboardWebhookEnabled; update = true; }
-                if (i.customId === 'action_starboard_channel') { settings.starboardChannelId = i.values[0]; update = true; }
-                if (i.customId === 'action_starboard_threshold') { settings.starboardThreshold = parseInt(i.values[0]); update = true; }
-                if (i.customId === 'action_starboard_emoji') { settings.starboardEmoji = i.values[0]; update = true; }
-
-                // One Word Story
-                if (i.customId === 'action_onewordstory_toggle') { settings.oneWordStoryEnabled = !settings.oneWordStoryEnabled; update = true; }
-                if (i.customId === 'action_onewordstory_consecutive_toggle') { settings.oneWordStoryAllowConsecutive = !settings.oneWordStoryAllowConsecutive; update = true; }
-                if (i.customId === 'action_onewordstory_channel') { settings.oneWordStoryChannelId = i.values[0]; update = true; }
-
-                // Anti-Raid
+                // Safety / Anti-Raid
                 if (i.customId === 'action_antiraid_toggle') { settings.antiRaidEnabled = !settings.antiRaidEnabled; update = true; }
                 if (i.customId === 'action_lockdown_toggle') { settings.lockdownMode = !settings.lockdownMode; update = true; }
                 if (i.customId === 'action_pfp_toggle') { settings.requirePFP = !settings.requirePFP; update = true; }
                 if (i.customId === 'action_nickfilter_toggle') { settings.nicknameRaidFilter = !settings.nicknameRaidFilter; update = true; }
-                if (i.customId === 'action_antiraid_threshold') { settings.antiRaidThreshold = parseInt(i.values[0]); update = true; }
                 if (i.customId === 'action_accountage_minage') { settings.minAccountAge = parseInt(i.values[0]); update = true; }
                 if (i.customId === 'action_antiraid_action') { settings.antiRaidAction = i.values[0]; update = true; }
 
-                // AutoMod — independent toggle per rule type
+                // AutoMod
                 if (i.customId === 'action_automod_profanity') { settings.automodProfanity = !settings.automodProfanity; update = true; sync = 'profanity'; }
-                if (i.customId === 'action_automod_sexual')    { settings.automodSexual = !settings.automodSexual; update = true; sync = 'profanity'; }
-                if (i.customId === 'action_automod_slurs')     { settings.automodSlurs = !settings.automodSlurs; update = true; sync = 'profanity'; }
-                if (i.customId === 'action_automod_scam')      { settings.automodScam = !settings.automodScam; update = true; sync = 'scam'; }
-                if (i.customId === 'action_automod_spam')      { settings.automodSpam = !settings.automodSpam; update = true; sync = 'spam'; }
-                if (i.customId === 'action_automod_hardcore')  { settings.automodHardcore = !settings.automodHardcore; update = true; sync = 'hardcore'; }
-                if (i.customId === 'action_automod_mentions')  { settings.automodMentions = parseInt(i.values[0]); update = true; sync = 'mentions'; }
-                if (i.customId === 'action_automod_immune')    { settings.automodImmuneRoles = JSON.stringify(i.values); update = true; sync = 'all'; }
+                if (i.customId === 'action_automod_sexual') { settings.automodSexual = !settings.automodSexual; update = true; sync = 'profanity'; }
+                if (i.customId === 'action_automod_slurs') { settings.automodSlurs = !settings.automodSlurs; update = true; sync = 'profanity'; }
+                if (i.customId === 'action_automod_scam') { settings.automodScam = !settings.automodScam; update = true; sync = 'scam'; }
+                if (i.customId === 'action_automod_spam') { settings.automodSpam = !settings.automodSpam; update = true; sync = 'spam'; }
+                if (i.customId === 'action_automod_hardcore') { settings.automodHardcore = !settings.automodHardcore; update = true; sync = 'hardcore'; }
+                if (i.customId === 'action_automod_mentions') { settings.automodMentions = parseInt(i.values[0]); update = true; sync = 'mentions'; }
+                if (i.customId === 'action_automod_immune') { settings.automodImmuneRoles = JSON.stringify(i.values); update = true; sync = 'all'; }
 
-                // Anti-Spam (legacy handlers removed — fully managed by Discord native AutoMod)
+                // Welcomer
+                if (i.customId === 'action_welcomer_toggle') { settings.welcomerEnabled = !settings.welcomerEnabled; update = true; }
+                if (i.customId === 'action_welcomedm_toggle') { settings.welcomeDmEnabled = !settings.welcomeDmEnabled; update = true; }
+                if (i.customId === 'action_welcome_channel') { settings.welcomeChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_welcome_role') { settings.welcomeRoleId = i.values[0]; update = true; }
 
-                // Logging & Section Channel Routing
+                // Leveling
+                if (i.customId === 'action_leveling_toggle') { settings.levelingEnabled = !settings.levelingEnabled; update = true; }
+                if (i.customId === 'action_levelalert_toggle') { settings.levelUpNotificationsEnabled = !settings.levelUpNotificationsEnabled; update = true; }
+                if (i.customId === 'action_leveldm_toggle') { settings.levelUpDmEnabled = !settings.levelUpDmEnabled; update = true; }
+                if (i.customId === 'action_levelalert_channel') { settings.levelUpChannelId = i.values[0]; update = true; }
+
+                // Games & AFK
+                if (i.customId === 'action_afk_toggle') { settings.afkEnabled = settings.afkEnabled !== false ? false : true; update = true; }
+                if (i.customId === 'action_onewordstory_toggle') { settings.oneWordStoryEnabled = !settings.oneWordStoryEnabled; update = true; }
+                if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }
+                if (i.customId === 'action_counting_channel') { settings.countingChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_starboard_channel') { settings.starboardChannelId = i.values[0]; update = true; }
+
+                // Logging & Section Routing
                 if (i.customId === 'action_log_part_select') {
                     state.selectedLogCategory = i.values[0];
                     settings.selectedLogCategory = i.values[0];
                     return i.update(buildDashboard('view_logging'));
                 }
                 if (i.customId === 'action_log_channel') {
-                    const selectedCategory = state.selectedLogCategory || settings.selectedLogCategory || 'default';
+                    const selectedCategory = state.selectedLogCategory || 'default';
                     const targetChannelId = i.values[0];
-
                     if (selectedCategory === 'default') {
                         settings.loggingChannelId = targetChannelId;
                     } else {
@@ -829,8 +704,7 @@ module.exports = {
                     const values = i.values;
                     const logFields = [
                         'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes',
-                        'logAutomod', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes',
-                        'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logMemberBoosts'
+                        'logAutomod', 'logChannelEdits', 'logVoiceJoins', 'logMemberBoosts'
                     ];
                     for (const field of logFields) {
                         settings[field] = values.includes(field);
@@ -838,52 +712,62 @@ module.exports = {
                     update = true;
                 }
 
-                // Leveling
-                if (i.customId === 'action_leveling_toggle') { settings.levelingEnabled = !settings.levelingEnabled; update = true; }
-                if (i.customId === 'action_levelalert_toggle') { settings.levelUpNotificationsEnabled = !settings.levelUpNotificationsEnabled; update = true; }
-                if (i.customId === 'action_levelalert_channel') { settings.levelUpChannelId = i.values[0]; update = true; }
+                // Verification
+                if (i.customId === 'action_verify_type') { settings.verificationType = i.values[0]; update = true; }
+                if (i.customId === 'action_verify_channel') { settings.verifyChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_verify_role') { settings.verifyRoleId = i.values.join(','); update = true; }
+                if (i.customId === 'action_roblox_toggle') { settings.robloxVerifyEnabled = !settings.robloxVerifyEnabled; update = true; }
 
-                // Base Settings
-                if (i.customId === 'action_ai_pref') { settings.aiPreference = i.values[0]; update = true; }
-                if (i.customId === 'action_warning_thresh') { settings.warningThreshold = parseInt(i.values[0]); update = true; }
-                if (i.customId === 'action_warning_action') { settings.warningAction = i.values[0]; update = true; }
-                
-                // Ticketing
+                if (i.customId.startsWith('action_verify_spawn')) {
+                    if (!settings.verifyRoleId) return i.reply({ content: '⚠️ You must configure at least one **Verified Role** in the dropdown above first!', ephemeral: true });
+                    const targetChannelId = settings.verifyChannelId || i.channel.id;
+                    const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
+
+                    let spawnType = settings.verificationType || 'captcha';
+                    if (i.customId === 'action_verify_spawn_button') spawnType = 'button';
+                    if (i.customId === 'action_verify_spawn_captcha') spawnType = 'captcha';
+                    if (i.customId === 'action_verify_spawn_reaction') spawnType = 'reaction';
+                    if (i.customId === 'action_verify_spawn_roblox') spawnType = 'roblox';
+
+                    const verifyEngine = require('../../bot/engines/verify');
+                    try {
+                        await verifyEngine.spawnVerificationPanel(channel, settings, spawnType, i);
+                        const typeNames = {
+                            button: '1-Click Button',
+                            captcha: 'Anti-Bot CAPTCHA',
+                            reaction: `Reaction (${settings.verifyEmoji || '✅'})`,
+                            roblox: 'Roblox Linking'
+                        };
+                        return i.reply({ content: `✅ **${typeNames[spawnType]}** verification panel spawned in <#${channel.id}>!`, ephemeral: true });
+                    } catch (spawnErr) {
+                        console.error('Verification panel spawn error:', spawnErr);
+                        return i.reply({ content: `⚠️ Failed to spawn panel: ${spawnErr.message}`, ephemeral: true });
+                    }
+                }
+
+                // Tickets
                 if (i.customId === 'action_ticket_category') { settings.ticketCategoryId = i.values[0]; update = true; }
-                if (i.customId === 'action_ticket_channel') { settings.ticketChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_ticket_support_role') { settings.ticketSupportRoleId = i.values[0]; update = true; }
                 if (i.customId === 'action_ticket_autoarchive_toggle') { settings.ticketAutoArchive = !settings.ticketAutoArchive; update = true; }
                 if (i.customId === 'action_ticket_customize_panel') {
                     const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
                     const modal = new ModalBuilder().setCustomId('modal_ticket_customize_panel').setTitle('Customize Ticket Panel');
-
                     modal.addComponents(
                         new ActionRowBuilder().addComponents(
-                            new TextInputBuilder()
-                                .setCustomId('panel_title')
-                                .setLabel('Panel Title')
-                                .setStyle(TextInputStyle.Short)
-                                .setRequired(true)
-                                .setValue(settings.ticketPanelTitle || 'Support Center')
+                            new TextInputBuilder().setCustomId('panel_title').setLabel('Panel Title').setStyle(TextInputStyle.Short).setRequired(true).setValue(settings.ticketPanelTitle || 'Support Center')
                         ),
                         new ActionRowBuilder().addComponents(
-                            new TextInputBuilder()
-                                .setCustomId('panel_desc')
-                                .setLabel('Panel Description')
-                                .setStyle(TextInputStyle.Paragraph)
-                                .setRequired(true)
-                                .setValue(settings.ticketPanelDesc || 'Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.')
+                            new TextInputBuilder().setCustomId('panel_desc').setLabel('Panel Description').setStyle(TextInputStyle.Paragraph).setRequired(true).setValue(settings.ticketPanelDesc || 'Need assistance? Please select a category below to open a private ticket with staff.')
                         )
                     );
                     await i.showModal(modal);
-
                     try {
                         const submitted = await i.awaitModalSubmit({ time: 300000, filter: x => x.user.id === interaction.user.id && x.customId === 'modal_ticket_customize_panel' });
                         settings.ticketPanelTitle = submitted.fields.getTextInputValue('panel_title');
                         settings.ticketPanelDesc = submitted.fields.getTextInputValue('panel_desc');
                         await settings.save();
                         settingsCache.invalidate(interaction.guild.id);
-                        return submitted.update(buildDashboard('view_ticketing'));
+                        return submitted.update(buildDashboard('view_tickets'));
                     } catch (e) {
                         return;
                     }
@@ -892,16 +776,9 @@ module.exports = {
                     if (!settings.ticketCategoryId) return i.reply({ content: '⚠️ You must select a Ticket Category above first!', ephemeral: true });
                     const targetChannelId = settings.ticketChannelId || i.channel.id;
                     const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
-                    
                     const panelTitle = settings.ticketPanelTitle || 'Support Center';
-                    const panelDesc = settings.ticketPanelDesc || 'Need assistance? Please select the category that best matches your issue below to open a private channel with the Staff team.\n\n**Categories:**\n**Support:** General questions or assistance.\n**Reporting:** Report a user breaking the rules or a bug.\n**Appeals:** Request an appeal for an action taken against you.\n**Other:** Anything else.';
-
-                    const pEmbed = new EmbedBuilder()
-                        .setTitle(panelTitle)
-                        .setDescription(panelDesc)
-                        .setColor(getRoleColor(interaction))
-                        .setFooter({ text: 'Support Ticketing System' });
-
+                    const panelDesc = settings.ticketPanelDesc || 'Need assistance? Select a category below to open a private ticket with our staff team.';
+                    const pEmbed = new EmbedBuilder().setTitle(panelTitle).setDescription(panelDesc).setColor(getRoleColor(interaction)).setFooter({ text: 'Support Ticketing System' });
                     const pRow = new ActionRowBuilder().addComponents(
                         new ButtonBuilder().setCustomId('ticket_Support').setLabel('Support').setStyle(ButtonStyle.Primary),
                         new ButtonBuilder().setCustomId('ticket_Reporting').setLabel('Reporting').setStyle(ButtonStyle.Danger),
@@ -909,96 +786,35 @@ module.exports = {
                         new ButtonBuilder().setCustomId('ticket_Other').setLabel('Other').setStyle(ButtonStyle.Secondary)
                     );
                     await channel.send({ embeds: [pEmbed], components: [pRow] });
-                    return i.reply({ content: `Ticketing panel spawned in <#${channel.id}>!`, ephemeral: true });
-                }
-                
-                // Verify
-                if (i.customId === 'action_verify_channel') { settings.verifyChannelId = i.values[0]; update = true; }
-                if (i.customId === 'action_verify_role') { settings.verifyRoleId = i.values.join(','); update = true; }
-                if (i.customId === 'action_verify_spawn') {
-                    if (!settings.verifyRoleId) return i.reply({ content: '⚠️ You must set the Verified Roles above first!', ephemeral: true });
-                    const targetChannelId = settings.verifyChannelId || i.channel.id;
-                    const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
-                    
-                    const pEmbed = new EmbedBuilder()
-                        .setTitle('Server Verification Required')
-                        .setDescription('To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and complete the CAPTCHA.')
-                        .setColor(getRoleColor(interaction))
-                        .setFooter({ text: 'Nora Security Systems' });
-                    const pRow = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('verify_system_button').setLabel('Verify').setStyle(ButtonStyle.Success));
-                    
-                    await channel.send({ embeds: [pEmbed], components: [pRow] });
-                    return i.reply({ content: `Verification panel spawned in <#${channel.id}>!`, ephemeral: true });
+                    return i.reply({ content: `✅ Ticket panel spawned in <#${channel.id}>!`, ephemeral: true });
                 }
 
-                // Roblox
-                if (i.customId === 'action_roblox_toggle') { settings.robloxVerifyEnabled = !settings.robloxVerifyEnabled; update = true; }
-                if (i.customId === 'action_roblox_role') { settings.robloxVerifyRoleId = i.values[0]; update = true; }
-                if (i.customId === 'action_roblox_channel') { settings.robloxVerifyChannelId = i.values[0]; update = true; }
-                if (i.customId === 'action_roblox_spawn') {
-                    if (!settings.robloxVerifyEnabled) return i.reply({ content: '⚠️ Roblox verification must be enabled in settings first!', ephemeral: true });
-                    if (!settings.robloxVerifyRoleId) return i.reply({ content: '⚠️ Roblox verified role must be set in settings first!', ephemeral: true });
-                    
-                    const targetChannelId = settings.robloxVerifyChannelId || i.channel.id;
-                    const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
-
-                    const pEmbed = new EmbedBuilder()
-                        .setTitle('Roblox Account Verification')
-                        .setDescription('Link your Roblox account to this Discord server for access, roles, and perks!\n\n**How to verify:**\n1️⃣ Use the `/verify link` command with your Roblox username\n2️⃣ Copy the verification code provided\n3️⃣ Paste it into your Roblox profile description\n4️⃣ Run `/verify check` to complete verification\n\n**Manage your accounts:**\n• `/verify list` — View all linked accounts\n• `/verify switch` — Change your active account\n• `/verify unlink` — Remove a linked account')
-                        .setColor('#00b4d8')
-                        .setFooter({ text: 'Roblox Verification System' });
-
-                    const pRow = new ActionRowBuilder().addComponents(
-                        new ButtonBuilder()
-                            .setLabel('Verify via Website')
-                            .setStyle(ButtonStyle.Link)
-                            .setURL(`https://vaztinix.dev/verify?guild=${i.guild.id}`),
-                        new ButtonBuilder()
-                            .setCustomId('roblox_verify_alt')
-                            .setLabel('Alternative Verification')
-                            .setStyle(ButtonStyle.Secondary)
-                    );
-
-                    await channel.send({ embeds: [pEmbed], components: [pRow] });
-                    return i.reply({ content: `Roblox verification panel spawned in <#${channel.id}>!`, ephemeral: true });
-                }
-
-                // Self Roles
+                // Self Roles & AI
+                if (i.customId === 'action_ai_pref') { settings.aiPreference = i.values[0]; update = true; }
                 if (i.customId === 'action_selfroles_build') {
                     const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
                     const modal = new ModalBuilder().setCustomId('modal_selfroles_build').setTitle('Self Roles Builder');
-                    
                     modal.addComponents(
                         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('sr_title').setLabel('Panel Title').setStyle(TextInputStyle.Short).setRequired(true).setValue('Self Roles')),
-                        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('sr_desc').setLabel('Panel Description').setStyle(TextInputStyle.Paragraph).setRequired(true).setValue('Click the buttons below to assign or remove roles from yourself.')),
+                        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('sr_desc').setLabel('Panel Description').setStyle(TextInputStyle.Paragraph).setRequired(true).setValue('Click the buttons below to assign or remove roles.')),
                         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('sr_roles').setLabel('Role IDs (comma-separated, max 5)').setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder('123456789, 987654321'))
                     );
                     await i.showModal(modal);
-
                     let submitted;
                     try {
                         submitted = await i.awaitModalSubmit({ time: 300000, filter: x => x.user.id === interaction.user.id && x.customId === 'modal_selfroles_build' });
                         await submitted.deferReply({ ephemeral: true }).catch(() => {});
-                        
                         const title = submitted.fields.getTextInputValue('sr_title');
                         const desc = submitted.fields.getTextInputValue('sr_desc');
                         const rawRoleInput = submitted.fields.getTextInputValue('sr_roles');
                         const roleStrs = rawRoleInput.split(',').map(r => r.trim()).filter(r => r.length > 0);
 
                         if (roleStrs.length > 5 || roleStrs.length === 0) {
-                            return await submitted.editReply({ content: '⚠️ You must provide between 1 and 5 valid numeric Role IDs (comma-separated).' }).catch(() => {});
+                            return await submitted.editReply({ content: '⚠️ Provide between 1 and 5 valid numeric Role IDs.' }).catch(() => {});
                         }
 
-                        const targetChannel = i.channel || interaction.channel || (i.channelId ? await i.guild.channels.fetch(i.channelId).catch(() => null) : null);
-                        if (!targetChannel) {
-                            return await submitted.editReply({ content: '⚠️ Could not determine the channel to spawn the self-roles panel.' }).catch(() => {});
-                        }
-
-                        const panelEmbed = new EmbedBuilder()
-                            .setTitle(title)
-                            .setDescription(desc)
-                            .setColor(getRoleColor(interaction));
-
+                        const targetChannel = i.channel || interaction.channel;
+                        const panelEmbed = new EmbedBuilder().setTitle(title).setDescription(desc).setColor(getRoleColor(interaction));
                         const row = new ActionRowBuilder();
                         let loaded = 0;
                         const addedRoles = new Set();
@@ -1014,92 +830,32 @@ module.exports = {
                         }
 
                         if (loaded === 0) {
-                            return await submitted.editReply({ content: '⚠️ Could not find any of those Role IDs in this server. Make sure you provided valid numeric Role IDs.' }).catch(() => {});
+                            return await submitted.editReply({ content: '⚠️ Could not find those Role IDs in this server.' }).catch(() => {});
                         }
 
                         await targetChannel.send({ embeds: [panelEmbed], components: [row] });
-                        return await submitted.editReply({ content: '✅ Self-roles panel successfully spawned!' }).catch(() => {});
+                        return await submitted.editReply({ content: '✅ Self-roles panel successfully created!' }).catch(() => {});
                     } catch (e) {
-                        console.error('Self Roles Builder Modal Error:', e);
-                        if (submitted) {
-                            const errText = e.code === 50013 || (e.message && e.message.includes('Permissions'))
-                                ? '⚠️ Nora lacks Send Messages / Embed Links permissions in this channel.'
-                                : `⚠️ Could not spawn panel: ${e.message || 'Unknown error'}`;
-                            if (submitted.deferred || submitted.replied) {
-                                await submitted.editReply({ content: errText }).catch(() => {});
-                            } else {
-                                await submitted.reply({ content: errText, ephemeral: true }).catch(() => {});
-                            }
-                        }
+                        return;
                     }
                 }
 
-                // Extras
-                if (i.customId === 'action_welcomer_toggle') { settings.welcomerEnabled = !settings.welcomerEnabled; update = true; }
-                if (i.customId === 'action_welcome_channel') { settings.welcomeChannelId = i.values[0]; update = true; }
-                if (i.customId === 'action_counting_toggle') {
-                    if (settings.countingChannelId) {
-                        settings.countingChannelId = null;
-                    } else {
-                        settings.countingChannelId = i.channelId;
-                    }
-                    update = true;
-                }
-                if (i.customId === 'action_counting_channel') { settings.countingChannelId = i.values[0]; update = true; }
-                if (i.customId === 'action_votelog_channel') { settings.voteLogChannelId = i.values[0]; update = true; }
-
-                // Premium Overrides Modal Dispatch
-                if (i.customId === 'premium_enable_btn' || i.customId === 'premium_disable_btn' || i.customId === 'premium_remove_btn') {
-                    if (!APP_OWNER_IDS.includes(i.user.id)) return i.reply({ content: '❌ This action is strictly restricted to Bot Owners.', ephemeral: true });
-
-                    const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
-                    
-                    const action = i.customId.replace('_btn', ''); // premium_enable, premium_disable, premium_remove
-                    const actionLabel = i.customId.includes('enable') ? 'ENABLE' : i.customId.includes('disable') ? 'DISABLE' : 'REMOVE';
-                    
-                    const modal = new ModalBuilder()
-                        .setCustomId(`modal_premium_${action}`)
-                        .setTitle(`${actionLabel} PREMIUM`);
-
-                    const userInput = new TextInputBuilder()
-                        .setCustomId('user_id')
-                        .setLabel('Target Discord User ID')
-                        .setPlaceholder('Enter User ID (Optional)')
-                        .setStyle(TextInputStyle.Short)
-                        .setRequired(false);
-
-                    const guildInput = new TextInputBuilder()
-                        .setCustomId('guild_id')
-                        .setLabel('Target Discord Guild ID')
-                        .setPlaceholder('Enter Guild ID (Optional)')
-                        .setStyle(TextInputStyle.Short)
-                        .setRequired(false);
-
-                    modal.addComponents(
-                        new ActionRowBuilder().addComponents(userInput),
-                        new ActionRowBuilder().addComponents(guildInput)
-                    );
-
-                    await i.showModal(modal);
-                    return;
-                }
-
-                // Dev Handlers
+                // Dev Controls
                 if (i.customId === 'dev_reboot') {
                     if (!APP_OWNER_IDS.includes(i.user.id)) return i.reply({ content: 'Unauthorized.', ephemeral: true });
-                    await i.update({ content: 'Rebooting application core...', embeds: [], components: [] });
-                    process.exit(1); 
+                    await i.update({ content: '🔄 Rebooting application core...', embeds: [], components: [] });
+                    process.exit(1);
                 }
                 if (i.customId === 'dev_dbsync') {
                     if (!APP_OWNER_IDS.includes(i.user.id)) return i.reply({ content: 'Unauthorized.', ephemeral: true });
                     const sequelize = require('../../database/db');
-                    await sequelize.sync({ alter: true }).catch(()=>{});
-                    return i.reply({ content: 'Database correctly synchronized.', ephemeral: true });
+                    await sequelize.sync({ alter: true }).catch(() => {});
+                    return i.reply({ content: '✅ Database correctly synchronized.', ephemeral: true });
                 }
 
                 if (update) {
                     await settings.save();
-                    settingsCache.invalidate(interaction.guild.id); // STAGE 3: Force settings cache reload
+                    settingsCache.invalidate(interaction.guild.id);
 
                     if (sync) {
                         if (sync === 'all') {
@@ -1118,9 +874,9 @@ module.exports = {
                 }
 
             } catch (err) {
-                console.error(err);
-                if (!i.replied && !i.deferred) i.reply({ content: 'Save failed.', ephemeral: true }).catch(()=>{});
+                console.error('Setup collector error:', err);
+                if (!i.replied && !i.deferred) i.reply({ content: '⚠️ Save failed.', ephemeral: true }).catch(() => {});
             }
         });
-    },
+    }
 };

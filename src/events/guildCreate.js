@@ -36,6 +36,10 @@ module.exports = {
                 await settings.update({ installedAt: new Date() });
                 console.log(`[Privacy Boundary] Initialized installedAt for server ${guild.name} (${guild.id})`);
             }
+
+            // Immediately cache invites for newly joined server
+            const { cacheGuildInvites } = require('../utils/inviteTracker');
+            await cacheGuildInvites(guild);
         } catch (e) {
             console.error(`[Privacy Boundary Error] Failed to write installedAt for ${guild.id}:`, e.message);
         }

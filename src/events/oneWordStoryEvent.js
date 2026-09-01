@@ -1,4 +1,4 @@
-const { Events } = require('discord.js');
+const { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const settingsCache = require('../utils/settingsCache');
 const oneWordStoryManager = require('../utils/oneWordStoryManager');
 
@@ -31,15 +31,18 @@ module.exports = {
                 }
             } catch (e) {}
 
-            // Auto-finish if 10 sentences completed or max words limit reached
+            // Auto-finish if sentences or max words limit reached
             const isWordLimitReached = settings.oneWordStoryMaxWords > 0 && result.wordCount >= settings.oneWordStoryMaxWords;
             const isSentenceLimitReached = result.sentenceCount >= maxSentences;
 
             if (result.isStoryEnd || isSentenceLimitReached || isWordLimitReached) {
-                const endResult = await oneWordStoryManager.endGame(message.guild.id, message.channel.id);
+                const endResult = await oneWordStoryManager.endGame(message.guild.id, message.channel.id, false);
                 if (endResult.success) {
-                    const { EmbedBuilder } = require('discord.js');
                     const topList = endResult.topContributors.slice(0, 5).map((c, idx) => `${idx + 1}. **${c.username}**: ${c.count} words`).join('\n') || 'None';
+
+                    const footerText = endResult.autoRestartRemaining > 0
+                        ? `🔄 Auto-restarting in 5 seconds... (${endResult.autoRestartRemaining} round${endResult.autoRestartRemaining !== 1 ? 's' : ''} remaining)`
+                        : `Reached ${endResult.sentenceCount || maxSentences} sentence story milestone 🎯`;
 
                     const embed = new EmbedBuilder()
                         .setTitle('📖 One Word Story Completed!')
@@ -51,10 +54,62 @@ module.exports = {
                             { name: 'Contributors', value: `${endResult.contributorsCount}`, inline: true },
                             { name: 'Top Authors', value: topList, inline: false }
                         )
-                        .setFooter({ text: `Reached ${endResult.sentenceCount || maxSentences} sentence story milestone 🎯` })
+                        .setFooter({ text: footerText })
                         .setTimestamp();
 
                     await message.channel.send({ embeds: [embed] }).catch(() => {});
+
+                    // Auto-restart logic
+                    if (endResult.autoRestartRemaining > 0) {
+                        const channelId = message.channel.id;
+                        const guildId = message.guild.id;
+                        const remainingRounds = endResult.autoRestartRemaining - 1;
+
+                        setTimeout(async () => {
+                            try {
+                                // Double-check no game was manually started in the meantime
+                                const existingGame = await oneWordStoryManager.getActiveGame(channelId);
+                                if (existingGame) return;
+
+                                const startResult = await oneWordStoryManager.startGame(guildId, channelId, client.user.id, remainingRounds);
+                                if (!startResult.success) return;
+
+                                const roundLabel = remainingRounds > 0
+                                    ? `(${remainingRounds} auto-restart${remainingRounds !== 1 ? 's' : ''} remaining)`
+                                    : '(Final round)';
+
+                                const startEmbed = new EmbedBuilder()
+                                    .setTitle('📖 One Word Story — New Round!')
+                                    .setDescription(
+                                        `🔄 **Auto-restarted!** ${roundLabel}\n\n` +
+                                        '**Rules:**\n' +
+                                        '1️⃣ Send **exactly ONE word** per message.\n' +
+                                        `2️⃣ ${allowConsecutive ? 'Consecutive turns allowed.' : 'You **cannot** post twice in a row — wait for someone else!'}\n` +
+                                        '3️⃣ No mentions (`@everyone`/`<@user>`), links, or commands.\n' +
+                                        '4️⃣ Add a period (`.`) at the end of a word to **complete a sentence** (reacts with 📝).\n' +
+                                        `5️⃣ Story automatically finishes after **${maxSentences} sentences**!\n\n` +
+                                        '**Start the new story now by typing the first word below!**'
+                                    )
+                                    .setColor('#7c3aed')
+                                    .setFooter({ text: 'Nora One Word Story Game — Auto-Restart' })
+                                    .setTimestamp();
+
+                                const row = new ActionRowBuilder().addComponents(
+                                    new ButtonBuilder()
+                                        .setCustomId(`onewordstory_end_btn_${channelId}`)
+                                        .setLabel('End Story')
+                                        .setStyle(ButtonStyle.Danger)
+                                );
+
+                                const channel = await client.channels.fetch(channelId).catch(() => null);
+                                if (channel) {
+                                    await channel.send({ embeds: [startEmbed], components: [row] }).catch(() => {});
+                                }
+                            } catch (err) {
+                                console.error('[One Word Story Auto-Restart Error]:', err);
+                            }
+                        }, 5000);
+                    }
                 }
             }
         } else {

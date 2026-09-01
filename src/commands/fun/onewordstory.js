@@ -17,10 +17,20 @@ module.exports = {
                     opt.setName('channel')
                         .setDescription('Channel to start the game in (defaults to current channel)')
                         .addChannelTypes(ChannelType.GuildText)
+                        .setRequired(false))
+                .addBooleanOption(opt =>
+                    opt.setName('autostart')
+                        .setDescription('Auto-restart when story completes? (overrides server default)')
+                        .setRequired(false))
+                .addIntegerOption(opt =>
+                    opt.setName('rounds')
+                        .setDescription('How many times to auto-restart (default: server setting)')
+                        .setMinValue(1)
+                        .setMaxValue(50)
                         .setRequired(false)))
         .addSubcommand(sub =>
             sub.setName('end')
-                .setDescription('End the active story game session and display the full completed story.')
+                .setDescription('Force-end the active story game session (cancels auto-restart).')
                 .addChannelOption(opt =>
                     opt.setName('channel')
                         .setDescription('Channel of the game to end (defaults to current channel)')
@@ -55,7 +65,22 @@ module.exports = {
             interaction.channel;
 
         if (subcommand === 'start') {
-            const result = await oneWordStoryManager.startGame(interaction.guild.id, targetChannel.id, interaction.user.id);
+            // Determine auto-restart settings: command overrides > guild defaults
+            const autoStartOverride = interaction.options.getBoolean('autostart');
+            const roundsOverride = interaction.options.getInteger('rounds');
+
+            let autoRestart = settings.oneWordStoryAutoRestart || false;
+            let autoRestartRounds = settings.oneWordStoryAutoRestartRounds || 1;
+
+            if (autoStartOverride !== null) autoRestart = autoStartOverride;
+            if (roundsOverride !== null) {
+                autoRestart = true; // specifying rounds implies autostart
+                autoRestartRounds = roundsOverride;
+            }
+
+            const effectiveRounds = autoRestart ? autoRestartRounds : 0;
+
+            const result = await oneWordStoryManager.startGame(interaction.guild.id, targetChannel.id, interaction.user.id, effectiveRounds);
             if (!result.success) {
                 return await handleError(interaction, 'Game Already Active', result.error);
             }
@@ -63,10 +88,14 @@ module.exports = {
             const allowConsecutive = !!settings.oneWordStoryAllowConsecutive;
             const maxSentences = settings.oneWordStoryMaxSentences || 10;
 
+            const autoRestartLine = autoRestart
+                ? `\n🔄 **Auto-restart:** Enabled (${autoRestartRounds} round${autoRestartRounds !== 1 ? 's' : ''} after this one)`
+                : '';
+
             const startEmbed = new EmbedBuilder()
                 .setTitle('📖 One Word Story — Game Started!')
                 .setDescription(
-                    `A new story has begun in <#${targetChannel.id}>!\n\n` +
+                    `A new story has begun in <#${targetChannel.id}>!${autoRestartLine}\n\n` +
                     '**Rules:**\n' +
                     '1️⃣ Send **exactly ONE word** per message.\n' +
                     `2️⃣ ${allowConsecutive ? 'Consecutive turns allowed.' : 'You **cannot** post twice in a row — wait for someone else!'}\n` +
@@ -106,7 +135,8 @@ module.exports = {
                 return await handleError(interaction, 'Permission Denied', 'Only server staff (Manage Server) or the user who started the game can end it.');
             }
 
-            const result = await oneWordStoryManager.endGame(interaction.guild.id, targetChannel.id);
+            // Force stop — cancels any remaining auto-restarts
+            const result = await oneWordStoryManager.endGame(interaction.guild.id, targetChannel.id, true);
             if (!result.success) {
                 return await handleError(interaction, 'Error Ending Game', result.error);
             }
@@ -123,7 +153,7 @@ module.exports = {
                     { name: 'Contributors', value: `${result.contributorsCount}`, inline: true },
                     { name: 'Top Authors', value: topList, inline: false }
                 )
-                .setFooter({ text: `Ended by ${interaction.user.tag}` })
+                .setFooter({ text: `🛑 Force-ended by ${interaction.user.tag} — auto-restart cancelled` })
                 .setTimestamp();
 
             return await interaction.reply({ embeds: [endEmbed] });
@@ -138,6 +168,10 @@ module.exports = {
             const storyText = await oneWordStoryManager.getStoryFormatted(targetChannel.id);
             const maxSentences = settings.oneWordStoryMaxSentences || 10;
 
+            const autoRestartInfo = activeGame.autoRestartRemaining > 0
+                ? `🔄 ${activeGame.autoRestartRemaining} auto-restart${activeGame.autoRestartRemaining !== 1 ? 's' : ''} remaining`
+                : '';
+
             const storyEmbed = new EmbedBuilder()
                 .setTitle('📖 One Word Story in Progress')
                 .setDescription(`**Current Story:**\n>>> ${storyText}`)
@@ -147,7 +181,7 @@ module.exports = {
                     { name: 'Sentences Completed', value: `${activeGame.sentenceCount || 0} / ${maxSentences}`, inline: true },
                     { name: 'Last Contributor', value: activeGame.lastUserId ? `<@${activeGame.lastUserId}>` : 'None', inline: true }
                 )
-                .setFooter({ text: 'Nora One Word Story Game' })
+                .setFooter({ text: autoRestartInfo || 'Nora One Word Story Game' })
                 .setTimestamp();
 
             return await interaction.reply({ embeds: [storyEmbed] });
@@ -167,7 +201,8 @@ module.exports = {
                     '3. No `@everyone`, user mentions, links, or bot commands.\n' +
                     '4. End a sentence by adding a period (`.`) to a word or as a single message (reacts with 📝).\n' +
                     `5. Once **${maxSentences} sentences** are completed, Nora puts the entire story together and posts it!\n` +
-                    '6. Anyone with Manage Server or the game host can also run `/onewordstory end` to finish early.'
+                    '6. Anyone with Manage Server or the game host can also run `/onewordstory end` to finish early.\n' +
+                    '7. If auto-restart is enabled, the game automatically starts a new round after completion!'
                 )
                 .setColor('#7c3aed');
 

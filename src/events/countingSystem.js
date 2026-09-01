@@ -103,7 +103,7 @@ function sendCountingHelpEmbed(message, guildData) {
             `• **Current Count:** \`${currentCount}\`\n` +
             `• **Server High Score Best:** \`${highScore}\`\n` +
             `• **Next Required Count:** \`${nextNumber}\`\n\n` +
-            `*Use \`n!help\` or \`c!help\` anytime for counting guidance.*`
+            `*Use \`n!help\` anytime for counting guidance.*`
         )
         .setColor(0x4F46E5)
         .setFooter({ text: 'Nora Counting System' })
@@ -151,11 +151,11 @@ module.exports = {
         const guildData = allData[message.guild.id] || { currentCount: 0, lastUserId: null, highScore: 0 };
         const expectedNext = guildData.currentCount + 1;
 
-        // Check for help commands in counting channel (n!help, c!help, !help, n!counting, c!counting)
+        // Check for help commands in counting channel (n!help, !help, n!counting)
         const contentLower = message.content.toLowerCase().trim();
         if ([
-            'n!help', 'c!help', '!help', 'n!counting', 'c!counting', 
-            'n!help counting', 'c!help counting', '!help counting', '/help counting'
+            'n!help', '!help', 'n!counting', 
+            'n!help counting', '!help counting', '/help counting'
         ].includes(contentLower)) {
             return sendCountingHelpEmbed(message, guildData);
         }
@@ -176,7 +176,7 @@ module.exports = {
             }
 
             const highScore = guildData.highScore || 0;
-            await safeReplyOrSend(message, { content: `You ruined it, <@${message.author.id}>! The next number was **${expectedNext}**. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` or \`c!help\` for counting rules.*` });
+            await safeReplyOrSend(message, { content: `You ruined it, <@${message.author.id}>! The next number was **${expectedNext}**. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` for counting rules.*` });
             allData[message.guild.id] = { currentCount: 0, lastUserId: null, highScore };
             queueSave();
             return;
@@ -185,7 +185,7 @@ module.exports = {
         // Rule: No double-counting in a row on this specific server
         if (guildData.lastUserId === message.author.id) {
             const highScore = guildData.highScore || 0;
-            await safeReplyOrSend(message, { content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` or \`c!help\` for counting rules.*` });
+            await safeReplyOrSend(message, { content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` for counting rules.*` });
             allData[message.guild.id] = { currentCount: 0, lastUserId: null, highScore };
             queueSave();
             return;

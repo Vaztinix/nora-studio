@@ -1,6 +1,16 @@
-const { PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-
+const { 
+    PermissionFlagsBits, 
+    ModalBuilder, 
+    TextInputBuilder, 
+    TextInputStyle, 
+    ActionRowBuilder, 
+    AttachmentBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    EmbedBuilder 
+} = require('discord.js');
 const sharp = require('sharp');
+const settingsCache = require('../../utils/settingsCache');
 
 function generateRandomCaptcha(length = 6) {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid confusing characters like O, 0, I, 1
@@ -57,12 +67,162 @@ function generateSvgCaptcha(text) {
 }
 
 /**
+ * Universal helper to grant configured verification roles to a member and dispatch audit logs
+ */
+async function grantVerificationRoles(member, settings, context = {}, method = 'Standard') {
+    if (!member || !member.guild) {
+        return { success: false, message: 'Could not resolve guild member profile.' };
+    }
+
+    const guild = member.guild;
+    const targetRoleIds = (settings?.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+
+    if (!targetRoleIds.length) {
+        return { success: false, message: '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask an admin to configure it in `/setup`.' };
+    }
+
+    if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+        return { success: false, message: '⚠️ I lack the **Manage Roles** permission to grant verification roles.' };
+    }
+
+    const botHighest = guild.members.me.roles.highest.position;
+    let rolesAdded = 0;
+    let alreadyHasAll = true;
+
+    for (const rId of targetRoleIds) {
+        const roleObj = guild.roles.cache.get(rId) || await guild.roles.fetch(rId).catch(() => null);
+        if (!roleObj) continue;
+
+        if (roleObj.position >= botHighest) {
+            return { success: false, message: `⚠️ I cannot assign <@&${roleObj.id}> because it is higher than or equal to my highest role.` };
+        }
+
+        if (!member.roles.cache.has(rId)) {
+            alreadyHasAll = false;
+            try {
+                await member.roles.add(rId);
+                rolesAdded++;
+            } catch (err) {
+                console.error(`Failed to assign verified role ${rId}:`, err);
+            }
+        }
+    }
+
+    // Automatically remove unverified role(s) upon successful verification
+    const shouldRemoveUnverified = settings?.removeUnverifiedRoleOnVerify !== false;
+    if (shouldRemoveUnverified) {
+        const unverifiedRoleIds = [];
+        if (settings?.unverifiedRoleId) {
+            unverifiedRoleIds.push(...settings.unverifiedRoleId.split(',').map(r => r.trim()).filter(Boolean));
+        }
+
+        // If no explicit role ID configured, automatically check if member has a role named "Unverified"
+        if (unverifiedRoleIds.length === 0) {
+            const namedUnverified = member.roles.cache.find(r => r.name.toLowerCase() === 'unverified');
+            if (namedUnverified) {
+                unverifiedRoleIds.push(namedUnverified.id);
+            }
+        }
+
+        for (const uId of unverifiedRoleIds) {
+            if (member.roles.cache.has(uId)) {
+                const unvRoleObj = guild.roles.cache.get(uId) || await guild.roles.fetch(uId).catch(() => null);
+                if (unvRoleObj && unvRoleObj.position < botHighest) {
+                    try {
+                        await member.roles.remove(uId, `Nora Verification: Member completed ${method} verification, unverified role removed.`);
+                    } catch (remErr) {
+                        console.error(`Failed to remove unverified role ${uId}:`, remErr.message);
+                    }
+                }
+            }
+        }
+    }
+
+    if (alreadyHasAll) {
+        return { success: true, alreadyVerified: true, message: 'You are already verified on this server!' };
+    }
+
+    // Send Audit Log if configured
+    try {
+        let loggingChannels = {};
+        if (typeof settings?.loggingChannels === 'object' && settings.loggingChannels !== null) {
+            loggingChannels = settings.loggingChannels;
+        } else if (typeof settings?.loggingChannels === 'string') {
+            try { loggingChannels = JSON.parse(settings.loggingChannels); } catch(e) {}
+        }
+
+        const logChannelId = loggingChannels.members || settings?.loggingChannelId || settings?.verificationLogChannelId;
+        if (logChannelId) {
+            const logChannel = guild.channels.cache.get(logChannelId) || await guild.channels.fetch(logChannelId).catch(() => null);
+            if (logChannel) {
+                const logEmbed = new EmbedBuilder()
+                    .setTitle('✅ Member Verified')
+                    .setDescription(`${member.user} (${member.user.tag}) completed **${method}** verification.`)
+                    .addFields(
+                        { name: 'User ID', value: `\`${member.user.id}\``, inline: true },
+                        { name: 'Method', value: `\`${method}\``, inline: true },
+                        { name: 'Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
+                    )
+                    .setColor(0x2ea043)
+                    .setTimestamp();
+                await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
+            }
+        }
+    } catch (logErr) {
+        console.error('[Verification Log Error]:', logErr);
+    }
+
+    return { success: true, alreadyVerified: false, rolesAdded, message: '✅ **Verification Successful!** You have been verified and granted access.' };
+}
+
+/**
+ * 1-Click Instant Button Verification
+ */
+async function handleInstantButtonClick(interaction, settings) {
+    const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+    const result = await grantVerificationRoles(member, settings, { interaction }, '1-Click Button');
+
+    if (!result.success) {
+        if (interaction.deferred || interaction.replied) {
+            return await interaction.editReply({ content: result.message }).catch(() => {});
+        }
+        return await interaction.reply({ content: result.message, ephemeral: true }).catch(() => {});
+    }
+
+    if (result.alreadyVerified) {
+        const text = 'ℹ️ You are already verified on this server!';
+        if (interaction.deferred || interaction.replied) {
+            return await interaction.editReply({ content: text }).catch(() => {});
+        }
+        return await interaction.reply({ content: text, ephemeral: true }).catch(() => {});
+    }
+
+    const embed = new EmbedBuilder()
+        .setColor(0x2ea043)
+        .setTitle('✅ Access Granted')
+        .setDescription('You have successfully verified and unlocked full server access! Welcome to the community.')
+        .setTimestamp();
+
+    if (interaction.deferred || interaction.replied) {
+        return await interaction.editReply({ embeds: [embed] }).catch(() => {});
+    }
+    return await interaction.reply({ embeds: [embed], ephemeral: true }).catch(() => {});
+}
+
+/**
  * Sends the dynamic CAPTCHA image with an "Enter Code" button when the user clicks Verify.
  */
 async function handleVerifyButtonClick(interaction, settings) {
     try {
+        const verifyType = settings?.verificationType || 'captcha';
+
+        // If server is configured for 1-Click Button verification, do instant verification
+        if (verifyType === 'button') {
+            return await handleInstantButtonClick(interaction, settings);
+        }
+
         if (!settings || !settings.verifyRoleId) {
-            const msg = '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask a server admin to configure the Verified Role in the dashboard or via `/setup`.';
+            const msg = '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask a server admin to configure the Verified Role in `/setup`.';
             if (interaction.deferred || interaction.replied) {
                 return await interaction.editReply({ content: msg }).catch(() => {});
             } else {
@@ -147,67 +307,170 @@ async function handleVerifyModalSubmit(interaction, settings) {
     const answer = interaction.fields.getTextInputValue('captcha_answer');
 
     if (answer.trim().toUpperCase() !== expectedAnswer) {
-        return interaction.editReply({ content: '❌ Verification failed. The CAPTCHA code entered was incorrect. Please try again.' });
+        return interaction.editReply({ content: '❌ Verification failed. The CAPTCHA code entered was incorrect. Please try clicking Verify again.' });
     }
 
     const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
-    if (!member) return interaction.editReply({ content: 'Could not resolve your member profile.' });
+    const result = await grantVerificationRoles(member, settings, { interaction }, 'CAPTCHA');
 
-    if (!settings || !settings.verifyRoleId) {
-        return interaction.editReply({ content: 'Verification is not fully set up on this server. Please contact an admin.' });
+    if (!result.success) {
+        return interaction.editReply({ content: result.message });
     }
 
-    try {
-        const roleIds = settings.verifyRoleId.split(',');
-        let rolesAdded = 0;
-        
-        if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
-            return interaction.editReply({ content: 'I do not have the **Manage Roles** permission physically required to verify you. Please alert an admin.' });
-        }
+    if (result.alreadyVerified) {
+        return interaction.editReply({ content: 'ℹ️ You are already verified on this server!' });
+    }
 
-        for (const rId of roleIds) {
-            const roleObj = interaction.guild.roles.cache.get(rId);
-            if (roleObj && interaction.guild.members.me.roles.highest.position <= roleObj.position) {
-                return interaction.editReply({ content: 'I cannot assign the verification role because it is higher than my highest role. Please alert an admin.' });
-            }
+    return interaction.editReply({ content: '✅ **Verification Successful!** You have completed the CAPTCHA and unlocked access to the server.' });
+}
 
-            if (!member.roles.cache.has(rId)) {
-                await member.roles.add(rId).catch(()=>{});
-                rolesAdded++;
-            }
-        }
+/**
+ * Handles React Verification when user adds an emoji reaction to the verification panel
+ */
+async function handleReactionVerification(reaction, user, settings) {
+    const guild = reaction.message.guild;
+    if (!guild || user.bot) return;
 
-        if (rolesAdded === 0) {
-            await interaction.editReply({ content: 'You are already verified!' });
-        } else {
-            await interaction.editReply({ content: '✅ **Verification Successful!** You have been granted access to the server.' });
-            
-            const logChannelId = settings.verificationLogChannelId || settings.logChannelId;
-            if (logChannelId) {
-                const logChannel = interaction.guild.channels.cache.get(logChannelId);
-                if (logChannel) {
-                    const logEmbed = new EmbedBuilder()
-                        .setTitle('✅ Member Verified')
-                        .setDescription(`${member.user} (${member.user.tag}) completed verification.`)
-                        .addFields(
-                            { name: 'User ID', value: `\`${member.user.id}\``, inline: true },
-                            { name: 'Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
-                        )
-                        .setColor(0x2ea043)
-                        .setTimestamp();
-                    await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
-                }
-            }
-        }
+    const member = await guild.members.fetch(user.id).catch(() => null);
+    if (!member) return;
 
-    } catch (error) {
-        console.error('Verification Error:', error);
-        await interaction.editReply({ content: 'I encountered an error trying to assign the roles. Please contact an admin.' });
+    const result = await grantVerificationRoles(member, settings, { reaction, user }, 'Reaction');
+    if (result.success && !result.alreadyVerified) {
+        try {
+            const dmEmbed = new EmbedBuilder()
+                .setTitle('✅ Verified')
+                .setDescription(`You have successfully verified in **${guild.name}** via reaction!`)
+                .setColor(0x2ea043)
+                .setTimestamp();
+            await user.send({ embeds: [dmEmbed] }).catch(() => {});
+        } catch (e) {}
     }
 }
 
+/**
+ * Spawns a verification panel of the specified type (button, captcha, reaction, roblox)
+ */
+async function spawnVerificationPanel(targetChannel, settings, type = 'captcha', interaction = null) {
+    if (!targetChannel) throw new Error('Target channel is required to spawn verification panel.');
+
+    const guild = targetChannel.guild;
+    const embedColor = guild.members.me?.roles?.highest?.color || 0x57acf2;
+
+    if (type === 'button') {
+        const embed = new EmbedBuilder()
+            .setTitle('Server Access Verification')
+            .setDescription('Welcome to the server! Click the **Verify** button below to immediately unlock access.')
+            .setColor(embedColor)
+            .setFooter({ text: 'Nora Security • 1-Click Verification' });
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('verify_button_instant')
+                .setLabel('Click to Verify')
+                .setEmoji('✅')
+                .setStyle(ButtonStyle.Success)
+        );
+
+        const sent = await targetChannel.send({ embeds: [embed], components: [row] });
+        settings.verifyMessageId = sent.id;
+        settings.verificationType = 'button';
+        await settings.save();
+        settingsCache.invalidate(guild.id);
+        return sent;
+    }
+
+    if (type === 'captcha') {
+        const embed = new EmbedBuilder()
+            .setTitle('Server Verification Required')
+            .setDescription('To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and solve the image CAPTCHA.')
+            .setColor(embedColor)
+            .setFooter({ text: 'Nora Security • Anti-Bot CAPTCHA' });
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('verify_system_button')
+                .setLabel('Verify')
+                .setEmoji('🔒')
+                .setStyle(ButtonStyle.Success)
+        );
+
+        const sent = await targetChannel.send({ embeds: [embed], components: [row] });
+        settings.verifyMessageId = sent.id;
+        settings.verificationType = 'captcha';
+        await settings.save();
+        settingsCache.invalidate(guild.id);
+        return sent;
+    }
+
+    if (type === 'reaction') {
+        const triggerEmoji = settings.verifyEmoji || '✅';
+        const embed = new EmbedBuilder()
+            .setTitle('Reaction Verification')
+            .setDescription(`React with ${triggerEmoji} below to verify yourself and gain full access to the server!`)
+            .setColor(embedColor)
+            .setFooter({ text: 'Nora Security • React Verification' });
+
+        const sent = await targetChannel.send({ embeds: [embed] });
+        try {
+            await sent.react(triggerEmoji);
+        } catch (e) {
+            console.warn('[React Verify] Could not pre-react to verification panel:', e.message);
+        }
+        settings.verifyMessageId = sent.id;
+        settings.verificationType = 'reaction';
+        await settings.save();
+        settingsCache.invalidate(guild.id);
+        return sent;
+    }
+
+    if (type === 'roblox') {
+        const embed = new EmbedBuilder()
+            .setTitle('Roblox Account Verification')
+            .setDescription(
+                'Link your Roblox account to this Discord server for access, roles, and rank perks!\n\n' +
+                '**How to verify:**\n' +
+                '1️⃣ Use `/verify link <username>` with your Roblox username\n' +
+                '2️⃣ Copy the verification code provided\n' +
+                '3️⃣ Paste the code into your Roblox profile description (About section)\n' +
+                '4️⃣ Run `/verify check` to complete verification\n\n' +
+                '**Manage accounts:**\n' +
+                '• `/verify list` — View linked profiles\n' +
+                '• `/verify switch` — Change active profile\n' +
+                '• `/verify unlink` — Remove a linked account'
+            )
+            .setColor('#00b4d8')
+            .setFooter({ text: 'Nora Security • Roblox Verification' });
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setLabel('Verify via Website')
+                .setStyle(ButtonStyle.Link)
+                .setURL(`https://vaztinix.dev/verify?guild=${guild.id}`),
+            new ButtonBuilder()
+                .setCustomId('roblox_verify_alt')
+                .setLabel('Alternative Verification')
+                .setStyle(ButtonStyle.Secondary)
+        );
+
+        const sent = await targetChannel.send({ embeds: [embed], components: [row] });
+        settings.verifyMessageId = sent.id;
+        settings.verificationType = 'roblox';
+        await settings.save();
+        settingsCache.invalidate(guild.id);
+        return sent;
+    }
+
+    throw new Error(`Unknown verification type: ${type}`);
+}
+
 module.exports = {
+    generateRandomCaptcha,
+    generateSvgCaptcha,
+    grantVerificationRoles,
+    handleInstantButtonClick,
     handleVerifyButtonClick,
     handleEnterCodeButtonClick,
-    handleVerifyModalSubmit
+    handleVerifyModalSubmit,
+    handleReactionVerification,
+    spawnVerificationPanel
 };

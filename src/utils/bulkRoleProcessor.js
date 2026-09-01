@@ -98,9 +98,147 @@ async function performRoleOperationWithRetry(member, role, isAdd, auditReason, m
 }
 
 /**
+ * Robustly parses a date/time or duration filter string.
+ * Supports:
+ * - Relative durations: "7d", "7d ago", "24h", "2w", "30 days ago", "1 month"
+ * - Calendar dates: "YYYY-MM-DD", "YYYY-MM-DD HH:mm", "MM/DD/YYYY", "Month Day, Year"
+ * - Keywords: "today", "yesterday"
+ * - Timestamps: "<t:1724600000>", "1724600000" (seconds), "1724600000000" (ms)
+ */
+function parseFilterDate(input, mode = 'before') {
+    if (!input || typeof input !== 'string') return null;
+    const str = input.trim();
+    if (!str) return null;
+
+    const now = Date.now();
+
+    // 1. Check for Discord timestamp format: <t:1724600000:R> or <t:1724600000>
+    const discordMatch = str.match(/^<t:(\d+)(?::[a-zA-Z])?>$/);
+    if (discordMatch) {
+        const sec = parseInt(discordMatch[1], 10);
+        const ms = sec * 1000;
+        return {
+            timestamp: ms,
+            formatted: `<t:${sec}:f> (<t:${sec}:R>)`,
+            raw: str
+        };
+    }
+
+    // 2. Check for raw unix timestamp (10 digits = seconds, 13 digits = ms)
+    if (/^\d{10}$/.test(str)) {
+        const sec = parseInt(str, 10);
+        return {
+            timestamp: sec * 1000,
+            formatted: `<t:${sec}:f> (<t:${sec}:R>)`,
+            raw: str
+        };
+    }
+    if (/^\d{13}$/.test(str)) {
+        const ms = parseInt(str, 10);
+        const sec = Math.floor(ms / 1000);
+        return {
+            timestamp: ms,
+            formatted: `<t:${sec}:f> (<t:${sec}:R>)`,
+            raw: str
+        };
+    }
+
+    // 3. Natural keywords: "today", "yesterday"
+    if (str.toLowerCase() === 'today') {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const ms = startOfDay.getTime();
+        const sec = Math.floor(ms / 1000);
+        return {
+            timestamp: ms,
+            formatted: `Today (<t:${sec}:f>)`,
+            raw: str
+        };
+    }
+    if (str.toLowerCase() === 'yesterday') {
+        const startOfYesterday = new Date();
+        startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+        startOfYesterday.setHours(0, 0, 0, 0);
+        const ms = startOfYesterday.getTime();
+        const sec = Math.floor(ms / 1000);
+        return {
+            timestamp: ms,
+            formatted: `Yesterday (<t:${sec}:f>)`,
+            raw: str
+        };
+    }
+
+    // 4. Relative duration string: e.g. "7d", "7d ago", "2 weeks", "30 days ago", "24h", "1 month"
+    const relRegex = /^(\d+(?:\.\d+)?)\s*(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|wk|wks|week|weeks|mo|mon|mons|month|months|y|yr|yrs|year|years)?\s*(ago|old)?$/i;
+    const relMatch = str.match(relRegex);
+
+    if (relMatch) {
+        const value = parseFloat(relMatch[1]);
+        const unit = (relMatch[2] || 'd').toLowerCase();
+        let multiplier = 24 * 60 * 60 * 1000; // default days
+
+        if (unit.startsWith('s')) multiplier = 1000;
+        else if (unit.startsWith('m') && !unit.startsWith('mo')) multiplier = 60 * 1000;
+        else if (unit.startsWith('h')) multiplier = 60 * 60 * 1000;
+        else if (unit.startsWith('d')) multiplier = 24 * 60 * 60 * 1000;
+        else if (unit.startsWith('w')) multiplier = 7 * 24 * 60 * 60 * 1000;
+        else if (unit.startsWith('mo')) multiplier = 30 * 24 * 60 * 60 * 1000;
+        else if (unit.startsWith('y')) multiplier = 365 * 24 * 60 * 60 * 1000;
+
+        const durationMs = Math.round(value * multiplier);
+        const targetTimestamp = now - durationMs;
+        const targetSec = Math.floor(targetTimestamp / 1000);
+
+        if (mode === 'after') {
+            return {
+                timestamp: targetTimestamp,
+                formatted: `Within last ${str.replace(/ago|old/gi, '').trim()} (<t:${targetSec}:R>)`,
+                raw: str,
+                isRelative: true,
+                durationMs
+            };
+        } else {
+            return {
+                timestamp: targetTimestamp,
+                formatted: `Older than ${str.replace(/ago|old/gi, '').trim()} ago (<t:${targetSec}:R>)`,
+                raw: str,
+                isRelative: true,
+                durationMs
+            };
+        }
+    }
+
+    // 5. Absolute Date parse: "2024-05-01", "2024-05-01 14:30", "05/01/2024", "May 1 2024"
+    const parsedDate = new Date(str);
+    if (!isNaN(parsedDate.getTime())) {
+        const ms = parsedDate.getTime();
+        const sec = Math.floor(ms / 1000);
+        return {
+            timestamp: ms,
+            formatted: `<t:${sec}:f> (<t:${sec}:R>)`,
+            raw: str,
+            isRelative: false
+        };
+    }
+
+    return null;
+}
+
+/**
  * Main engine to process bulk role additions / removals.
  */
-async function processBulkRole({ interaction, isAdd, role, filter, filterRole, customReason }) {
+async function processBulkRole({
+    interaction,
+    isAdd,
+    role,
+    filter,
+    filterRole,
+    joinedBeforeStr,
+    joinedAfterStr,
+    createdBeforeStr,
+    createdAfterStr,
+    customReason
+}) {
     const guildId = interaction.guild.id;
 
     // Prevent duplicate concurrent runs on the same guild
@@ -133,12 +271,64 @@ async function processBulkRole({ interaction, isAdd, role, filter, filterRole, c
         );
     }
 
+    // 4. Validate and parse Date/Time filters if provided
+    const joinedBefore = joinedBeforeStr ? parseFilterDate(joinedBeforeStr, 'before') : null;
+    if (joinedBeforeStr && !joinedBefore) {
+        return handleError(
+            interaction,
+            'Invalid Date/Time Filter',
+            `Could not parse \`joined_before\`: **"${joinedBeforeStr}"**\n\n**Supported Formats:**\n• Relative: \`7d\`, \`24h\`, \`30 days ago\`, \`2w\`\n• Calendar: \`YYYY-MM-DD\` (e.g. \`2024-05-01\`), \`YYYY-MM-DD HH:mm\`\n• Keywords: \`today\`, \`yesterday\`\n• Timestamps: \`<t:1714521600>\` or \`1714521600\``
+        );
+    }
+
+    const joinedAfter = joinedAfterStr ? parseFilterDate(joinedAfterStr, 'after') : null;
+    if (joinedAfterStr && !joinedAfter) {
+        return handleError(
+            interaction,
+            'Invalid Date/Time Filter',
+            `Could not parse \`joined_after\`: **"${joinedAfterStr}"**\n\n**Supported Formats:**\n• Relative: \`7d\`, \`24h\`, \`30 days ago\`, \`2w\`\n• Calendar: \`YYYY-MM-DD\` (e.g. \`2024-05-01\`), \`YYYY-MM-DD HH:mm\`\n• Keywords: \`today\`, \`yesterday\`\n• Timestamps: \`<t:1714521600>\` or \`1714521600\``
+        );
+    }
+
+    const createdBefore = createdBeforeStr ? parseFilterDate(createdBeforeStr, 'before') : null;
+    if (createdBeforeStr && !createdBefore) {
+        return handleError(
+            interaction,
+            'Invalid Date/Time Filter',
+            `Could not parse \`created_before\`: **"${createdBeforeStr}"**\n\n**Supported Formats:**\n• Relative: \`30d\`, \`1y\`, \`2 weeks ago\`\n• Calendar: \`YYYY-MM-DD\` (e.g. \`2024-01-01\`)\n• Timestamps: \`<t:1714521600>\``
+        );
+    }
+
+    const createdAfter = createdAfterStr ? parseFilterDate(createdAfterStr, 'after') : null;
+    if (createdAfterStr && !createdAfter) {
+        return handleError(
+            interaction,
+            'Invalid Date/Time Filter',
+            `Could not parse \`created_after\`: **"${createdAfterStr}"**\n\n**Supported Formats:**\n• Relative: \`7d\`, \`24h\`, \`30 days\`\n• Calendar: \`YYYY-MM-DD\` (e.g. \`2024-01-01\`)\n• Timestamps: \`<t:1714521600>\``
+        );
+    }
+
+    // Build human-friendly filter label
+    const filterLabels = [];
+    if (filter === 'humans') filterLabels.push('Humans Only');
+    else if (filter === 'bots') filterLabels.push('Bots Only');
+    else if (filter === 'has_role') filterLabels.push(`With ${filterRole.name}`);
+    else if (filter === 'lacks_role') filterLabels.push(`Without ${filterRole.name}`);
+    else filterLabels.push('All Members');
+
+    if (joinedAfter) filterLabels.push(`Joined After: ${joinedAfter.formatted}`);
+    if (joinedBefore) filterLabels.push(`Joined Before: ${joinedBefore.formatted}`);
+    if (createdAfter) filterLabels.push(`Account After: ${createdAfter.formatted}`);
+    if (createdBefore) filterLabels.push(`Account Before: ${createdBefore.formatted}`);
+
+    const filterLabel = filterLabels.join(' • ');
+
     // Initial status embed
     await interaction.editReply({
         embeds: [
             new EmbedBuilder()
                 .setTitle('⏳ Fetching Guild Members...')
-                .setDescription(`Scanning all server members to prepare bulk ${isAdd ? 'assignment' : 'removal'} for ${role}...`)
+                .setDescription(`Scanning server members matching filter:\n**\`${filterLabel}\`**\nto prepare bulk ${isAdd ? 'assignment' : 'removal'} for ${role}...`)
                 .setColor(0x3498DB)
         ]
     }).catch(() => {});
@@ -168,26 +358,26 @@ async function processBulkRole({ interaction, isAdd, role, filter, filterRole, c
         if (isAdd && hasTargetRole) continue;
         if (!isAdd && !hasTargetRole) continue;
 
-        // Apply filter criteria
+        // Apply member type & role filter criteria
         if (filter === 'humans' && member.user.bot) continue;
         if (filter === 'bots' && !member.user.bot) continue;
         if (filter === 'has_role' && filterRole && !member.roles.cache.has(filterRole.id)) continue;
         if (filter === 'lacks_role' && filterRole && member.roles.cache.has(filterRole.id)) continue;
 
+        // Apply date/time filters
+        if (joinedBefore && (!member.joinedTimestamp || member.joinedTimestamp >= joinedBefore.timestamp)) continue;
+        if (joinedAfter && (!member.joinedTimestamp || member.joinedTimestamp <= joinedAfter.timestamp)) continue;
+        if (createdBefore && (!member.user.createdTimestamp || member.user.createdTimestamp >= createdBefore.timestamp)) continue;
+        if (createdAfter && (!member.user.createdTimestamp || member.user.createdTimestamp <= createdAfter.timestamp)) continue;
+
         targets.push(member);
     }
-
-    let filterLabel = 'All Members (Humans & Bots)';
-    if (filter === 'humans') filterLabel = 'Humans Only';
-    else if (filter === 'bots') filterLabel = 'Bots Only';
-    else if (filter === 'has_role') filterLabel = `Members with ${filterRole.name}`;
-    else if (filter === 'lacks_role') filterLabel = `Members without ${filterRole.name}`;
 
     if (targets.length === 0) {
         return handleError(
             interaction,
             'No Eligible Members',
-            `Found **0** members matching the filter criteria (\`${filterLabel}\`) that require ${role} ${isAdd ? 'added' : 'removed'}.`
+            `Found **0** members matching the filter criteria:\n**\`${filterLabel}\`**\nthat require ${role} ${isAdd ? 'added' : 'removed'}.`
         );
     }
 
@@ -468,6 +658,7 @@ async function handleCancelOperation(interaction) {
 
 module.exports = {
     processBulkRole,
+    parseFilterDate,
     performRoleOperationWithRetry,
     createProgressBar,
     fetchAllGuildMembers,

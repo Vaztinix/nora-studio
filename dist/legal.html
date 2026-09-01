@@ -273,8 +273,7 @@
     <main class="legal-wrapper">
         <div class="container">
             <h1>Transparency & Trust</h1>
-            <p class="subtitle">Last Updated: July 27, 2026</p>
-
+            <p class="subtitle">Last Updated: August 30, 2026</p>
 
             <div class="switch-container">
                 <div class="legal-switch" id="legal-switch" onclick="toggleLegal()">
@@ -290,7 +289,7 @@
                     <h2>Terms of Service</h2>
                     <section>
                         <h3>1. Agreement to Terms</h3>
-                        <p>By inviting, installing, or using Nora within a Discord server or accessing the Nora Studio Dashboard, you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service. If you do not agree with these terms, you must remove the bot from your server immediately.</p>
+                        <p>By inviting, installing, or using Nora within a Discord server, running commands via slash (<code>/</code>) or text prefix (<code>n!</code>, <code>n?</code>), or accessing the Nora Studio Dashboard, you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service. If you do not agree with these terms, you must remove the bot from your server immediately.</p>
                     </section>
                     <section>
                         <h3>2. Relationship with Discord</h3>
@@ -300,12 +299,15 @@
                         <h3>3. Description of the Service & Feature Systems</h3>
                         <p>Nora is an automated community moderation, engagement, and server telemetry ecosystem. Our platform provides automated feature systems including:</p>
                         <ul>
+                            <li><strong>Multi-Mode Member Verification (v2.6):</strong> Server protection gates supporting 4 verification engines: 1-Click Instant Button, Anti-Bot Visual CAPTCHA, Emoji Reaction Verification, and Roblox Account Linking.</li>
                             <li><strong>Security & Anti-Raid System (v2.1):</strong> Anti-raid gates, min account age filters, avatar requirements, and automated lockdown rules.</li>
+                            <li><strong>AFK & Availability Tracker (v2.6):</strong> Voluntary status broadcast system, auto-nickname prefixing (<code>[AFK]</code>), and automatic removal upon return.</li>
+                            <li><strong>Collaborative Community Games (v2.5):</strong> High-score Sequential Counting engine and One Word Story collaborative writing with automated milestone archives.</li>
                             <li><strong>Roblox Verification & Role Sync (v2.4):</strong> Real-time Roblox identity verification, group rank sync bindings, and nickname enforcement.</li>
-                            <li><strong>Support Ticketing & Help Desk (Beta):</strong> Reaction panel triggers, staff routing, automated transcripts, and category auto-archiving.</li>
-                            <li><strong>Starboard System (v2.5):</strong> Community reaction voting reposting, custom trigger emojis, threshold configuration, custom webhook branding, and channel ignore filters.</li>
+                            <li><strong>Support Ticketing & Help Desk:</strong> Modal and button panel triggers, staff routing, automated transcripts, and category auto-archiving.</li>
+                            <li><strong>Starboard & Engagement:</strong> Community reaction voting reposting, custom trigger emojis, threshold configuration, custom webhook branding, and channel ignore filters.</li>
                             <li><strong>Progression & Leveling Engine (v2.3):</strong> Experience gain algorithms, level role rewards, custom rank cards (custom colors, border accents, and background image uploads), and rank leaderboards.</li>
-                            <li><strong>Autoresponder & AI Bot Hooks (v2.1):</strong> Keyword triggers, regex patterns, local Nora V10 engine processing, and external AI model integration options.</li>
+                            <li><strong>Autoresponder & AI Bot Hooks:</strong> Keyword triggers, regex patterns, local Nora V10 engine processing, and external AI model integration options.</li>
                         </ul>
                         <p>We reserve the right to modify, suspend, or discontinue any feature, layout, or API endpoint at any time without prior notice to preserve operational stability and network security.</p>
                     </section>
@@ -316,7 +318,7 @@
                     <section>
                         <h3>5. Command and Permission Usage</h3>
                         <p>Nora acts strictly upon the permissions granted by server administrators. We are not liable for misconfigurations or damage caused by granting excessive permissions (such as Administrator, Manage Roles, or Manage Channels) to the bot.</p>
-                        <p>Nora integrates natively with Discord's Application Command Permission framework. All moderator and administrator commands are physically hidden at the client level from members lacking appropriate permissions. The `/help` command also dynamically filters command categories based on real-time user permissions.</p>
+                        <p>Nora integrates natively with Discord's Application Command Permission framework. All moderator and administrator commands are physically hidden at the client level from members lacking appropriate permissions. Both slash commands (<code>/</code>) and prefix commands (<code>n!</code>) enforce strict server-side permission checks before executing any action.</p>
                     </section>
                     <section>
                         <h3>6. AI Interfaces (Local Engine & External Providers)</h3>
@@ -343,17 +345,19 @@
                         <h3>2. Data We Collect & Store</h3>
                         <p>To provide baseline functionality, Nora stores minimal operational configuration data in our local database. This data includes:</p>
                         <ul>
-                            <li><strong>Guild Configuration Records:</strong> Log channel IDs, welcome messages, ticket categories, AutoMod sensitivities, and Starboard settings (including ignored channel lists).</li>
+                            <li><strong>Guild Configuration Records:</strong> Log channel IDs, welcome messages, verification modes and role IDs, ticket categories, AutoMod sensitivities, and Starboard settings.</li>
                             <li><strong>Leveling & Engagement Statistics:</strong> User XP counts, server levels, custom rank card color hex values, and optional user-uploaded rank card background image URLs or base64 data.</li>
+                            <li><strong>AFK State (Temporary):</strong> User ID, voluntary AFK status text, timestamp, and previous nickname for automatic restoration. AFK records are erased immediately upon user return.</li>
                             <li><strong>Roblox Verification Bindings:</strong> Linked Roblox user IDs and verified Discord account associations.</li>
                             <li><strong>Moderation Case Logs:</strong> Active user warning counts and issued case reason strings.</li>
+                            <li><strong>Community Games:</strong> Current counting number and high scores; completed One Word Story transcripts.</li>
                             <li><strong>Integrations:</strong> Top.gg integration secret tokens, vote log webhook URLs, and notification preferences.</li>
                         </ul>
                         <p>We do not store message history permanently.</p>
                     </section>
                     <section>
                         <h3>3. Message Processing</h3>
-                        <p>Message content is processed in real-time volatile memory strictly to enforce active moderation rules (AutoMod profanity/scam/mentions filters) or supply context to chosen AI engines. This processing occurs in memory and is instantly discarded; it is never written to disk or recorded in permanent storage.</p>
+                        <p>Message content is processed in real-time volatile memory strictly to enforce active moderation rules (AutoMod profanity/scam/mentions filters), process prefix commands (<code>n!</code>), evaluate counting games, or supply context to chosen AI engines. This processing occurs in memory and is instantly discarded; it is never written to disk or recorded in permanent storage.</p>
                     </section>
                     <section>
                         <h3>4. AI Data Policies</h3>
@@ -365,7 +369,7 @@
                     </section>
                     <section>
                         <h3>6. User Sovereignty & The Data Kill Switch</h3>
-                        <p>We respect the right to be forgotten. Users can run the `/mycard` command inside Discord at any time to inspect their stored database record, and click the <strong>"Erase Data"</strong> button to immediately and permanently delete their leveling statistics, XP, Roblox connections, and warning records across all Nora nodes.</p>
+                        <p>We respect the right to be forgotten. Users can run the <code>/mycard</code> or <code>n!mycard</code> command inside Discord at any time to inspect their stored database record, and click the <strong>"Erase Data"</strong> button to immediately and permanently delete their leveling statistics, XP, Roblox connections, and warning records across all Nora nodes.</p>
                     </section>
                     <section>
                         <h3>7. Server Data Isolation</h3>

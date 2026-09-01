@@ -382,6 +382,7 @@ require('./database/models/TicketHistory');
 require('./database/models/MemberRolesHistory');
 require('./database/models/Notification');
 require('./database/models/IpBan');
+require('./database/models/AfkUser');
 
 const client = new Client({
     rest: {
@@ -431,6 +432,14 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketPanelDesc` TEXT NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `ActiveTickets` ADD COLUMN `claimedByUserId` VARCHAR(255) NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `ActiveTickets` ADD COLUMN `excludeAutoClose` TINYINT(1) DEFAULT 0;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAutoRestart` TINYINT(1) DEFAULT 0;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAutoRestartRounds` INTEGER DEFAULT 1;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkEnabled` TINYINT(1) DEFAULT 1;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkAutoNickname` TINYINT(1) DEFAULT 1;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkCleanMessage` TINYINT(1) DEFAULT 1;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyEmoji` VARCHAR(255) DEFAULT '✅';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `unverifiedRoleId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `removeUnverifiedRoleOnVerify` TINYINT(1) DEFAULT 1;"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {
@@ -526,6 +535,21 @@ runPreSyncMigrations().then(() => {
     } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryMaxSentences` INTEGER DEFAULT 10;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAutoRestart` TINYINT(1) DEFAULT 0;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAutoRestartRounds` INTEGER DEFAULT 1;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkEnabled` TINYINT(1) DEFAULT 1;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkAutoNickname` TINYINT(1) DEFAULT 1;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkCleanMessage` TINYINT(1) DEFAULT 1;");
     } catch (e) { }
 
     try {
@@ -706,18 +730,19 @@ function isAllowedOrigin(origin) {
 // Universal CORS Middleware — Must run FIRST before any route or security check
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin && isAllowedOrigin(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
-        res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Vary', 'Origin');
+    if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Vary', 'Origin');
     } else {
-        res.header('Access-Control-Allow-Origin', 'https://vaztinix.dev');
+        res.setHeader('Access-Control-Allow-Origin', '*');
     }
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma');
-    res.header('Access-Control-Max-Age', '86400');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
+    const requestHeaders = req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma, X-Real-IP, CF-Connecting-IP';
+    res.setHeader('Access-Control-Allow-Headers', requestHeaders);
+    res.setHeader('Access-Control-Max-Age', '86400');
     if (req.method === 'OPTIONS') {
-        return res.sendStatus(204);
+        return res.status(204).end();
     }
     next();
 });
@@ -971,7 +996,7 @@ const globalApiRateLimiter = rateLimit({
 
 const authRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 30,
+    max: 500,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many authentication attempts. Please wait 15 minutes.' },
@@ -1707,7 +1732,10 @@ app.get('/api/user/me', async (req, res) => {
             } else {
                 const discordToken = session.discordToken || token;
                 const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                    headers: { Authorization: `Bearer ${discordToken}` }
+                    headers: { 
+                        Authorization: `Bearer ${discordToken}`,
+                        'User-Agent': 'DiscordBot (https://vaztinix.dev, 1.0.0)'
+                    }
                 }).catch((err) => ({ error: err }));
 
                 if (userRes && userRes.error) {
@@ -1739,7 +1767,10 @@ app.get('/api/user/me', async (req, res) => {
                 user = cachedUser.user;
             } else {
                 const userRes = await axios.get('https://discord.com/api/v10/users/@me', {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        'User-Agent': 'DiscordBot (https://vaztinix.dev, 1.0.0)'
+                    }
                 }).catch((err) => ({ error: err }));
 
                 if (userRes && userRes.error) {
@@ -2586,6 +2617,14 @@ app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
                             }
                         }
 
+                        // Remove unverified role if present
+                        if (settings.removeUnverifiedRoleOnVerify !== false) {
+                            const unvId = settings.unverifiedRoleId || member.roles.cache.find(r => r.name.toLowerCase() === 'unverified')?.id;
+                            if (unvId && member.roles.cache.has(unvId)) {
+                                await member.roles.remove(unvId).catch(() => {});
+                            }
+                        }
+
                         let groupBindings = [];
                         try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) { }
                         if (groupBindings.length > 0) {
@@ -2796,6 +2835,13 @@ app.get('/api/user/roblox/callback', async (req, res) => {
                         if (settings.robloxVerifyRoleId) {
                             const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
                             if (role) await member.roles.add(role).catch(() => { });
+                        }
+                        // Remove unverified role if present
+                        if (settings.removeUnverifiedRoleOnVerify !== false) {
+                            const unvId = settings.unverifiedRoleId || member.roles.cache.find(r => r.name.toLowerCase() === 'unverified')?.id;
+                            if (unvId && member.roles.cache.has(unvId)) {
+                                await member.roles.remove(unvId).catch(() => {});
+                            }
                         }
                         let groupBindings = [];
                         try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) { }
