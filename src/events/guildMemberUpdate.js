@@ -92,8 +92,8 @@ module.exports = {
                 roleEmbed.setTimestamp();
                 await loggerUtil.sendEventLog(newMember.guild, 'memberUpdate', roleEmbed, settings);
 
-                // Check if the assigned role is the Underage Role (1539395288811446302 or legacy 1544420452439556116)
-                if (addedRoles.has('1539395288811446302') || addedRoles.has('1544420452439556116')) {
+                // Check if the assigned role is the Underage Role (1539395288811446302)
+                if (newMember.guild.id === '1487342521133830174' && addedRoles.has('1539395288811446302')) {
                     try {
                         const { processUnderageMember } = require('../utils/underageSweep');
                         processUnderageMember(newMember, newMember.client).catch(err => {
