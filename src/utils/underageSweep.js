@@ -157,6 +157,7 @@ async function runUnderageSweep(client) {
     }
 
     console.log(`[Underage Sweep] [SWEEP COMPLETE] Scan finished. Target members found: ${totalFound}, processed: ${totalKicked}.`);
+    return { totalFound, totalKicked, timestamp: new Date().toISOString() };
 }
 
 /**

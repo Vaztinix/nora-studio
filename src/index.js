@@ -2522,6 +2522,23 @@ app.get('/api/user/guilds', async (req, res) => {
     }
 });
 
+// Trigger On-Demand Underage Member Sweep
+app.all('/api/moderation/underage-sweep', async (req, res) => {
+    try {
+        const { runUnderageSweep } = require('./utils/underageSweep');
+        console.log('[API] Manual on-demand Underage Sweep triggered via /api/moderation/underage-sweep');
+        // Run sweep asynchronously or await
+        const result = await runUnderageSweep(req.client);
+        res.json({
+            success: true,
+            message: 'Underage sweep executed successfully. Hourly background check remains active.',
+            result
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/moderation/underage-sweep');
+    }
+});
+
 // Roblox Verification API endpoints
 app.get('/api/user/roblox', async (req, res) => {
     const authHeader = req.headers.authorization;
