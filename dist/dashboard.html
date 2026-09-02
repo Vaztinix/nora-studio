@@ -15765,7 +15765,7 @@
                 initMultiselect('setting-automodImmuneRoles', roles);
                 initMultiselect('setting-countingWhitelistedRoles', roles);
                 const chList = (typeof textChannels !== 'undefined' ? textChannels : (window.currentTextChannels || []));
-                initMultiselect('setting-starboardIgnoredChannels', chList);
+                initMultiselect('setting-starboardIgnoredChannels', (window.currentTextChannels || []));
 
             } catch (e) {
                 console.error('[Roles Apply Error]:', e);
@@ -16424,8 +16424,8 @@
             const avatar = document.getElementById('roblox-presence-avatar');
             const joinBtn = document.getElementById('roblox-join-btn');
             
-            dot.style.background = '#ffcc00';
-            status.textContent = 'Checking...';
+            if (dot) dot.style.background = '#ffcc00';
+            if (status) status.textContent = 'Checking...';
             if (joinBtn) joinBtn.style.display = 'none';
             
             try {
@@ -16521,6 +16521,7 @@
                 const el = document.getElementById('setting-' + k);
                 if (!el) return;
                 if (el.type === 'checkbox') el.checked = false;
+                else if (el.type === 'color') el.value = '#5865F2';
                 else el.value = '';
             });
             const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say', 'reactionrole', 'autoresponder', 'youtube'];
@@ -16879,12 +16880,12 @@
                     topggAuthInput.value = 'nora_' + Math.random().toString(36).substring(2, 15);
                 }
 
-                // Fetch Top.gg Connections and populate asset dropdown
+                                // Fetch Top.gg Connections and populate asset dropdown
                 let guildConns = [];
                 try {
+                    const token = (typeof t !== 'undefined' && t) ? t : (sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token') || '');
                     const connRes = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/topgg/connections', {
-                        const token = (typeof t !== 'undefined' && t) ? t : (sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token') || '');
-                    headers: { 'Authorization': Bearer \ }` }
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (connRes.ok) {
                         const connData = await connRes.json();
@@ -16892,7 +16893,7 @@
                         guildConns = allConns.filter(c => c.guildId === currentServerId);
                     }
                 } catch (connErr) {
-                    console.error('[Top.gg Connections Load Error]:', connErr);
+                    /* silent topgg notice */
                 }
 
                 const assetSelectorGroup = document.getElementById('topgg-asset-selector-group');
