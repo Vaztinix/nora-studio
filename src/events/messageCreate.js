@@ -92,10 +92,13 @@ module.exports = {
                                     }
                                 }
 
-                                const noticeMsg = await message.channel.send({
+                                const noticeMsg = await message.reply({
                                     content: noticeContent,
-                                    allowedMentions: { parse: [] } // Do not ping the AFK user again
-                                }).catch(() => null);
+                                    allowedMentions: { repliedUser: false, parse: [] } // Reply without pinging
+                                }).catch(() => message.channel.send({
+                                    content: noticeContent,
+                                    allowedMentions: { parse: [] }
+                                }).catch(() => null));
 
                                 if (noticeMsg && (settings?.afkCleanMessage !== false)) {
                                     setTimeout(() => noticeMsg.delete().catch(() => {}), 10000);
