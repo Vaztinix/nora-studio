@@ -20,11 +20,13 @@ const ActiveTicket = require('../../database/models/ActiveTicket');
 const TicketHistory = require('../../database/models/TicketHistory');
 const ActionLog = require('../../database/models/ActionLog');
 const { logServerAction } = require('../../utils/actionLogger');
+const settingsCache = require('../../utils/settingsCache');
 
-
+// Short-term in-memory cache for aggregated dashboard data (15s TTL) to prevent repeated heavy queries
+const dashboardDataCache = new Map();
+const DASHBOARD_DATA_TTL = 15 * 1000;
 
 // Apply guild permission checking middleware
-
 router.use(requireGuildPermission);
 
 /**
@@ -78,6 +80,14 @@ router.get('/action-logs', async (req, res) => {
 router.get('/full-dashboard-data', async (req, res) => {
     try {
         const { guildId } = req.params;
+
+        // Check short-term in-memory cache for instant <1ms response
+        const now = Date.now();
+        const cached = dashboardDataCache.get(guildId);
+        if (cached && cached.expires > now) {
+            return res.json(cached.data);
+        }
+
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
@@ -112,14 +122,16 @@ router.get('/full-dashboard-data', async (req, res) => {
             url: e.imageURL()
         }));
 
-        // 4. Database Models
+        // 4. Database Models in Parallel
         const GuildSettings = require('../../database/models/GuildSettings');
         const ContentFeed = require('../../database/models/ContentFeed');
         const Autoresponder = require('../../database/models/Autoresponder');
 
-        const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
-        const contentFeeds = await ContentFeed.findAll({ where: { guildId } }).catch(() => []);
-        const autoresponders = await Autoresponder.findAll({ where: { guildId } }).catch(() => []);
+        const [settings, contentFeeds, autoresponders] = await Promise.all([
+            settingsCache.get(guildId).then(s => s || GuildSettings.findOrCreate({ where: { guildId } }).then(([res]) => res)),
+            ContentFeed.findAll({ where: { guildId } }).catch(() => []),
+            Autoresponder.findAll({ where: { guildId } }).catch(() => [])
+        ]);
 
         // 5. Analytics summary
         const analytics = {
@@ -128,17 +140,24 @@ router.get('/full-dashboard-data', async (req, res) => {
             roleCount: guild.roles.cache.size || 0
         };
 
-        res.json({
+        const responsePayload = {
             success: true,
             channels,
             roles,
             emojis,
-            settings: settings ? settings.toJSON() : {},
+            settings: settings ? (typeof settings.toJSON === 'function' ? settings.toJSON() : settings) : {},
             contentFeeds,
             autoresponders,
             applications: [],
             analytics
+        };
+
+        dashboardDataCache.set(guildId, {
+            data: responsePayload,
+            expires: now + DASHBOARD_DATA_TTL
         });
+
+        res.json(responsePayload);
     } catch (e) {
         console.error('Error fetching full dashboard data:', e);
         res.status(500).json({ error: e.message });

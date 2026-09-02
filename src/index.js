@@ -1416,6 +1416,8 @@ app.post('/api/auth/invalidate', async (req, res) => {
 
         // Destroy all sessions for this user
         await Session.destroy({ where: { userId } });
+        const { invalidateSessionToken } = require('./api/middleware/auth');
+        invalidateSessionToken(token);
 
         res.json({
             success: true,

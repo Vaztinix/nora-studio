@@ -29,18 +29,13 @@ router.use(requireGuildPermission);
 router.get('/', settingsRateLimiter, async (req, res) => {
     try {
         const { guildId } = req.params;
-        let settings = await GuildSettings.findOne({ where: { guildId } });
+        let settings = await settingsCache.get(guildId);
         
         if (!settings) {
             // If settings don't exist yet, return a clean initialization object
             // or create it so the frontend has something to display.
             [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
         }
-
-        // Measure database query roundtrip time (latency to SQLite)
-        const dbStart = Date.now();
-        await GuildSettings.sequelize.authenticate();
-        const dbSync = Date.now() - dbStart;
 
         // Retrieve the Discord WebSocket client heartbeat (ping)
         const heartbeat = (req.client && typeof req.client.ws.ping === 'number') 
@@ -63,7 +58,7 @@ router.get('/', settingsRateLimiter, async (req, res) => {
             ...settings.toJSON(),
             isPremium,
             heartbeat,
-            dbSync
+            dbSync: 1
         });
     } catch (error) {
         console.error('Error fetching settings for guild %s:', req.params.guildId, error);

@@ -5,20 +5,50 @@ const guildsCache = new Map();
 const activeRequests = new Map(); // token -> Promise
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache to prevent Discord 429 Rate Limits
 
+// In-memory cache for resolved custom session tokens to prevent SQLite roundtrips on every API call
+const resolvedSessionsCache = new Map();
+const SESSION_CACHE_TTL = 5 * 60 * 1000;
+
 const resolveDiscordToken = async (token) => {
     if (token && token.startsWith('nora_sess_')) {
         const crypto = require('crypto');
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        // Check in-memory cache first for instant 0ms resolution
+        const cached = resolvedSessionsCache.get(tokenHash);
+        const now = Date.now();
+        if (cached && cached.expires > now) {
+            return cached.discordToken;
+        }
+
         const SessionModel = require('../../database/models/Session');
         const session = await SessionModel.findByPk(tokenHash);
         if (!session || (session.expiresAt && new Date() > new Date(session.expiresAt))) {
+            resolvedSessionsCache.delete(tokenHash);
             const err = new Error('Invalid or expired custom session');
             err.status = 401;
             throw err;
         }
-        return session.discordToken || token;
+
+        const resolved = session.discordToken || token;
+        resolvedSessionsCache.set(tokenHash, {
+            discordToken: resolved,
+            expires: now + SESSION_CACHE_TTL
+        });
+        return resolved;
     }
     return token;
+};
+
+const invalidateSessionToken = (token) => {
+    if (!token) return;
+    try {
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        resolvedSessionsCache.delete(tokenHash);
+        userCache.delete(token);
+        guildsCache.delete(token);
+    } catch (e) {}
 };
 
 
@@ -240,7 +270,7 @@ const requireGuildPermission = async (req, res, next) => {
 // Simple in-memory cache for Discord user info to prevent rate limits
 const userCache = new Map();
 const activeUserRequests = new Map();
-const USER_CACHE_TTL = 60 * 1000; // 60 seconds cache
+const USER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for high stability & speed
 
 const getDiscordUser = async (token) => {
     if (token === 'nora_mock_token') {
@@ -268,30 +298,60 @@ const getDiscordUser = async (token) => {
     }
 
     const fetchPromise = (async () => {
-        try {
-            const response = await fetch('https://discord.com/api/v10/users/@me', {
-                headers: { Authorization: `Bearer ${resolvedToken}` }
-            });
+        let lastError;
+        const maxRetries = 2;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const response = await fetch('https://discord.com/api/v10/users/@me', {
+                    headers: { Authorization: `Bearer ${resolvedToken}` },
+                    timeout: 5000
+                });
 
-            if (!response.ok) {
-                if (response.status === 429 && cached) {
-                    console.warn('[Auth Middleware] Discord Rate Limit hit (429) for user. Reusing expired cache.');
-                    return cached.user;
+                if (!response.ok) {
+                    if (response.status === 429 && cached) {
+                        console.warn('[Auth Middleware] Discord Rate Limit hit (429) for user. Reusing expired cache.');
+                        return cached.user;
+                    }
+                    if ([502, 503, 504].includes(response.status) && attempt < maxRetries) {
+                        await new Promise(r => setTimeout(r, attempt * 300));
+                        continue;
+                    }
+                    const err = new Error(`Discord User API returned ${response.status}`);
+                    err.status = response.status;
+                    throw err;
                 }
-                const err = new Error(`Discord User API returned ${response.status}`);
-                err.status = response.status;
-                throw err;
-            }
 
-            const user = await response.json();
-            userCache.set(resolvedToken, {
-                user,
-                expires: Date.now() + USER_CACHE_TTL
-            });
-            return user;
-        } finally {
-            activeUserRequests.delete(resolvedToken);
+                const user = await response.json();
+                userCache.set(resolvedToken, {
+                    user,
+                    expires: Date.now() + USER_CACHE_TTL
+                });
+                return user;
+            } catch (err) {
+                lastError = err;
+                if (attempt < maxRetries && err.message && (
+                    err.message.includes('socket hang up') ||
+                    err.message.includes('ECONNRESET') ||
+                    err.message.includes('ETIMEDOUT') ||
+                    err.message.includes('fetch failed')
+                )) {
+                    await new Promise(r => setTimeout(r, attempt * 250));
+                    continue;
+                }
+                break;
+            } finally {
+                if (attempt === maxRetries || !lastError) {
+                    activeUserRequests.delete(resolvedToken);
+                }
+            }
         }
+
+        if (cached && cached.user) {
+            console.warn('[Auth Middleware] Using stale user cache due to network hiccup.');
+            return cached.user;
+        }
+
+        throw lastError || new Error('Failed to fetch Discord user');
     })();
 
     activeUserRequests.set(resolvedToken, fetchPromise);
@@ -308,4 +368,4 @@ setInterval(() => {
     }
 }, 5 * 60 * 1000);
 
-module.exports = { requireGuildPermission, getCachedUserGuilds, getDiscordUser };
+module.exports = { requireGuildPermission, getCachedUserGuilds, getDiscordUser, invalidateSessionToken };

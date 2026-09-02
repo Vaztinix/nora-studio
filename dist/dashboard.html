@@ -6,7 +6,7 @@
     <title>Nora Studio | Manager</title>
     <link rel="icon" type="image/png" href="nora.png">
     <link rel="manifest" href="/manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="/translate.js"></script>
     <script>
@@ -122,26 +122,28 @@
             display: none;
         }
 
-                :root {
-            --bg: #09090b;
-            --sidebar-bg: #111115;
-            --panel-bg: #141418;
-            --card-bg: #141418;
-            --card-hover: #1e1e24;
+        :root {
+            --bg: #0B0C12;
+            --sidebar-bg: #10111A;
+            --panel-bg: rgba(16, 17, 26, 0.75);
+            --card-bg: rgba(16, 17, 26, 0.75);
+            --card-hover: rgba(25, 27, 40, 0.85);
+            --blurple: #5865F2;
+            --blurple-glow: rgba(88, 101, 242, 0.25);
             --primary: #ffffff;
             --primary-glow: rgba(255, 255, 255, 0.12);
             --primary-hover: #ffffff;
-            --text: #ffffff;
-            --muted: #a1a1aa;
+            --text: #F2F3F5;
+            --muted: #949BA4;
             --border: rgba(255, 255, 255, 0.08);
             --radius-md: 10px;
             --radius-lg: 20px;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --input-bg: rgba(0, 0, 0, 0.25);
+            --danger: #ED4245;
+            --success: #23A55A;
+            --warning: #FEE75C;
+            --input-bg: rgba(0, 0, 0, 0.28);
             --row-bg: rgba(255, 255, 255, 0.02);
-            --glow-1: rgba(255, 255, 255, 0.03);
+            --glow-1: rgba(88, 101, 242, 0.08);
             --glow-2: rgba(255, 255, 255, 0.02);
             --rail-width: 210px;
         }
@@ -201,11 +203,11 @@
 
         /* Glassmorphism Design System */
         .panel, .card, .modal, .config-card {
-            background: rgba(14, 14, 16, 0.85) !important;
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            background: rgba(16, 17, 26, 0.75) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
         }
 
         /* Smooth Transition when Switching Themes */
@@ -419,13 +421,13 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             color-scheme: var(--color-scheme, dark);
             background-color: var(--bg);
             background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
-            background-size: 100% 100%;
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
             background-attachment: fixed;
             color: var(--text);
             min-height: 100vh;
@@ -3499,6 +3501,346 @@
         .tab-content.active {
             display: block !important;
         }
+
+        /* ==========================================================================
+           MODERN DASHBOARD TOPBAR & USER MENU (Obsidian Glass Theme)
+           ========================================================================== */
+        .topbar {
+            background: rgba(16, 17, 26, 0.75) !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-top: none !important;
+            border-left: none !important;
+            border-right: none !important;
+            padding: 12px 28px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            height: 72px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1000 !important;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.3px;
+            color: #fff;
+            text-decoration: none;
+            background: none;
+            box-shadow: none;
+        }
+
+        .brand img {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            object-fit: contain;
+            box-shadow: 0 2px 10px rgba(88, 101, 242, 0.3);
+        }
+
+        #cfg-breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        #global-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .global-nav-btn {
+            color: var(--muted) !important;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .global-nav-btn:hover {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .global-nav-btn.active {
+            color: #fff !important;
+            background: var(--blurple) !important;
+            box-shadow: 0 2px 10px rgba(88, 101, 242, 0.35);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .system-status-pill {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #8b90a5;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 6px 14px;
+        }
+
+        .system-status-dot {
+            width: 7px;
+            height: 7px;
+            background: #23a55a;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #23a55a;
+        }
+
+        .auto-refresh-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            color: #8b90a5;
+        }
+
+        .auto-refresh-pill button {
+            background: none;
+            border: none;
+            color: #8b90a5;
+            cursor: pointer;
+            padding: 3px 5px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .auto-refresh-pill button:hover {
+            color: #fff;
+            transform: rotate(30deg);
+        }
+
+        .auto-refresh-pill select {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .theme-toggle-pill {
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-pill:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* User Menu & Dropdown */
+        .user-menu-wrapper {
+            position: relative;
+        }
+
+        .user-profile-pill {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 4px 14px 4px 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .user-profile-pill:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(88, 101, 242, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-profile-pill img {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-chevron {
+            font-size: 0.72rem;
+            opacity: 0.6;
+            transition: transform 0.2s ease;
+        }
+
+        .user-menu-wrapper.active .user-chevron {
+            transform: rotate(180deg);
+        }
+
+        .user-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 220px;
+            background: rgba(16, 17, 26, 0.95);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(88, 101, 242, 0.15);
+            z-index: 1100;
+            animation: dropdownFade 0.2s ease;
+        }
+
+        .user-menu-wrapper.active .user-dropdown-menu {
+            display: block;
+        }
+
+        @keyframes dropdownFade {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-dropdown-header {
+            padding: 8px 12px 10px;
+        }
+
+        .user-dropdown-name {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-dropdown-sub {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .user-dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 6px 0;
+        }
+
+        .user-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .user-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+        }
+
+        .user-dropdown-item i {
+            font-size: 0.9rem;
+            width: 16px;
+            color: var(--muted);
+        }
+
+        .user-dropdown-item:hover i {
+            color: var(--blurple);
+        }
+
+        .user-dropdown-item.item-danger {
+            color: #ED4245;
+        }
+
+        .user-dropdown-item.item-danger i {
+            color: #ED4245;
+        }
+
+        .user-dropdown-item.item-danger:hover {
+            background: rgba(237, 66, 69, 0.1);
+            color: #ff5e61;
+        }
+
+        /* Hero Banner (Command Center) Refinement */
+        #view-greeting .hero-banner {
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.12) 0%, rgba(16, 17, 26, 0.7) 100%) !important;
+            border: 1px solid rgba(88, 101, 242, 0.25) !important;
+            border-radius: 20px !important;
+            padding: 36px 40px !important;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+        }
     </style>
 </head>
 <body class="nora-theme">
@@ -3595,71 +3937,89 @@
         </div>
     </div>
 
-        <header class="topbar" style="background: #0a0a0b; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; height: auto;">
-        <button id="mobile-burger-btn" class="mobile-burger-btn"><i class="fas fa-bars"></i></button>
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <div class="brand" style="display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 1.15rem; letter-spacing: -0.5px; color: #fff; text-transform: uppercase; margin: 0; background: none; box-shadow: none;">
-                <img src="nora.png" style="height: 24px; width: 24px; object-fit: contain;">
-                NORA STUDIO
+        <header class="topbar" id="dashboard-topbar">
+            <button id="mobile-burger-btn" class="mobile-burger-btn"><i class="fas fa-bars"></i></button>
+            <div class="topbar-left">
+                <a href="/dashboard" class="brand" id="dashboard-brand">
+                    <img src="nora.png" alt="Nora Studio Logo">
+                    <span>NORA STUDIO</span>
+                </a>
+                <!-- Breadcrumbs -->
+                <div id="cfg-breadcrumbs">
+                    <span id="breadcrumb-server-name" data-no-translate>Nora's Hub</span>
+                    <span>/</span>
+                    <span id="breadcrumb-tab-group">Home</span>
+                    <span>/</span>
+                    <span id="breadcrumb-tab-name">Dashboard</span>
+                </div>
             </div>
-            <!-- Breadcrumbs -->
-            <div id="cfg-breadcrumbs" style="display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem; font-weight: 500;">
-                <span id="breadcrumb-server-name" data-no-translate>Nora's Hub</span>
-                <span>/</span>
-                <span id="breadcrumb-tab-group">Home</span>
-                <span>/</span>
-                <span id="breadcrumb-tab-name" style="color: #fff; font-weight: 600;">Dashboard</span>
-            </div>
-            <!-- Global Nav Links (Ticket King Layout) -->
-            <div id="global-nav-links" style="display: flex; align-items: center; gap: 10px;">
-                <button onclick="showTab('servers')" class="global-nav-btn active" data-tab="servers"><i class="fas fa-server"></i> Servers</button>
-                <button onclick="showTab('profile')" class="global-nav-btn" data-tab="profile"><i class="fas fa-user-circle"></i> Profile</button>
+
+            <!-- Global Nav Center Links -->
+            <div id="global-nav-links">
+                <button onclick="showTab('servers')" class="global-nav-btn active" data-tab="servers"><i class="fas fa-server"></i> <span>Servers</span></button>
+                <button onclick="showTab('profile')" class="global-nav-btn" data-tab="profile"><i class="fas fa-user-circle"></i> <span>Profile</span></button>
                 <button onclick="showTab('notifications')" class="global-nav-btn" data-tab="notifications">
-                    <i class="fas fa-bell"></i> Notifications
+                    <i class="fas fa-bell"></i> <span>Notifications</span>
                     <span id="topbar-notif-badge" class="notif-badge" style="display: none; margin-left: 5px;">0</span>
                 </button>
-                <button onclick="showTab('prefs')" class="global-nav-btn" data-tab="prefs"><i class="fas fa-cog"></i> Settings</button>
+                <button onclick="showTab('prefs')" class="global-nav-btn" data-tab="prefs"><i class="fas fa-sliders-h"></i> <span>Settings</span></button>
             </div>
-        </div>
-        <div class="topbar-actions" style="display: flex; align-items: center; gap: 12px;">
-            <!-- Quick Theme Switcher Button -->
-            <button id="quick-theme-toggle" onclick="toggleTheme()" class="global-nav-btn theme-toggle-btn" style="padding: 6px 12px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600;" title="Toggle Light / Dark Mode">
-                <i id="theme-toggle-icon" class="fas fa-moon" style="color: var(--primary);"></i>
-                <span id="theme-toggle-label" class="hide-on-mobile">Dark</span>
-            </button>
-            <!-- Auto-Refresh Control Manager Widget -->
-            <div id="auto-refresh-widget" style="display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 3px 10px; font-size: 0.78rem; color: #8b90a5;">
-                <button id="manual-refresh-btn" onclick="triggerManualRefresh()" style="background: none; border: none; color: #8b90a5; cursor: pointer; padding: 2px 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Refresh Page & API Data Now">
-                    <i id="refresh-icon" class="fas fa-sync-alt" style="font-size: 0.75rem;"></i>
+
+            <!-- Topbar Right Actions: Consolidated, Clean & Advanced -->
+            <div class="topbar-actions">
+                <!-- Systems Operational Status Pill -->
+                <div class="system-status-pill" title="All Systems Operational">
+                    <span class="system-status-dot"></span>
+                    <span class="hide-on-mobile">Operational</span>
+                </div>
+
+                <!-- Auto-Refresh Control Manager Widget -->
+                <div id="auto-refresh-widget" class="auto-refresh-pill">
+                    <button id="manual-refresh-btn" onclick="triggerManualRefresh()" title="Refresh Page & API Data Now">
+                        <i id="refresh-icon" class="fas fa-sync-alt"></i>
+                    </button>
+                    <span id="refresh-countdown-text">30s</span>
+                    <select id="auto-refresh-select" onchange="handleAutoRefreshChange(this.value)">
+                        <option value="0">Off (Manual)</option>
+                        <option value="5" id="opt-refresh-5">5s (Instant 👑)</option>
+                        <option value="10" id="opt-refresh-10">10s (👑)</option>
+                        <option value="15" id="opt-refresh-15">15s (👑)</option>
+                        <option value="30" selected>30s</option>
+                        <option value="60">1m</option>
+                        <option value="300">5m</option>
+                        <option value="600">10m</option>
+                    </select>
+                </div>
+
+                <!-- Quick Theme Switcher Button -->
+                <button id="quick-theme-toggle" onclick="toggleTheme()" class="theme-toggle-pill" title="Toggle Light / Dark Mode">
+                    <i id="theme-toggle-icon" class="fas fa-moon" style="color: var(--primary);"></i>
+                    <span id="theme-toggle-label" class="hide-on-mobile">Dark</span>
                 </button>
-                <span id="refresh-countdown-text" style="font-size: 0.75rem; font-weight: 600; min-width: 42px; text-align: center; color: #8b90a5;">30s</span>
-                <select id="auto-refresh-select" onchange="handleAutoRefreshChange(this.value)" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: #fff; font-size: 0.75rem; padding: 2px 6px; cursor: pointer; outline: none;">
-                    <option value="0">Off (Manual)</option>
-                    <option value="5" id="opt-refresh-5">5s (Instant 👑)</option>
-                    <option value="10" id="opt-refresh-10">10s (👑)</option>
-                    <option value="15" id="opt-refresh-15">15s (👑)</option>
-                    <option value="30" selected>30s (Default)</option>
-                    <option value="60">1m</option>
-                    <option value="300">5m</option>
-                    <option value="600">10m</option>
-                </select>
+
+                <!-- Unified User Profile Menu Pill with Popover -->
+                <div class="user-menu-wrapper" id="user-menu-wrapper">
+                    <button type="button" class="user-profile-pill" id="user-profile-btn" onclick="toggleUserDropdown(event)">
+                        <img id="user-avatar-top" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" alt="User">
+                        <span id="user-name-top" data-no-translate>Loading</span>
+                        <i class="fas fa-chevron-down user-chevron"></i>
+                    </button>
+                    
+                    <div class="user-dropdown-menu" id="user-dropdown-menu">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="user-dropdown-name">Nora User</div>
+                            <div class="user-dropdown-sub" id="user-dropdown-sub">Discord Authenticated</div>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="/" class="user-dropdown-item"><i class="fas fa-home"></i> Home Page</a>
+                        <a href="/docs" class="user-dropdown-item"><i class="fas fa-book"></i> Documentation</a>
+                        <a href="https://discord.gg/Uxb2tNAxtp" target="_blank" class="user-dropdown-item"><i class="fab fa-discord"></i> Community Support</a>
+                        <div class="user-dropdown-divider"></div>
+                        <button onclick="performLogout()" class="user-dropdown-item item-danger"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+                    </div>
+                </div>
             </div>
-            <!-- Systems Operational Status -->
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #8b90a5;">
-                <div style="width: 6px; height: 6px; background: #2ea043; border-radius: 50%;"></div>
-                All Systems Operational
-            </div>
-            <!-- User Profile (Vazzy / Avatar) -->
-            <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 4px 12px 4px 6px;">
-                <img id="user-avatar-top" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 24px; height: 24px; border-radius: 50%; margin: 0;">
-                <span id="user-name-top" style="color: #fff; font-size: 0.8rem; font-weight: 700;" data-no-translate>Loading</span>
-            </div>
-            <!-- Logout Button in Topbar -->
-            <button onclick="performLogout()" class="global-nav-btn" style="padding: 6px; border-radius: 50%; color: var(--danger); background: transparent; border: none; cursor: pointer;" title="Logout">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
-        </div>
-    </header>
+        </header>
     <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
     <div class="app-layout">
@@ -9279,6 +9639,14 @@
                 const userNameEl = document.getElementById('user-name-top');
                 if (userNameEl) {
                     userNameEl.textContent = (d.prefs && d.prefs.displayName) || d.username;
+                }
+                const userDropdownName = document.getElementById('user-dropdown-name');
+                if (userDropdownName) {
+                    userDropdownName.textContent = (d.prefs && d.prefs.displayName) || d.username;
+                }
+                const userDropdownSub = document.getElementById('user-dropdown-sub');
+                if (userDropdownSub) {
+                    userDropdownSub.textContent = `@${d.username}`;
                 }
                 
                 // Populate Settings
@@ -19778,6 +20146,20 @@ function selectThemeMode(mode) {
         showToast(`Theme updated to ${mode === 'light' ? 'Light Glass' : 'Dark Glass'}`, 'success');
     }
 }
+
+// User Menu Dropdown Handler
+function toggleUserDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrapper = document.getElementById('user-menu-wrapper');
+    if (wrapper) wrapper.classList.toggle('active');
+}
+
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('user-menu-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        wrapper.classList.remove('active');
+    }
+});
 
 // Auto-sync theme on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
