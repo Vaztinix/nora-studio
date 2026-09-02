@@ -66,6 +66,32 @@ function queueSave() {
     }, 1000); // 1-second debounce delay
 }
 
+async function getGuildCountingData(guildId) {
+    const allData = await loadCountingData();
+    const data = allData[guildId] || {};
+    return {
+        currentCount: data.currentCount || 0,
+        lastUserId: data.lastUserId || null,
+        lastUserTag: data.lastUserTag || null,
+        lastCountAt: data.lastCountAt || null,
+        highScore: data.highScore || 0,
+        highScoreDate: data.highScoreDate || null,
+        totalCorrectCounts: data.totalCorrectCounts || 0,
+        totalResets: data.totalResets || 0,
+        userCounts: data.userCounts || {}
+    };
+}
+
+async function setGuildCountingData(guildId, data) {
+    const allData = await loadCountingData();
+    allData[guildId] = {
+        ...allData[guildId],
+        ...data
+    };
+    queueSave();
+    return allData[guildId];
+}
+
 async function safeReplyOrSend(message, payload) {
     if (!message || !message.channel) return null;
     try {
@@ -175,19 +201,39 @@ module.exports = {
                 return;
             }
 
+            const previousStreak = guildData.currentCount || 0;
             const highScore = guildData.highScore || 0;
-            await safeReplyOrSend(message, { content: `You ruined it, <@${message.author.id}>! The next number was **${expectedNext}**. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` for counting rules.*` });
-            allData[message.guild.id] = { currentCount: 0, lastUserId: null, highScore };
+            guildData.totalResets = (guildData.totalResets || 0) + 1;
+            guildData.currentCount = 0;
+            guildData.lastUserId = null;
+            allData[message.guild.id] = guildData;
             queueSave();
+
+            await safeReplyOrSend(message, { 
+                content: `❌ You broke the count, <@${message.author.id}>! The next number was **${expectedNext}**.\n` +
+                    `• **Lost Streak:** \`${previousStreak}\`\n` +
+                    `• **Server Record:** \`${highScore}\`\n\n` +
+                    `The count has been reset to **0**. Start again at **1**!` 
+            });
             return;
         }
 
         // Rule: No double-counting in a row on this specific server
         if (guildData.lastUserId === message.author.id) {
+            const previousStreak = guildData.currentCount || 0;
             const highScore = guildData.highScore || 0;
-            await safeReplyOrSend(message, { content: `You ruined it, <@${message.author.id}>! You can't count twice in a row. The count is reset back to **0**.\n\n*Server High Score Best: \`${highScore}\`. Use \`n!help\` for counting rules.*` });
-            allData[message.guild.id] = { currentCount: 0, lastUserId: null, highScore };
+            guildData.totalResets = (guildData.totalResets || 0) + 1;
+            guildData.currentCount = 0;
+            guildData.lastUserId = null;
+            allData[message.guild.id] = guildData;
             queueSave();
+
+            await safeReplyOrSend(message, { 
+                content: `❌ You cannot count twice in a row, <@${message.author.id}>!\n` +
+                    `• **Lost Streak:** \`${previousStreak}\`\n` +
+                    `• **Server Record:** \`${highScore}\`\n\n` +
+                    `The count has been reset to **0**. Start again at **1**!` 
+            });
             return;
         }
 
@@ -197,10 +243,17 @@ module.exports = {
 
         if (isNewBest) {
             guildData.highScore = expectedNext;
+            guildData.highScoreDate = Date.now();
         }
 
         guildData.currentCount = expectedNext;
         guildData.lastUserId = message.author.id;
+        guildData.lastUserTag = message.author.tag || message.author.username;
+        guildData.lastCountAt = Date.now();
+        guildData.totalCorrectCounts = (guildData.totalCorrectCounts || 0) + 1;
+        guildData.userCounts = guildData.userCounts || {};
+        guildData.userCounts[message.author.id] = (guildData.userCounts[message.author.id] || 0) + 1;
+
         allData[message.guild.id] = guildData;
         queueSave();
 
@@ -214,6 +267,24 @@ module.exports = {
             await message.react('☑️').catch(() => { });
         } else {
             await message.react('✅').catch(() => { });
+        }
+
+        // Milestone Announcement for major accomplishments
+        if (expectedNext > 0 && (expectedNext === 50 || expectedNext % 100 === 0 || expectedNext === 500 || expectedNext === 1000)) {
+            const { EmbedBuilder } = require('discord.js');
+            const milestoneEmbed = new EmbedBuilder()
+                .setTitle(`🎉 Milestone Reached: ${expectedNext}!`)
+                .setDescription(
+                    `Incredible teamwork! **${message.guild.name}** has reached **${expectedNext}**!\n\n` +
+                    `• **Counted by:** <@${message.author.id}>\n` +
+                    `• **Next Number:** **${expectedNext + 1}**\n` +
+                    `• **All-Time Server Record:** \`${guildData.highScore}\``
+                )
+                .setColor(0xFEE75C)
+                .setFooter({ text: 'Nora Counting Milestone' })
+                .setTimestamp();
+
+            await message.channel.send({ embeds: [milestoneEmbed] }).catch(() => {});
         }
 
         // Award XP for successful count
@@ -234,4 +305,8 @@ module.exports = {
         const { checkAndAwardEgg } = require('../utils/easterEggSystem');
         checkAndAwardEgg(message, 7);
     },
+    getGuildCountingData,
+    setGuildCountingData,
+    loadCountingData,
+    queueSave
 };

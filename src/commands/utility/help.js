@@ -156,7 +156,7 @@ function buildSingleCommandHelp(client, query, guild) {
     } else if (name === 'verify') {
         examples.push('`n!verify link Lunar_Dev`', '`n!verify check`');
     } else if (name === 'counting') {
-        examples.push('`n!counting`');
+        examples.push('`n!counting`', '`n!counting stats`', '`n!counting top`', '`n!counting rules`', '`n!counting channel #counting`', '`n!counting reset 0`');
     } else if (name === 'onewordstory') {
         examples.push('`n!story start`', '`n!story history`', '`n!story stats`');
     } else if (name === 'ticket') {
@@ -238,8 +238,12 @@ module.exports = {
                             value: '`n!rank`, `n!leaderboard`, `n!mycard`, `n!afk [status]`, Chat/Voice XP rewards' 
                         },
                         { 
+                            name: '🔢 Advanced Counting Game', 
+                            value: '`n!counting [stats|top|rules|channel|reset]`, sandboxed math equations, records & milestones' 
+                        },
+                        { 
                             name: '🎮 Community Games & Fun', 
-                            value: '`n!counting`, `n!story`, `n!guess`, `n!rps`, `n!ask [prompt]`, `n!poll`, `n!giveaway`' 
+                            value: '`n!story`, `n!guess`, `n!rps`, `n!ask [prompt]`, `n!poll`, `n!giveaway`' 
                         },
                         { 
                             name: '⚙️ Server Setup & Verification', 
@@ -252,6 +256,45 @@ module.exports = {
                         { 
                             name: '💎 Nora Premium', 
                             value: 'Real-time Roblox rank sync, 200 autoresponder slots, custom GIF rank cards, and 10x XP multipliers' 
+                        }
+                    );
+            } else if (category === 'counting') {
+                embed.setTitle('🔢 Nora Counting Game Manual')
+                    .setDescription(
+                        'Nora features an **advanced sequential counting engine** with sandboxed math parsing, server streak records, contributor leaderboards, and XP rewards!\n\n' +
+                        '**How it works:** Members take turns counting up sequentially in the designated channel. Chat or emojis are ignored, but wrong numbers or counting twice in a row resets the count.'
+                    )
+                    .addFields(
+                        { 
+                            name: '🎮 Core Rules & Mechanics', 
+                            value: '• Start counting at **1** and increment by **1** with each message.\n' +
+                                   '• **Alternating Turns:** You cannot count twice in a row! Another member must count next.\n' +
+                                   '• Entering the wrong number or double counting resets the count to **0** while keeping the all-time server record.'
+                        },
+                        { 
+                            name: '🧮 Advanced Math Expression Sandbox', 
+                            value: '• Nora evaluates mathematical expressions safely in a secure sandbox.\n' +
+                                   '• Supported operators: `+`, `-`, `*`, `/`, `^` (power), `%` (modulo), and parentheses `( )`.\n' +
+                                   '• Examples: `5 + 5` (=10), `10 * 2 + 5` (=25), `(8 - 2) * 4` (=24), `2^4` (=16).'
+                        },
+                        { 
+                            name: '🏆 Reactions & Milestone Celebrations', 
+                            value: '• ✅ **Verified Count:** Valid number progressing towards the record.\n' +
+                                   '• ☑️ **New Server Record:** When your count exceeds the server\'s all-time high score!\n' +
+                                   '• 💯 **Century Milestone:** Milestone reaction when hitting numbers ending in 00.\n' +
+                                   '• 🎉 **Milestone Alerts:** Nora sends celebratory chat announcements at 50, 100, 500, and 1000.'
+                        },
+                        { 
+                            name: '📜 Counting Commands (`n!` or `/`)', 
+                            value: '• `n!counting` or `/counting stats` — View live count, next required number, and server records.\n' +
+                                   '• `n!counting top` or `/counting leaderboard` — View top counting contributors on this server.\n' +
+                                   '• `n!counting rules` — In-chat quick guide and math syntax.\n' +
+                                   '• `n!counting channel <#channel>` — Assign or change the counting channel (Staff).\n' +
+                                   '• `n!counting reset [count]` — Calibrate or reset current count (Staff).'
+                        },
+                        { 
+                            name: '⭐ Leveling & XP Rewards', 
+                            value: 'Every correct count automatically awards XP towards your server rank card and global levels (customizable in `/setup games`).'
                         }
                     );
             } else if (category === 'safety') {
@@ -282,7 +325,7 @@ module.exports = {
                 embed.setTitle('🎮 Community Games & Fun Commands')
                     .setDescription('Interactive chat games and engagement tools for your community.')
                     .addFields(
-                        { name: '`n!counting`', value: 'Sequential counting game in configured channel with high score tracking and XP rewards.' },
+                        { name: '`n!counting`', value: 'Advanced sequential counting game with math sandbox, milestone alerts, and XP rewards.' },
                         { name: '`n!story [start|stop|history|stats]`', value: 'Collaborative One Word Story game with auto-restart milestones (Alias: `n!story`).' },
                         { name: '`n!guess <number>`', value: 'Play the number guessing game against Nora for bonus XP.' },
                         { name: '`n!rps <rock|paper|scissors>`', value: 'Play Rock Paper Scissors against Nora with optional XP bets.' },
@@ -334,9 +377,10 @@ module.exports = {
 
         const dropdownOptions = [
             { label: 'Main Menu', value: 'main', description: 'Overview of all Nora features', emoji: '💖' },
+            { label: 'Counting Game', value: 'counting', description: 'Rules, math expressions, milestones, and stats', emoji: '🔢' },
             { label: 'Safety & Moderation', value: 'safety', description: 'Warns, bans, timeouts, and AutoMod', emoji: '🛡️' },
             { label: 'Profiles, Leveling & AFK', value: 'profile', description: 'Rank cards, XP leaderboards, and AFK status', emoji: '👤' },
-            { label: 'Community Games & Fun', value: 'games', description: 'Counting, Story, RPS, Guess, Polls, and AI', emoji: '🎮' },
+            { label: 'Community Games & Fun', value: 'games', description: 'Story, RPS, Guess, Polls, and AI', emoji: '🎮' },
             { label: 'Setup & Verification', value: 'setup', description: 'Server dashboard, 4 verification types, and logs', emoji: '⚙️' },
             { label: 'Tickets & Utility', value: 'utility', description: 'Tickets, applications, roblox, and info', emoji: '🎫' },
             { label: 'Premium Perks', value: 'premium', description: 'Exclusive perks and server upgrades', emoji: '💎' }
