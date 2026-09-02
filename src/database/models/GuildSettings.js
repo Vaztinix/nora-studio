@@ -280,6 +280,31 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         defaultValue: '✅'
     },
+    verifyEmbedTitle: {
+        type: DataTypes.STRING,
+        defaultValue: 'Server Verification Required'
+    },
+    verifyEmbedDesc: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: 'Welcome! To gain full access to the server, please verify that you are human by clicking the button below.'
+    },
+    verifyEmbedColor: {
+        type: DataTypes.STRING,
+        defaultValue: '#5865F2'
+    },
+    verifyBtnLabel: {
+        type: DataTypes.STRING,
+        defaultValue: 'Verify Account'
+    },
+    verifyBtnEmoji: {
+        type: DataTypes.STRING,
+        defaultValue: '🔒'
+    },
+    verificationLogChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     // ---- Dynamic Logging Framework Extensions ----
     logChannelCreates: {
         type: DataTypes.BOOLEAN,

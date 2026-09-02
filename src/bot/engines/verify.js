@@ -75,10 +75,12 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
     }
 
     const guild = member.guild;
-    const targetRoleIds = (settings?.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+    const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;
+    const maxVerifiedRoles = isPremium ? 5 : 3;
+    const targetRoleIds = (settings?.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean).slice(0, maxVerifiedRoles);
 
     if (!targetRoleIds.length) {
-        return { success: false, message: '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask an admin to configure it in `/setup`.' };
+        return { success: false, message: '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask an admin to configure it in `/setup` or Nora Studio.' };
     }
 
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
@@ -354,20 +356,42 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
     if (!targetChannel) throw new Error('Target channel is required to spawn verification panel.');
 
     const guild = targetChannel.guild;
-    const embedColor = guild.members.me?.roles?.highest?.color || 0x57acf2;
+    const botUser = guild.members.me?.user;
+    
+    // Resolve embed color
+    let embedColor = 0x5865F2;
+    if (settings?.verifyEmbedColor) {
+        try {
+            embedColor = parseInt(settings.verifyEmbedColor.replace('#', ''), 16);
+        } catch (e) {
+            embedColor = 0x5865F2;
+        }
+    } else if (guild.members.me?.roles?.highest?.color) {
+        embedColor = guild.members.me.roles.highest.color;
+    }
+
+    const botAvatar = botUser ? botUser.displayAvatarURL({ dynamic: true, size: 256 }) : null;
 
     if (type === 'button') {
+        const title = settings?.verifyEmbedTitle || 'Server Access Verification';
+        const description = settings?.verifyEmbedDesc || 'Welcome to the server! Click the **Verify** button below to immediately unlock full access to community channels.';
+        const btnLabel = settings?.verifyBtnLabel || 'Click to Verify';
+        const btnEmoji = settings?.verifyBtnEmoji || '✅';
+
         const embed = new EmbedBuilder()
-            .setTitle('Server Access Verification')
-            .setDescription('Welcome to the server! Click the **Verify** button below to immediately unlock access.')
+            .setTitle(title)
+            .setDescription(description)
             .setColor(embedColor)
-            .setFooter({ text: 'Nora Security • 1-Click Verification' });
+            .setFooter({ text: 'Nora Gatekeeper • 1-Click Verification', iconURL: botAvatar })
+            .setTimestamp();
+
+        if (botAvatar) embed.setThumbnail(botAvatar);
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('verify_button_instant')
-                .setLabel('Click to Verify')
-                .setEmoji('✅')
+                .setLabel(btnLabel)
+                .setEmoji(btnEmoji)
                 .setStyle(ButtonStyle.Success)
         );
 
@@ -380,17 +404,25 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
     }
 
     if (type === 'captcha') {
+        const title = settings?.verifyEmbedTitle || 'Server Verification Required';
+        const description = settings?.verifyEmbedDesc || 'To protect the server from automated raids and bots, please verify that you are human.\n\nClick the **Verify** button below and solve the image CAPTCHA challenge.';
+        const btnLabel = settings?.verifyBtnLabel || 'Verify Account';
+        const btnEmoji = settings?.verifyBtnEmoji || '🔒';
+
         const embed = new EmbedBuilder()
-            .setTitle('Server Verification Required')
-            .setDescription('To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and solve the image CAPTCHA.')
+            .setTitle(title)
+            .setDescription(description)
             .setColor(embedColor)
-            .setFooter({ text: 'Nora Security • Anti-Bot CAPTCHA' });
+            .setFooter({ text: 'Nora Gatekeeper • Anti-Bot CAPTCHA Protection', iconURL: botAvatar })
+            .setTimestamp();
+
+        if (botAvatar) embed.setThumbnail(botAvatar);
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('verify_system_button')
-                .setLabel('Verify')
-                .setEmoji('🔒')
+                .setLabel(btnLabel)
+                .setEmoji(btnEmoji)
                 .setStyle(ButtonStyle.Success)
         );
 
@@ -403,12 +435,18 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
     }
 
     if (type === 'reaction') {
-        const triggerEmoji = settings.verifyEmoji || '✅';
+        const triggerEmoji = settings?.verifyEmoji || '✅';
+        const title = settings?.verifyEmbedTitle || 'Reaction Verification';
+        const description = settings?.verifyEmbedDesc || `React with ${triggerEmoji} below to verify yourself and gain full access to the community!`;
+
         const embed = new EmbedBuilder()
-            .setTitle('Reaction Verification')
-            .setDescription(`React with ${triggerEmoji} below to verify yourself and gain full access to the server!`)
+            .setTitle(title)
+            .setDescription(description)
             .setColor(embedColor)
-            .setFooter({ text: 'Nora Security • React Verification' });
+            .setFooter({ text: 'Nora Gatekeeper • Reaction Verification', iconURL: botAvatar })
+            .setTimestamp();
+
+        if (botAvatar) embed.setThumbnail(botAvatar);
 
         const sent = await targetChannel.send({ embeds: [embed] });
         try {
@@ -424,8 +462,9 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
     }
 
     if (type === 'roblox') {
+        const title = settings?.verifyEmbedTitle || 'Roblox Account Verification';
         const embed = new EmbedBuilder()
-            .setTitle('Roblox Account Verification')
+            .setTitle(title)
             .setDescription(
                 'Link your Roblox account to this Discord server for access, roles, and rank perks!\n\n' +
                 '**How to verify:**\n' +

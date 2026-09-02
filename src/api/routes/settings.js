@@ -166,6 +166,24 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             }
         }
 
+        // Validate auto-role on join (welcomeRoleId) limits
+        if (payload.welcomeRoleId) {
+            const roleCount = payload.welcomeRoleId.split(',').map(r => r.trim()).filter(Boolean).length;
+            const maxRoles = isPremium ? 5 : 3;
+            if (roleCount > maxRoles) {
+                return res.status(400).json({ error: `Auto-Role Limit Exceeded: Free servers can configure up to 3 auto-roles upon join. Nora Plus unlocks up to 5 roles. You selected ${roleCount}.` });
+            }
+        }
+
+        // Validate verification role (verifyRoleId) limits
+        if (payload.verifyRoleId) {
+            const roleCount = payload.verifyRoleId.split(',').map(r => r.trim()).filter(Boolean).length;
+            const maxRoles = isPremium ? 5 : 3;
+            if (roleCount > maxRoles) {
+                return res.status(400).json({ error: `Verification Role Limit Exceeded: Free servers can configure up to 3 verified roles. Nora Plus unlocks up to 5 roles. You selected ${roleCount}.` });
+            }
+        }
+
         // Decode topggWebhookAvatar base64 image if present
         if (payload.topggWebhookAvatar) {
             const { saveBase64Image } = require('../../utils/imageSaver');

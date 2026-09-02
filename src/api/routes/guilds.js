@@ -1313,79 +1313,37 @@ router.post('/action', async (req, res) => {
 
 
         if (action === 'spawn_verify') {
-
             const settingsCache = require('../../utils/settingsCache');
-
+            const verifyEngine = require('../../bot/engines/verify');
             const settings = await settingsCache.get(guildId);
 
-            if (!settings || !settings.verifyRoleId) {
-
-                return res.status(400).json({ error: 'Verify role must be set in settings first.' });
-
+            if (!settings || (!settings.verifyRoleId && !settings.robloxVerifyRoleId)) {
+                return res.status(400).json({ error: 'Please configure at least one Verified Role in settings before spawning the panel.' });
             }
-
-
 
             const targetChannelId = settings.verifyChannelId;
-
             let channel = targetChannelId ? guild.channels.cache.get(targetChannelId) : null;
-
             if (!channel) {
-
                 channel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
-
             }
-
             if (!channel) return res.status(400).json({ error: 'No suitable text channel found. Set a Verify Channel in settings.' });
 
-
-
-            const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-
-            const pEmbed = new EmbedBuilder()
-
-                .setTitle('Server Verification Required')
-
-                .setDescription('To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and complete the CAPTCHA.')
-
-                .setColor('#ffffff')
-
-                .setFooter({ text: 'Nora Security Systems' });
-
-            const pRow = new ActionRowBuilder().addComponents(
-
-                new ButtonBuilder().setCustomId('verify_system_button').setLabel('Verify').setStyle(ButtonStyle.Success)
-
-            );
-
-            await channel.send({ embeds: [pEmbed], components: [pRow] });
-
-
+            const method = settings.verificationType || 'captcha';
+            const sent = await verifyEngine.spawnVerificationPanel(channel, settings, method);
 
             const logger = require('../../utils/logger');
-
             logger.logDashboardOrCommandAction(
-
                 guild,
-
                 'Dashboard Action - Spawn Verification Panel',
-
                 [
-
                     { name: 'Administrator', value: userTag, inline: true },
-
-                    { name: 'Channel', value: `<#${channel.id}>`, inline: true }
-
+                    { name: 'Channel', value: `<#${channel.id}>`, inline: true },
+                    { name: 'Gatekeeper Mode', value: `\`${method.toUpperCase()}\``, inline: true }
                 ],
-
                 0x3498db
-
             ).catch(() => null);
 
-
-
-            return res.json({ success: true, message: `Verification panel spawned in #${channel.name}!` });
-
+            return res.json({ success: true, message: `Official verification panel (${method.toUpperCase()}) spawned in #${channel.name}!` });
         }
 
 

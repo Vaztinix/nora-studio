@@ -233,13 +233,50 @@ module.exports = {
                 .setTimestamp();
             await loggerUtil.sendEventLog(member.guild, 'memberJoin', logEmbed, settings);
 
-            // 2.5. --- Add Welcome Role on Join ---
-            if (settings.welcomeRoleId) {
-                const role = member.guild.roles.cache.get(settings.welcomeRoleId);
-                if (role) {
-                    await member.roles.add(role, 'Nora: Welcome Role assigned on join').catch(err => {
-                        console.error(`[Welcome Role] Failed to assign role ${role.name} for ${member.user.tag}:`, err.message);
-                    });
+            // 2.5. --- Enterprise Auto-Role on Join (Tiered: Up to 3 Free / 5 Premium) ---
+            if (member.guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+                const isPremium = settings.isPremium === true || settings.isManualPremium === true;
+                const maxAutoRoles = isPremium ? 5 : 3;
+                const botHighest = member.guild.members.me.roles.highest.position;
+
+                // 2.5.1 Assign Standard Auto-Roles
+                if (settings.welcomeRoleId) {
+                    const roleIds = settings.welcomeRoleId.split(',').map(r => r.trim()).filter(Boolean).slice(0, maxAutoRoles);
+                    const rolesToAdd = [];
+
+                    for (const rId of roleIds) {
+                        const role = member.guild.roles.cache.get(rId) || await member.guild.roles.fetch(rId).catch(() => null);
+                        if (role && role.position < botHighest) {
+                            rolesToAdd.push(role);
+                        } else if (role) {
+                            console.warn(`[Auto-Role] Cannot assign role ${role.name} (${role.id}): role position higher than or equal to bot role.`);
+                        }
+                    }
+
+                    if (rolesToAdd.length > 0) {
+                        await member.roles.add(rolesToAdd, `Nora: Auto-Role on join (${rolesToAdd.length}/${maxAutoRoles} roles assigned)`).catch(err => {
+                            console.error(`[Auto-Role Error] Failed to assign roles for ${member.user.tag}:`, err.message);
+                        });
+                    }
+                }
+
+                // 2.5.2 Assign Unverified Quarantine Role(s) if Verification Gatekeeper is Active
+                if (settings.unverifiedRoleId) {
+                    const unvRoleIds = settings.unverifiedRoleId.split(',').map(r => r.trim()).filter(Boolean);
+                    const unvRolesToAdd = [];
+
+                    for (const uId of unvRoleIds) {
+                        const unvRole = member.guild.roles.cache.get(uId) || await member.guild.roles.fetch(uId).catch(() => null);
+                        if (unvRole && unvRole.position < botHighest) {
+                            unvRolesToAdd.push(unvRole);
+                        }
+                    }
+
+                    if (unvRolesToAdd.length > 0) {
+                        await member.roles.add(unvRolesToAdd, 'Nora: Unverified gatekeeper role assigned upon join').catch(err => {
+                            console.error(`[Unverified Role Error] Failed to assign unverified role for ${member.user.tag}:`, err.message);
+                        });
+                    }
                 }
             }
 

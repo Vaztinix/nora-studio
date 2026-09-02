@@ -1,17 +1,36 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 const axios = require('axios');
 const RobloxVerify = require('../../database/models/RobloxVerify');
 const settingsCache = require('../../utils/settingsCache');
 const { handleError, handleSuccess } = require('../../utils/embeds');
 const robloxSystem = require('../../utils/robloxSystem');
+const verifyEngine = require('../../bot/engines/verify');
 
 module.exports = {
     category: 'setup',
     ephemeral: true,
     data: new SlashCommandBuilder()
         .setName('verify')
-        .setDescription('Verify your Roblox account to gain a role.')
+        .setDescription('Official Server Verification and Account Gatekeeper.')
         .setDMPermission(false)
+        .addSubcommand(sub =>
+            sub.setName('start')
+                .setDescription('Complete server verification to unlock channels and claim your roles.')
+        )
+        .addSubcommand(sub =>
+            sub.setName('status')
+                .setDescription('View your current verification status and granted roles.')
+        )
+        .addSubcommand(sub =>
+            sub.setName('panel')
+                .setDescription('Deploy or refresh the official verification panel (Admin only).')
+                .addChannelOption(opt =>
+                    opt.setName('channel')
+                        .setDescription('Channel to deploy the panel in (defaults to current channel)')
+                        .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+                        .setRequired(false)
+                )
+        )
         .addSubcommand(sub =>
             sub.setName('link')
                 .setDescription('Link a Roblox account by providing its username.')
@@ -38,15 +57,125 @@ module.exports = {
 
     async execute(interaction) {
         const settings = await settingsCache.get(interaction.guild.id);
-
-        if (!settings || !settings.robloxVerifyEnabled) {
-            return await handleError(interaction, 'Feature Disabled', 'Roblox verification is not enabled in this server.');
-        }
-
         const subcommand = interaction.options.getSubcommand();
         const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+
         if (!member) {
             return await handleError(interaction, 'Error', 'Failed to resolve guild member details.');
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // SUBCOMMAND: START (Member initiates verification)
+        // ─────────────────────────────────────────────────────────────────────
+        if (subcommand === 'start') {
+            if (!settings || (!settings.verifyRoleId && !settings.robloxVerifyRoleId)) {
+                return await handleError(interaction, 'Not Configured', 'Verification has not been configured by the server administrators yet. Please ask an admin to set it up in Nora Studio or `/setup`.');
+            }
+
+            const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;
+            const maxRoles = isPremium ? 5 : 3;
+            const targetRoleIds = (settings?.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean).slice(0, maxRoles);
+
+            // Check if user already has all verified roles
+            const hasAllRoles = targetRoleIds.length > 0 && targetRoleIds.every(rId => member.roles.cache.has(rId));
+            if (hasAllRoles) {
+                const verifiedEmbed = new EmbedBuilder()
+                    .setTitle('✅ Already Verified')
+                    .setDescription(`You are already fully verified in **${interaction.guild.name}**!\n\n**Your Verified Roles:** ${targetRoleIds.map(id => `<@&${id}>`).join(' ')}`)
+                    .setColor(0x2ea043)
+                    .setFooter({ text: 'Nora Gatekeeper • Enterprise Verified' })
+                    .setTimestamp();
+                return await interaction.reply({ embeds: [verifiedEmbed], ephemeral: true });
+            }
+
+            const method = settings.verificationType || 'captcha';
+            if (method === 'button') {
+                return await verifyEngine.handleInstantButtonClick(interaction, settings);
+            } else if (method === 'captcha') {
+                return await verifyEngine.handleVerifyButtonClick(interaction, settings);
+            } else if (method === 'reaction') {
+                const channelMention = settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : 'the verification channel';
+                return await interaction.reply({
+                    content: `ℹ️ This server uses **Reaction Verification**. Please head over to ${channelMention} and react with ${settings.verifyEmoji || '✅'} on the verification panel to gain access!`,
+                    ephemeral: true
+                });
+            } else if (method === 'roblox') {
+                return await interaction.reply({
+                    content: '🎮 This server uses **Roblox Verification**! Use `/verify link <username>` to begin linking your Roblox profile.',
+                    ephemeral: true
+                });
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // SUBCOMMAND: STATUS (Check verification status)
+        // ─────────────────────────────────────────────────────────────────────
+        if (subcommand === 'status') {
+            const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;
+            const maxRoles = isPremium ? 5 : 3;
+            const targetRoleIds = (settings?.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean).slice(0, maxRoles);
+            const verifiedRoles = targetRoleIds.filter(rId => member.roles.cache.has(rId));
+            const isVerified = targetRoleIds.length > 0 && verifiedRoles.length === targetRoleIds.length;
+
+            const embed = new EmbedBuilder()
+                .setTitle(`Verification Status: ${interaction.user.username}`)
+                .setColor(isVerified ? 0x2ea043 : 0xffa500)
+                .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 256 }))
+                .addFields(
+                    { name: 'Status', value: isVerified ? '🟢 **Verified**' : '🟡 **Unverified**', inline: true },
+                    { name: 'Gatekeeper Type', value: `\`${(settings?.verificationType || 'captcha').toUpperCase()}\``, inline: true },
+                    { name: 'Joined Server', value: `<t:${Math.floor(member.joinedTimestamp / 1000)}:R>`, inline: true },
+                    { name: 'Verified Roles', value: verifiedRoles.length > 0 ? verifiedRoles.map(id => `<@&${id}>`).join(' ') : '*None*', inline: false }
+                )
+                .setFooter({ text: 'Nora Gatekeeper • Status Matrix' })
+                .setTimestamp();
+
+            return await interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // SUBCOMMAND: PANEL (Admin spawns or refreshes verification panel)
+        // ─────────────────────────────────────────────────────────────────────
+        if (subcommand === 'panel') {
+            if (!member.permissions.has(PermissionFlagsBits.ManageGuild) && !member.permissions.has(PermissionFlagsBits.Administrator)) {
+                return await handleError(interaction, 'Permission Denied', 'You require the **Manage Server** permission to deploy verification panels.');
+            }
+
+            if (!settings || (!settings.verifyRoleId && !settings.robloxVerifyRoleId)) {
+                return await handleError(interaction, 'Configuration Required', 'Please configure your Verified Role in Nora Studio or `/setup` before spawning the panel.');
+            }
+
+            const targetChannel = interaction.options.getChannel('channel') || interaction.channel;
+            if (!targetChannel.isTextBased()) {
+                return await handleError(interaction, 'Invalid Channel', 'Verification panels can only be deployed in text or announcement channels.');
+            }
+
+            await interaction.deferReply({ ephemeral: true });
+            try {
+                const method = settings.verificationType || 'captcha';
+                const sent = await verifyEngine.spawnVerificationPanel(targetChannel, settings, method, interaction);
+
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle('✅ Verification Panel Deployed')
+                            .setColor(0x2ea043)
+                            .setDescription(`Successfully deployed the **${method.toUpperCase()}** verification panel in ${targetChannel}!\n\n• **Target Channel:** <#${targetChannel.id}>\n• **Panel Message ID:** \`${sent.id}\`\n• **Gatekeeper Mode:** \`${method}\``)
+                            .setFooter({ text: 'Nora Gatekeeper • Enterprise Deployment' })
+                            .setTimestamp()
+                    ]
+                });
+            } catch (err) {
+                console.error('[Verify Panel Deploy Error]:', err);
+                return await handleError(interaction, 'Deployment Error', `Failed to spawn panel: ${err.message}`);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // SUBCOMMANDS: ROBLOX INTEGRATION (link, check, unlink, list, switch)
+        // ─────────────────────────────────────────────────────────────────────
+        if (!settings || !settings.robloxVerifyEnabled) {
+            return await handleError(interaction, 'Feature Disabled', 'Roblox verification is not enabled in this server.');
         }
 
         if (subcommand === 'link') {
@@ -88,7 +217,6 @@ module.exports = {
                 const crypto = require('crypto');
                 const verifyCode = `Nora-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
                 
-                // Find pending or overwrite
                 const existingPending = await RobloxVerify.findOne({
                     where: { userId: interaction.user.id, robloxId: robloxIdStr, status: 'PENDING' }
                 });
@@ -96,7 +224,6 @@ module.exports = {
                 if (existingPending) {
                     await existingPending.update({ verifyCode });
                 } else {
-                    // Check limit of verified/pending accounts (cap at 10 to prevent abuse)
                     const count = await RobloxVerify.count({ where: { userId: interaction.user.id } });
                     if (count >= 10) {
                         return await handleError(interaction, 'Limit Reached', 'You cannot link more than 10 Roblox accounts.');
@@ -123,7 +250,6 @@ module.exports = {
                     .setFooter({ text: 'Note: You can remove the code once verified.' });
 
                 await interaction.editReply({ embeds: [embed] });
-
             } catch (err) {
                 console.error('Roblox Link Error:', err);
                 return await handleError(interaction, 'Connection Error', 'An error occurred while connecting to Roblox API.');
@@ -149,66 +275,43 @@ module.exports = {
                     const username = profileRes.data.name;
 
                     if (description.includes(record.verifyCode)) {
-                        // Mark as verified
                         await record.update({ status: 'VERIFIED', isActive: true });
                         verifiedAny = true;
                         successList.push(username);
 
-                        // Deactivate other verified accounts of the user
-                        await RobloxVerify.update(
-                            { isActive: false },
-                            {
-                                where: {
-                                    userId: interaction.user.id,
-                                    robloxId: { [require('sequelize').Op.ne]: record.robloxId }
-                                }
+                        if (settings.robloxVerifyRoleId) {
+                            const role = interaction.guild.roles.cache.get(settings.robloxVerifyRoleId);
+                            if (role) {
+                                await member.roles.add(role, 'Roblox Verification Complete').catch(e => console.error('Failed to grant role:', e));
                             }
-                        );
+                        }
+
+                        let groupBindings = [];
+                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
+                        if (groupBindings.length > 0) {
+                            await robloxSystem.syncRobloxRolesWithBackoff(member, record.robloxId, groupBindings);
+                        }
                     } else {
-                        failedList.push({ username, code: record.verifyCode });
+                        failedList.push(username);
                     }
-                } catch (e) {
-                    console.error(`Check error for robloxId ${record.robloxId}:`, e);
+                } catch (err) {
+                    console.error('Check record error:', err);
+                    failedList.push(record.robloxId);
                 }
             }
 
             if (verifiedAny) {
-                // Find active verified account (which is the one we just activated)
-                const activeRecord = await RobloxVerify.findOne({ where: { userId: interaction.user.id, status: 'VERIFIED', isActive: true } });
-                
-                if (activeRecord) {
-                    // Grant base verification role
-                    if (settings.robloxVerifyRoleId) {
-                        const role = interaction.guild.roles.cache.get(settings.robloxVerifyRoleId);
-                        if (role) {
-                            await member.roles.add(role).catch(e => console.error('Failed to grant Roblox role:', e));
-                        }
-                    }
-
-                    // Sync group bindings
-                    let groupBindings = [];
-                    try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
-                    if (groupBindings.length > 0) {
-                        await robloxSystem.syncRobloxRolesWithBackoff(member, activeRecord.robloxId, groupBindings);
-                    }
-                }
-
                 const embed = new EmbedBuilder()
-                    .setTitle('Verification Success!')
-                    .setDescription(`Successfully verified and linked: **${successList.join(', ')}**.\nThis account is now marked as your **active** Roblox profile.`)
-                    .setColor(0x2ea043);
-
+                    .setTitle('Roblox Verification Results')
+                    .setColor(0x2ecc71)
+                    .setDescription(`Successfully verified: **${successList.join(', ')}**!\nYour roles have been updated.`)
+                    .setTimestamp();
                 if (failedList.length > 0) {
-                    embed.addFields({
-                        name: 'Pending / Code Missing',
-                        value: failedList.map(item => `**${item.username}**: code \`${item.code}\` not found in description.`).join('\n')
-                    });
+                    embed.addFields({ name: 'Still Pending', value: failedList.join(', ') });
                 }
-
-                await interaction.editReply({ embeds: [embed] });
+                return await interaction.editReply({ embeds: [embed] });
             } else {
-                const descriptionLines = failedList.map(item => `**${item.username}**: add code \`${item.code}\` to your description.`);
-                return await handleError(interaction, 'Verification Failed', `We could not find the required verification codes in your Roblox profiles.\n\n${descriptionLines.join('\n')}`);
+                return await handleError(interaction, 'Verification Failed', `Code not found in the profile description of: **${failedList.join(', ')}**.\nEnsure you saved your Roblox About section, then try again.`);
             }
         }
 
@@ -216,67 +319,31 @@ module.exports = {
             const usernameInput = interaction.options.getString('username');
             await interaction.deferReply({ ephemeral: true });
 
-            let record;
-            if (usernameInput) {
-                // Find the Roblox ID of the username input first
-                try {
+            try {
+                let targetRecord = null;
+                if (usernameInput) {
                     const searchRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
                         usernames: [usernameInput],
                         excludeBannedUsers: true
                     });
-                    if (searchRes.data.data.length > 0) {
-                        const robloxId = searchRes.data.data[0].id.toString();
-                        record = await RobloxVerify.findOne({ where: { userId: interaction.user.id, robloxId } });
-                    }
-                } catch (e) {
-                    console.error('Unlink username resolve failure:', e);
-                }
-            } else {
-                // Default to unlinking the active verified account
-                record = await RobloxVerify.findOne({ where: { userId: interaction.user.id, isActive: true } });
-            }
-
-            if (!record) {
-                return await handleError(interaction, 'Not Linked', usernameInput ? `Could not find a linked Roblox account with username **${usernameInput}**.` : 'You do not have an active verified Roblox account.');
-            }
-
-            const wasActive = record.isActive;
-            const unlinkedRobloxId = record.robloxId;
-            await record.destroy();
-
-            // If we deleted the active account, set another verified account to active
-            if (wasActive) {
-                const remaining = await RobloxVerify.findOne({ where: { userId: interaction.user.id, status: 'VERIFIED' } });
-                if (remaining) {
-                    await remaining.update({ isActive: true });
-                    // Sync roles for the new active account
-                    let groupBindings = [];
-                    try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
-                    if (groupBindings.length > 0) {
-                        await robloxSystem.syncRobloxRolesWithBackoff(member, remaining.robloxId, groupBindings);
+                    if (searchRes.data.data.length) {
+                        const rId = searchRes.data.data[0].id.toString();
+                        targetRecord = await RobloxVerify.findOne({ where: { userId: interaction.user.id, robloxId: rId } });
                     }
                 } else {
-                    // Remove verification role if no active verified accounts remain
-                    if (settings.robloxVerifyRoleId) {
-                        const role = interaction.guild.roles.cache.get(settings.robloxVerifyRoleId);
-                        if (role && member.roles.cache.has(role.id)) {
-                            await member.roles.remove(role).catch(() => {});
-                        }
-                    }
-
-                    // Remove group synced roles
-                    let groupBindings = [];
-                    try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
-                    for (const binding of groupBindings) {
-                        const role = interaction.guild.roles.cache.get(binding.roleId);
-                        if (role && member.roles.cache.has(role.id)) {
-                            await member.roles.remove(role).catch(() => {});
-                        }
-                    }
+                    targetRecord = await RobloxVerify.findOne({ where: { userId: interaction.user.id, isActive: true } });
                 }
-            }
 
-            return await handleSuccess(interaction, 'Roblox Unlinked', `Successfully unlinked the Roblox account matching ID \`${unlinkedRobloxId}\`.`);
+                if (!targetRecord) {
+                    return await handleError(interaction, 'Account Not Found', 'Could not find a linked Roblox account matching that username.');
+                }
+
+                await targetRecord.destroy();
+                return await handleSuccess(interaction, 'Account Unlinked', 'Successfully unlinked your Roblox account.');
+            } catch (err) {
+                console.error('Roblox Unlink Error:', err);
+                return await handleError(interaction, 'Error', 'An error occurred while unlinking the account.');
+            }
         }
 
         if (subcommand === 'list') {
@@ -284,19 +351,18 @@ module.exports = {
 
             const accounts = await RobloxVerify.findAll({ where: { userId: interaction.user.id } });
             if (!accounts.length) {
-                return await handleError(interaction, 'No Accounts', 'You have no Roblox accounts linked to Nora. Use `/verify link` to link one.');
+                return await handleError(interaction, 'No Accounts Linked', 'You have not linked any Roblox accounts yet. Use `/verify link` to connect one.');
             }
 
-            // Resolve usernames to display
             const resolved = [];
             for (const acc of accounts) {
-                let username = `ID: ${acc.robloxId}`;
+                let name = 'Unknown';
                 try {
-                    const profileRes = await axios.get(`https://users.roblox.com/v1/users/${acc.robloxId}`);
-                    username = profileRes.data.name;
+                    const res = await axios.get(`https://users.roblox.com/v1/users/${acc.robloxId}`);
+                    name = res.data.name;
                 } catch (e) {}
                 resolved.push({
-                    username,
+                    username: name,
                     status: acc.status,
                     active: acc.isActive,
                     robloxId: acc.robloxId
@@ -326,7 +392,6 @@ module.exports = {
             await interaction.deferReply({ ephemeral: true });
 
             try {
-                // Find Roblox ID of target username
                 const searchRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
                     usernames: [usernameInput],
                     excludeBannedUsers: true
@@ -337,8 +402,6 @@ module.exports = {
                 }
 
                 const robloxId = searchRes.data.data[0].id.toString();
-
-                // Find verified record
                 const record = await RobloxVerify.findOne({
                     where: { userId: interaction.user.id, robloxId, status: 'VERIFIED' }
                 });
@@ -347,14 +410,12 @@ module.exports = {
                     return await handleError(interaction, 'Not Verified', `You do not have a verified Roblox link for **${usernameInput}**. Please link and verify it first.`);
                 }
 
-                // Switch active flag
                 await RobloxVerify.update(
                     { isActive: false },
                     { where: { userId: interaction.user.id } }
                 );
                 await record.update({ isActive: true });
 
-                // Sync roles for new active account
                 let groupBindings = [];
                 try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}
                 if (groupBindings.length > 0) {

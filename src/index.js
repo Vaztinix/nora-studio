@@ -453,6 +453,12 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyEmoji` VARCHAR(255) DEFAULT '✅';"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `unverifiedRoleId` VARCHAR(255) NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `removeUnverifiedRoleOnVerify` TINYINT(1) DEFAULT 1;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyEmbedTitle` VARCHAR(255) DEFAULT 'Server Verification Required';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyEmbedDesc` TEXT NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyEmbedColor` VARCHAR(255) DEFAULT '#5865F2';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyBtnLabel` VARCHAR(255) DEFAULT 'Verify Account';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyBtnEmoji` VARCHAR(255) DEFAULT '🔒';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verificationLogChannelId` VARCHAR(255) NULL;"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {

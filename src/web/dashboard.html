@@ -5500,7 +5500,11 @@
                                     </div>
                                     <div class="input-group" style="margin-bottom: 15px;">
                                         <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px; display: block;">Assign Role on Join</label>
-                                        <select id="setting-welcomeRoleId" style="width: 100%;"><option value="">No role selected</option></select>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                        <span style="font-size: 0.75rem; color: var(--muted);">Select up to 3 roles for free servers, or 5 with Nora Plus.</span>
+                                        <span class="badge" id="welcome-role-limit-badge" style="font-size: 0.72rem; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 8px; border-radius: 6px; font-weight: 700;">Free: Max 3 Roles • Plus: Max 5</span>
+                                    </div>
+                                    <input type="hidden" id="setting-welcomeRoleId" value="">
                                     </div>
                                     <div class="row" style="margin-bottom: 15px; border-bottom: none; padding: 0;">
                                         <div>
@@ -6239,18 +6243,19 @@
                 
                 <div id="tab-verify" class="tab-content" style="display: none;">
                     <!-- Verification Hero Banner -->
-                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 36px; margin-bottom: 28px; backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);">
-                        <div style="max-width: 650px;">
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 36px; margin-bottom: 24px; backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);">
+                        <div style="max-width: 720px;">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                <span style="background: rgba(16, 185, 129, 0.25); color: #10b981; font-size: 0.72rem; padding: 3px 10px; border-radius: 999px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(16, 185, 129, 0.4);">Security & Identity Gatekeeper</span>
+                                <span style="background: rgba(16, 185, 129, 0.25); color: #10b981; font-size: 0.72rem; padding: 3px 10px; border-radius: 999px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(16, 185, 129, 0.4);">Official Nora Gatekeeper v2.0</span>
+                                <span class="badge" id="verify-tier-badge" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; font-size: 0.72rem; padding: 3px 10px; border-radius: 999px; font-weight: 700; border: 1px solid rgba(99, 102, 241, 0.35);">Free: Max 3 Roles • Nora Plus: Max 5</span>
                             </div>
-                            <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Server Verification & Identity Center</h1>
-                            <p style="color: rgba(255,255,255,0.75); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">Configure Discord onboarding gates and Roblox group identity sync to keep your community safe from alts and raiders.</p>
+                            <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Server Verification & Identity Gatekeeper</h1>
+                            <p style="color: rgba(255,255,255,0.75); font-size: 0.88rem; line-height: 1.5; margin-bottom: 16px;">Protect your server with enterprise gatekeeping. Choose between 1-Click buttons, anti-bot CAPTCHA challenges, emoji reaction gates, and Roblox identity sync.</p>
                             
                             <!-- Sub-view navigation buttons -->
                             <div style="display: flex; gap: 10px;">
                                 <button type="button" class="config-btn active" id="verify-subnav-discord" onclick="switchVerifySubnav('discord')" style="width: auto; padding: 8px 18px; font-size: 0.82rem; border-radius: 10px; background: rgba(255,255,255,0.12); color: #fff; font-weight: 700;">
-                                    <i class="fab fa-discord" style="margin-right: 6px; color: #5865F2;"></i> Standard Discord Verification
+                                    <i class="fab fa-discord" style="margin-right: 6px; color: #5865F2;"></i> Discord Gatekeeper
                                 </button>
                                 <button type="button" class="config-btn" id="verify-subnav-roblox" onclick="switchVerifySubnav('roblox')" style="width: auto; padding: 8px 18px; font-size: 0.82rem; border-radius: 10px; background: rgba(255,255,255,0.04); color: #ccc; font-weight: 600;">
                                     <i class="fas fa-cube" style="margin-right: 6px; color: #00a2ff;"></i> Roblox Verification & Group Sync
@@ -6260,62 +6265,191 @@
                     </div>
 
                     <!-- SECTION 1: Standard Discord Verification -->
-                    <div id="verify-section-discord" style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 28px; align-items: start;">
-                        <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Discord Gatekeeper Configuration</h3>
-                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 24px;">Configure standard Discord verification methods, auto-role granting, and onboarding panel spawning.</p>
-
-                            <div class="input-group" style="margin-bottom: 18px;">
-                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Verification Spawn Channel</label>
-                                <select id="setting-verifyChannelId" style="width: 100%; box-sizing: border-box;">
-                                    <option value="">Select channel...</option>
-                                </select>
-                            </div>
-
-                            <div class="input-group" style="margin-bottom: 18px;">
-                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Verified Member Role</label>
-                                <select id="setting-verifyRoleId" style="width: 100%; box-sizing: border-box;">
-                                    <option value="">Select role to assign upon verification...</option>
-                                </select>
-                            </div>
-
-                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 12px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px;">
-                                <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">Protection Rules</div>
-                                <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <span style="font-size: 0.8rem; color: var(--muted);">Require Minimum Account Age (7 Days)</span>
-                                    <label class="switch small"><input type="checkbox" id="setting-minAccountAgeEnabled"><span class="slider"></span></label>
+                    <div id="verify-section-discord" style="display: flex; flex-direction: column; gap: 24px;">
+                        
+                        <!-- Verification Method Selector Cards -->
+                        <div class="panel" style="margin: 0; padding: 22px 26px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                <div>
+                                    <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0;">Verification Challenge Mode</h3>
+                                    <p style="font-size: 0.8rem; color: var(--muted); margin: 3px 0 0 0;">Select how incoming members verify their accounts.</p>
                                 </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <span style="font-size: 0.8rem; color: var(--muted);">Alt Account Flagging & Raid Prevention</span>
-                                    <label class="switch small"><input type="checkbox" id="setting-altPreventionEnabled"><span class="slider"></span></label>
-                                </div>
+                                <input type="hidden" id="setting-verificationType" value="captcha">
                             </div>
 
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> Save settings in the top toolbar before spawning the verification panel.</p>
-                            <button type="button" class="config-btn primary" onclick="triggerAction('spawn_verify', this)" style="width: 100%; padding: 12px; font-weight: 800; font-size: 0.9rem; background: var(--primary); color: #fff; border-radius: 10px;">
-                                <i class="fas fa-paper-plane" style="margin-right: 6px;"></i> Spawn Discord Verification Panel
-                            </button>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                                <div class="verify-method-card active" data-method="captcha" onclick="selectVerificationMethod('captcha')" style="cursor: pointer; padding: 16px; border-radius: 12px; border: 2px solid #5865F2; background: rgba(88, 101, 242, 0.08); transition: all 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(88, 101, 242, 0.2); display: flex; align-items: center; justify-content: center; color: #5865F2; font-size: 1rem;"><i class="fas fa-shield-alt"></i></div>
+                                        <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Anti-Bot CAPTCHA</div>
+                                    </div>
+                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 0; line-height: 1.4;">Generates dynamic distorted SVG/PNG code challenges. Optimal against automated raid bots.</p>
+                                </div>
+
+                                <div class="verify-method-card" data-method="button" onclick="selectVerificationMethod('button')" style="cursor: pointer; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255, 255, 255, 0.02); transition: all 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 1rem;"><i class="fas fa-bolt"></i></div>
+                                        <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">1-Click Button</div>
+                                    </div>
+                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 0; line-height: 1.4;">Instant, frictionless verification with a single button click. Perfect for friendly communities.</p>
+                                </div>
+
+                                <div class="verify-method-card" data-method="reaction" onclick="selectVerificationMethod('reaction')" style="cursor: pointer; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255, 255, 255, 0.02); transition: all 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 1rem;"><i class="fas fa-smile"></i></div>
+                                        <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Emoji Reaction</div>
+                                    </div>
+                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 0; line-height: 1.4;">Classic reaction gate. Nora watches for reaction emoji and grants roles instantly.</p>
+                                </div>
+
+                                <div class="verify-method-card" data-method="roblox" onclick="selectVerificationMethod('roblox')" style="cursor: pointer; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255, 255, 255, 0.02); transition: all 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(0, 162, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #00a2ff; font-size: 1rem;"><i class="fas fa-cube"></i></div>
+                                        <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Roblox Link</div>
+                                    </div>
+                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 0; line-height: 1.4;">Require linking a verified Roblox account and sync custom group rank roles.</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Live Preview Card -->
-                        <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 16px;">Live Panel Embed Preview</h3>
-                            <div style="background: #313338; border-radius: 14px; padding: 20px; font-family: 'gg sans', sans-serif; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);">
-                                <div style="display: flex; gap: 14px; align-items: flex-start;">
-                                    <img src="nora.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" onerror="this.src='nora.png';">
-                                    <div style="flex: 1; overflow: hidden;">
-                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                                            <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">Nora Gatekeeper</span>
-                                            <span style="background: #5865F2; color: #fff; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; font-weight: 700;">BOT</span>
+                        <!-- Two-Column Config & Preview Grid -->
+                        <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 24px; align-items: start;">
+                            
+                            <!-- Left Column: Form Settings -->
+                            <div class="panel" style="margin: 0; padding: 26px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; display: flex; flex-direction: column; gap: 18px;">
+                                <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Gatekeeper Roles & Routing</h3>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                    <div class="input-group">
+                                        <label style="font-weight: 700; color: #fff; font-size: 0.82rem; margin-bottom: 6px; display: block;">Verification Spawn Channel</label>
+                                        <select id="setting-verifyChannelId" style="width: 100%; box-sizing: border-box;">
+                                            <option value="">Select channel...</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label style="font-weight: 700; color: #fff; font-size: 0.82rem; margin-bottom: 6px; display: block;">Verification Audit Log</label>
+                                        <select id="setting-verificationLogChannelId" style="width: 100%; box-sizing: border-box;">
+                                            <option value="">Use Default Logs</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Verified Role Multi-Select -->
+                                <div class="input-group">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                        <label style="font-weight: 700; color: #fff; font-size: 0.82rem; margin: 0;">Verified Roles to Grant</label>
+                                        <span class="badge" id="verify-role-limit-badge" style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 6px; font-weight: 700;">Free: Max 3 Roles • Plus: Max 5</span>
+                                    </div>
+                                    <input type="hidden" id="setting-verifyRoleId" value="">
+                                </div>
+
+                                <!-- Unverified Quarantine Role -->
+                                <div class="input-group" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 14px 16px; border-radius: 12px;">
+                                    <label style="font-weight: 700; color: #fff; font-size: 0.82rem; margin-bottom: 6px; display: block;">Unverified Quarantine Role (Given on Join, Removed on Verify)</label>
+                                    <select id="setting-unverifiedRoleId" style="width: 100%; box-sizing: border-box; margin-bottom: 10px;">
+                                        <option value="">None (No unverified role)</option>
+                                    </select>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 0.78rem; color: var(--muted);">Strip unverified role immediately upon verification</span>
+                                        <label class="switch small"><input type="checkbox" id="setting-removeUnverifiedRoleOnVerify" checked><span class="slider"></span></label>
+                                    </div>
+                                </div>
+
+                                <!-- Embed Styling Customizer -->
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px;">
+                                    <div style="font-size: 0.88rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-palette" style="color: var(--primary);"></i> Panel Embed Customization
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label style="font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 5px; display: block;">Panel Embed Title</label>
+                                        <input type="text" id="setting-verifyEmbedTitle" placeholder="Server Verification Required" oninput="updateVerifyLivePreview()" style="width: 100%; box-sizing: border-box;">
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label style="font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 5px; display: block;">Instructions / Description</label>
+                                        <textarea id="setting-verifyEmbedDesc" rows="3" placeholder="Welcome! Click the button below and complete the verification challenge to unlock all channels." oninput="updateVerifyLivePreview()" style="width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 0.6fr; gap: 12px;">
+                                        <div class="input-group">
+                                            <label style="font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 5px; display: block;">Accent Color</label>
+                                            <div style="display: flex; gap: 8px; align-items: center;">
+                                                <input type="color" id="setting-verifyEmbedColor" value="#5865F2" oninput="updateVerifyLivePreview()" style="width: 40px; height: 36px; padding: 0; border: none; border-radius: 6px; cursor: pointer; background: transparent;">
+                                            </div>
                                         </div>
-                                        <div style="border-left: 4px solid #10b981; background: #2b2d31; border-radius: 4px; padding: 14px 16px; margin-top: 4px;">
-                                            <div style="font-weight: 700; color: #fff; font-size: 0.98rem; margin-bottom: 6px;">🔒 Server Verification</div>
-                                            <div style="font-size: 0.88rem; color: #dbdee1; line-height: 1.4;">Click the button below to verify your Discord account and gain access to the community channels.</div>
+
+                                        <div class="input-group">
+                                            <label style="font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 5px; display: block;">Button Label</label>
+                                            <input type="text" id="setting-verifyBtnLabel" placeholder="Verify Account" oninput="updateVerifyLivePreview()" style="width: 100%; box-sizing: border-box;">
                                         </div>
-                                        <div style="margin-top: 10px;">
-                                            <button style="background: #248046; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">✅ Verify Account</button>
+
+                                        <div class="input-group">
+                                            <label style="font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 5px; display: block;">Emoji</label>
+                                            <input type="text" id="setting-verifyBtnEmoji" placeholder="🔒" oninput="updateVerifyLivePreview()" style="width: 100%; box-sizing: border-box; text-align: center;">
                                         </div>
                                     </div>
+                                </div>
+
+                                <!-- Security Controls -->
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 14px 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">Protection Rules</div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 0.8rem; color: var(--muted);">Require Minimum Account Age (7 Days)</span>
+                                        <label class="switch small"><input type="checkbox" id="setting-minAccountAgeEnabled"><span class="slider"></span></label>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 0.8rem; color: var(--muted);">Alt Account Flagging & Raid Prevention</span>
+                                        <label class="switch small"><input type="checkbox" id="setting-altPreventionEnabled"><span class="slider"></span></label>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="config-btn primary" onclick="triggerAction('spawn_verify', this)" style="width: 100%; padding: 13px; font-weight: 800; font-size: 0.92rem; background: var(--primary); color: #fff; border-radius: 10px; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);">
+                                    <i class="fas fa-paper-plane" style="margin-right: 8px;"></i> Spawn / Refresh Verification Panel
+                                </button>
+                            </div>
+
+                            <!-- Right Column: Live Discord Panel Preview -->
+                            <div class="panel" style="margin: 0; padding: 26px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; position: sticky; top: 90px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Live Embed Preview</h3>
+                                    <span style="font-size: 0.72rem; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 2px 8px; border-radius: 6px; font-weight: 700;">Discord Accurate</span>
+                                </div>
+
+                                <div style="background: #313338; border-radius: 14px; padding: 18px 20px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);">
+                                    <div style="display: flex; gap: 14px; align-items: flex-start;">
+                                        <img src="nora.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" onerror="this.src='nora.png';">
+                                        <div style="flex: 1; overflow: hidden;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                                <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">Nora</span>
+                                                <span style="background: #5865F2; color: #fff; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; font-weight: 700;">BOT</span>
+                                                <span style="color: #949ba4; font-size: 0.75rem;">Today at 12:00 PM</span>
+                                            </div>
+                                            
+                                            <!-- Embed Card -->
+                                            <div id="verify-preview-embed" style="border-left: 4px solid #5865F2; background: #2b2d31; border-radius: 4px; padding: 14px 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 8px;">
+                                                <div id="verify-preview-title" style="font-weight: 700; color: #fff; font-size: 0.98rem;">Server Verification Required</div>
+                                                <div id="verify-preview-desc" style="font-size: 0.85rem; color: #dbdee1; line-height: 1.45; white-space: pre-line;">To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and complete the CAPTCHA.</div>
+                                                <div style="font-size: 0.72rem; color: #949ba4; margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                                                    <img src="nora.png" style="width: 16px; height: 16px; border-radius: 50%;">
+                                                    <span>Nora Gatekeeper • Enterprise Protection</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Button / Action Row -->
+                                            <div id="verify-preview-actions" style="margin-top: 12px;">
+                                                <button id="verify-preview-btn" style="background: #248046; color: #fff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                                    <span id="verify-preview-btn-emoji">🔒</span>
+                                                    <span id="verify-preview-btn-label">Verify Account</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 16px; padding: 12px 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; font-size: 0.78rem; color: #c7d2fe; line-height: 1.45;">
+                                    <i class="fas fa-info-circle" style="margin-right: 5px;"></i> Members can also run <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #fff;">/verify start</code> to verify directly, or admins can deploy via <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #fff;">/verify panel</code>.
                                 </div>
                             </div>
                         </div>
@@ -8330,7 +8464,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji'];
 
 
 
@@ -13889,6 +14023,7 @@
                     'setting-countingChannelId',
                     'setting-boostChannelId',
                     'setting-verifyChannelId',
+                    'setting-verificationLogChannelId',
                     'setting-ticketChannelId',
                     'setting-robloxVerifyChannelId',
                     'setting-inviteTrackerChannelId',
@@ -15199,6 +15334,8 @@
                 }
             });
             syncMultiselectUI('setting-verifyRoleId');
+                syncMultiselectUI('setting-welcomeRoleId');
+                if (typeof updateVerifyLivePreview === 'function') updateVerifyLivePreview();
             syncMultiselectUI('setting-automodImmuneRoles');
             syncMultiselectUI('setting-countingWhitelistedRoles');
             if (typeof updatePreview === 'function') updatePreview();
@@ -15744,7 +15881,7 @@
                     'setting-boostRewardRoleId',
                     'setting-robloxVerifyRoleId',
                     'setting-promoterRoleId',
-                    'setting-welcomeRoleId',
+                    'setting-unverifiedRoleId',
                     'rr-role-1',
                     'rr-role-2',
                     'rr-role-3',
@@ -15810,7 +15947,9 @@
                 initCustomDropdown('new-feed-ping');
 
                 // Initialize custom multiselect dropdowns for verify roles and immune roles
-                initMultiselect('setting-verifyRoleId', roles);
+                const roleLimit = window.currentServerIsPremium ? 5 : 3;
+                initMultiselect('setting-verifyRoleId', roles, roleLimit);
+                initMultiselect('setting-welcomeRoleId', roles, roleLimit);
                 initMultiselect('setting-automodImmuneRoles', roles);
                 initMultiselect('setting-countingWhitelistedRoles', roles);
                 const chList = (typeof textChannels !== 'undefined' ? textChannels : (window.currentTextChannels || []));
@@ -16034,8 +16173,95 @@
             selectEl.refreshCustomDropdown = rebuildOptions;
         }
 
+        
+        /* Verification UI Helpers */
+        function selectVerificationMethod(method) {
+            const input = document.getElementById('setting-verificationType');
+            if (input) input.value = method;
+
+            document.querySelectorAll('.verify-method-card').forEach(card => {
+                if (card.getAttribute('data-method') === method) {
+                    card.classList.add('active');
+                    card.style.border = '2px solid #5865F2';
+                    card.style.background = 'rgba(88, 101, 242, 0.08)';
+                } else {
+                    card.classList.remove('active');
+                    card.style.border = '1px solid rgba(255,255,255,0.1)';
+                    card.style.background = 'rgba(255, 255, 255, 0.02)';
+                }
+            });
+
+            // Set method-specific defaults if fields are empty
+            const titleEl = document.getElementById('setting-verifyEmbedTitle');
+            const descEl = document.getElementById('setting-verifyEmbedDesc');
+            const btnLabelEl = document.getElementById('setting-verifyBtnLabel');
+            const btnEmojiEl = document.getElementById('setting-verifyBtnEmoji');
+
+            if (method === 'button') {
+                if (btnLabelEl && !btnLabelEl.value) btnLabelEl.value = 'Click to Verify';
+                if (btnEmojiEl && !btnEmojiEl.value) btnEmojiEl.value = '✅';
+            } else if (method === 'captcha') {
+                if (btnLabelEl && !btnLabelEl.value) btnLabelEl.value = 'Verify Account';
+                if (btnEmojiEl && !btnEmojiEl.value) btnEmojiEl.value = '🔒';
+            } else if (method === 'reaction') {
+                if (titleEl && !titleEl.value) titleEl.value = 'Reaction Verification';
+            } else if (method === 'roblox') {
+                if (titleEl && !titleEl.value) titleEl.value = 'Roblox Account Verification';
+            }
+
+            updateVerifyLivePreview();
+        }
+
+        function updateVerifyLivePreview() {
+            const method = (document.getElementById('setting-verificationType') || {}).value || 'captcha';
+            const title = (document.getElementById('setting-verifyEmbedTitle') || {}).value || (method === 'button' ? 'Server Access Verification' : (method === 'reaction' ? 'Reaction Verification' : 'Server Verification Required'));
+            const desc = (document.getElementById('setting-verifyEmbedDesc') || {}).value || (method === 'button' ? 'Welcome to the server! Click the button below to immediately unlock access.' : (method === 'reaction' ? 'React with ✅ below to verify yourself and gain full access to the server!' : 'To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and complete the CAPTCHA.'));
+            const color = (document.getElementById('setting-verifyEmbedColor') || {}).value || '#5865F2';
+            const btnLabel = (document.getElementById('setting-verifyBtnLabel') || {}).value || (method === 'button' ? 'Click to Verify' : 'Verify Account');
+            const btnEmoji = (document.getElementById('setting-verifyBtnEmoji') || {}).value || (method === 'button' ? '✅' : '🔒');
+
+            const previewEmbed = document.getElementById('verify-preview-embed');
+            if (previewEmbed) previewEmbed.style.borderLeftColor = color;
+
+            const previewTitle = document.getElementById('verify-preview-title');
+            if (previewTitle) previewTitle.textContent = title;
+
+            const previewDesc = document.getElementById('verify-preview-desc');
+            if (previewDesc) previewDesc.textContent = desc;
+
+            const previewBtnEmoji = document.getElementById('verify-preview-btn-emoji');
+            if (previewBtnEmoji) previewBtnEmoji.textContent = btnEmoji;
+
+            const previewBtnLabel = document.getElementById('verify-preview-btn-label');
+            if (previewBtnLabel) previewBtnLabel.textContent = btnLabel;
+
+            // Highlight the active method card
+            document.querySelectorAll('.verify-method-card').forEach(card => {
+                if (card.getAttribute('data-method') === method) {
+                    card.style.border = '2px solid #5865F2';
+                    card.style.background = 'rgba(88, 101, 242, 0.08)';
+                } else {
+                    card.style.border = '1px solid rgba(255,255,255,0.1)';
+                    card.style.background = 'rgba(255, 255, 255, 0.02)';
+                }
+            });
+
+            // Update badge text according to premium status
+            const isPrem = !!window.currentServerIsPremium;
+            const badge = document.getElementById('verify-role-limit-badge');
+            if (badge) {
+                badge.textContent = isPrem ? 'Nora Plus: Up to 5 Roles' : 'Free: Up to 3 Roles (Upgrade for 5)';
+                badge.style.color = isPrem ? '#a5b4fc' : '#10b981';
+            }
+            const welcomeBadge = document.getElementById('welcome-role-limit-badge');
+            if (welcomeBadge) {
+                welcomeBadge.textContent = isPrem ? 'Nora Plus: Up to 5 Roles' : 'Free: Up to 3 Roles (Upgrade for 5)';
+                welcomeBadge.style.color = isPrem ? '#a5b4fc' : '#60a5fa';
+            }
+        }
+
         /* Custom Multiselect Logic */
-        function initMultiselect(hiddenInputId, roles) {
+        function initMultiselect(hiddenInputId, roles, maxLimit = null) {
             const input = document.getElementById(hiddenInputId);
             if (!input) return;
 
@@ -16150,11 +16376,28 @@
                 option.appendChild(label);
                 optionsList.appendChild(option);
 
-                // Click option toggle
+                // Click option toggle with tier limit enforcement
                 option.addEventListener('click', (e) => {
                     if (r.higherThanBot) return;
+                    const willCheck = (e.target === checkbox) ? checkbox.checked : !checkbox.checked;
+                    
+                    if (willCheck) {
+                        const effectiveLimit = maxLimit || ((hiddenInputId === 'setting-welcomeRoleId' || hiddenInputId === 'setting-verifyRoleId') ? (window.currentServerIsPremium ? 5 : 3) : null);
+                        if (effectiveLimit) {
+                            const currentChecked = optionsList.querySelectorAll('input[type="checkbox"]:checked').length;
+                            const newTotal = (e.target === checkbox) ? currentChecked : (currentChecked + 1);
+                            if (newTotal > effectiveLimit) {
+                                if (e.target === checkbox) checkbox.checked = false;
+                                if (typeof showToast === 'function') {
+                                    showToast(`Role Limit: You can configure up to ${effectiveLimit} roles on this server (${window.currentServerIsPremium ? 'Nora Plus max' : 'Free tier max. Upgrade to Nora Plus for 5 roles!'})`, 'warning');
+                                }
+                                return;
+                            }
+                        }
+                    }
+
                     if (e.target !== checkbox) {
-                        checkbox.checked = !checkbox.checked;
+                        checkbox.checked = willCheck;
                     }
                     updateValue();
                 });
