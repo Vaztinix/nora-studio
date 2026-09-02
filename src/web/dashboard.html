@@ -4848,7 +4848,12 @@
                                     </strong>
                                     <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Play a subtle chime sound when real-time updates and push alerts are delivered.</p>
                                 </div>
-                                <input type="checkbox" id="pref-notif-sound" checked onchange="saveNotificationToggles()" style="width: 20px; height: 20px; accent-color: #a855f7; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <button type="button" onclick="playNoraChime(true)" style="background: rgba(88, 101, 242, 0.12); border: 1px solid rgba(88, 101, 242, 0.35); color: #a5b4fc; border-radius: 8px; padding: 6px 14px; font-weight: 700; font-size: 0.76rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" title="Play Nora's Signature Audio Chime">
+                                        <i class="fas fa-play" style="font-size: 0.65rem;"></i> Test Chime
+                                    </button>
+                                    <input type="checkbox" id="pref-notif-sound" checked onchange="saveNotificationToggles()" style="width: 20px; height: 20px; accent-color: #5865F2; cursor: pointer;">
+                                </div>
                             </div>
                         </div>
 
@@ -9196,6 +9201,10 @@
                 });
             });
 
+            if (type !== 'error' && typeof window.playNoraChime === 'function') {
+                window.playNoraChime(false);
+            }
+
             const timeout = setTimeout(() => {
                 dismissToast(toast);
             }, 6000);
@@ -11635,7 +11644,7 @@
             const actionBtn = isGranted
                 ? `<button id="test-push-btn" onclick="testWebPushNotification()" style="background: rgba(124,58,237,0.25); border: 1px solid rgba(124,58,237,0.5); color: #c084fc; border-radius: 10px; padding: 6px 14px; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-paper-plane"></i> Test Push</button>`
                 : isDenied
-                ? `<button disabled style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #64748b; border-radius: 10px; padding: 6px 14px; font-weight: 600; font-size: 0.78rem; cursor: not-allowed;"><i class="fas fa-lock"></i> Unblock in Browser</button>`
+                ? `<button onclick="openNotificationUnblockModal()" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; border-radius: 10px; padding: 6px 14px; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-lock-open"></i> Unblock in Browser</button>`
                 : `<button id="enable-push-btn" onclick="subscribeToWebPush()" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; color: #ffffff; border-radius: 10px; padding: 7px 16px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(124,58,237,0.4); display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-bell"></i> Enable Push Notifications</button>`;
 
             widget.innerHTML = `
@@ -11676,7 +11685,7 @@
             } else if (isDenied) {
                 statusBadgeEl.innerHTML = `<span style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-ban"></i> Blocked</span>`;
                 actionsEl.innerHTML = `
-                    <button disabled style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #64748b; border-radius: 10px; padding: 7px 14px; font-weight: 600; font-size: 0.8rem; cursor: not-allowed;"><i class="fas fa-lock"></i> Unblock in Browser Settings</button>
+                    <button onclick="openNotificationUnblockModal()" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; border-radius: 10px; padding: 7px 16px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-lock-open"></i> Unblock in Browser Settings</button>
                 `;
             } else {
                 statusBadgeEl.innerHTML = `<span style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-bell"></i> Available</span>`;
@@ -20184,7 +20193,489 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('nora_theme_mode') || 'dark';
     applyThemeMode(savedTheme, false);
 });
+
+// =========================================================================
+// 🔔 NORA SIGNATURE AUDIO CHIME SYNTHESIZER (Web Audio API)
+// =========================================================================
+let noraAudioCtx = null;
+
+function playNoraChime(forcePlay = false) {
+    try {
+        const sndEl = document.getElementById('pref-notif-sound');
+        const isSoundEnabled = sndEl ? sndEl.checked : true;
+        if (!isSoundEnabled && !forcePlay) return;
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        if (!noraAudioCtx) {
+            noraAudioCtx = new AudioContextClass();
+        }
+        if (noraAudioCtx.state === 'suspended') {
+            noraAudioCtx.resume().catch(() => {});
+        }
+
+        const now = noraAudioCtx.currentTime;
+
+        // Nora's Signature Audio Chime: Harmonic Crystal Cascade (Eb5 -> G5 -> Bb5 -> Eb6 Sparkle)
+        // Engineered for a high-end, distinctive, warm studio notification sound signature.
+        const notes = [
+            { freq: 622.25, time: 0.00, dur: 0.40, gain: 0.20 }, // Eb5
+            { freq: 783.99, time: 0.06, dur: 0.42, gain: 0.22 }, // G5
+            { freq: 932.33, time: 0.12, dur: 0.46, gain: 0.24 }, // Bb5
+            { freq: 1244.51, time: 0.18, dur: 0.65, gain: 0.28 } // Eb6 (Crystal Sparkle)
+        ];
+
+        // Master output gain node
+        const masterGain = noraAudioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.35, now);
+
+        // Low-pass filter to smooth transients and deliver a silky, warm acoustic presence
+        const filter = noraAudioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(4500, now);
+        filter.connect(noraAudioCtx.destination);
+        masterGain.connect(filter);
+
+        notes.forEach(note => {
+            const noteStart = now + note.time;
+            const noteEnd = noteStart + note.dur;
+
+            // Pure fundamental sine oscillator
+            const osc = noraAudioCtx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(note.freq, noteStart);
+
+            // Subtle harmonic triangle overtone for body
+            const overtone = noraAudioCtx.createOscillator();
+            overtone.type = 'triangle';
+            overtone.frequency.setValueAtTime(note.freq * 2, noteStart);
+
+            // Dynamic gain envelope
+            const noteGain = noraAudioCtx.createGain();
+            noteGain.gain.setValueAtTime(0.0001, noteStart);
+            noteGain.gain.exponentialRampToValueAtTime(note.gain, noteStart + 0.02);
+            noteGain.gain.exponentialRampToValueAtTime(0.0001, noteEnd);
+
+            const overtoneGain = noraAudioCtx.createGain();
+            overtoneGain.gain.setValueAtTime(0.0001, noteStart);
+            overtoneGain.gain.exponentialRampToValueAtTime(note.gain * 0.2, noteStart + 0.015);
+            overtoneGain.gain.exponentialRampToValueAtTime(0.0001, noteStart + (note.dur * 0.5));
+
+            osc.connect(noteGain);
+            overtone.connect(overtoneGain);
+            noteGain.connect(masterGain);
+            overtoneGain.connect(masterGain);
+
+            osc.start(noteStart);
+            overtone.start(noteStart);
+            osc.stop(noteEnd);
+            overtone.stop(noteEnd);
+        });
+
+        if (forcePlay && typeof showToast === 'function') {
+            showToast('🎵 Playing Nora Signature Audio Chime...', 'info');
+        }
+    } catch (err) {
+        console.warn('[Nora Chime]: Audio playback error:', err.message);
+    }
+}
+window.playNoraChime = playNoraChime;
+
+// =========================================================================
+// 🌐 BROWSER DETECTION & INTERACTIVE UNBLOCK NOTIFICATIONS MODAL
+// =========================================================================
+function detectUserBrowser() {
+    const ua = navigator.userAgent;
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
+    const isMobile = isIOS || isAndroid || /Mobile/i.test(ua);
+
+    if (isIOS) {
+        return { name: 'Apple Safari (iOS)', id: 'safari-ios', isMobile: true, icon: 'fab fa-apple', key: 'safari' };
+    }
+    if (isAndroid && /Chrome/i.test(ua)) {
+        return { name: 'Google Chrome (Android)', id: 'chrome-android', isMobile: true, icon: 'fab fa-chrome', key: 'chrome' };
+    }
+    if (/Edg/i.test(ua)) {
+        return { name: 'Microsoft Edge', id: 'edge', isMobile, icon: 'fab fa-edge', key: 'edge' };
+    }
+    if (/Brave/i.test(ua) || (navigator.brave && typeof navigator.brave.isBrave === 'function')) {
+        return { name: 'Brave Browser', id: 'brave', isMobile, icon: 'fas fa-shield-alt', key: 'brave' };
+    }
+    if (/OPR|Opera/i.test(ua)) {
+        return { name: 'Opera / Opera GX', id: 'opera', isMobile, icon: 'fab fa-opera', key: 'chrome' };
+    }
+    if (/Firefox/i.test(ua)) {
+        return { name: 'Mozilla Firefox', id: 'firefox', isMobile, icon: 'fab fa-firefox-browser', key: 'firefox' };
+    }
+    if (/Safari/i.test(ua) && !/Chrome|Chromium/i.test(ua)) {
+        return { name: 'Apple Safari', id: 'safari', isMobile, icon: 'fab fa-safari', key: 'safari' };
+    }
+    return { name: 'Google Chrome', id: 'chrome', isMobile, icon: 'fab fa-chrome', key: 'chrome' };
+}
+window.detectUserBrowser = detectUserBrowser;
+
+function openNotificationUnblockModal() {
+    const modal = document.getElementById('notification-unblock-modal');
+    if (!modal) return;
+
+    const detected = detectUserBrowser();
+    const nameEl = document.getElementById('notif-detected-name');
+    const iconEl = document.getElementById('notif-detected-icon');
+
+    if (nameEl) nameEl.textContent = detected.name;
+    if (iconEl) iconEl.className = detected.icon;
+
+    switchBrowserInstructions(detected.key || 'chrome');
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+window.openNotificationUnblockModal = openNotificationUnblockModal;
+
+function closeNotificationUnblockModal() {
+    const modal = document.getElementById('notification-unblock-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+window.closeNotificationUnblockModal = closeNotificationUnblockModal;
+
+function switchBrowserInstructions(browserKey) {
+    document.querySelectorAll('.notif-browser-tab').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-browser') === browserKey);
+    });
+    document.querySelectorAll('.notif-instructions-pane').forEach(p => {
+        p.style.display = p.id === `notif-instructions-${browserKey}` ? 'block' : 'none';
+    });
+}
+window.switchBrowserInstructions = switchBrowserInstructions;
+
+function copyNotifUrl(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            if (typeof showToast === 'function') {
+                showToast(`Copied settings URL: ${text}`, 'success');
+            }
+        }).catch(() => {
+            prompt('Copy this settings URL and paste it in your browser address bar:', text);
+        });
+    } else {
+        prompt('Copy this settings URL and paste it in your browser address bar:', text);
+    }
+}
+window.copyNotifUrl = copyNotifUrl;
+
+async function verifyNotificationPermissionStatus() {
+    const btn = document.getElementById('btn-verify-notif-perm');
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        btn.disabled = true;
+    }
+
+    await new Promise(r => setTimeout(r, 600));
+
+    const permission = ('Notification' in window) ? Notification.permission : 'denied';
+
+    if (permission === 'granted') {
+        closeNotificationUnblockModal();
+        if (typeof updateSettingsPushUI === 'function') updateSettingsPushUI();
+        if (typeof playNoraChime === 'function') playNoraChime(true);
+        if (typeof showToast === 'function') {
+            showToast('🎉 Push notifications are now unblocked and active!', 'success');
+        }
+    } else if (permission === 'default') {
+        closeNotificationUnblockModal();
+        if (typeof showToast === 'function') {
+            showToast('Permission reset detected! Requesting access...', 'info');
+        }
+        if (typeof subscribeToWebPush === 'function') subscribeToWebPush();
+    } else {
+        if (typeof showToast === 'function') {
+            showToast('Notifications are still Blocked. Please check your browser settings bar and try again.', 'error');
+        }
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verify Permission Now';
+            btn.disabled = false;
+        }
+    }
+}
+window.verifyNotificationPermissionStatus = verifyNotificationPermissionStatus;
+
+// Escape key listener to close modal
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeNotificationUnblockModal();
+    }
+});
 </script>
+
+<!-- Notification Unblock Instructions Modal -->
+<div id="notification-unblock-modal" onclick="if(event.target === this) closeNotificationUnblockModal()" style="display: none; position: fixed; inset: 0; z-index: 100000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div style="background: rgba(16, 17, 26, 0.95); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; max-width: 620px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 70px rgba(0,0,0,0.85), 0 0 50px rgba(88, 101, 242, 0.18); padding: 32px; position: relative; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;">
+        
+        <!-- Close Button -->
+        <button onclick="closeNotificationUnblockModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 34px; height: 34px; color: #949ba4; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Close Modal">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Modal Header -->
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+            <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas fa-bell-slash" style="color: #ef4444; font-size: 1.3rem;"></i>
+            </div>
+            <div>
+                <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0 0 4px 0; letter-spacing: -0.3px;">Unblock Browser Notifications</h2>
+                <p style="font-size: 0.84rem; color: var(--muted); margin: 0;">Follow the quick instructions below to restore real-time alerts and audio chimes.</p>
+            </div>
+        </div>
+
+        <!-- Detected Browser Banner -->
+        <div id="notif-detected-browser-banner" style="background: rgba(88, 101, 242, 0.1); border: 1px solid rgba(88, 101, 242, 0.25); border-radius: 12px; padding: 10px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: #fff;">
+                <i id="notif-detected-icon" class="fab fa-chrome" style="color: #5865F2; font-size: 1.1rem;"></i>
+                <span>Detected Browser: <strong id="notif-detected-name" style="color: #a5b4fc;">Google Chrome</strong></span>
+            </div>
+            <span style="font-size: 0.72rem; color: #23a55a; background: rgba(35, 165, 90, 0.12); border: 1px solid rgba(35, 165, 90, 0.3); padding: 2px 8px; border-radius: 20px; font-weight: 700;">Auto-Detected</span>
+        </div>
+
+        <!-- Browser Switcher Tabs -->
+        <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <button class="notif-browser-tab active" data-browser="chrome" onclick="switchBrowserInstructions('chrome')"><i class="fab fa-chrome"></i> Chrome</button>
+            <button class="notif-browser-tab" data-browser="edge" onclick="switchBrowserInstructions('edge')"><i class="fab fa-edge"></i> Edge</button>
+            <button class="notif-browser-tab" data-browser="firefox" onclick="switchBrowserInstructions('firefox')"><i class="fab fa-firefox-browser"></i> Firefox</button>
+            <button class="notif-browser-tab" data-browser="safari" onclick="switchBrowserInstructions('safari')"><i class="fab fa-safari"></i> Safari</button>
+            <button class="notif-browser-tab" data-browser="brave" onclick="switchBrowserInstructions('brave')"><i class="fas fa-shield-alt"></i> Brave</button>
+            <button class="notif-browser-tab" data-browser="mobile" onclick="switchBrowserInstructions('mobile')"><i class="fas fa-mobile-alt"></i> Mobile PWA</button>
+        </div>
+
+        <!-- Chrome Instructions -->
+        <div id="notif-instructions-chrome" class="notif-instructions-pane">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="notif-step-card">
+                    <div class="notif-step-num">1</div>
+                    <div class="notif-step-content">
+                        <strong>Click the Address Bar Tune / Lock Icon</strong>
+                        <p>In Chrome's address bar at the top, click the <strong>Tune (🎛️)</strong> or <strong>Lock (🔒)</strong> icon on the left.</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">2</div>
+                    <div class="notif-step-content">
+                        <strong>Switch Notifications to "Allow"</strong>
+                        <p>Locate <strong>Notifications</strong> in the permissions popup and switch the toggle from <em>Block</em> to <strong>Allow</strong>.</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">3</div>
+                    <div class="notif-step-content">
+                        <strong>Or Open Chrome Settings Directly</strong>
+                        <p>Paste this URL in a new tab to manage Chrome notifications:</p>
+                        <div style="display: flex; gap: 8px; margin-top: 6px;">
+                            <code style="background: rgba(0,0,0,0.4); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; color: #a5b4fc; flex: 1;">chrome://settings/content/notifications</code>
+                            <button type="button" class="btn-outline" style="font-size: 0.75rem; padding: 4px 10px; cursor: pointer;" onclick="copyNotifUrl('chrome://settings/content/notifications')"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edge Instructions -->
+        <div id="notif-instructions-edge" class="notif-instructions-pane" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="notif-step-card">
+                    <div class="notif-step-num">1</div>
+                    <div class="notif-step-content">
+                        <strong>Click the Lock Icon</strong>
+                        <p>Click the <strong>Lock (🔒)</strong> icon in Microsoft Edge's address bar next to the URL.</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">2</div>
+                    <div class="notif-step-content">
+                        <strong>Open Permissions for this site</strong>
+                        <p>Click <strong>Permissions for this site</strong> and change <strong>Notifications</strong> from <em>Block</em> to <strong>Allow</strong>.</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">3</div>
+                    <div class="notif-step-content">
+                        <strong>Direct Edge Settings Shortcut</strong>
+                        <div style="display: flex; gap: 8px; margin-top: 6px;">
+                            <code style="background: rgba(0,0,0,0.4); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; color: #a5b4fc; flex: 1;">edge://settings/content/notifications</code>
+                            <button type="button" class="btn-outline" style="font-size: 0.75rem; padding: 4px 10px; cursor: pointer;" onclick="copyNotifUrl('edge://settings/content/notifications')"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Firefox Instructions -->
+        <div id="notif-instructions-firefox" class="notif-instructions-pane" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="notif-step-card">
+                    <div class="notif-step-num">1</div>
+                    <div class="notif-step-content">
+                        <strong>Click the Permission Icon</strong>
+                        <p>Click the crossed-out speech bubble icon or lock icon next to the address bar.</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">2</div>
+                    <div class="notif-step-content">
+                        <strong>Clear Blocked Permission</strong>
+                        <p>Under <strong>Permissions</strong>, click the <strong>✕</strong> next to <em>Send Notifications: Blocked</em> to remove the block.</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">3</div>
+                    <div class="notif-step-content">
+                        <strong>Click "Verify Permission Now" Below</strong>
+                        <p>After removing the block, click the button below to re-prompt for notification access.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Safari Instructions -->
+        <div id="notif-instructions-safari" class="notif-instructions-pane" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="notif-step-card">
+                    <div class="notif-step-num">1</div>
+                    <div class="notif-step-content">
+                        <strong>Open Safari Settings / Preferences</strong>
+                        <p>In the top macOS menu bar, click <strong>Safari</strong> > <strong>Settings...</strong> (or press <code>Cmd + ,</code>).</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">2</div>
+                    <div class="notif-step-content">
+                        <strong>Change Website Permission</strong>
+                        <p>Go to the <strong>Websites</strong> tab, select <strong>Notifications</strong> from the left sidebar, locate this website, and switch dropdown to <strong>Allow</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Brave Instructions -->
+        <div id="notif-instructions-brave" class="notif-instructions-pane" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="notif-step-card">
+                    <div class="notif-step-num">1</div>
+                    <div class="notif-step-content">
+                        <strong>Click the Tune Icon</strong>
+                        <p>Click the <strong>Tune (🎛️)</strong> icon in Brave's address bar next to the lion shields icon.</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">2</div>
+                    <div class="notif-step-content">
+                        <strong>Toggle Notifications to Allow</strong>
+                        <p>Switch <strong>Notifications</strong> to <strong>Allow</strong>, and ensure Brave Shields allows site notification prompts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile PWA Instructions -->
+        <div id="notif-instructions-mobile" class="notif-instructions-pane" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="notif-step-card">
+                    <div class="notif-step-num">iOS</div>
+                    <div class="notif-step-content">
+                        <strong>Apple iOS 16.4+ Web Push</strong>
+                        <p>On iPhone/iPad, tap Safari's <strong>Share (↑)</strong> button > <strong>"Add to Home Screen"</strong>. Open the app from your Home Screen to enable push.</p>
+                    </div>
+                </div>
+                <div class="notif-step-card">
+                    <div class="notif-step-num">Android</div>
+                    <div class="notif-step-content">
+                        <strong>Chrome for Android</strong>
+                        <p>Tap the <strong>3 vertical dots</strong> in Chrome > <strong>Settings</strong> > <strong>Site settings</strong> > <strong>Notifications</strong> > Select this site > <strong>Allow</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap;">
+            <button type="button" onclick="playNoraChime(true)" style="background: rgba(88, 101, 242, 0.12); border: 1px solid rgba(88, 101, 242, 0.3); color: #a5b4fc; border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                <i class="fas fa-volume-up" style="color: #23a55a;"></i> Test Nora Chime
+            </button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" onclick="closeNotificationUnblockModal()" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--muted); border-radius: 12px; padding: 10px 18px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Close</button>
+                <button type="button" id="btn-verify-notif-perm" onclick="verifyNotificationPermissionStatus()" style="background: linear-gradient(135deg, #5865F2 0%, #4F46E5 100%); border: none; color: #fff; border-radius: 12px; padding: 10px 22px; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(88,101,242,0.35); transition: all 0.2s;">
+                    <i class="fas fa-sync-alt"></i> Verify Permission Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.notif-browser-tab {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 6px 14px;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.notif-browser-tab:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+}
+.notif-browser-tab.active {
+    background: rgba(88, 101, 242, 0.2);
+    border-color: rgba(88, 101, 242, 0.45);
+    color: #fff;
+    font-weight: 700;
+}
+.notif-step-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 16px;
+}
+.notif-step-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #5865F2;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.notif-step-content strong {
+    display: block;
+    font-size: 0.88rem;
+    color: #fff;
+    margin-bottom: 4px;
+}
+.notif-step-content p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+}
+</style>
 
 </body>
 </html>
