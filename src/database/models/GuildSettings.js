@@ -762,6 +762,22 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         defaultValue: '{emoji} **{count}** | {channel}'
     },
+    starboardSelfStar: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    starboardAuthorRewardXp: {
+        type: DataTypes.INTEGER,
+        defaultValue: 25
+    },
+    starboardDynamicColors: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    starboardNotifyAuthor: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
     levelingCardBgColor: {
         type: DataTypes.STRING,
         defaultValue: '#111217'

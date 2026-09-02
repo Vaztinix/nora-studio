@@ -161,6 +161,8 @@ function buildSingleCommandHelp(client, query, guild) {
         examples.push('`n!story start`', '`n!story history`', '`n!story stats`');
     } else if (name === 'ticket') {
         examples.push('`n!ticket`');
+    } else if (name === 'starboard') {
+        examples.push('`n!starboard`', '`n!starboard top`', '`n!starboard halloffame`', '`n!starboard random`', '`n!starboard channel #starboard`', '`n!starboard threshold 4`');
     } else if (name === 'ask') {
         examples.push('`n!ask What is the weather in Tokyo?`');
     } else if (name === 'avatar') {
@@ -326,6 +328,7 @@ module.exports = {
                     .setDescription('Interactive chat games and engagement tools for your community.')
                     .addFields(
                         { name: '`n!counting`', value: 'Advanced sequential counting game with math sandbox, milestone alerts, and XP rewards.' },
+                        { name: '`n!starboard [stats|top|hof|random]`', value: 'Starboard system with dynamic star tiers, Hall of Fame, and author XP rewards (Alias: `n!star`).' },
                         { name: '`n!story [start|stop|history|stats]`', value: 'Collaborative One Word Story game with auto-restart milestones (Alias: `n!story`).' },
                         { name: '`n!guess <number>`', value: 'Play the number guessing game against Nora for bonus XP.' },
                         { name: '`n!rps <rock|paper|scissors>`', value: 'Play Rock Paper Scissors against Nora with optional XP bets.' },

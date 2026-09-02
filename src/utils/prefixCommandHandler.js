@@ -336,7 +336,9 @@ async function handlePrefixCommand(message, client) {
                 'roblox': 'profile',
                 'onewordstory': 'start',
                 'counting': 'stats',
-                'count': 'stats'
+                'count': 'stats',
+                'starboard': 'stats',
+                'star': 'stats'
             };
 
             const preferredDefault = defaultSubcommandMap[commandName] || subcommands[0].name;

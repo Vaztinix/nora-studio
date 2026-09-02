@@ -474,15 +474,16 @@ module.exports = {
                         { name: 'AFK System', value: settings.afkEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: 'Counting Game', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : '**Disabled**', inline: true },
                         { name: 'One Word Story', value: settings.oneWordStoryEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
-                        { name: 'Starboard', value: settings.starboardEnabled ? `<#${settings.starboardChannelId || 'Unset'}>` : '**Disabled**', inline: true },
-                        { name: 'Number Guessing', value: settings.guessGameEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
-                        { name: 'Rock Paper Scissors', value: settings.rpsGameEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true }
+                        { name: 'Starboard', value: settings.starboardEnabled ? `<#${settings.starboardChannelId || 'Unset'}> (${settings.starboardThreshold || 3}⭐)` : '**Disabled**', inline: true },
+                        { name: 'Self-Star Policy', value: settings.starboardSelfStar ? '**Allowed**' : '**Blocked**', inline: true },
+                        { name: 'Starboard XP', value: `**+${settings.starboardAuthorRewardXp !== undefined ? settings.starboardAuthorRewardXp : 25} XP**`, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_afk_toggle').setLabel(settings.afkEnabled !== false ? 'Disable AFK' : 'Enable AFK').setStyle(settings.afkEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_onewordstory_toggle').setLabel(settings.oneWordStoryEnabled !== false ? 'Disable Story' : 'Enable Story').setStyle(settings.oneWordStoryEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success)
+                    new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_starboard_selfstar').setLabel(settings.starboardSelfStar ? 'Self-Star: On' : 'Self-Star: Off').setStyle(ButtonStyle.Secondary)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
@@ -739,6 +740,7 @@ module.exports = {
                 if (i.customId === 'action_afk_toggle') { settings.afkEnabled = settings.afkEnabled !== false ? false : true; update = true; }
                 if (i.customId === 'action_onewordstory_toggle') { settings.oneWordStoryEnabled = !settings.oneWordStoryEnabled; update = true; }
                 if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }
+                if (i.customId === 'action_starboard_selfstar') { settings.starboardSelfStar = !settings.starboardSelfStar; update = true; }
                 if (i.customId === 'action_counting_channel') { settings.countingChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_starboard_channel') { settings.starboardChannelId = i.values[0]; update = true; }
 
