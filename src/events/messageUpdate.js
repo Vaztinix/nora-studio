@@ -4,14 +4,30 @@ const GuildSettings = require('../database/models/GuildSettings');
 module.exports = {
     name: Events.MessageUpdate,
     async execute(oldMessage, newMessage) {
-        if (oldMessage.partial || newMessage.partial) return;
-        if (!oldMessage.guild) return;
-        if (oldMessage.author && oldMessage.author.bot) return;
+        if (oldMessage.partial) {
+            try { await oldMessage.fetch().catch(() => {}); } catch (_) {}
+        }
+        if (newMessage.partial) {
+            try { await newMessage.fetch().catch(() => {}); } catch (_) {}
+        }
+        const guild = newMessage.guild || oldMessage.guild;
+        if (!guild) return;
+        const author = newMessage.author || oldMessage.author;
+        if (author && author.bot) return;
         if (oldMessage.content === newMessage.content) return; // Ignore embed or pin updates
 
         try {
-            const settings = await GuildSettings.findOne({ where: { guildId: oldMessage.guild.id } });
+            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
             if (!settings) return;
+
+            // 🚨 Anti-Cheat: Handle edits in the Counting Channel
+            try {
+                const { handleCountingMessageEdit } = require('./countingSystem');
+                await handleCountingMessageEdit(oldMessage, newMessage, settings);
+            } catch (err) {
+                console.error('[Counting] Error executing handleCountingMessageEdit:', err);
+            }
+
             const loggerUtil = require('../utils/logger');
             
             const author = oldMessage.author || newMessage.author;

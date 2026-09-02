@@ -27,13 +27,39 @@ function stripEmojis(str) {
 }
 
 /**
+ * Strips Discord markdown formatting:
+ * - Bold: **text**
+ * - Italics: *text*
+ * - Bold Italics: ***text***
+ * - Underline: __text__
+ * - Strikethrough: ~~text~~
+ * - Spoilers: ||text||
+ * - Inline code: `text`
+ * - Code blocks: ```text```
+ */
+function stripMarkdown(str) {
+    if (!str) return '';
+    let s = str.trim();
+    s = s.replace(/```(?:[a-z]*\n)?([\s\S]*?)```/gi, '$1');
+    s = s.replace(/`([^`]+)`/g, '$1');
+    s = s.replace(/\|\|([\s\S]*?)\|\|/g, '$1');
+    s = s.replace(/~~([\s\S]*?)~~/g, '$1');
+    s = s.replace(/__([\s\S]*?)__/g, '$1');
+    s = s.replace(/\*\*\*([\s\S]+?)\*\*\*/g, '$1');
+    s = s.replace(/\*\*([\s\S]+?)\*\*/g, '$1');
+    s = s.replace(/(?:^|\s)\*([^*\s]+)\*(?:\s|$)/g, ' $1 ');
+    return s.trim();
+}
+
+/**
  * Validates mathematical expressions safely without using vulnerable eval() commands.
  */
 function evaluateCountingInput(userInputString, targetCountSequence) {
-    // Step 1: Strip emojis from the input
-    const cleanedInput = stripEmojis(userInputString);
+    // Step 1: Strip emojis and Discord markdown from the input
+    const withoutEmojis = stripEmojis(userInputString);
+    const cleanedInput = stripMarkdown(withoutEmojis);
 
-    // If the message was purely emojis (nothing left after stripping), silently ignore
+    // If the message was purely emojis or empty after stripping, silently ignore
     if (!cleanedInput || cleanedInput.length === 0) {
         return {
             isValid: false,

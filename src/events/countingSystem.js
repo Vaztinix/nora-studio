@@ -206,6 +206,9 @@ module.exports = {
             guildData.totalResets = (guildData.totalResets || 0) + 1;
             guildData.currentCount = 0;
             guildData.lastUserId = null;
+            guildData.lastMessageId = null;
+            guildData.lastMessageContent = null;
+            guildData.recentCountMessages = {};
             allData[message.guild.id] = guildData;
             queueSave();
 
@@ -225,6 +228,9 @@ module.exports = {
             guildData.totalResets = (guildData.totalResets || 0) + 1;
             guildData.currentCount = 0;
             guildData.lastUserId = null;
+            guildData.lastMessageId = null;
+            guildData.lastMessageContent = null;
+            guildData.recentCountMessages = {};
             allData[message.guild.id] = guildData;
             queueSave();
 
@@ -250,9 +256,23 @@ module.exports = {
         guildData.lastUserId = message.author.id;
         guildData.lastUserTag = message.author.tag || message.author.username;
         guildData.lastCountAt = Date.now();
+        guildData.lastMessageId = message.id;
+        guildData.lastMessageContent = message.content;
         guildData.totalCorrectCounts = (guildData.totalCorrectCounts || 0) + 1;
         guildData.userCounts = guildData.userCounts || {};
         guildData.userCounts[message.author.id] = (guildData.userCounts[message.author.id] || 0) + 1;
+
+        guildData.recentCountMessages = guildData.recentCountMessages || {};
+        guildData.recentCountMessages[message.id] = {
+            count: expectedNext,
+            authorId: message.author.id,
+            content: message.content,
+            timestamp: Date.now()
+        };
+        const messageIds = Object.keys(guildData.recentCountMessages);
+        if (messageIds.length > 50) {
+            delete guildData.recentCountMessages[messageIds[0]];
+        }
 
         allData[message.guild.id] = guildData;
         queueSave();
@@ -305,8 +325,121 @@ module.exports = {
         const { checkAndAwardEgg } = require('../utils/easterEggSystem');
         checkAndAwardEgg(message, 7);
     },
+    handleCountingMessageEdit,
+    handleCountingMessageDelete,
     getGuildCountingData,
     setGuildCountingData,
     loadCountingData,
     queueSave
 };
+
+async function handleCountingMessageEdit(oldMessage, newMessage, settings) {
+    try {
+        if (!newMessage || !oldMessage) return;
+        const guild = newMessage.guild || oldMessage.guild;
+        if (!guild || !settings || !settings.countingChannelId) return;
+        if (newMessage.channel.id !== settings.countingChannelId) return;
+
+        const author = newMessage.author || oldMessage.author;
+        if (!author || author.bot) return;
+
+        const oldContent = (oldMessage.content || '').trim();
+        const newContent = (newMessage.content || '').trim();
+        if (oldContent === newContent) return; // Ignore embed or pin/reaction updates
+
+        const allData = await loadCountingData();
+        const guildData = allData[guild.id];
+        if (!guildData || guildData.currentCount === 0) return;
+
+        // Check if the edited message was part of the active counting game
+        const isLastCount = guildData.lastMessageId && guildData.lastMessageId === newMessage.id;
+        const isRecentCount = guildData.recentCountMessages && guildData.recentCountMessages[newMessage.id];
+
+        // Also check if either oldContent or newContent looks like a number/count attempt
+        const { evaluateCountingInput } = require('../bot/engines/counter');
+        const oldEval = oldContent ? evaluateCountingInput(oldContent, guildData.currentCount) : null;
+        const newEval = newContent ? evaluateCountingInput(newContent, guildData.currentCount) : null;
+        const hadCountContent = (oldEval && (oldEval.isValid || oldEval.result !== undefined)) || (newEval && (newEval.isValid || newEval.result !== undefined));
+
+        if (isLastCount || isRecentCount || hadCountContent) {
+            // Remove checkmark reactions if present
+            try {
+                const reactions = newMessage.reactions.cache;
+                for (const r of reactions.values()) {
+                    if (['✅', '☑️', '💯'].includes(r.emoji.name)) {
+                        await r.users.remove(newMessage.client.user.id).catch(() => {});
+                    }
+                }
+                await newMessage.react('❌').catch(() => {});
+            } catch (_) {}
+
+            const originalDisplay = oldContent || (isRecentCount ? isRecentCount.content : (guildData.lastMessageContent || 'N/A'));
+            const editedDisplay = newContent || '*[Empty]*';
+            const previousStreak = guildData.currentCount || 0;
+            const highScore = guildData.highScore || 0;
+
+            guildData.totalResets = (guildData.totalResets || 0) + 1;
+            guildData.currentCount = 0;
+            guildData.lastUserId = null;
+            guildData.lastMessageId = null;
+            guildData.lastMessageContent = null;
+            guildData.recentCountMessages = {};
+            allData[guild.id] = guildData;
+            queueSave();
+
+            await safeReplyOrSend(newMessage, {
+                content: `❌ <@${author.id}>, **you cannot edit your messages in the counting channel!**\n` +
+                    `• **Original:** \`${originalDisplay}\`\n` +
+                    `• **Edited To:** \`${editedDisplay}\`\n` +
+                    `• **Lost Streak:** \`${previousStreak}\`\n` +
+                    `• **Server Record:** \`${highScore}\`\n\n` +
+                    `The count has been broken and reset to **0**. Start again at **1**!`
+            });
+        }
+    } catch (err) {
+        console.error('[Counting] Error in handleCountingMessageEdit:', err);
+    }
+}
+
+async function handleCountingMessageDelete(message, settings) {
+    try {
+        if (!message || !message.guild || !settings || !settings.countingChannelId) return;
+        if (message.channel.id !== settings.countingChannelId) return;
+
+        const author = message.author;
+        if (author && author.bot) return;
+
+        const allData = await loadCountingData();
+        const guildData = allData[message.guild.id];
+        if (!guildData || guildData.currentCount === 0) return;
+
+        const isLastCount = guildData.lastMessageId && guildData.lastMessageId === message.id;
+        const isRecentCount = guildData.recentCountMessages && guildData.recentCountMessages[message.id];
+
+        if (isLastCount || isRecentCount) {
+            const deletedNumber = isRecentCount ? isRecentCount.count : guildData.currentCount;
+            const previousStreak = guildData.currentCount || 0;
+            const highScore = guildData.highScore || 0;
+            const authorMention = author ? `<@${author.id}>` : (isRecentCount ? `<@${isRecentCount.authorId}>` : 'Someone');
+
+            guildData.totalResets = (guildData.totalResets || 0) + 1;
+            guildData.currentCount = 0;
+            guildData.lastUserId = null;
+            guildData.lastMessageId = null;
+            guildData.lastMessageContent = null;
+            guildData.recentCountMessages = {};
+            allData[message.guild.id] = guildData;
+            queueSave();
+
+            await message.channel.send({
+                content: `❌ ${authorMention} **deleted their count (${deletedNumber}) in the counting channel!**\n` +
+                    `Deleting counts ruins the channel count history.\n` +
+                    `• **Lost Streak:** \`${previousStreak}\`\n` +
+                    `• **Server Record:** \`${highScore}\`\n\n` +
+                    `The count has been reset to **0**. Start again at **1**!`
+            }).catch(() => {});
+        }
+    } catch (err) {
+        console.error('[Counting] Error in handleCountingMessageDelete:', err);
+    }
+}

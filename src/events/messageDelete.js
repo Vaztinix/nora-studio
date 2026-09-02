@@ -10,6 +10,15 @@ module.exports = {
         try {
             const settings = await GuildSettings.findOne({ where: { guildId: message.guild.id } });
             if (!settings) return;
+
+            // 🚨 Anti-Cheat: Handle deletions in the Counting Channel
+            try {
+                const { handleCountingMessageDelete } = require('./countingSystem');
+                await handleCountingMessageDelete(message, settings);
+            } catch (err) {
+                console.error('[Counting] Error executing handleCountingMessageDelete:', err);
+            }
+
             const loggerUtil = require('../utils/logger');
             
             const author = message.author;
