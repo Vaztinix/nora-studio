@@ -65,17 +65,13 @@
 
         body {
             font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #0B0C12;
+            background-color: #0E0F15;
             color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            background-image: 
-                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
-                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-            background-size: 100% 100%, 28px 28px;
-            background-attachment: fixed;
+            background-image: radial-gradient(circle at 50% 0%, rgba(88, 101, 242, 0.08) 0%, transparent 60%);
             -webkit-font-smoothing: antialiased;
         }
 
@@ -89,18 +85,17 @@
             z-index: 1;
         }
 
-        /* ===== GLASSMORPHISM UTILITY ===== */
+        /* ===== CARD SURFACE UTILITY ===== */
         .glass-panel {
-            background: var(--bg-surface);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            background: #15161E;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
             transition: var(--transition-smooth);
         }
         .glass-panel:hover {
-            border-color: var(--border-hover);
+            border-color: rgba(255, 255, 255, 0.14);
+            background: #181923;
         }
 
         /* ===== STICKY HEADER ===== */
@@ -108,10 +103,8 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            background: rgba(7, 8, 12, 0.82);
-            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(14, 15, 21, 0.96);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             transition: var(--transition-smooth);
         }
 
@@ -119,35 +112,23 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 74px;
+            height: 68px;
         }
 
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-weight: 800;
-            font-size: 1.25rem;
+            font-weight: 700;
+            font-size: 1.18rem;
             color: #FFFFFF;
             text-decoration: none;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
         }
         .brand img {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(88, 101, 242, 0.35);
-        }
-        .brand-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: var(--radius-full);
-            background: rgba(88, 101, 242, 0.15);
-            color: #818CF8;
-            border: 1px solid rgba(88, 101, 242, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
         }
 
         .nav-links {
@@ -205,10 +186,10 @@
 
         .btn-nav-dashboard {
             background: var(--bg-surface-elevated);
-            border: 1px solid var(--border-subtle);
-            color: #FFFFFF;
-            padding: 9px 20px;
-            border-radius: var(--radius-full);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #F2F3F5;
+            padding: 8px 18px;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.88rem;
@@ -218,28 +199,25 @@
             gap: 8px;
         }
         .btn-nav-dashboard:hover {
-            border-color: var(--border-hover);
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.16);
+            background: #252630;
         }
 
         .btn-nav-invite {
-            background: linear-gradient(135deg, var(--blurple) 0%, var(--purple) 100%);
+            background: var(--blurple);
             color: #FFFFFF;
-            padding: 9px 22px;
-            border-radius: var(--radius-full);
+            padding: 8px 18px;
+            border-radius: 6px;
             text-decoration: none;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 0.88rem;
-            box-shadow: 0 4px 20px var(--blurple-glow);
             transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
         .btn-nav-invite:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5);
+            background: var(--blurple-hover);
         }
 
         /* ===== HERO SECTION ===== */
@@ -263,41 +241,38 @@
         .hero-announcement-pill {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            background: rgba(88, 101, 242, 0.12);
-            border: 1px solid rgba(88, 101, 242, 0.28);
-            padding: 6px 16px;
-            border-radius: var(--radius-full);
+            gap: 8px;
+            background: #161720;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 14px;
+            border-radius: 6px;
             font-size: 0.82rem;
-            font-weight: 700;
-            color: #D2D8FC;
+            font-weight: 600;
+            color: #949BA4;
             width: fit-content;
         }
         .hero-announcement-pill i {
             color: #5865F2;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .hero-heading {
-            font-size: clamp(2.5rem, 4.8vw, 3.9rem);
+            font-size: clamp(2.4rem, 4.5vw, 3.6rem);
             font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -0.035em;
+            line-height: 1.12;
+            letter-spacing: -0.03em;
             color: #FFFFFF;
         }
         .hero-highlight {
-            color: #5865F2;
-            background: linear-gradient(135deg, #7983F5 0%, #5865F2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--blurple);
             display: inline-block;
         }
 
         .hero-description {
-            font-size: 1.12rem;
-            line-height: 1.65;
+            font-size: 1.05rem;
+            line-height: 1.6;
             color: var(--text-muted);
-            max-width: 580px;
+            max-width: 560px;
         }
         .hero-description strong {
             color: var(--text-main);
@@ -306,38 +281,36 @@
         .hero-cta-group {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             flex-wrap: wrap;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         .btn-cta-primary {
-            background: linear-gradient(135deg, var(--blurple) 0%, #4F46E5 100%);
+            background: var(--blurple);
             color: #FFFFFF;
-            padding: 14px 32px;
-            border-radius: var(--radius-full);
-            font-weight: 700;
-            font-size: 1.02rem;
+            padding: 12px 26px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.98rem;
             text-decoration: none;
-            box-shadow: 0 10px 30px var(--blurple-glow);
             transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
             gap: 10px;
         }
         .btn-cta-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 40px rgba(88, 101, 242, 0.55);
+            background: var(--blurple-hover);
         }
 
         .btn-cta-secondary {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
+            background: #1C1D24;
+            border: 1px solid rgba(255, 255, 255, 0.09);
             color: #FFFFFF;
-            padding: 14px 28px;
-            border-radius: var(--radius-full);
+            padding: 12px 24px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 1.02rem;
+            font-size: 0.98rem;
             text-decoration: none;
             transition: var(--transition-smooth);
             display: inline-flex;
@@ -345,9 +318,8 @@
             gap: 10px;
         }
         .btn-cta-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--border-hover);
-            transform: translateY(-2px);
+            background: #272832;
+            border-color: rgba(255, 255, 255, 0.18);
         }
 
         /* ===== HERO STATS BAR ===== */
@@ -853,21 +825,21 @@
             position: relative;
         }
         .pricing-tier-card.featured {
-            border-color: rgba(139, 92, 246, 0.4);
-            box-shadow: 0 0 50px rgba(139, 92, 246, 0.2);
+            border-color: var(--blurple);
+            box-shadow: 0 0 20px rgba(88, 101, 242, 0.15);
         }
         .featured-badge {
             position: absolute;
-            top: -14px;
-            right: 28px;
-            background: linear-gradient(135deg, var(--purple) 0%, var(--blurple) 100%);
+            top: -12px;
+            right: 24px;
+            background: var(--blurple);
             color: #FFFFFF;
             font-size: 0.72rem;
-            font-weight: 800;
-            padding: 4px 14px;
-            border-radius: var(--radius-full);
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
         }
         .tier-name {
             font-size: 1.5rem;
@@ -959,11 +931,11 @@
             padding: 60px 0 100px 0;
         }
         .cta-box {
-            padding: 60px 40px;
+            padding: 50px 36px;
             text-align: center;
-            background: linear-gradient(135deg, rgba(88, 101, 242, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
-            border: 1px solid rgba(88, 101, 242, 0.3);
-            border-radius: var(--radius-lg);
+            background: #15161E;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
             position: relative;
             overflow: hidden;
         }
@@ -1099,12 +1071,9 @@
             <a href="/" class="brand" id="brand-logo">
                 <img src="nora.png" alt="Nora Studio Logo">
                 <span>Nora Studio</span>
-                <span class="brand-badge">BOT</span>
             </a>
             
             <nav class="nav-links">
-                <a href="#features"><i class="fas fa-layer-group"></i> Features</a>
-                <a href="#simulator"><i class="fas fa-play"></i> Preview</a>
                 <a href="#commands"><i class="fas fa-terminal"></i> Commands</a>
                 <a href="#pricing"><i class="fas fa-tag"></i> Pricing</a>
                 <a href="/docs"><i class="fas fa-book"></i> Docs</a>
@@ -1112,10 +1081,6 @@
             </nav>
 
             <div class="nav-actions">
-                <div class="live-status-pill" id="live-telemetry-badge">
-                    <span class="live-dot"></span>
-                    <span id="header-server-count">65 Servers Online</span>
-                </div>
                 <a href="/dashboard" class="btn-nav-dashboard" id="btn-header-dash">Dashboard</a>
                 <a href="/install" class="btn-nav-invite" id="btn-header-invite"><i class="fab fa-discord"></i> Invite</a>
             </div>
