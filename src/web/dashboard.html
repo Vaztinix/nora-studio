@@ -15764,7 +15764,8 @@
                 initMultiselect('setting-verifyRoleId', roles);
                 initMultiselect('setting-automodImmuneRoles', roles);
                 initMultiselect('setting-countingWhitelistedRoles', roles);
-                initMultiselect('setting-starboardIgnoredChannels', textChannels);
+                const chList = (typeof textChannels !== 'undefined' ? textChannels : (window.currentTextChannels || []));
+                initMultiselect('setting-starboardIgnoredChannels', chList);
 
             } catch (e) {
                 console.error('[Roles Apply Error]:', e);
@@ -16882,7 +16883,8 @@
                 let guildConns = [];
                 try {
                     const connRes = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/topgg/connections', {
-                        headers: { 'Authorization': `Bearer ${t}` }
+                        const token = (typeof t !== 'undefined' && t) ? t : (sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token') || '');
+                    headers: { 'Authorization': Bearer \ }` }
                     });
                     if (connRes.ok) {
                         const connData = await connRes.json();
