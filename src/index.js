@@ -879,6 +879,12 @@ const FAIL2BAN_WINDOW_MS = 60000;    // ...within 60 seconds...
 const FAIL2BAN_BAN_DURATION_MS = 15 * 60 * 1000; // ...triggers a 15 minute ban
 
 // Resolve the real visitor IP — prefer CF-Connecting-IP over req.ip
+
+const isLoopbackIP = (req) => {
+    const ip = getRealIP(req);
+    return ip === '127.0.0.1' || ip === '::1' || ip === 'localhost' || ip === '::ffff:127.0.0.1';
+};
+
 const getRealIP = (req) => {
     return req.headers['cf-connecting-ip'] ||
         req.headers['x-real-ip'] ||
@@ -901,6 +907,7 @@ setInterval(() => {
 
 // Middleware: block banned IPs instantly — respond with 429 so Cloudflare can relay it
 app.use((req, res, next) => {
+    if (typeof isLoopbackIP === 'function' && isLoopbackIP(req)) return next();
     const ip = getRealIP(req);
     const entry = fail2banMap.get(ip);
     if (entry && entry.bannedUntil && Date.now() < entry.bannedUntil) {
@@ -1023,7 +1030,7 @@ const globalApiRateLimiter = rateLimit({
     legacyHeaders: false,
     message: { error: 'Too many requests from this IP. Please try again later.' },
     keyGenerator: (req) => getRealIP(req),
-    skip: (req) => req.method === 'OPTIONS' || req.path === '/health' || req.path === '/api/health'
+    skip: (req) => req.method === 'OPTIONS' || (typeof isLoopbackIP === 'function' && isLoopbackIP(req)) || req.path === '/health' || req.path === '/api/health' || (typeof isLoopbackIP === 'function' && isLoopbackIP(req))
 });
 
 const authRateLimiter = rateLimit({
@@ -1033,14 +1040,14 @@ const authRateLimiter = rateLimit({
     legacyHeaders: false,
     message: { error: 'Too many authentication attempts. Please wait 15 minutes.' },
     keyGenerator: (req) => getRealIP(req),
-    skip: (req) => req.method === 'OPTIONS'
+    skip: (req) => req.method === 'OPTIONS' || (typeof isLoopbackIP === 'function' && isLoopbackIP(req))
 });
 
 app.use('/api/', globalApiRateLimiter);
 app.use(['/api/user/me', '/api/auth/pair', '/api/auth/invalidate', '/api/owner/'], authRateLimiter);
 
 const ipRateLimiter = (req, res, next) => {
-    if (req.method === 'OPTIONS' || req.path === '/health' || req.path === '/api/health') return next();
+    if (req.method === 'OPTIONS' || req.path === '/health' || req.path === '/api/health' || (typeof isLoopbackIP === 'function' && isLoopbackIP(req))) return next();
     const ip = getRealIP(req); // Use real visitor IP, not Cloudflare edge node IP
     const now = Date.now();
 
