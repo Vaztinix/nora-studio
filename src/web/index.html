@@ -9,22 +9,48 @@
         }
     </script>
     <title>Nora Studio | Privacy-First, All-in-One Discord Automation Bot</title>
-    <meta name="description" content="Nora Studio is a privacy-first, all-in-one Discord bot designed to keep your server secure, automated, and running smoothly. From robust Roblox integrations and leveling systems to secure verification and custom autoresponders, Nora handles all your server tasks while keeping your community's data safe and private.">
+    <meta name="description" content="Nora Studio is the ultimate privacy-first Discord bot for community operations. Features real-time Roblox group rank sync, Starboard v3.0, sandboxed math counting game, 4-way verification, native AutoMod threat shield, and full web telemetry.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Modern Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --site-bg: #070706;
-            --primary: #FFFFFF;
-            --primary-hover: #EEEEEC;
-            --border: #191918;
-            --border-hover: #222221;
-            --muted: #9D9D9D;
-            --card-bg: #111110;
-            --text: #EEEEEC;
-            --discord-blurple: #5865F2;
-            --discord-blurple-hover: #4752C4;
+            --bg-base: #07080C;
+            --bg-surface: rgba(16, 17, 26, 0.75);
+            --bg-surface-elevated: rgba(22, 24, 36, 0.88);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.18);
+            --border-glow: rgba(88, 101, 242, 0.4);
+            
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --text-dim: #6B7280;
+            
+            --blurple: #5865F2;
+            --blurple-hover: #4752C4;
+            --blurple-glow: rgba(88, 101, 242, 0.35);
+            
+            --purple: #8B5CF6;
+            --cyan: #06B6D4;
+            --emerald: #10B981;
+            --amber: #F59E0B;
+            --rose: #F43F5E;
+            
+            --discord-bg: #313338;
+            --discord-dark: #2B2D31;
+            --discord-input: #383A40;
+            
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 22px;
+            --radius-full: 9999px;
+            
+            --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -33,1440 +59,1811 @@
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--site-bg);
-            color: var(--text);
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+                radial-gradient(circle at 15% 15%, rgba(88, 101, 242, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 25%, rgba(139, 92, 246, 0.07) 0%, transparent 45%),
+                radial-gradient(circle at 50% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
             background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* ===== HERO PARTICLE CANVAS ===== */
-        #hero-particles {
+        /* ===== AMBIENT GLOW EFFECTS ===== */
+        .ambient-glow {
             position: absolute;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .hero-section { position: relative; }
-
-        /* ===== HERO GLOW ===== */
-        .hero-glow {
-            position: absolute;
-            width: 500px;
-            height: 500px;
             border-radius: 50%;
-            filter: blur(120px);
+            filter: blur(140px);
             pointer-events: none;
             z-index: 0;
         }
-        .hero-glow-1 {
-            background: rgba(88, 101, 242, 0.1);
+        .ambient-glow-1 {
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(88, 101, 242, 0.14) 0%, transparent 70%);
             top: -100px;
-            left: -100px;
-            animation: glowPulse 8s ease-in-out infinite alternate;
+            left: -150px;
+            animation: ambientDrift 12s ease-in-out infinite alternate;
         }
-        .hero-glow-2 {
-            background: rgba(0, 229, 255, 0.06);
-            bottom: -150px;
-            right: -100px;
-            animation: glowPulse 10s ease-in-out infinite alternate-reverse;
+        .ambient-glow-2 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+            top: 200px;
+            right: -200px;
+            animation: ambientDrift 14s ease-in-out infinite alternate-reverse;
         }
-
-        @keyframes glowPulse {
-            0% { transform: scale(1) translate(0, 0); opacity: 0.8; }
-            50% { transform: scale(1.2) translate(20px, -10px); opacity: 1; }
-            100% { transform: scale(0.9) translate(-15px, 15px); opacity: 0.7; }
-        }
-
-        /* ===== ANIMATED HERO TITLE ===== */
-        .hero-info h1 {
-            background: linear-gradient(135deg, #FFFFFF 0%, #CCCCCC 40%, #5865F2 70%, #00e5ff 100%);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: heroShimmer 6s ease-in-out infinite;
+        @keyframes ambientDrift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, -30px) scale(1.1); }
+            100% { transform: translate(-30px, 40px) scale(0.95); }
         }
 
-        @keyframes heroShimmer {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* ===== FLOATING SIMULATOR ===== */
-        .simulator-wrapper {
-            animation: simFloat 5s ease-in-out infinite;
-        }
-
-        @keyframes simFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
-        }
-
-        /* ===== SCROLL REVEAL ===== */
-        .reveal-item {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-        .reveal-item.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ===== CARD HOVER GLOW & GLASSMORPHISM ===== */
-        .secondary-card, .simulator-wrapper, .modal {
-            background: rgba(18, 18, 24, 0.65) !important;
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-            transition: all 0.35s ease;
-        }
-        .secondary-card:hover {
-            box-shadow: 0 0 30px rgba(88, 101, 242, 0.15) !important;
-        }
-
+        /* ===== CONTAINER ===== */
         .container {
-            max-width: 1200px;
+            max-width: 1240px;
             margin: 0 auto;
             padding: 0 24px;
             width: 100%;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Header / Navbar */
+        /* ===== GLASSMORPHISM UTILITY ===== */
+        .glass-panel {
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: var(--transition-smooth);
+        }
+        .glass-panel:hover {
+            border-color: var(--border-hover);
+        }
+
+        /* ===== STICKY HEADER ===== */
         header {
             position: sticky;
             top: 0;
-            z-index: 100;
-            backdrop-filter: blur(12px);
-            background: rgba(7, 7, 6, 0.8);
-            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(7, 8, 12, 0.82);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: var(--transition-smooth);
         }
 
         .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 70px;
+            height: 74px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1.15rem;
-            color: white;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #FFFFFF;
             text-decoration: none;
+            letter-spacing: -0.02em;
         }
-
         .brand img {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(88, 101, 242, 0.35);
+        }
+        .brand-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: var(--radius-full);
+            background: rgba(88, 101, 242, 0.15);
+            color: #818CF8;
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .nav-links {
             display: flex;
-            gap: 28px;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
         }
-
         .nav-links a {
-            font-weight: 500;
-            color: var(--text);
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-muted);
             text-decoration: none;
-            transition: color 0.2s ease;
-            opacity: 0.8;
-            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-
         .nav-links a:hover {
-            color: var(--primary);
-            opacity: 1;
+            color: #FFFFFF;
         }
 
-        .btn-header {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 999px;
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .live-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #10B981;
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #10B981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10B981;
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .btn-nav-dashboard {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: var(--radius-full);
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.85rem;
-            transition: 0.2s;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-dashboard:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
         }
 
-        .btn-header:hover {
-            background: var(--border-hover);
-            border-color: rgba(255, 255, 255, 0.15);
+        .btn-nav-invite {
+            background: linear-gradient(135deg, var(--blurple) 0%, var(--purple) 100%);
+            color: #FFFFFF;
+            padding: 9px 22px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            box-shadow: 0 4px 20px var(--blurple-glow);
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-invite:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5);
         }
 
-        /* Hero Section */
+        /* ===== HERO SECTION ===== */
         .hero-section {
+            padding: 85px 0 60px 0;
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: 1.1fr 1fr;
             gap: 60px;
             align-items: center;
-            padding: 80px 0;
             position: relative;
         }
-
-        @media (max-width: 900px) {
-            .hero-section {
-                grid-template-columns: 1fr;
-                gap: 40px;
-                text-align: center;
-            }
-            .hero-info {
-                align-items: center;
-            }
-            .hero-buttons {
-                justify-content: center;
-            }
+        #hero-canvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .hero-info {
+        .hero-left {
             display: flex;
             flex-direction: column;
+            gap: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-announcement-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(88, 101, 242, 0.12);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #C7D2FE;
+            width: fit-content;
+            backdrop-filter: blur(10px);
+        }
+        .hero-announcement-pill i {
+            color: #818CF8;
+        }
+
+        .hero-heading {
+            font-size: clamp(2.5rem, 4.8vw, 4rem);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+            color: #FFFFFF;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 40%, #818CF8 75%, #06B6D4 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textShimmer 8s ease infinite;
+        }
+        @keyframes textShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero-description {
+            font-size: 1.12rem;
+            line-height: 1.65;
+            color: var(--text-muted);
+            max-width: 580px;
+        }
+        .hero-description strong {
+            color: var(--text-main);
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .btn-cta-primary {
+            background: linear-gradient(135deg, var(--blurple) 0%, #4F46E5 100%);
+            color: #FFFFFF;
+            padding: 14px 32px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 1.02rem;
+            text-decoration: none;
+            box-shadow: 0 10px 30px var(--blurple-glow);
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px rgba(88, 101, 242, 0.55);
+        }
+
+        .btn-cta-secondary {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            padding: 14px 28px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 1.02rem;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-cta-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        /* ===== HERO STATS BAR ===== */
+        .hero-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
-            text-align: left;
+            margin-top: 30px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
+            max-width: 580px;
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .stat-value {
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.02em;
+        }
+        .stat-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        @media (max-width: 900px) {
-            .hero-info {
-                text-align: center;
-            }
+        /* ===== INTERACTIVE DISCORD SIMULATOR ===== */
+        .hero-simulator-wrapper {
+            position: relative;
+            z-index: 2;
         }
 
-        .tagline {
+        .discord-mock-window {
+            background: var(--discord-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(88, 101, 242, 0.15);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .discord-mock-header {
+            background: #1E1F22;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        .discord-channel-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #F2F3F5;
+        }
+        .discord-channel-info i {
+            color: #80848E;
+            font-size: 1.1rem;
+        }
+        .simulator-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #00A8FC;
+            background: rgba(0, 168, 252, 0.12);
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Simulator Tabs Switcher */
+        .sim-tabs-bar {
+            background: var(--discord-dark);
+            padding: 8px 16px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .sim-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #949BA4;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .sim-tab-btn:hover {
+            color: #DBDEE1;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .sim-tab-btn.active {
+            background: #404249;
+            color: #FFFFFF;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Simulator Message Area */
+        .sim-message-area {
+            padding: 22px;
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            justify-content: flex-start;
+        }
+
+        .discord-msg-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .discord-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+        .discord-avatar-placeholder {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--blurple) 0%, var(--purple) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #FFFFFF;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .discord-msg-body {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+        .discord-msg-header {
             display: flex;
             align-items: center;
             gap: 8px;
-            color: var(--primary);
-            font-size: 0.85rem;
+        }
+        .discord-username {
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .hero-info h1 {
-            font-size: clamp(2.2rem, 4vw, 3.5rem);
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -1.5px;
-        }
-
-        .hero-info p {
-            color: var(--muted);
-            font-size: 1.05rem;
-            line-height: 1.5;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .btn-main {
-            padding: 12px 24px;
-            border-radius: 999px;
-            font-weight: 600;
-            text-decoration: none;
             font-size: 0.95rem;
-            transition: 0.2s ease-in-out;
+            color: #F2F3F5;
+        }
+        .discord-bot-badge {
+            background: var(--blurple);
+            color: #FFFFFF;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .discord-timestamp {
+            font-size: 0.75rem;
+            color: #949BA4;
+            margin-left: 4px;
+        }
+
+        /* Discord Embed Component */
+        .sim-embed {
+            background: var(--discord-dark);
+            border-left: 4px solid var(--blurple);
+            border-radius: 4px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: var(--transition-smooth);
+        }
+        .sim-embed-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #F2F3F5;
+        }
+        .sim-embed-desc {
+            font-size: 0.86rem;
+            line-height: 1.5;
+            color: #DBDEE1;
+        }
+        .sim-embed-fields {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .sim-field-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #949BA4;
+            text-transform: uppercase;
+        }
+        .sim-field-val {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #F2F3F5;
+        }
+
+        /* Interactive Component Buttons inside Simulator */
+        .sim-action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .sim-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            font-family: inherit;
+        }
+        .sim-btn-blurple {
+            background: var(--blurple);
+            color: #FFFFFF;
+        }
+        .sim-btn-blurple:hover {
+            background: var(--blurple-hover);
+        }
+        .sim-btn-green {
+            background: #248046;
+            color: #FFFFFF;
+        }
+        .sim-btn-green:hover {
+            background: #1A6334;
+        }
+        .sim-btn-grey {
+            background: #4E5058;
+            color: #FFFFFF;
+        }
+        .sim-btn-grey:hover {
+            background: #6D6F78;
+        }
+
+        /* Interactive Counting Input Bar */
+        .sim-counting-bar {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        .sim-counting-input {
+            background: var(--discord-input);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 8px 14px;
+            color: #FFFFFF;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+        }
+        .sim-counting-input:focus {
+            border-color: var(--blurple);
+        }
+
+        /* ===== BENTO GRID FEATURES SECTION ===== */
+        .features-section {
+            padding: 100px 0;
+            position: relative;
+        }
+        .section-header {
+            text-align: center;
+            max-width: 760px;
+            margin: 0 auto 60px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .section-tag {
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #818CF8;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            cursor: pointer;
         }
-
-        .btn-main-primary {
-            background: var(--primary);
-            color: #0b0b0a;
-            border: none;
-        }
-
-        .btn-main-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-main-secondary {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: white;
-        }
-
-        .btn-main-secondary:hover {
-            background: var(--border-hover);
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        /* Interactive Simulator Card */
-        .simulator-wrapper {
-            width: 100%;
-            max-width: 440px;
-            margin: 0 auto;
-        }
-
-        .simulator-card {
-            background: #252523;
-            border: 1px solid #3E3E3B;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .simulator-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            padding: 0 4px;
-        }
-
-        .bot-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .bot-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: black;
+        .section-title {
+            font-size: clamp(2rem, 3.4vw, 3rem);
             font-weight: 800;
-            font-size: 0.8rem;
-            position: relative;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: #FFFFFF;
         }
-
-        .bot-status {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #23a55a;
-            border: 2px solid #252523;
-        }
-
-        .bot-name {
-            font-weight: 600;
-            color: white;
-            font-size: 0.95rem;
-        }
-
-        .bot-badge {
-            background: #5865F2;
-            color: white;
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
-
-        .simulator-body {
-            background: var(--card-bg);
-            border: 1px solid #3C3B38;
-            border-radius: 8px;
-            padding: 16px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .discord-embed {
-            border-left: 4px solid var(--primary);
-            background: #191918;
-            padding: 12px;
-            border-radius: 4px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .embed-title {
-            font-weight: 600;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .embed-description {
-            font-size: 0.82rem;
-            color: var(--muted);
-            line-height: 1.4;
-        }
-
-        .discord-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .discord-btn {
-            background: #2a2a28;
-            border: 1px solid #3b3a37;
-            color: #b5b3ad;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .discord-btn:hover {
-            background: #3b3a37;
-        }
-
-        .discord-btn-primary {
-            background: #4e3cfb;
-            border-color: #6e5ffc;
-            color: white;
-        }
-
-        .discord-btn-primary:hover {
-            background: #5b4bff;
-        }
-
-        .discord-btn-success {
-            background: #23a55a;
-            border-color: #24b662;
-            color: white;
-        }
-
-        /* Features Showcase Section */
-        .features-showcase {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .section-header {
-            max-width: 600px;
-            margin: 0 auto 50px auto;
-        }
-
-        .section-header h2 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 12px;
-        }
-
-        .section-header p {
-            color: var(--muted);
-            font-size: 1rem;
-        }
-
-        .showcase-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .showcase-tab {
-            padding: 10px 20px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            color: var(--muted);
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .showcase-tab:hover {
-            color: white;
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .showcase-tab.active {
-            background: var(--primary);
-            color: #070706;
-            border-color: var(--primary);
-        }
-
-        .showcase-display {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 40px;
-            text-align: left;
-            align-items: center;
-            min-height: 380px;
-        }
-
-        @media (max-width: 768px) {
-            .showcase-display {
-                grid-template-columns: 1fr;
-                padding: 20px;
-                gap: 20px;
-            }
-        }
-
-        .showcase-content {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .showcase-content h3 {
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        .showcase-content p {
-            color: var(--muted);
+        .section-subtitle {
+            font-size: 1.05rem;
+            color: var(--text-muted);
             line-height: 1.6;
         }
 
-        .showcase-visual {
-            background: #191918;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
-            height: 100%;
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .bento-card {
+            padding: 34px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        .bento-card.col-span-2 {
+            grid-column: span 2;
         }
 
-        /* 12 Grid Secondary Features */
-        .secondary-features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-top: 60px;
-        }
-
-        .secondary-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: left;
-            transition: all 0.3s ease;
-        }
-
-        .secondary-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        .secondary-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.06);
+        .bento-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary);
-            font-size: 1.15rem;
-            margin-bottom: 16px;
+            font-size: 1.4rem;
+            margin-bottom: 24px;
+        }
+        .bento-icon.blurple { background: rgba(88, 101, 242, 0.15); color: #818CF8; }
+        .bento-icon.emerald { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+        .bento-icon.amber { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
+        .bento-icon.cyan { background: rgba(6, 182, 212, 0.15); color: #06B6D4; }
+        .bento-icon.purple { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
+        .bento-icon.rose { background: rgba(244, 63, 94, 0.15); color: #FB7185; }
+
+        .bento-body h3 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
+        }
+        .bento-body p {
+            color: var(--text-muted);
+            font-size: 0.94rem;
+            line-height: 1.6;
         }
 
-        .secondary-card h4 {
-            font-size: 1.1rem;
-            color: white;
+        .bento-badge-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .bento-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* ===== COMMAND EXPLORER SECTION ===== */
+        .commands-section {
+            padding: 90px 0;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .command-filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 36px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 8px 20px;
+            border-radius: var(--radius-full);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .filter-btn:hover {
+            color: #FFFFFF;
+            border-color: var(--border-hover);
+        }
+        .filter-btn.active {
+            background: var(--blurple);
+            color: #FFFFFF;
+            border-color: var(--blurple);
+            box-shadow: 0 4px 15px var(--blurple-glow);
+        }
+
+        .command-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .command-item-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+        }
+        .command-item-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-3px);
+            background: var(--bg-surface-elevated);
+        }
+        .command-name {
+            font-family: monospace;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #818CF8;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
+        .command-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
 
-        .badge {
-            display: inline-flex;
+        /* ===== PRICING COMPARISON TABLE ===== */
+        .pricing-section {
+            padding: 100px 0;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .pricing-cards-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto 60px auto;
+        }
+        .pricing-tier-card {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .pricing-tier-card.featured {
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.2);
+        }
+        .featured-badge {
+            position: absolute;
+            top: -14px;
+            right: 28px;
+            background: linear-gradient(135deg, var(--purple) 0%, var(--blurple) 100%);
+            color: #FFFFFF;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 4px 14px;
+            border-radius: var(--radius-full);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .tier-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+        }
+        .tier-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin: 16px 0;
+        }
+        .tier-price span {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+        .tier-features-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 24px 0 32px 0;
+        }
+        .tier-features-list li {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 0.65rem;
+            gap: 12px;
+            font-size: 0.94rem;
+            color: var(--text-muted);
+        }
+        .tier-features-list li i {
+            color: #10B981;
+            font-size: 0.9rem;
+        }
+
+        /* ===== FAQ ACCORDION SECTION ===== */
+        .faq-section {
+            padding: 90px 0;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .faq-item {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+        .faq-question {
+            padding: 20px 26px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 9999px;
+            font-size: 1.05rem;
+            color: #FFFFFF;
+            cursor: pointer;
+            user-select: none;
+        }
+        .faq-question i {
+            transition: var(--transition-smooth);
+            color: var(--text-dim);
+        }
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+            color: var(--blurple);
+        }
+        .faq-answer {
+            padding: 0 26px 22px 26px;
+            color: var(--text-muted);
+            font-size: 0.94rem;
+            line-height: 1.6;
+            display: none;
+        }
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        /* ===== CTA BANNER ===== */
+        .cta-banner-section {
+            padding: 60px 0 100px 0;
+        }
+        .cta-box {
+            padding: 60px 40px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            border-radius: var(--radius-lg);
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-box h2 {
+            font-size: clamp(2rem, 3.5vw, 2.8rem);
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+        }
+        .cta-box p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            border-top: 1px solid var(--border-subtle);
+            background: rgba(5, 6, 9, 0.9);
+            padding: 70px 0 35px 0;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 50px;
+            margin-bottom: 50px;
+        }
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-width: 340px;
+        }
+        .footer-col h5 {
+            color: #FFFFFF;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 20px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-        .badge.stable {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-        .badge.beta {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-        .badge.dev {
-            background: rgba(99, 102, 241, 0.1);
-            color: #6366f1;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-        }
-
-        .secondary-card p {
-            color: var(--muted);
-            font-size: 0.88rem;
-            line-height: 1.5;
-        }
-
-        /* Pricing Plan Matrix */
-        .pricing-section {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .pricing-table-container {
-            overflow-x: auto;
-            margin-top: 40px;
-        }
-
-        .pricing-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            min-width: 600px;
-        }
-
-        .pricing-table th, .pricing-table td {
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .pricing-table th {
-            font-weight: 600;
-            color: white;
-            background: var(--card-bg);
-        }
-
-        .pricing-table td {
-            color: var(--muted);
-            font-size: 0.95rem;
-        }
-
-        .pricing-table tr:hover td {
-            color: white;
-            background: rgba(255, 255, 255, 0.01);
-        }
-
-        .pricing-table td:nth-child(2), .pricing-table td:nth-child(3) {
-            text-align: center;
-        }
-
-        .pricing-table th:nth-child(2), .pricing-table th:nth-child(3) {
-            text-align: center;
-        }
-
-        .check-icon {
-            color: var(--primary);
-        }
-
-        .cross-icon {
-            color: #ff4d4d;
-        }
-
-        /* Benefits Showcase */
-        .benefits-section {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .benefit-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: center;
-            margin-bottom: 80px;
-        }
-
-        .benefit-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .benefit-row.reversed {
-            direction: rtl;
-        }
-
-        .benefit-row.reversed .benefit-info {
-            direction: ltr;
-        }
-
-        @media (max-width: 768px) {
-            .benefit-row, .benefit-row.reversed {
-                grid-template-columns: 1fr;
-                gap: 30px;
-                direction: ltr;
-            }
-        }
-
-        .benefit-info {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .benefit-info h3 {
-            font-size: 1.8rem;
-            color: white;
-            font-weight: 700;
-        }
-
-        .benefit-info p {
-            color: var(--muted);
-            line-height: 1.6;
-            font-size: 1rem;
-        }
-
-        .benefit-visual {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 30px;
-            min-height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Call To Action */
-        .cta-section {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            background: linear-gradient(180deg, var(--site-bg) 0%, #111110 100%);
-        }
-
-        .cta-card {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 50px 30px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: rgba(17, 17, 16, 0.5);
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .cta-card h2 {
-            font-size: 2.2rem;
-            color: white;
-            font-weight: 800;
-        }
-
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border);
-            background: #0b0b0a;
-            padding: 60px 0 30px 0;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 1.5fr repeat(3, 1fr);
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        @media (max-width: 768px) {
-            .footer-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 30px;
-            }
-            .footer-brand-col {
-                grid-column: span 2;
-            }
-        }
-
-        .footer-brand-col {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .footer-brand-col p {
-            color: var(--muted);
-            font-size: 0.88rem;
-            line-height: 1.5;
-        }
-
-        .footer-col h5 {
-            color: white;
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-
         .footer-col ul {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
-
         .footer-col ul a {
-            color: var(--muted);
+            color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.88rem;
-            transition: color 0.2s;
+            font-size: 0.9rem;
+            transition: var(--transition-smooth);
         }
-
         .footer-col ul a:hover {
-            color: var(--primary);
+            color: #FFFFFF;
+            padding-left: 4px;
         }
-
         .footer-bottom {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             padding-top: 30px;
-            border-top: 1px solid var(--border);
-            color: var(--muted);
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-dim);
             font-size: 0.85rem;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 16px;
         }
 
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(35, 165, 90, 0.1);
-            color: #23a55a;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.78rem;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #23a55a;
-        }
-
-        @media (max-width: 600px) {
-            .nav-container {
-                flex-direction: column;
-                height: auto;
-                padding: 15px 0;
-                gap: 12px;
+        /* ===== RESPONSIVE MEDIA QUERIES ===== */
+        @media (max-width: 992px) {
+            .hero-section {
+                grid-template-columns: 1fr;
+                gap: 50px;
+                text-align: center;
             }
-            .nav-links {
-                gap: 15px;
-                flex-wrap: wrap;
+            .hero-left {
+                align-items: center;
+            }
+            .hero-description {
+                margin: 0 auto;
+            }
+            .hero-cta-group {
                 justify-content: center;
+            }
+            .hero-stats-bar {
+                margin: 20px auto 0 auto;
+            }
+            .bento-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .bento-card.col-span-2 {
+                grid-column: span 2;
+            }
+            .pricing-cards-container {
+                grid-template-columns: 1fr;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 640px) {
+            .nav-links {
+                display: none;
+            }
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+            .bento-card.col-span-2 {
+                grid-column: span 1;
+            }
+            .hero-stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <header>
+    <!-- Ambient Glow Drops -->
+    <div class="ambient-glow ambient-glow-1"></div>
+    <div class="ambient-glow ambient-glow-2"></div>
+
+    <!-- Sticky Header -->
+    <header id="main-header">
         <div class="container nav-container">
-            <a href="/" class="brand">
-                <img src="nora.png" alt="Nora Logo">
+            <a href="/" class="brand" id="brand-logo">
+                <img src="nora.png" alt="Nora Studio Logo">
                 <span>Nora Studio</span>
+                <span class="brand-badge">v3.0</span>
             </a>
+            
             <nav class="nav-links">
-                <a href="/install">Invite</a>
-                <a href="/docs">Docs</a>
-                <a href="/dashboard">Dashboard</a>
-                <a href="/team">Team</a>
-                <a href="/legal">Legal</a>
+                <a href="#features"><i class="fas fa-layer-group"></i> Features</a>
+                <a href="#simulator"><i class="fas fa-play"></i> Playground</a>
+                <a href="#commands"><i class="fas fa-terminal"></i> Commands</a>
+                <a href="#pricing"><i class="fas fa-gem"></i> Pricing</a>
+                <a href="/docs"><i class="fas fa-book"></i> Docs</a>
+                <a href="/status"><i class="fas fa-chart-line"></i> Status</a>
             </nav>
-            <a href="/dashboard" class="btn-header">Open Dashboard</a>
+
+            <div class="nav-actions">
+                <div class="live-status-pill" id="live-telemetry-badge">
+                    <span class="live-dot"></span>
+                    <span id="header-server-count">65 Servers Online</span>
+                </div>
+                <a href="/dashboard" class="btn-nav-dashboard" id="btn-header-dash">Dashboard</a>
+                <a href="/install" class="btn-nav-invite" id="btn-header-invite"><i class="fab fa-discord"></i> Invite</a>
+            </div>
         </div>
     </header>
 
     <main>
         <!-- Hero Section -->
         <section class="container hero-section">
-            <canvas id="hero-particles"></canvas>
-            <div class="hero-glow hero-glow-1"></div>
-            <div class="hero-glow hero-glow-2"></div>
-            <div class="hero-info" style="position: relative; z-index: 1;">
-                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); padding: 5px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; color: #10B981; text-transform: uppercase; margin-bottom: 14px; backdrop-filter: blur(10px);">
-                    <i class="fas fa-crown" style="color: #10B981;"></i> Studio Plus v2.6 — Unlimited Power & Real-Time Sync
+            <canvas id="hero-canvas"></canvas>
+            
+            <div class="hero-left">
+                <div class="hero-announcement-pill" id="hero-announcement">
+                    <i class="fas fa-sparkles"></i> Studio v3.0 • Real-Time Sync & Starboard Hall of Fame
                 </div>
-                <div class="tagline">
-                    <i class="fas fa-shield-alt"></i> THE PRIVACY-FIRST, ALL-IN-ONE DISCORD OPERATIONS & AUTOMATION HUB
+                
+                <h1 class="hero-heading">
+                    The Ultimate Discord Automation & <span class="gradient-text">Community Engine</span>
+                </h1>
+                
+                <p class="hero-description">
+                    Empower your community with the all-new Nora Studio. Featuring zero-delay <strong>Roblox Group Rank Sync</strong>, sandboxed <strong>Counting Math</strong>, dynamic <strong>Starboard v3.0</strong>, 4-way verification gates, and native <strong>AutoMod Threat Shield</strong>—all operating on zero-trust, privacy-first infrastructure.
+                </p>
+
+                <div class="hero-cta-group">
+                    <a href="/install" class="btn-cta-primary" id="btn-hero-invite">
+                        <i class="fab fa-discord"></i> Add to Discord
+                    </a>
+                    <a href="/dashboard" class="btn-cta-secondary" id="btn-hero-dashboard">
+                        Open Dashboard <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
-                <h1>The ultimate privacy-first and all-in-one workspace for Discord</h1>
-                <p>Experience the next generation of Discord server operations. Nora V2.0 brings together the all-new <strong>Nora Studio 2.0 Command Center</strong>, real-time <strong>Roblox Group Rank Sync</strong>, <strong>Multi-Engine AI Co-Pilots</strong>, and live telemetry diagnostics—all powered by a zero-trust, privacy-first infrastructure.</p>
-                <div class="hero-buttons">
-                    <a href="/install" class="btn-main btn-main-primary">Invite Nora</a>
-                    <a href="/dashboard" class="btn-main btn-main-secondary">Open Dashboard <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+
+                <div class="hero-stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-servers">65+</span>
+                        <span class="stat-label">Active Guilds</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-members">5,600+</span>
+                        <span class="stat-label">Protected Members</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">59</span>
+                        <span class="stat-label">Slash Commands</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-ping">18ms</span>
+                        <span class="stat-label">Gateway Ping</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="simulator-wrapper">
-                <div class="simulator-card">
-                    <div class="simulator-header">
-                        <div class="bot-profile">
-                            <div class="bot-avatar">
-                                N
-                                <div class="bot-status"></div>
-                            </div>
-                            <span class="bot-name">Nora</span>
-                            <span class="bot-badge">Bot</span>
+            <!-- Interactive Live Discord Simulator -->
+            <div class="hero-simulator-wrapper" id="simulator">
+                <div class="discord-mock-window">
+                    <div class="discord-mock-header">
+                        <div class="discord-channel-info">
+                            <i class="fas fa-hashtag"></i>
+                            <span id="sim-channel-title">starboard</span>
                         </div>
-                        <span style="font-size: 0.75rem; color: var(--muted);">Live Interactive Demo</span>
+                        <div class="simulator-badge">
+                            <i class="fas fa-bolt"></i> Live Sandbox
+                        </div>
                     </div>
-                    <div class="simulator-body" id="demo-body">
-                        <div class="discord-embed" id="demo-embed">
-                            <span class="embed-title" id="demo-title">Nora Privacy-First Guard</span>
-                            <span class="embed-description" id="demo-desc">
-                                Protect your server with Nora. We use local database storage, zero third-party data tracking, and end-to-end telemetry controls to ensure your guild records, verification states, and moderator actions remain completely secure and private.
-                            </span>
-                        </div>
-                        <div class="discord-buttons" id="demo-buttons">
-                            <button class="discord-btn discord-btn-primary" onclick="triggerDemo('security')">Security Shield</button>
-                            <button class="discord-btn" onclick="triggerDemo('privacy')">Privacy Status</button>
-                            <button class="discord-btn" onclick="triggerDemo('moderation')">All-in-One Dashboard</button>
+
+                    <!-- Simulator Mode Switcher -->
+                    <div class="sim-tabs-bar">
+                        <button class="sim-tab-btn active" onclick="switchSimTab('starboard', this)" id="tab-btn-starboard">
+                            <i class="fas fa-star" style="color: #F59E0B;"></i> Starboard v3.0
+                        </button>
+                        <button class="sim-tab-btn" onclick="switchSimTab('counting', this)" id="tab-btn-counting">
+                            <i class="fas fa-calculator" style="color: #10B981;"></i> Math Counting
+                        </button>
+                        <button class="sim-tab-btn" onclick="switchSimTab('verify', this)" id="tab-btn-verify">
+                            <i class="fas fa-user-check" style="color: #06B6D4;"></i> Verification
+                        </button>
+                        <button class="sim-tab-btn" onclick="switchSimTab('automod', this)" id="tab-btn-automod">
+                            <i class="fas fa-shield-virus" style="color: #F43F5E;"></i> AutoMod Shield
+                        </button>
+                    </div>
+
+                    <!-- Dynamic Message Viewport -->
+                    <div class="sim-message-area" id="sim-viewport">
+                        <!-- Default Starboard View -->
+                        <div class="discord-msg-row">
+                            <img src="nora.png" class="discord-avatar" alt="Nora Avatar">
+                            <div class="discord-msg-body">
+                                <div class="discord-msg-header">
+                                    <span class="discord-username">Nora</span>
+                                    <span class="discord-bot-badge">BOT</span>
+                                    <span class="discord-timestamp">Today at 1:00 AM</span>
+                                </div>
+                                <div id="sim-starboard-header" style="font-weight: 700; color: #FFD700; font-size: 0.95rem;">
+                                    ⭐ **3** | #general
+                                </div>
+                                <div class="sim-embed" id="sim-starboard-embed" style="border-color: #FFD700;">
+                                    <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.88rem; color: #F2F3F5;">
+                                        <div style="width: 20px; height: 20px; border-radius: 50%; background: #5865F2; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">C</div>
+                                        CommunityMember
+                                    </div>
+                                    <div class="sim-embed-desc" style="margin-top: 6px;">
+                                        "Nora's new Starboard and Counting update is incredible! Everything is completely seamless."
+                                    </div>
+                                    <div style="margin-top: 8px; font-size: 0.75rem; color: #949BA4;">
+                                        ⭐ Message ID: 1284910284910 • Bronze Star
+                                    </div>
+                                </div>
+                                <div class="sim-action-row">
+                                    <button class="sim-btn sim-btn-grey" onclick="addSimStar()" id="btn-sim-add-star">
+                                        <i class="fas fa-star" style="color: #FFD700;"></i> Add Star (<span id="sim-star-count">3</span>)
+                                    </button>
+                                    <button class="sim-btn sim-btn-grey" onclick="resetSimStar()">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Interactive Showcase Section -->
-        <section class="features-showcase">
+        <!-- Bento Grid Feature Showcase -->
+        <section class="features-section" id="features">
             <div class="container">
                 <div class="section-header">
-                    <h2>Powerful Features for All Discord Communities</h2>
-                    <p>Everything you need to manage automations, roles, logs, and community safety under a privacy-first model.</p>
+                    <span class="section-tag"><i class="fas fa-cube"></i> Architecture & Modules</span>
+                    <h2 class="section-title">Built for Performance, Security & Engagement</h2>
+                    <p class="section-subtitle">A complete suite of community-grade features built directly into one zero-latency bot framework.</p>
                 </div>
 
-                <div class="showcase-tabs">
-                    <div class="showcase-tab active" onclick="switchShowcase(0, this)">Support Tickets</div>
-                    <div class="showcase-tab" onclick="switchShowcase(1, this)">Roblox Verification</div>
-                    <div class="showcase-tab" onclick="switchShowcase(2, this)">Custom Commands</div>
-                    <div class="showcase-tab" onclick="switchShowcase(3, this)">Invite Tracker</div>
-                    <div class="showcase-tab" onclick="switchShowcase(4, this)">Leveling Engine</div>
-                </div>
-
-                <div class="showcase-display" id="showcase-display">
-                    <div class="showcase-content">
-                        <h3 id="showcase-title">Instant Support Ticket Creation</h3>
-                        <p id="showcase-desc">Allow members to spawn private support channels instantly at the click of a button. Nora handles permissions, staff mentions, and setups automatically behind the scenes.</p>
-                    </div>
-                    <div class="showcase-visual">
-                        <div class="discord-embed" style="border-color:#5865F2;">
-                            <strong style="color:white; font-size:0.9rem;"># ticket-0042</strong>
-                            <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Ticket created by @Member. Staff will be with you shortly.</p>
-                            <div class="discord-buttons" style="margin-top:10px;">
-                                <button class="discord-btn" style="background:#ff4d4d; color:white; border:none;"><i class="fas fa-lock"></i> Close Ticket</button>
-                                <button class="discord-btn"><i class="fas fa-download"></i> Transcript</button>
+                <div class="bento-grid">
+                    <!-- Feature 1: Roblox Sync -->
+                    <div class="glass-panel bento-card col-span-2">
+                        <div>
+                            <div class="bento-icon blurple"><i class="fas fa-cubes-stacked"></i></div>
+                            <div class="bento-body">
+                                <h3>Automated Roblox Group Rank Sync</h3>
+                                <p>Bind multiple server roles directly to Roblox group ranks. Nora synchronizes member permissions, rank promotions, and role assignments in real-time with zero polling lag.</p>
                             </div>
                         </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">Zero Polling Lag</span>
+                            <span class="bento-chip">Multi-Group Bindings</span>
+                            <span class="bento-chip">Anti-Impersonation</span>
+                            <span class="bento-chip">Instant Verify</span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- 12-Grid Features -->
-                <div class="secondary-features-grid" id="features-grid">
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-ticket-alt"></i></div>
-                        <h4>Support Ticketing Suite</h4>
-                        <p>Deploy customizable support panels with custom questions, claim queues, inactivity sweep timers, and permanent HTML transcripts.</p>
+                    <!-- Feature 2: Starboard v3.0 -->
+                    <div class="glass-panel bento-card">
+                        <div>
+                            <div class="bento-icon amber"><i class="fas fa-star"></i></div>
+                            <div class="bento-body">
+                                <h3>Starboard & Hall of Fame</h3>
+                                <p>Dynamic star tiers (⭐ Bronze ➔ 🌟 Gold ➔ ✨ Radiant ➔ 💫 Supernova ➔ 🌠 Mythic) with persistent SQLite tracking, reply context quotes, and author XP rewards.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">Dynamic Tiers</span>
+                            <span class="bento-chip">Author XP</span>
+                            <span class="bento-chip">Hall of Fame</span>
+                        </div>
                     </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-shield-alt"></i></div>
-                        <h4>Roblox Integration Desk</h4>
-                        <p>Automatically synchronize member server roles with Roblox group ranks and manage verification mapping states dynamically.</p>
+
+                    <!-- Feature 3: Math Counting -->
+                    <div class="glass-panel bento-card">
+                        <div>
+                            <div class="bento-icon emerald"><i class="fas fa-calculator"></i></div>
+                            <div class="bento-body">
+                                <h3>Sandboxed Math Counting</h3>
+                                <p>Turn your counting channel into a collaborative game. Safely evaluates math expressions like <code>10*2+5</code> or <code>2^4</code> with milestone alerts and server contributor leaderboards.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">Math Sandbox</span>
+                            <span class="bento-chip">Milestone Alerts</span>
+                            <span class="bento-chip">Anti-Double Count</span>
+                        </div>
                     </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-terminal"></i></div>
-                        <h4>Custom Commands & Autoresponders</h4>
-                        <p>Set trigger phrases to execute auto-replies, incorporating ignore filters for staff/bots and role-specific conditional restrictions.</p>
+
+                    <!-- Feature 4: 4-Way Verification -->
+                    <div class="glass-panel bento-card">
+                        <div>
+                            <div class="bento-icon cyan"><i class="fas fa-user-shield"></i></div>
+                            <div class="bento-body">
+                                <h3>4-Way Verification Gatekeeper</h3>
+                                <p>Protect against automated raids with 4 selectable verification engines: 1-Click Button, Image CAPTCHA, Reaction confirmation, and Roblox account binding.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">1-Click</span>
+                            <span class="bento-chip">Image CAPTCHA</span>
+                            <span class="bento-chip">Auto-Role Sync</span>
+                        </div>
                     </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-users-cog"></i></div>
-                        <h4>Invite Tracker Logs</h4>
-                        <p>Announce joins, trace active invite links, count inviter stats, and configure welcome templating variables.</p>
+
+                    <!-- Feature 5: Native AutoMod -->
+                    <div class="glass-panel bento-card">
+                        <div>
+                            <div class="bento-icon rose"><i class="fas fa-shield-halved"></i></div>
+                            <div class="bento-body">
+                                <h3>AutoMod Threat Shield</h3>
+                                <p>Leverages Discord's native low-level AutoMod pipeline to instantly block spam links, mass pings, and profanity in under 5ms with zero bot latency.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">Zero Latency</span>
+                            <span class="bento-chip">Native Discord AutoMod</span>
+                            <span class="bento-chip">Anti-Scam</span>
+                        </div>
                     </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-trophy"></i></div>
-                        <h4>Advanced Leveling Engine</h4>
-                        <p>Earn experience (XP) through chat and voice channels, set multiplier roles, and configure automatic milestone role rewards.</p>
-                    </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-history"></i></div>
-                        <h4>Granular Server Audits</h4>
-                        <p>Log 15+ server events (message updates, channel edits, voice swaps, boosting actions) into specific log rooms.</p>
-                    </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-user-shield"></i></div>
-                        <h4>Automated AutoMod Shield</h4>
-                        <p>Instantly block server slurs, mass mentions, profanity, scam URLs, and duplicate spam in real-time memory.</p>
-                    </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-gavel"></i></div>
-                        <h4>Moderation Desk</h4>
-                        <p>Equip staff with quick-moderation commands for warning thresholds, temporary bans, mutes, deafening, and purging.</p>
-                    </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-gamepad"></i></div>
-                        <h4>Interactive Games & Fun</h4>
-                        <p>Engage members with Guess-the-Number, Rock-Paper-Scissors (RPS), and global leaderboard integrations.</p>
-                    </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-poll"></i></div>
-                        <h4>Polls & Announcements</h4>
-                        <p>Launch styled server voting grids, query feedback, and broadcast server notifications cleanly.</p>
-                    </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-language"></i></div>
-                        <h4>Translation Engine</h4>
-                        <p>Instantly translate text content via slash commands, allowing global members to chat in any language.</p>
-                    </div>
-                    <div class="secondary-card reveal-item">
-                        <div class="secondary-icon"><i class="fas fa-brain"></i></div>
-                        <h4>Nora AI Companion</h4>
-                        <p>Interact with local and API-driven Artificial Intelligence models to answer questions, analyze statistics, and guide users.</p>
+
+                    <!-- Feature 6: Support Tickets & Leveling -->
+                    <div class="glass-panel bento-card col-span-2">
+                        <div>
+                            <div class="bento-icon purple"><i class="fas fa-ticket-simple"></i></div>
+                            <div class="bento-body">
+                                <h3>Support Ticketing & Custom Rank Cards</h3>
+                                <p>Deploy 1-click private ticket panels with questionnaire modals and searchable HTML transcripts. Combine with Nora's leveling engine for custom GIF rank cards and voice XP multipliers.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">HTML Transcripts</span>
+                            <span class="bento-chip">Staff Claims</span>
+                            <span class="bento-chip">Custom GIF Cards</span>
+                            <span class="bento-chip">Voice XP Multipliers</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Privacy Protocol Section -->
-        <section class="privacy-section" style="padding: 80px 0; border-top: 1px solid var(--border); background: linear-gradient(180deg, transparent, rgba(88, 101, 242, 0.02) 100%);">
-            <div class="container">
-                <div class="section-header" style="text-align: center; margin-bottom: 50px;">
-                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 6px 14px; border-radius: 99px; color: #10b981; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-                        <i class="fas fa-shield-alt"></i> Security & Transparency
-                    </div>
-                    <h2 style="font-size: 2.2rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; margin-bottom: 12px;">Nora Privacy Protocol</h2>
-                    <p style="color: var(--muted); font-size: 1.05rem; max-width: 600px; margin: 0 auto;">Nora is built with a core philosophy: your data belongs to you. We do not track, sell, or store sensitive community logs.</p>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px;">
-                    <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 30px; border-radius: 16px; transition: all 0.3s ease;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='var(--border)'">
-                        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(88, 101, 242, 0.1); display: flex; align-items: center; justify-content: center; color: #5865f2; font-size: 1.3rem; margin-bottom: 20px;">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 12px;">Zero Telemetry Design</h3>
-                        <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.6;">Nora never logs user chat interactions, attachments, or personal metadata. Telemetry is strictly limited to command invocation logs.</p>
-                    </div>
-
-                    <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 30px; border-radius: 16px; transition: all 0.3s ease;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='var(--border)'">
-                        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 1.3rem; margin-bottom: 20px;">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 12px;">Secure OAuth2 Verification</h3>
-                        <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.6;">All web-dashboard authentication passes directly through secure Discord API endpoints. We never require or hold passwords.</p>
-                    </div>
-
-                    <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 30px; border-radius: 16px; transition: all 0.3s ease;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='var(--border)'">
-                        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.3rem; margin-bottom: 20px;">
-                            <i class="fas fa-trash-alt"></i>
-                        </div>
-                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 12px;">Self-Destructing Logs</h3>
-                        <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.6;">Audit logs can be configured to purge automatically from the database after a configurable timeframe (7 to 30 days).</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Pricing Plan Matrix -->
-        <section class="pricing-section">
+        <!-- Command Explorer Section -->
+        <section class="commands-section" id="commands">
             <div class="container">
                 <div class="section-header">
-                    <h2>Choose the Right Plan for Your Community</h2>
-                    <p>Compare Nora Studio Free and Premium tiers to unlock advanced community management tools.</p>
+                    <span class="section-tag"><i class="fas fa-terminal"></i> Command Matrix</span>
+                    <h2 class="section-title">59 Global Slash & Prefix Commands</h2>
+                    <p class="section-subtitle">Every command is optimized for both Slash (<code>/</code>) and Prefix (<code>n!</code>) execution with rich interactive button interfaces.</p>
                 </div>
 
-                <div class="pricing-table-container">
-                    <table class="pricing-table">
-                        <thead>
-                            <tr>
-                                <th>Feature Area</th>
-                                <th>Nora Free</th>
-                                <th>Nora Plus ($1.99/mo)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>All-in-One Setup Guild Limit</td>
-                                <td>2 active servers</td>
-                                <td><span style="color: var(--primary); font-weight: 700;">Unlimited servers</span></td>
-                            </tr>
-                            <tr>
-                                <td>Custom Commands & Autoresponders</td>
-                                <td>Up to 5 triggers</td>
-                                <td><span style="color: var(--primary); font-weight: 700;">Unlimited triggers</span> (200 slots)</td>
-                            </tr>
-                            <tr>
-                                <td>Autoresponder Ignored/Allowed Role Filters</td>
-                                <td><i class="fas fa-times cross-icon"></i> Standard only</td>
-                                <td><i class="fas fa-check check-icon"></i> Full role controls</td>
-                            </tr>
-                            <tr>
-                                <td>Roblox Verification & Rank Sync</td>
-                                <td>Standard polling</td>
-                                <td><span style="color: var(--primary); font-weight: 700;">Instant real-time sync</span></td>
-                            </tr>
-                            <tr>
-                                <td>Leveling System Rank Card Colors & Backgrounds</td>
-                                <td>Default styles</td>
-                                <td><i class="fas fa-check check-icon"></i> Custom HEX & image background builder</td>
-                            </tr>
-                            <tr>
-                                <td>Voice & Chat XP Multipliers</td>
-                                <td><i class="fas fa-times cross-icon"></i> Disabled</td>
-                                <td><i class="fas fa-check check-icon"></i> Unlimited role boosters & 10x XP multipliers</td>
-                            </tr>
-                            <tr>
-                                <td>Granular Logging Audit Streams</td>
-                                <td>3 active channels</td>
-                                <td><i class="fas fa-check check-icon"></i> All 15+ event streams</td>
-                            </tr>
-                            <tr>
-                                <td>AI Engine Integrations (Gemini / GPT / Aura AI)</td>
-                                <td><i class="fas fa-times cross-icon"></i> Disabled / Rate Limited</td>
-                                <td><i class="fas fa-check check-icon"></i> Advanced LLM & custom persona instructions</td>
-                            </tr>
-                            <tr>
-                                <td>Custom Command Ignore Staff & Bots Toggle</td>
-                                <td><i class="fas fa-check check-icon"></i> Supported</td>
-                                <td><i class="fas fa-check check-icon"></i> Supported</td>
-                            </tr>
-                            <tr>
-                                <td>Member Color Picker Roles Desk</td>
-                                <td><i class="fas fa-times cross-icon"></i> Disabled</td>
-                                <td><i class="fas fa-check check-icon"></i> Unlimited self-assignable color roles</td>
-                            </tr>
-                            <tr>
-                                <td>Starboard System v2.5</td>
-                                <td>1 channel (3 stars min)</td>
-                                <td><i class="fas fa-check check-icon"></i> Multi-channel filtering & custom emojis</td>
-                            </tr>
-                            <tr>
-                                <td>Applications Builder Pro</td>
-                                <td>1 active form (3 questions)</td>
-                                <td><i class="fas fa-check check-icon"></i> Unlimited forms & 5 questions per modal</td>
-                            </tr>
-                            <tr>
-                                <td>Roblox Group Rank Bindings</td>
-                                <td>2 rank rules</td>
-                                <td><i class="fas fa-check check-icon"></i> Unlimited group rank bindings</td>
-                            </tr>
-                            <tr>
-                                <td>YouTube & Twitch Content Feeds</td>
-                                <td>1 social feed</td>
-                                <td><i class="fas fa-check check-icon"></i> Unlimited feeds + custom announcement pings</td>
-                            </tr>
-                            <tr>
-                                <td>AutoMod Intent Threat Classifier</td>
-                                <td>Standard keyword filter</td>
-                                <td><i class="fas fa-check check-icon"></i> Smart contextual slur & harassment detection</td>
-                            </tr>
-                            <tr>
-                                <td>Custom Embed Broadcasts & Interactive Buttons</td>
-                                <td>Basic text embeds</td>
-                                <td><i class="fas fa-check check-icon"></i> Custom interactive buttons & multi-embeds</td>
-                            </tr>
-                            <tr>
-                                <td>Interactive Games & Global Leaderboards</td>
-                                <td>Basic games</td>
-                                <td><i class="fas fa-check check-icon"></i> Full game suite & global leaderboards</td>
-                            </tr>
-                            <tr>
-                                <td>Dedicated VIP Gateway & Priority SLA</td>
-                                <td>Standard community support</td>
-                                <td><i class="fas fa-check check-icon"></i> 24/7 Priority SLA & VIP Gateway Route</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="command-filter-bar">
+                    <button class="filter-btn active" onclick="filterCommands('all', this)">All Commands</button>
+                    <button class="filter-btn" onclick="filterCommands('games', this)">Games & Fun</button>
+                    <button class="filter-btn" onclick="filterCommands('moderation', this)">Moderation & Safety</button>
+                    <button class="filter-btn" onclick="filterCommands('setup', this)">Setup & Config</button>
+                    <button class="filter-btn" onclick="filterCommands('utility', this)">Utilities & Tickets</button>
+                </div>
+
+                <div class="command-card-grid" id="command-grid">
+                    <!-- Command Cards populated via JS -->
                 </div>
             </div>
         </section>
 
-        <!-- Benefits Showcase -->
-        <section class="benefits-section">
+        <!-- Pricing Section -->
+        <section class="pricing-section" id="pricing">
             <div class="container">
-                <div class="benefit-row">
-                    <div class="benefit-info">
-                        <h3>All-in-One Community Operations</h3>
-                        <p>Replace multiple single-purpose bots with one unified command deck. Nora Studio handles Roblox group verification, leveling engines, custom commands, logging, and autoresponders simultaneously under a singular framework.</p>
-                    </div>
-                    <div class="benefit-visual">
-                        <div class="discord-embed" style="width:100%;">
-                            <span style="color:#FFFFFF; font-size:0.8rem; font-weight:700;"><i class="fas fa-cubes"></i> NORA MULTI-TASK SUITE</span>
-                            <p style="color:white; font-size:0.9rem; margin-top:8px;">Active Modules: Leveling, Anti-Raid, Verification, Autoresponder.</p>
-                        </div>
-                    </div>
+                <div class="section-header">
+                    <span class="section-tag"><i class="fas fa-gem"></i> Pricing & Upgrades</span>
+                    <h2 class="section-title">Simple, Transparent & Community-First</h2>
+                    <p class="section-subtitle">Everything you need for everyday operations is 100% free. Upgrade to Plus for maximum automation power.</p>
                 </div>
 
-                <div class="benefit-row reversed">
-                    <div class="benefit-info">
-                        <h3>Privacy-First Telemetry Control</h3>
-                        <p>Your server data belongs to you. Nora does not store message contents, track user habits, or share telemetry. All configurations are securely isolated and databases are fully encrypted.</p>
-                    </div>
-                    <div class="benefit-visual">
-                        <div class="discord-embed" style="width:100%; border-color:#23a55a;">
-                            <span style="color:#23a55a; font-size:0.8rem; font-weight:700;"><i class="fas fa-shield-alt"></i> ZERO TELEMETRY LOGGING</span>
-                            <p style="color:white; font-size:0.9rem; margin-top:8px;">Encryption: AES-256 Active. Telemetry state: Restricted.</p>
+                <div class="pricing-cards-container">
+                    <!-- Free Plan -->
+                    <div class="glass-panel pricing-tier-card">
+                        <div>
+                            <span class="tier-name">Nora Standard</span>
+                            <p style="color: var(--text-muted); font-size: 0.92rem;">Essential automations, safety, and engagement for growing communities.</p>
+                            <div class="tier-price">$0 <span>/ forever</span></div>
+                            
+                            <ul class="tier-features-list">
+                                <li><i class="fas fa-check"></i> Standard Verification (1-Click & Reaction)</li>
+                                <li><i class="fas fa-check"></i> Counting Game with Math Expression Parser</li>
+                                <li><i class="fas fa-check"></i> Starboard System with Dynamic Tiers</li>
+                                <li><i class="fas fa-check"></i> Native AutoMod Keyword Threat Shield</li>
+                                <li><i class="fas fa-check"></i> Support Ticket Desk with HTML Transcripts</li>
+                                <li><i class="fas fa-check"></i> Full Web Dashboard Access</li>
+                            </ul>
                         </div>
+                        <a href="/install" class="btn-cta-secondary" style="width: 100%; justify-content: center;">Invite Free</a>
+                    </div>
+
+                    <!-- Plus Plan -->
+                    <div class="glass-panel pricing-tier-card featured">
+                        <span class="featured-badge">Studio Plus</span>
+                        <div>
+                            <span class="tier-name">Nora Plus</span>
+                            <p style="color: var(--text-muted); font-size: 0.92rem;">Unlimited power, instant Roblox rank sync, and custom branding.</p>
+                            <div class="tier-price">$1.99 <span>/ month</span></div>
+                            
+                            <ul class="tier-features-list">
+                                <li><i class="fas fa-check"></i> <strong>Real-Time Roblox Group Rank Sync</strong></li>
+                                <li><i class="fas fa-check"></i> <strong>200 Custom Autoresponder Slots</strong> (40x capacity)</li>
+                                <li><i class="fas fa-check"></i> <strong>Custom GIF Rank Cards & HEX Colors</strong></li>
+                                <li><i class="fas fa-check"></i> <strong>10x Voice & Chat XP Multipliers</strong></li>
+                                <li><i class="fas fa-check"></i> <strong>Multi-Channel Audit Log Routing</strong></li>
+                                <li><i class="fas fa-check"></i> <strong>Dedicated Priority VIP Gateway Route</strong></li>
+                            </ul>
+                        </div>
+                        <a href="/dashboard" class="btn-cta-primary" style="width: 100%; justify-content: center;">
+                            <i class="fas fa-bolt"></i> Upgrade to Plus
+                        </a>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="benefit-row">
-                    <div class="benefit-info">
-                        <h3>Tailored Layout and Themes</h3>
-                        <p>Match your community's style with custom aesthetics. Toggle between color accents, custom backdrops, and compact layouts directly from the Nora Studio control panel.</p>
+        <!-- FAQ Section -->
+        <section class="faq-section" id="faq">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag"><i class="fas fa-circle-question"></i> Help & Inquiries</span>
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+                </div>
+
+                <div class="faq-container">
+                    <div class="faq-item active" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            <span>How does Nora's Roblox Group Verification work?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Members link their Roblox account using Nora's secure profile check (putting a unique phrase in their Roblox profile description). Once verified, Nora automatically syncs their server roles to their Roblox group ranks with zero delay.
+                        </div>
                     </div>
-                    <div class="benefit-visual">
-                        <div class="discord-embed" style="border-color:#5865F2; width:100%;">
-                            <strong style="color:white; font-size:1rem;">Aesthetics & Branding Control</strong>
-                            <p style="color:#B5B3AD; font-size:0.82rem; margin-top:5px;">Custom accents, background images, and layout options.</p>
+
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            <span>Is Nora truly privacy-first?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Yes. Nora operates on a strict zero-telemetry architecture. We never store message contents, track user conversations, or sell data. All database records are strictly isolated per guild and encrypted.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            <span>How do I configure the new Starboard and Counting channels?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            You can easily set them up in Discord using <code>/starboard channel &lt;#channel&gt;</code> and <code>/counting channel &lt;#channel&gt;</code>, or open the visual web dashboard at <a href="/dashboard" style="color: #818CF8;">vaztinix.dev/dashboard</a> under the Games tab!
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            <span>Can I customize the trigger emojis and math rules?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Yes! Starboard supports custom server emojis, configurable thresholds (1-100), and self-star protection. The Counting game automatically evaluates math expressions such as <code>10*2+5</code>, <code>50/2</code>, and <code>2^4</code> safely.
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- CTA Section -->
-        <section class="cta-section">
-            <div class="container">
-                <div class="cta-card">
-                    <h2>Ready to Elevate Your Server Operations?</h2>
-                    <p>Set up Nora Studio in under five minutes. Privacy-first, zero configurations required.</p>
-                    <div class="hero-buttons">
-                        <a href="/install" class="btn-main btn-main-primary">Invite Nora Bot</a>
-                        <a href="/dashboard" class="btn-main btn-main-secondary">Open Dashboard</a>
-                    </div>
+        <!-- CTA Banner -->
+        <section class="container cta-banner-section">
+            <div class="cta-box">
+                <h2>Ready to Transform Your Discord Server?</h2>
+                <p>Add Nora Studio in less than 60 seconds. Zero setup required to start protecting and entertaining your community.</p>
+                <div class="hero-cta-group" style="justify-content: center;">
+                    <a href="/install" class="btn-cta-primary"><i class="fab fa-discord"></i> Invite Nora Now</a>
+                    <a href="/dashboard" class="btn-cta-secondary">Open Control Center</a>
                 </div>
             </div>
         </section>
     </main>
 
+    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-grid">
-                <div class="footer-brand-col">
+                <div class="footer-brand">
                     <a href="/" class="brand">
                         <img src="nora.png" alt="Nora Logo">
                         <span>Nora Studio</span>
                     </a>
-                    <p>The ultimate privacy-first, all-in-one operations and automation solution for Discord servers. Enhance workflows, enforce security, and keep communities safe.</p>
+                    <p>The ultimate privacy-first community operations suite for Discord servers. Robust automations, real-time sync, and security.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Navigation</h5>
+                    <ul>
+                        <li><a href="/dashboard">Dashboard</a></li>
+                        <li><a href="/install">Invite Bot</a></li>
+                        <li><a href="/status">Network Status</a></li>
+                        <li><a href="/team">Team & Credits</a></li>
+                    </ul>
                 </div>
                 <div class="footer-col">
                     <h5>Resources</h5>
                     <ul>
-                        <li><a href="/dashboard">Dashboard</a></li>
-                        <li><a href="/install">Invite Bot</a></li>
-                        <li><a href="/team">Our Team</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h5>Learn</h5>
-                    <ul>
-                        <li><a href="/docs">Documentation</a>
-                        <a href="/status">Network Status</a></li>
-                        <li><a href="/docs#panels">Ticket Panels</a></li>
-                        <li><a href="/docs#automations">Automations</a></li>
+                        <li><a href="/docs">Documentation</a></li>
+                        <li><a href="/docs#verification">Roblox Verification</a></li>
+                        <li><a href="/docs#starboard">Starboard Engine</a></li>
+                        <li><a href="/docs#counting">Counting Game</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
                     <h5>Support & Legal</h5>
                     <ul>
                         <li><a href="https://discord.gg/Uxb2tNAxtp" target="_blank">Discord Support</a></li>
-                        <li><a href="/legal">Terms & Privacy</a></li>
+                        <li><a href="/legal">Privacy Policy</a></li>
+                        <li><a href="/legal#terms">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
 
             <div class="footer-bottom">
-                <span>&copy; 2026 Nora Studio. All rights reserved.</span>
-                <span class="status-badge">
-                    <span class="status-dot"></span> All Systems Operational
-                </span>
+                <span>&copy; 2026 Nora Studio. Built for empowering communities.</span>
+                <div class="live-status-pill">
+                    <span class="live-dot"></span>
+                    <span>All Systems Operational</span>
+                </div>
             </div>
         </div>
     </footer>
 
-    <!-- Interactive Logic Script -->
+    <!-- Interactive Simulator & Telemetry Logic -->
     <script>
-        // Interactive Live Demo Simulator
-        function triggerDemo(type) {
-            const embed = document.getElementById('demo-embed');
-            const title = document.getElementById('demo-title');
-            const desc = document.getElementById('demo-desc');
-            const buttons = document.getElementById('demo-buttons');
-
-            if (type === 'security') {
-                title.innerText = "Nora Security Shield Active";
-                desc.innerHTML = "Anti-Raid, Profile Picture checks, and Account Age verification gates are actively protecting your server. Intrusion attempts blocked: <strong>0</strong>.";
-                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
-            } else if (type === 'privacy') {
-                title.innerText = "Nora Privacy Status: Secure";
-                desc.innerHTML = "Telemetry data: <strong>Disabled</strong>. Database storage: <strong>Encrypted</strong>. Third-party data selling: <strong>Zero</strong>. Your community's privacy is fully guaranteed.";
-                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
-            } else if (type === 'moderation') {
-                title.innerText = "All-in-One Task Management";
-                desc.innerHTML = "Managing leveling systems, Roblox verification, autoresponders, tickets, and custom commands. All features run locally on the Nora node.";
-                buttons.innerHTML = '<button class="discord-btn discord-btn-success" onclick="resetDemo()">Reset Demo</button>';
+        // Real-Time Telemetry Fetcher
+        (async function fetchLiveTelemetry() {
+            try {
+                const res = await fetch('/api/status/public', { cache: 'no-store', signal: AbortSignal.timeout(4000) });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.serverCount) {
+                        const countText = `${data.serverCount} Servers Online`;
+                        const headerBadge = document.getElementById('header-server-count');
+                        const statServers = document.getElementById('stat-servers');
+                        if (headerBadge) headerBadge.innerText = countText;
+                        if (statServers) statServers.innerText = `${data.serverCount}+`;
+                    }
+                    if (data.ping) {
+                        const pingEl = document.getElementById('stat-ping');
+                        if (pingEl) pingEl.innerText = `${data.ping}ms`;
+                    }
+                }
+            } catch (e) {
+                // Fallback to static defaults
             }
+        })();
+
+        // Simulator State & Tabs
+        let simStarCount = 3;
+        const tierColors = {
+            3: { color: '#FFD700', tier: '⭐ Bronze Star', emoji: '⭐' },
+            6: { color: '#FFA500', tier: '🌟 Golden Flare', emoji: '🌟' },
+            10: { color: '#FF7700', tier: '✨ Radiant Sparkles', emoji: '✨' },
+            20: { color: '#FF2200', tier: '💫 Supernova Star', emoji: '💫' },
+            50: { color: '#9B59B6', tier: '🌠 Cosmic Mythic', emoji: '🌠' }
+        };
+
+        function addSimStar() {
+            simStarCount++;
+            let currentTier = tierColors[3];
+            if (simStarCount >= 50) currentTier = tierColors[50];
+            else if (simStarCount >= 20) currentTier = tierColors[20];
+            else if (simStarCount >= 10) currentTier = tierColors[10];
+            else if (simStarCount >= 6) currentTier = tierColors[6];
+
+            document.getElementById('sim-star-count').innerText = simStarCount;
+            document.getElementById('sim-starboard-header').innerHTML = `${currentTier.emoji} **${simStarCount}** | #general`;
+            document.getElementById('sim-starboard-header').style.color = currentTier.color;
+            
+            const embed = document.getElementById('sim-starboard-embed');
+            embed.style.borderColor = currentTier.color;
+            embed.querySelector('div:last-child').innerText = `${currentTier.emoji} Message ID: 1284910284910 • ${currentTier.tier}`;
         }
 
-        function resetDemo() {
-            const title = document.getElementById('demo-title');
-            const desc = document.getElementById('demo-desc');
-            const buttons = document.getElementById('demo-buttons');
-
-            title.innerText = "Nora Privacy-First Guard";
-            desc.innerHTML = "Protect your server with Nora. We use local database storage, zero third-party data tracking, and end-to-end telemetry controls to ensure your guild records, verification states, and moderator actions remain completely secure and private.";
-            buttons.innerHTML = `
-                <button class="discord-btn discord-btn-primary" onclick="triggerDemo('security')">Security Shield</button>
-                <button class="discord-btn" onclick="triggerDemo('privacy')">Privacy Status</button>
-                <button class="discord-btn" onclick="triggerDemo('moderation')">All-in-One Dashboard</button>
-            `;
+        function resetSimStar() {
+            simStarCount = 2;
+            addSimStar();
         }
 
-        // Showcase switch
-        const showcaseData = [
-            {
-                title: "Support Ticket Center",
-                desc: "Allow members to spawn private support channels instantly at the click of a button. Nora handles permissions, staff mentions, categories routing, and transcript logging automatically.",
-                visual: `
-                    <div class="discord-embed" style="border-color:#5865F2;">
-                        <strong style="color:white; font-size:0.9rem;"># ticket-0042</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Support ticket created by @Member. Staff will assist you shortly.</p>
-                        <div class="discord-buttons" style="margin-top:10px;">
-                            <button class="discord-btn" style="background:#ff4d4d; color:white; border:none;"><i class="fas fa-lock"></i> Close Ticket</button>
-                            <button class="discord-btn"><i class="fas fa-download"></i> Transcript</button>
+        function switchSimTab(mode, btnEl) {
+            document.querySelectorAll('.sim-tab-btn').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+
+            const viewport = document.getElementById('sim-viewport');
+            const channelTitle = document.getElementById('sim-channel-title');
+
+            if (mode === 'starboard') {
+                channelTitle.innerText = 'starboard';
+                viewport.innerHTML = `
+                    <div class="discord-msg-row">
+                        <img src="nora.png" class="discord-avatar" alt="Nora Avatar">
+                        <div class="discord-msg-body">
+                            <div class="discord-msg-header">
+                                <span class="discord-username">Nora</span>
+                                <span class="discord-bot-badge">BOT</span>
+                                <span class="discord-timestamp">Today at 1:00 AM</span>
+                            </div>
+                            <div id="sim-starboard-header" style="font-weight: 700; color: #FFD700; font-size: 0.95rem;">
+                                ⭐ **3** | #general
+                            </div>
+                            <div class="sim-embed" id="sim-starboard-embed" style="border-color: #FFD700;">
+                                <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.88rem; color: #F2F3F5;">
+                                    <div style="width: 20px; height: 20px; border-radius: 50%; background: #5865F2; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">C</div>
+                                    CommunityMember
+                                </div>
+                                <div class="sim-embed-desc" style="margin-top: 6px;">
+                                    "Nora's new Starboard and Counting update is incredible! Everything is completely seamless."
+                                </div>
+                                <div style="margin-top: 8px; font-size: 0.75rem; color: #949BA4;">
+                                    ⭐ Message ID: 1284910284910 • Bronze Star
+                                </div>
+                            </div>
+                            <div class="sim-action-row">
+                                <button class="sim-btn sim-btn-grey" onclick="addSimStar()" id="btn-sim-add-star">
+                                    <i class="fas fa-star" style="color: #FFD700;"></i> Add Star (<span id="sim-star-count">3</span>)
+                                </button>
+                                <button class="sim-btn sim-btn-grey" onclick="resetSimStar()">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                            </div>
                         </div>
                     </div>
-                `
-            },
-            {
-                title: "Roblox Group Verification & Role Binding",
-                desc: "Securely bind and synchronize your community roles with Roblox group ranks. Automatically verify Roblox account mappings and assign corresponding roles when members join the Discord.",
-                visual: `
-                    <div class="discord-embed" style="border-color:#23a55a;">
-                        <strong style="color:white; font-size:0.9rem;">Roblox Verification Status</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Roblox User: <strong>BuildBoy</strong> (Rank: Captain)<br>Roles Assigned: <span style="background:rgba(35,165,90,0.1); color:#23a55a; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Verified</span> <span style="background:rgba(35,165,90,0.1); color:#23a55a; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Captain Role</span></p>
+                `;
+            } else if (mode === 'counting') {
+                channelTitle.innerText = 'counting';
+                viewport.innerHTML = `
+                    <div class="discord-msg-row">
+                        <div class="discord-avatar-placeholder">A</div>
+                        <div class="discord-msg-body">
+                            <div class="discord-msg-header">
+                                <span class="discord-username">Alex</span>
+                                <span class="discord-timestamp">Today at 1:02 AM</span>
+                            </div>
+                            <div style="color: #F2F3F5; font-size: 0.95rem; font-weight: 600;">
+                                99 <span style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; margin-left: 6px;">✅</span>
+                            </div>
+                        </div>
                     </div>
-                `
-            },
-            {
-                title: "Custom Commands & Autoresponders",
-                desc: "Create dynamic workflows and customized commands. Includes an ignore filter for server staff and bots, channel exclusions, and button-triggered reactions.",
-                visual: `
-                    <div class="discord-embed" style="border-color:#eb459e;">
-                        <strong style="color:white; font-size:0.9rem;">Autoresponder Triggered</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Trigger: <code>!emergency</code><br>Action: Pings emergency staff, ignores other bots, and posts safety guidelines.</p>
+                    <div class="discord-msg-row" id="sim-counting-response">
+                        <div class="discord-avatar-placeholder" style="background: #10B981;">Y</div>
+                        <div class="discord-msg-body">
+                            <div class="discord-msg-header">
+                                <span class="discord-username">You</span>
+                                <span class="discord-timestamp">Just now</span>
+                            </div>
+                            <div style="color: #F2F3F5; font-size: 0.95rem; font-weight: 600;" id="sim-count-target">
+                                100 <span style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; margin-left: 6px;">💯</span>
+                            </div>
+                            <div class="sim-embed" style="border-color: #FEE75C; margin-top: 6px;">
+                                <div class="sim-embed-title">🎉 Milestone Reached: 100!</div>
+                                <div class="sim-embed-desc">Incredible teamwork! The server has reached count <strong>100</strong>! Next number is <strong>101</strong>.</div>
+                            </div>
+                        </div>
                     </div>
-                `
-            },
-            {
-                title: "Invite Tracker Logs",
-                desc: "Track referral links and keep logs of precisely which invite code was utilized and who invited the new member, counting referral totals automatically.",
-                visual: `
-                    <div class="discord-embed" style="border-color:#FFFFFF;">
-                        <strong style="color:white; font-size:0.9rem;">Invite Tracker Notification</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">📥 @NewUser joined the server using invite link <code>nora-dev</code> (Created by @Inviter - Total Invites: 42).</p>
+                    <div class="sim-counting-bar">
+                        <input type="text" class="sim-counting-input" id="counting-input" placeholder="Type next number or math expression (e.g. 100 + 1)..." onkeydown="if(event.key==='Enter') executeSimCount()">
+                        <button class="sim-btn sim-btn-green" onclick="executeSimCount()">Count</button>
                     </div>
-                `
-            },
-            {
-                title: "Advanced Leveling & XP Multipliers",
-                desc: "Build community engagement with automated experience (XP) systems. Set promoter roles, adjust voice/text XP cooldown intervals, and define role-based multipliers.",
-                visual: `
-                    <div class="discord-embed" style="border-color:#faa61a;">
-                        <strong style="color:white; font-size:0.9rem;">🎉 Level Up!</strong>
-                        <p style="color:#B5B3AD; font-size:0.8rem; margin-top:5px;">Congratulations @Member! You have reached <strong>Level 15</strong> and unlocked the <span style="color:#faa61a;">Silver Elite Role</span>.</p>
+                `;
+            } else if (mode === 'verify') {
+                channelTitle.innerText = 'verification';
+                viewport.innerHTML = `
+                    <div class="discord-msg-row">
+                        <img src="nora.png" class="discord-avatar" alt="Nora Avatar">
+                        <div class="discord-msg-body">
+                            <div class="discord-msg-header">
+                                <span class="discord-username">Nora</span>
+                                <span class="discord-bot-badge">BOT</span>
+                                <span class="discord-timestamp">Today at 1:04 AM</span>
+                            </div>
+                            <div class="sim-embed" style="border-color: #5865F2;">
+                                <div class="sim-embed-title">🛡️ Server Member Verification</div>
+                                <div class="sim-embed-desc">Welcome to the server! Click the button below to verify and unlock full community access.</div>
+                                <div class="sim-embed-fields">
+                                    <div><div class="sim-field-title">Engine</div><div class="sim-field-val">1-Click / Roblox Sync</div></div>
+                                    <div><div class="sim-field-title">Security</div><div class="sim-field-val">Anti-Raid Shield</div></div>
+                                </div>
+                            </div>
+                            <div class="sim-action-row" id="sim-verify-actions">
+                                <button class="sim-btn sim-btn-green" onclick="triggerSimVerify()">
+                                    <i class="fas fa-check-circle"></i> Complete Verification
+                                </button>
+                                <button class="sim-btn sim-btn-blurple" onclick="alert('Roblox rank synchronization matches group ranks directly!')">
+                                    <i class="fas fa-link"></i> Link Roblox
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                `
+                `;
+            } else if (mode === 'automod') {
+                channelTitle.innerText = 'audit-logs';
+                viewport.innerHTML = `
+                    <div class="discord-msg-row">
+                        <img src="nora.png" class="discord-avatar" alt="Nora Avatar">
+                        <div class="discord-msg-body">
+                            <div class="discord-msg-header">
+                                <span class="discord-username">Nora AutoMod Shield</span>
+                                <span class="discord-bot-badge">AUTO</span>
+                                <span class="discord-timestamp">Just now</span>
+                            </div>
+                            <div class="sim-embed" style="border-color: #EF4444;">
+                                <div class="sim-embed-title">🚨 Threat Blocked: Phishing Link Detected</div>
+                                <div class="sim-embed-desc">Blocked suspicious domain <code>free-nitro-gift.ru</code> from user <strong>SpamBot#4910</strong> in &lt;#general&gt;.</div>
+                                <div class="sim-embed-fields">
+                                    <div><div class="sim-field-title">Latency</div><div class="sim-field-val">&lt; 4ms (Native)</div></div>
+                                    <div><div class="sim-field-title">Action</div><div class="sim-field-val">Deleted & Timed Out</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
+        }
+
+        function executeSimCount() {
+            const input = document.getElementById('counting-input');
+            if (!input || !input.value.trim()) return;
+            const val = input.value.trim();
+            const target = document.getElementById('sim-count-target');
+            if (target) {
+                target.innerHTML = `${val} <span style="background: rgba(36, 128, 70, 0.2); color: #23A55A; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; margin-left: 6px;">✅ Verified (+25 XP)</span>`;
+            }
+            input.value = '';
+        }
+
+        function triggerSimVerify() {
+            const actions = document.getElementById('sim-verify-actions');
+            if (actions) {
+                actions.innerHTML = `
+                    <div style="color: #23A55A; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-circle-check"></i> Verification Successful! Role @Member assigned.
+                    </div>
+                `;
+            }
+        }
+
+        // FAQ Toggle
+        function toggleFaq(item) {
+            item.classList.toggle('active');
+        }
+
+        // Command Explorer Data & Filter
+        const commandList = [
+            { name: '/counting stats', category: 'games', desc: 'View live server count, streak record, and contributor stats.' },
+            { name: '/counting leaderboard', category: 'games', desc: 'Display the top 10 counting contributors in the server.' },
+            { name: '/starboard stats', category: 'games', desc: 'View starboard channel, required stars, and server records.' },
+            { name: '/starboard halloffame', category: 'games', desc: 'Showcase the top 5 highest starred messages of all time.' },
+            { name: '/starboard random', category: 'games', desc: 'Display a random highlighted message from the starboard history.' },
+            { name: '/verify check', category: 'utility', desc: 'Verify your Roblox account description and claim roles.' },
+            { name: '/roblox profile', category: 'utility', desc: 'Inspect a Roblox user avatar, badges, and group ranks.' },
+            { name: '/afk [status]', category: 'utility', desc: 'Set an AFK status with optional link/GIF preview and mention alerts.' },
+            { name: '/setup dashboard', category: 'setup', desc: 'Open the visual server management dashboard directly in Discord.' },
+            { name: '/setup games', category: 'setup', desc: 'Configure Starboard, Counting, and One Word Story channels.' },
+            { name: '/warn add', category: 'moderation', desc: 'Issue a formal rule warning to an offending member.' },
+            { name: '/timeout', category: 'moderation', desc: 'Temporarily mute/timeout a member with reason logging.' },
+            { name: '/ticket', category: 'utility', desc: 'Open a private staff ticket with automated transcripts.' },
+            { name: '/rank [@user]', category: 'games', desc: 'View level progress, total XP, and custom rank card.' },
+            { name: '/mycard', category: 'utility', desc: 'Display your interactive profile card with bio and linked badges.' },
+            { name: '/purge [amount]', category: 'moderation', desc: 'Bulk delete up to 100 recent messages in the current channel.' }
         ];
 
-        function switchShowcase(index, tabEl) {
-            // Remove active classes
-            const tabs = document.querySelectorAll('.showcase-tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            tabEl.classList.add('active');
-
-            // Update content
-            const data = showcaseData[index];
-            document.getElementById('showcase-title').innerText = data.title;
-            document.getElementById('showcase-desc').innerText = data.desc;
-            document.getElementById('showcase-display').querySelector('.showcase-visual').innerHTML = data.visual;
+        function renderCommands(filter = 'all') {
+            const grid = document.getElementById('command-grid');
+            if (!grid) return;
+            const filtered = filter === 'all' ? commandList : commandList.filter(c => c.category === filter);
+            grid.innerHTML = filtered.map(c => `
+                <div class="command-item-card" onclick="alert('Command syntax: ' + '${c.name}' + '\\n' + '${c.desc}')">
+                    <div class="command-name">
+                        <span>${c.name}</span>
+                        <i class="fas fa-chevron-right" style="font-size: 0.75rem; opacity: 0.5;"></i>
+                    </div>
+                    <div class="command-desc">${c.desc}</div>
+                </div>
+            `).join('');
         }
-        // ===== HERO PARTICLES =====
-        (function() {
-            const c = document.getElementById('hero-particles');
-            if (!c) return;
-            const ctx = c.getContext('2d');
-            const hero = c.parentElement;
-            let dots = [], w, h;
+
+        function filterCommands(category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCommands(category);
+        }
+
+        // Initialize Command Grid
+        renderCommands('all');
+
+        // Hero Background Canvas Particle Simulation
+        (function initCanvas() {
+            const canvas = document.getElementById('hero-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w, h, particles = [];
 
             function resize() {
-                const rect = hero.getBoundingClientRect();
-                w = c.width = rect.width;
-                h = c.height = rect.height;
-                dots = [];
-                const count = Math.floor((w * h) / 18000);
+                w = canvas.width = canvas.parentElement.offsetWidth;
+                h = canvas.height = canvas.parentElement.offsetHeight;
+                particles = [];
+                const count = Math.floor((w * h) / 22000);
                 for (let i = 0; i < count; i++) {
-                    dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 1.5 + 0.5 });
+                    particles.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        vx: (Math.random() - 0.5) * 0.4,
+                        vy: (Math.random() - 0.5) * 0.4,
+                        radius: Math.random() * 1.5 + 0.5
+                    });
                 }
             }
 
             function draw() {
                 ctx.clearRect(0, 0, w, h);
-                for (let i = 0; i < dots.length; i++) {
-                    let d = dots[i];
-                    d.x += d.vx; d.y += d.vy;
-                    if (d.x < 0 || d.x > w) d.vx *= -1;
-                    if (d.y < 0 || d.y > h) d.vy *= -1;
-                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0 || p.x > w) p.vx *= -1;
+                    if (p.y < 0 || p.y > h) p.vy *= -1;
+
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
                     ctx.beginPath();
-                    ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                     ctx.fill();
-                    for (let j = i + 1; j < dots.length; j++) {
-                        let dx = d.x - dots[j].x, dy = d.y - dots[j].y;
-                        let dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < 100) {
-                            ctx.strokeStyle = `rgba(255,255,255,${0.04 * (1 - dist / 100)})`;
-                            ctx.lineWidth = 0.5;
+
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 110) {
+                            ctx.strokeStyle = `rgba(88, 101, 242, ${0.12 * (1 - dist / 110)})`;
+                            ctx.lineWidth = 0.6;
                             ctx.beginPath();
-                            ctx.moveTo(d.x, d.y);
-                            ctx.lineTo(dots[j].x, dots[j].y);
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
                             ctx.stroke();
                         }
                     }
@@ -1477,68 +1874,6 @@
             window.addEventListener('resize', resize);
             resize();
             draw();
-        })();
-
-        // ===== SCROLL REVEAL =====
-        (function() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry, i) => {
-                    if (entry.isIntersecting) {
-                        setTimeout(() => entry.target.classList.add('visible'), i * 80);
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.15 });
-
-            document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
-        })();
-
-        // ===== WEBPAGE DISCORD & BOT DOWNTIME MONITOR =====
-        (function() {
-            const WEBHOOK_URL = ''; // Configured via env or proxy
-            const getApiBase = () => {
-                if (typeof window.getApiBaseUrl === 'function') return window.getApiBaseUrl();
-                const host = window.location.hostname;
-                if (host === 'localhost' || host === '127.0.0.1') return window.location.origin;
-                if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') return 'http://localhost:3000'; if (host === 'api.vaztinix.dev') return window.location.origin; return 'https://api.vaztinix.dev';
-            };
-            const CHECK_INTERVAL = 45000; // 45 seconds
-
-            let isDown = false;
-            let downSince = null;
-
-            async function checkHealth() {
-                const now = Date.now();
-                try {
-                    const healthUrl = getApiBase() + '/api/health';
-                    const res = await fetch(healthUrl, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    
-                    // RECOVERY DETECTED
-                    if (isDown) {
-                        const durationMs = now - downSince;
-                        const durationSec = Math.floor(durationMs / 1000);
-                        const mins = Math.floor(durationSec / 60);
-                        const secs = durationSec % 60;
-                        const durationStr = mins > 0 ? `${mins} min ${secs} sec` : `${secs} sec`;
-                        
-                        isDown = false;
-                        downSince = null;
-                        
-                        console.log('[System Web Monitor] Bot recovered after ' + durationStr);
-                    }
-                } catch (err) {
-                    // DOWNTIME DETECTED
-                    if (!isDown) {
-                        isDown = true;
-                        downSince = now;
-                        console.warn('[System Web Monitor] Bot Health Check Failed! Bot is offline.');
-                    }
-                }
-            }
-
-            setInterval(checkHealth, CHECK_INTERVAL);
-            setTimeout(checkHealth, 5000);
         })();
     </script>
 </body>
