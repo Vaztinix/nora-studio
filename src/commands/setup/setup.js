@@ -8,7 +8,10 @@ const {
     RoleSelectMenuBuilder, 
     ButtonBuilder, 
     ButtonStyle, 
-    ChannelType 
+    ChannelType,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle
 } = require('discord.js');
 const GuildSettings = require('../../database/models/GuildSettings');
 const { handleError, handleSuccess } = require('../../utils/embeds');
@@ -32,6 +35,9 @@ module.exports = {
         .addSubcommand(sub =>
             sub.setName('welcomer')
                 .setDescription('Configure welcome cards, join messages, and auto-roles.'))
+        .addSubcommand(sub =>
+            sub.setName('autorole')
+                .setDescription('Configure multi-role assignment on join (Up to 3 free, 5 premium).'))
         .addSubcommand(sub =>
             sub.setName('leveling')
                 .setDescription('Configure chat/voice leveling, XP multipliers, and rank rewards.'))
@@ -74,6 +80,7 @@ module.exports = {
             dashboard: 'main',
             automod: 'view_automod',
             welcomer: 'view_welcomer',
+            autorole: 'view_welcomer',
             leveling: 'view_leveling',
             logging: 'view_logging',
             games: 'view_games',
@@ -150,7 +157,7 @@ module.exports = {
                         },
                         { 
                             name: '👋 Welcomer & Verify', 
-                            value: `Welcomer: **${settings.welcomerEnabled ? '🟢 On' : '🔴 Off'}**\nAuto-Role: ${settings.welcomeRoleId ? `<@&${settings.welcomeRoleId}>` : '*None*'}\nVerification: **${settings.verifyRoleId ? '🟢 On' : '🔴 Off'}**`, 
+                            value: `Welcomer: **${settings.welcomerEnabled ? '🟢 On' : '🔴 Off'}**\nAuto-Roles: ${(settings.welcomeRoleId || '').split(',').filter(Boolean).length > 0 ? (settings.welcomeRoleId.split(',').filter(Boolean).length <= 2 ? settings.welcomeRoleId.split(',').filter(Boolean).map(id => `<@&${id}>`).join(' ') : `**${settings.welcomeRoleId.split(',').filter(Boolean).length} roles**`) : '*None*'}\nVerification: **${settings.verifyRoleId ? '🟢 On' : '🔴 Off'}** (${(settings.verifyRoleId || '').split(',').filter(Boolean).length} roles)\nTier: ${(settings.isPremium || settings.isManualPremium) ? '⭐ **Nora Plus** (5 Max)' : '⚡ **Free** (3 Max)'}`, 
                             inline: true 
                         },
                         { 
@@ -299,14 +306,22 @@ module.exports = {
             // 👋 WELCOMER & AUTO-ROLES
             // ==========================================
             if (viewName === 'view_welcomer') {
-                embed.setTitle('👋 Welcomer & Starter Roles')
-                    .setDescription('Configure automated welcome cards, join channels, and starter roles for new members.')
+                const isPremium = settings.isPremium === true || settings.isManualPremium === true;
+                const maxAutoRoles = isPremium ? 5 : 3;
+                const currentRoles = (settings.welcomeRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+
+                embed.setTitle('👋 Welcomer & Starter Auto-Roles')
+                    .setDescription(
+                        `Configure automated welcome cards, join channels, and starter roles for new members.\n` +
+                        `• **Tier Limits:** Free servers can assign up to **3 roles** on join. Nora Plus unlocks up to **5 roles**.`
+                    )
                     .addFields(
                         { name: 'Welcomer System', value: settings.welcomerEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
                         { name: 'Welcome Channel', value: settings.welcomeChannelId ? `<#${settings.welcomeChannelId}>` : '*None*', inline: true },
-                        { name: 'Starter Auto-Role', value: settings.welcomeRoleId ? `<@&${settings.welcomeRoleId}>` : '*None*', inline: true },
+                        { name: `Starter Auto-Roles (${currentRoles.length}/${maxAutoRoles})`, value: currentRoles.length > 0 ? currentRoles.map(id => `<@&${id}>`).join(' ') : '*None*', inline: true },
+                        { name: 'Quarantine Role', value: settings.unverifiedRoleId ? `<@&${settings.unverifiedRoleId}>` : '*None*', inline: true },
                         { name: 'Join DM Alerts', value: settings.welcomeDmEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Welcome Card Images', value: settings.levelingUseImages !== false ? '🟢 Image Card' : '📄 Text Only', inline: true }
+                        { name: 'Tier Cap', value: isPremium ? '⭐ **Nora Plus** (5 Max)' : '⚡ **Free Tier** (3 Max)', inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -319,10 +334,22 @@ module.exports = {
                 );
 
                 const rowC = new ActionRowBuilder().addComponents(
-                    new RoleSelectMenuBuilder().setCustomId('action_welcome_role').setPlaceholder('Select Starter Auto-Role...')
+                    new RoleSelectMenuBuilder()
+                        .setCustomId('action_welcome_role')
+                        .setPlaceholder(`Select Auto-Roles on Join (Up to ${maxAutoRoles} roles)...`)
+                        .setMinValues(0)
+                        .setMaxValues(maxAutoRoles)
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+                const rowD = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder()
+                        .setCustomId('action_unverified_role')
+                        .setPlaceholder('Select Quarantine Role (Given on join, removed on verify)...')
+                        .setMinValues(0)
+                        .setMaxValues(1)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
             // ==========================================
@@ -367,6 +394,7 @@ module.exports = {
                 const activeSection = state.selectedLogCategory || 'default';
                 const categoryLabels = {
                     default: '⚙️ Default Fallback Log Channel',
+                    verify: '🔒 Verification & Gatekeeper Logs',
                     messages: '💬 Message Logs (Edits & Deletes)',
                     members: '👥 Member Logs (Joins, Leaves & Boosts)',
                     channels: '📁 Channel Logs (Creates, Edits & Deletes)',
@@ -381,16 +409,17 @@ module.exports = {
                     )
                     .addFields(
                         { name: '⚙️ Default Fallback', value: settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*', inline: true },
+                        { name: '🔒 Verification Log', value: settings.verificationLogChannelId ? `<#${settings.verificationLogChannelId}>` : `*(Fallback)*`, inline: true },
                         { name: '💬 Messages Log', value: logChannels.messages ? `<#${logChannels.messages}>` : `*(Fallback)*`, inline: true },
                         { name: '👥 Members Log', value: logChannels.members ? `<#${logChannels.members}>` : `*(Fallback)*`, inline: true },
                         { name: '📁 Channels Log', value: logChannels.channels ? `<#${logChannels.channels}>` : `*(Fallback)*`, inline: true },
-                        { name: '🎙️ Voice Log', value: logChannels.voice ? `<#${logChannels.voice}>` : `*(Fallback)*`, inline: true },
-                        { name: '🛡️ AutoMod Log', value: logChannels.automod ? `<#${logChannels.automod}>` : `*(Fallback)*`, inline: true }
+                        { name: '🎙️ Voice Log', value: logChannels.voice ? `<#${logChannels.voice}>` : `*(Fallback)*`, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder().setCustomId('action_log_part_select').setPlaceholder('Choose Log Category to Assign...').addOptions([
                         { label: 'Default Fallback Channel', value: 'default', description: 'Catch-all channel for all unassigned log types', default: activeSection === 'default' },
+                        { label: 'Verification Logs', value: 'verify', description: 'Member verification passes, challenges, and audits', default: activeSection === 'verify' },
                         { label: 'Message Logs', value: 'messages', description: 'Edits, deletes, and bulk deletions', default: activeSection === 'messages' },
                         { label: 'Member Logs', value: 'members', description: 'Joins, leaves, kicks, and boosts', default: activeSection === 'members' },
                         { label: 'Channel Logs', value: 'channels', description: 'Channel creates, updates, and deletes', default: activeSection === 'channels' },
@@ -463,26 +492,33 @@ module.exports = {
                 const currentType = settings.verificationType || 'captcha';
                 const typeLabels = {
                     button: '🔘 Click to Verify (1-Click Button)',
-                    captcha: '🔒 CAPTCHA Verification (Anti-Bot Code)',
+                    captcha: '🔒 Anti-Bot CAPTCHA Challenge',
                     reaction: `⭐ React Verification (${settings.verifyEmoji || '✅'})`,
                     roblox: '🎮 Roblox Account Verification'
                 };
 
-                embed.setTitle('✅ Multi-Mode Member Verification')
+                const isPremium = settings.isPremium === true || settings.isManualPremium === true;
+                const maxVerifyRoles = isPremium ? 5 : 3;
+                const verifiedRoles = (settings.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+
+                embed.setTitle('✅ Enterprise Gatekeeper & Verification')
                     .setDescription(
                         `Configure server entry verification. Nora supports **4 different verification types**:\n` +
-                        `• **🔘 Click to Verify:** Simple 1-click button for instant access.\n` +
+                        `• **🔘 Click to Verify:** Instant 1-click button for frictionless verification.\n` +
                         `• **🔒 CAPTCHA:** Distorted image security code to block raids and userbots.\n` +
                         `• **⭐ React:** Reaction emoji on a welcome/rules message.\n` +
-                        `• **🎮 Roblox:** Verifies and links Roblox accounts for role sync.`
+                        `• **🎮 Roblox:** Verifies and links Roblox accounts for group rank sync.`
                     )
                     .addFields(
-                        { name: 'Active Verification Type', value: `**${typeLabels[currentType] || '🔒 CAPTCHA'}**`, inline: true },
-                        { name: 'Verification Channel', value: settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : '*None (Will use current)*', inline: true },
-                        { name: 'Verified Role(s)', value: settings.verifyRoleId ? settings.verifyRoleId.split(',').map(id => `<@&${id}>`).join(' ') : '*None (Required)*', inline: true },
-                        { name: 'Reaction Emoji', value: `${settings.verifyEmoji || '✅'} *(React mode)*`, inline: true },
-                        { name: 'Roblox Module', value: settings.robloxVerifyEnabled ? '🟢 Active' : '🔴 Off', inline: true },
-                        { name: 'Active Panel Message', value: settings.verifyMessageId ? `\`${settings.verifyMessageId}\`` : '*Not spawned yet*', inline: true }
+                        { name: 'Active Challenge Mode', value: `**${typeLabels[currentType] || '🔒 Anti-Bot CAPTCHA'}**`, inline: true },
+                        { name: 'Spawn Channel', value: settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : '*None (Will use current)*', inline: true },
+                        { name: `Verified Role(s) (${verifiedRoles.length}/${maxVerifyRoles})`, value: verifiedRoles.length > 0 ? verifiedRoles.map(id => `<@&${id}>`).join(' ') : '*None (Required)*', inline: true },
+                        { name: 'Quarantine Role', value: settings.unverifiedRoleId ? `<@&${settings.unverifiedRoleId}>` : '*None (Optional)*', inline: true },
+                        { name: 'Strip Quarantine on Verify', value: settings.removeUnverifiedRoleOnVerify !== false ? '🟢 Yes' : '🔴 No', inline: true },
+                        { name: 'Audit Log Channel', value: settings.verificationLogChannelId ? `<#${settings.verificationLogChannelId}>` : '*Default Log Channel*', inline: true },
+                        { name: 'Tier Limit', value: isPremium ? '⭐ **Nora Plus** (Up to 5 roles)' : '⚡ **Free Tier** (Up to 3 roles)', inline: true },
+                        { name: 'Custom Embed Title', value: `\`${settings.verifyEmbedTitle || 'Server Verification Required'}\``, inline: true },
+                        { name: 'Button Style', value: `${settings.verifyBtnEmoji || '🔒'} \`${settings.verifyBtnLabel || 'Verify Account'}\` (${settings.verifyEmbedColor || '#5865F2'})`, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -490,29 +526,42 @@ module.exports = {
                         .setCustomId('action_verify_type')
                         .setPlaceholder('Choose Active Verification Type...')
                         .addOptions([
+                            { label: 'Anti-Bot CAPTCHA (Image Challenge)', value: 'captcha', description: 'Visual distorted image security code test', emoji: '🔒', default: currentType === 'captcha' },
                             { label: 'Click to Verify (1-Click Button)', value: 'button', description: 'Immediate 1-click instant verification button', emoji: '🔘', default: currentType === 'button' },
-                            { label: 'CAPTCHA Verification (Anti-Bot)', value: 'captcha', description: 'Visual distorted image security code test', emoji: '🔒', default: currentType === 'captcha' },
                             { label: 'React Verification (Emoji)', value: 'reaction', description: 'React with an emoji to gain access', emoji: '⭐', default: currentType === 'reaction' },
                             { label: 'Roblox Account Verification', value: 'roblox', description: 'Link Roblox profile to Discord server', emoji: '🎮', default: currentType === 'roblox' }
                         ])
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_verify_spawn_button').setLabel('Spawn 1-Click Panel').setStyle(ButtonStyle.Success).setEmoji('🔘'),
-                    new ButtonBuilder().setCustomId('action_verify_spawn_captcha').setLabel('Spawn CAPTCHA Panel').setStyle(ButtonStyle.Primary).setEmoji('🔒'),
-                    new ButtonBuilder().setCustomId('action_verify_spawn_reaction').setLabel('Spawn React Panel').setStyle(ButtonStyle.Secondary).setEmoji('⭐'),
-                    new ButtonBuilder().setCustomId('action_verify_spawn_roblox').setLabel('Spawn Roblox Panel').setStyle(ButtonStyle.Secondary).setEmoji('🎮')
+                    new RoleSelectMenuBuilder()
+                        .setCustomId('action_verify_role')
+                        .setPlaceholder(`Select Verified Role(s) (Up to ${maxVerifyRoles})...`)
+                        .setMinValues(1)
+                        .setMaxValues(maxVerifyRoles)
                 );
 
                 const rowC = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder().setCustomId('action_verify_channel').setPlaceholder('Select Destination Verification Channel...').setChannelTypes(ChannelType.GuildText)
+                    new RoleSelectMenuBuilder()
+                        .setCustomId('action_unverified_role')
+                        .setPlaceholder('Select Quarantine Role (Removed on verify)...')
+                        .setMinValues(0)
+                        .setMaxValues(1)
                 );
 
                 const rowD = new ActionRowBuilder().addComponents(
-                    new RoleSelectMenuBuilder().setCustomId('action_verify_role').setPlaceholder('Select Role(s) Granted Upon Verification...').setMinValues(1).setMaxValues(5)
+                    new ChannelSelectMenuBuilder().setCustomId('action_verify_channel').setPlaceholder('Select Destination Verification Channel...').setChannelTypes(ChannelType.GuildText)
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
+                const rowE = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_verify_spawn_active').setLabel(`Deploy ${(currentType).toUpperCase()} Panel`).setStyle(ButtonStyle.Success).setEmoji('🚀'),
+                    new ButtonBuilder().setCustomId('action_verify_customize_modal').setLabel('🎨 Embed Style').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('action_remove_unverified_toggle').setLabel(settings.removeUnverifiedRoleOnVerify !== false ? 'Strip Role: ON' : 'Strip Role: OFF').setStyle(settings.removeUnverifiedRoleOnVerify !== false ? ButtonStyle.Primary : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('go_back').setLabel('◀️ Main Menu').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setLabel('🌐 Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, rowE] };
             }
 
             // ==========================================
@@ -657,11 +706,17 @@ module.exports = {
                 if (i.customId === 'action_automod_mentions') { settings.automodMentions = parseInt(i.values[0]); update = true; sync = 'mentions'; }
                 if (i.customId === 'action_automod_immune') { settings.automodImmuneRoles = JSON.stringify(i.values); update = true; sync = 'all'; }
 
-                // Welcomer
+                // Welcomer & Auto-Roles
                 if (i.customId === 'action_welcomer_toggle') { settings.welcomerEnabled = !settings.welcomerEnabled; update = true; }
                 if (i.customId === 'action_welcomedm_toggle') { settings.welcomeDmEnabled = !settings.welcomeDmEnabled; update = true; }
                 if (i.customId === 'action_welcome_channel') { settings.welcomeChannelId = i.values[0]; update = true; }
-                if (i.customId === 'action_welcome_role') { settings.welcomeRoleId = i.values[0]; update = true; }
+                if (i.customId === 'action_welcome_role') {
+                    const isPremium = settings.isPremium === true || settings.isManualPremium === true;
+                    const maxRoles = isPremium ? 5 : 3;
+                    const chosen = i.values.slice(0, maxRoles);
+                    settings.welcomeRoleId = chosen.length > 0 ? chosen.join(',') : null;
+                    update = true;
+                }
 
                 // Leveling
                 if (i.customId === 'action_leveling_toggle') { settings.levelingEnabled = !settings.levelingEnabled; update = true; }
@@ -687,6 +742,8 @@ module.exports = {
                     const targetChannelId = i.values[0];
                     if (selectedCategory === 'default') {
                         settings.loggingChannelId = targetChannelId;
+                    } else if (selectedCategory === 'verify') {
+                        settings.verificationLogChannelId = targetChannelId;
                     } else {
                         let currentMap = {};
                         if (typeof settings.loggingChannels === 'object' && settings.loggingChannels !== null) {
@@ -712,14 +769,28 @@ module.exports = {
                     update = true;
                 }
 
-                // Verification
+                // Verification & Gatekeeper
                 if (i.customId === 'action_verify_type') { settings.verificationType = i.values[0]; update = true; }
                 if (i.customId === 'action_verify_channel') { settings.verifyChannelId = i.values[0]; update = true; }
-                if (i.customId === 'action_verify_role') { settings.verifyRoleId = i.values.join(','); update = true; }
+                if (i.customId === 'action_verify_role') {
+                    const isPremium = settings.isPremium === true || settings.isManualPremium === true;
+                    const maxRoles = isPremium ? 5 : 3;
+                    const chosen = i.values.slice(0, maxRoles);
+                    settings.verifyRoleId = chosen.length > 0 ? chosen.join(',') : null;
+                    update = true;
+                }
+                if (i.customId === 'action_unverified_role') {
+                    settings.unverifiedRoleId = i.values.length > 0 ? i.values[0] : null;
+                    update = true;
+                }
+                if (i.customId === 'action_remove_unverified_toggle') {
+                    settings.removeUnverifiedRoleOnVerify = settings.removeUnverifiedRoleOnVerify === false ? true : false;
+                    update = true;
+                }
                 if (i.customId === 'action_roblox_toggle') { settings.robloxVerifyEnabled = !settings.robloxVerifyEnabled; update = true; }
 
-                if (i.customId.startsWith('action_verify_spawn')) {
-                    if (!settings.verifyRoleId) return i.reply({ content: '⚠️ You must configure at least one **Verified Role** in the dropdown above first!', ephemeral: true });
+                if (i.customId === 'action_verify_spawn_active' || i.customId.startsWith('action_verify_spawn')) {
+                    if (!settings.verifyRoleId) return i.reply({ content: '⚠️ You must configure at least one **Verified Role** in the dropdown first!', ephemeral: true });
                     const targetChannelId = settings.verifyChannelId || i.channel.id;
                     const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
 
@@ -738,11 +809,95 @@ module.exports = {
                             reaction: `Reaction (${settings.verifyEmoji || '✅'})`,
                             roblox: 'Roblox Linking'
                         };
-                        return i.reply({ content: `✅ **${typeNames[spawnType]}** verification panel spawned in <#${channel.id}>!`, ephemeral: true });
+                        return i.reply({ content: `✅ **${typeNames[spawnType] || spawnType.toUpperCase()}** verification panel deployed in <#${channel.id}>!`, ephemeral: true });
                     } catch (spawnErr) {
                         console.error('Verification panel spawn error:', spawnErr);
                         return i.reply({ content: `⚠️ Failed to spawn panel: ${spawnErr.message}`, ephemeral: true });
                     }
+                }
+
+                if (i.customId === 'action_verify_customize_modal') {
+                    const modal = new ModalBuilder()
+                        .setCustomId('modal_verify_customize')
+                        .setTitle('Verification Embed Customizer');
+
+                    const titleInput = new TextInputBuilder()
+                        .setCustomId('verify_embed_title')
+                        .setLabel('Embed Title')
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(false)
+                        .setMaxLength(256)
+                        .setValue(settings.verifyEmbedTitle || 'Server Verification Required');
+
+                    const descInput = new TextInputBuilder()
+                        .setCustomId('verify_embed_desc')
+                        .setLabel('Embed Description')
+                        .setStyle(TextInputStyle.Paragraph)
+                        .setRequired(false)
+                        .setMaxLength(1000)
+                        .setValue(settings.verifyEmbedDesc || 'To gain full access to the server, please verify that you are human.\n\nClick the button below to complete verification.');
+
+                    const colorInput = new TextInputBuilder()
+                        .setCustomId('verify_embed_color')
+                        .setLabel('Accent Hex Color (e.g. #5865F2)')
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(false)
+                        .setMaxLength(7)
+                        .setValue(settings.verifyEmbedColor || '#5865F2');
+
+                    const labelInput = new TextInputBuilder()
+                        .setCustomId('verify_btn_label')
+                        .setLabel('Button Label')
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(false)
+                        .setMaxLength(80)
+                        .setValue(settings.verifyBtnLabel || 'Verify Account');
+
+                    const emojiInput = new TextInputBuilder()
+                        .setCustomId('verify_btn_emoji')
+                        .setLabel('Button Emoji')
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(false)
+                        .setMaxLength(16)
+                        .setValue(settings.verifyBtnEmoji || '🔒');
+
+                    modal.addComponents(
+                        new ActionRowBuilder().addComponents(titleInput),
+                        new ActionRowBuilder().addComponents(descInput),
+                        new ActionRowBuilder().addComponents(colorInput),
+                        new ActionRowBuilder().addComponents(labelInput),
+                        new ActionRowBuilder().addComponents(emojiInput)
+                    );
+
+                    await i.showModal(modal);
+
+                    let submitted;
+                    try {
+                        submitted = await i.awaitModalSubmit({
+                            time: 300000,
+                            filter: x => x.user.id === interaction.user.id && x.customId === 'modal_verify_customize'
+                        });
+                    } catch (e) {
+                        return;
+                    }
+
+                    const newTitle = submitted.fields.getTextInputValue('verify_embed_title')?.trim();
+                    const newDesc = submitted.fields.getTextInputValue('verify_embed_desc')?.trim();
+                    const newColor = submitted.fields.getTextInputValue('verify_embed_color')?.trim();
+                    const newLabel = submitted.fields.getTextInputValue('verify_embed_label')?.trim();
+                    const newEmoji = submitted.fields.getTextInputValue('verify_embed_emoji')?.trim();
+
+                    if (newTitle) settings.verifyEmbedTitle = newTitle;
+                    if (newDesc) settings.verifyEmbedDesc = newDesc;
+                    if (newColor && /^#[0-9A-Fa-f]{6}$/.test(newColor)) settings.verifyEmbedColor = newColor;
+                    if (newLabel) settings.verifyBtnLabel = newLabel;
+                    if (newEmoji) settings.verifyBtnEmoji = newEmoji;
+
+                    await settings.save();
+                    settingsCache.invalidate(interaction.guild.id);
+
+                    await submitted.deferUpdate().catch(() => {});
+                    return targetMessage.edit(buildDashboard('view_verify')).catch(() => {});
                 }
 
                 // Tickets
