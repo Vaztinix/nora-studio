@@ -895,8 +895,8 @@ module.exports = {
                     const newTitle = submitted.fields.getTextInputValue('verify_embed_title')?.trim();
                     const newDesc = submitted.fields.getTextInputValue('verify_embed_desc')?.trim();
                     const newColor = submitted.fields.getTextInputValue('verify_embed_color')?.trim();
-                    const newLabel = submitted.fields.getTextInputValue('verify_embed_label')?.trim();
-                    const newEmoji = submitted.fields.getTextInputValue('verify_embed_emoji')?.trim();
+                    const newLabel = submitted.fields.getTextInputValue('verify_btn_label')?.trim();
+                    const newEmoji = submitted.fields.getTextInputValue('verify_btn_emoji')?.trim();
 
                     if (newTitle) settings.verifyEmbedTitle = newTitle;
                     if (newDesc) settings.verifyEmbedDesc = newDesc;

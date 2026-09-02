@@ -115,8 +115,8 @@ module.exports = {
 
                 // Check if the user has another active reaction on this message that grants the same role
                 try {
-                    const targetMsg = reaction.message.partial ? await reaction.message.fetch().catch(() => reaction.message) : reaction.message;
-                    const freshReactions = await targetMsg.reactions.fetch().catch(() => targetMsg.reactions.cache);
+                    const targetMsg = await reaction.message.fetch(true).catch(() => reaction.message);
+                    const freshReactions = targetMsg.reactions ? targetMsg.reactions.cache : new Map();
 
                     let hasOtherGrantingReaction = false;
                     for (const [rId, msgReaction] of freshReactions) {

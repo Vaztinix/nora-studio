@@ -75,7 +75,22 @@ module.exports = {
                             if (afkManager.checkMentionCooldown(message.guild.id, mentionedId, message.channel.id)) {
                                 const targetMember = message.guild.members.cache.get(mentionedId);
                                 const displayName = targetMember ? targetMember.displayName.replace(/^\[AFK\]\s*/, '') : mentionedUser.username;
-                                const noticeContent = `💤 **${displayName}** is AFK: ${targetAfk.status} — <t:${Math.floor(targetAfk.timestamp / 1000)}:R>`;
+                                const timeTag = `<t:${Math.floor(targetAfk.timestamp / 1000)}:R>`;
+                                const urlRegex = /(https?:\/\/[^\s]+)/gi;
+                                const urls = (targetAfk.status || '').match(urlRegex);
+                                let noticeContent;
+
+                                if (!urls) {
+                                    noticeContent = `💤 **${displayName}** is AFK: ${targetAfk.status} — ${timeTag}`;
+                                } else {
+                                    const textOnly = (targetAfk.status || '').replace(urlRegex, '').replace(/\s+/g, ' ').trim();
+                                    const urlString = urls.join('\n');
+                                    if (!textOnly) {
+                                        noticeContent = `💤 **${displayName}** is AFK (${timeTag}):\n${urlString}`;
+                                    } else {
+                                        noticeContent = `💤 **${displayName}** is AFK: ${textOnly} — ${timeTag}\n${urlString}`;
+                                    }
+                                }
 
                                 const noticeMsg = await message.channel.send({
                                     content: noticeContent,

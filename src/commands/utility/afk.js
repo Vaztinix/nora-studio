@@ -12,8 +12,8 @@ module.exports = {
         .setDMPermission(false)
         .addStringOption(opt =>
             opt.setName('status')
-                .setDescription('The reason/status for being AFK (e.g. Eating dinner, studying, sleeping)')
-                .setMaxLength(200)
+                .setDescription('The reason/status for being AFK (supports text, links, and GIFs)')
+                .setMaxLength(500)
                 .setRequired(false)),
 
     async execute(interaction) {
@@ -60,8 +60,25 @@ module.exports = {
             autoNicknameChanged
         );
 
+        // Separate URLs and GIFs from markdown bold so Discord embeds them reliably
+        const urlRegex = /(https?:\/\/[^\s]+)/gi;
+        const urls = status.match(urlRegex);
+        let replyContent;
+
+        if (!urls) {
+            replyContent = `💤 I set your AFK: **${status}**`;
+        } else {
+            const textOnly = status.replace(urlRegex, '').replace(/\s+/g, ' ').trim();
+            const urlString = urls.join('\n');
+            if (!textOnly) {
+                replyContent = `💤 I set your AFK:\n${urlString}`;
+            } else {
+                replyContent = `💤 I set your AFK: **${textOnly}**\n${urlString}`;
+            }
+        }
+
         return await interaction.reply({
-            content: `💤 I set your AFK: **${status}**`,
+            content: replyContent,
             allowedMentions: { repliedUser: false }
         });
     }

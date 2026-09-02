@@ -195,8 +195,8 @@ module.exports = {
 
                     // 2. Fetch fresh reactions on message and force-remove user from ALL OTHER emojis
                     try {
-                        const targetMsg = reaction.message.partial ? await reaction.message.fetch().catch(() => reaction.message) : reaction.message;
-                        const freshReactions = await targetMsg.reactions.fetch().catch(() => targetMsg.reactions.cache);
+                        const targetMsg = await reaction.message.fetch(true).catch(() => reaction.message);
+                        const freshReactions = targetMsg.reactions ? targetMsg.reactions.cache : new Map();
 
                         for (const [rId, msgReaction] of freshReactions) {
                             const isCurrentEmoji = matchesEmoji(msgReaction.emoji, match.emoji) || matchesEmoji(msgReaction.emoji, reaction.emoji);

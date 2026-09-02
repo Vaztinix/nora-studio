@@ -62,7 +62,7 @@ async function loadAll() {
 async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, autoNicknameChanged = false) {
     await loadAll();
     const cleanStatus = (status && typeof status === 'string' && status.trim()) 
-        ? status.trim().substring(0, 250) 
+        ? status.trim().substring(0, 500) 
         : 'AFK';
     const timestamp = Date.now();
 
