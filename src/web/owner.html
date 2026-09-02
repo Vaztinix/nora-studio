@@ -486,30 +486,34 @@
 
     <script>
         window.getApiBaseUrl = function() {
+            const host = window.location.hostname;
+
+            // 1. When running on localhost / loopback / local IP network, ALWAYS use current local origin!
+            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || !host || window.location.protocol === 'file:') {
+                const saved = localStorage.getItem('nora_api_url');
+                if (saved && !saved.includes('localhost') && !saved.includes('127.0.0.1')) {
+                    localStorage.removeItem('nora_api_url');
+                }
+                return (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:'))
+                    ? window.location.origin
+                    : 'http://localhost:3000';
+            }
+
+            // 2. Server-injected value (set in .env as API_BASE_URL for remote deployments)
             if (window.__NORA_API_BASE_URL__) {
                 return window.__NORA_API_BASE_URL__;
             }
 
             const savedUrl = localStorage.getItem('nora_api_url');
-            if (savedUrl && typeof savedUrl === 'string' && savedUrl.startsWith('http')) {
+            if (savedUrl && typeof savedUrl === 'string' && savedUrl.startsWith('https://')) {
                 return savedUrl;
             }
 
-            const host = window.location.hostname;
-            const port = window.location.port;
-
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
-                if (window.location.protocol.startsWith('http') && (port === '3000' || (!port && window.location.protocol === 'http:'))) {
-                    return window.location.origin;
-                }
-                return 'http://localhost:3000';
-            }
-
-            if (host === 'api.vaztinix.dev' || host.startsWith('api.')) {
+            if (host === 'api.vaztinix.dev' || host === 'vaztinix.dev') {
                 return window.location.origin;
             }
 
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') return 'http://localhost:3000'; if (host === 'api.vaztinix.dev') return window.location.origin; return 'https://api.vaztinix.dev';
+            return 'https://api.vaztinix.dev';
         };
 
         // Check OAuth Implicit Token

@@ -516,28 +516,28 @@
 
         window.getApiBaseUrl = function() {
             const host = window.location.hostname;
-            const port = window.location.port;
 
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
+            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || !host || window.location.protocol === 'file:') {
+                const saved = localStorage.getItem('nora_api_url');
+                if (saved && !saved.includes('localhost') && !saved.includes('127.0.0.1')) {
+                    localStorage.removeItem('nora_api_url');
+                }
                 return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
                     ? window.location.origin 
                     : 'http://localhost:3000';
             }
 
             const localOverride = localStorage.getItem('nora_api_url');
-            if (localOverride) {
-                if (localOverride.includes('vaztinix.dev') && !localOverride.includes('api.vaztinix.dev')) {
-                    // fall through
-                } else {
-                    return localOverride;
-                }
+            if (localOverride && localOverride.startsWith('https://')) {
+                return localOverride;
             }
 
             if (window.__NORA_API_BASE_URL__) {
                 return window.__NORA_API_BASE_URL__;
             }
 
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') return 'http://localhost:3000'; if (host === 'api.vaztinix.dev') return window.location.origin; return 'https://api.vaztinix.dev';
+            if (host === 'api.vaztinix.dev' || host === 'vaztinix.dev') return window.location.origin;
+            return 'https://api.vaztinix.dev';
         };
 
         let currentUser = null;

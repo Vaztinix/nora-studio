@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="nora.png">
     <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <script src="/translate.js"></script>
     <script>
         window.__KNOWN_NORA_GUILDS__ = ["1380094048882266112","1471582546151346359","1502569432785092618","1408523665573810296","1487342521133830174","1493517644815536180","1542284395891920896","1331685485759955016","1492598604643434570","1516656405904363530","1492594051713863710","1505315717921112154","1495210302894116894","1497716213973782588","1528497353680621588","1501092925516546173","1371510828712464565","1351304498185900184","1311022958843658351","1515800329889779954","1514002757110206505","1518640702161027263","1493022018055176387","1484683779137208420","1457481176112431347","1492601244374794543","1311634850607927306","1452453746859577481","1492600701530935407","1392140968551252010","1368269183011393637","1456729601551106125","1520426496991166655","1324215030366867456","1492598096167964722","1492599093992751135","1216119597976256522","1506147817427828809","1469895571413270740","1492593551291187290","1412901825174048800","939395110519603220","1520149842163269672","1460360514730201276","1406717813913030757","1492593292410355812","1492592049147609298","1492983186496425984","1265014058290122783","1484256847727952114","1444403869097656412","1428110154121084968","1231664152615981238","1506664856227418163","1492600447683526778","1492602875044565134","1492598348916723822","1525511322849120428","1148276609762205709","1246976150874624050","1425663262166614030","1429166136695590924","1492601497563955330","1391954867215667200","1492600988799074434"];
@@ -1413,6 +1413,7 @@
             letter-spacing: -0.6px;
             background: linear-gradient(135deg, #ffffff 30%, #c7d2fe 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             line-height: 1.2;
         }
@@ -8063,35 +8064,38 @@
         // The server injects window.__NORA_API_BASE_URL__ from process.env.API_BASE_URL.
         // This is the ONLY source of truth — no hostname guessing, no localStorage fragility.
         window.getApiBaseUrl = function() {
-            // 1. Server-injected value (set in .env as API_BASE_URL)
+            const host = window.location.hostname;
+
+            // 1. When running on localhost, 127.0.0.1, or local IP network, ALWAYS use current local origin!
+            // This ensures instant, direct communication with the local active bot instance and zero CORS issues.
+            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || !host || window.location.protocol === 'file:') {
+                // Clear any stale production override in localStorage that would hijack localhost
+                const saved = localStorage.getItem('nora_api_url');
+                if (saved && !saved.includes('localhost') && !saved.includes('127.0.0.1')) {
+                    localStorage.removeItem('nora_api_url');
+                }
+                return (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:'))
+                    ? window.location.origin
+                    : 'http://localhost:3000';
+            }
+
+            // 2. Server-injected value (set in .env as API_BASE_URL for remote deployments)
             if (window.__NORA_API_BASE_URL__) {
                 return window.__NORA_API_BASE_URL__;
             }
 
-            const host = window.location.hostname;
-
-            // 2. Check localStorage override (only allow http:// on localhost, require https:// on production)
+            // 3. Check localStorage override on production (must be HTTPS)
             const savedUrl = localStorage.getItem('nora_api_url');
-            if (savedUrl && typeof savedUrl === 'string' && savedUrl.startsWith('http')) {
-                if (host === 'localhost' || host === '127.0.0.1' || savedUrl.startsWith('https://')) {
-                    return savedUrl;
-                } else {
-                    // Purge stale http://localhost overrides on external devices
-                    localStorage.removeItem('nora_api_url');
-                }
+            if (savedUrl && typeof savedUrl === 'string' && savedUrl.startsWith('https://')) {
+                return savedUrl;
             }
 
-            // 3. Localhost or 127.0.0.1 or local file
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') {
-                return 'http://localhost:3000';
-            }
-
-            // 4. Same-origin if on api.vaztinix.dev
-            if (host === 'api.vaztinix.dev') {
+            // 4. Same-origin if on api.vaztinix.dev or vaztinix.dev
+            if (host === 'api.vaztinix.dev' || host === 'vaztinix.dev') {
                 return window.location.origin;
             }
 
-            // 5. Canonical production API endpoint for vaztinix.dev frontend
+            // 5. Canonical production API endpoint for external frontend
             return 'https://api.vaztinix.dev';
         };
 
@@ -8351,12 +8355,10 @@
                         statusEl.innerHTML = 'Checking connection...';
                     }
 
-                    const targets = [
-                        window.getApiBaseUrl(),
-                        'https://api.vaztinix.dev',
-                        window.location.origin,
-                        'http://localhost:3000'
-                    ].filter(Boolean);
+                    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    const targets = isLocal
+                        ? [window.location.origin, 'http://localhost:3000', window.getApiBaseUrl()].filter(Boolean)
+                        : [window.getApiBaseUrl(), 'https://api.vaztinix.dev', window.location.origin].filter(Boolean);
 
                     let recoveredUrl = null;
                     for (const target of targets) {
@@ -8367,7 +8369,7 @@
                     }
 
                     if (recoveredUrl) {
-                        if (recoveredUrl !== 'http://localhost:3000' || window.location.hostname === 'localhost') {
+                        if (!isLocal && recoveredUrl.startsWith('https://')) {
                             localStorage.setItem('nora_api_url', recoveredUrl);
                         }
                         consecutiveNetworkErrors = 0;
@@ -8397,16 +8399,14 @@
             const statusEl = document.getElementById('offline-retry-status');
             if (statusEl) statusEl.innerHTML = '<span style="color:#00d2ff; font-weight:700;">Testing API Connection...</span>';
 
-            const targets = [
-                window.getApiBaseUrl(),
-                'https://api.vaztinix.dev',
-                window.location.origin,
-                'http://localhost:3000'
-            ].filter(Boolean);
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const targets = isLocal
+                ? [window.location.origin, 'http://localhost:3000', window.getApiBaseUrl()].filter(Boolean)
+                : [window.getApiBaseUrl(), 'https://api.vaztinix.dev', window.location.origin].filter(Boolean);
 
             for (const target of targets) {
                 if (await tryHealth(target)) {
-                    if (target !== 'http://localhost:3000' || window.location.hostname === 'localhost') {
+                    if (!isLocal && target.startsWith('https://')) {
                         localStorage.setItem('nora_api_url', target);
                     }
                     consecutiveNetworkErrors = 0;

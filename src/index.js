@@ -1154,8 +1154,19 @@ app.use((req, res, next) => {
 // Serve dashboard.html dynamically — inject the correct API base URL from config
 // This is the ONLY reliable way to ensure every device on any network gets the right URL.
 // No hostname guessing, no localStorage dependency — the server tells the client.
-const DASHBOARD_API_BASE = (process.env.API_BASE_URL || 'https://api.vaztinix.dev').replace(/\/$/, '');
-console.log(`[Config] Dashboard API base URL: ${DASHBOARD_API_BASE}`);
+const DEFAULT_PROD_API_BASE = (process.env.API_BASE_URL || 'https://api.vaztinix.dev').replace(/\/$/, '');
+console.log(`[Config] Dashboard default production API base URL: ${DEFAULT_PROD_API_BASE}`);
+
+function getApiBaseForReq(req) {
+    const rawHost = (req && req.headers && req.headers.host) ? req.headers.host : '';
+    const host = rawHost.split(':')[0].toLowerCase();
+    // If request was made to localhost, 127.0.0.1, or local network, client must talk to this local server!
+    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || host.endsWith('.local')) {
+        const proto = req.protocol || (req.connection && req.connection.encrypted ? 'https' : 'http');
+        return `${proto}://${rawHost}`;
+    }
+    return DEFAULT_PROD_API_BASE;
+}
 
 function getResolvedClientId() {
     let cid = process.env.CLIENT_ID;
@@ -1187,8 +1198,9 @@ function serveDashboard(req, res) {
     try {
         let html = fs.readFileSync(filePath, 'utf8');
         // Inject the canonical API URL as the very first script — before any other JS runs
+        const apiBase = getApiBaseForReq(req);
         const clientId = getResolvedClientId();
-        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
+        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${apiBase}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
         html = html.replace('</head>', injection + '</head>');
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(html);
@@ -1211,8 +1223,9 @@ function serveVerify(req, res) {
 
     try {
         let html = fs.readFileSync(filePath, 'utf8');
+        const apiBase = getApiBaseForReq(req);
         const clientId = getResolvedClientId();
-        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
+        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${apiBase}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
         html = html.replace('</head>', injection + '</head>');
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(html);
@@ -1235,8 +1248,9 @@ function serveOwner(req, res) {
 
     try {
         let html = fs.readFileSync(filePath, 'utf8');
+        const apiBase = getApiBaseForReq(req);
         const clientId = getResolvedClientId();
-        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${DASHBOARD_API_BASE}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
+        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${apiBase}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
         html = html.replace('</head>', injection + '</head>');
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(html);
