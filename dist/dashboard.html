@@ -11499,7 +11499,13 @@
                 counter.textContent = `${el.value.length}/${limit}`;
             }
         };
-                function addNotification(title, content, type = 'info', server = "") {
+        function saveNotifications() {
+            try {
+                localStorage.setItem(getNotifKey(), JSON.stringify(notifications || []));
+            } catch (e) {}
+        }
+
+        function addNotification(title, content, type = 'info', server = "") {
             const normalizedTitle = String(title || '').trim();
             const normalizedContent = String(content || '').trim();
             const targetServer = server || currentServerName || 'System';
