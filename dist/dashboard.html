@@ -9890,7 +9890,7 @@
             if (window.currentUser) {
                 if (nameEl) nameEl.textContent = '@' + (window.currentUser.username || 'User');
                 if (avatarEl && window.currentUser.avatar) {
-                    avatarEl.src = `https://cdn.discordapp.com/avatars/${window.currentUser.id}/${window.currentUser.avatar}.png?size=256`;
+                    avatarEl.src = (typeof formatDiscordAvatar === 'function' ? formatDiscordAvatar(window.currentUser) : null) || (window.currentUser.avatar.startsWith('http') ? window.currentUser.avatar : `https://cdn.discordapp.com/avatars/${window.currentUser.id}/${window.currentUser.avatar}.${window.currentUser.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`);
                 }
             }
 
@@ -10183,7 +10183,7 @@
             if (avatarImg) {
                 if (showAvatar) {
                     if (window.currentUser && window.currentUser.avatar) {
-                        avatarImg.src = window.currentUser.avatar;
+                        avatarImg.src = (typeof formatDiscordAvatar === 'function' ? formatDiscordAvatar(window.currentUser) : null) || (window.currentUser.avatar.startsWith('http') ? window.currentUser.avatar : `https://cdn.discordapp.com/avatars/${window.currentUser.id}/${window.currentUser.avatar}.${window.currentUser.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`);
                     } else {
                         avatarImg.src = 'nora.png';
                     }

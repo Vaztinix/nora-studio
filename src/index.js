@@ -709,7 +709,7 @@ const PORT = process.env.PORT || 3000;
 const { EmbedBuilder } = require('discord.js');
 const noraLeveling = require('./utils/noraLeveling');
 const GuildSettings = require('./database/models/GuildSettings');
-const RobloxVerify = require('./database/models/RobloxVerify');
+// RobloxVerify loaded
 
 const NORA_SERVER_ID = '1351304498185900184';
 
@@ -2440,6 +2440,201 @@ app.get('/api/bot/guild-ids', (req, res) => {
         res.json({ success: true, guildIds: ids, total: ids.length });
     } catch (e) {
         res.json({ success: false, guildIds: [], total: 0 });
+    }
+});
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🎮 ROBLOX USER PROFILE & VERIFICATION API ROUTES
+// ─────────────────────────────────────────────────────────────────────────────
+const RobloxVerify = require('./database/models/RobloxVerify');
+
+app.get('/api/user/roblox/accounts', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token);
+        if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+        const records = await RobloxVerify.findAll({ where: { userId: user.id } });
+        const accounts = await Promise.all(records.map(async (r) => {
+            let robloxUsername = 'RobloxUser';
+            let avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${r.robloxId}&size=150x150&format=Png&isCircular=false`;
+            try {
+                if (r.robloxId) {
+                    const rRes = await fetch(`https://users.roblox.com/v1/users/${r.robloxId}`).then(res => res.json()).catch(() => null);
+                    if (rRes && rRes.name) robloxUsername = rRes.name;
+                }
+            } catch (e) { }
+
+            return {
+                id: r.id,
+                robloxId: r.robloxId,
+                robloxUsername: robloxUsername,
+                avatarUrl: avatarUrl,
+                verified: r.status === 'VERIFIED',
+                verifyCode: r.verifyCode,
+                isActive: r.isActive !== false
+            };
+        }));
+
+        res.json({ success: true, accounts });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/accounts');
+    }
+});
+
+app.post('/api/user/roblox/link', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token);
+        if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+        const { username } = req.body || {};
+        if (!username || typeof username !== 'string') {
+            return res.status(400).json({ error: 'Please provide a valid Roblox username.' });
+        }
+
+        // 1. Resolve Roblox username to Roblox ID via Roblox API
+        const lookupRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usernames: [username.trim()], excludeBannedUsers: false })
+        }).then(r => r.json()).catch(() => null);
+
+        if (!lookupRes || !lookupRes.data || !lookupRes.data.length) {
+            return res.status(404).json({ error: `Could not find Roblox account with username "${username}".` });
+        }
+
+        const robloxUser = lookupRes.data[0];
+        const robloxId = String(robloxUser.id);
+        const robloxName = robloxUser.name;
+
+        // Generate friendly verification code
+        const codeNum = Math.floor(1000 + Math.random() * 9000);
+        const verifyCode = `Nora-${codeNum}`;
+
+        // Check if already linked
+        let existing = await RobloxVerify.findOne({ where: { userId: user.id, robloxId } });
+        if (existing) {
+            existing.verifyCode = verifyCode;
+            await existing.save();
+        } else {
+            existing = await RobloxVerify.create({
+                userId: user.id,
+                robloxId,
+                verifyCode,
+                status: 'PENDING',
+                isActive: true
+            });
+        }
+
+        const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`;
+
+        res.json({
+            success: true,
+            account: {
+                id: existing.id,
+                robloxId,
+                robloxUsername: robloxName,
+                avatarUrl,
+                verified: existing.status === 'VERIFIED',
+                verifyCode: existing.verifyCode,
+                isActive: existing.isActive
+            }
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/link');
+    }
+});
+
+app.post('/api/user/roblox/check', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token);
+        if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+        const { robloxId } = req.body || {};
+        if (!robloxId) return res.status(400).json({ error: 'Missing robloxId' });
+
+        const record = await RobloxVerify.findOne({ where: { userId: user.id, robloxId: String(robloxId) } });
+        if (!record) return res.status(404).json({ error: 'Roblox verification record not found.' });
+
+        // Query Roblox profile description
+        const profileRes = await fetch(`https://users.roblox.com/v1/users/${robloxId}`).then(r => r.json()).catch(() => null);
+        const description = (profileRes && profileRes.description) ? profileRes.description : '';
+
+        if (description.includes(record.verifyCode)) {
+            record.status = 'VERIFIED';
+            record.isActive = true;
+            await record.save();
+            return res.json({ success: true, verified: true, message: 'Account verified successfully!' });
+        } else {
+            return res.json({
+                success: false,
+                verified: false,
+                message: `Verification code "${record.verifyCode}" was not found in your Roblox "About" description. Please update your profile description and try again.`
+            });
+        }
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/check');
+    }
+});
+
+app.post('/api/user/roblox/unlink', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token);
+        if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+        const { robloxId } = req.body || {};
+        if (robloxId) {
+            await RobloxVerify.destroy({ where: { userId: user.id, robloxId: String(robloxId) } });
+        }
+        res.json({ success: true, message: 'Account unlinked.' });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/unlink');
+    }
+});
+
+app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token);
+        if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+        const { robloxId, active } = req.body || {};
+        const record = await RobloxVerify.findOne({ where: { userId: user.id, robloxId: String(robloxId) } });
+        if (record) {
+            record.isActive = !!active;
+            await record.save();
+        }
+        res.json({ success: true });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/accounts/toggle');
+    }
+});
+
+app.get('/api/user/roblox/avatar', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        if (!userId) return res.redirect('/nora.png');
+        const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`).then(r => r.json()).catch(() => null);
+        if (thumbRes && thumbRes.data && thumbRes.data[0] && thumbRes.data[0].imageUrl) {
+            return res.redirect(thumbRes.data[0].imageUrl);
+        }
+        res.redirect('/nora.png');
+    } catch (e) {
+        res.redirect('/nora.png');
     }
 });
 
