@@ -130,8 +130,8 @@ module.exports = {
                 .setFooter({ text: `Nora Dashboard • ${interaction.guild.name}` });
 
             const backRow = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('go_back').setLabel('◀️ Main Menu').setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder().setLabel('🌐 Web Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
+                new ButtonBuilder().setCustomId('go_back').setLabel('Main Menu').setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setLabel('Web Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
             );
 
             // ==========================================
@@ -144,86 +144,97 @@ module.exports = {
                     settings.automodMentions > 0
                 ].filter(Boolean).length;
 
-                embed.setTitle('⚙️ Nora Server Management Dashboard')
+                const isPremium = settings.isPremium === true || settings.isManualPremium === true;
+                const autoRoles = (settings.welcomeRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+                const verifyRoles = (settings.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+
+                const autoRoleText = autoRoles.length > 0 
+                    ? (autoRoles.length <= 2 ? autoRoles.map(id => `<@&${id}>`).join(' ') : `**${autoRoles.length} roles**`) 
+                    : '*None*';
+                const verifyRoleText = verifyRoles.length > 0 
+                    ? (verifyRoles.length <= 2 ? verifyRoles.map(id => `<@&${id}>`).join(' ') : `**${verifyRoles.length} roles**`) 
+                    : '*Unset*';
+
+                embed.setTitle('Nora Server Management')
                     .setDescription(
-                        `Welcome to the **${interaction.guild.name}** settings center!\n` +
-                        `Select a category from the menu below to configure features in real-time.`
+                        `Welcome to the **${interaction.guild.name}** configuration center.\n` +
+                        `Select a category from the dropdown below to configure settings in real-time.`
                     )
                     .addFields(
                         { 
-                            name: '🛡️ Safety & AutoMod', 
-                            value: `Anti-Raid: **${settings.antiRaidEnabled ? '🟢 On' : '🔴 Off'}**\nAutoMod: **${autoModCount}/7 Rules Active**\nLockdown: **${settings.lockdownMode ? '🔒 Active' : '🔓 Normal'}**`, 
+                            name: 'Safety & AutoMod', 
+                            value: `Anti-Raid: **${settings.antiRaidEnabled ? 'On' : 'Off'}**\nAutoMod: **${autoModCount}/7 Active**\nLockdown: **${settings.lockdownMode ? 'Active' : 'Normal'}**`, 
                             inline: true 
                         },
                         { 
-                            name: '👋 Welcomer & Verify', 
-                            value: `Welcomer: **${settings.welcomerEnabled ? '🟢 On' : '🔴 Off'}**\nAuto-Roles: ${(settings.welcomeRoleId || '').split(',').filter(Boolean).length > 0 ? (settings.welcomeRoleId.split(',').filter(Boolean).length <= 2 ? settings.welcomeRoleId.split(',').filter(Boolean).map(id => `<@&${id}>`).join(' ') : `**${settings.welcomeRoleId.split(',').filter(Boolean).length} roles**`) : '*None*'}\nVerification: **${settings.verifyRoleId ? '🟢 On' : '🔴 Off'}** (${(settings.verifyRoleId || '').split(',').filter(Boolean).length} roles)\nTier: ${(settings.isPremium || settings.isManualPremium) ? '⭐ **Nora Plus** (5 Max)' : '⚡ **Free** (3 Max)'}`, 
+                            name: 'Welcomer & Verify', 
+                            value: `Welcomer: **${settings.welcomerEnabled ? 'On' : 'Off'}**\nAuto-Roles: ${autoRoleText}\nVerification: **${settings.verifyRoleId ? 'On' : 'Off'}** (${verifyRoleText})\nTier: **${isPremium ? 'Nora Plus' : 'Free Tier'}**`, 
                             inline: true 
                         },
                         { 
-                            name: '🏆 Leveling & XP', 
-                            value: `Chat XP: **${settings.levelingEnabled ? '🟢 On' : '🔴 Off'}**\nLevel Alerts: **${settings.levelUpNotificationsEnabled !== false ? '🟢 On' : '🔴 Off'}**\nAlert Ch: ${settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : '*Current*'}`, 
+                            name: 'Leveling & XP', 
+                            value: `Chat XP: **${settings.levelingEnabled ? 'On' : 'Off'}**\nLevel Alerts: **${settings.levelUpNotificationsEnabled !== false ? 'On' : 'Off'}**\nAlert Channel: ${settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : '*Current*'}`, 
                             inline: true 
                         },
                         { 
-                            name: '📋 Audit Logging', 
-                            value: `Default Log: ${settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*'}\nRouted Chans: **${typeof settings.loggingChannels === 'object' ? Object.keys(settings.loggingChannels || {}).length : 0} active**`, 
+                            name: 'Audit Logging', 
+                            value: `Default Log: ${settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*'}\nRouted Channels: **${typeof settings.loggingChannels === 'object' ? Object.keys(settings.loggingChannels || {}).length : 0} active**`, 
                             inline: true 
                         },
                         { 
-                            name: '🎮 Games & AFK', 
-                            value: `AFK System: **${settings.afkEnabled !== false ? '🟢 On' : '🔴 Off'}**\nCounting: ${settings.countingChannelId ? `<#${settings.countingChannelId}>` : '*Disabled*'}\nStarboard: **${settings.starboardEnabled ? '🟢 On' : '🔴 Off'}**`, 
+                            name: 'Games & AFK', 
+                            value: `AFK System: **${settings.afkEnabled !== false ? 'On' : 'Off'}**\nCounting: ${settings.countingChannelId ? `<#${settings.countingChannelId}>` : '*Disabled*'}\nStarboard: **${settings.starboardEnabled ? 'On' : 'Off'}**`, 
                             inline: true 
                         },
                         { 
-                            name: '🎫 Support & Utility', 
-                            value: `Tickets: ${settings.ticketCategoryId ? '🟢 Configured' : '🔴 Unset'}\nAutoresponders: **${state.autoresponderCount} rules**\nYouTube Feeds: **${state.youtubeFeedCount} active**`, 
+                            name: 'Support & Utility', 
+                            value: `Tickets: **${settings.ticketCategoryId ? 'Configured' : 'Unset'}**\nAutoresponders: **${state.autoresponderCount} rules**\nYouTube Feeds: **${state.youtubeFeedCount} active**`, 
                             inline: true 
                         }
                     );
 
                 const menu = new StringSelectMenuBuilder()
                     .setCustomId('config_main')
-                    .setPlaceholder('🚀 Select a category to configure...')
+                    .setPlaceholder('Select a category to configure...')
                     .addOptions([
-                        { label: 'Safety & Anti-Raid', value: 'view_safety', description: 'Anti-raid, account age gate, photo check, lockdowns', emoji: '🛡️' },
-                        { label: 'Discord AutoMod Rules', value: 'view_automod', description: 'Zero-latency native filters for profanity, spam, and scam links', emoji: '🤖' },
-                        { label: 'Welcomer & Auto-Roles', value: 'view_welcomer', description: 'Custom welcome cards, join messages, and starter roles', emoji: '👋' },
-                        { label: 'Leveling & Experience', value: 'view_leveling', description: 'Chat & Voice XP, level-up notifications, and multipliers', emoji: '🏆' },
-                        { label: 'Server Logs & Routing', value: 'view_logging', description: 'Multi-channel audit logs for members, messages, and voice', emoji: '📋' },
-                        { label: 'Community Games & AFK', value: 'view_games', description: 'AFK module, Counting, One Word Story, and Starboard', emoji: '🎮' },
-                        { label: 'Join & Roblox Verification', value: 'view_verify', description: 'Human CAPTCHA gate and Roblox account linking', emoji: '✅' },
-                        { label: 'Support Ticket System', value: 'view_tickets', description: 'Private staff ticket categories, panels, and transcripts', emoji: '🎫' },
-                        { label: 'Self Roles & AI Engine', value: 'view_utility', description: 'Interactive button role panels and AI personality', emoji: '🎭' }
+                        { label: 'Safety & Anti-Raid', value: 'view_safety', description: 'Anti-raid, account age gate, photo check, lockdowns' },
+                        { label: 'Discord AutoMod Rules', value: 'view_automod', description: 'Zero-latency native filters for profanity, spam, and scam links' },
+                        { label: 'Welcomer & Auto-Roles', value: 'view_welcomer', description: 'Custom welcome cards, join messages, and starter roles' },
+                        { label: 'Leveling & Experience', value: 'view_leveling', description: 'Chat & Voice XP, level-up notifications, and multipliers' },
+                        { label: 'Server Logs & Routing', value: 'view_logging', description: 'Multi-channel audit logs for members, messages, and voice' },
+                        { label: 'Community Games & AFK', value: 'view_games', description: 'AFK module, Counting, One Word Story, and Starboard' },
+                        { label: 'Member Verification', value: 'view_verify', description: 'Human CAPTCHA gate, 1-click button, reaction, and Roblox sync' },
+                        { label: 'Support Ticket System', value: 'view_tickets', description: 'Private staff ticket categories, panels, and transcripts' },
+                        { label: 'Self Roles & AI Engine', value: 'view_utility', description: 'Interactive button role panels and AI personality' }
                     ]);
 
                 if (APP_OWNER_IDS.includes(interaction.user.id)) {
                     menu.addOptions([
-                        { label: 'Dev & Premium Overrides', value: 'view_dev', description: 'Bot owner tools, database sync, and premium grants', emoji: '👑' }
+                        { label: 'Dev & Premium Overrides', value: 'view_dev', description: 'Bot owner tools, database sync, and premium grants' }
                     ]);
                 }
 
                 const quickActions = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_quick_refresh').setLabel('🔄 Refresh Status').setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder().setLabel('🌐 Open Web Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
+                    new ButtonBuilder().setCustomId('action_quick_refresh').setLabel('Refresh Status').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setLabel('Web Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
                 );
 
                 return { embeds: [embed], components: [new ActionRowBuilder().addComponents(menu), quickActions] };
             }
 
             // ==========================================
-            // 🛡️ SAFETY & ANTI-RAID
+            // SAFETY & ANTI-RAID
             // ==========================================
             if (viewName === 'view_safety') {
-                embed.setTitle('🛡️ Safety & Anti-Raid Settings')
+                embed.setTitle('Safety & Anti-Raid Settings')
                     .setDescription('Configure protection against raids, malicious alt accounts, and mass bot joins.')
                     .addFields(
-                        { name: 'Anti-Raid Engine', value: settings.antiRaidEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Server Lockdown', value: settings.lockdownMode ? '🔒 Active (Channels Locked)' : '🔓 Normal', inline: true },
-                        { name: 'Require Profile Picture', value: settings.requirePFP ? '🟢 Required (No Defaults)' : '🔴 Optional', inline: true },
-                        { name: 'Min Account Age', value: settings.minAccountAge > 0 ? `🟢 ${settings.minAccountAge} Day(s)` : '🔴 Disabled', inline: true },
-                        { name: 'Nickname Raid Filter', value: settings.nicknameRaidFilter ? '🟢 Active' : '🔴 Disabled', inline: true },
-                        { name: 'Raid Detection Action', value: `⚡ \`${settings.antiRaidAction || 'notify'}\``, inline: true }
+                        { name: 'Anti-Raid Engine', value: settings.antiRaidEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Server Lockdown', value: settings.lockdownMode ? '**Active (Locked)**' : '**Normal**', inline: true },
+                        { name: 'Require Profile Picture', value: settings.requirePFP ? '**Required**' : '**Optional**', inline: true },
+                        { name: 'Min Account Age', value: settings.minAccountAge > 0 ? `**${settings.minAccountAge} Day(s)**` : '**Disabled**', inline: true },
+                        { name: 'Nickname Raid Filter', value: settings.nicknameRaidFilter ? '**Active**' : '**Disabled**', inline: true },
+                        { name: 'Raid Detection Action', value: `\`${settings.antiRaidAction || 'notify'}\``, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -256,21 +267,21 @@ module.exports = {
             }
 
             // ==========================================
-            // 🤖 DISCORD AUTOMOD RULES
+            // DISCORD AUTOMOD RULES
             // ==========================================
             if (viewName === 'view_automod') {
-                const on = (v) => v ? '🟢 Blocked' : '🔴 Allowed';
-                embed.setTitle('🤖 Discord Native AutoMod Rules')
+                const on = (v) => v ? '**Blocked**' : '**Allowed**';
+                embed.setTitle('Discord Native AutoMod Rules')
                     .setDescription('Enforced directly by **Discord\'s native AutoMod engine** for instant, zero-latency protection.')
                     .addFields(
-                        { name: '🔤 Profanity Filter', value: on(settings.automodProfanity), inline: true },
-                        { name: '🔞 Sexual Content', value: on(settings.automodSexual), inline: true },
-                        { name: '🚫 Slurs & Hate Speech', value: on(settings.automodSlurs), inline: true },
-                        { name: '🔗 Scam / Phishing Links', value: on(settings.automodScam), inline: true },
-                        { name: '💬 Text Message Spam', value: on(settings.automodSpam), inline: true },
-                        { name: '🔞 Hardcore Media Filter', value: on(settings.automodHardcore), inline: true },
-                        { name: '📢 Mention Spam Limit', value: settings.automodMentions > 0 ? `🟢 Max ${settings.automodMentions}` : '🔴 Off', inline: true },
-                        { name: '🛡️ Immune Roles', value: (() => { try { const r = JSON.parse(settings.automodImmuneRoles || '[]'); return r.length ? r.map(id => `<@&${id}>`).join(', ') : '*None*'; } catch { return '*None*'; } })(), inline: true }
+                        { name: 'Profanity Filter', value: on(settings.automodProfanity), inline: true },
+                        { name: 'Sexual Content', value: on(settings.automodSexual), inline: true },
+                        { name: 'Slurs & Hate Speech', value: on(settings.automodSlurs), inline: true },
+                        { name: 'Scam & Phishing Links', value: on(settings.automodScam), inline: true },
+                        { name: 'Text Message Spam', value: on(settings.automodSpam), inline: true },
+                        { name: 'Hardcore Media Filter', value: on(settings.automodHardcore), inline: true },
+                        { name: 'Mention Spam Limit', value: settings.automodMentions > 0 ? `**Max ${settings.automodMentions}**` : '**Off**', inline: true },
+                        { name: 'Immune Roles', value: (() => { try { const r = JSON.parse(settings.automodImmuneRoles || '[]'); return r.length ? r.map(id => `<@&${id}>`).join(', ') : '*None*'; } catch { return '*None*'; } })(), inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -303,25 +314,25 @@ module.exports = {
             }
 
             // ==========================================
-            // 👋 WELCOMER & AUTO-ROLES
+            // WELCOMER & STARTER ROLES
             // ==========================================
             if (viewName === 'view_welcomer') {
                 const isPremium = settings.isPremium === true || settings.isManualPremium === true;
                 const maxAutoRoles = isPremium ? 5 : 3;
                 const currentRoles = (settings.welcomeRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
 
-                embed.setTitle('👋 Welcomer & Starter Auto-Roles')
+                embed.setTitle('Welcomer & Starter Auto-Roles')
                     .setDescription(
                         `Configure automated welcome cards, join channels, and starter roles for new members.\n` +
-                        `• **Tier Limits:** Free servers can assign up to **3 roles** on join. Nora Plus unlocks up to **5 roles**.`
+                        `Tier Limits: Free servers can assign up to **3 roles** on join. Nora Plus unlocks up to **5 roles**.`
                     )
                     .addFields(
-                        { name: 'Welcomer System', value: settings.welcomerEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Welcomer System', value: settings.welcomerEnabled ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: 'Welcome Channel', value: settings.welcomeChannelId ? `<#${settings.welcomeChannelId}>` : '*None*', inline: true },
                         { name: `Starter Auto-Roles (${currentRoles.length}/${maxAutoRoles})`, value: currentRoles.length > 0 ? currentRoles.map(id => `<@&${id}>`).join(' ') : '*None*', inline: true },
                         { name: 'Quarantine Role', value: settings.unverifiedRoleId ? `<@&${settings.unverifiedRoleId}>` : '*None*', inline: true },
-                        { name: 'Join DM Alerts', value: settings.welcomeDmEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Tier Cap', value: isPremium ? '⭐ **Nora Plus** (5 Max)' : '⚡ **Free Tier** (3 Max)', inline: true }
+                        { name: 'Join DM Alerts', value: settings.welcomeDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Tier Cap', value: isPremium ? '**Nora Plus (5 Max)**' : '**Free Tier (3 Max)**', inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -353,18 +364,18 @@ module.exports = {
             }
 
             // ==========================================
-            // 🏆 LEVELING & EXPERIENCE
+            // LEVELING & EXPERIENCE
             // ==========================================
             if (viewName === 'view_leveling') {
-                embed.setTitle('🏆 Leveling & XP Rewards')
+                embed.setTitle('Leveling & XP Rewards')
                     .setDescription('Reward active community members with Chat XP, Voice XP, custom rank cards, and level roles.')
                     .addFields(
-                        { name: 'Chat Leveling', value: settings.levelingEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Level-Up Alerts', value: settings.levelUpNotificationsEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Chat Leveling', value: settings.levelingEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Level-Up Alerts', value: settings.levelUpNotificationsEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: 'Level-Up Channel', value: settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : '*Current Channel*', inline: true },
-                        { name: 'Direct Message Alerts', value: settings.levelUpDmEnabled ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: 'Rank Card Avatars', value: settings.levelingPfpEnabled !== false ? '🟢 Shown' : '🔴 Hidden', inline: true },
-                        { name: 'Voice XP Rate', value: `🎙️ ${settings.voiceXpRate || 10} XP / ${settings.voiceXpInterval || 300}s`, inline: true }
+                        { name: 'Direct Message Alerts', value: settings.levelUpDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Rank Card Avatars', value: settings.levelingPfpEnabled !== false ? '**Shown**' : '**Hidden**', inline: true },
+                        { name: 'Voice XP Rate', value: `${settings.voiceXpRate || 10} XP / ${settings.voiceXpInterval || 300}s`, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -381,7 +392,7 @@ module.exports = {
             }
 
             // ==========================================
-            // 📋 SERVER LOGGING & ROUTING
+            // SERVER LOGGING & ROUTING
             // ==========================================
             if (viewName === 'view_logging') {
                 let logChannels = {};
@@ -393,27 +404,27 @@ module.exports = {
 
                 const activeSection = state.selectedLogCategory || 'default';
                 const categoryLabels = {
-                    default: '⚙️ Default Fallback Log Channel',
-                    verify: '🔒 Verification & Gatekeeper Logs',
-                    messages: '💬 Message Logs (Edits & Deletes)',
-                    members: '👥 Member Logs (Joins, Leaves & Boosts)',
-                    channels: '📁 Channel Logs (Creates, Edits & Deletes)',
-                    voice: '🎙️ Voice Logs (Joins, Leaves & Moves)',
-                    automod: '🛡️ AutoMod & Security Logs'
+                    default: 'Default Fallback Log Channel',
+                    verify: 'Verification & Gatekeeper Logs',
+                    messages: 'Message Logs (Edits & Deletes)',
+                    members: 'Member Logs (Joins, Leaves & Boosts)',
+                    channels: 'Channel Logs (Creates, Edits & Deletes)',
+                    voice: 'Voice Logs (Joins, Leaves & Moves)',
+                    automod: 'AutoMod & Security Logs'
                 };
 
-                embed.setTitle('📋 Audit Logging & Channel Routing')
+                embed.setTitle('Audit Logging & Channel Routing')
                     .setDescription(
                         `**Configuring Category:** ${categoryLabels[activeSection] || 'Default Fallback'}\n` +
                         `Select a category from the dropdown below, then choose the destination channel.`
                     )
                     .addFields(
-                        { name: '⚙️ Default Fallback', value: settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*', inline: true },
-                        { name: '🔒 Verification Log', value: settings.verificationLogChannelId ? `<#${settings.verificationLogChannelId}>` : `*(Fallback)*`, inline: true },
-                        { name: '💬 Messages Log', value: logChannels.messages ? `<#${logChannels.messages}>` : `*(Fallback)*`, inline: true },
-                        { name: '👥 Members Log', value: logChannels.members ? `<#${logChannels.members}>` : `*(Fallback)*`, inline: true },
-                        { name: '📁 Channels Log', value: logChannels.channels ? `<#${logChannels.channels}>` : `*(Fallback)*`, inline: true },
-                        { name: '🎙️ Voice Log', value: logChannels.voice ? `<#${logChannels.voice}>` : `*(Fallback)*`, inline: true }
+                        { name: 'Default Fallback', value: settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*', inline: true },
+                        { name: 'Verification Log', value: settings.verificationLogChannelId ? `<#${settings.verificationLogChannelId}>` : `*(Fallback)*`, inline: true },
+                        { name: 'Messages Log', value: logChannels.messages ? `<#${logChannels.messages}>` : `*(Fallback)*`, inline: true },
+                        { name: 'Members Log', value: logChannels.members ? `<#${logChannels.members}>` : `*(Fallback)*`, inline: true },
+                        { name: 'Channels Log', value: logChannels.channels ? `<#${logChannels.channels}>` : `*(Fallback)*`, inline: true },
+                        { name: 'Voice Log', value: logChannels.voice ? `<#${logChannels.voice}>` : `*(Fallback)*`, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -454,18 +465,18 @@ module.exports = {
             }
 
             // ==========================================
-            // 🎮 COMMUNITY GAMES, STARBOARD & AFK
+            // COMMUNITY GAMES, STARBOARD & AFK
             // ==========================================
             if (viewName === 'view_games') {
-                embed.setTitle('🎮 Community Games, Starboard & AFK')
+                embed.setTitle('Community Games, Starboard & AFK')
                     .setDescription('Configure interactive server games and community features.')
                     .addFields(
-                        { name: '💤 AFK System', value: settings.afkEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: '🔢 Counting Game', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : '🔴 Disabled', inline: true },
-                        { name: '📖 One Word Story', value: settings.oneWordStoryEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: '⭐ Starboard', value: settings.starboardEnabled ? `<#${settings.starboardChannelId || 'Unset'}>` : '🔴 Disabled', inline: true },
-                        { name: '🎲 Number Guessing', value: settings.guessGameEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true },
-                        { name: '✂️ Rock Paper Scissors', value: settings.rpsGameEnabled !== false ? '🟢 Enabled' : '🔴 Disabled', inline: true }
+                        { name: 'AFK System', value: settings.afkEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Counting Game', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : '**Disabled**', inline: true },
+                        { name: 'One Word Story', value: settings.oneWordStoryEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Starboard', value: settings.starboardEnabled ? `<#${settings.starboardChannelId || 'Unset'}>` : '**Disabled**', inline: true },
+                        { name: 'Number Guessing', value: settings.guessGameEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Rock Paper Scissors', value: settings.rpsGameEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -486,39 +497,39 @@ module.exports = {
             }
 
             // ==========================================
-            // ✅ MULTI-MODE MEMBER VERIFICATION
+            // MULTI-MODE MEMBER VERIFICATION & GATEKEEPER
             // ==========================================
             if (viewName === 'view_verify') {
                 const currentType = settings.verificationType || 'captcha';
                 const typeLabels = {
-                    button: '🔘 Click to Verify (1-Click Button)',
-                    captcha: '🔒 Anti-Bot CAPTCHA Challenge',
-                    reaction: `⭐ React Verification (${settings.verifyEmoji || '✅'})`,
-                    roblox: '🎮 Roblox Account Verification'
+                    button: '1-Click Button',
+                    captcha: 'Anti-Bot CAPTCHA',
+                    reaction: 'Reaction Emoji',
+                    roblox: 'Roblox Account Verification'
                 };
 
                 const isPremium = settings.isPremium === true || settings.isManualPremium === true;
                 const maxVerifyRoles = isPremium ? 5 : 3;
                 const verifiedRoles = (settings.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
 
-                embed.setTitle('✅ Enterprise Gatekeeper & Verification')
+                embed.setTitle('Server Verification & Gatekeeper')
                     .setDescription(
-                        `Configure server entry verification. Nora supports **4 different verification types**:\n` +
-                        `• **🔘 Click to Verify:** Instant 1-click button for frictionless verification.\n` +
-                        `• **🔒 CAPTCHA:** Distorted image security code to block raids and userbots.\n` +
-                        `• **⭐ React:** Reaction emoji on a welcome/rules message.\n` +
-                        `• **🎮 Roblox:** Verifies and links Roblox accounts for group rank sync.`
+                        `Configure server entry verification. Nora supports 4 challenge types:\n` +
+                        `• **1-Click Button:** Instant frictionless verification.\n` +
+                        `• **Anti-Bot CAPTCHA:** Distorted image security code to block raids.\n` +
+                        `• **Reaction:** Reaction emoji on a verification message.\n` +
+                        `• **Roblox:** Verifies and links Roblox accounts for group sync.`
                     )
                     .addFields(
-                        { name: 'Active Challenge Mode', value: `**${typeLabels[currentType] || '🔒 Anti-Bot CAPTCHA'}**`, inline: true },
-                        { name: 'Spawn Channel', value: settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : '*None (Will use current)*', inline: true },
+                        { name: 'Active Challenge Mode', value: `**${typeLabels[currentType] || 'Anti-Bot CAPTCHA'}**`, inline: true },
+                        { name: 'Spawn Channel', value: settings.verifyChannelId ? `<#${settings.verifyChannelId}>` : '*Current Channel*', inline: true },
                         { name: `Verified Role(s) (${verifiedRoles.length}/${maxVerifyRoles})`, value: verifiedRoles.length > 0 ? verifiedRoles.map(id => `<@&${id}>`).join(' ') : '*None (Required)*', inline: true },
-                        { name: 'Quarantine Role', value: settings.unverifiedRoleId ? `<@&${settings.unverifiedRoleId}>` : '*None (Optional)*', inline: true },
-                        { name: 'Strip Quarantine on Verify', value: settings.removeUnverifiedRoleOnVerify !== false ? '🟢 Yes' : '🔴 No', inline: true },
+                        { name: 'Quarantine Role', value: settings.unverifiedRoleId ? `<@&${settings.unverifiedRoleId}>` : '*None*', inline: true },
+                        { name: 'Strip Quarantine on Verify', value: settings.removeUnverifiedRoleOnVerify !== false ? '**Yes**' : '**No**', inline: true },
                         { name: 'Audit Log Channel', value: settings.verificationLogChannelId ? `<#${settings.verificationLogChannelId}>` : '*Default Log Channel*', inline: true },
-                        { name: 'Tier Limit', value: isPremium ? '⭐ **Nora Plus** (Up to 5 roles)' : '⚡ **Free Tier** (Up to 3 roles)', inline: true },
+                        { name: 'Tier Limit', value: isPremium ? '**Nora Plus (Up to 5 roles)**' : '**Free Tier (Up to 3 roles)**', inline: true },
                         { name: 'Custom Embed Title', value: `\`${settings.verifyEmbedTitle || 'Server Verification Required'}\``, inline: true },
-                        { name: 'Button Style', value: `${settings.verifyBtnEmoji || '🔒'} \`${settings.verifyBtnLabel || 'Verify Account'}\` (${settings.verifyEmbedColor || '#5865F2'})`, inline: true }
+                        { name: 'Button Label & Accent', value: `\`${settings.verifyBtnLabel || 'Verify Account'}\` (${settings.verifyEmbedColor || '#5865F2'})`, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -526,10 +537,10 @@ module.exports = {
                         .setCustomId('action_verify_type')
                         .setPlaceholder('Choose Active Verification Type...')
                         .addOptions([
-                            { label: 'Anti-Bot CAPTCHA (Image Challenge)', value: 'captcha', description: 'Visual distorted image security code test', emoji: '🔒', default: currentType === 'captcha' },
-                            { label: 'Click to Verify (1-Click Button)', value: 'button', description: 'Immediate 1-click instant verification button', emoji: '🔘', default: currentType === 'button' },
-                            { label: 'React Verification (Emoji)', value: 'reaction', description: 'React with an emoji to gain access', emoji: '⭐', default: currentType === 'reaction' },
-                            { label: 'Roblox Account Verification', value: 'roblox', description: 'Link Roblox profile to Discord server', emoji: '🎮', default: currentType === 'roblox' }
+                            { label: 'Anti-Bot CAPTCHA (Image Challenge)', value: 'captcha', description: 'Visual distorted image security code test', default: currentType === 'captcha' },
+                            { label: 'Click to Verify (1-Click Button)', value: 'button', description: 'Immediate 1-click instant verification button', default: currentType === 'button' },
+                            { label: 'React Verification (Emoji)', value: 'reaction', description: 'React with an emoji to gain access', default: currentType === 'reaction' },
+                            { label: 'Roblox Account Verification', value: 'roblox', description: 'Link Roblox profile to Discord server', default: currentType === 'roblox' }
                         ])
                 );
 
@@ -554,27 +565,27 @@ module.exports = {
                 );
 
                 const rowE = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_verify_spawn_active').setLabel(`Deploy ${(currentType).toUpperCase()} Panel`).setStyle(ButtonStyle.Success).setEmoji('🚀'),
-                    new ButtonBuilder().setCustomId('action_verify_customize_modal').setLabel('🎨 Embed Style').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('action_verify_spawn_active').setLabel(`Deploy ${(currentType).toUpperCase()} Panel`).setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_verify_customize_modal').setLabel('Customize Embed').setStyle(ButtonStyle.Primary),
                     new ButtonBuilder().setCustomId('action_remove_unverified_toggle').setLabel(settings.removeUnverifiedRoleOnVerify !== false ? 'Strip Role: ON' : 'Strip Role: OFF').setStyle(settings.removeUnverifiedRoleOnVerify !== false ? ButtonStyle.Primary : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('go_back').setLabel('◀️ Main Menu').setStyle(ButtonStyle.Secondary),
-                    new ButtonBuilder().setLabel('🌐 Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
+                    new ButtonBuilder().setCustomId('go_back').setLabel('Main Menu').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setLabel('Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
                 );
 
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, rowE] };
             }
 
             // ==========================================
-            // 🎫 SUPPORT TICKETS
+            // SUPPORT TICKETS
             // ==========================================
             if (viewName === 'view_tickets') {
-                embed.setTitle('🎫 Support Ticket System')
+                embed.setTitle('Support Ticket System')
                     .setDescription('Configure private support tickets with customizable panel titles, descriptions, and staff roles.')
                     .addFields(
-                        { name: 'Parent Category', value: settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : '🔴 Unset', inline: true },
-                        { name: 'Panel Channel', value: settings.ticketChannelId ? `<#${settings.ticketChannelId}>` : '🔴 Unset', inline: true },
-                        { name: 'Support Staff Role', value: settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : '🔴 Unset', inline: true },
-                        { name: 'Auto-Archive', value: settings.ticketAutoArchive ? '🟢 Enabled' : '🔴 Disabled', inline: true },
+                        { name: 'Parent Category', value: settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : '*Unset*', inline: true },
+                        { name: 'Panel Channel', value: settings.ticketChannelId ? `<#${settings.ticketChannelId}>` : '*Unset*', inline: true },
+                        { name: 'Support Staff Role', value: settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : '*Unset*', inline: true },
+                        { name: 'Auto-Archive', value: settings.ticketAutoArchive ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: 'Tickets Created', value: `#${settings.ticketLastNumber || 0}`, inline: true }
                     );
 
@@ -596,7 +607,7 @@ module.exports = {
             }
 
             // ==========================================
-            // 🎭 SELF ROLES, AUTORESPONDERS & AI
+            // SELF ROLES, AUTORESPONDERS & AI
             // ==========================================
             if (viewName === 'view_utility') {
                 embed.setTitle('🎭 Self Roles, Autoresponders & AI')
