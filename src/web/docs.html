@@ -3,21 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora Studio | Architectural Overview & Docs</title>
-    <meta name="description" content="Comprehensive documentation and inside look into Nora Studio's architecture.">
+    <title>Nora Studio | Documentation & System Guide</title>
+    <meta name="description" content="Comprehensive documentation and architectural guide for Nora Studio: Discord bot features, Roblox sync, Starboard v3.0, Math Counting, and AutoMod.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --site-bg: #070706;
-            --primary: #FFFFFF;
-            --primary-hover: #EEEEEC;
-            --border: #191918;
-            --border-hover: #222221;
-            --muted: #9D9D9D;
-            --card-bg: #111110;
-            --text: #EEEEEC;
+            --bg: #0B0C12;
+            --card-bg: rgba(16, 17, 26, 0.75);
+            --card-hover: rgba(25, 27, 40, 0.85);
+            --blurple: #5865F2;
+            --blurple-glow: rgba(88, 101, 242, 0.25);
+            --primary: #ffffff;
+            --text: #F2F3F5;
+            --muted: #949BA4;
+            --border: rgba(255, 255, 255, 0.08);
+            --code-bg: rgba(0, 0, 0, 0.4);
+            --success: #23A55A;
+            --warning: #FEE75C;
+            --danger: #ED4245;
         }
 
         * {
@@ -27,41 +32,44 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--site-bg);
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
+            background-attachment: fixed;
             color: var(--text);
             min-height: 100vh;
-            overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
-            background-attachment: fixed;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 0 24px;
             width: 100%;
         }
 
-        /* Header / Navbar */
+        /* Top Header */
         header {
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(12px);
-            background: rgba(7, 7, 6, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(16, 17, 26, 0.75);
             border-bottom: 1px solid var(--border);
+            height: 72px;
         }
 
         .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 70px;
+            height: 100%;
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 24px;
@@ -71,113 +79,142 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 1.15rem;
             color: white;
             text-decoration: none;
+            letter-spacing: -0.3px;
         }
 
         .brand img {
             width: 32px;
             height: 32px;
-            border-radius: 6px;
+            border-radius: 8px;
+            object-fit: contain;
         }
 
         .nav-links {
             display: flex;
-            gap: 28px;
+            align-items: center;
+            gap: 24px;
         }
 
         .nav-links a {
-            font-weight: 500;
-            color: var(--text);
+            font-weight: 600;
+            color: var(--muted);
             text-decoration: none;
             transition: color 0.2s ease;
-            opacity: 0.8;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .nav-links a:hover, .nav-links a.active {
-            color: var(--primary);
-            opacity: 1;
+            color: #ffffff;
         }
 
-        .btn-header {
-            background: var(--card-bg);
+        .btn-nav-dash {
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
             color: white;
-            padding: 8px 20px;
+            padding: 8px 18px;
             border-radius: 999px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.85rem;
-            transition: 0.2s;
+            transition: all 0.2s ease;
         }
 
-        .btn-header:hover {
-            background: var(--border-hover);
-            border-color: rgba(255, 255, 255, 0.15);
+        .btn-nav-dash:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
-        /* Docs Wrapper */
+        /* Docs Content */
         .doc-wrapper {
-            padding: 60px 0;
+            padding: 50px 0 80px;
             flex-grow: 1;
         }
 
         .doc-card {
             background: var(--card-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .doc-header {
+            margin-bottom: 36px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 28px;
+        }
+
+        .doc-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(88, 101, 242, 0.12);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            border-radius: 999px;
+            color: #8b96ff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
         }
 
         h1 {
-            font-size: 2.2rem;
+            font-size: 2.3rem;
             font-weight: 800;
             color: white;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             letter-spacing: -0.5px;
         }
 
         .subtitle {
             color: var(--muted);
-            font-size: 1rem;
-            margin-bottom: 40px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        section {
+            margin-bottom: 42px;
         }
 
         h2 {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             color: white;
-            margin-top: 40px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-weight: 700;
+            gap: 12px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
         }
 
-        h2::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
+        h2 i {
+            color: var(--blurple);
+            font-size: 1.2rem;
         }
 
         h3 {
-            font-size: 1.2rem;
-            color: white;
-            margin-top: 25px;
-            margin-bottom: 10px;
-            font-weight: 600;
+            font-size: 1.15rem;
+            color: #ffffff;
+            margin: 22px 0 10px;
+            font-weight: 700;
         }
 
         p {
             color: var(--muted);
             line-height: 1.7;
             font-size: 0.95rem;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         ul {
@@ -185,24 +222,96 @@
             line-height: 1.7;
             font-size: 0.95rem;
             margin-bottom: 20px;
-            padding-left: 20px;
+            padding-left: 24px;
         }
 
         li {
             margin-bottom: 8px;
         }
 
-        section {
-            margin-bottom: 35px;
+        strong {
+            color: #F2F3F5;
         }
 
+        code {
+            background: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 2px 7px;
+            border-radius: 6px;
+            color: #a5b4fc;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.88rem;
+        }
+
+        /* Feature Highlight Callout Box */
+        .callout-box {
+            background: rgba(88, 101, 242, 0.08);
+            border: 1px solid rgba(88, 101, 242, 0.25);
+            border-radius: 14px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .callout-icon {
+            font-size: 1.3rem;
+            color: var(--blurple);
+            margin-top: 2px;
+        }
+
+        .callout-text h4 {
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .callout-text p {
+            margin: 0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        /* Command Tables */
+        .cmd-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 28px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .cmd-table th {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 12px 16px;
+            text-align: left;
+            color: #ffffff;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cmd-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--muted);
+        }
+
+        .cmd-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Footer */
         footer {
             border-top: 1px solid var(--border);
-            padding: 40px 0;
+            padding: 36px 0;
             text-align: center;
             color: var(--muted);
             font-size: 0.85rem;
-            background: #0b0b0a;
+            background: rgba(11, 12, 18, 0.8);
         }
     </style>
 </head>
@@ -210,99 +319,186 @@
     <header>
         <div class="nav-container">
             <a href="/" class="brand">
-                <img src="nora.png" alt="Nora Logo">
-                <span>Nora Studio</span>
+                <img src="nora.png" alt="Nora Studio">
+                <span>NORA STUDIO</span>
             </a>
             <nav class="nav-links">
-                <a href="/install">Invite</a>
-                <a href="/docs" class="active">Docs</a>
-                <a href="/dashboard">Dashboard</a>
-                <a href="/team">Team</a>
-                <a href="/legal">Legal</a>
+                <a href="/"><i class="fas fa-home"></i> Home</a>
+                <a href="/install"><i class="fas fa-plus-circle"></i> Invite</a>
+                <a href="/docs" class="active"><i class="fas fa-book"></i> Docs</a>
+                <a href="/status"><i class="fas fa-signal"></i> Status</a>
+                <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
             </nav>
-            <a href="/dashboard" class="btn-header">Open Dashboard</a>
+            <a href="/dashboard" class="btn-nav-dash"><i class="fas fa-sliders-h"></i> Dashboard</a>
         </div>
     </header>
 
     <main class="doc-wrapper">
         <div class="container">
             <div class="doc-card">
-                <h1>Architectural Overview & Documentation</h1>
-                <p class="subtitle">An inside look into Nora Studio's privacy-first Discord ecosystem</p>
+                <div class="doc-header">
+                    <span class="doc-tag"><i class="fas fa-book-open"></i> Nora Architecture & Docs</span>
+                    <h1>System Documentation & Command Guide</h1>
+                    <p class="subtitle">Complete technical reference for Nora Studio's automation, games, verification, and moderation systems.</p>
+                </div>
 
                 <section>
-                    <p><strong>Nora Studio</strong> is an all-in-one Discord community engagement, automation, and safety ecosystem engineered to provide enterprise-grade moderation, member verification, collaborative chat games, and leveling while maintaining an absolute commitment to user privacy. Following the <strong>v2.6 upgrade</strong>, Nora supports universal text prefix commands (<code>n!</code>), multi-mode verification engines, an AFK availability notifier, and the real-time <strong>Nora Studio</strong> web management dashboard.</p>
-                </section>
-
-                <section>
-                    <h2>1. Dual-Execution Engine: Slash & Universal Prefix (n!)</h2>
-                    <p>Every command in Nora is accessible via both Discord Slash Commands (<code>/</code>) and standard chat text prefixes (<code>n!</code>, <code>n?</code>, or <code>@Nora</code>), giving your community maximum flexibility on mobile and desktop alike.</p>
+                    <h2><i class="fas fa-rocket"></i> Quickstart Guide</h2>
+                    <p>Get Nora running in your Discord server in less than 60 seconds:</p>
                     <ul>
-                        <li><strong>Zero-Latency Execution:</strong> Subcommands, arguments, and mentions (e.g. <code>n!warn @user spamming</code>, <code>n!afk studying</code>, <code>n!rank @user</code>) are resolved instantly.</li>
-                        <li><strong>Built-In Shorthand Aliases:</strong> Quick shortcuts like <code>n!h</code> (help), <code>n!p</code> (ping), <code>n!lb</code> (leaderboard), <code>n!card</code> (mycard), <code>n!story</code> (onewordstory), and <code>n!w</code> (warn).</li>
-                        <li><strong>Consistent Server-Side Security:</strong> Member permissions (e.g., Ban Members, Manage Guild) are strictly validated on both prefix and slash commands.</li>
+                        <li><strong>Step 1 — Authorize Application:</strong> Visit <a href="/install" style="color: #a5b4fc;">/install</a> and choose your target server with standard administrator permissions.</li>
+                        <li><strong>Step 2 — Interactive Setup:</strong> Type <code>/setup dashboard</code> in any channel to view and configure all community modules.</li>
+                        <li><strong>Step 3 — Web Dashboard:</strong> Log in at <a href="/dashboard" style="color: #a5b4fc;">vaztinix.dev/dashboard</a> to manage channels, roles, autoresponders, and member rank synchronization.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>2. Multi-Mode Member Verification (v2.6)</h2>
-                    <p>Protect your community against raid bots, alt accounts, and spam rings with our 4-way verification engine, configurable in <code>/setup verify</code> or the web dashboard:</p>
+                    <h2><i class="fas fa-cubes-stacked"></i> Automated Roblox Group Rank Sync</h2>
+                    <p>Seamlessly connect your Roblox group hierarchy to Discord server roles:</p>
                     <ul>
-                        <li><strong>1-Click Instant Button:</strong> Frictionless single-click role grant for fast onboarding.</li>
-                        <li><strong>Anti-Bot Visual CAPTCHA:</strong> High-security distorted SVG/PNG code verification tested against automated bot scripts.</li>
-                        <li><strong>Emoji Reaction Verification:</strong> Classic pre-reacted embed message where adding a reaction grants the verified role.</li>
-                        <li><strong>Roblox Identity Linking:</strong> Cryptographic account verification syncing Roblox groups, ranks, and server roles.</li>
+                        <li><strong>Group Binding:</strong> Use <code>/roblox profile</code> or configure your Group ID in the web dashboard under Onboarding & Safety.</li>
+                        <li><strong>Automated Role Mapping:</strong> Assign Discord roles directly matching Roblox group ranks (Guest, Member, Officer, Developer, Owner).</li>
+                        <li><strong>Zero-Friction Verification:</strong> Members verify using single-click bio description matching or cryptographic web handshake.</li>
+                    </ul>
+                    <div class="callout-box">
+                        <div class="callout-icon"><i class="fas fa-shield-check"></i></div>
+                        <div class="callout-text">
+                            <h4>Roblox Group Anti-Impersonation</h4>
+                            <p>Nora caches group rank tokens securely and checks against the public Roblox Cloud API. Suspicious rapid rank manipulation triggers automated audit warnings in your logging channel.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2><i class="fas fa-star"></i> Dynamic Starboard v3.0</h2>
+                    <p>Highlight your community's funniest and most memorable messages with dynamic tier styling:</p>
+                    <table class="cmd-table">
+                        <thead>
+                            <tr>
+                                <th>Stars Required</th>
+                                <th>Tier Title</th>
+                                <th>Embed Color</th>
+                                <th>Visual Flare</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>3+ Stars</td>
+                                <td>⭐ Bronze Star</td>
+                                <td>Gold (#FFD700)</td>
+                                <td>Clean single-reaction pin</td>
+                            </tr>
+                            <tr>
+                                <td>6+ Stars</td>
+                                <td>🌟 Golden Flare</td>
+                                <td>Warm Orange (#FFA500)</td>
+                                <td>Highlighted community post</td>
+                            </tr>
+                            <tr>
+                                <td>10+ Stars</td>
+                                <td>✨ Radiant Sparkles</td>
+                                <td>Vibrant Flare (#FF7700)</td>
+                                <td>Server top-feed contender</td>
+                            </tr>
+                            <tr>
+                                <td>20+ Stars</td>
+                                <td>💫 Supernova Star</td>
+                                <td>Fiery Red (#FF2200)</td>
+                                <td>Hall of Fame milestone</td>
+                            </tr>
+                            <tr>
+                                <td>50+ Stars</td>
+                                <td>🌠 Cosmic Mythic</td>
+                                <td>Amethyst Purple (#9B59B6)</td>
+                                <td>Legendary community highlight</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>Configure star channel, reaction thresholds, and self-star restrictions with <code>/setup starboard</code> or in the dashboard.</p>
+                </section>
+
+                <section>
+                    <h2><i class="fas fa-calculator"></i> Collaborative Math Counting</h2>
+                    <p>Keep channels active with sequential math counting:</p>
+                    <ul>
+                        <li><strong>Mathematical Parser:</strong> Members can submit numbers directly (<code>100</code>) or valid math expressions (<code>50 + 50</code>, <code>10^2</code>, <code>25 * 4</code>).</li>
+                        <li><strong>Strict Anti-Double-Count:</strong> A user cannot count twice in a row. Teamwork is mandatory.</li>
+                        <li><strong>Streak Records:</strong> Track highest server count streaks with <code>/counting stats</code> and top contributors with <code>/counting leaderboard</code>.</li>
+                        <li><strong>Configurable Strict Mode:</strong> Choose whether incorrect numbers reset the counter back to 0 or simply get deleted with a warning.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>3. AFK & Availability Engine</h2>
-                    <p>Keep your members informed about chatter availability without chat spam:</p>
+                    <h2><i class="fas fa-shield-virus"></i> Native Discord AutoMod & Chat Defense</h2>
+                    <p>Protect server chat with sub-4ms native gateway filtering:</p>
                     <ul>
-                        <li><strong>Instant Setup:</strong> Type <code>n!afk [reason]</code> or <code>/afk [reason]</code> to set your status.</li>
-                        <li><strong>Auto-Nickname Prefixing:</strong> Automatically prepends <code>[AFK]</code> to manageable members' server nicknames.</li>
-                        <li><strong>Mention Notifier & Auto-Cleanup:</strong> When someone pings an AFK user, Nora replies with their status and auto-deletes the notification to keep channels tidy.</li>
-                        <li><strong>Seamless Return:</strong> Simply typing a message in any channel immediately removes your AFK status and restores your original nickname.</li>
+                        <li><strong>Phishing & Scam Link Blocker:</strong> Automatically detects and removes newly registered malicious domains and fake Nitro links.</li>
+                        <li><strong>Mass Mention & Raid Shield:</strong> Blocks messages containing >5 mentions and prevents mass spam joins.</li>
+                        <li><strong>Custom Mod Responses:</strong> Configure automatic timeout actions and tailored rule violation warnings via <code>/setup automod</code>.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>4. Collaborative Community Games</h2>
-                    <p>Boost chat retention with cooperative server-wide mini-games:</p>
-                    <ul>
-                        <li><strong>Sequential Counting:</strong> Math-checked sequential counting channel with high-score tracking, anti-double-counting protection, and bonus XP.</li>
-                        <li><strong>One Word Story:</strong> Multi-author collaborative storytelling with automated punctuation triggers, contributor leaderboards, and milestone archiving.</li>
-                        <li><strong>Rock Paper Scissors & Guessing:</strong> Quick interactive games against Nora with XP wagering.</li>
-                    </ul>
+                    <h2><i class="fas fa-terminal"></i> Essential Command Catalog</h2>
+                    <table class="cmd-table">
+                        <thead>
+                            <tr>
+                                <th>Command</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>/setup dashboard</code></td>
+                                <td>Setup</td>
+                                <td>Open interactive server management and settings interface.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/counting stats</code></td>
+                                <td>Games</td>
+                                <td>View current count, server record streak, and last counter.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/starboard stats</code></td>
+                                <td>Games</td>
+                                <td>Inspect starboard channel, threshold, and top starred posts.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/verify check</code></td>
+                                <td>Utility</td>
+                                <td>Check and synchronize member verification and Roblox ranks.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/afk [reason]</code></td>
+                                <td>Utility</td>
+                                <td>Set AFK status with mention alerts and auto-nickname prefix.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/ticket</code></td>
+                                <td>Support</td>
+                                <td>Open private staff inquiry ticket with automated HTML transcript.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/rank [@user]</code></td>
+                                <td>Leveling</td>
+                                <td>View XP level, chat rank, and custom card progression.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/purge [count]</code></td>
+                                <td>Moderation</td>
+                                <td>Bulk clean recent channel messages with audit logging.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </section>
-
-                <section>
-                    <h2>5. Consolidated /setup Management Hub</h2>
-                    <p>Configure every module in your server from a single organized interface:</p>
-                    <ul>
-                        <li><strong>Organized Module Dashboard:</strong> View active status (🟢 On / 🔴 Off) across Welcomer, Leveling, AutoMod, Logging, Games, Verification, and Tickets.</li>
-                        <li><strong>Direct Subcommand Routing:</strong> Fast jumpers like <code>/setup verify</code>, <code>/setup automod</code>, <code>/setup leveling</code>, and <code>/setup logging</code>.</li>
-                        <li><strong>Multi-Audit Log Routing:</strong> Direct dedicated log channels for deleted messages, member joins/leaves, voice states, and AutoMod triggers.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2>6. Privacy-First Data Protocol: "My Card"</h2>
-                    <p>Privacy is not an afterthought; it is the foundation of Nora. Nora is built on a "Zero-Access" architecture:</p>
-                    <ul>
-                        <li><strong>User Transparency:</strong> The <code>/mycard</code> or <code>n!mycard</code> command provides a real-time window into stored database records.</li>
-                        <li><strong>The Sovereign Data Kill Switch:</strong> The "Erase Data" button allows any member to immediately and permanently delete their leveling statistics, XP, and Roblox bindings across all Nora nodes.</li>
-                        <li><strong>Ephemeral Message Processing:</strong> Chat messages are processed in volatile memory for AutoMod and AI triggers and immediately discarded.</li>
-                    </ul>
-                </section>
-
             </div>
         </div>
     </main>
 
     <footer>
         <div class="container">
-            &copy; 2026 Nora Studio. All rights reserved.
+            &copy; 2026 Nora Studio. Built for Discord Communities.
         </div>
     </footer>
 </body>

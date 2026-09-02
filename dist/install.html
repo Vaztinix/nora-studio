@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Nora to Discord</title>
-    <meta name="description" content="Add Nora to your Discord server for advanced moderation and AI assistance.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Add Nora to Discord | Nora Studio</title>
+    <meta name="description" content="Authorize Nora for your Discord server. Automated Roblox Group Sync, dynamic Starboard v3.0, collaborative Math Counting, and native AutoMod.">
     <link rel="icon" type="image/png" href="nora.png">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --site-bg: #070706;
-            --primary: #FFFFFF;
-            --primary-hover: #EEEEEC;
-            --border: #191918;
-            --border-hover: #222221;
-            --muted: #9D9D9D;
-            --card-bg: #111110;
-            --text: #EEEEEC;
+            --bg: #0B0C12;
+            --card-bg: rgba(16, 17, 26, 0.85);
+            --blurple: #5865F2;
+            --blurple-hover: #4752C4;
+            --text: #F2F3F5;
+            --muted: #949BA4;
+            --border: rgba(255, 255, 255, 0.08);
+            --success: #23A55A;
         }
 
         * {
@@ -26,29 +27,35 @@
         }
 
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--site-bg);
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.18) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
+            background-attachment: fixed;
             color: var(--text);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
-            background-attachment: fixed;
+            padding: 24px;
         }
 
-        .container {
+        .invite-card {
             text-align: center;
-            padding: 50px;
+            padding: 48px 36px;
             background: var(--card-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            max-width: 500px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border-radius: 24px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(88, 101, 242, 0.15);
             animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            position: relative;
+            overflow: hidden;
         }
 
         @keyframes floatUp {
@@ -56,82 +63,185 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        .icon-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 25px;
+        .partner-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(88, 101, 242, 0.12);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            color: #8b96ff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        img {
-            width: 100px;
-            height: 100px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
+        .avatar-wrap {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .avatar-glow {
+            position: absolute;
+            inset: -8px;
+            background: var(--blurple);
+            filter: blur(20px);
+            opacity: 0.4;
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .bot-avatar {
+            position: relative;
+            z-index: 1;
+            width: 96px;
+            height: 96px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
         }
 
         h1 {
-            font-size: 2.2rem;
-            margin: 0 0 15px;
+            font-size: 2rem;
+            margin: 0 0 10px;
             font-weight: 800;
             color: #ffffff;
+            letter-spacing: -0.5px;
         }
 
-        p {
+        .desc {
             color: var(--muted);
-            margin: 0 0 35px;
+            margin: 0 0 24px;
             line-height: 1.6;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
-        .btn {
-            padding: 14px 35px;
-            background: var(--primary);
-            color: #0b0b0a;
-            text-decoration: none;
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 28px;
+            text-align: left;
+        }
+
+        .feat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.82rem;
             font-weight: 600;
-            border-radius: 999px;
-            transition: all 0.2s ease;
-            display: inline-block;
+            color: #E0E2E7;
+        }
+
+        .feat-item i {
+            color: var(--blurple);
+            font-size: 0.95rem;
+        }
+
+        .btn-authorize {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 28px;
+            background: linear-gradient(135deg, var(--blurple) 0%, #4F46E5 100%);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
             font-size: 1rem;
+            border-radius: 14px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border: none;
             cursor: pointer;
+            box-shadow: 0 8px 24px rgba(88, 101, 242, 0.35);
         }
 
-        .btn:hover {
+        .btn-authorize:hover {
             transform: translateY(-2px);
-            background: var(--primary-hover);
+            box-shadow: 0 12px 30px rgba(88, 101, 242, 0.5);
+            filter: brightness(1.1);
         }
 
-        .back-link {
-            display: block;
-            margin-top: 25px;
+        .bottom-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .bottom-link {
             color: var(--muted);
             text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.85rem;
+            font-weight: 600;
             transition: color 0.2s;
         }
 
-        .back-link:hover {
-            color: white;
+        .bottom-link:hover {
+            color: #ffffff;
+        }
+
+        .success-box {
+            display: none;
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(35, 165, 90, 0.12);
+            border: 1px solid var(--success);
+            border-radius: 12px;
+            color: var(--success);
+            font-weight: 700;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="icon-wrapper">
-            <img src="nora.png" alt="Nora" onerror="this.onerror=null; this.src='nora.png'">
-        </div>
-        <h1>Add Nora</h1>
-        <p>Enhance your community with Nora's privacy-first AI moderation and high-performance utility suite. Standard administrative permissions are required for full security integration.</p>
-        
-        <a href="#" id="invite-link" class="btn">Authorize Application</a>
-        
-        <div id="success-msg" style="display: none; margin-top: 20px; padding: 15px; background: rgba(35, 165, 90, 0.1); border: 1px solid #23a55a; border-radius: 12px; color: #23a55a; font-weight: 600;">
-            ✅ Authorization Successful! Returning to previous page...
+    <div class="invite-card">
+        <div class="partner-pill">
+            <i class="fas fa-shield-alt"></i> Official Discord Application
         </div>
 
-        <a href="/" class="back-link">← Return to Home</a>
+        <div class="avatar-wrap">
+            <div class="avatar-glow"></div>
+            <img src="nora.png" alt="Nora Studio" class="bot-avatar" onerror="this.onerror=null; this.src='nora.png'">
+        </div>
+
+        <h1>Add Nora to Server</h1>
+        <p class="desc">
+            Empower your Discord community with automated <strong>Roblox Group Sync</strong>, dynamic <strong>Starboard v3.0</strong>, <strong>Math Counting</strong>, and native <strong>AutoMod</strong> defense.
+        </p>
+
+        <div class="features-grid">
+            <div class="feat-item"><i class="fas fa-cubes-stacked"></i> Roblox Rank Sync</div>
+            <div class="feat-item"><i class="fas fa-star"></i> Starboard v3.0</div>
+            <div class="feat-item"><i class="fas fa-calculator"></i> Math Counting</div>
+            <div class="feat-item"><i class="fas fa-shield-virus"></i> Native AutoMod</div>
+        </div>
+
+        <a href="#" id="invite-link" class="btn-authorize">
+            <i class="fab fa-discord" style="font-size: 1.25rem;"></i>
+            <span>Authorize & Add Nora</span>
+        </a>
+
+        <div id="success-msg" class="success-box">
+            <i class="fas fa-circle-check"></i> Authorization Successful! Redirecting to Dashboard...
+        </div>
+
+        <div class="bottom-links">
+            <a href="/" class="bottom-link"><i class="fas fa-home"></i> Home</a>
+            <a href="/docs" class="bottom-link"><i class="fas fa-book"></i> Docs</a>
+            <a href="/status" class="bottom-link"><i class="fas fa-signal"></i> Status</a>
+            <a href="/dashboard" class="bottom-link"><i class="fas fa-sliders-h"></i> Dashboard</a>
+        </div>
     </div>
 
     <script>
@@ -147,7 +257,7 @@
             document.getElementById('success-msg').style.display = 'block';
             setTimeout(() => {
                 window.location.href = '/dashboard';
-            }, 3000);
+            }, 2500);
         }
     </script>
 </body>

@@ -1205,7 +1205,7 @@
         #auth-overlay {
             position: fixed;
             inset: 0;
-            background: #08080a radial-gradient(circle at 50% 15%, rgba(88, 101, 242, 0.16) 0%, rgba(10, 10, 15, 0.98) 75%, #050507 100%);
+            background: #0B0C12 radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.2) 0%, rgba(11, 12, 18, 0.98) 75%, #08090D 100%);
             z-index: 99999;
             display: flex;
             flex-direction: column;
@@ -1224,10 +1224,10 @@
             content: '';
             position: absolute;
             inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
             background-size: 28px 28px;
             pointer-events: none;
-            opacity: 0.8;
+            opacity: 1;
         }
 
         .auth-top-nav {
@@ -5012,18 +5012,36 @@
                             </div>
                         </div>
 
-                        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 10px 14px; font-weight: 700;">Main Menu</div>
-                        <button class="h-tab active" data-tab="tab-overview" onclick="showTab('tab-overview')"><span><i class="fas fa-chart-line"></i> Overview</span></button>
-                        <button class="h-tab" data-tab="tab-safety" onclick="showTab('tab-safety')"><span><i class="fas fa-shield-alt"></i> Security & Anti-Raid</span><span class="badge stable">v2.1</span></button>
-                        <button class="h-tab" data-tab="tab-verify" onclick="showTab('tab-verify')"><span><i class="fas fa-user-check"></i> Verification</span><span class="badge stable">v2.4</span></button>
+                        <!-- Core & Overview -->
+                        <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 12px 14px 6px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-compass" style="font-size: 0.7rem; color: var(--blurple);"></i> Core & Overview
+                        </div>
+                        <button class="h-tab active" data-tab="tab-overview" onclick="showTab('tab-overview')"><span><i class="fas fa-chart-line"></i> Dashboard</span></button>
+
+                        <!-- Community & Games -->
+                        <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 16px 14px 6px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-dice" style="font-size: 0.7rem; color: var(--blurple);"></i> Community & Games
+                        </div>
+                        <button class="h-tab" data-tab="tab-welcome" onclick="showTab('tab-welcome')"><span><i class="fas fa-calculator"></i> Games & Counting</span><span class="badge stable">v2.5</span></button>
+                        <button class="h-tab" data-tab="tab-starboard" onclick="showTab('tab-starboard')"><span><i class="fas fa-star"></i> Starboard v3.0</span><span class="badge stable">v3.0</span></button>
+                        <button class="h-tab" data-tab="tab-leveling" onclick="showTab('tab-leveling')"><span><i class="fas fa-trophy"></i> Leveling & XP</span><span class="badge stable">v2.3</span></button>
+
+                        <!-- Onboarding & Safety -->
+                        <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 16px 14px 6px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-shield-alt" style="font-size: 0.7rem; color: var(--blurple);"></i> Safety & Onboarding
+                        </div>
+                        <button class="h-tab" data-tab="tab-safety" onclick="showTab('tab-safety')"><span><i class="fas fa-shield-virus"></i> AutoMod Defense</span><span class="badge stable">v2.5</span></button>
+                        <button class="h-tab" data-tab="tab-verify" onclick="showTab('tab-verify')"><span><i class="fas fa-user-check"></i> Verification & Roblox</span><span class="badge stable">v2.6</span></button>
+                        <button class="h-tab" data-tab="tab-logging" onclick="showTab('tab-logging')"><span><i class="fas fa-file-alt"></i> Welcomer & Audit Logs</span><span class="badge stable">v2.0</span></button>
+
+                        <!-- Management & Tools -->
+                        <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 16px 14px 6px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-sliders-h" style="font-size: 0.7rem; color: var(--blurple);"></i> Management & Tools
+                        </div>
                         <button class="h-tab" data-tab="tab-tickets" onclick="showTab('tab-tickets')"><span><i class="fas fa-ticket-alt"></i> Support Ticketing</span><span class="badge beta">Beta</span></button>
-                        <button class="h-tab" data-tab="tab-starboard" onclick="showTab('tab-starboard')"><span><i class="fas fa-star"></i> Starboard</span><span class="badge stable">v2.5</span></button>
-                        <button class="h-tab" data-tab="tab-applications" onclick="showTab('tab-applications')"><span><i class="fas fa-file-signature"></i> Apps Builder</span><span class="badge dev">Dev</span></button>
-                        <button class="h-tab" data-tab="tab-reactionroles" onclick="showTab('tab-reactionroles')"><span><i class="fas fa-magic"></i> Reaction Roles</span><span class="badge stable">v2.0</span></button>
-                        <button class="h-tab" data-tab="tab-leveling" onclick="showTab('tab-leveling')"><span><i class="fas fa-trophy"></i> Leveling System</span><span class="badge stable">v2.3</span></button>
-                        <button class="h-tab" data-tab="tab-welcome" onclick="showTab('tab-welcome')"><span><i class="fas fa-gamepad"></i> Games & Counting</span><span class="badge stable">v2.0</span></button>
-                        <button class="h-tab" data-tab="tab-logging" onclick="showTab('tab-logging')"><span><i class="fas fa-file-alt"></i> Server Logging</span><span class="badge stable">v2.0</span></button>
                         <button class="h-tab" data-tab="tab-autoresponder" onclick="showTab('tab-autoresponder')"><span><i class="fas fa-reply"></i> Autoresponder</span><span class="badge stable">v2.1</span></button>
+                        <button class="h-tab" data-tab="tab-reactionroles" onclick="showTab('tab-reactionroles')"><span><i class="fas fa-magic"></i> Reaction Roles</span><span class="badge stable">v2.0</span></button>
+                        <button class="h-tab" data-tab="tab-applications" onclick="showTab('tab-applications')"><span><i class="fas fa-file-signature"></i> Apps Builder</span><span class="badge dev">Dev</span></button>
                         <button class="h-tab" data-tab="tab-feeds" onclick="showTab('tab-feeds')"><span><i class="fas fa-broadcast-tower"></i> Content Feeds</span><span class="badge beta">Beta</span></button>
                         <button class="h-tab" data-tab="tab-webhooks" onclick="showTab('tab-webhooks')"><span><i class="fas fa-network-wired"></i> Webhooks</span><span class="badge stable">v2.1</span></button>
                         

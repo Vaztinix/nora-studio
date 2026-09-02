@@ -6,18 +6,18 @@
     <title>Nora Studio | Transparency & Legal Docs</title>
     <meta name="description" content="Legal agreements, terms of service, and privacy policies for the Nora Discord workspace bot.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
-            --site-bg: #070706;
-            --primary: #FFFFFF;
-            --primary-hover: #EEEEEC;
-            --border: #191918;
-            --border-hover: #222221;
-            --muted: #9D9D9D;
-            --card-bg: #111110;
-            --text: #EEEEEC;
+            --site-bg: #0B0C12;
+            --primary: #5865F2;
+            --primary-hover: #4752C4;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            --muted: #949BA4;
+            --card-bg: rgba(16, 17, 26, 0.75);
+            --text: #F2F3F5;
         }
 
         * {
@@ -27,7 +27,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
             background-color: var(--site-bg);
             color: var(--text);
             min-height: 100vh;
@@ -35,8 +35,9 @@
             display: flex;
             flex-direction: column;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
             background-attachment: fixed;
         }
 
@@ -52,8 +53,9 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(12px);
-            background: rgba(7, 7, 6, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(16, 17, 26, 0.75);
             border-bottom: 1px solid var(--border);
         }
 
@@ -188,16 +190,18 @@
             color: var(--muted);
         }
 
-        .legal-switch:not(.active) #label-tos { color: #070706; }
-        .legal-switch.active #label-privacy { color: #070706; }
+        .legal-switch:not(.active) #label-tos { color: #ffffff; }
+        .legal-switch.active #label-privacy { color: #ffffff; }
 
         /* Document Styling */
         .legal-card {
             background: var(--card-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .legal-section {
@@ -243,11 +247,11 @@
 
         footer {
             border-top: 1px solid var(--border);
-            padding: 40px 0;
+            padding: 36px 0;
             text-align: center;
             color: var(--muted);
             font-size: 0.85rem;
-            background: #0b0b0a;
+            background: rgba(11, 12, 18, 0.8);
         }
     </style>
 </head>

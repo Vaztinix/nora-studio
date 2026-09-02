@@ -5,37 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nora Systems | Live Network Status</title>
     <link rel="icon" type="image/png" href="/nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-dark: #090d16;
-            --card-bg: rgba(17, 24, 39, 0.65);
+            --bg-dark: #0B0C12;
+            --card-bg: rgba(16, 17, 26, 0.75);
             --card-border: rgba(255, 255, 255, 0.08);
-            --primary: #7C3AED;
-            --primary-glow: rgba(124, 58, 237, 0.3);
-            --green: #10B981;
-            --green-glow: rgba(16, 185, 129, 0.25);
-            --amber: #F59E0B;
-            --amber-glow: rgba(245, 158, 11, 0.25);
-            --red: #EF4444;
-            --red-glow: rgba(239, 68, 68, 0.25);
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
+            --primary: #5865F2;
+            --primary-glow: rgba(88, 101, 242, 0.25);
+            --green: #23A55A;
+            --green-glow: rgba(35, 165, 90, 0.25);
+            --amber: #FEE75C;
+            --amber-glow: rgba(254, 231, 92, 0.25);
+            --red: #ED4245;
+            --red-glow: rgba(237, 66, 69, 0.25);
+            --text-main: #F2F3F5;
+            --text-muted: #949BA4;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.18) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
             background-attachment: fixed;
             color: var(--text-main);
             min-height: 100vh;
@@ -46,9 +47,9 @@
         /* Header */
         header {
             border-bottom: 1px solid var(--card-border);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            background: rgba(9, 13, 22, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(16, 17, 26, 0.75);
             position: sticky;
             top: 0;
             z-index: 100;
