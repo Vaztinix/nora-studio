@@ -64,49 +64,19 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg-base);
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0B0C12;
             color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
             background-image: 
-                radial-gradient(circle at 15% 15%, rgba(88, 101, 242, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 25%, rgba(139, 92, 246, 0.07) 0%, transparent 45%),
-                radial-gradient(circle at 50% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
             background-attachment: fixed;
             -webkit-font-smoothing: antialiased;
-        }
-
-        /* ===== AMBIENT GLOW EFFECTS ===== */
-        .ambient-glow {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(140px);
-            pointer-events: none;
-            z-index: 0;
-        }
-        .ambient-glow-1 {
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle, rgba(88, 101, 242, 0.14) 0%, transparent 70%);
-            top: -100px;
-            left: -150px;
-            animation: ambientDrift 12s ease-in-out infinite alternate;
-        }
-        .ambient-glow-2 {
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
-            top: 200px;
-            right: -200px;
-            animation: ambientDrift 14s ease-in-out infinite alternate-reverse;
-        }
-        @keyframes ambientDrift {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(40px, -30px) scale(1.1); }
-            100% { transform: translate(-30px, 40px) scale(0.95); }
         }
 
         /* ===== CONTAINER ===== */
@@ -274,18 +244,12 @@
 
         /* ===== HERO SECTION ===== */
         .hero-section {
-            padding: 85px 0 60px 0;
+            padding: 70px 0 50px 0;
             display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            gap: 60px;
+            grid-template-columns: 1.08fr 1fr;
+            gap: 55px;
             align-items: center;
             position: relative;
-        }
-        #hero-canvas {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
         }
 
         .hero-left {
@@ -301,37 +265,32 @@
             align-items: center;
             gap: 10px;
             background: rgba(88, 101, 242, 0.12);
-            border: 1px solid rgba(88, 101, 242, 0.3);
+            border: 1px solid rgba(88, 101, 242, 0.28);
             padding: 6px 16px;
             border-radius: var(--radius-full);
             font-size: 0.82rem;
             font-weight: 700;
-            color: #C7D2FE;
+            color: #D2D8FC;
             width: fit-content;
-            backdrop-filter: blur(10px);
         }
         .hero-announcement-pill i {
-            color: #818CF8;
+            color: #5865F2;
+            font-size: 0.95rem;
         }
 
         .hero-heading {
-            font-size: clamp(2.5rem, 4.8vw, 4rem);
+            font-size: clamp(2.5rem, 4.8vw, 3.9rem);
             font-weight: 800;
-            line-height: 1.08;
-            letter-spacing: -0.04em;
+            line-height: 1.1;
+            letter-spacing: -0.035em;
             color: #FFFFFF;
         }
-        .gradient-text {
-            background: linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 40%, #818CF8 75%, #06B6D4 100%);
-            background-size: 200% 200%;
+        .hero-highlight {
+            color: #5865F2;
+            background: linear-gradient(135deg, #7983F5 0%, #5865F2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: textShimmer 8s ease infinite;
-        }
-        @keyframes textShimmer {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+            display: inline-block;
         }
 
         .hero-description {
@@ -437,16 +396,36 @@
 
         .discord-mock-header {
             background: #1E1F22;
-            padding: 14px 20px;
+            padding: 12px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.3);
         }
+        .discord-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .discord-window-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .window-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .window-dot.close { background: #ED4245; }
+        .window-dot.min { background: #FEE75C; }
+        .window-dot.max { background: #57F287; }
+
         .discord-channel-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: 700;
             font-size: 0.95rem;
             color: #F2F3F5;
@@ -455,11 +434,20 @@
             color: #80848E;
             font-size: 1.1rem;
         }
+        .discord-channel-topic {
+            font-size: 0.8rem;
+            color: #949BA4;
+            font-weight: 400;
+            border-left: 1px solid #3F4147;
+            padding-left: 10px;
+            margin-left: 4px;
+        }
         .simulator-badge {
             font-size: 0.72rem;
             font-weight: 700;
-            color: #00A8FC;
-            background: rgba(0, 168, 252, 0.12);
+            color: #949BA4;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             padding: 4px 10px;
             border-radius: var(--radius-full);
             display: inline-flex;
@@ -552,14 +540,18 @@
             font-size: 0.95rem;
             color: #F2F3F5;
         }
-        .discord-bot-badge {
-            background: var(--blurple);
+        .discord-app-badge {
+            background: #5865F2;
             color: #FFFFFF;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
-            padding: 1px 5px;
-            border-radius: 4px;
-            text-transform: uppercase;
+            padding: 2px 5px;
+            border-radius: 3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            line-height: 1.2;
+            letter-spacing: 0.02em;
         }
         .discord-timestamp {
             font-size: 0.75rem;
@@ -1101,24 +1093,20 @@
     </style>
 </head>
 <body>
-    <!-- Ambient Glow Drops -->
-    <div class="ambient-glow ambient-glow-1"></div>
-    <div class="ambient-glow ambient-glow-2"></div>
-
     <!-- Sticky Header -->
     <header id="main-header">
         <div class="container nav-container">
             <a href="/" class="brand" id="brand-logo">
                 <img src="nora.png" alt="Nora Studio Logo">
                 <span>Nora Studio</span>
-                <span class="brand-badge">v3.0</span>
+                <span class="brand-badge">BOT</span>
             </a>
             
             <nav class="nav-links">
                 <a href="#features"><i class="fas fa-layer-group"></i> Features</a>
-                <a href="#simulator"><i class="fas fa-play"></i> Playground</a>
+                <a href="#simulator"><i class="fas fa-play"></i> Preview</a>
                 <a href="#commands"><i class="fas fa-terminal"></i> Commands</a>
-                <a href="#pricing"><i class="fas fa-gem"></i> Pricing</a>
+                <a href="#pricing"><i class="fas fa-tag"></i> Pricing</a>
                 <a href="/docs"><i class="fas fa-book"></i> Docs</a>
                 <a href="/status"><i class="fas fa-chart-line"></i> Status</a>
             </nav>
@@ -1137,19 +1125,17 @@
     <main>
         <!-- Hero Section -->
         <section class="container hero-section">
-            <canvas id="hero-canvas"></canvas>
-            
             <div class="hero-left">
                 <div class="hero-announcement-pill" id="hero-announcement">
-                    <i class="fas fa-sparkles"></i> Studio v3.0 • Real-Time Sync & Starboard Hall of Fame
+                    <i class="fab fa-discord"></i> Built for Discord Communities • 65+ Servers
                 </div>
                 
                 <h1 class="hero-heading">
-                    The Ultimate Discord Automation & <span class="gradient-text">Community Engine</span>
+                    The Complete Discord Bot for <span class="hero-highlight">Your Server</span>
                 </h1>
                 
                 <p class="hero-description">
-                    Empower your community with the all-new Nora Studio. Featuring zero-delay <strong>Roblox Group Rank Sync</strong>, sandboxed <strong>Counting Math</strong>, dynamic <strong>Starboard v3.0</strong>, 4-way verification gates, and native <strong>AutoMod Threat Shield</strong>—all operating on zero-trust, privacy-first infrastructure.
+                    Everything your Discord community needs in one fast, reliable bot. From automated <strong>Roblox Group Rank Sync</strong> and dynamic <strong>Starboard v3.0</strong> to collaborative <strong>Math Counting</strong>, member verification, and native <strong>AutoMod</strong> defense.
                 </p>
 
                 <div class="hero-cta-group">
@@ -1157,22 +1143,22 @@
                         <i class="fab fa-discord"></i> Add to Discord
                     </a>
                     <a href="/dashboard" class="btn-cta-secondary" id="btn-hero-dashboard">
-                        Open Dashboard <i class="fas fa-arrow-right"></i>
+                        <i class="fas fa-sliders-h"></i> Web Dashboard
                     </a>
                 </div>
 
                 <div class="hero-stats-bar">
                     <div class="stat-item">
                         <span class="stat-value" id="stat-servers">65+</span>
-                        <span class="stat-label">Active Guilds</span>
+                        <span class="stat-label">Active Servers</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value" id="stat-members">5,600+</span>
-                        <span class="stat-label">Protected Members</span>
+                        <span class="stat-value" id="stat-members">10,700+</span>
+                        <span class="stat-label">Total Members</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value">59</span>
-                        <span class="stat-label">Slash Commands</span>
+                        <span class="stat-label">Commands</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value" id="stat-ping">18ms</span>
@@ -1185,28 +1171,37 @@
             <div class="hero-simulator-wrapper" id="simulator">
                 <div class="discord-mock-window">
                     <div class="discord-mock-header">
-                        <div class="discord-channel-info">
-                            <i class="fas fa-hashtag"></i>
-                            <span id="sim-channel-title">starboard</span>
+                        <div class="discord-header-left">
+                            <div class="discord-window-controls">
+                                <span class="window-dot close"></span>
+                                <span class="window-dot min"></span>
+                                <span class="window-dot max"></span>
+                            </div>
+                            <div class="discord-channel-info">
+                                <i class="fas fa-hashtag"></i>
+                                <span id="sim-channel-title">starboard</span>
+                                <span class="discord-channel-topic" id="sim-channel-topic">Server highlight feed</span>
+                            </div>
                         </div>
                         <div class="simulator-badge">
-                            <i class="fas fa-bolt"></i> Live Sandbox
+                            <span class="live-dot" style="width: 6px; height: 6px;"></span>
+                            <span>Interactive Demo</span>
                         </div>
                     </div>
 
                     <!-- Simulator Mode Switcher -->
                     <div class="sim-tabs-bar">
                         <button class="sim-tab-btn active" onclick="switchSimTab('starboard', this)" id="tab-btn-starboard">
-                            <i class="fas fa-star" style="color: #F59E0B;"></i> Starboard v3.0
+                            <i class="fas fa-star" style="color: #F59E0B;"></i> Starboard
                         </button>
                         <button class="sim-tab-btn" onclick="switchSimTab('counting', this)" id="tab-btn-counting">
                             <i class="fas fa-calculator" style="color: #10B981;"></i> Math Counting
                         </button>
                         <button class="sim-tab-btn" onclick="switchSimTab('verify', this)" id="tab-btn-verify">
-                            <i class="fas fa-user-check" style="color: #06B6D4;"></i> Verification
+                            <i class="fas fa-shield-alt" style="color: #5865F2;"></i> Verification
                         </button>
                         <button class="sim-tab-btn" onclick="switchSimTab('automod', this)" id="tab-btn-automod">
-                            <i class="fas fa-shield-virus" style="color: #F43F5E;"></i> AutoMod Shield
+                            <i class="fas fa-shield-virus" style="color: #ED4245;"></i> AutoMod
                         </button>
                     </div>
 
@@ -1218,7 +1213,7 @@
                             <div class="discord-msg-body">
                                 <div class="discord-msg-header">
                                     <span class="discord-username">Nora</span>
-                                    <span class="discord-bot-badge">BOT</span>
+                                    <span class="discord-app-badge"><i class="fas fa-check" style="font-size: 8px;"></i> APP</span>
                                     <span class="discord-timestamp">Today at 1:00 AM</span>
                                 </div>
                                 <div id="sim-starboard-header" style="font-weight: 700; color: #FFD700; font-size: 0.95rem;">
@@ -1255,9 +1250,9 @@
         <section class="features-section" id="features">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-tag"><i class="fas fa-cube"></i> Architecture & Modules</span>
-                    <h2 class="section-title">Built for Performance, Security & Engagement</h2>
-                    <p class="section-subtitle">A complete suite of community-grade features built directly into one zero-latency bot framework.</p>
+                    <span class="section-tag"><i class="fas fa-layer-group"></i> Features</span>
+                    <h2 class="section-title">Everything Your Community Needs</h2>
+                    <p class="section-subtitle">Keep members active, reward highlights, secure joins, and protect chat with an all-in-one Discord bot.</p>
                 </div>
 
                 <div class="bento-grid">
@@ -1267,14 +1262,14 @@
                             <div class="bento-icon blurple"><i class="fas fa-cubes-stacked"></i></div>
                             <div class="bento-body">
                                 <h3>Automated Roblox Group Rank Sync</h3>
-                                <p>Bind multiple server roles directly to Roblox group ranks. Nora synchronizes member permissions, rank promotions, and role assignments in real-time with zero polling lag.</p>
+                                <p>Bind multiple Discord roles directly to Roblox group ranks. Nora synchronizes member permissions, promotions, and role assignments automatically without manual checking.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
-                            <span class="bento-chip">Zero Polling Lag</span>
+                            <span class="bento-chip">Zero Delay</span>
                             <span class="bento-chip">Multi-Group Bindings</span>
                             <span class="bento-chip">Anti-Impersonation</span>
-                            <span class="bento-chip">Instant Verify</span>
+                            <span class="bento-chip">Instant Role Assignment</span>
                         </div>
                     </div>
 
@@ -1299,13 +1294,13 @@
                         <div>
                             <div class="bento-icon emerald"><i class="fas fa-calculator"></i></div>
                             <div class="bento-body">
-                                <h3>Sandboxed Math Counting</h3>
-                                <p>Turn your counting channel into a collaborative game. Safely evaluates math expressions like <code>10*2+5</code> or <code>2^4</code> with milestone alerts and server contributor leaderboards.</p>
+                                <h3>Math & Counting Channel Game</h3>
+                                <p>Turn your counting channel into an active community game. Safely evaluates math expressions like <code>10*2+5</code> or <code>2^4</code> with milestone alerts and server leaderboards.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
-                            <span class="bento-chip">Math Sandbox</span>
-                            <span class="bento-chip">Milestone Alerts</span>
+                            <span class="bento-chip">Math Parser</span>
+                            <span class="bento-chip">Milestone Celebrations</span>
                             <span class="bento-chip">Anti-Double Count</span>
                         </div>
                     </div>
@@ -1320,7 +1315,7 @@
                             </div>
                         </div>
                         <div class="bento-badge-row">
-                            <span class="bento-chip">1-Click</span>
+                            <span class="bento-chip">1-Click Button</span>
                             <span class="bento-chip">Image CAPTCHA</span>
                             <span class="bento-chip">Auto-Role Sync</span>
                         </div>
@@ -1331,13 +1326,13 @@
                         <div>
                             <div class="bento-icon rose"><i class="fas fa-shield-halved"></i></div>
                             <div class="bento-body">
-                                <h3>AutoMod Threat Shield</h3>
-                                <p>Leverages Discord's native low-level AutoMod pipeline to instantly block spam links, mass pings, and profanity in under 5ms with zero bot latency.</p>
+                                <h3>Native Discord AutoMod & Safety</h3>
+                                <p>Leverages Discord's native low-level AutoMod pipeline to instantly block spam links, mass pings, and profanity in under 5ms with zero bot lag.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
                             <span class="bento-chip">Zero Latency</span>
-                            <span class="bento-chip">Native Discord AutoMod</span>
+                            <span class="bento-chip">Native AutoMod</span>
                             <span class="bento-chip">Anti-Scam</span>
                         </div>
                     </div>
@@ -1347,7 +1342,7 @@
                         <div>
                             <div class="bento-icon purple"><i class="fas fa-ticket-simple"></i></div>
                             <div class="bento-body">
-                                <h3>Support Ticketing & Custom Rank Cards</h3>
+                                <h3>Support Tickets & Custom Rank Cards</h3>
                                 <p>Deploy 1-click private ticket panels with questionnaire modals and searchable HTML transcripts. Combine with Nora's leveling engine for custom GIF rank cards and voice XP multipliers.</p>
                             </div>
                         </div>
@@ -1366,16 +1361,16 @@
         <section class="commands-section" id="commands">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-tag"><i class="fas fa-terminal"></i> Command Matrix</span>
-                    <h2 class="section-title">59 Global Slash & Prefix Commands</h2>
-                    <p class="section-subtitle">Every command is optimized for both Slash (<code>/</code>) and Prefix (<code>n!</code>) execution with rich interactive button interfaces.</p>
+                    <span class="section-tag"><i class="fas fa-terminal"></i> Commands</span>
+                    <h2 class="section-title">59 Ready-to-Use Discord Commands</h2>
+                    <p class="section-subtitle">Full support for Discord Slash (<code>/</code>) and classic Prefix (<code>n!</code>) commands with instant autocomplete.</p>
                 </div>
 
                 <div class="command-filter-bar">
                     <button class="filter-btn active" onclick="filterCommands('all', this)">All Commands</button>
                     <button class="filter-btn" onclick="filterCommands('games', this)">Games & Fun</button>
-                    <button class="filter-btn" onclick="filterCommands('moderation', this)">Moderation & Safety</button>
-                    <button class="filter-btn" onclick="filterCommands('setup', this)">Setup & Config</button>
+                    <button class="filter-btn" onclick="filterCommands('moderation', this)">Moderation</button>
+                    <button class="filter-btn" onclick="filterCommands('setup', this)">Server Setup</button>
                     <button class="filter-btn" onclick="filterCommands('utility', this)">Utilities & Tickets</button>
                 </div>
 
@@ -1389,9 +1384,9 @@
         <section class="pricing-section" id="pricing">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-tag"><i class="fas fa-gem"></i> Pricing & Upgrades</span>
-                    <h2 class="section-title">Simple, Transparent & Community-First</h2>
-                    <p class="section-subtitle">Everything you need for everyday operations is 100% free. Upgrade to Plus for maximum automation power.</p>
+                    <span class="section-tag"><i class="fas fa-tag"></i> Plans & Pricing</span>
+                    <h2 class="section-title">Free Forever. Upgrade for Power.</h2>
+                    <p class="section-subtitle">All core moderation, verification, and engagement features are 100% free forever. Upgrade to Plus for extra capacity.</p>
                 </div>
 
                 <div class="pricing-cards-container">
@@ -1616,16 +1611,18 @@
 
             const viewport = document.getElementById('sim-viewport');
             const channelTitle = document.getElementById('sim-channel-title');
+            const channelTopic = document.getElementById('sim-channel-topic');
 
             if (mode === 'starboard') {
                 channelTitle.innerText = 'starboard';
+                if (channelTopic) channelTopic.innerText = 'Server highlight feed';
                 viewport.innerHTML = `
                     <div class="discord-msg-row">
                         <img src="nora.png" class="discord-avatar" alt="Nora Avatar">
                         <div class="discord-msg-body">
                             <div class="discord-msg-header">
                                 <span class="discord-username">Nora</span>
-                                <span class="discord-bot-badge">BOT</span>
+                                <span class="discord-app-badge"><i class="fas fa-check" style="font-size: 8px;"></i> APP</span>
                                 <span class="discord-timestamp">Today at 1:00 AM</span>
                             </div>
                             <div id="sim-starboard-header" style="font-weight: 700; color: #FFD700; font-size: 0.95rem;">
@@ -1656,9 +1653,10 @@
                 `;
             } else if (mode === 'counting') {
                 channelTitle.innerText = 'counting';
+                if (channelTopic) channelTopic.innerText = 'Take turns counting with math equations';
                 viewport.innerHTML = `
                     <div class="discord-msg-row">
-                        <div class="discord-avatar-placeholder">A</div>
+                        <div class="discord-avatar-placeholder" style="background: #5865F2;">A</div>
                         <div class="discord-msg-body">
                             <div class="discord-msg-header">
                                 <span class="discord-username">Alex</span>
@@ -1670,7 +1668,7 @@
                         </div>
                     </div>
                     <div class="discord-msg-row" id="sim-counting-response">
-                        <div class="discord-avatar-placeholder" style="background: #10B981;">Y</div>
+                        <div class="discord-avatar-placeholder" style="background: #23A55A;">Y</div>
                         <div class="discord-msg-body">
                             <div class="discord-msg-header">
                                 <span class="discord-username">You</span>
@@ -1692,13 +1690,14 @@
                 `;
             } else if (mode === 'verify') {
                 channelTitle.innerText = 'verification';
+                if (channelTopic) channelTopic.innerText = 'Complete verification to unlock server access';
                 viewport.innerHTML = `
                     <div class="discord-msg-row">
                         <img src="nora.png" class="discord-avatar" alt="Nora Avatar">
                         <div class="discord-msg-body">
                             <div class="discord-msg-header">
                                 <span class="discord-username">Nora</span>
-                                <span class="discord-bot-badge">BOT</span>
+                                <span class="discord-app-badge"><i class="fas fa-check" style="font-size: 8px;"></i> APP</span>
                                 <span class="discord-timestamp">Today at 1:04 AM</span>
                             </div>
                             <div class="sim-embed" style="border-color: #5865F2;">
@@ -1721,17 +1720,18 @@
                     </div>
                 `;
             } else if (mode === 'automod') {
-                channelTitle.innerText = 'audit-logs';
+                channelTitle.innerText = 'mod-logs';
+                if (channelTopic) channelTopic.innerText = 'Automated moderation audit logs';
                 viewport.innerHTML = `
                     <div class="discord-msg-row">
                         <img src="nora.png" class="discord-avatar" alt="Nora Avatar">
                         <div class="discord-msg-body">
                             <div class="discord-msg-header">
-                                <span class="discord-username">Nora AutoMod Shield</span>
-                                <span class="discord-bot-badge">AUTO</span>
+                                <span class="discord-username">Nora AutoMod</span>
+                                <span class="discord-app-badge"><i class="fas fa-check" style="font-size: 8px;"></i> APP</span>
                                 <span class="discord-timestamp">Just now</span>
                             </div>
-                            <div class="sim-embed" style="border-color: #EF4444;">
+                            <div class="sim-embed" style="border-color: #ED4245;">
                                 <div class="sim-embed-title">🚨 Threat Blocked: Phishing Link Detected</div>
                                 <div class="sim-embed-desc">Blocked suspicious domain <code>free-nitro-gift.ru</code> from user <strong>SpamBot#4910</strong> in &lt;#general&gt;.</div>
                                 <div class="sim-embed-fields">
@@ -1792,15 +1792,25 @@
             { name: '/purge [amount]', category: 'moderation', desc: 'Bulk delete up to 100 recent messages in the current channel.' }
         ];
 
+        function copyCommand(cmd, el) {
+            navigator.clipboard.writeText(cmd).catch(() => {});
+            const badge = el.querySelector('.copy-indicator');
+            if (badge) {
+                const oldContent = badge.innerHTML;
+                badge.innerHTML = '<span style="color: #23A55A; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-check"></i> Copied!</span>';
+                setTimeout(() => { badge.innerHTML = oldContent; }, 1800);
+            }
+        }
+
         function renderCommands(filter = 'all') {
             const grid = document.getElementById('command-grid');
             if (!grid) return;
             const filtered = filter === 'all' ? commandList : commandList.filter(c => c.category === filter);
             grid.innerHTML = filtered.map(c => `
-                <div class="command-item-card" onclick="alert('Command syntax: ' + '${c.name}' + '\\n' + '${c.desc}')">
+                <div class="command-item-card" onclick="copyCommand('${c.name}', this)" title="Click to copy command">
                     <div class="command-name">
                         <span>${c.name}</span>
-                        <i class="fas fa-chevron-right" style="font-size: 0.75rem; opacity: 0.5;"></i>
+                        <span class="copy-indicator"><i class="fas fa-copy" style="font-size: 0.8rem; opacity: 0.4;"></i></span>
                     </div>
                     <div class="command-desc">${c.desc}</div>
                 </div>
@@ -1815,66 +1825,6 @@
 
         // Initialize Command Grid
         renderCommands('all');
-
-        // Hero Background Canvas Particle Simulation
-        (function initCanvas() {
-            const canvas = document.getElementById('hero-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let w, h, particles = [];
-
-            function resize() {
-                w = canvas.width = canvas.parentElement.offsetWidth;
-                h = canvas.height = canvas.parentElement.offsetHeight;
-                particles = [];
-                const count = Math.floor((w * h) / 22000);
-                for (let i = 0; i < count; i++) {
-                    particles.push({
-                        x: Math.random() * w,
-                        y: Math.random() * h,
-                        vx: (Math.random() - 0.5) * 0.4,
-                        vy: (Math.random() - 0.5) * 0.4,
-                        radius: Math.random() * 1.5 + 0.5
-                    });
-                }
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, w, h);
-                for (let i = 0; i < particles.length; i++) {
-                    const p = particles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    if (p.x < 0 || p.x > w) p.vx *= -1;
-                    if (p.y < 0 || p.y > h) p.vy *= -1;
-
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    for (let j = i + 1; j < particles.length; j++) {
-                        const p2 = particles[j];
-                        const dx = p.x - p2.x;
-                        const dy = p.y - p2.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < 110) {
-                            ctx.strokeStyle = `rgba(88, 101, 242, ${0.12 * (1 - dist / 110)})`;
-                            ctx.lineWidth = 0.6;
-                            ctx.beginPath();
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(p2.x, p2.y);
-                            ctx.stroke();
-                        }
-                    }
-                }
-                requestAnimationFrame(draw);
-            }
-
-            window.addEventListener('resize', resize);
-            resize();
-            draw();
-        })();
     </script>
 </body>
 </html>
