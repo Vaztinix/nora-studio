@@ -39,7 +39,7 @@ function stripEmojis(str) {
  */
 function stripMarkdown(str) {
     if (!str) return '';
-    let s = str.trim();
+    let s = str.trim().normalize('NFKC');
     s = s.replace(/```(?:[a-z]*\n)?([\s\S]*?)```/gi, '$1');
     s = s.replace(/`([^`]+)`/g, '$1');
     s = s.replace(/\|\|([\s\S]*?)\|\|/g, '$1');
@@ -48,6 +48,7 @@ function stripMarkdown(str) {
     s = s.replace(/\*\*\*([\s\S]+?)\*\*\*/g, '$1');
     s = s.replace(/\*\*([\s\S]+?)\*\*/g, '$1');
     s = s.replace(/(?:^|\s)\*([^*\s]+)\*(?:\s|$)/g, ' $1 ');
+    s = s.replace(/(?:^|\s)_([^_\s]+)_(?:\s|$)/g, ' $1 ');
     return s.trim();
 }
 
