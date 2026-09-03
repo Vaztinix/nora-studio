@@ -207,21 +207,28 @@ class Logger {
 
             const { EmbedBuilder } = require('discord.js');
             const safeFields = (fields || []).map(f => {
-                let val = String(f.value || '*None*');
+                let val = String(f.value !== undefined && f.value !== null ? f.value : '*None*').trim() || '*None*';
                 if (val.length > 1024) {
                     val = val.substring(0, 1020) + '...';
                 }
+                let name = String(f.name !== undefined && f.name !== null ? f.name : 'Detail').trim() || 'Detail';
+                if (name.length > 256) {
+                    name = name.substring(0, 252) + '...';
+                }
                 return {
-                    name: String(f.name || 'Detail').substring(0, 256),
-                    value: val || '*None*',
+                    name,
+                    value: val,
                     inline: !!f.inline
                 };
             });
             const embed = new EmbedBuilder()
                 .setTitle(String(title || 'Dashboard Action').substring(0, 256))
                 .setColor(color)
-                .addFields(safeFields)
                 .setTimestamp();
+
+            if (safeFields.length > 0) {
+                embed.addFields(safeFields);
+            }
 
             await logChannel.send({ embeds: [embed] }).catch(err => {
                 console.error(`[Logger ERROR] Failed to send log to ${logChannel.name}:`, err.message);

@@ -3,6 +3,7 @@ const router = express.Router({ mergeParams: true });
 const GuildSettings = require('../../database/models/GuildSettings');
 const { requireGuildPermission, getDiscordUser } = require('../middleware/auth');
 const settingsCache = require('../../utils/settingsCache');
+const { logServerAction } = require('../../utils/actionLogger');
 
 // Rate limiting store for settings endpoints
 const settingsRequests = new Map();
@@ -239,12 +240,12 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             });
         }
 
+        const changedKeys = Object.keys(payload);
         if (guild) {
             const authHeader = req.headers.authorization;
             const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
             const user = token ? await getDiscordUser(token).catch(() => null) : null;
             const logger = require('../../utils/logger');
-            const changedKeys = Object.keys(payload);
             const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
             let keysSummary = changedKeys.length > 0 ? changedKeys.join(', ') : 'None';
             if (keysSummary.length > 950) {
@@ -262,7 +263,6 @@ router.post('/', settingsRateLimiter, async (req, res) => {
         }
 
         // Record per-server action log for Nora's site accountability
-        const changedKeys = Object.keys(payload);
         const detailsSummary = changedKeys.length > 0 
             ? `Updated ${changedKeys.length} configuration fields`
             : 'Saved server settings';
@@ -271,6 +271,8 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             req,
             action: 'UPDATE_SETTINGS',
             details: detailsSummary
+        }).catch(err => {
+            console.error('[ActionLogger] Failed to record update settings action for guild %s:', guildId, err?.message || err);
         });
 
         res.json({ success: true, settings });
@@ -295,12 +297,13 @@ router.delete('/', settingsRateLimiter, async (req, res) => {
         settingsCache.invalidate(guildId);
 
         // Record per-server action log for Nora's site accountability
-        const { logServerAction } = require('../../utils/actionLogger');
         await logServerAction({
             guildId,
             req,
             action: 'RESET_SETTINGS',
             details: 'Performed a complete server configuration reset and data erasure.'
+        }).catch(err => {
+            console.error('[ActionLogger] Failed to record reset settings action for guild %s:', guildId, err?.message || err);
         });
         
         res.json({ success: true, message: 'Cascading settings reset successfully performed.' });
