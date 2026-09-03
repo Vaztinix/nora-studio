@@ -206,10 +206,21 @@ class Logger {
             if (!logChannel) return;
 
             const { EmbedBuilder } = require('discord.js');
+            const safeFields = (fields || []).map(f => {
+                let val = String(f.value || '*None*');
+                if (val.length > 1024) {
+                    val = val.substring(0, 1020) + '...';
+                }
+                return {
+                    name: String(f.name || 'Detail').substring(0, 256),
+                    value: val || '*None*',
+                    inline: !!f.inline
+                };
+            });
             const embed = new EmbedBuilder()
-                .setTitle(title)
+                .setTitle(String(title || 'Dashboard Action').substring(0, 256))
                 .setColor(color)
-                .addFields(fields)
+                .addFields(safeFields)
                 .setTimestamp();
 
             await logChannel.send({ embeds: [embed] }).catch(err => {

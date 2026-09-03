@@ -38,13 +38,15 @@ router.get('/', settingsRateLimiter, async (req, res) => {
         }
 
         // Retrieve the Discord WebSocket client heartbeat (ping)
-        const heartbeat = (req.client && typeof req.client.ws.ping === 'number') 
+        const heartbeat = (req.client && req.client.ws && typeof req.client.ws.ping === 'number') 
             ? Math.max(0, Math.round(req.client.ws.ping)) 
             : 15; // default fallback if ws is offline/not connected yet
 
         // Calculate Premium status for the guild
         let isPremium = !!settings.isPremium || !!settings.isManualPremium;
-        const guild = req.client ? req.client.guilds.cache.get(guildId) : null;
+        const guild = (req.client && req.client.guilds && req.client.guilds.cache) 
+            ? req.client.guilds.cache.get(guildId) 
+            : null;
         if (guild && (guild.ownerId === '1214048435632603137' || guild.ownerId === '1366229304257544213')) {
             isPremium = true;
         }
@@ -54,15 +56,19 @@ router.get('/', settingsRateLimiter, async (req, res) => {
             isPremium = true;
         }
 
+        const settingsData = typeof settings.toJSON === 'function' 
+            ? settings.toJSON() 
+            : (settings.dataValues || settings);
+
         res.json({
-            ...settings.toJSON(),
+            ...settingsData,
             isPremium,
             heartbeat,
             dbSync: 1
         });
     } catch (error) {
         console.error('Error fetching settings for guild %s:', req.params.guildId, error);
-        res.status(500).json({ error: 'Internal server error while fetching settings.' });
+        res.status(500).json({ error: 'Internal server error while fetching settings.', details: error.message });
     }
 });
 
@@ -240,12 +246,16 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             const logger = require('../../utils/logger');
             const changedKeys = Object.keys(payload);
             const userTag = user ? `${user.username} (${user.id})` : 'Dashboard Administrator';
+            let keysSummary = changedKeys.length > 0 ? changedKeys.join(', ') : 'None';
+            if (keysSummary.length > 950) {
+                keysSummary = keysSummary.substring(0, 940) + `... (+${changedKeys.length} keys)`;
+            }
             logger.logDashboardOrCommandAction(
                 guild,
                 'Dashboard Settings Updated',
                 [
                     { name: 'Administrator', value: userTag, inline: true },
-                    { name: 'Updated Config Keys', value: changedKeys.length > 0 ? `\`${changedKeys.join(', ')}\`` : '*None*' }
+                    { name: 'Updated Config Keys', value: changedKeys.length > 0 ? `\`${keysSummary}\`` : '*None*' }
                 ],
                 0x2ed573
             ).catch(() => null);

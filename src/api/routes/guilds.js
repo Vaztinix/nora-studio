@@ -187,11 +187,7 @@ router.get('/channels', async (req, res) => {
 
 
 
-        const me = guild.members.me || await guild.members.fetch(req.client.user.id).catch(() => null);
-
-        if (!me) return res.status(500).json({ error: 'Failed to fetch bot member.' });
-
-
+        const me = guild.members.me || (req.client.user ? await guild.members.fetch(req.client.user.id).catch(() => null) : null);
 
         const channels = [];
 
@@ -199,9 +195,9 @@ router.get('/channels', async (req, res) => {
 
             if (c.type === 0 || c.isTextBased()) {
 
-                const canView = c.permissionsFor(me)?.has('ViewChannel') || false;
+                const canView = me ? (c.permissionsFor(me)?.has('ViewChannel') || false) : true;
 
-                const canSend = c.permissionsFor(me)?.has('SendMessages') || false;
+                const canSend = me ? (c.permissionsFor(me)?.has('SendMessages') || false) : true;
 
                 if (canView) {
 
@@ -257,11 +253,9 @@ router.get('/roles', async (req, res) => {
 
 
 
-        const botMember = guild.members.me || await guild.members.fetch(req.client.user.id).catch(() => null);
+        const botMember = guild.members.me || (req.client.user ? await guild.members.fetch(req.client.user.id).catch(() => null) : null);
 
-        if (!botMember) return res.status(500).json({ error: 'Failed to fetch bot member.' });
-
-        const botHighestRole = botMember.roles.highest;
+        const botHighestRole = botMember ? botMember.roles.highest : null;
 
 
 
@@ -275,16 +269,17 @@ router.get('/roles', async (req, res) => {
 
                 color: r.hexColor,
 
-                higherThanBot: r.position >= botHighestRole.position
+                position: r.position,
+
+                managed: r.managed,
+
+                isManageable: botHighestRole ? (botHighestRole.position > r.position && !r.managed) : (!r.managed)
 
             };
 
         });
 
-
-
         // Sort by role position descending
-
         roles.sort((a, b) => b.position - a.position);
 
 
