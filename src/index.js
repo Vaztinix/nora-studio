@@ -3615,6 +3615,23 @@ function startCloudflareTunnel() {
             }
         }
 
+        // Check for conflicting cloudflared Windows service on system
+        if (process.platform === 'win32') {
+            try {
+                const checkOut = execSync('sc.exe query cloudflared 2>nul', { encoding: 'utf8' });
+                if (checkOut && checkOut.includes('RUNNING')) {
+                    console.warn('\n⚠️  [Cloudflare Tunnel WARNING] A separate "cloudflared" Windows Service is running!');
+                    console.warn('⚠️  This service causes duplicate connector routing conflicts and 503 errors on api.vaztinix.dev.');
+                    console.warn('⚠️  To fix: Right-click "scripts/disable-cloudflared-service.bat" and choose "Run as administrator".\n');
+                }
+            } catch (e) { }
+
+            // Clean up stale connections on startup
+            try {
+                execSync('cloudflared tunnel cleanup noraapi 2>nul', { stdio: 'ignore' });
+            } catch (e) { }
+        }
+
         const configPath = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
         const token = "eyJhIjoiNTk0Nzk4OWE0OTlmODZjNDZhY2ZhNTRjMmRmODFkZjYiLCJ0IjoiNzIzMzI4NDgtYTg2OC00Y2ZjLTgzZjgtMmZkYTMzZDlmODY1IiwicyI6IjNZNzkrRnhMcU5GRmsrdUcvRVhiM1hWT1luUTBWR00zWm5FRldjK1dYcmc9In0=";
         const args = fs.existsSync(configPath)
