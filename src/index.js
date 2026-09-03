@@ -980,6 +980,10 @@ app.use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma');
     }
+    res.setHeader('Access-Control-Max-Age', '86400');
+    if (req.headers['access-control-request-private-network']) {
+        res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    }
 
     if (req.method === 'OPTIONS') {
         return res.sendStatus(204);
@@ -3611,10 +3615,13 @@ function startCloudflareTunnel() {
             }
         }
 
+        const configPath = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
         const token = "eyJhIjoiNTk0Nzk4OWE0OTlmODZjNDZhY2ZhNTRjMmRmODFkZjYiLCJ0IjoiNzIzMzI4NDgtYTg2OC00Y2ZjLTgzZjgtMmZkYTMzZDlmODY1IiwicyI6IjNZNzkrRnhMcU5GRmsrdUcvRVhiM1hWT1luUTBWR00zWm5FRldjK1dYcmc9In0=";
-        const args = ['tunnel', 'run', '--token', token];
+        const args = fs.existsSync(configPath)
+            ? ['tunnel', '--config', configPath, 'run']
+            : ['tunnel', 'run', '--token', token];
 
-        console.log(`[Cloudflare Tunnel] Executing cloudflared tunnel with remote token...`);
+        console.log(`[Cloudflare Tunnel] Executing cloudflared tunnel with ${fs.existsSync(configPath) ? 'local config: ' + configPath : 'remote token'}...`);
         cloudflareTunnelProcess = spawn('cloudflared', args, { windowsHide: true });
 
         if (cloudflareTunnelProcess.pid) {
