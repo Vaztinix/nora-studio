@@ -8090,12 +8090,12 @@
                 return savedUrl;
             }
 
-            // 4. Same-origin if on api.vaztinix.dev or vaztinix.dev
-            if (host === 'api.vaztinix.dev' || host === 'vaztinix.dev') {
+            // 4. Same-origin ONLY if on api.vaztinix.dev
+            if (host === 'api.vaztinix.dev') {
                 return window.location.origin;
             }
 
-            // 5. Canonical production API endpoint for external frontend
+            // 5. Canonical production API endpoint for external/static frontends (e.g. vaztinix.dev, github.io)
             return 'https://api.vaztinix.dev';
         };
 
@@ -8358,7 +8358,7 @@
                     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                     const targets = isLocal
                         ? [window.location.origin, 'http://localhost:3000', window.getApiBaseUrl()].filter(Boolean)
-                        : [window.getApiBaseUrl(), 'https://api.vaztinix.dev', window.location.origin].filter(Boolean);
+                        : [window.getApiBaseUrl(), 'https://api.vaztinix.dev', (window.location.hostname === 'api.vaztinix.dev' ? window.location.origin : null)].filter(Boolean);
 
                     let recoveredUrl = null;
                     for (const target of targets) {
@@ -8402,7 +8402,7 @@
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const targets = isLocal
                 ? [window.location.origin, 'http://localhost:3000', window.getApiBaseUrl()].filter(Boolean)
-                : [window.getApiBaseUrl(), 'https://api.vaztinix.dev', window.location.origin].filter(Boolean);
+                : [window.getApiBaseUrl(), 'https://api.vaztinix.dev', (window.location.hostname === 'api.vaztinix.dev' ? window.location.origin : null)].filter(Boolean);
 
             for (const target of targets) {
                 if (await tryHealth(target)) {
@@ -11541,12 +11541,34 @@
                 }
 
                 const reg = await navigator.serviceWorker.ready;
-                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
-                const keyRes = await fetch(apiBase + '/api/notifications/vapid-key');
-                const keyData = await keyRes.json();
+                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '').replace(/\/$/, '');
+
+                // Safe VAPID key fetch with fallback endpoints
+                const vapidCandidates = [
+                    apiBase ? apiBase + '/api/notifications/vapid-key' : null,
+                    'https://api.vaztinix.dev/api/notifications/vapid-key',
+                    'http://localhost:3000/api/notifications/vapid-key'
+                ].filter(Boolean);
+
+                let keyData = null;
+                for (const vUrl of vapidCandidates) {
+                    try {
+                        const keyRes = await fetch(vUrl);
+                        const keyText = await keyRes.text().catch(() => '');
+                        if (keyText) {
+                            try {
+                                const parsed = JSON.parse(keyText);
+                                if (parsed && parsed.publicKey) {
+                                    keyData = parsed;
+                                    break;
+                                }
+                            } catch (_) {}
+                        }
+                    } catch (_) {}
+                }
 
                 if (!keyData || !keyData.publicKey) {
-                    if (!silent) showToast('Could not retrieve Web Push VAPID key.', 'error');
+                    if (!silent) showToast('Could not retrieve Web Push VAPID key from server.', 'error');
                     return false;
                 }
 
@@ -11562,11 +11584,23 @@
 
                 const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
                 const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
-                await fetch(apiBase + '/api/notifications/subscribe', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subscription: subPayload, userId: currentUserId })
-                });
+
+                const subCandidates = [
+                    apiBase ? apiBase + '/api/notifications/subscribe' : null,
+                    'https://api.vaztinix.dev/api/notifications/subscribe',
+                    'http://localhost:3000/api/notifications/subscribe'
+                ].filter(Boolean);
+
+                for (const sUrl of subCandidates) {
+                    try {
+                        const sRes = await fetch(sUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ subscription: subPayload, userId: currentUserId })
+                        });
+                        if (sRes.ok) break;
+                    } catch (_) {}
+                }
 
                 if (!silent) showToast('🔔 Web Push Notifications successfully enabled!', 'success');
                 renderPushNotificationWidget();
@@ -11583,20 +11617,58 @@
             try {
                 const reg = await navigator.serviceWorker.ready.catch(() => null);
                 let sub = reg ? await reg.pushManager.getSubscription().catch(() => null) : null;
-                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '').replace(/\/$/, '');
                 const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
                 const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
 
-                const res = await fetch(apiBase + '/api/notifications/test-push', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: currentUserId, subscription: subPayload, endpoint: sub ? sub.endpoint : null })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    showToast('🚀 Test Web Push sent! Check your system notification center.', 'success');
-                } else {
-                    showToast(data.error || 'Failed to send test Web Push notification.', 'error');
+                // Priority candidate endpoints to attempt
+                const candidateUrls = [];
+                if (apiBase) candidateUrls.push(apiBase + '/api/notifications/test-push');
+                if (!candidateUrls.includes('https://api.vaztinix.dev/api/notifications/test-push')) {
+                    candidateUrls.push('https://api.vaztinix.dev/api/notifications/test-push');
+                }
+                if (!candidateUrls.includes('http://localhost:3000/api/notifications/test-push')) {
+                    candidateUrls.push('http://localhost:3000/api/notifications/test-push');
+                }
+
+                let lastErr = null;
+                let delivered = false;
+
+                for (const url of candidateUrls) {
+                    try {
+                        const res = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId: currentUserId, subscription: subPayload, endpoint: sub ? sub.endpoint : null })
+                        });
+
+                        const text = await res.text().catch(() => '');
+                        let data = null;
+                        try {
+                            data = text ? JSON.parse(text) : null;
+                        } catch (_) {
+                            data = null;
+                        }
+
+                        if (res.ok) {
+                            const msg = (data && data.message) ? data.message : 'Test Web Push sent! Check your system notification center.';
+                            showToast('🚀 ' + msg, 'success');
+                            delivered = true;
+                            break;
+                        } else {
+                            lastErr = (data && data.error)
+                                ? data.error
+                                : (res.status === 405
+                                    ? 'Static host rejected POST (405 Method Not Allowed).'
+                                    : `Server returned HTTP ${res.status} (${res.statusText || 'Error'}).`);
+                        }
+                    } catch (netErr) {
+                        lastErr = netErr.message;
+                    }
+                }
+
+                if (!delivered) {
+                    showToast('Failed to send test Web Push: ' + (lastErr || 'Server unavailable'), 'error');
                 }
             } catch (e) {
                 showToast('Error testing Web Push: ' + e.message, 'error');
