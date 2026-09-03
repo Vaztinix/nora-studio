@@ -1,24 +1,34 @@
 @echo off
-:: This script stops and disables the conflicting cloudflared Windows Service.
-:: Right-click this file and choose "Run as administrator".
+:: Auto-request Administrator elevation if not already elevated
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Administrator privileges required. Requesting elevation...
+    powershell -NoProfile -Command "Start-Process cmd.exe -ArgumentList '/c \"\"%~f0\"\"' -Verb RunAs"
+    exit /b
+)
 
-echo ========================================================
-echo   Fixing Cloudflare Tunnel Conflict for Nora Studio
-echo ========================================================
+title Nora Studio - Disable Conflicting Cloudflared Service
+color 0b
+
+echo ======================================================================
+echo    Nora Studio - Cloudflare Tunnel Service Fixer
+echo ======================================================================
 echo.
-
-echo [1/2] Stopping cloudflared Windows service...
+echo Stopping conflicting Windows Service (cloudflared)...
 net stop cloudflared 2>nul
 sc.exe stop cloudflared 2>nul
 
-echo [2/2] Disabling automatic startup for cloudflared service...
+echo Disabling automatic startup for cloudflared service...
 sc.exe config cloudflared start= disabled
 
+echo Terminating any lingering ghost processes...
+taskkill /F /IM cloudflared.exe /FI "SESSION eq 0" 2>nul
+
 echo.
-echo ========================================================
-echo   Done! The conflicting service has been disabled.
-echo   Nora's internal tunnel will now be the sole connector
-echo   and api.vaztinix.dev will resolve cleanly without 503s.
-echo ========================================================
+echo ======================================================================
+echo  SUCCESS: Conflicting service has been stopped and disabled!
+echo  Nora's internal tunnel is now the sole active connector.
+echo  Your dashboard at https://vaztinix.dev will now connect with zero 503s!
+echo ======================================================================
 echo.
 pause

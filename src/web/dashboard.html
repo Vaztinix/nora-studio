@@ -13398,7 +13398,11 @@
             window.currentGuild = g;
             currentServerName = g.name;
             currentServerIsPremium = g.isPremium;
-            document.getElementById('cfg-icon').src = g.icon;
+            const guildIconUrl = (g.icon && (g.icon.startsWith('http://') || g.icon.startsWith('https://') || g.icon.startsWith('data:')))
+                ? g.icon
+                : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'nora.png');
+            const cfgIconEl = document.getElementById('cfg-icon');
+            if (cfgIconEl) cfgIconEl.src = guildIconUrl;
             document.getElementById('cfg-name').innerHTML = `${escapeHtml(g.name)} <div id="cfg-status" class="status-indicator online" title="Online"></div>`;
             
             [viewServers, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
@@ -13409,7 +13413,7 @@
             const breadcrumbServer = document.getElementById('breadcrumb-server-name');
             if (breadcrumbServer) breadcrumbServer.textContent = g.name;
             const sideIcon = document.getElementById('sidebar-server-icon');
-            if (sideIcon) sideIcon.src = g.icon;
+            if (sideIcon) sideIcon.src = guildIconUrl;
             const sideName = document.getElementById('sidebar-server-name');
             if (sideName) sideName.textContent = g.name;
             
