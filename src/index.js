@@ -3497,9 +3497,6 @@ app.get('/docs', ipRateLimiter, (req, res) => {
 app.get('/ai', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('AI.html'));
 });
-app.get('/ai-studio', ipRateLimiter, (req, res) => {
-    res.sendFile(getWebFilePath('ai-studio.html'));
-});
 
 app.get('/install', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('install.html'));
