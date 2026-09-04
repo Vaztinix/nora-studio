@@ -12063,10 +12063,37 @@
 
         let currentNotifFilter = 'all';
 
+        function getNotifCategory(n) {
+            if (!n) return 'info';
+            const type = String(n.type || n.severity || '').toLowerCase();
+            const title = String(n.title || '').toLowerCase();
+            const content = String(n.content || n.message || '').toLowerCase();
+            if (type === 'error' || type === 'danger' || type === 'critical' || type === 'outage' || title.includes('outage') || title.includes('offline') || title.includes('error') || content.includes('outage') || content.includes('offline')) return 'error';
+            if (type === 'warning' || type === 'warn' || type === 'caution' || type === 'degraded' || title.includes('warning') || title.includes('degraded') || content.includes('warning') || content.includes('degraded')) return 'warning';
+            if (type === 'success' || title.includes('success') || content.includes('successfully') || content.includes('resolved') || content.includes('restored')) return 'success';
+            return 'info';
+        }
+
+        function matchesNotifFilter(n, filter) {
+            if (!filter || filter === 'all') return true;
+            return getNotifCategory(n) === filter;
+        }
+
         function filterNotifs(type, btn) {
             currentNotifFilter = type;
-            document.querySelectorAll('.notif-filter-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
+            document.querySelectorAll('.notif-filter-btn').forEach(b => {
+                b.classList.remove('active');
+                b.style.background = 'transparent';
+                b.style.color = '#94a3b8';
+                b.style.borderColor = 'rgba(255,255,255,0.08)';
+            });
+            const activeBtn = btn || document.querySelector(`.notif-filter-btn[data-type="${type}"]`) || (type === 'all' ? document.querySelector('.notif-filter-btn') : null);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.style.background = 'var(--primary, #5865f2)';
+                activeBtn.style.color = '#fff';
+                activeBtn.style.borderColor = 'var(--primary, #5865f2)';
+            }
             renderNotifications();
         }
 
@@ -12748,20 +12775,19 @@
                 // Render into topbar dropdown container
                 const dropdownList = document.getElementById('notif-list') || document.getElementById('notifications-list') || document.getElementById('notifications-container');
                 if (dropdownList) {
-                    const filtered = (notifications || []).filter(n => {
-                        if (currentNotifFilter === 'unread') return !n.read;
-                        if (currentNotifFilter !== 'all') return n.type === currentNotifFilter;
-                        return true;
-                    });
+                    const filtered = (notifications || []).filter(n => matchesNotifFilter(n, currentNotifFilter));
 
                     if (!filtered.length) {
-                        dropdownList.innerHTML = '<div style="text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem;">No notifications found</div>';
+                        const emptyMsg = currentNotifFilter !== 'all' ? `No ${currentNotifFilter} alerts found` : 'No notifications found';
+                        dropdownList.innerHTML = `<div style="text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem;">${emptyMsg}</div>`;
                     } else {
                         dropdownList.innerHTML = filtered.map(n => {
                             const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (n.timestamp ? new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now');
+                            const cat = getNotifCategory(n);
+                            const emoji = cat === 'error' ? '🔴' : (cat === 'warning' ? '🟡' : (cat === 'success' ? '🟢' : '🔵'));
                             return `
                                 <div class="notif-item ${n.read ? 'read' : 'unread'}" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; align-items: flex-start; cursor: pointer;" onclick="markNotificationRead(${n.id || 0}, event)">
-                                    <div style="font-size: 1.1rem; margin-top: 2px;">${n.type === 'error' || n.type === 'danger' ? '🔴' : (n.type === 'warning' ? '🟡' : (n.type === 'success' ? '🟢' : '🔵'))}</div>
+                                    <div style="font-size: 1.1rem; margin-top: 2px;">${emoji}</div>
                                     <div style="flex: 1; min-width: 0;">
                                         <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
                                             <div style="font-weight: 600; font-size: 0.85rem; color: #fff;">${escapeHtml(n.title || 'Notification')}</div>
@@ -12781,16 +12807,18 @@
                 const listOlder = document.getElementById('notification-list-older');
 
                 if (listNew || listOlder) {
-                    const allNotifs = notifications || [];
-                    const recent = allNotifs.filter(n => !n.read);
-                    const older = allNotifs.filter(n => n.read);
+                    const allFiltered = (notifications || []).filter(n => matchesNotifFilter(n, currentNotifFilter));
+                    const recent = allFiltered.filter(n => !n.read);
+                    const older = allFiltered.filter(n => n.read);
+
+                    const filterName = currentNotifFilter !== 'all' ? currentNotifFilter : '';
 
                     if (listNew) {
                         if (recent.length === 0) {
                             listNew.innerHTML = `
                                 <div id="no-notifications-new" style="padding: 45px 20px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px dashed var(--border);">
                                     <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;">✨</div>
-                                    All caught up! No unread notifications.
+                                    ${filterName ? `All caught up! No unread ${filterName} notifications.` : 'All caught up! No new notifications.'}
                                 </div>
                             `;
                         } else {
@@ -12802,11 +12830,11 @@
                         if (older.length === 0) {
                             listOlder.innerHTML = `
                                 <div id="no-notifications-older" style="padding: 30px 20px; text-align: center; color: var(--muted); opacity: 0.6;">
-                                    No previous notification history.
+                                    ${filterName ? `No previous ${filterName} history recorded.` : 'No previous notification history recorded yet.'}
                                 </div>
                             `;
                         } else {
-                            listOlder.innerHTML = older.slice(0, 20).map(n => renderNotifCardHtml(n, true)).join('');
+                            listOlder.innerHTML = older.slice(0, 30).map(n => renderNotifCardHtml(n, true)).join('');
                         }
                     }
                 }
@@ -12817,12 +12845,37 @@
 
         function renderNotifCardHtml(n, isRead) {
             const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleString() : (n.timestamp ? new Date(n.timestamp).toLocaleString() : 'Recent');
-            const icon = n.type === 'error' || n.type === 'danger' ? 'fas fa-exclamation-circle' : (n.type === 'warning' ? 'fas fa-triangle-exclamation' : (n.type === 'success' ? 'fas fa-check-circle' : 'fas fa-bell'));
-            const iconColor = n.type === 'error' || n.type === 'danger' ? '#ef4444' : (n.type === 'warning' ? '#f59e0b' : (n.type === 'success' ? '#10b981' : '#6366f1'));
-            const bgBorder = isRead ? 'border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.015);' : 'border: 1px solid rgba(99, 102, 241, 0.3); background: rgba(99, 102, 241, 0.05);';
+            const cat = getNotifCategory(n);
+            
+            let icon = 'fas fa-bell';
+            let iconColor = 'var(--primary, #5865f2)';
+            let cardBg = isRead ? 'rgba(255, 255, 255, 0.015)' : 'rgba(88, 101, 242, 0.05)';
+            let cardBorder = isRead ? 'rgba(255, 255, 255, 0.05)' : 'rgba(88, 101, 242, 0.25)';
+
+            if (cat === 'error') {
+                icon = 'fas fa-circle-exclamation';
+                iconColor = '#ef4444';
+                cardBg = isRead ? 'rgba(255, 255, 255, 0.015)' : 'rgba(239, 68, 68, 0.06)';
+                cardBorder = isRead ? 'rgba(255, 255, 255, 0.05)' : 'rgba(239, 68, 68, 0.25)';
+            } else if (cat === 'warning') {
+                icon = 'fas fa-triangle-exclamation';
+                iconColor = '#f59e0b';
+                cardBg = isRead ? 'rgba(255, 255, 255, 0.015)' : 'rgba(245, 158, 11, 0.06)';
+                cardBorder = isRead ? 'rgba(255, 255, 255, 0.05)' : 'rgba(245, 158, 11, 0.25)';
+            } else if (cat === 'success') {
+                icon = 'fas fa-circle-check';
+                iconColor = '#10b981';
+                cardBg = isRead ? 'rgba(255, 255, 255, 0.015)' : 'rgba(16, 185, 129, 0.06)';
+                cardBorder = isRead ? 'rgba(255, 255, 255, 0.05)' : 'rgba(16, 185, 129, 0.25)';
+            } else {
+                const title = String(n.title || '').toLowerCase();
+                if (title.includes('announcement') || title.includes('broadcast')) {
+                    icon = 'fas fa-bullhorn';
+                }
+            }
 
             return `
-                <div style="padding: 16px; border-radius: 12px; ${bgBorder} display: flex; gap: 14px; align-items: flex-start; transition: 0.2s;">
+                <div style="padding: 16px; border-radius: 12px; border: 1px solid ${cardBorder}; background: ${cardBg}; display: flex; gap: 14px; align-items: flex-start; transition: 0.2s;">
                     <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: ${iconColor}; font-size: 1.1rem; flex-shrink: 0;">
                         <i class="${icon}"></i>
                     </div>
