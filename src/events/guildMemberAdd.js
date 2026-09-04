@@ -140,7 +140,15 @@ module.exports = {
                     if (settings.antiRaidAction === 'lockdown') {
                         settings.lockdownMode = true;
                         await settings.save();
-                        if (alertChannel) await alertChannel.send({ content: '🚨 **Auto-Mod**: Join surge threshold exceeded. **Global Lockdown** has been automatically activated.' }).catch(() => {});
+                        if (alertChannel) await alertChannel.send({ content: '🚨 **Nora Shield**: Join surge threshold exceeded! **Emergency Lockdown Mode** has been automatically activated to protect the server.' }).catch(() => {});
+                    } else if (settings.antiRaidAction === 'quarantine' && settings.quarantineRoleId) {
+                        try {
+                            const quarantineRole = member.guild.roles.cache.get(settings.quarantineRoleId);
+                            if (quarantineRole) {
+                                await member.roles.add(quarantineRole, 'Nora Anti-Raid: Surge quarantine protection').catch(() => {});
+                                await member.send({ content: `🛡️ **Security Alert**: **${member.guild.name}** is currently experiencing high join traffic. You have been assigned the Quarantine role until verification.` }).catch(() => {});
+                            }
+                        } catch (e) {}
                     } else if (settings.antiRaidAction === 'kick_new') {
                         try {
                             await member.send({ content: `⚠️ **Security Alert**: **${member.guild.name}** is currently experiencing a join surge. You have been kicked to protect the server. Please try again in a few minutes.` }).catch(() => {});

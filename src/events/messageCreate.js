@@ -194,6 +194,68 @@ module.exports = {
             return;
         }
 
+        // 🛡️ Proactive Nora AutoMod & Threat Engine
+        try {
+            const settingsCache = require('../utils/settingsCache');
+            const guildSettings = await settingsCache.get(message.guild.id);
+            if (guildSettings && guildSettings.moderationEnabled !== false && guildSettings.autoModActive !== false) {
+                const { assessMessageThreatContext } = require('../bot/engines/moderation');
+                const threat = await assessMessageThreatContext(guildSettings, message);
+
+                if (threat && threat.actionRequired) {
+                    // 1. Delete the violating message immediately
+                    await message.delete().catch(() => {});
+
+                    // 2. Execute timeout if recommended
+                    if (threat.recommendedAction === 'DELETE_AND_TIMEOUT' && message.member?.moderatable) {
+                        const duration = threat.durationMs || 60000;
+                        await message.member.timeout(duration, `Nora AutoMod: ${threat.reason}`).catch(() => {});
+                    }
+
+                    // 3. Send direct message notice to user if enabled
+                    if (guildSettings.sendModDms !== false) {
+                        const dmEmbed = new EmbedBuilder()
+                            .setTitle(`🛡️ Nora AutoMod Alert • ${message.guild.name}`)
+                            .setColor(0xff4444)
+                            .setDescription(`Your message was automatically removed for violating server safety rules.\n\n**Reason:** ${threat.reason}\n**Action Taken:** \`${threat.recommendedAction.replace(/_/g, ' ')}\``)
+                            .setFooter({ text: 'Please adhere to the server guidelines.' })
+                            .setTimestamp();
+                        await message.author.send({ embeds: [dmEmbed] }).catch(() => {});
+                    }
+
+                    // 4. Temporary channel notification
+                    const warnNotice = await message.channel.send({
+                        content: `🛡️ **AutoMod**: ${message.author}, your message was removed: *${threat.reason}*`
+                    }).catch(() => null);
+                    if (warnNotice) setTimeout(() => warnNotice.delete().catch(() => {}), 6000);
+
+                    // 5. Send Audit Log to dedicated Mod Log or Logging Channel
+                    const modLogId = guildSettings.modLogChannelId || guildSettings.loggingChannelId;
+                    if (modLogId) {
+                        const logChannel = message.guild.channels.cache.get(modLogId);
+                        if (logChannel) {
+                            const modLogEmbed = new EmbedBuilder()
+                                .setTitle(`🛡️ AutoMod Violation: ${threat.contextClassification || 'Safety Trigger'}`)
+                                .setColor(0xff3333)
+                                .addFields(
+                                    { name: 'Target User', value: `${message.author.tag} (\`${message.author.id}\`)`, inline: true },
+                                    { name: 'Channel', value: `${message.channel}`, inline: true },
+                                    { name: 'Action', value: `\`${threat.recommendedAction}\``, inline: true },
+                                    { name: 'Reason', value: threat.reason || 'AutoMod Rule Violation' },
+                                    { name: 'Content Snippet', value: message.content ? `\`\`\`${message.content.slice(0, 900)}\`\`\`` : '*Empty/Embed*' }
+                                )
+                                .setTimestamp();
+                            await logChannel.send({ embeds: [modLogEmbed] }).catch(() => {});
+                        }
+                    }
+
+                    return; // Stop further processing (leveling/autoresponder) for violating message
+                }
+            }
+        } catch (autoModErr) {
+            console.error('[AutoMod messageCreate Error]:', autoModErr.message);
+        }
+
         // 🤖 Autoresponder Hook
         try {
             const Autoresponder = require('../database/models/Autoresponder');

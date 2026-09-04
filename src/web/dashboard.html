@@ -5893,13 +5893,15 @@
                     <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px; padding: 28px 35px; margin-bottom: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
                             <div>
-                                <h1 style="font-size: 2.1rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Security & Anti-Raid</h1>
-                                <p style="color: var(--muted); font-size: 0.92rem; margin: 6px 0 0 0; line-height: 1.4;">Configure join verification, scam link filters, anti-spam rules, and inspect blocked content audit logs.</p>
+                                <h1 style="font-size: 2.1rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em; display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-shield-halved" style="color: var(--primary);"></i> Moderation & Security Shield
+                                </h1>
+                                <p style="color: var(--muted); font-size: 0.92rem; margin: 6px 0 0 0; line-height: 1.4;">Advanced Anti-Raid velocity defense, intelligent AutoMod rule matrices, warning escalation ladders, and live moderation audit streams.</p>
                             </div>
 
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                                <button type="button" class="save-btn" style="width: auto; padding: 10px 18px; font-size: 0.85rem; background: #ef4444; color: #fff; font-weight: 700; border-radius: 8px;" onclick="triggerEmergencyLockdown()">
-                                    <i class="fas fa-lock" style="margin-right: 6px;"></i> Emergency Lockdown
+                                <button type="button" class="save-btn" style="width: auto; padding: 10px 18px; font-size: 0.85rem; background: #ef4444; color: #fff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="triggerEmergencyLockdown()">
+                                    <i class="fas fa-lock"></i> Emergency Lockdown
                                 </button>
                                 <button type="button" class="config-btn" style="width: auto; padding: 10px 18px; font-size: 0.85rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: #fff; font-weight: 600;" onclick="enableMaxSecurityPreset()">
                                     <i class="fas fa-shield-alt" style="margin-right: 6px;"></i> Enable Recommended Presets
@@ -5907,326 +5909,459 @@
                             </div>
                         </div>
 
-                        <!-- Dynamic status summary -->
+                        <!-- Dynamic status summary metrics -->
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 18px;">
-                            <div style="background: rgba(0,0,0,0.2); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Anti-Raid Status</div>
-                                <div id="real-stat-antiraid" style="font-size: 1.15rem; font-weight: 800; color: var(--success); margin-top: 4px;">Disabled</div>
+                            <div style="background: rgba(0,0,0,0.25); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Anti-Raid Shield</div>
+                                <div id="real-stat-antiraid" style="font-size: 1.15rem; font-weight: 800; color: var(--success); margin-top: 4px;">Active Protection</div>
                             </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="background: rgba(0,0,0,0.25); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
                                 <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Server Lockdown</div>
                                 <div id="real-stat-lockdown" style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 4px;">Inactive</div>
                             </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Min Account Age</div>
-                                <div id="real-stat-accountage" style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 4px;">Disabled</div>
+                            <div style="background: rgba(0,0,0,0.25); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Active AutoMod Rules</div>
+                                <div id="real-stat-automod-count" style="font-size: 1.15rem; font-weight: 800; color: #6366f1; margin-top: 4px;">7 Rules Active</div>
                             </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="background: rgba(0,0,0,0.25); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
                                 <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Logged Incidents</div>
-                                <div id="real-stat-logcount" style="font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-top: 4px;">0 Events Logged</div>
+                                <div id="real-stat-logcount" style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 4px;">0 Events Logged</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Security Modules Container -->
-                    <div style="display: flex; flex-direction: column; gap: 24px;">
-                        <!-- 1. Anti-Raid & Joins Protection -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">1. Anti-Raid & Joins Protection</h3>
-                            
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div class="row"><h4>Enable Anti-Raid Protection</h4><label class="switch"><input type="checkbox" id="setting-antiRaidEnabled" onchange="syncRealSecurityStats()"><span class="slider"></span></label></div>
-                                <div class="row"><h4>Server Lockdown Mode</h4><label class="switch"><input type="checkbox" id="setting-lockdownMode" onchange="syncRealSecurityStats()"><span class="slider"></span></label></div>
-                                <div class="row"><h4>Require Profile Picture on Join</h4><label class="switch"><input type="checkbox" id="setting-requirePFP"><span class="slider"></span></label></div>
-                                <div class="row"><h4>Filter Suspicious Join Nicknames</h4><label class="switch"><input type="checkbox" id="setting-nicknameRaidFilter"><span class="slider"></span></label></div>
-
-                                <div class="row-inputs" style="margin-top: 10px;">
-                                    <div class="input-group"><label style="font-weight: 600;">Join Velocity Sensitivity</label><select id="setting-antiRaidThreshold"><option value="">Select Sensitivity...</option><option value="5">Strict (5 joins / sec)</option><option value="10">Normal (10 joins / sec)</option><option value="20">Lenient (20 joins / sec)</option></select></div>
-                                    <div class="input-group"><label style="font-weight: 600;">Minimum Account Age Requirement</label><select id="setting-minAccountAge" onchange="syncRealSecurityStats()"><option value="0">Disabled (No Age Requirement)</option><option value="1">1 Day Old</option><option value="7">7 Days Old</option><option value="30">30 Days Old</option></select></div>
-                                    <div class="input-group"><label style="font-weight: 600;">Underage Account Enforcement</label><select id="setting-minAccountAgeAction"><option value="">Select Enforcement Action...</option><option value="kick">Kick Member</option><option value="ban_perm">Permanent Ban</option></select></div>
-                                    <div class="input-group"><label style="font-weight: 600;">Anti-Raid Mitigation Action</label><select id="setting-antiRaidAction"><option value="">Select Mitigation Action...</option><option value="notify">Log & Notify Staff Only</option><option value="lockdown">Server Lockdown</option><option value="kick_new">Kick Malicious Joiners</option><option value="ban_perm">Permanent Ban</option></select></div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- 2. Scam Links & Content Moderation -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">2. Scam Links & Content Filters</h3>
-                            
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div class="row"><h4>Block Scam & Phishing Links</h4><label class="switch"><input type="checkbox" id="setting-automodScam"><span class="slider"></span></label></div>
-                                <div class="row"><h4>Block Hardcore Script & Token-Logger Patterns</h4><label class="switch"><input type="checkbox" id="setting-automodHardcore"><span class="slider"></span></label></div>
-                                <div class="row"><h4>Block Unverified External Links</h4><label class="switch"><input type="checkbox" id="setting-automodSpam"><span class="slider"></span></label></div>
-                                <div class="row"><h4>Block Profanity & Vulgar Words</h4><label class="switch"><input type="checkbox" id="setting-automodProfanity"><span class="slider"></span></label></div>
-                                <div class="row"><h4>Block Hate Speech & Slurs</h4><label class="switch"><input type="checkbox" id="setting-automodSlurs"><span class="slider"></span></label></div>
-                                <div class="row"><h4>Block Explicit / Sexual Content</h4><label class="switch"><input type="checkbox" id="setting-automodSexual"><span class="slider"></span></label></div>
-
-                                <div class="input-group" style="margin-top: 10px;">
-                                    <label style="font-weight: 600;">Custom Blocked Words & Phishing Domains (Comma-separated)</label>
-                                    <input type="text" id="setting-customBlockedContexts" placeholder="e.g. disccord.gift, steamcomrnunity.com, badword" style="width: 100%; box-sizing: border-box;">
-                                </div>
-
-                                <div class="row-inputs" style="margin-top: 10px;">
-                                    <div class="input-group"><label style="font-weight: 600;">Max User/Role Mention Limit</label><select id="setting-automodMentions"><option value="0">Off (Unlimited Mentions)</option><option value="3">3 Mentions Limit</option><option value="5">5 Mentions Limit</option><option value="10">10 Mentions Limit</option></select></div>
-                                    <div class="input-group"><label style="font-weight: 600;">Immune Roles (Bypass Safety Filters)</label><input type="hidden" id="setting-automodImmuneRoles"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3. Anti-Spam Rate Limiter -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 15px 0;">3. Anti-Spam Rate Limiter</h3>
-                            
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div class="row"><h4>Enable Anti-Spam Rate Limiting</h4><label class="switch"><input type="checkbox" id="setting-spamDetectionEnabled"><span class="slider"></span></label></div>
-                                
-                                <div class="row-inputs">
-                                    <div class="input-group">
-                                        <label style="font-weight: 600;">Message Threshold</label>
-                                        <input type="number" id="setting-spamThreshold" min="1" max="20" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
-                                    </div>
-                                    <div class="input-group">
-                                        <label style="font-weight: 600;">Time Window (Seconds)</label>
-                                        <input type="number" id="setting-spamInterval" min="1" max="60" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
-                                    </div>
-                                    <div class="input-group">
-                                        <label style="font-weight: 600;">Mute Duration (Minutes)</label>
-                                        <input type="number" id="setting-antiSpamMuteDuration" min="1" max="1440" class="numerical-input" placeholder="e.g. 5" style="width: 100%; box-sizing: border-box;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                    <!-- 2-Column Main Command Grid (Parity with Starboard & Counting) -->
+                    <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 24px; align-items: start;">
                         
-                        <!-- 4. Warning & Moderation System (Visual Server Overview & Actions Feed) -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
-                                <div>
-                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
-                                        <i class="fas fa-gavel" style="color: var(--primary);"></i> Warning & Moderation System
-                                    </h3>
-                                    <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--muted);">Visual server overview of member warnings, mutes, kicks, bans, and quick moderation tools.</p>
+                        <!-- LEFT COLUMN: Configurations & Rules -->
+                        <div style="display: flex; flex-direction: column; gap: 24px;">
+                            
+                            <!-- 1. Anti-Raid & Join Velocity Shield -->
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 25px; margin: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                    <div>
+                                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-shield-virus" style="color: #ef4444;"></i> 1. Server Shield & Anti-Raid
+                                        </h3>
+                                        <p style="font-size: 0.82rem; color: var(--muted); margin: 4px 0 0 0;">Detect join surges, quarantine spambots, and enforce new account gates.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-antiRaidEnabled" onchange="syncRealSecurityStats(); updateSecurityPreview()">
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
 
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <button type="button" onclick="openModActionModal()" style="padding: 8px 16px; font-size: 0.82rem; background: #5865F2; color: #ffffff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;">
-                                        <i class="fas fa-plus-circle"></i> Issue Mod Action
-                                    </button>
-                                    <button type="button" class="config-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: #fff; font-weight: 600;" onclick="loadModLogs()">
-                                        <i class="fas fa-sync-alt" style="margin-right: 6px;"></i> Refresh Feed
-                                    </button>
-                                </div>
-                            </div>
+                                <div style="display: flex; flex-direction: column; gap: 14px;">
+                                    <div class="row">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.9rem;">Emergency Lockdown Mode</strong>
+                                            <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Immediately restrict all incoming member joins.</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-lockdownMode" onchange="syncRealSecurityStats(); updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
 
-                            <!-- Moderation Telemetry Summary Bar -->
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Active Warnings</div>
-                                    <div id="mod-stat-warnings" style="font-size: 1.25rem; font-weight: 800; color: #f59e0b; margin-top: 4px;">0 Active</div>
-                                </div>
-                                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Timeouts / Mutes</div>
-                                    <div id="mod-stat-timeouts" style="font-size: 1.25rem; font-weight: 800; color: #0ea5e9; margin-top: 4px;">0 Active</div>
-                                </div>
-                                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Bans Issued</div>
-                                    <div id="mod-stat-bans" style="font-size: 1.25rem; font-weight: 800; color: #ef4444; margin-top: 4px;">0 Bans</div>
-                                </div>
-                                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Total Cases Logged</div>
-                                    <div id="mod-stat-total" style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-top: 4px;">0 Cases</div>
-                                </div>
-                            </div>
+                                    <div class="row">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.9rem;">Require Profile Picture (Avatar)</strong>
+                                            <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Kick or quarantine accounts with default Discord avatars.</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-requirePFP" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
 
-                            <!-- Automated Warning Escalation Rules -->
-                            <div style="background: rgba(0,0,0,0.15); border-radius: 12px; padding: 18px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.04);">
-                                <h4 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0 0 12px 0;">Automated Warning Rules</h4>
-                                <div class="row-inputs">
+                                    <div class="row">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.9rem;">Filter Suspicious / Bot Nicknames</strong>
+                                            <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Block spambot naming patterns and impersonator accounts.</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-nicknameRaidFilter" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px;">
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-weight: 600;">Join Surge Sensitivity</label>
+                                            <select id="setting-antiRaidThreshold" onchange="updateSecurityPreview()">
+                                                <option value="5">Strict (5 joins / 10s)</option>
+                                                <option value="10">Normal (10 joins / 10s)</option>
+                                                <option value="20">Lenient (20 joins / 10s)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-weight: 600;">Surge Mitigation Action</label>
+                                            <select id="setting-antiRaidAction" onchange="updateSecurityPreview()">
+                                                <option value="notify">Notify & Alert Staff Only</option>
+                                                <option value="quarantine">Assign Quarantine Role</option>
+                                                <option value="kick_new">Kick New Joiners</option>
+                                                <option value="lockdown">Trigger Emergency Lockdown</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-weight: 600;">Quarantine Role</label>
+                                            <select id="setting-quarantineRoleId" onchange="updateSecurityPreview()">
+                                                <option value="">Select Quarantine Role...</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-weight: 600;">Minimum Account Age</label>
+                                            <select id="setting-minAccountAge" onchange="syncRealSecurityStats(); updateSecurityPreview()">
+                                                <option value="0">Disabled (No Requirement)</option>
+                                                <option value="1">1 Day Old</option>
+                                                <option value="3">3 Days Old</option>
+                                                <option value="7">7 Days Old</option>
+                                                <option value="14">14 Days Old</option>
+                                                <option value="30">30 Days Old</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-weight: 600;">Warning Limit Threshold</label>
-                                        <input type="number" id="setting-warningThreshold" min="1" max="50" class="numerical-input" placeholder="e.g. 3" style="width: 100%; box-sizing: border-box;">
+                                        <label style="font-weight: 600;">Underage Account Action</label>
+                                        <select id="setting-minAccountAgeAction" onchange="updateSecurityPreview()">
+                                            <option value="kick">Kick Member from Server</option>
+                                            <option value="ban_7">Ban Member (Purge 7 Days Messages)</option>
+                                            <option value="ban_perm">Permanent Ban</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Smart AutoMod Engine Matrix -->
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 25px; margin: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                    <div>
+                                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-robot" style="color: #6366f1;"></i> 2. Intelligent AutoMod Matrix
+                                        </h3>
+                                        <p style="font-size: 0.82rem; color: var(--muted); margin: 4px 0 0 0;">Real-time message inspection, invite interception, link filters, and toxicity shield.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-autoModActive" onchange="syncRealSecurityStats(); updateSecurityPreview()">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                                    <div style="background: rgba(0,0,0,0.2); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.85rem;">🚫 Block Discord Invites</strong>
+                                            <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Disallow external server links</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-automodInvites" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
+
+                                    <div style="background: rgba(0,0,0,0.2); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.85rem;">🔗 Block External Links</strong>
+                                            <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block unauthorized URLs</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-automodLinks" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
+
+                                    <div style="background: rgba(0,0,0,0.2); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.85rem;">🎣 Scam & Phishing URLs</strong>
+                                            <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block Nitro & Steam baits</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-automodScam" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
+
+                                    <div style="background: rgba(0,0,0,0.2); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.85rem;">⚠️ Hate Speech & Slurs</strong>
+                                            <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Zero-tolerance slur filter</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-automodSlurs" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
+
+                                    <div style="background: rgba(0,0,0,0.2); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.85rem;">🤬 Profanity & Vulgarity</strong>
+                                            <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Filter swear words in chat</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-automodProfanity" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
+
+                                    <div style="background: rgba(0,0,0,0.2); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.85rem;">🔠 Mass Caps & Zalgo</strong>
+                                            <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block loud text & corrupt unicode</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-automodCaps" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 14px;">
+                                    <label style="font-weight: 600;">Allowed Discord Invites (Whitelisted Server Vanity / Codes)</label>
+                                    <input type="text" id="setting-allowedInvites" placeholder="e.g. nora, partner-server, mydiscord" style="width: 100%; box-sizing: border-box;" oninput="updateSecurityPreview()">
+                                    <p style="font-size: 0.72rem; color: var(--muted); margin: 4px 0 0 0;">Comma-separated invite codes that won't be deleted when invite blocker is on.</p>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 14px;">
+                                    <label style="font-weight: 600;">Custom Blocked Words & Phrases (Comma-separated)</label>
+                                    <input type="text" id="setting-customBlockedContexts" placeholder="e.g. badword, maliciousdomain.com, scamkeyword" style="width: 100%; box-sizing: border-box;" oninput="updateSecurityPreview()">
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Mass Mention Threshold</label>
+                                        <select id="setting-automodMentions" onchange="updateSecurityPreview()">
+                                            <option value="0">Off (Unlimited)</option>
+                                            <option value="3">Strict (3 Mentions)</option>
+                                            <option value="5">Normal (5 Mentions)</option>
+                                            <option value="10">Lenient (10 Mentions)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Immune Roles (Bypass AutoMod)</label>
+                                        <input type="hidden" id="setting-automodImmuneRoles">
+                                        <div id="automod-immune-roles-container" style="margin-top: 4px; max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 6px;">
+                                            <div style="font-size: 0.78rem; color: var(--muted); text-align: center;">Select a server to load roles...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Fast Anti-Spam Rate Limiter -->
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 25px; margin: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                    <div>
+                                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-bolt" style="color: #f59e0b;"></i> 3. Fast Anti-Spam Rate Limiter
+                                        </h3>
+                                        <p style="font-size: 0.82rem; color: var(--muted); margin: 4px 0 0 0;">Token-bucket sliding window filter to prevent chat floods and copypasta spam.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-spamDetectionEnabled" onchange="updateSecurityPreview()">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Max Messages</label>
+                                        <input type="number" id="setting-spamThreshold" min="1" max="25" placeholder="5" style="width: 100%; box-sizing: border-box;" oninput="updateSecurityPreview()">
                                     </div>
                                     <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-weight: 600;">Action on Reaching Threshold</label>
-                                        <select id="setting-warningAction">
-                                            <option value="">Select Action...</option>
-                                            <option value="none">Log & Notify Staff Only</option>
+                                        <label style="font-weight: 600;">Window (Seconds)</label>
+                                        <input type="number" id="setting-spamInterval" min="1" max="60" placeholder="5" style="width: 100%; box-sizing: border-box;" oninput="updateSecurityPreview()">
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Timeout (Minutes)</label>
+                                        <input type="number" id="setting-antiSpamMuteDuration" min="1" max="1440" placeholder="10" style="width: 100%; box-sizing: border-box;" oninput="updateSecurityPreview()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. Moderation System & Escalation Rules -->
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 25px; margin: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                    <div>
+                                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-gavel" style="color: #38bdf8;"></i> 4. Moderation & Escalation Rules
+                                        </h3>
+                                        <p style="font-size: 0.82rem; color: var(--muted); margin: 4px 0 0 0;">Direct DM notifications, mod log dispatch, and warning escalation ladders.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-moderationEnabled" onchange="updateSecurityPreview()">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; gap: 14px;">
+                                    <div class="row">
+                                        <div>
+                                            <strong style="color: #fff; font-size: 0.9rem;">Send Direct Message on Punishment</strong>
+                                            <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Notify penalized users with detailed infraction info and appeal links.</p>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-sendModDms" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-weight: 600;">Dedicated Mod Log Channel</label>
+                                            <select id="setting-modLogChannelId" onchange="updateSecurityPreview()">
+                                                <option value="">Select channel...</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-weight: 600;">Warning Limit Threshold</label>
+                                            <input type="number" id="setting-warningThreshold" min="1" max="50" placeholder="3" style="width: 100%; box-sizing: border-box;" oninput="updateSecurityPreview()">
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600;">Action on Reaching Warning Limit</label>
+                                        <select id="setting-warningAction" onchange="updateSecurityPreview()">
+                                            <option value="none">Notify Staff in Mod Logs Only</option>
                                             <option value="timeout">Temporary Timeout (Mute)</option>
-                                            <option value="kick">Kick Member</option>
+                                            <option value="kick">Kick Member from Server</option>
                                             <option value="ban">Permanent Ban</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Inline Moderation Action Drawer/Box -->
-                            <div id="mod-action-box" style="display: none; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                        <!-- RIGHT COLUMN: Interactive Live Simulator & Mod Logs -->
+                        <div style="display: flex; flex-direction: column; gap: 24px; position: sticky; top: 20px;">
+                            
+                            <!-- Live Interactive Simulator Card -->
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; margin: 0;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                                    <h4 style="margin: 0; color: #fff; font-weight: 700; font-size: 1rem;">Execute Moderation Action</h4>
-                                    <button type="button" onclick="closeModActionModal()" style="background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 1rem;"><i class="fas fa-times"></i></button>
-                                </div>
-
-                                <div class="row-inputs">
-                                    <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-weight: 600;">Target User ID <span style="color: #ef4444;">*</span></label>
-                                        <input type="text" id="mod-input-userid" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
-                                    </div>
-                                    <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-weight: 600;">Action Type</label>
-                                        <select id="mod-input-action">
-                                            <option value="WARN">Warn User</option>
-                                            <option value="TIMEOUT">Timeout User</option>
-                                            <option value="KICK">Kick User</option>
-                                            <option value="BAN">Ban User</option>
-                                        </select>
-                                    </div>
-                                    <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-weight: 600;">Duration (Mins, Timeout Only)</label>
-                                        <input type="number" id="mod-input-duration" value="10" placeholder="10" style="width: 100%; box-sizing: border-box;">
-                                    </div>
-                                </div>
-
-                                <div class="input-group" style="margin-top: 12px;">
-                                    <label style="font-weight: 600;">Reason / Notes</label>
-                                    <input type="text" id="mod-input-reason" placeholder="e.g. Repeated spamming after warning" style="width: 100%; box-sizing: border-box;">
-                                </div>
-
-                                <button type="button" onclick="submitModAction()" style="margin-top: 14px; width: 100%; padding: 12px; font-weight: 700; background: #5865F2; color: #ffffff; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;">
-                                    <i class="fas fa-check-circle"></i> Submit & Execute Action
-                                </button>
-                            </div>
-
-                            <!-- ModLog & User Actions Feed Table Header & Search -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
-                                <h4 style="margin: 0; color: #fff; font-weight: 700; font-size: 0.95rem;">ModLogs & User Actions Feed</h4>
-                                <div style="display: flex; gap: 10px; flex: 1; max-width: 500px;">
-                                    <input type="text" id="modlog-search" placeholder="Search by User, Mod, or Case ID..." oninput="filterModLogs()" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
-                                    <select id="modlog-filter-action" onchange="filterModLogs()" style="width: 160px; box-sizing: border-box; font-size: 0.82rem;">
-                                        <option value="ALL">All Actions</option>
-                                        <option value="WARN">Warnings</option>
-                                        <option value="TIMEOUT">Timeouts / Mutes</option>
-                                        <option value="KICK">Kicks</option>
-                                        <option value="BAN">Bans</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- ModLogs Table -->
-                            <div style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #dbdee1; text-align: left;">
-                                    <thead>
-                                        <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem;">
-                                            <th style="padding: 10px 14px;">Case ID</th>
-                                            <th style="padding: 10px 14px;">Timestamp</th>
-                                            <th style="padding: 10px 14px;">Target User</th>
-                                            <th style="padding: 10px 14px;">Action</th>
-                                            <th style="padding: 10px 14px;">Moderator</th>
-                                            <th style="padding: 10px 14px;">Reason / Details</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="modlog-tbody">
-                                        <tr>
-                                            <td colspan="6" style="padding: 25px; text-align: center; color: var(--muted);">
-                                                Loading moderation logs...
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- 5. Blocked Content & Enforcement Log -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
-                                <div>
-                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">5. Blocked Content & Enforcement Log</h3>
-                                    <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--muted);">Audit log of blocked messages, scam links, user violations, and applied punishments in this server.</p>
-                                </div>
-
-                                <button type="button" class="config-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: #fff; font-weight: 600;" onclick="loadSecurityAuditLogs()">
-                                    <i class="fas fa-sync-alt" style="margin-right: 6px;"></i> Refresh Log
-                                </button>
-                            </div>
-
-                            <!-- Log Filters Bar -->
-                            <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 12px; margin-bottom: 16px;">
-                                <input type="text" id="sec-log-search" placeholder="Filter by Username, User ID, or Content..." oninput="filterSecurityAuditLogs()" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
-                                <select id="sec-log-category" onchange="filterSecurityAuditLogs()" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
-                                    <option value="ALL">All Categories</option>
-                                    <option value="SCAM">Scam & Phishing Links</option>
-                                    <option value="SPAM">Anti-Spam Floods</option>
-                                    <option value="PROFANITY">Profanity & Slurs</option>
-                                    <option value="RAID">Anti-Raid Triggers</option>
-                                </select>
-                            </div>
-
-                            <!-- Log Table -->
-                            <div style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #dbdee1; text-align: left;">
-                                    <thead>
-                                        <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem;">
-                                            <th style="padding: 12px 15px;">Timestamp</th>
-                                            <th style="padding: 12px 15px;">User</th>
-                                            <th style="padding: 12px 15px;">Flagged Content / Trigger</th>
-                                            <th style="padding: 12px 15px;">Category</th>
-                                            <th style="padding: 12px 15px;">Action Taken</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="sec-log-tbody">
-                                        <tr>
-                                            <td colspan="5" style="padding: 25px; text-align: center; color: var(--muted);">
-                                                Loading security audit logs...
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- 6. Server Action Log (Accountability Feed for Nora's Site) -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px; margin-top: 25px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
-                                <div>
-                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-history" style="color: #ffffff;"></i> Nora's Site Action Log
+                                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-desktop" style="color: #a855f7;"></i> Live Discord Simulator
                                     </h3>
-                                    <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--muted);">Track which administrator made changes to the bot's configuration or moderation settings on this server.</p>
+                                    <span style="font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">
+                                        LIVE PREVIEW
+                                    </span>
                                 </div>
 
-                                <button type="button" class="config-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: #fff; font-weight: 600;" onclick="loadServerActionLogs()">
-                                    <i class="fas fa-sync-alt" style="margin-right: 6px;"></i> Refresh Log
-                                </button>
+                                <!-- Simulator Mode Switcher -->
+                                <div style="display: flex; gap: 6px; margin-bottom: 14px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <button type="button" id="sec-sim-btn-chat" class="btn-outline" style="flex: 1; font-size: 0.75rem; padding: 6px; text-align: center; border: none; background: rgba(255,255,255,0.08); color: #fff; border-radius: 6px; font-weight: 600;" onclick="setSecuritySimMode('chat')">AutoMod Alert</button>
+                                    <button type="button" id="sec-sim-btn-dm" class="btn-outline" style="flex: 1; font-size: 0.75rem; padding: 6px; text-align: center; border: none; background: transparent; color: var(--muted); border-radius: 6px; font-weight: 600;" onclick="setSecuritySimMode('dm')">User DM Notice</button>
+                                    <button type="button" id="sec-sim-btn-log" class="btn-outline" style="flex: 1; font-size: 0.75rem; padding: 6px; text-align: center; border: none; background: transparent; color: var(--muted); border-radius: 6px; font-weight: 600;" onclick="setSecuritySimMode('log')">Mod Log Card</button>
+                                </div>
+
+                                <!-- Live Simulator Frame -->
+                                <div style="background: #313338; border-radius: 8px; padding: 14px; font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">
+                                    
+                                    <!-- Bot Identity Header -->
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                        <img src="nora.png" style="width: 38px; height: 38px; border-radius: 50%;" onerror="this.src='nora.png';" alt="Nora">
+                                        <div>
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <span style="font-weight: 600; color: #fff; font-size: 0.95rem;">Nora</span>
+                                                <span style="background: #5865f2; color: #fff; font-size: 0.62rem; font-weight: 700; padding: 1px 4px; border-radius: 3px;">BOT</span>
+                                                <span style="font-size: 0.75rem; color: #949ba4;">Today at 2:54 PM</span>
+                                            </div>
+                                            <div id="sec-preview-subtitle" style="font-size: 0.75rem; color: #dbdee1; margin-top: 1px;">Automated Security Notice</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Simulator Embed Container -->
+                                    <div id="sec-preview-embed" style="border-left: 4px solid #ef4444; background: #2b2d31; border-radius: 4px; padding: 12px 16px; margin-top: 6px;">
+                                        <div id="sec-preview-title" style="font-weight: 700; color: #fff; font-size: 0.95rem; margin-bottom: 6px;">
+                                            🛡️ Nora AutoMod Alert
+                                        </div>
+                                        <div id="sec-preview-desc" style="font-size: 0.85rem; color: #dbdee1; line-height: 1.45;">
+                                            Your message was automatically removed for violating server safety rules.<br><br>
+                                            <strong>Reason:</strong> Unauthorized Discord Invite Link<br>
+                                            <strong>Action:</strong> Message Deleted & Warning Logged
+                                        </div>
+                                        <div id="sec-preview-footer" style="font-size: 0.72rem; color: #949ba4; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                                            Nora Shield • Server Protection
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 8px; margin-top: 14px;">
+                                    <button type="button" class="btn-outline" style="flex: 1; padding: 8px; font-size: 0.78rem; text-align: center; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); color: #fff;" onclick="testSimulateAutoMod()">
+                                        <i class="fas fa-play" style="margin-right: 4px; color: #22c55e;"></i> Test Simulation
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Log Filters Bar -->
-                            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-                                <input type="text" id="action-log-search" placeholder="Search by Administrator, User ID, Action, or Details..." oninput="loadServerActionLogs()" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
-                            </div>
+                            <!-- Quick Moderation Action Box -->
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; margin: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-hammer" style="color: #eab308;"></i> Quick Mod Action
+                                    </h3>
+                                    <button type="button" class="config-btn" style="width: auto; padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; background: rgba(255,255,255,0.06); color: #fff;" onclick="loadModLogs()">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
 
-                            <!-- Log Table -->
-                            <div style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #dbdee1; text-align: left;">
-                                    <thead>
-                                        <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px;">
-                                            <th style="padding: 14px 18px; width: 190px; white-space: nowrap;">Timestamp</th>
-                                            <th style="padding: 14px 18px; width: 230px; white-space: nowrap;">Administrator</th>
-                                            <th style="padding: 14px 18px; width: 170px; white-space: nowrap;">Action</th>
-                                            <th style="padding: 14px 18px;">Details</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="action-log-tbody">
-                                        <tr>
-                                            <td colspan="4" style="padding: 25px; text-align: center; color: var(--muted);">
-                                                Loading action logs...
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; font-size: 0.8rem;">Target User ID</label>
+                                        <input type="text" id="mod-input-userid" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-weight: 600; font-size: 0.8rem;">Action</label>
+                                            <select id="mod-input-action" style="font-size: 0.85rem;">
+                                                <option value="WARN">Warn</option>
+                                                <option value="TIMEOUT">Timeout</option>
+                                                <option value="KICK">Kick</option>
+                                                <option value="BAN">Ban</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-weight: 600; font-size: 0.8rem;">Duration (Mins)</label>
+                                            <input type="number" id="mod-input-duration" value="10" placeholder="10" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
+                                        </div>
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; font-size: 0.8rem;">Reason</label>
+                                        <input type="text" id="mod-input-reason" placeholder="e.g. Rule violation" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
+                                    </div>
+                                    <button type="button" onclick="submitModAction()" style="margin-top: 4px; padding: 10px; font-weight: 700; background: #5865F2; color: #ffffff; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                        <i class="fas fa-paper-plane"></i> Execute Action
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- FULL WIDTH: Real-Time Moderation Audit Log -->
+                    <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 25px; margin-top: 24px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-list-check" style="color: var(--primary);"></i> Real-Time Moderation Cases & Audit Log
+                                </h3>
+                                <p style="font-size: 0.82rem; color: var(--muted); margin: 4px 0 0 0;">Inspect past bans, timeouts, warnings, kicks, and AutoMod triggers.</p>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; flex: 1; max-width: 500px;">
+                                <input type="text" id="modlog-search" placeholder="Search by User, Moderator, or Case ID..." oninput="filterModLogs()" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
+                                <select id="modlog-filter-action" onchange="filterModLogs()" style="width: 160px; box-sizing: border-box; font-size: 0.82rem;">
+                                    <option value="ALL">All Actions</option>
+                                    <option value="WARN">Warnings</option>
+                                    <option value="TIMEOUT">Timeouts</option>
+                                    <option value="KICK">Kicks</option>
+                                    <option value="BAN">Bans</option>
+                                </select>
+                                <button type="button" class="config-btn" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: #fff; font-weight: 600;" onclick="loadModLogs()">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ModLogs Table -->
+                        <div style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #dbdee1; text-align: left;">
+                                <thead>
+                                    <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase; font-size: 0.72rem;">
+                                        <th style="padding: 12px 15px;">Case ID</th>
+                                        <th style="padding: 12px 15px;">Timestamp</th>
+                                        <th style="padding: 12px 15px;">Target User</th>
+                                        <th style="padding: 12px 15px;">Action</th>
+                                        <th style="padding: 12px 15px;">Moderator</th>
+                                        <th style="padding: 12px 15px;">Reason / Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modlog-tbody">
+                                    <tr>
+                                        <td colspan="6" style="padding: 25px; text-align: center; color: var(--muted);">
+                                            Loading moderation audit cases...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+
+                
 
                 <div id="tab-logging" class="tab-content">
                     <!-- Privacy Compliance Alert -->
@@ -9247,7 +9382,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules'];
 
 
 

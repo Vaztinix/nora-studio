@@ -206,6 +206,46 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.TEXT, // JSON array of role IDs
         defaultValue: '[]'
     },
+    automodImmuneChannels: {
+        type: DataTypes.TEXT, // JSON array of channel IDs
+        defaultValue: '[]'
+    },
+    automodInvites: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodLinks: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodCaps: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodZalgo: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    allowedInvites: {
+        type: DataTypes.TEXT, // JSON array of allowed invite codes or vanity codes
+        defaultValue: '[]'
+    },
+    quarantineRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    modLogChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    sendModDms: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    warnEscalationRules: {
+        type: DataTypes.TEXT, // JSON object string mapping warning count to action e.g. {"3":"timeout_1h","5":"kick","7":"ban"}
+        defaultValue: '{"3":"timeout_1h","5":"kick","7":"ban"}'
+    },
     managedBotId: {
         type: DataTypes.STRING,
         allowNull: true

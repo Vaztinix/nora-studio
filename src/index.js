@@ -579,6 +579,37 @@ runPreSyncMigrations().then(() => {
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkCleanMessage` TINYINT(1) DEFAULT 1;");
     } catch (e) { }
+    // ---- Advanced Moderation & AutoMod Migrations ----
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `automodImmuneChannels` TEXT DEFAULT '[]';");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `automodInvites` TINYINT(1) DEFAULT 0;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `automodLinks` TINYINT(1) DEFAULT 0;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `automodCaps` TINYINT(1) DEFAULT 0;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `automodZalgo` TINYINT(1) DEFAULT 0;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `allowedInvites` TEXT DEFAULT '[]';");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `quarantineRoleId` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `modLogChannelId` VARCHAR(255) DEFAULT NULL;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `sendModDms` TINYINT(1) DEFAULT 1;");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `warnEscalationRules` TEXT DEFAULT '{\"3\":\"timeout_1h\",\"5\":\"kick\",\"7\":\"ban\"}';");
+    } catch (e) { }
 
     try {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `ticketAutoArchive` TINYINT(1) DEFAULT 0;");
