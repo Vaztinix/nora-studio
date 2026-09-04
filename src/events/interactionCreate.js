@@ -826,25 +826,47 @@ module.exports = {
 
         let activeDeferPromise = null;
 
-        interaction.deferReply = async (options) => {
+        interaction.deferReply = async (options = {}) => {
             if (interaction.deferred || interaction.replied) {
                 return;
             }
-            if (!activeDeferPromise) {
-                activeDeferPromise = originalDeferReply(options).catch(() => {});
+            if (activeDeferPromise) {
+                try {
+                    await activeDeferPromise;
+                } catch (e) {}
             }
-            return await activeDeferPromise;
+            if (!interaction.deferred && !interaction.replied) {
+                try {
+                    activeDeferPromise = originalDeferReply(options);
+                    return await activeDeferPromise;
+                } catch (e) {}
+            }
         };
 
         interaction.editReply = async (options) => {
             if (activeDeferPromise) {
-                await activeDeferPromise;
+                try {
+                    await activeDeferPromise;
+                } catch (e) {}
             }
-            return await originalEditReply(options);
+            if (interaction.deferred || interaction.replied) {
+                return await originalEditReply(options);
+            } else {
+                return await originalReply(options);
+            }
         };
 
         interaction.reply = async (options) => {
-            return await interaction.editReply(options);
+            if (activeDeferPromise) {
+                try {
+                    await activeDeferPromise;
+                } catch (e) {}
+            }
+            if (interaction.deferred || interaction.replied) {
+                return await originalEditReply(options);
+            } else {
+                return await originalReply(options);
+            }
         };
 
         // ⚡ INSTANT DEFERRAL (<10ms) to beat Discord's 3-second Gateway interaction timeout

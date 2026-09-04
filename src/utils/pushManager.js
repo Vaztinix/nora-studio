@@ -52,8 +52,14 @@ function getVapidPublicKey() {
  * Save or update a Web Push subscription.
  */
 async function saveSubscription(userId, sub) {
-    if (!sub || !sub.endpoint || !sub.keys) return null;
+    if (!sub || !sub.endpoint || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) return null;
     try {
+        const p256Buf = Buffer.from(sub.keys.p256dh, 'base64');
+        if (p256Buf.length !== 65) {
+            console.warn(`[PushManager] Rejected push subscription with invalid p256dh key length (${p256Buf.length} bytes, expected 65).`);
+            return null;
+        }
+
         const [record] = await PushSubscription.upsert({
             userId: userId || 'anonymous',
             endpoint: sub.endpoint,
@@ -73,6 +79,18 @@ async function saveSubscription(userId, sub) {
 async function sendPushNotification(subRecord, payload) {
     if (!subRecord || !subRecord.endpoint || !subRecord.p256dh || !subRecord.auth) return false;
     
+    try {
+        const p256Buf = Buffer.from(subRecord.p256dh, 'base64');
+        if (p256Buf.length !== 65) {
+            // Malformed/corrupt key stored previously -> purge from DB
+            await PushSubscription.destroy({ where: { endpoint: subRecord.endpoint } }).catch(() => {});
+            return false;
+        }
+    } catch (e) {
+        await PushSubscription.destroy({ where: { endpoint: subRecord.endpoint } }).catch(() => {});
+        return false;
+    }
+
     const pushSubscription = {
         endpoint: subRecord.endpoint,
         keys: {
@@ -85,8 +103,8 @@ async function sendPushNotification(subRecord, payload) {
         await webpush.sendNotification(pushSubscription, JSON.stringify(payload));
         return true;
     } catch (err) {
-        if (err.statusCode === 404 || err.statusCode === 410) {
-            // Subscription expired or unregistered -> clean up from DB
+        if (err.statusCode === 404 || err.statusCode === 410 || (err.message && err.message.includes('p256dh'))) {
+            // Subscription expired, unregistered, or corrupt -> clean up from DB
             await PushSubscription.destroy({ where: { endpoint: subRecord.endpoint } }).catch(() => {});
         } else {
             console.error('[PushManager] Failed to deliver push notification:', err.message);
