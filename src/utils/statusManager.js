@@ -100,7 +100,7 @@ async function updateBotStatus(client) {
             `📡 Shard #${shardId} | Serving ${serverCount} servers`,
             `👥 Shard #${shardId} | Protecting ${memberCount.toLocaleString()} members`,
             `⚡ Shard #${shardId} | Ping: ${pingMs}ms • Uptime: ${uptimeStr}`,
-            `🛡️ Shard #${shardId} | 100% Operational`
+            `🛡️ Shard #${shardId} | 100% Online`
         ];
 
         // Group status pools

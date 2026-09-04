@@ -4263,10 +4263,10 @@
                 <span>Nora Studio</span>
             </div>
             <div class="auth-top-links">
-                <div class="auth-status-pill">
-                    <span class="auth-status-dot"></span>
-                    <span>Systems Operational</span>
-                </div>
+                <a href="status.html" class="auth-status-pill" id="auth-status-pill" style="text-decoration: none; color: inherit;" title="System Status: Online">
+                    <span class="auth-status-dot" id="auth-status-dot"></span>
+                    <span id="auth-status-text">Online</span>
+                </a>
                 <a href="index.html" class="auth-nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
                 <a href="docs.html" class="auth-nav-link"><i class="fas fa-book"></i> <span>Docs</span></a>
                 <a href="support.html" class="auth-nav-link"><i class="fas fa-headset"></i> <span>Support</span></a>
@@ -4368,11 +4368,11 @@
 
             <!-- Topbar Right Actions: Consolidated, Clean & Advanced -->
             <div class="topbar-actions">
-                <!-- Systems Operational Status Pill -->
-                <div class="system-status-pill" title="All Systems Operational">
-                    <span class="system-status-dot"></span>
-                    <span class="hide-on-mobile">Operational</span>
-                </div>
+                <!-- Systems Online Status Pill -->
+                <a href="status.html" class="system-status-pill" id="dashboard-status-pill" title="System Status: Online" style="text-decoration: none; color: inherit;">
+                    <span class="system-status-dot" id="dashboard-status-dot"></span>
+                    <span class="hide-on-mobile" id="dashboard-status-text">Online</span>
+                </a>
 
                 <!-- Auto-Refresh Control Manager Widget -->
                 <div id="auto-refresh-widget" class="auto-refresh-pill">
@@ -21525,6 +21525,46 @@ document.addEventListener('keydown', (e) => {
     window.addEventListener('resize', syncMobileActionBar);
     document.addEventListener('click', function() { setTimeout(syncMobileActionBar, 50); });
     setInterval(syncMobileActionBar, 500);
+})();
+
+// Live Dynamic System Status Synchronizer
+(function initSystemStatusSync() {
+    async function syncStatus() {
+        try {
+            const res = await fetch('/api/status/public', { cache: 'no-store', signal: AbortSignal.timeout(3500) });
+            if (!res.ok) return;
+            const data = await res.json();
+            const text = data.statusText || 'Online';
+            const status = data.systemStatus || 'online';
+
+            const targets = [
+                { textEl: document.getElementById('dashboard-status-text'), dotEl: document.getElementById('dashboard-status-dot'), pillEl: document.getElementById('dashboard-status-pill') },
+                { textEl: document.getElementById('auth-status-text'), dotEl: document.getElementById('auth-status-dot'), pillEl: document.getElementById('auth-status-pill') }
+            ];
+
+            targets.forEach(({ textEl, dotEl, pillEl }) => {
+                if (textEl) textEl.textContent = text;
+                if (pillEl) pillEl.title = `System Status: ${text}`;
+                if (dotEl) {
+                    if (status === 'degraded') {
+                        dotEl.style.background = '#f59e0b';
+                        dotEl.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.6)';
+                    } else if (status === 'outage' || status === 'offline') {
+                        dotEl.style.background = '#ef4444';
+                        dotEl.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+                    } else if (status === 'maintenance') {
+                        dotEl.style.background = '#8b5cf6';
+                        dotEl.style.boxShadow = '0 0 8px rgba(139, 92, 246, 0.6)';
+                    } else {
+                        dotEl.style.background = '#10b981';
+                        dotEl.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
+                    }
+                }
+            });
+        } catch (e) {}
+    }
+    syncStatus();
+    setInterval(syncStatus, 30000);
 })();
 </script>
 

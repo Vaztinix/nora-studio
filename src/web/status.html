@@ -546,7 +546,7 @@
         <!-- Incidents & Notes Section -->
         <div class="section-header">
             <div class="section-title">
-                <i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Operational Notes & Incident History
+                <i class="fas fa-clipboard-list" style="color: var(--primary);"></i> System Status & Incident History
             </div>
         </div>
 
@@ -608,7 +608,7 @@
             // If all endpoints fail or time out, render true offline state
             renderStatus({
                 systemStatus: 'outage',
-                statusText: 'All Systems Offline',
+                statusText: 'Offline',
                 statusDesc: 'Unable to establish connection to Nora bot core and API gateway.',
                 shards: [
                     {
@@ -639,7 +639,7 @@
             });
         }
 
-                function renderStatus(data) {
+        function renderStatus(data) {
             const hero = document.getElementById('status-hero-banner');
             const icon = document.getElementById('hero-status-icon');
             const title = document.getElementById('hero-status-title');
@@ -649,10 +649,10 @@
             // Reset classes
             hero.className = 'status-hero';
             
-            if (data.systemStatus === 'outage') {
+            if (data.systemStatus === 'outage' || data.systemStatus === 'offline') {
                 hero.classList.add('outage');
                 icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-                title.textContent = data.statusText || 'All Systems Offline';
+                title.textContent = data.statusText || 'Offline';
                 desc.textContent = data.statusDesc || 'Our automated systems have flagged that the Nora backend is currently offline.';
             } else if (data.systemStatus === 'degraded') {
                 hero.classList.add('degraded');
@@ -666,7 +666,7 @@
                 desc.textContent = 'Upgrades or database maintenance currently under execution.';
             } else {
                 icon.innerHTML = '<i class="fas fa-check-circle"></i>';
-                title.textContent = 'All Systems Operational';
+                title.textContent = data.statusText || 'Online';
                 desc.textContent = 'All cluster shards, API services, and gateway connectors are running smoothly.';
             }
 
@@ -719,7 +719,7 @@
                     incidentsContainer.innerHTML = `
                         <div class="no-incidents">
                             <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--green); margin-bottom: 10px; display: block;"></i>
-                            No operational flags or incidents reported in the last 90 days.
+                            No incident flags or disruptions reported in the last 90 days.
                         </div>
                     `;
                 } else {

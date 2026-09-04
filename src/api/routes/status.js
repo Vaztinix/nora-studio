@@ -17,18 +17,18 @@ module.exports = function(client) {
             const activeFlags = flags.filter(f => !f.isResolved);
             
             // Determine system status
-            let systemStatus = 'operational';
-            let statusText = 'All Systems Operational';
+            let systemStatus = 'online';
+            let statusText = 'Online';
 
             if (activeFlags.some(f => f.severity === 'outage')) {
                 systemStatus = 'outage';
-                statusText = 'Partial Service Outage Reported';
+                statusText = 'Partial Outage';
             } else if (activeFlags.some(f => f.severity === 'degraded') || (client && client.ws && client.ws.ping > 250)) {
                 systemStatus = 'degraded';
-                statusText = 'Degraded Gateway Performance';
+                statusText = 'Degraded Performance';
             } else if (activeFlags.some(f => f.severity === 'maintenance')) {
                 systemStatus = 'maintenance';
-                statusText = 'Scheduled Maintenance Underway';
+                statusText = 'Scheduled Maintenance';
             }
 
             // Gather shard metrics

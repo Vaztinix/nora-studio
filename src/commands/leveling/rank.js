@@ -120,14 +120,14 @@ module.exports = {
             const finalShowPfp = showPfp && userShowAvatar;
 
             const themeMode = targetPrefs?.rankCardThemeMode || (targetPrefs?.rankCardBackgroundImage ? 'image' : (targetPrefs?.rankCardCustomColor ? 'custom' : 'preset'));
-            let cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
+            let cardAccent = settings?.levelingCardAccentColor || '#6366f1';
             if ((themeMode === 'custom' || themeMode === 'image') && targetPrefs?.rankCardCustomColor) {
                 cardAccent = targetPrefs.rankCardCustomColor;
             } else if (targetPrefs?.rankCardCustomColor && themeMode !== 'preset') {
                 cardAccent = targetPrefs.rankCardCustomColor;
             }
 
-            let cardBgColor = settings?.levelingCardBgColor || '#111217';
+            let cardBgColor = settings?.levelingCardBgColor || '#090a10';
             let cardUserBg = null;
             if (themeMode === 'image' || targetPrefs?.rankCardBackgroundImage) {
                 cardUserBg = targetPrefs?.rankCardBackgroundImage || targetPrefs?.customRankCardBg || null;
@@ -145,7 +145,7 @@ module.exports = {
                     showPfp: finalShowPfp,
                     bgColor: cardBgColor,
                     accentColor: cardAccent,
-                    borderColor: settings?.levelingCardBorderColor || '#23252e',
+                    borderColor: settings?.levelingCardBorderColor || '#232538',
                     isPremium: targetIsPremium,
                     userCustomBg: cardUserBg
                 }),
@@ -159,7 +159,7 @@ module.exports = {
             
             const embed = new EmbedBuilder()
                 .setAuthor({ name: `${target.username}'s Rank Profile`, iconURL: target.displayAvatarURL() })
-                .setColor(0x7C3AED)
+                .setColor(0x6366F1)
                 .setImage(`attachment://${fileName}`)
                 .setTimestamp();
 

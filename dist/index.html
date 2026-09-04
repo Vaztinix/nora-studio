@@ -1387,10 +1387,10 @@
 
             <div class="footer-bottom">
                 <span>&copy; 2026 Nora Studio. Built for empowering communities.</span>
-                <div class="live-status-pill">
-                    <span class="live-dot"></span>
-                    <span>All Systems Operational</span>
-                </div>
+                <a href="/status" class="live-status-pill" id="landing-status-pill" style="text-decoration: none; color: inherit;">
+                    <span class="live-dot" id="landing-status-dot"></span>
+                    <span id="landing-status-text">Online</span>
+                </a>
             </div>
         </div>
     </footer>
@@ -1413,6 +1413,26 @@
                     if (data.ping) {
                         const pingEl = document.getElementById('stat-ping');
                         if (pingEl) pingEl.innerText = `${data.ping}ms`;
+                    }
+                    const statusTextEl = document.getElementById('landing-status-text');
+                    const statusDotEl = document.getElementById('landing-status-dot');
+                    if (statusTextEl && data.statusText) {
+                        statusTextEl.innerText = data.statusText;
+                    }
+                    if (statusDotEl && data.systemStatus) {
+                        if (data.systemStatus === 'degraded') {
+                            statusDotEl.style.background = '#f59e0b';
+                            statusDotEl.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.6)';
+                        } else if (data.systemStatus === 'outage' || data.systemStatus === 'offline') {
+                            statusDotEl.style.background = '#ef4444';
+                            statusDotEl.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+                        } else if (data.systemStatus === 'maintenance') {
+                            statusDotEl.style.background = '#8b5cf6';
+                            statusDotEl.style.boxShadow = '0 0 8px rgba(139, 92, 246, 0.6)';
+                        } else {
+                            statusDotEl.style.background = '#10b981';
+                            statusDotEl.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
+                        }
                     }
                 }
             } catch (e) {
