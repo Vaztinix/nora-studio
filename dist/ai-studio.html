@@ -3,10 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora Studio | AI Workspace</title>
+    <title>Nora Studio | Workspace & Bot Studio</title>
+    <meta name="description" content="Configure Nora's behavior, hosted bots, automation templates, and community memory context from the official studio workspace.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Modern Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script>
         // SESSION PERSISTENCE PROXY
         (function() {
@@ -61,69 +67,73 @@
         (function() {
             const savedColor = localStorage.getItem('nora_theme_color');
             if (savedColor) {
-                document.documentElement.style.setProperty('--primary', savedColor);
-                const r = parseInt(savedColor.slice(1, 3), 16);
-                const g = parseInt(savedColor.slice(3, 5), 16);
-                const b = parseInt(savedColor.slice(5, 7), 16);
-                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.18)`);
-                document.documentElement.style.setProperty('--glow', `rgba(${r}, ${g}, ${b}, 0.18)`);
+                document.documentElement.style.setProperty('--blurple', savedColor);
             }
         })();
     </script>
     <style>
         :root {
-            --bg: #090d18;
-            --bg-secondary: #11182a;
-            --card: rgba(17, 24, 42, 0.88);
-            --card-strong: rgba(24, 30, 53, 0.95);
-            --border: rgba(255,255,255,0.08);
-            --text: #f8fbff;
-            --muted: #a1adc6;
-            --primary: #ffffff;
-            --accent: rgba(174, 239, 255, 0.18);
-            --glow: rgba(174, 239, 255, 0.16);
-            --success: #2ea043;
-            --warning: #f4b942;
-            --danger: #ff6666;
-            --radius: 22px;
-            --shadow: 0 24px 60px rgba(0,0,0,0.35);
+            --bg-base: #0B0C12;
+            --bg-surface: rgba(16, 17, 26, 0.78);
+            --bg-surface-elevated: rgba(22, 24, 38, 0.92);
+            --bg-card: rgba(18, 20, 32, 0.85);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            --border-glow: rgba(88, 101, 242, 0.4);
+            
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --text-dim: #6B7280;
+            
+            --blurple: #5865F2;
+            --blurple-hover: #4752C4;
+            --blurple-glow: rgba(88, 101, 242, 0.35);
+            --blurple-subtle: rgba(88, 101, 242, 0.12);
+            
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+            
+            --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.45);
+            --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        * { box-sizing: border-box; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
+        }
 
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            color: var(--text);
-            background-color: var(--bg);
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
-                radial-gradient(circle at 20% 20%, rgba(174,239,255,0.12), transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(114, 125, 255, 0.12), transparent 40%);
-            background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
-            background-attachment: fixed;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-base);
             min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.15) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Ambient Visualizer Overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at 50% 0%, var(--glow), transparent 70%);
-            opacity: 0.5;
-            z-index: -1;
-            pointer-events: none;
-        }
-
+        /* ===== NAVBAR ===== */
         .topbar {
             position: sticky;
             top: 0;
-            z-index: 5;
-            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-subtle);
             backdrop-filter: blur(16px);
-            background: rgba(8, 12, 22, 0.85);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(11, 12, 18, 0.85);
         }
 
         .topbar-inner {
@@ -133,94 +143,186 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: -0.01em;
         }
 
         .brand img {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
         }
 
         .nav-links {
             display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
         }
 
         .nav-links a {
-            color: var(--muted);
+            color: var(--text-muted);
             text-decoration: none;
             font-size: 0.9rem;
-            font-weight: 700;
-            padding: 10px 14px;
-            border-radius: 999px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            transition: var(--transition-smooth);
             border: 1px solid transparent;
-            transition: 0.2s ease;
         }
 
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--text);
-            border-color: var(--border);
-            background: rgba(255,255,255,0.03);
+        .nav-links a:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border-subtle);
         }
 
+        .nav-links a.active {
+            color: #fff;
+            background: var(--blurple-subtle);
+            border-color: rgba(88, 101, 242, 0.3);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 1.1rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== MOBILE DRAWER ===== */
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: min(300px, 80vw);
+            height: 100vh;
+            background: rgba(14, 15, 24, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border-subtle);
+            z-index: 10000;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mobile-drawer.open { right: 0; }
+        .mobile-drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .mobile-drawer-nav { display: flex; flex-direction: column; gap: 8px; }
+        .mobile-drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.92rem;
+            background: rgba(255, 255, 255, 0.02);
+            transition: var(--transition-smooth);
+        }
+        .mobile-drawer-nav a:hover, .mobile-drawer-nav a.active {
+            color: #fff;
+            background: var(--blurple-subtle);
+            border: 1px solid rgba(88, 101, 242, 0.25);
+        }
+
+        /* ===== CONTAINER & LAYOUT ===== */
         .container {
-            width: min(1300px, calc(100% - 32px));
-            margin: 24px auto 80px;
+            width: min(1300px, calc(100% - 40px));
+            margin: 28px auto 80px;
         }
 
+        /* ===== HERO SECTION ===== */
         .hero {
             display: grid;
             grid-template-columns: 1.3fr 0.9fr;
-            gap: 18px;
+            gap: 20px;
             align-items: stretch;
+            margin-bottom: 24px;
         }
 
         .hero-card {
-            background: linear-gradient(135deg, rgba(19,25,45,0.96), rgba(27,36,60,0.88));
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 28px;
-            box-shadow: var(--shadow);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(16px);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hero-card.main-hero {
+            background: linear-gradient(145deg, rgba(22, 24, 38, 0.9), rgba(16, 17, 26, 0.85));
+            border-color: rgba(88, 101, 242, 0.2);
         }
 
         .eyebrow {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(174,239,255,0.25);
-            background: rgba(174,239,255,0.08);
-            color: var(--primary);
-            font-size: 0.78rem;
-            font-weight: 800;
-            letter-spacing: 0.04em;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            background: var(--blurple-subtle);
+            color: #818CF8;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
             text-transform: uppercase;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
+            align-self: flex-start;
         }
 
         .hero h1 {
             margin: 0 0 14px;
-            font-size: clamp(1.9rem, 2vw + 1.2rem, 2.6rem);
-            line-height: 1.08;
+            font-size: clamp(1.8rem, 2.2vw + 1rem, 2.4rem);
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.025em;
+            color: #fff;
         }
 
         .hero p {
             margin: 0;
-            color: var(--muted);
-            line-height: 1.7;
-            font-size: 0.97rem;
+            color: var(--text-muted);
+            line-height: 1.65;
+            font-size: 0.95rem;
         }
 
         .hero-stats {
@@ -231,95 +333,136 @@
         }
 
         .stat-tile {
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.02);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.02);
             padding: 16px;
+            transition: var(--transition-smooth);
+        }
+        .stat-tile:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .stat-tile strong {
             display: block;
-            font-size: 1.2rem;
-            margin-bottom: 8px;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
 
         .stat-tile span {
-            color: var(--muted);
-            font-size: 0.84rem;
-            line-height: 1.5;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+            line-height: 1.4;
+            font-weight: 500;
         }
 
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
+        /* ===== BUTTONS ===== */
         .primary-btn, .secondary-btn, .danger-btn {
-            border: none;
-            border-radius: 999px;
-            padding: 12px 16px;
-            font-size: 0.9rem;
-            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: var(--radius-full);
+            padding: 10px 20px;
+            font-size: 0.88rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .primary-btn:hover, .secondary-btn:hover, .danger-btn:hover {
-            transform: translateY(-1px);
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            font-family: inherit;
         }
 
         .primary-btn {
-            background: linear-gradient(135deg, var(--primary), #8ee7ff);
-            color: #07111d;
-            box-shadow: 0 12px 32px rgba(174,239,255,0.18);
+            background: var(--blurple);
+            color: #fff;
+            border: 1px solid transparent;
+            box-shadow: 0 4px 16px rgba(88, 101, 242, 0.35);
+        }
+        .primary-btn:hover {
+            background: var(--blurple-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.45);
         }
 
         .secondary-btn {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+        }
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+            color: #fff;
         }
 
         .danger-btn {
-            background: rgba(255,102,102,0.15);
-            border: 1px solid rgba(255,102,102,0.25);
-            color: #ffd8d8;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #FCA5A5;
+        }
+        .danger-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fff;
+            transform: translateY(-1px);
         }
 
+        /* ===== MODULE GRID ===== */
         .module-grid {
-            margin-top: 24px;
             display: grid;
-            grid-template-columns: repeat(12, minmax(0, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
         }
 
         .module-pane {
-            grid-column: span 12;
-            display: grid;
-            gap: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .module-card {
-            background: rgba(12, 17, 31, 0.94);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 26px;
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(16px);
+            transition: var(--transition-smooth);
+        }
+        .module-card:hover {
+            border-color: var(--border-hover);
         }
 
         .module-card h2 {
-            margin: 0 0 8px;
-            font-size: 1.2rem;
+            margin: 0 0 6px;
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.015em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .module-card > p {
-            color: var(--muted);
+            color: var(--text-muted);
             line-height: 1.6;
-            margin: 0 0 18px;
+            font-size: 0.88rem;
+            margin: 0 0 20px;
         }
 
+        /* ===== FORM FIELDS ===== */
         .field-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -329,155 +472,173 @@
         .field {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .field.full { grid-column: 1 / -1; }
 
         .field label {
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: var(--text);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.01em;
         }
 
         .field input, .field select, .field textarea {
             width: 100%;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.02);
-            color: var(--text);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            background: rgba(14, 15, 24, 0.65);
+            color: #fff;
             font: inherit;
-            padding: 12px 14px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 10px 14px;
+            outline: none;
+            transition: var(--transition-smooth);
+            font-size: 0.9rem;
         }
 
         .field input:focus, .field select:focus, .field textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(0,0,0,0.4);
-            box-shadow: 0 0 0 3px rgba(174, 239, 255, 0.15), inset 0 0 10px rgba(174, 239, 255, 0.05);
+            border-color: var(--blurple);
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2);
+            background: rgba(14, 15, 24, 0.9);
         }
 
         .field textarea {
-            min-height: 120px;
+            min-height: 90px;
             resize: vertical;
+            line-height: 1.5;
         }
 
+        /* ===== SWITCHES ===== */
         .switch-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            padding: 14px 0;
-            border-top: 1px solid var(--border);
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.015);
+            margin-top: 12px;
+            gap: 14px;
         }
 
-        .switch-row:first-of-type {
-            border-top: none;
+        .switch-row strong {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
         }
 
         .switch-row p {
             margin: 0;
-            color: var(--muted);
-            font-size: 0.9rem;
-            line-height: 1.5;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            line-height: 1.4;
         }
 
         .switch {
             position: relative;
-            width: 54px;
-            height: 28px;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
             flex-shrink: 0;
         }
 
-        .switch input { display: none; }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
 
         .slider {
             position: absolute;
+            cursor: pointer;
             inset: 0;
-            background: rgba(255,255,255,0.1);
+            background-color: rgba(255, 255, 255, 0.12);
+            transition: .25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 999px;
-            transition: 0.2s ease;
+            border: 1px solid var(--border-subtle);
         }
 
-        .slider::before {
-            content: '';
+        .slider:before {
             position: absolute;
-            width: 20px;
-            height: 20px;
-            left: 4px;
-            top: 4px;
-            background: white;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: #fff;
+            transition: .25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
-            transition: 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .switch input:checked + .slider {
-            background: linear-gradient(135deg, var(--primary), #7de4ff);
-            box-shadow: 0 0 15px rgba(174, 239, 255, 0.4);
+        input:checked + .slider {
+            background-color: var(--blurple);
+            border-color: var(--blurple);
         }
 
-        .switch input:checked + .slider::before {
-            transform: translateX(26px);
-            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+        input:checked + .slider:before {
+            transform: translateX(20px);
         }
 
-        .mini-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .tag-row {
+        /* ===== TOOLBAR & CODE BLOCKS ===== */
+        .toolbar {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
+            margin-top: 18px;
         }
 
-        .tag-pill {
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.02);
-            font-size: 0.82rem;
-            color: var(--text);
+        .notice {
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(88, 101, 242, 0.25);
+            background: var(--blurple-subtle);
+            color: #C7D2FE;
+            font-size: 0.88rem;
+            margin-top: 14px;
+            line-height: 1.5;
         }
 
         .code-block {
-            background: rgba(0,0,0,0.28);
-            border: 1px solid var(--border);
-            color: #d5f6ff;
-            font-family: 'Courier New', monospace;
-            border-radius: 16px;
-            padding: 16px;
-            font-size: 0.88rem;
-            max-height: 320px;
-            overflow: auto;
-            white-space: pre-wrap;
-            line-height: 1.6;
-        }
-
-        .table-card {
-            padding: 18px 20px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.015);
-        }
-
-        .table-card + .table-card {
             margin-top: 12px;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            background: #08090D;
+            border: 1px solid var(--border-subtle);
+            color: #E2E8F0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        /* ===== TABLE CARD & LISTS ===== */
+        .table-card {
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.015);
+            margin-bottom: 10px;
         }
 
         .table-card h3 {
-            margin: 0 0 8px;
-            font-size: 1rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
         }
 
         .table-card p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
             margin: 0;
-            color: var(--muted);
-            font-size: 0.9rem;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         .row-between {
@@ -485,378 +646,285 @@
             justify-content: space-between;
             align-items: center;
             gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .badge-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .badge-row span {
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border);
         }
 
         .bot-list {
             display: grid;
             gap: 12px;
+            margin-top: 14px;
         }
 
         .bot-item {
             padding: 18px;
-            border-radius: 18px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.018);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.018);
+            transition: var(--transition-smooth);
+        }
+        .bot-item:hover {
+            border-color: var(--border-hover);
         }
 
         .bot-item header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .bot-item h3 {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #fff;
         }
 
         .bot-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
         .bot-meta span {
-            border-radius: 999px;
-            padding: 5px 9px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.02);
-            color: var(--muted);
-            font-size: 0.8rem;
+            border-radius: var(--radius-full);
+            padding: 4px 10px;
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 500;
         }
 
         .bot-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
-            margin-top: 12px;
+            margin-top: 14px;
         }
 
         .command-list {
             margin-top: 12px;
             display: grid;
-            gap: 10px;
+            gap: 8px;
         }
 
         .command-item {
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.015);
-            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            background: rgba(0, 0, 0, 0.25);
+            padding: 12px 14px;
         }
 
         .command-item strong {
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+            color: #fff;
+            font-size: 0.88rem;
         }
 
         .command-item p {
             margin: 0;
-            color: var(--muted);
-            font-size: 0.88rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
         }
 
-        .toolbar {
+        .badge-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 16px;
+            gap: 8px;
+            margin: 14px 0 6px;
         }
 
-        .notice {
-            padding: 14px 16px;
-            border-radius: 14px;
-            border: 1px solid rgba(174,239,255,0.16);
-            background: rgba(174,239,255,0.08);
-            color: var(--text);
-            font-size: 0.92rem;
-            margin-top: 12px;
+        .badge-row span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
         }
 
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             display: inline-block;
-            margin-right: 8px;
         }
 
-        .status-ok { background: var(--success); }
-        .status-warn { background: var(--warning); }
-        .status-bad { background: var(--danger); }
+        .status-ok { background: var(--success); box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+        .status-warn { background: var(--warning); box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
+        .status-bad { background: var(--danger); box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
 
         .footer-note {
             margin-top: 16px;
-            color: var(--muted);
-            font-size: 0.86rem;
+            color: var(--text-dim);
+            font-size: 0.82rem;
             line-height: 1.6;
         }
 
         .empty-state {
             padding: 20px;
-            border-radius: 16px;
-            border: 1px dashed var(--border);
-            color: var(--muted);
-            background: rgba(255,255,255,0.01);
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border-subtle);
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.01);
+            text-align: center;
+            font-size: 0.86rem;
         }
 
+        /* ===== RESPONSIVENESS ===== */
         @media (max-width: 980px) {
-            .hero, .field-grid { grid-template-columns: 1fr; }
+            .hero { grid-template-columns: 1fr; }
             .module-grid { grid-template-columns: 1fr; }
-            .module-pane { grid-column: span 1; }
         }
 
         @media (max-width: 768px) {
-            body {
-                font-size: 14px;
-                overflow-x: hidden;
-            }
+            .nav-links { display: none !important; }
+            .mobile-menu-btn { display: flex !important; }
             .container {
-                width: min(100%, calc(100% - 20px));
+                width: min(100%, calc(100% - 24px));
                 margin: 16px auto 60px;
-                padding: 0 10px;
             }
-            .hero {
-                grid-template-columns: 1fr !important;
-                gap: 15px;
-            }
-            .hero-card {
-                padding: 18px 14px !important;
-                border-radius: 16px !important;
-            }
-            .hero-stats {
-                grid-template-columns: 1fr 1fr !important;
-                gap: 10px;
-            }
-            .field-grid, 
-            .module-grid {
-                grid-template-columns: 1fr !important;
-                gap: 15px;
-            }
-            .module-pane {
-                grid-column: span 1 !important;
-                padding: 16px 14px !important;
-                border-radius: 16px !important;
-            }
-            .topbar-inner {
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-                padding: 12px 14px;
-            }
-            .nav-links {
-                justify-content: center;
-                width: 100%;
-                gap: 6px;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 4px;
-            }
-            .nav-links a {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-                white-space: nowrap;
-                flex-shrink: 0;
-            }
-            input, 
-            select, 
-            textarea, 
-            button {
-                min-height: 44px;
+            .hero-card { padding: 22px 18px !important; }
+            .hero h1 { font-size: 1.65rem !important; }
+            .hero-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .field-grid { grid-template-columns: 1fr !important; gap: 10px; }
+            .module-card { padding: 20px 16px !important; }
+            .hero-actions { display: grid; grid-template-columns: 1fr; }
+            .hero-actions button { width: 100%; }
+            .topbar-inner { padding: 12px 16px; }
+            
+            input, select, textarea, button {
                 font-size: 16px !important; /* Prevents auto-zoom on iOS */
-                box-sizing: border-box;
             }
-            .table-card {
-                padding: 14px !important;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            .row-between {
-                flex-direction: column;
-                align-items: stretch !important;
-                gap: 12px;
-            }
-            .row-between button {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero-stats { grid-template-columns: 1fr !important; }
-            .hero-actions { display: grid; gap: 8px; }
-            .hero-actions button { margin: 0 !important; width: 100%; }
-        }
-
-        /* Device-specific layout overrides */
-        body.device-mobile {
-            font-size: 14px;
-        }
-        body.device-mobile .container {
-            width: min(100%, calc(100% - 20px));
-            margin: 16px auto 60px;
-        }
-        body.device-mobile .hero {
-            grid-template-columns: 1fr !important;
-            gap: 15px;
-        }
-        body.device-mobile .hero-card {
-            padding: 20px;
-        }
-        body.device-mobile .hero-stats {
-            grid-template-columns: 1fr !important;
-            gap: 10px;
-        }
-        body.device-mobile .field-grid, 
-        body.device-mobile .module-grid {
-            grid-template-columns: 1fr !important;
-            gap: 15px;
-        }
-        body.device-mobile .module-pane {
-            grid-column: span 1 !important;
-            padding: 15px !important;
-        }
-        body.device-mobile .topbar-inner {
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-        }
-        body.device-mobile .nav-links {
-            justify-content: center;
-            width: 100%;
-            gap: 8px;
-        }
-        body.device-mobile .nav-links a {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-        }
-        body.device-mobile input, 
-        body.device-mobile select, 
-        body.device-mobile textarea, 
-        body.device-mobile button {
-            min-height: 42px;
-            font-size: 16px !important; /* Prevents auto-zoom on iOS */
-        }
-        body.device-mobile .table-card {
-            padding: 15px !important;
-        }
-        body.device-mobile .row-between {
-            flex-direction: column;
-            align-items: stretch !important;
-            gap: 12px;
-        }
-        body.device-mobile .row-between button {
-            width: 100%;
-        }
-
-        body.device-tablet .hero {
-            grid-template-columns: 1fr !important;
-        }
-        body.device-tablet .topbar-inner {
-            padding: 12px 16px;
         }
     </style>
 </head>
 <body>
-    <div class="topbar">
-        <div class="topbar-inner">
+    <!-- Mobile Drawer & Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMobileMenu()"></div>
+    <aside class="mobile-drawer" id="mobile-drawer">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--border-subtle);">
             <div class="brand">
-                <img src="nora.png" alt="Nora">
+                <img src="nora.png" alt="Nora Logo">
                 <span>Nora Studio</span>
             </div>
-            <div class="nav-links">
+            <button onclick="toggleMobileMenu()" style="background: transparent; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; padding: 4px 8px;">&times;</button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
+            <a href="/ai-studio" class="active"><i class="fas fa-layer-group"></i> Studio Workspace</a>
+            <a href="/install"><i class="fab fa-discord"></i> Invite Bot</a>
+            <a href="/docs"><i class="fas fa-book"></i> Documentation</a>
+            <a href="/status"><i class="fas fa-signal"></i> Network Status</a>
+            <a href="/support"><i class="fas fa-headset"></i> Support</a>
+            <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
+        </nav>
+    </aside>
+
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a href="/" class="brand">
+                <img src="nora.png" alt="Nora">
+                <span>Nora Studio</span>
+            </a>
+            <nav class="nav-links">
                 <a href="/">Home</a>
-                <a href="/ai">AI</a>
                 <a href="/dashboard">Dashboard</a>
-                <a href="/ai-studio" class="active">AI Studio</a>
-                <a href="/health">Health</a>
+                <a href="/ai-studio" class="active">Studio Workspace</a>
+                <a href="/docs">Docs</a>
+                <a href="/status">Status</a>
+                <a href="/support">Support</a>
+            </nav>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <a href="/dashboard" class="primary-btn" style="padding: 6px 14px; font-size: 0.82rem;">Dashboard</a>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
-    </div>
+    </header>
 
-    <div class="container">
-        <div class="hero">
-            <div class="hero-card" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.15) 0%, rgba(235, 69, 158, 0.1) 100%); border: 1px solid rgba(88, 101, 242, 0.15); position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
-                <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: #5865F2; filter: blur(90px); opacity: 0.1; border-radius: 50%;"></div>
-                <div style="position: relative; z-index: 2;">
-                    <div class="eyebrow" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
-                        <i class="fas fa-brain"></i>
-                        Operational Workspace
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-card main-hero">
+                <div>
+                    <div class="eyebrow">
+                        <i class="fas fa-sliders-h"></i>
+                        Studio Workspace
                     </div>
-                    <h1 style="color: #fff; font-weight: 800; font-size: 2.8rem; letter-spacing: -0.02em;">Design Nora’s AI behavior, memory, and hosted-bot workflows from one place.</h1>
-                    <p style="color: rgba(255,255,255,0.7); font-size: 1.05rem;">This workspace gives you live controls for persona tuning, current-memory visibility, bot profile management, and automation templates. It is built to make Nora feel faster, more personalized, and honest about what it is doing.</p>
+                    <h1>Configure Nora's persona, hosted bots, and automation templates.</h1>
+                    <p>Fine-tune assistant responses, inspect live community channel memory context, manage hosted bot profiles, and compose reusable workflows from a unified studio desk.</p>
                 </div>
-                <div class="hero-actions" style="position: relative; z-index: 2;">
-                    <button id="save-ai-profile" class="primary-btn"><i class="fas fa-save"></i> Save AI Profile</button>
-                    <button id="save-hosted-bot" class="secondary-btn"><i class="fas fa-robot"></i> Create Hosted Bot</button>
-                    <button id="refresh-studio" class="secondary-btn"><i class="fas fa-sync-alt"></i> Refresh Data</button>
-                </div>
-                <div class="hero-stats">
-                    <div class="stat-tile">
-                        <strong id="system-guilds">–</strong>
-                        <span>Guilds currently connected to Nora.</span>
+                <div>
+                    <div class="hero-actions">
+                        <button id="save-ai-profile" class="primary-btn"><i class="fas fa-save"></i> Save Profile</button>
+                        <button id="save-hosted-bot" class="secondary-btn"><i class="fas fa-robot"></i> Create Hosted Bot</button>
+                        <button id="refresh-studio" class="secondary-btn"><i class="fas fa-sync-alt"></i> Refresh Workspace</button>
                     </div>
-                    <div class="stat-tile">
-                        <strong id="system-uptime">–</strong>
-                        <span>Memory and process uptime summary.</span>
-                    </div>
-                    <div class="stat-tile">
-                        <strong id="ai-requests">–</strong>
-                        <span>AI requests used this billing cycle.</span>
-                    </div>
-                    <div class="stat-tile">
-                        <strong id="ai-tokens">–</strong>
-                        <span>Estimated tokens consumed by your AI usage.</span>
+                    <div class="hero-stats">
+                        <div class="stat-tile">
+                            <strong id="system-guilds">–</strong>
+                            <span>Connected server guilds.</span>
+                        </div>
+                        <div class="stat-tile">
+                            <strong id="system-uptime">–</strong>
+                            <span>System process uptime.</span>
+                        </div>
+                        <div class="stat-tile">
+                            <strong id="ai-requests">–</strong>
+                            <span>Requests this billing cycle.</span>
+                        </div>
+                        <div class="stat-tile">
+                            <strong id="ai-tokens">–</strong>
+                            <span>Estimated tokens utilized.</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="hero-card">
-                <div class="eyebrow">
-                    <i class="fas fa-signal"></i>
-                    Live Operating Notes
-                </div>
-                <div class="table-card">
-                    <h3>Bot Status</h3>
-                    <p id="system-status">Loading system health…</p>
-                </div>
-                <div class="table-card">
-                    <h3>Current Persona</h3>
-                    <p id="persona-summary">Loading your AI profile…</p>
-                </div>
-                <div class="table-card">
-                    <h3>Current Workspace Route</h3>
-                    <p>Use this workspace to keep Nora aligned with your community, your style, and your hosted-bot plans.</p>
+                <div>
+                    <div class="eyebrow">
+                        <i class="fas fa-chart-line"></i>
+                        Live Snapshot
+                    </div>
+                    <div class="table-card">
+                        <h3>System Status</h3>
+                        <p id="system-status">Loading system health…</p>
+                    </div>
+                    <div class="table-card">
+                        <h3>Current Persona Summary</h3>
+                        <p id="persona-summary">Loading profile configuration…</p>
+                    </div>
+                    <div class="table-card">
+                        <h3>Context Engine</h3>
+                        <p>Real-time context compilation keeps responses synchronized with your guild structure and persona settings.</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="module-grid">
+        <!-- Main Studio Grid -->
+        <section class="module-grid">
+            <!-- Left Pane: Persona, Memory & Templates -->
             <div class="module-pane">
+                <!-- Module: Persona & Response Tuning -->
                 <div class="module-card">
-                    <h2>AI Persona & Response Tuning</h2>
-                    <p>Shape what Nora says, how much context it uses, and when it reaches out to live web data. These settings are stored in your account preferences and available for future expansion.</p>
+                    <h2><i class="fas fa-comment-dots" style="color: var(--blurple);"></i> Persona & Response Tuning</h2>
+                    <p>Customize tone, response conciseness, context window limits, and real-time search behaviors across your community.</p>
                     <div class="field-grid">
                         <div class="field">
-                            <label for="ai-mode">Primary AI Mode</label>
+                            <label for="ai-mode">Primary Mode</label>
                             <select id="ai-mode">
                                 <option value="balanced">Balanced</option>
                                 <option value="direct">Direct</option>
@@ -892,14 +960,15 @@
                             </select>
                         </div>
                         <div class="field full">
-                            <label for="custom-instructions">Custom Instructions</label>
-                            <textarea id="custom-instructions" placeholder="Add personality rules, safety preferences, or community-specific phrasing here."></textarea>
+                            <label for="custom-instructions">Custom Personality Instructions</label>
+                            <textarea id="custom-instructions" placeholder="Add personality instructions, guidelines, safety preferences, or community-specific phrasing."></textarea>
                         </div>
                     </div>
+                    
                     <div class="switch-row">
                         <div>
-                            <strong>Use live web context</strong>
-                            <p>Allow Nora to pull live search context when the prompt asks for current information.</p>
+                            <strong>Live Web Context</strong>
+                            <p>Allow live web searching when queries demand real-time or recent information.</p>
                         </div>
                         <label class="switch">
                             <input id="web-search-enabled" type="checkbox">
@@ -908,8 +977,8 @@
                     </div>
                     <div class="switch-row">
                         <div>
-                            <strong>Auto-summarize long history</strong>
-                            <p>Compress old messages into a shorter recap before the AI response is generated.</p>
+                            <strong>Auto-Summarize Long Context</strong>
+                            <p>Condense older conversation history into succinct digests before compiling responses.</p>
                         </div>
                         <label class="switch">
                             <input id="history-summarize" type="checkbox">
@@ -918,26 +987,28 @@
                     </div>
                     <div class="switch-row">
                         <div>
-                            <strong>Show explanation note on fallback</strong>
-                            <p>Let users know when Nora is running on a fallback engine or local path.</p>
+                            <strong>Fallback Notice</strong>
+                            <p>Display transparent notices if fallback pathways or local models are engaged.</p>
                         </div>
                         <label class="switch">
                             <input id="show-fallback-note" type="checkbox">
                             <span class="slider"></span>
                         </label>
                     </div>
+
                     <div class="toolbar">
-                        <button id="build-prompt-preview" class="secondary-btn"><i class="fas fa-file-alt"></i> Build Prompt Preview</button>
-                        <button id="load-history-preview" class="secondary-btn"><i class="fas fa-history"></i> Preview 30-Day Memory</button>
-                        <button id="save-draft" class="secondary-btn"><i class="fas fa-floppy-disk"></i> Save Draft Locally</button>
+                        <button id="build-prompt-preview" class="secondary-btn"><i class="fas fa-eye"></i> Prompt Preview</button>
+                        <button id="load-history-preview" class="secondary-btn"><i class="fas fa-history"></i> Load Context</button>
+                        <button id="save-draft" class="secondary-btn"><i class="fas fa-save"></i> Save Draft</button>
                     </div>
-                    <div class="notice" id="ai-notice">Your prompt preview will appear here once the settings are loaded.</div>
-                    <div class="code-block" id="prompt-preview">No prompt preview generated yet.</div>
+                    <div class="notice" id="ai-notice">Prompt preview will render below once settings are initialized.</div>
+                    <div class="code-block" id="prompt-preview">No prompt preview compiled yet.</div>
                 </div>
 
+                <!-- Module: Memory Lab -->
                 <div class="module-card">
-                    <h2>Memory Lab</h2>
-                    <p>Inspect the context Nora can actually use from the selected channel and use that information to spot drift, missing data, or stale context.</p>
+                    <h2><i class="fas fa-database" style="color: var(--blurple);"></i> Memory Lab & Context Inspector</h2>
+                    <p>Inspect exact message history and contextual memory fetched from specific server channels.</p>
                     <div class="field-grid">
                         <div class="field">
                             <label for="history-guild">Guild</label>
@@ -948,130 +1019,151 @@
                             <select id="history-channel"></select>
                         </div>
                         <div class="field full">
-                            <label for="history-filter">Optional keyword filter</label>
-                            <input id="history-filter" type="text" placeholder="e.g. onboarding, premium, event" />
+                            <label for="history-filter">Optional Keyword Filter</label>
+                            <input id="history-filter" type="text" placeholder="e.g. onboarding, rules, premium, event" />
                         </div>
                     </div>
                     <div class="toolbar">
-                        <button id="fetch-history" class="primary-btn"><i class="fas fa-search"></i> Fetch Channel Context</button>
-                        <button id="copy-history" class="secondary-btn"><i class="fas fa-copy"></i> Copy Context</button>
+                        <button id="fetch-history" class="primary-btn"><i class="fas fa-search"></i> Inspect Channel Context</button>
+                        <button id="copy-history" class="secondary-btn"><i class="fas fa-copy"></i> Copy Output</button>
                     </div>
-                    <div class="code-block" id="history-preview">No channel context has been fetched yet.</div>
+                    <div class="code-block" id="history-preview">No channel context loaded yet.</div>
                 </div>
 
+                <!-- Module: Automation Templates -->
                 <div class="module-card">
-                    <h2>Automation Templates</h2>
-                    <p>Draft custom workflow scenarios for your hosted bots and your community. These are stored locally, so you can iterate without needing to touch live commands.</p>
+                    <h2><i class="fas fa-magic" style="color: var(--blurple);"></i> Automation Templates</h2>
+                    <p>Save reusable workflow drafts and trigger instructions locally for rapid deployment.</p>
                     <div class="field-grid">
                         <div class="field">
                             <label for="automation-name">Template Name</label>
-                            <input id="automation-name" type="text" placeholder="Welcome Flow" />
+                            <input id="automation-name" type="text" placeholder="Community Welcome Flow" />
                         </div>
                         <div class="field">
-                            <label for="automation-type">Template Type</label>
+                            <label for="automation-type">Category</label>
                             <select id="automation-type">
-                                <option value="welcome">Welcome</option>
-                                <option value="moderation">Moderation</option>
-                                <option value="support">Support</option>
-                                <option value="event">Event</option>
+                                <option value="welcome">Welcome Flow</option>
+                                <option value="moderation">Moderation Guide</option>
+                                <option value="support">Support Response</option>
+                                <option value="event">Event Announcer</option>
                             </select>
                         </div>
                         <div class="field full">
-                            <label for="automation-body">Template Instructions</label>
-                            <textarea id="automation-body" placeholder="Describe the behavior you want Nora to guide users through."></textarea>
+                            <label for="automation-body">Template Logic & Blueprint</label>
+                            <textarea id="automation-body" placeholder="Describe the behavior, rules, and steps you want this workflow to follow."></textarea>
                         </div>
                     </div>
                     <div class="toolbar">
-                        <button id="save-template" class="primary-btn"><i class="fas fa-layer-group"></i> Save Template</button>
-                        <button id="load-template" class="secondary-btn"><i class="fas fa-folder-open"></i> Load Saved Templates</button>
+                        <button id="save-template" class="primary-btn"><i class="fas fa-folder-plus"></i> Save Template</button>
+                        <button id="load-template" class="secondary-btn"><i class="fas fa-folder-open"></i> Reload Templates</button>
                     </div>
-                    <div id="template-list" class="mini-stack"></div>
+                    <div id="template-list" class="mini-stack" style="margin-top: 14px;"></div>
                 </div>
             </div>
 
+            <!-- Right Pane: Hosted Bots, Command Composer & Status -->
             <div class="module-pane">
+                <!-- Module: Hosted Bot Profiles -->
                 <div class="module-card">
-                    <h2>Hosted Bot Builder</h2>
-                    <p>Create or update hosted bot profiles from the dashboard, then bind reusable custom commands directly to the bot’s command set.</p>
+                    <h2><i class="fas fa-robot" style="color: var(--blurple);"></i> Hosted Bot Profiles</h2>
+                    <p>Connect and manage dedicated bot tokens with custom prefixes, limits, and command suites.</p>
                     <div class="field-grid">
                         <div class="field full">
-                            <label for="hosted-token">Bot Token</label>
-                            <input id="hosted-token" type="password" placeholder="Paste a bot token here" />
+                            <label for="hosted-token">Discord Application Bot Token</label>
+                            <input id="hosted-token" type="password" placeholder="Enter bot token" />
                         </div>
                         <div class="field">
-                            <label for="hosted-prefix">Prefix</label>
+                            <label for="hosted-prefix">Command Prefix</label>
                             <input id="hosted-prefix" type="text" value="!" placeholder="!" />
                         </div>
                         <div class="field">
-                            <label for="hosted-label">Internal Label</label>
-                            <input id="hosted-label" type="text" placeholder="Community Support Bot" />
+                            <label for="hosted-label">Internal Name / Label</label>
+                            <input id="hosted-label" type="text" placeholder="Community Helper" />
                         </div>
                     </div>
                     <div class="toolbar">
-                        <button id="create-bot-btn" class="primary-btn"><i class="fas fa-plus"></i> Add Bot Profile</button>
-                        <button id="refresh-bots" class="secondary-btn"><i class="fas fa-sync-alt"></i> Refresh Bots</button>
+                        <button id="create-bot-btn" class="primary-btn"><i class="fas fa-plus"></i> Add Hosted Profile</button>
+                        <button id="refresh-bots" class="secondary-btn"><i class="fas fa-sync-alt"></i> Refresh Profiles</button>
                     </div>
                     <div id="bot-list" class="bot-list"></div>
                 </div>
 
+                <!-- Module: Custom Command Composer -->
                 <div class="module-card">
-                    <h2>Custom Command Composer</h2>
-                    <p>Define command metadata and response payloads for a selected bot. The response can be plain text, structured embed JSON, or an action blueprint.</p>
+                    <h2><i class="fas fa-terminal" style="color: var(--blurple);"></i> Custom Command Composer</h2>
+                    <p>Assign structured response blueprints (Text, Embed JSON, Actions) to specific hosted bots.</p>
                     <div class="field-grid">
                         <div class="field">
-                            <label for="command-bot">Bot</label>
+                            <label for="command-bot">Target Bot</label>
                             <select id="command-bot"></select>
                         </div>
                         <div class="field">
                             <label for="command-name">Command Name</label>
-                            <input id="command-name" type="text" placeholder="ticket" />
+                            <input id="command-name" type="text" placeholder="support" />
                         </div>
                         <div class="field">
-                            <label for="command-type">Response Type</label>
+                            <label for="command-type">Payload Format</label>
                             <select id="command-type">
-                                <option value="text">Text</option>
+                                <option value="text">Plain Text</option>
                                 <option value="embed">Embed JSON</option>
-                                <option value="action">Action</option>
+                                <option value="action">Action Blueprint</option>
                             </select>
                         </div>
                         <div class="field">
-                            <label for="command-trigger">Trigger</label>
+                            <label for="command-trigger">Invocation Trigger</label>
                             <select id="command-trigger">
-                                <option value="message">Message</option>
-                                <option value="reaction">Reaction</option>
-                                <option value="timer">Timer</option>
+                                <option value="message">Message Prefix</option>
+                                <option value="reaction">Reaction Emoji</option>
+                                <option value="timer">Scheduled Timer</option>
                             </select>
                         </div>
                         <div class="field full">
-                            <label for="command-description">Description</label>
-                            <input id="command-description" type="text" placeholder="Responds with support instructions" />
+                            <label for="command-description">Command Description</label>
+                            <input id="command-description" type="text" placeholder="Describes what this command outputs." />
                         </div>
                         <div class="field full">
-                            <label for="command-response">Response Content</label>
-                            <textarea id="command-response" placeholder="Plain text, JSON, or action blueprint"></textarea>
+                            <label for="command-response">Response Blueprint Content</label>
+                            <textarea id="command-response" placeholder="Message content, Embed JSON schema, or action payload."></textarea>
                         </div>
                     </div>
                     <div class="toolbar">
                         <button id="save-command-btn" class="primary-btn"><i class="fas fa-save"></i> Save Command</button>
                         <button id="clear-command-form" class="secondary-btn"><i class="fas fa-eraser"></i> Clear Form</button>
                     </div>
-                    <div id="command-preview" class="code-block">Select a bot to build a command preview.</div>
+                    <div id="command-preview" class="code-block">Select a bot to generate live command schema.</div>
                 </div>
 
+                <!-- Module: Workspace Transparency -->
                 <div class="module-card">
-                    <h2>Community Transparency</h2>
-                    <p>Understand what Nora is doing right now and what the workspace is using to build context and automate responses.</p>
+                    <h2><i class="fas fa-shield-alt" style="color: var(--blurple);"></i> Operational Transparency</h2>
+                    <p>Live summary of your active persona parameters, memory horizon, and attached profiles.</p>
                     <div class="badge-row" id="transparency-badges"></div>
-                    <div class="notice" id="transparency-note">Fetching live system snapshot…</div>
+                    <div class="notice" id="transparency-note">Retrieving workspace snapshot…</div>
                     <div class="footer-note">
-                        <strong>Why this matters:</strong> Nora can be more helpful when you can see the current memory window, the active workflow settings, and the hosted-bot setup. This transparency layer is designed to make the system feel safe, honest, and expandable.
+                        <strong>Studio Architecture:</strong> Nora compiles memory parameters and persona rules cleanly before dispatching model runs, ensuring low latency, predictable outputs, and consistent community governance.
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script>
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (!drawer || !backdrop) return;
+            const isOpen = drawer.classList.contains('open');
+            if (isOpen) {
+                drawer.classList.remove('open');
+                backdrop.classList.remove('open');
+                document.body.style.overflow = '';
+            } else {
+                drawer.classList.add('open');
+                backdrop.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -1081,12 +1173,11 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
         }
+
         window.getApiBaseUrl = function() {
             const host = window.location.hostname;
             const port = window.location.port;
 
-            // If we are accessing the Express server directly (custom port) or on a local network IP,
-            // we should ALWAYS fall back to relative pathing to prevent connection failures.
             if ((port && port !== '80' && port !== '443') || 
                 host === 'localhost' || 
                 host === '127.0.0.1' || 
@@ -1099,7 +1190,6 @@
 
             let customApi = localStorage.getItem('nora_api_url');
             if (customApi) {
-                // Ignore any invalid same-origin production site overrides (GitHub Pages doesn't have an API backend)
                 if (customApi.includes('vaztinix.dev') && !customApi.includes('api.vaztinix.dev')) {
                     // fall through
                 } else {
@@ -1107,8 +1197,9 @@
                 }
             }
 
-            // Official production configurations (subdomain runs the API, apex domain is static pages)
-            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') return 'http://localhost:3000'; if (host === 'api.vaztinix.dev') return window.location.origin; return 'https://api.vaztinix.dev';
+            if (host === 'localhost' || host === '127.0.0.1' || !host || window.location.protocol === 'file:') return 'http://localhost:3000';
+            if (host === 'api.vaztinix.dev') return window.location.origin;
+            return 'https://api.vaztinix.dev';
         };
 
         const originalFetch = window.fetch;
@@ -1118,24 +1209,6 @@
             }
             return originalFetch(input, init);
         };
-
-        // Device detection and layout adjustments
-        function detectDevice() {
-            const ua = navigator.userAgent;
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || window.innerWidth <= 768;
-            const isTablet = /iPad|PlayBook|Silk/i.test(ua) || (window.innerWidth > 768 && window.innerWidth <= 1024);
-            
-            document.body.classList.remove('device-mobile', 'device-tablet', 'device-desktop');
-            if (isMobile) {
-                document.body.classList.add('device-mobile');
-            } else if (isTablet) {
-                document.body.classList.add('device-tablet');
-            } else {
-                document.body.classList.add('device-desktop');
-            }
-        }
-        detectDevice();
-        window.addEventListener('resize', detectDevice);
 
         const token = sessionStorage.getItem('discord_token');
         const state = {
@@ -1155,9 +1228,11 @@
 
         const notify = (message, tone = 'info') => {
             const notice = document.getElementById('transparency-note');
+            if (!notice) return;
             notice.textContent = message;
-            notice.style.background = tone === 'error' ? 'rgba(255,102,102,0.12)' : 'rgba(174,239,255,0.12)';
-            notice.style.borderColor = tone === 'error' ? 'rgba(255,102,102,0.24)' : 'rgba(174,239,255,0.24)';
+            notice.style.background = tone === 'error' ? 'rgba(239, 68, 68, 0.14)' : 'rgba(88, 101, 242, 0.12)';
+            notice.style.borderColor = tone === 'error' ? 'rgba(239, 68, 68, 0.28)' : 'rgba(88, 101, 242, 0.25)';
+            notice.style.color = tone === 'error' ? '#FCA5A5' : '#C7D2FE';
         };
 
         const setText = (id, value) => {
@@ -1211,16 +1286,17 @@
 
         function renderBadges(system) {
             const badges = document.getElementById('transparency-badges');
+            if (!badges) return;
             badges.innerHTML = '';
             const items = [
-                ['Ready', system?.ready ? 'status-ok' : 'status-bad', system?.ready ? 'Bot is ready' : 'Bot is offline'],
-                ['Mode', 'status-warn', `${state.aiProfile?.mode || 'balanced'} mode`],
-                ['History', 'status-ok', `${state.aiProfile?.contextDays || 30} day context`],
-                ['Hosted Bots', 'status-ok', `${state.bots.length} profile(s) attached`]
+                ['System Core', system?.ready ? 'status-ok' : 'status-bad', system?.ready ? 'Online' : 'Offline'],
+                ['Tuning Mode', 'status-warn', `${state.aiProfile?.mode || 'balanced'}`],
+                ['Context Memory', 'status-ok', `${state.aiProfile?.contextDays || 30} Days`],
+                ['Hosted Profiles', 'status-ok', `${state.bots.length} Active`]
             ];
             items.forEach(([label, klass, text]) => {
                 const span = document.createElement('span');
-                span.innerHTML = `<span class="status-dot ${klass}"></span>${label}: ${text}`;
+                span.innerHTML = `<span class="status-dot ${klass}"></span><strong>${label}:</strong> ${text}`;
                 badges.appendChild(span);
             });
         }
@@ -1238,15 +1314,18 @@
                 `Fallback note: ${p.showFallbackNote ? 'enabled' : 'disabled'}.`,
                 `Custom instructions: ${p.customInstructions}`
             ];
-            document.getElementById('prompt-preview').textContent = preview.join('\n');
-            document.getElementById('persona-summary').textContent = `${p.mode} / ${p.voice} / ${p.contextDays}-day memory / ${p.responseLength} responses`;
+            const promptBox = document.getElementById('prompt-preview');
+            if (promptBox) promptBox.textContent = preview.join('\n');
+            const summaryBox = document.getElementById('persona-summary');
+            if (summaryBox) summaryBox.textContent = `${p.mode.toUpperCase()} • ${p.voice} style • ${p.contextDays}-day window • ${p.responseLength} length`;
         }
 
         function renderTemplates() {
             const list = document.getElementById('template-list');
+            if (!list) return;
             list.innerHTML = '';
             if (!state.templates.length) {
-                list.innerHTML = '<div class="empty-state">No automation templates saved yet. Save one to build a reusable workflow.</div>';
+                list.innerHTML = '<div class="empty-state">No automation templates saved yet. Save a draft to reuse across bots.</div>';
                 return;
             }
             state.templates.forEach((template, index) => {
@@ -1255,10 +1334,10 @@
                 item.innerHTML = `
                     <div class="row-between">
                         <div>
-                            <h3>${template.name}</h3>
-                            <p>${template.type} • ${template.body.slice(0, 100)}${template.body.length > 100 ? '…' : ''}</p>
+                            <h3>${escapeHtml(template.name)}</h3>
+                            <p>${escapeHtml(template.type.toUpperCase())} • ${escapeHtml(template.body.slice(0, 80))}${template.body.length > 80 ? '…' : ''}</p>
                         </div>
-                        <button data-index="${index}" class="secondary-btn remove-template">Remove</button>
+                        <button data-index="${index}" class="danger-btn remove-template" style="padding: 6px 12px; font-size: 0.78rem;">Remove</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1276,12 +1355,12 @@
         async function loadSystemHealth() {
             try {
                 const system = await jsonFetch('/api/system/health');
-                setText('system-guilds', system.guilds);
-                setText('system-uptime', `${Math.round(system.uptime)}s`);
-                setText('system-status', `PID ${system.pid} • ${system.ready ? 'ready' : 'not ready'} • memory ${system.memoryMB} MB`);
+                setText('system-guilds', system.guilds ?? '0');
+                setText('system-uptime', `${Math.round(system.uptime ?? 0)}s`);
+                setText('system-status', `PID ${system.pid} • ${system.ready ? 'Ready' : 'Standby'} • ${system.memoryMB} MB Memory`);
                 renderBadges(system);
             } catch (err) {
-                notify(`System health unavailable: ${err.message}`, 'error');
+                notify(`System status unavailable: ${err.message}`, 'error');
             }
         }
 
@@ -1297,14 +1376,14 @@
                 setChecked('web-search-enabled', result.profile.webSearchEnabled);
                 setChecked('history-summarize', result.profile.historySummarize);
                 setChecked('show-fallback-note', result.profile.showFallbackNote);
-                setText('ai-requests', result.usage.requestsThisMonth);
-                setText('ai-tokens', result.usage.tokensThisMonth);
+                setText('ai-requests', result.usage?.requestsThisMonth ?? 0);
+                setText('ai-tokens', result.usage?.tokensThisMonth ?? 0);
                 renderPromptPreview();
-                notify('AI profile loaded successfully.');
+                notify('Workspace profile synchronized.');
             } catch (err) {
                 state.aiProfile = defaultProfile();
                 renderPromptPreview();
-                notify(`AI profile could not be loaded: ${err.message}`, 'error');
+                notify(`Workspace profile loaded with defaults: ${err.message}`, 'info');
             }
         }
 
@@ -1326,9 +1405,9 @@
                 });
                 state.aiProfile = profile;
                 renderPromptPreview();
-                notify('AI profile saved to your account preferences.');
+                notify('Profile saved to your account successfully.');
             } catch (err) {
-                notify(`Unable to save AI profile: ${err.message}`, 'error');
+                notify(`Unable to save profile: ${err.message}`, 'error');
             }
         }
 
@@ -1337,6 +1416,7 @@
                 const guilds = await jsonFetch('/api/user/guilds');
                 state.guilds = guilds;
                 const guildSelect = document.getElementById('history-guild');
+                if (!guildSelect) return;
                 guildSelect.innerHTML = '';
                 guilds.forEach(g => {
                     const opt = document.createElement('option');
@@ -1358,6 +1438,7 @@
                 const data = await response.json();
                 state.channels = data;
                 const channelSelect = document.getElementById('history-channel');
+                if (!channelSelect) return;
                 channelSelect.innerHTML = '';
                 data.forEach(channel => {
                     const opt = document.createElement('option');
@@ -1366,7 +1447,7 @@
                     channelSelect.appendChild(opt);
                 });
             } catch (err) {
-                notify(`Channel data unavailable: ${err.message}`, 'error');
+                notify(`Channel list unavailable: ${err.message}`, 'error');
             }
         }
 
@@ -1378,10 +1459,10 @@
                 let url = `/api/user/ai-history?guildId=${encodeURIComponent(guildId)}&channelId=${encodeURIComponent(channelId)}`;
                 if (filter) url += `&filter=${encodeURIComponent(filter)}`;
                 const result = await jsonFetch(url);
-                document.getElementById('history-preview').textContent = result.summary || 'No context available.';
-                notify('Recent history loaded successfully.');
+                document.getElementById('history-preview').textContent = result.summary || 'No context found in this channel window.';
+                notify('Channel context loaded successfully.');
             } catch (err) {
-                notify(`History fetch failed: ${err.message}`, 'error');
+                notify(`Context fetch error: ${err.message}`, 'error');
             }
         }
 
@@ -1391,10 +1472,11 @@
                 state.bots = bots;
                 const list = document.getElementById('bot-list');
                 const select = document.getElementById('command-bot');
+                if (!list || !select) return;
                 list.innerHTML = '';
                 select.innerHTML = '';
                 if (!bots.length) {
-                    list.innerHTML = '<div class="empty-state">No hosted bots are connected yet. Add one to start building custom command workflows.</div>';
+                    list.innerHTML = '<div class="empty-state">No hosted bot profiles attached. Add a bot token above to initialize one.</div>';
                 } else {
                     bots.forEach(bot => {
                         const option = document.createElement('option');
@@ -1408,19 +1490,19 @@
                             <header>
                                 <div>
                                     <h3>${escapeHtml(bot.name)}</h3>
-                                    <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;">${escapeHtml(bot.id)}</p>
+                                    <p style="margin: 2px 0 0; color: var(--text-dim); font-size: 0.8rem;">ID: ${escapeHtml(bot.id)}</p>
                                 </div>
-                                <span style="font-size: 0.8rem; color: var(--primary);">${bot.isEnabled ? 'Enabled' : 'Disabled'}</span>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: ${bot.isEnabled ? 'var(--success)' : 'var(--text-dim)'};">${bot.isEnabled ? 'Active' : 'Disabled'}</span>
                             </header>
-                            <p style="margin: 0; color: var(--muted); line-height: 1.5;">Prefix: ${escapeHtml(bot.prefix)} • Command count: ${bot.commandCount} • Tokens used: ${bot.totalTokensUsed}</p>
+                            <p style="margin: 0; color: var(--text-muted); font-size: 0.84rem; line-height: 1.5;">Prefix: <code>${escapeHtml(bot.prefix)}</code> • Commands: <strong>${bot.commandCount}</strong> • Usage: <strong>${bot.totalTokensUsed}</strong> tokens</p>
                             <div class="bot-meta">
-                                <span>${bot.inviteUrl ? 'Invite URL ready' : 'Invite URL pending'}</span>
-                                <span>Monthly limit ${bot.tokenLimit}</span>
-                                <span>Events ${bot.totalEventsTriggered}</span>
+                                <span>${bot.inviteUrl ? 'Invite Configured' : 'No Invite URL'}</span>
+                                <span>Limit: ${bot.tokenLimit}</span>
+                                <span>Events: ${bot.totalEventsTriggered}</span>
                             </div>
                             <div class="bot-actions">
-                                <button data-bot-id="${escapeHtml(bot.id)}" class="secondary-btn inspect-bot">Inspect Commands</button>
-                                <button data-bot-id="${escapeHtml(bot.id)}" class="danger-btn remove-bot">Remove Bot</button>
+                                <button data-bot-id="${escapeHtml(bot.id)}" class="secondary-btn inspect-bot" style="padding: 6px 14px; font-size: 0.8rem;"><i class="fas fa-list"></i> Commands</button>
+                                <button data-bot-id="${escapeHtml(bot.id)}" class="danger-btn remove-bot" style="padding: 6px 14px; font-size: 0.8rem;"><i class="fas fa-trash"></i> Delete</button>
                             </div>
                             <div class="command-list" data-bot-id="${escapeHtml(bot.id)}"></div>
                         `;
@@ -1437,17 +1519,19 @@
                             const commands = await jsonFetch(`/api/user/hosted-bots/${state.selectedBotId}/commands`);
                             container.innerHTML = commands.length ? commands.map(command => `
                                 <div class="command-item">
-                                    <strong>${escapeHtml(command.name)}</strong>
-                                    <p>${escapeHtml(command.description || 'No description provided.')} • ${escapeHtml(command.type)} • ${escapeHtml(command.trigger)}</p>
-                                    <div class="bot-actions">
-                                        <button data-name="${command.name}" data-bot-id="${state.selectedBotId}" class="secondary-btn remove-command">Delete</button>
+                                    <div class="row-between">
+                                        <div>
+                                            <strong>${escapeHtml(command.name)}</strong>
+                                            <p>${escapeHtml(command.description || 'No description.')} • Format: ${escapeHtml(command.type)} • Trigger: ${escapeHtml(command.trigger)}</p>
+                                        </div>
+                                        <button data-name="${escapeHtml(command.name)}" data-bot-id="${state.selectedBotId}" class="danger-btn remove-command" style="padding: 4px 10px; font-size: 0.75rem;">Delete</button>
                                     </div>
                                 </div>
-                            `).join('') : '<div class="empty-state">No commands yet for this bot.</div>';
+                            `).join('') : '<div class="empty-state" style="margin-top: 8px;">No custom commands defined yet.</div>';
                             container.querySelectorAll('.remove-command').forEach(removeBtn => {
                                 removeBtn.addEventListener('click', async () => {
                                     await jsonFetch(`/api/user/hosted-bots/${removeBtn.dataset.botId}/commands/${encodeURIComponent(removeBtn.dataset.name)}`, { method: 'DELETE' });
-                                    notify('Command deleted from the hosted bot.');
+                                    notify('Command removed.');
                                     await loadHostedBots();
                                 });
                             });
@@ -1460,15 +1544,15 @@
                     btn.addEventListener('click', async () => {
                         try {
                             await jsonFetch(`/api/user/hosted-bots/${btn.dataset.botId}`, { method: 'DELETE' });
-                            notify('Hosted bot removed.');
+                            notify('Bot profile deleted.');
                             await loadHostedBots();
                         } catch (err) {
-                            notify(`Unable to remove bot: ${err.message}`, 'error');
+                            notify(`Unable to delete bot: ${err.message}`, 'error');
                         }
                     });
                 });
             } catch (err) {
-                notify(`Hosted bot data unavailable: ${err.message}`, 'error');
+                notify(`Hosted bot data error: ${err.message}`, 'error');
             }
         }
 
@@ -1479,7 +1563,7 @@
             const description = document.getElementById('command-description').value.trim();
             const response = document.getElementById('command-response').value.trim();
             if (!commandName || !response) {
-                document.getElementById('command-preview').textContent = 'Provide a command name and response content to see a preview.';
+                document.getElementById('command-preview').textContent = 'Enter command name and response blueprint to view live JSON schema.';
                 return;
             }
             document.getElementById('command-preview').textContent = JSON.stringify({
@@ -1493,18 +1577,14 @@
 
         async function loadCommandPreview() {
             buildCommandPreview();
-            if (!state.selectedBotId) {
-                return;
-            }
+            if (!state.selectedBotId) return;
             try {
                 const commands = await jsonFetch(`/api/user/hosted-bots/${state.selectedBotId}/commands`);
                 const current = commands.find(command => command.name === document.getElementById('command-name').value.trim());
                 if (current) {
                     document.getElementById('command-preview').textContent = JSON.stringify(current, null, 2);
                 }
-            } catch (err) {
-                // Ignore preview load failures; current preview already exists.
-            }
+            } catch (err) {}
         }
 
         async function createHostedBot() {
@@ -1512,7 +1592,7 @@
             const token = document.getElementById('hosted-token').value.trim();
             const prefix = document.getElementById('hosted-prefix').value.trim() || '!';
             if (!token) {
-                notify('Paste a bot token before creating a hosted bot profile.', 'error');
+                notify('Please provide a valid bot token.', 'error');
                 return;
             }
             try {
@@ -1520,17 +1600,17 @@
                     method: 'POST',
                     body: JSON.stringify({ token, prefix, label })
                 });
-                notify('Hosted bot profile created successfully.');
+                notify('Hosted bot created successfully.');
                 document.getElementById('hosted-token').value = '';
                 await loadHostedBots();
             } catch (err) {
-                notify(`Hosted bot creation failed: ${err.message}`, 'error');
+                notify(`Failed to create bot: ${err.message}`, 'error');
             }
         }
 
         async function saveCommand() {
             if (!state.selectedBotId) {
-                notify('Select a hosted bot before saving a command.', 'error');
+                notify('Select a target hosted bot before saving a command.', 'error');
                 return;
             }
             const payload = {
@@ -1541,7 +1621,7 @@
                 response: document.getElementById('command-response').value.trim()
             };
             if (!payload.name || !payload.response) {
-                notify('A command name and response content are required.', 'error');
+                notify('Command name and response blueprint are required.', 'error');
                 return;
             }
             try {
@@ -1549,11 +1629,11 @@
                     method: 'POST',
                     body: JSON.stringify(payload)
                 });
-                notify('Custom command saved to the hosted bot.');
+                notify('Command saved successfully.');
                 await loadHostedBots();
                 await loadCommandPreview();
             } catch (err) {
-                notify(`Unable to save command: ${err.message}`, 'error');
+                notify(`Save command failed: ${err.message}`, 'error');
             }
         }
 
@@ -1590,15 +1670,15 @@
                     showFallbackNote: document.getElementById('show-fallback-note').checked
                 }
             }));
-            notify('Your draft was saved locally.');
+            notify('Draft saved to browser storage.');
         });
         document.getElementById('fetch-history').addEventListener('click', loadHistoryPreview);
         document.getElementById('copy-history').addEventListener('click', async () => {
             try {
                 await navigator.clipboard.writeText(document.getElementById('history-preview').textContent);
-                notify('History context copied to the clipboard.');
+                notify('Context copied to clipboard.');
             } catch (err) {
-                notify('Clipboard access failed.', 'error');
+                notify('Clipboard error.', 'error');
             }
         });
         document.getElementById('save-template').addEventListener('click', () => {
@@ -1606,7 +1686,7 @@
             const type = document.getElementById('automation-type').value;
             const body = document.getElementById('automation-body').value.trim();
             if (!name || !body) {
-                notify('Name and instructions are required to save a template.', 'error');
+                notify('Please fill out both template name and instructions.', 'error');
                 return;
             }
             state.templates.push({ name, type, body });
@@ -1614,17 +1694,17 @@
             renderTemplates();
             document.getElementById('automation-name').value = '';
             document.getElementById('automation-body').value = '';
-            notify('Automation template saved locally.');
+            notify('Template saved locally.');
         });
         document.getElementById('load-template').addEventListener('click', () => {
             const saved = localStorage.getItem('nora_ai_templates');
             if (!saved) {
-                notify('No templates have been saved locally yet.', 'error');
+                notify('No templates saved in local storage.', 'info');
                 return;
             }
             state.templates = JSON.parse(saved);
             renderTemplates();
-            notify('Saved templates loaded.');
+            notify('Templates reloaded.');
         });
         document.getElementById('create-bot-btn').addEventListener('click', createHostedBot);
         document.getElementById('refresh-bots').addEventListener('click', loadHostedBots);
@@ -1633,7 +1713,7 @@
             document.getElementById('command-name').value = '';
             document.getElementById('command-description').value = '';
             document.getElementById('command-response').value = '';
-            document.getElementById('command-preview').textContent = 'Select a bot to build a command preview.';
+            document.getElementById('command-preview').textContent = 'Select a bot to generate live command schema.';
         });
 
         ['ai-mode', 'ai-voice', 'context-days', 'response-length', 'custom-instructions', 'web-search-enabled', 'history-summarize', 'show-fallback-note'].forEach(id => {
@@ -1649,11 +1729,10 @@
         });
 
         if (!token) {
-            notify('You are not authenticated. Please sign in through the dashboard first.', 'error');
+            notify('You are not authenticated. Please sign in through the dashboard.', 'info');
         } else {
             refreshAll();
         }
-    
 
         async function performLogout() {
             try {
@@ -1684,11 +1763,9 @@
             } catch(e) {}
 
             window.currentUser = null;
-            // Clean redirect to login page (stops auto-login from cached URL tokens or reload loop)
             window.location.href = '/install?logout=true';
         }
         window.performLogout = performLogout;
-
-</script>
+    </script>
 </body>
 </html>
