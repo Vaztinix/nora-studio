@@ -18,7 +18,15 @@ router.get('/vapid-key', (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const userId = req.query.userId || req.headers['x-user-id'];
+        let userId = req.query.userId || req.headers['x-user-id'];
+        const authHeader = req.headers.authorization;
+        if (!userId && authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const { getDiscordUser } = require('../middleware/auth');
+                const user = await getDiscordUser(authHeader.split(' ')[1]).catch(() => null);
+                if (user && user.id) userId = user.id;
+            } catch (_) {}
+        }
         const { Op } = require('sequelize');
 
         const rawNotifications = await Notification.findAll({

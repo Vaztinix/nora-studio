@@ -5191,10 +5191,10 @@
                         </div>
                     </div>
 
-                    <!-- Notification & Web Push Alerts Card -->
+                    <!-- Notification & Push Notification Alerts Card -->
                     <div class="panel" style="margin-top: 24px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                         <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-bell" style="color: #a855f7;"></i> Notification Preferences & Web Push Alerts
+                            <i class="fas fa-bell" style="color: #a855f7;"></i> Notification Preferences & Push Notification Alerts
                         </h3>
                         <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Configure real-time device push notifications, security alerts, and browser audio chime preferences.</p>
 
@@ -5206,7 +5206,7 @@
                                 </div>
                                 <div style="display: flex; flex-direction: column;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <strong style="font-size: 1rem; font-weight: 700; color: #fff;">Web Push Alerts</strong>
+                                        <strong style="font-size: 1rem; font-weight: 700; color: #fff;">Push Notification Alerts</strong>
                                         <span id="settings-push-status-badge"></span>
                                     </div>
                                     <span style="font-size: 0.78rem; color: #94a3b8; margin-top: 3px;">Mobile, Tablet & Desktop Live Notifications</span>
@@ -11822,6 +11822,48 @@
             }
         }
 
+        
+        window.lastSavedBackup = null;
+
+        function revertFromSaveModal() {
+            cancelSaveSettings();
+            revertUnsavedChanges();
+            showToast('All pending changes have been reverted.', 'info');
+        }
+
+        async function revertLastSave() {
+            if (!window.lastSavedBackup || !currentServerId) {
+                showToast('No previous save state available to revert.', 'warning');
+                return;
+            }
+            try {
+                showToast('Reverting last saved configuration...', 'info');
+                const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token');
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const res = await safeFetch(`${apiBase}/api/guilds/${currentServerId}/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify(window.lastSavedBackup)
+                });
+                if (res && res.ok) {
+                    window.previousSettings = { ...window.lastSavedBackup };
+                    window.lastSavedBackup = null;
+                    if (typeof fetchSettings === 'function') fetchSettings(currentServerId, true);
+                    showToast('✅ Configuration successfully reverted to previous state!', 'success');
+                } else {
+                    showToast('Failed to revert configuration: ' + (res?.data?.error || 'Server error'), 'error');
+                }
+            } catch (e) {
+                showToast('Error reverting configuration: ' + e.message, 'error');
+            }
+        }
+
+        window.revertFromSaveModal = revertFromSaveModal;
+        window.revertLastSave = revertLastSave;
+
         window.cancelSaveSettings = function() {
             const saveModal = document.getElementById('save-confirmation-modal');
             if (saveModal) saveModal.style.display = 'none';
@@ -11860,6 +11902,11 @@
                     body: JSON.stringify(payload)
                 });
                 if (res.ok) {
+                    // Store previous configuration backup for one-click Revert Changes action
+                    if (window.previousSettings) {
+                        window.lastSavedBackup = JSON.parse(JSON.stringify(window.previousSettings));
+                    }
+
                     // Compare with previousSettings to generate change notifications
                     try {
                         if (window.previousSettings) {
@@ -11878,7 +11925,7 @@
                                 }
                             });
                             if (changes.length) {
-                                addNotification('Settings Updated', changes.join('\n'), 'success');
+                                addNotification('Configuration Saved', `Updated ${changes.length} setting(s). Click Revert if you wish to roll back.`, 'success');
                             }
                         }
                         // Update stored previous settings (deep copy)
@@ -11889,9 +11936,11 @@
                     
                     const unsavedBar = document.getElementById('unsaved-changes-bar');
                     if (unsavedBar) unsavedBar.style.display = 'none';
-                    showToast('Settings saved successfully.', 'success');
+                    if (typeof markFormClean === 'function') markFormClean();
+                    showToast('Settings saved successfully! You can review or revert anytime.', 'success');
                     refreshModuleBadges();
                     if (typeof loadServerActionLogs === 'function') loadServerActionLogs();
+                    if (typeof loadNotifications === 'function') loadNotifications();
                     if (window.dashboardCache && window.dashboardCache.settings) window.dashboardCache.settings.delete(currentServerId);
                 } else {
                     const d = await res.json().catch(() => ({}));
@@ -12029,15 +12078,19 @@
         async function loadNotifications() {
             try {
                 const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token');
-                if (!t) return;
-                const res = await safeFetch('/api/notifications', {
-                    headers: { Authorization: `Bearer ${t}` }
-                });
+                const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : null);
+                const query = uid ? `?userId=${encodeURIComponent(uid)}` : '';
+                const headers = {};
+                if (t) headers['Authorization'] = `Bearer ${t}`;
+                if (uid) headers['x-user-id'] = uid;
+
+                const res = await safeFetch('/api/notifications' + query, { headers });
                 if (res && res.ok && res.data) {
-                    renderNotifications(res.data);
+                    const data = res.data.notifications ? res.data.notifications : res.data;
+                    renderNotifications(data);
                 }
             } catch (e) {
-                // Silently ignore notification sync issues
+                console.warn('[loadNotifications Notice]:', e);
             }
         }
 
@@ -12075,7 +12128,7 @@
         async function subscribeToWebPush(silent = false) {
             try {
                 if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                    if (!silent) showToast('Web Push Notifications are not supported by your browser.', 'warning');
+                    if (!silent) showToast('Push Notifications are not supported by your browser.', 'warning');
                     return false;
                 }
 
@@ -12121,7 +12174,7 @@
                 }
 
                 if (!keyData || !keyData.publicKey) {
-                    if (!silent) showToast('Could not retrieve Web Push VAPID key from server.', 'error');
+                    if (!silent) showToast('Could not retrieve Push Notifications VAPID key from server.', 'error');
                     return false;
                 }
 
@@ -12155,7 +12208,7 @@
                     } catch (_) {}
                 }
 
-                if (!silent) showToast('🔔 Web Push Notifications successfully enabled!', 'success');
+                if (!silent) showToast('🔔 Push Notifications successfully enabled!', 'success');
                 renderPushNotificationWidget();
                 return true;
             } catch (err) {
@@ -12204,7 +12257,7 @@
                         }
 
                         if (res.ok) {
-                            const msg = (data && data.message) ? data.message : 'Test Web Push sent! Check your system notification center.';
+                            const msg = (data && data.message) ? data.message : 'Test Push Notifications sent! Check your system notification center.';
                             showToast('🚀 ' + msg, 'success');
                             delivered = true;
                             break;
@@ -12221,10 +12274,10 @@
                 }
 
                 if (!delivered) {
-                    showToast('Failed to send test Web Push: ' + (lastErr || 'Server unavailable'), 'error');
+                    showToast('Failed to send test Push Notifications: ' + (lastErr || 'Server unavailable'), 'error');
                 }
             } catch (e) {
-                showToast('Error testing Web Push: ' + e.message, 'error');
+                showToast('Error testing Push Notifications: ' + e.message, 'error');
             }
         }
 
@@ -12277,7 +12330,7 @@
                     <i class="fas fa-mobile-alt" style="font-size: 1.1rem; color: #a855f7;"></i>
                     <div style="display: flex; flex-direction: column;">
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <strong style="font-weight: 700; color: #fff;">Web Push Alerts</strong>
+                            <strong style="font-weight: 700; color: #fff;">Push Notification Alerts</strong>
                             ${statusBadge}
                         </div>
                         <span style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Mobile, Tablet & Desktop Live Notifications</span>
@@ -12474,7 +12527,7 @@
             const delayMinutes = parseInt(delaySelect.value, 10);
             const triggerTime = Date.now() + delayMinutes * 60000;
 
-            // Post to server API for Web Push & background scheduler delivery
+            // Post to server API for Push Notifications & background scheduler delivery
             try {
                 const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
                 const res = await fetch(apiBase + '/api/notifications/reminders', {
@@ -12494,7 +12547,7 @@
                 console.error('[Reminders API Error]:', e);
             }
 
-            // Prompt for Web Push permission if not granted
+            // Prompt for Push Notifications permission if not granted
             if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
                 subscribeToWebPush();
             }
@@ -12511,7 +12564,7 @@
             startReminderTimers();
 
             msgInput.value = '';
-            showToast('⏰ Reminder scheduled! Web Push notifications will alert you when due.', 'success');
+            showToast('⏰ Reminder scheduled! Push Notifications notifications will alert you when due.', 'success');
             
             addNotification(
                 'Reminder Set',
@@ -12661,19 +12714,40 @@
             }
         };
         function renderNotifications(incomingData) {
-            if (Array.isArray(incomingData)) {
-                notifications = incomingData;
+            let listData = incomingData;
+            if (incomingData && Array.isArray(incomingData.notifications)) {
+                listData = incomingData.notifications;
+            } else if (!Array.isArray(incomingData) && (!notifications || notifications.length === 0)) {
+                try {
+                    const cached = localStorage.getItem(getNotifKey());
+                    if (cached) listData = JSON.parse(cached);
+                } catch (_) {}
             }
+
+            if (Array.isArray(listData)) {
+                notifications = listData;
+            }
+
             try {
+                const unreadList = (notifications || []).filter(n => !n.read);
+                const unreadCount = unreadList.length;
+
+                // Update badges
                 const badge = document.getElementById('notif-badge') || document.querySelector('.notif-badge') || document.getElementById('notifications-count');
-                const unreadCount = (notifications || []).filter(n => !n.read).length;
                 if (badge) {
                     badge.textContent = unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : '';
                     badge.style.display = unreadCount > 0 ? 'inline-flex' : 'none';
                 }
 
-                const listEl = document.getElementById('notif-list') || document.getElementById('notifications-list') || document.getElementById('notifications-container');
-                if (listEl) {
+                const countTag = document.getElementById('new-notif-count-tag');
+                if (countTag) {
+                    countTag.textContent = unreadCount;
+                    countTag.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+                }
+
+                // Render into topbar dropdown container
+                const dropdownList = document.getElementById('notif-list') || document.getElementById('notifications-list') || document.getElementById('notifications-container');
+                if (dropdownList) {
                     const filtered = (notifications || []).filter(n => {
                         if (currentNotifFilter === 'unread') return !n.read;
                         if (currentNotifFilter !== 'all') return n.type === currentNotifFilter;
@@ -12681,27 +12755,87 @@
                     });
 
                     if (!filtered.length) {
-                        listEl.innerHTML = '<div style="text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem;">No notifications found</div>';
-                        return;
+                        dropdownList.innerHTML = '<div style="text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem;">No notifications found</div>';
+                    } else {
+                        dropdownList.innerHTML = filtered.map(n => {
+                            const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (n.timestamp ? new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now');
+                            return `
+                                <div class="notif-item ${n.read ? 'read' : 'unread'}" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; align-items: flex-start; cursor: pointer;" onclick="markNotificationRead(${n.id || 0}, event)">
+                                    <div style="font-size: 1.1rem; margin-top: 2px;">${n.type === 'error' || n.type === 'danger' ? '🔴' : (n.type === 'warning' ? '🟡' : (n.type === 'success' ? '🟢' : '🔵'))}</div>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+                                            <div style="font-weight: 600; font-size: 0.85rem; color: #fff;">${escapeHtml(n.title || 'Notification')}</div>
+                                            <span style="font-size: 0.7rem; color: var(--muted); white-space: nowrap;">${timeStr}</span>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: var(--muted); margin-top: 3px; word-break: break-word;">${escapeHtml(n.content || n.message || '')}</div>
+                                    </div>
+                                    <button onclick="deleteNotification(${n.id || 0}, event)" style="background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 0.75rem;" title="Dismiss">&times;</button>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                }
+
+                // Render into Notifications Tab (Recent Updates & Previous History)
+                const listNew = document.getElementById('notification-list-new');
+                const listOlder = document.getElementById('notification-list-older');
+
+                if (listNew || listOlder) {
+                    const allNotifs = notifications || [];
+                    const recent = allNotifs.filter(n => !n.read);
+                    const older = allNotifs.filter(n => n.read);
+
+                    if (listNew) {
+                        if (recent.length === 0) {
+                            listNew.innerHTML = `
+                                <div id="no-notifications-new" style="padding: 45px 20px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px dashed var(--border);">
+                                    <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;">✨</div>
+                                    All caught up! No unread notifications.
+                                </div>
+                            `;
+                        } else {
+                            listNew.innerHTML = recent.map(n => renderNotifCardHtml(n, false)).join('');
+                        }
                     }
 
-                    listEl.innerHTML = filtered.map(n => `
-                        <div class="notif-item ${n.read ? 'read' : 'unread'}" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; align-items: flex-start; cursor: pointer;" onclick="markNotificationRead(${n.id}, event)">
-                            <div style="font-size: 1.1rem; margin-top: 2px;">${n.type === 'error' || n.type === 'danger' ? '🔴' : (n.type === 'warning' ? '🟡' : (n.type === 'success' ? '🟢' : '🔵'))}</div>
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
-                                    <div style="font-weight: 600; font-size: 0.85rem; color: #fff;">${(typeof escapeHtml === 'function' ? escapeHtml(n.title || 'Notification') : (n.title || 'Notification'))}${n.count > 1 ? ` <span style="font-size: 0.75rem; color: var(--primary);">(${n.count})</span>` : ''}</div>
-                                    <span style="font-size: 0.7rem; color: var(--muted); white-space: nowrap;">${new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    if (listOlder) {
+                        if (older.length === 0) {
+                            listOlder.innerHTML = `
+                                <div id="no-notifications-older" style="padding: 30px 20px; text-align: center; color: var(--muted); opacity: 0.6;">
+                                    No previous notification history.
                                 </div>
-                                <div style="font-size: 0.8rem; color: var(--muted); margin-top: 3px; word-break: break-word;">${(typeof escapeHtml === 'function' ? escapeHtml(n.content || '') : (n.content || ''))}</div>
-                            </div>
-                            <button onclick="deleteNotification(${n.id}, event)" style="background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 0.75rem;" title="Dismiss">&times;</button>
-                        </div>
-                    `).join('');
+                            `;
+                        } else {
+                            listOlder.innerHTML = older.slice(0, 20).map(n => renderNotifCardHtml(n, true)).join('');
+                        }
+                    }
                 }
             } catch (e) {
                 console.warn('[renderNotifications notice]:', e);
             }
+        }
+
+        function renderNotifCardHtml(n, isRead) {
+            const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleString() : (n.timestamp ? new Date(n.timestamp).toLocaleString() : 'Recent');
+            const icon = n.type === 'error' || n.type === 'danger' ? 'fas fa-exclamation-circle' : (n.type === 'warning' ? 'fas fa-triangle-exclamation' : (n.type === 'success' ? 'fas fa-check-circle' : 'fas fa-bell'));
+            const iconColor = n.type === 'error' || n.type === 'danger' ? '#ef4444' : (n.type === 'warning' ? '#f59e0b' : (n.type === 'success' ? '#10b981' : '#6366f1'));
+            const bgBorder = isRead ? 'border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.015);' : 'border: 1px solid rgba(99, 102, 241, 0.3); background: rgba(99, 102, 241, 0.05);';
+
+            return `
+                <div style="padding: 16px; border-radius: 12px; ${bgBorder} display: flex; gap: 14px; align-items: flex-start; transition: 0.2s;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: ${iconColor}; font-size: 1.1rem; flex-shrink: 0;">
+                        <i class="${icon}"></i>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                            <strong style="color: #fff; font-size: 0.92rem;">${escapeHtml(n.title || 'Notification')}</strong>
+                            <span style="font-size: 0.72rem; color: var(--muted); white-space: nowrap;">${timeStr}</span>
+                        </div>
+                        <p style="font-size: 0.84rem; color: #dbdee1; margin: 4px 0 0 0; line-height: 1.45;">${escapeHtml(n.content || n.message || '')}</p>
+                    </div>
+                    ${!isRead ? `<button onclick="markNotificationRead(${n.id || 0}, event)" class="btn-outline" style="padding: 5px 10px; font-size: 0.72rem; border-radius: 6px; white-space: nowrap;">Mark Read</button>` : ''}
+                </div>
+            `;
         }
 
         function saveNotifications() {
@@ -21222,7 +21356,7 @@ document.addEventListener('keydown', (e) => {
                 <div class="notif-step-card">
                     <div class="notif-step-num">iOS</div>
                     <div class="notif-step-content">
-                        <strong>Apple iOS 16.4+ Web Push</strong>
+                        <strong>Apple iOS 16.4+ Push Notifications</strong>
                         <p>On iPhone/iPad, tap Safari's <strong>Share (↑)</strong> button > <strong>"Add to Home Screen"</strong>. Open the app from your Home Screen to enable push.</p>
                     </div>
                 </div>
