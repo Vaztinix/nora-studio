@@ -182,6 +182,7 @@ const path = require('path');
 const PID_FILE = path.join(__dirname, '../.nora.pid');
 
 try {
+    // 1. Check PID File
     if (fs.existsSync(PID_FILE)) {
         const oldPidStr = fs.readFileSync(PID_FILE, 'utf8').trim();
         const oldPid = parseInt(oldPidStr, 10);
@@ -199,17 +200,25 @@ try {
                 try {
                     process.kill(oldPid, 'SIGKILL');
                 } catch (err) { }
-                try {
-                    const { execSync } = require('child_process');
-                    execSync(`taskkill /F /PID ${oldPid} 2>nul || exit 0`, { stdio: 'ignore' });
-                } catch (err) { }
-
-                // Synchronous wait to ensure socket/file lock release
-                const start = Date.now();
-                while (Date.now() - start < 600) { }
+                if (process.platform === 'win32') {
+                    try {
+                        const { execSync } = require('child_process');
+                        execSync(`taskkill /F /PID ${oldPid} 2>nul`, { stdio: 'ignore' });
+                    } catch (err) { }
+                }
             }
         }
     }
+
+    // 2. Comprehensive OS Sweep for any other orphaned Nora bot instances
+    if (process.platform === 'win32') {
+        try {
+            const { execSync } = require('child_process');
+            const psScript = `Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { ($_.CommandLine -like '*src/index.js*' -or $_.CommandLine -like '*src\\\\index.js*') -and $_.ProcessId -ne ${process.pid} } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
+            execSync(`powershell -NoProfile -NonInteractive -Command "${psScript}"`, { stdio: 'ignore' });
+        } catch (e) { }
+    }
+
     fs.writeFileSync(PID_FILE, process.pid.toString());
     console.log(`[System Lock] Single instance protection active. Running under PID ${process.pid}.`);
 } catch (e) {

@@ -48,9 +48,20 @@ function stopPid(pidFile, label) {
     } catch (e) {}
 }
 
+function cleanupOrphanedProcesses() {
+    if (process.platform === 'win32') {
+        try {
+            console.log('[System] Sweeping for any orphaned Nora bot or cloudflared instances...');
+            const psScript = `Get-CimInstance Win32_Process -Filter "Name = 'node.exe' or Name = 'cloudflared.exe'" | Where-Object { ($_.CommandLine -like '*src/index.js*' -or $_.CommandLine -like '*src\\\\index.js*' -or $_.CommandLine -like '*cloudflared tunnel*') -and $_.ProcessId -ne ${process.pid} } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
+            execSync(`powershell -NoProfile -NonInteractive -Command "${psScript}"`, { stdio: 'ignore' });
+        } catch (e) {}
+    }
+}
+
 async function shutdownAll() {
     stopPid(PID_FILE, 'Nora Bot Core & API Server');
     stopPid(TUNNEL_PID_FILE, 'Cloudflare Tunnel Connector');
+    cleanupOrphanedProcesses();
     
     if (process.platform === 'win32') {
         const start = Date.now();
