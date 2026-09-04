@@ -26,6 +26,11 @@ function initReminderScheduler(client) {
                 reminder.isTriggered = true;
                 await reminder.save().catch(() => {});
 
+                // Safeguard: Never broadcast personal reminders to anonymous or empty user IDs
+                if (!reminder.userId || reminder.userId === 'anonymous' || reminder.userId === 'global') {
+                    continue;
+                }
+
                 const pushPayload = {
                     title: '⏰ Nora Reminder Alert!',
                     body: reminder.message,
@@ -33,7 +38,7 @@ function initReminderScheduler(client) {
                     data: { url: '/dashboard' }
                 };
 
-                // 1. Send Web Push Notification to PWA / installed web app
+                // 1. Send Web Push Notification to user's registered devices
                 await sendPushToUser(reminder.userId, pushPayload);
 
                 // 2. Log in Notification bell table for dashboard

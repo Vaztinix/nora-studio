@@ -76,7 +76,7 @@ router.post('/test-push', async (req, res) => {
             await pushManager.saveSubscription(userId || 'anonymous', subscription);
         }
 
-        let subRecord;
+        let subRecord = null;
         if (endpoint || (subscription && subscription.endpoint)) {
             const targetEndpoint = endpoint || (subscription && subscription.endpoint);
             subRecord = await PushSubscription.findOne({ where: { endpoint: targetEndpoint } });
@@ -84,17 +84,14 @@ router.post('/test-push', async (req, res) => {
         if (!subRecord && userId && userId !== 'anonymous') {
             subRecord = await PushSubscription.findOne({ where: { userId }, order: [['updatedAt', 'DESC']] });
         }
-        if (!subRecord) {
-            subRecord = await PushSubscription.findOne({ order: [['updatedAt', 'DESC']] });
-        }
 
         if (!subRecord) {
-            return res.status(404).json({ error: 'No active Web Push subscription found for this device. Please click Enable Push Notifications first.' });
+            return res.status(404).json({ error: 'No active Web Push subscription found for your device. Please click Enable Push Notifications first.' });
         }
 
         const testPayload = {
             title: '🔔 Nora Test Push Notification',
-            body: 'Web Push is active and working on your device! You will receive live alerts and reminders.',
+            body: 'Web Push is active and working on your device! You will receive personal alerts and reminders.',
             icon: '/favicon.ico',
             data: { url: '/dashboard' }
         };
@@ -116,7 +113,7 @@ router.post('/test-push', async (req, res) => {
 router.get('/reminders', async (req, res) => {
     try {
         const userId = req.query.userId || req.headers['x-user-id'];
-        if (!userId) {
+        if (!userId || userId === 'anonymous') {
             return res.json({ reminders: [] });
         }
         const reminders = await Reminder.findAll({
@@ -135,7 +132,13 @@ router.get('/reminders', async (req, res) => {
 router.post('/reminders', async (req, res) => {
     try {
         const { userId, message, triggerTime, delayMinutes } = req.body || {};
-        if (!message) {
+        
+        // Strict user validation: Reminders MUST belong to a specific Discord user
+        if (!userId || userId === 'anonymous' || !/^\d{17,20}$/.test(String(userId).trim())) {
+            return res.status(401).json({ error: 'You must be logged in with Discord to schedule personal reminders.' });
+        }
+
+        if (!message || !message.trim()) {
             return res.status(400).json({ error: 'Reminder message content required.' });
         }
 
@@ -148,8 +151,8 @@ router.post('/reminders', async (req, res) => {
         }
 
         const reminder = await Reminder.create({
-            userId: userId || 'anonymous',
-            message: message.slice(0, 500),
+            userId: String(userId).trim(),
+            message: message.trim().slice(0, 500),
             triggerTime: computedTime,
             isTriggered: false
         });

@@ -115,11 +115,14 @@ async function sendPushNotification(subRecord, payload) {
 
 /**
  * Send Web Push notification to all subscriptions of a specific user.
+ * Personal pushes will NEVER dispatch to anonymous or broadcast pseudo-users.
  */
 async function sendPushToUser(userId, payload) {
-    if (!userId) return 0;
+    if (!userId || userId === 'anonymous' || userId === 'global' || userId === 'null' || userId === 'undefined') {
+        return 0;
+    }
     try {
-        const subs = await PushSubscription.findAll({ where: { userId } }).catch(() => []);
+        const subs = await PushSubscription.findAll({ where: { userId: String(userId).trim() } }).catch(() => []);
         let count = 0;
         for (const sub of subs) {
             const success = await sendPushNotification(sub, payload);

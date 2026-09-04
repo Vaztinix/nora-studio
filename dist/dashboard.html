@@ -11906,6 +11906,17 @@
             }
         }
 
+        function getDashboardUserId() {
+            if (window.currentUser && window.currentUser.id && window.currentUser.id !== 'anonymous') {
+                return window.currentUser.id;
+            }
+            const lastId = localStorage.getItem('nora_last_user_id');
+            if (lastId && lastId !== 'anonymous' && /^\d{17,20}$/.test(lastId)) {
+                return lastId;
+            }
+            return null;
+        }
+
         async function initServiceWorkerAndPush() {
             if ('serviceWorker' in navigator) {
                 try {
@@ -11927,20 +11938,27 @@
         }
 
         async function subscribeToWebPush(silent = false) {
-            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                if (!silent) showToast('Web Push Notifications are not supported by this browser.', 'error');
-                return false;
-            }
-
             try {
+                if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                    if (!silent) showToast('Web Push Notifications are not supported by your browser.', 'warning');
+                    return false;
+                }
+
+                const reg = await navigator.serviceWorker.ready.catch(() => null);
+                if (!reg) {
+                    if (!silent) showToast('Service Worker is not ready. Please refresh the page.', 'error');
+                    return false;
+                }
+
                 const permission = await Notification.requestPermission();
                 if (permission !== 'granted') {
-                    if (!silent) showToast('Push Notification permission was denied.', 'warning');
+                    if (!silent && permission === 'denied') {
+                        openNotificationUnblockModal();
+                    }
                     renderPushNotificationWidget();
                     return false;
                 }
 
-                const reg = await navigator.serviceWorker.ready;
                 const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '').replace(/\/$/, '');
 
                 // Safe VAPID key fetch with fallback endpoints
@@ -11982,7 +12000,7 @@
                     });
                 }
 
-                const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
+                const currentUserId = getDashboardUserId() || 'anonymous';
                 const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
 
                 const subCandidates = [
@@ -12018,7 +12036,7 @@
                 const reg = await navigator.serviceWorker.ready.catch(() => null);
                 let sub = reg ? await reg.pushManager.getSubscription().catch(() => null) : null;
                 const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '').replace(/\/$/, '');
-                const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
+                const currentUserId = getDashboardUserId() || 'anonymous';
                 const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
 
                 // Priority candidate endpoints to attempt
@@ -12276,7 +12294,7 @@
         async function loadReminders() {
             try {
                 const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
-                const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : null;
+                const currentUserId = getDashboardUserId();
                 if (currentUserId) {
                     const res = await fetch(apiBase + '/api/notifications/reminders?userId=' + currentUserId);
                     const data = await res.json();
@@ -12306,6 +12324,11 @@
         }
 
         async function scheduleReminder() {
+            const currentUserId = getDashboardUserId();
+            if (!currentUserId) {
+                return showToast('Please log in with Discord before setting personal reminders!', 'error');
+            }
+
             const msgInput = document.getElementById('reminder-msg');
             const delaySelect = document.getElementById('reminder-delay');
             if (!msgInput || !delaySelect) return;
@@ -12315,12 +12338,11 @@
 
             const delayMinutes = parseInt(delaySelect.value, 10);
             const triggerTime = Date.now() + delayMinutes * 60000;
-            const currentUserId = (window.currentUserData && window.currentUserData.id) ? window.currentUserData.id : 'anonymous';
 
             // Post to server API for Web Push & background scheduler delivery
             try {
                 const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
-                await fetch(apiBase + '/api/notifications/reminders', {
+                const res = await fetch(apiBase + '/api/notifications/reminders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -12329,6 +12351,10 @@
                         delayMinutes
                     })
                 });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    return showToast(errData.error || 'Failed to save reminder on server.', 'error');
+                }
             } catch (e) {
                 console.error('[Reminders API Error]:', e);
             }
