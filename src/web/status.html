@@ -44,84 +44,234 @@
             flex-direction: column;
         }
 
-        /* Header */
+        /* ===== STICKY HEADER ===== */
         header {
-            border-bottom: 1px solid var(--card-border);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(16, 17, 26, 0.75);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(7, 8, 12, 0.85);
+            border-bottom: 1px solid var(--card-border);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .header-inner {
-            max-width: 1200px;
+        .header-inner, .nav-container {
+            max-width: 1240px;
             margin: 0 auto;
-            padding: 16px 24px;
+            padding: 0 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            height: 72px;
         }
 
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #FFFFFF;
             text-decoration: none;
-            color: #fff;
+            letter-spacing: -0.02em;
         }
-
         .brand img {
             width: 36px;
             height: 36px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
-
-        .brand-title {
-            font-size: 1.15rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-
-        .brand-subtitle {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+            border-radius: 9px;
+            box-shadow: 0 0 16px var(--primary-glow);
         }
 
         .nav-links {
             display: flex;
-            gap: 16px;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+        .nav-links a {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: #FFFFFF;
         }
 
-        .nav-btn {
-            background: rgba(255, 255, 255, 0.05);
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .btn-nav-dashboard {
+            background: rgba(22, 24, 36, 0.88);
             border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: 9999px;
             text-decoration: none;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
-
-        .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+        .btn-nav-dashboard:hover {
+            border-color: rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.08);
             transform: translateY(-1px);
+        }
+
+        .btn-nav-invite {
+            background: linear-gradient(135deg, #5865F2 0%, #8B5CF6 100%);
+            color: #FFFFFF;
+            padding: 9px 22px;
+            border-radius: 9999px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            box-shadow: 0 4px 20px var(--primary-glow);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-invite:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5);
+        }
+
+        /* ===== MOBILE DRAWER ===== */
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: #ffffff;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mobile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-drawer-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 280px;
+            height: 100vh;
+            background: rgba(11, 12, 18, 0.98);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-left: 1px solid var(--card-border);
+            z-index: 9999;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+        }
+        .mobile-drawer.active {
+            right: 0;
+        }
+
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .mobile-drawer-close {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .mobile-drawer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mobile-drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+        }
+        .mobile-drawer-nav a:hover,
+        .mobile-drawer-nav a:active,
+        .mobile-drawer-nav a.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .mobile-drawer-actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 16px;
+            border-top: 1px solid var(--card-border);
+        }
+        .mobile-drawer-actions a {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 9999px;
+            font-size: 0.92rem;
+            font-weight: 700;
         }
 
         /* Container */
         .container {
-            max-width: 1100px;
+            max-width: 1240px;
             margin: 0 auto;
             padding: 40px 24px;
             flex: 1;
@@ -453,6 +603,11 @@
             margin-top: auto;
         }
 
+        @media (max-width: 860px) {
+            .nav-links { display: none !important; }
+            .mobile-menu-btn { display: flex !important; }
+        }
+
         @media (max-width: 768px) {
             .container { padding: 0 16px 40px; }
             .header-inner { padding: 0 16px; height: 60px; }
@@ -493,18 +648,56 @@
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-        <div class="header-inner">
-            <a href="/" class="brand">
-                <img src="/nora.png" alt="Nora Logo" onerror="this.onerror=null; this.src='/favicon.ico';">
-                <div>
-                    <div class="brand-title">Nora Systems</div>
-                    <div class="brand-subtitle">Network Health & Status</div>
-                </div>
+    <!-- Mobile Navigation Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Navigation Drawer -->
+    <aside class="mobile-drawer" id="mobile-drawer">
+        <div class="mobile-drawer-header">
+            <div class="brand">
+                <img src="/nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px; border-radius: 8px;" onerror="this.onerror=null; this.src='/favicon.ico';">
+                <span>Nora Studio</span>
+            </div>
+            <button class="mobile-drawer-close" onclick="toggleMobileMenu()" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="/#commands" onclick="toggleMobileMenu()"><i class="fas fa-terminal" style="color: #06B6D4;"></i> Commands</a>
+            <a href="/#pricing" onclick="toggleMobileMenu()"><i class="fas fa-tag" style="color: #F59E0B;"></i> Pricing</a>
+            <a href="/docs"><i class="fas fa-book" style="color: #10B981;"></i> Documentation</a>
+            <a href="/status" class="active"><i class="fas fa-chart-line" style="color: #60A5FA;"></i> Systems Status</a>
+            <a href="/support"><i class="fas fa-headset" style="color: #F43F5E;"></i> Support Center</a>
+            <a href="/team"><i class="fas fa-users" style="color: #A78BFA;"></i> Meet Team</a>
+            <a href="/legal"><i class="fas fa-shield-alt" style="color: var(--text-muted);"></i> Privacy & Terms</a>
+        </nav>
+        <div class="mobile-drawer-actions">
+            <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Web Dashboard</a>
+            <a href="/install" class="btn-nav-invite"><i class="fab fa-discord"></i> Add to Discord</a>
+        </div>
+    </aside>
+
+    <!-- Sticky Header -->
+    <header id="main-header">
+        <div class="header-inner nav-container">
+            <a href="/" class="brand" id="brand-logo">
+                <img src="/nora.png" alt="Nora Studio Logo" onerror="this.onerror=null; this.src='/favicon.ico';">
+                <span>Nora Studio</span>
             </a>
-            <div class="nav-links">
-                <a href="/dashboard" class="nav-btn"><i class="fas fa-columns"></i> Dashboard</a>
+            
+            <nav class="nav-links">
+                <a href="/#commands"><i class="fas fa-terminal"></i> Commands</a>
+                <a href="/#pricing"><i class="fas fa-tag"></i> Pricing</a>
+                <a href="/docs"><i class="fas fa-book"></i> Docs</a>
+                <a href="/status" class="active" style="color: #fff;"><i class="fas fa-chart-line"></i> Status</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="/dashboard" class="btn-nav-dashboard" id="btn-header-dash">Dashboard</a>
+                <a href="/install" class="btn-nav-invite" id="btn-header-invite"><i class="fab fa-discord"></i> Invite</a>
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -758,6 +951,16 @@
                         incidentsContainer.appendChild(card);
                     });
                 }
+            }
+        }
+
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (drawer && backdrop) {
+                drawer.classList.toggle('active');
+                backdrop.classList.toggle('active');
+                document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
             }
         }
 
