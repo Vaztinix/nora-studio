@@ -371,6 +371,17 @@
             max-width: 600px;
             line-height: 1.4;
         }
+
+        @media (max-width: 600px) {
+            body { padding: 20px 14px; }
+            .auth-title { font-size: 1.3rem; }
+            .search-input-box input { font-size: 16px !important; min-height: 44px; }
+            .consent-actions { flex-direction: column-reverse; gap: 10px; }
+            .consent-actions button { width: 100%; min-height: 46px; }
+            .connector-row { gap: 14px; }
+            .lock-line::before, .lock-line::after { width: 18px; }
+            .footer-nav { flex-wrap: wrap; justify-content: center; gap: 12px; }
+        }
     </style>
 </head>
 <body>

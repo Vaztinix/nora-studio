@@ -189,6 +189,7 @@
             letter-spacing: -1px;
             background: linear-gradient(135deg, #FFFFFF 20%, #A7F3D0 40%, #34D399 70%, #10B981 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
         }
@@ -620,9 +621,153 @@
             color: var(--muted);
         }
 
+        /* Mobile & Responsive Rules */
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 290px;
+            height: 100vh;
+            background: rgba(6, 12, 9, 0.98);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-left: 1px solid var(--border);
+            z-index: 10000;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .mobile-drawer.open {
+            right: 0;
+        }
+        .mobile-drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-drawer-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .mobile-drawer-close {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #fff;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .mobile-drawer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mobile-drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+        }
+        .mobile-drawer-nav a:hover,
+        .mobile-drawer-nav a.active {
+            color: #34D399;
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none !important;
+            }
+            .btn-header {
+                display: none !important;
+            }
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+            .container {
+                padding: 0 16px !important;
+            }
+            .hero-section {
+                padding: 30px 0 20px !important;
+            }
+            .avatar-wrapper img {
+                width: 100px !important;
+                height: 100px !important;
+            }
+            .hero-title {
+                font-size: 1.8rem !important;
+            }
+            .hero-badge-row {
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+            }
+            .glass-card {
+                padding: 20px 16px !important;
+                border-radius: 16px !important;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+            .links-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            .music-player-card {
+                padding: 16px !important;
+            }
+        }
+
         footer {
             border-top: 1px solid var(--border);
-            padding: 40px 0;
+            padding: 30px 0;
             text-align: center;
             color: var(--muted);
             font-size: 0.88rem;
@@ -633,6 +778,35 @@
     </style>
 </head>
 <body>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMeMobileMenu()"></div>
+
+    <!-- Mobile Drawer Menu -->
+    <aside class="mobile-drawer" id="mobile-drawer">
+        <div class="mobile-drawer-header">
+            <div class="brand">
+                <img src="nora.png" alt="Nora Logo" style="width: 30px; height: 30px;">
+                <span>Nora Studio</span>
+            </div>
+            <button class="mobile-drawer-close" onclick="toggleMeMobileMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
+            <a href="/install"><i class="fab fa-discord"></i> Invite Bot</a>
+            <a href="/docs"><i class="fas fa-book"></i> Documentation</a>
+            <a href="/status"><i class="fas fa-chart-line"></i> Status</a>
+            <a href="/team"><i class="fas fa-users"></i> Team</a>
+            <a href="/me" class="active"><i class="fas fa-code"></i> Developer</a>
+            <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
+        </nav>
+        <div style="margin-top: auto;">
+            <a href="/dashboard" class="btn-header" style="display: block; text-align: center; width: 100%; box-sizing: border-box;">Open Dashboard</a>
+        </div>
+    </aside>
 
     <!-- Peak Multi-Color Soundwave Canvas Background -->
     <canvas id="audio-canvas"></canvas>
@@ -655,7 +829,12 @@
                 <a href="/me" class="active">Developer</a>
                 <a href="/legal">Legal</a>
             </nav>
-            <a href="/dashboard" class="btn-header">Open Dashboard</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <a href="/dashboard" class="btn-header">Open Dashboard</a>
+                <button class="mobile-menu-btn" onclick="toggleMeMobileMenu()" aria-label="Toggle navigation menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -1084,6 +1263,23 @@
         }
 
         animateVisualizer();
+
+        function toggleMeMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (drawer && backdrop) {
+                const isOpen = drawer.classList.contains('open');
+                if (isOpen) {
+                    drawer.classList.remove('open');
+                    backdrop.classList.remove('open');
+                    document.body.style.overflow = '';
+                } else {
+                    drawer.classList.add('open');
+                    backdrop.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
     </script>
 </body>
 </html>

@@ -304,10 +304,95 @@
             background: rgba(255, 255, 255, 0.02);
         }
 
+        /* Mobile Responsive Upgrades */
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #ffffff;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 12, 20, 0.98);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-left: 1px solid var(--border);
+            z-index: 10000;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+        }
+        .mobile-drawer.open { right: 0; }
+        .mobile-drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .mobile-drawer-nav { display: flex; flex-direction: column; gap: 8px; }
+        .mobile-drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.92rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .mobile-drawer-nav a:hover, .mobile-drawer-nav a.active {
+            color: #fff;
+            background: rgba(88, 101, 242, 0.2);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none !important; }
+            .mobile-menu-btn { display: flex !important; }
+            .container { padding: 0 14px !important; }
+            .doc-wrapper { padding: 24px 0 50px !important; }
+            .doc-card { padding: 22px 16px !important; border-radius: 18px !important; }
+            .doc-header h1 { font-size: 1.65rem !important; }
+            .callout-card { padding: 16px 14px !important; flex-direction: column !important; gap: 8px !important; }
+            .cmd-table th, .cmd-table td { padding: 10px 12px !important; font-size: 0.82rem !important; }
+        }
+
         /* Footer */
         footer {
             border-top: 1px solid var(--border);
-            padding: 36px 0;
+            padding: 30px 0;
             text-align: center;
             color: var(--muted);
             font-size: 0.85rem;
@@ -316,6 +401,29 @@
     </style>
 </head>
 <body>
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleDocsMenu()"></div>
+    <aside class="mobile-drawer" id="mobile-drawer">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+            <div class="brand">
+                <img src="nora.png" alt="Nora Studio" style="width: 28px; height: 28px;">
+                <span>NORA STUDIO</span>
+            </div>
+            <button onclick="toggleDocsMenu()" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
+            <a href="/install"><i class="fas fa-plus-circle"></i> Invite Bot</a>
+            <a href="/docs" class="active"><i class="fas fa-book"></i> Documentation</a>
+            <a href="/status"><i class="fas fa-signal"></i> Network Status</a>
+            <a href="/team"><i class="fas fa-users"></i> Team</a>
+            <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
+        </nav>
+        <div style="margin-top: auto;">
+            <a href="/dashboard" class="btn-nav-dash" style="display: block; text-align: center; width: 100%; box-sizing: border-box; padding: 12px;">Open Dashboard</a>
+        </div>
+    </aside>
+
     <header>
         <div class="nav-container">
             <a href="/" class="brand">
@@ -329,7 +437,12 @@
                 <a href="/status"><i class="fas fa-signal"></i> Status</a>
                 <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
             </nav>
-            <a href="/dashboard" class="btn-nav-dash"><i class="fas fa-sliders-h"></i> Dashboard</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <a href="/dashboard" class="btn-nav-dash"><i class="fas fa-sliders-h"></i> Dashboard</a>
+                <button class="mobile-menu-btn" onclick="toggleDocsMenu()" aria-label="Toggle navigation menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -500,6 +613,23 @@
         <div class="container">
             &copy; 2026 Nora Studio. Built for Discord Communities.
         </div>
-    </footer>
+    <script>
+        function toggleDocsMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (drawer && backdrop) {
+                const isOpen = drawer.classList.contains('open');
+                if (isOpen) {
+                    drawer.classList.remove('open');
+                    backdrop.classList.remove('open');
+                    document.body.style.overflow = '';
+                } else {
+                    drawer.classList.add('open');
+                    backdrop.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+    </script>
 </body>
 </html>

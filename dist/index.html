@@ -281,6 +281,7 @@
             color: #5865F2;
             background: linear-gradient(135deg, #7983F5 0%, #5865F2 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             display: inline-block;
         }
@@ -758,24 +759,137 @@
             gap: 16px;
         }
 
+        /* ===== MOBILE & RESPONSIVE UPGRADES ===== */
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #ffffff;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .mobile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
+        }
+
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100vh;
+            background: rgba(10, 12, 20, 0.98);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-left: 1px solid var(--border-subtle);
+            z-index: 10000;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .mobile-drawer.open {
+            right: 0;
+        }
+        .mobile-drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-drawer-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .mobile-drawer-close {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .mobile-drawer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mobile-drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+        }
+        .mobile-drawer-nav a:hover,
+        .mobile-drawer-nav a:active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .mobile-drawer-actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .mobile-drawer-actions a {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
         /* ===== RESPONSIVE MEDIA QUERIES ===== */
         @media (max-width: 992px) {
             .hero-section {
-                grid-template-columns: 1fr;
-                gap: 50px;
-                text-align: center;
+                padding: 50px 0 40px 0;
             }
-            .hero-left {
-                align-items: center;
-            }
-            .hero-description {
-                margin: 0 auto;
-            }
-            .hero-cta-group {
-                justify-content: center;
-            }
-            .hero-stats-bar {
-                margin: 20px auto 0 auto;
+            .hero-heading {
+                font-size: 2.25rem !important;
+                line-height: 1.2 !important;
             }
             .bento-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -788,29 +902,127 @@
             }
             .footer-grid {
                 grid-template-columns: 1fr 1fr;
+                gap: 30px;
             }
         }
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
             .nav-links {
-                display: none;
+                display: none !important;
             }
-            .bento-grid {
-                grid-template-columns: 1fr;
+            .mobile-menu-btn {
+                display: flex !important;
             }
-            .bento-card.col-span-2 {
-                grid-column: span 1;
+            .btn-nav-invite {
+                display: none !important;
+            }
+            .btn-nav-dashboard {
+                padding: 7px 14px !important;
+                font-size: 0.82rem !important;
+            }
+            .hero-section {
+                padding: 36px 0 30px 0;
+            }
+            .hero-heading {
+                font-size: 1.85rem !important;
+                letter-spacing: -0.02em !important;
+            }
+            .hero-description {
+                font-size: 0.95rem !important;
+                line-height: 1.55 !important;
+            }
+            .hero-cta-group {
+                flex-direction: column;
+                width: 100%;
+                gap: 12px;
+            }
+            .hero-cta-group a {
+                width: 100%;
+                justify-content: center;
+                min-height: 48px;
+                box-sizing: border-box;
             }
             .hero-stats-bar {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                padding: 16px 12px !important;
+            }
+            .stat-value {
+                font-size: 1.4rem !important;
+            }
+            .stat-label {
+                font-size: 0.75rem !important;
+            }
+            .bento-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .bento-card.col-span-2 {
+                grid-column: span 1 !important;
+            }
+            .bento-card {
+                padding: 22px 18px !important;
+            }
+            .command-explorer-container {
+                padding: 18px 14px !important;
+            }
+            .command-filter-bar {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                flex-wrap: nowrap !important;
+                padding-bottom: 8px !important;
+            }
+            .filter-btn {
+                flex-shrink: 0 !important;
+                white-space: nowrap !important;
+            }
+            .command-grid {
+                grid-template-columns: 1fr !important;
             }
             .footer-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
+                gap: 24px !important;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Mobile Navigation Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Navigation Drawer -->
+    <aside class="mobile-drawer" id="mobile-drawer">
+        <div class="mobile-drawer-header">
+            <div class="brand">
+                <img src="nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+                <span>Nora Studio</span>
+            </div>
+            <button class="mobile-drawer-close" onclick="toggleMobileMenu()" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="#features" onclick="toggleMobileMenu()"><i class="fas fa-layer-group" style="color: var(--blurple);"></i> Features</a>
+            <a href="#commands" onclick="toggleMobileMenu()"><i class="fas fa-terminal" style="color: var(--cyan);"></i> Commands</a>
+            <a href="#pricing" onclick="toggleMobileMenu()"><i class="fas fa-tag" style="color: var(--amber);"></i> Pricing</a>
+            <a href="/docs"><i class="fas fa-book" style="color: var(--emerald);"></i> Documentation</a>
+            <a href="/status"><i class="fas fa-chart-line" style="color: #60a5fa;"></i> Systems Status</a>
+            <a href="/ai-studio"><i class="fas fa-brain" style="color: var(--purple);"></i> AI Studio</a>
+            <a href="/support"><i class="fas fa-headset" style="color: var(--rose);"></i> Support Center</a>
+            <a href="/team"><i class="fas fa-users" style="color: #a78bfa;"></i> Meet Team</a>
+            <a href="/legal"><i class="fas fa-shield-alt" style="color: var(--text-muted);"></i> Privacy & Terms</a>
+        </nav>
+        <div class="mobile-drawer-actions">
+            <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Web Dashboard</a>
+            <a href="/install" class="btn-nav-invite"><i class="fab fa-discord"></i> Add to Discord</a>
+        </div>
+    </aside>
+
     <!-- Sticky Header -->
     <header id="main-header">
         <div class="container nav-container">
@@ -824,11 +1036,15 @@
                 <a href="#pricing"><i class="fas fa-tag"></i> Pricing</a>
                 <a href="/docs"><i class="fas fa-book"></i> Docs</a>
                 <a href="/status"><i class="fas fa-chart-line"></i> Status</a>
+                <a href="/ai-studio"><i class="fas fa-brain"></i> AI</a>
             </nav>
 
             <div class="nav-actions">
                 <a href="/dashboard" class="btn-nav-dashboard" id="btn-header-dash">Dashboard</a>
                 <a href="/install" class="btn-nav-invite" id="btn-header-invite"><i class="fab fa-discord"></i> Invite</a>
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -1260,6 +1476,24 @@
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             renderCommands(category);
+        }
+
+        // Mobile Drawer Menu Toggle
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (drawer && backdrop) {
+                const isOpen = drawer.classList.contains('open');
+                if (isOpen) {
+                    drawer.classList.remove('open');
+                    backdrop.classList.remove('open');
+                    document.body.style.overflow = '';
+                } else {
+                    drawer.classList.add('open');
+                    backdrop.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
         }
 
         // Initialize Command Grid

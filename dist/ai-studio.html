@@ -624,6 +624,87 @@
             .module-pane { grid-column: span 1; }
         }
 
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+                overflow-x: hidden;
+            }
+            .container {
+                width: min(100%, calc(100% - 20px));
+                margin: 16px auto 60px;
+                padding: 0 10px;
+            }
+            .hero {
+                grid-template-columns: 1fr !important;
+                gap: 15px;
+            }
+            .hero-card {
+                padding: 18px 14px !important;
+                border-radius: 16px !important;
+            }
+            .hero-stats {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 10px;
+            }
+            .field-grid, 
+            .module-grid {
+                grid-template-columns: 1fr !important;
+                gap: 15px;
+            }
+            .module-pane {
+                grid-column: span 1 !important;
+                padding: 16px 14px !important;
+                border-radius: 16px !important;
+            }
+            .topbar-inner {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+                padding: 12px 14px;
+            }
+            .nav-links {
+                justify-content: center;
+                width: 100%;
+                gap: 6px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 4px;
+            }
+            .nav-links a {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            input, 
+            select, 
+            textarea, 
+            button {
+                min-height: 44px;
+                font-size: 16px !important; /* Prevents auto-zoom on iOS */
+                box-sizing: border-box;
+            }
+            .table-card {
+                padding: 14px !important;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .row-between {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 12px;
+            }
+            .row-between button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-stats { grid-template-columns: 1fr !important; }
+            .hero-actions { display: grid; gap: 8px; }
+            .hero-actions button { margin: 0 !important; width: 100%; }
+        }
+
         /* Device-specific layout overrides */
         body.device-mobile {
             font-size: 14px;

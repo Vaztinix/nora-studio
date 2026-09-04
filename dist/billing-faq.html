@@ -241,8 +241,78 @@
             transition: background 0.2s ease;
         }
 
-        .btn-primary:hover {
-            background: var(--primary-hover);
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: min(300px, 80vw);
+            height: 100vh;
+            background: rgba(17, 17, 16, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border);
+            z-index: 10000;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mobile-drawer.open { right: 0; }
+        .mobile-drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .mobile-drawer-nav { display: flex; flex-direction: column; gap: 8px; }
+        .mobile-drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.92rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .mobile-drawer-nav a:hover, .mobile-drawer-nav a.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none !important; }
+            .mobile-menu-btn { display: flex !important; }
+            .container { padding: 0 16px !important; }
+            main { padding: 36px 0 !important; }
+            .page-title { font-size: 1.85rem !important; }
+            .page-subtitle { font-size: 0.95rem !important; }
+            .faq-card { padding: 18px 16px !important; }
+            .faq-title { font-size: 0.95rem !important; }
+            .cta-section { padding: 24px 16px !important; margin-top: 40px !important; }
         }
 
         footer {
@@ -256,6 +326,25 @@
     </style>
 </head>
 <body>
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleBillingMenu()"></div>
+    <aside class="mobile-drawer" id="mobile-drawer">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+            <div class="brand">
+                <img src="nora.png" alt="Nora Logo" style="width: 28px; height: 28px;">
+                <span>Nora Studio</span>
+            </div>
+            <button onclick="toggleBillingMenu()" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
+            <a href="/install"><i class="fab fa-discord"></i> Invite Bot</a>
+            <a href="/docs"><i class="fas fa-book"></i> Documentation</a>
+            <a href="/billing-faq" class="active"><i class="fas fa-credit-card"></i> Billing FAQ</a>
+            <a href="/support"><i class="fas fa-headset"></i> Support</a>
+            <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
+        </nav>
+    </aside>
 
     <header>
         <div class="nav-container">
@@ -264,10 +353,19 @@
                 <span>Nora Studio</span>
             </a>
             <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/install">Invite</a>
+                <a href="/docs">Docs</a>
                 <a href="/dashboard">Dashboard</a>
                 <a href="/support">Support</a>
-                <a href="/docs">Docs</a>
+                <a href="/legal">Legal</a>
             </nav>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <a href="/dashboard" class="btn-primary" style="padding: 7px 16px; font-size: 0.85rem; border-radius: 999px;">Dashboard</a>
+                <button class="mobile-menu-btn" onclick="toggleBillingMenu()" aria-label="Toggle navigation menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -380,6 +478,21 @@
                     c.classList.remove('active');
                 }
             });
+        function toggleBillingMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (drawer && backdrop) {
+                const isOpen = drawer.classList.contains('open');
+                if (isOpen) {
+                    drawer.classList.remove('open');
+                    backdrop.classList.remove('open');
+                    document.body.style.overflow = '';
+                } else {
+                    drawer.classList.add('open');
+                    backdrop.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
         }
     </script>
 </body>
