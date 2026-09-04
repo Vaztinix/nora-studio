@@ -63,26 +63,10 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        .partner-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 6px 14px;
-            border-radius: 999px;
-            background: rgba(88, 101, 242, 0.12);
-            border: 1px solid rgba(88, 101, 242, 0.3);
-            color: #8b96ff;
-            font-size: 0.78rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
         .avatar-wrap {
             position: relative;
             display: inline-block;
-            margin-bottom: 20px;
+            margin: 0 auto 24px auto;
         }
 
         .avatar-glow {
@@ -103,6 +87,7 @@
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            display: block;
         }
 
         h1 {
@@ -216,13 +201,9 @@
 </head>
 <body>
     <div class="invite-card">
-        <div class="partner-pill">
-            <i class="fas fa-shield-alt"></i> Official Discord Application
-        </div>
-
         <div class="avatar-wrap">
             <div class="avatar-glow"></div>
-            <img src="nora.png" alt="Nora Studio" class="bot-avatar" onerror="this.onerror=null; this.src='nora.png'">
+            <img src="/nora.png" alt="Nora Studio" class="bot-avatar" onerror="this.onerror=null; this.src='/favicon.ico';">
         </div>
 
         <h1>Add Nora to Server</h1>
