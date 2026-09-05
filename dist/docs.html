@@ -452,64 +452,66 @@
                 <div class="doc-header">
                     <span class="doc-tag"><i class="fas fa-book-open"></i> Nora Architecture & Docs</span>
                     <h1>System Documentation & Command Guide</h1>
-                    <p class="subtitle">Complete technical reference for Nora Studio's automation, games, verification, and moderation systems.</p>
+                    <p class="subtitle">Complete technical reference for Nora Studio's automation, Top.gg multi-bot tracking, Roblox rank synchronization, ticket management, leveling, games, and security systems.</p>
                 </div>
 
-                <section>
+                <!-- 1. Quickstart Guide -->
+                <section id="quickstart">
                     <h2><i class="fas fa-rocket"></i> Quickstart Guide</h2>
-                    <p>Get Nora running in your Discord server in less than 60 seconds:</p>
+                    <p>Get Nora operating in your Discord server in less than 60 seconds:</p>
                     <ul>
-                        <li><strong>Step 1 — Authorize Application:</strong> Visit <a href="/install" style="color: #a5b4fc;">/install</a> and choose your target server with standard administrator permissions.</li>
-                        <li><strong>Step 2 — Interactive Setup:</strong> Type <code>/setup dashboard</code> in any channel to view and configure all community modules.</li>
-                        <li><strong>Step 3 — Web Dashboard:</strong> Log in at <a href="/dashboard" style="color: #a5b4fc;">vaztinix.dev/dashboard</a> to manage channels, roles, autoresponders, and member rank synchronization.</li>
+                        <li><strong>Step 1 — Authorize Application:</strong> Visit <a href="/install" style="color: #a5b4fc;">/install</a> and select your target Discord server with standard administrator privileges.</li>
+                        <li><strong>Step 2 — Interactive Setup:</strong> Run <code>/setup dashboard</code> in any channel to view and configure community modules directly in Discord.</li>
+                        <li><strong>Step 3 — Web Dashboard:</strong> Access <a href="/dashboard" style="color: #a5b4fc;">vaztinix.dev/dashboard</a> to manage Top.gg votes, Roblox group rank bindings, tickets, custom embeds, and audit logs.</li>
                     </ul>
                 </section>
 
-                <section>
+                <!-- 2. Top.gg Integration & Multi-Bot Tracker -->
+                <section id="topgg">
                     <h2>
                         <img src="https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg" alt="Top.gg" style="width: 24px; height: 24px; border-radius: 6px; vertical-align: middle; margin-right: 6px; object-fit: cover;">
-                        Top.gg Vote Rewards & Integration Guide
+                        Top.gg Vote Rewards & Multi-Bot Tracker
                     </h2>
-                    <p>Reward your community members for upvoting Nora and connected Discord bots on Top.gg with instant role assignments, customizable Leveling XP, weekend multipliers, and loyalty vote streaks.</p>
+                    <p>Reward your community members for upvoting Nora and custom connected bots on Top.gg with instant role assignments, customizable Leveling XP, weekend multipliers, and loyalty vote streaks.</p>
 
                     <div class="callout-box" style="background: rgba(255, 51, 102, 0.08); border-color: rgba(255, 51, 102, 0.3);">
                         <div class="callout-icon"><i class="fas fa-bolt" style="color: #FF3366;"></i></div>
                         <div class="callout-text">
-                            <h4 style="color: #FF3366;">Instant Webhook Delivery Pipeline</h4>
-                            <p>Votes cast on Top.gg are dispatched directly to Nora's dedicated API endpoint with sub-second latency. No manual claim commands required—rewards apply automatically the moment the vote is confirmed.</p>
+                            <h4 style="color: #FF3366;">Sub-Second Webhook & Resilient Channel Pipeline</h4>
+                            <p>Votes cast on Top.gg are dispatched directly to Nora's high-performance endpoint with sub-second latency. If announcement channels restrict standard bot messaging, Nora automatically utilizes secure channel webhooks to guarantee embed delivery.</p>
                         </div>
                     </div>
 
                     <h3>Step-by-Step Setup Guide</h3>
                     <div style="display: flex; flex-direction: column; gap: 14px; margin: 16px 0 24px;">
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 1: Get Webhook Credentials from Nora Studio</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Open the <a href="/dashboard" style="color: #a5b4fc;">Nora Dashboard</a> and navigate to the <b>Top.gg Votes</b> tab. Under <b>1. Connect on Top.gg</b>, copy your unique <code>Webhook URL</code> and <code>Webhook Authorization Secret</code>.</p>
+                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 1: Copy Webhook URL from Dashboard</strong>
+                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Open the <a href="/dashboard" style="color: #a5b4fc;">Nora Dashboard</a> and navigate to the <b>Top.gg Votes</b> tab. Under <b>1. Connect on Top.gg</b>, copy the unified Webhook URL: <code>https://api.vaztinix.dev/api/webhooks/topgg</code>.</p>
                         </div>
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 2: Connect Webhooks on Top.gg Developer Portal</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Log in to <a href="https://top.gg" target="_blank" rel="noopener" style="color: #a5b4fc;">top.gg</a> &rarr; Open your Bot's Dashboard (e.g. <code>top.gg/discord/bots/YOUR_BOT_ID/dashboard/integrations</code>) &rarr; Go to <b>Integrations & API</b> &rarr; Scroll to <b>Webhooks</b>. Paste your <b>Webhook URL</b> and <b>Authorization Secret</b> into their respective fields, click <b>Save</b>, and then click <b>Send Test</b> to verify instant connectivity.</p>
+                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 2: Connect Webhook on Top.gg Developer Portal</strong>
+                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Log in to <a href="https://top.gg" target="_blank" rel="noopener" style="color: #a5b4fc;">top.gg</a> &rarr; Open your Bot Dashboard &rarr; <b>Webhooks</b> &rarr; Paste your <b>Webhook URL</b> into Top.gg. Copy the generated <code>whs_...</code> secret from Top.gg and paste it into Nora Dashboard's <b>Webhook Authorization Secret</b> field, then click <b>Save Data</b>.</p>
                         </div>
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 3: Configure Voter Rewards & Role Hierarchy</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">In Nora Dashboard under <b>2. Voter Rewards & Roles</b>, pick the <b>Discord Voter Role</b> to grant and set your base <b>Leveling XP</b> (default: <code>150 XP</code>). Ensure the <b>@Nora</b> role is placed above the Voter reward role in Discord Server Settings.</p>
+                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 3: Multi-Bot Tracking (Secondary Bots)</strong>
+                            <p style="margin: 6px 0 0; font-size: 0.88rem;">If your server hosts or uses multiple bots, scroll to <b>Multi-Bot Tracker</b> in the dashboard and click <b>+ Track Another Bot</b>. Enter the numeric Bot ID, display name, and avatar URL. Nora will listen for votes on all configured bots under a single webhook endpoint!</p>
                         </div>
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 4: Announcements & 12-Hour Reminders</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Select a dedicated <b>Vote Announcement Channel</b> for public celebration embeds and toggle <b>12-Hour Vote Reminders</b>. Nora will automatically notify voters via DM when their 12-hour vote cooldown expires so they can vote again and keep their streak alive.</p>
+                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 4: Configure Rewards, Announcements & Reminders</strong>
+                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Select your <b>Discord Voter Role</b>, base <b>Leveling XP</b> (e.g. <code>150 XP</code>), and <b>Vote Announcement Channel</b>. Enable <b>12-Hour Vote Reminders</b> so voters get private DM alerts the moment their vote cooldown expires to keep their streak alive.</p>
                         </div>
                     </div>
 
                     <div class="callout-box" style="background: rgba(254, 231, 92, 0.08); border-color: rgba(254, 231, 92, 0.3);">
                         <div class="callout-icon"><i class="fas fa-exclamation-triangle" style="color: #FEE75C;"></i></div>
                         <div class="callout-text">
-                            <h4 style="color: #FEE75C;">Important Discord Role Hierarchy Requirement</h4>
-                            <p>For Nora to assign voter roles successfully, ensure the <b>@Nora</b> role is positioned <b>HIGHER</b> than the Voter reward role in your Discord server under <b>Server Settings &rarr; Roles</b>. Discord blocks bots from assigning roles positioned above or equal to their highest role.</p>
+                            <h4 style="color: #FEE75C;">Role Hierarchy Notice</h4>
+                            <p>Ensure the <b>@Nora</b> role is placed <b>HIGHER</b> than the Voter reward role in Discord Server Settings &rarr; Roles so Nora can grant the role without permission conflicts.</p>
                         </div>
                     </div>
 
                     <h3>Reward Multipliers & Streak Mechanics</h3>
-                    <p>Nora calculates XP rewards dynamically based on voting frequency and weekend events:</p>
+                    <p>Nora dynamically computes voter rewards based on voting frequency and weekend events:</p>
                     <table class="cmd-table">
                         <thead>
                             <tr>
@@ -521,29 +523,29 @@
                         <tbody>
                             <tr>
                                 <td><strong>Base XP Reward</strong></td>
-                                <td><code>150 XP</code></td>
-                                <td>Standard baseline XP granted for every verified upvote.</td>
+                                <td><code>150 XP</code> (Configurable)</td>
+                                <td>Standard baseline XP awarded for every verified upvote.</td>
                             </tr>
                             <tr>
                                 <td><strong>⭐ Weekend Multiplier</strong></td>
                                 <td><code>2x Multiplier</code></td>
-                                <td>Automatically active Friday 00:00 UTC through Sunday 23:59 UTC to match Top.gg weekend double votes.</td>
+                                <td>Automatically active Friday 00:00 UTC through Sunday 23:59 UTC to match Top.gg double vote weekends.</td>
                             </tr>
                             <tr>
                                 <td><strong>🔥 Vote Streak Loyalty</strong></td>
-                                <td><code>+25 XP per vote</code></td>
+                                <td><code>+25 XP per streak count</code></td>
                                 <td>Increases by 1 for each consecutive vote cast within a rolling 36-hour window.</td>
                             </tr>
                             <tr>
                                 <td><strong>Formula</strong></td>
                                 <td><code>(Base + Streak Bonus) &times; Multiplier</code></td>
-                                <td>Example: Base 150 + (3 streak &times; 25) = 225 XP &times; 2x Weekend = <strong>450 Total XP</strong>!</td>
+                                <td>Example: 150 Base + (3 streak &times; 25) = 225 XP &times; 2x Weekend = <strong>450 Total XP</strong>!</td>
                             </tr>
                         </tbody>
                     </table>
 
                     <h3>Announcement Message Placeholders & Variables</h3>
-                    <p>Customize your vote celebration embeds with dynamic placeholders. Nora replaces these tags in real-time when votes arrive:</p>
+                    <p>Customize your announcement templates with dynamic placeholder tags:</p>
                     <table class="cmd-table">
                         <thead>
                             <tr>
@@ -554,14 +556,19 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>{user}</code></td>
+                                <td><code>{user}</code> / <code>{userMention}</code></td>
                                 <td>Mentions the Discord voter.</td>
-                                <td><code>@Lunar</code></td>
+                                <td><code>@Vaztinix</code></td>
                             </tr>
                             <tr>
                                 <td><code>{username}</code></td>
-                                <td>Voter's clean Discord username (without ping).</td>
-                                <td><code>Lunar</code></td>
+                                <td>Voter's clean username (without ping).</td>
+                                <td><code>Vaztinix</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{userTag}</code></td>
+                                <td>Voter tag with discriminator.</td>
+                                <td><code>Vaztinix#0000</code></td>
                             </tr>
                             <tr>
                                 <td><code>{server}</code> / <code>{serverName}</code></td>
@@ -576,126 +583,170 @@
                             <tr>
                                 <td><code>{bot}</code></td>
                                 <td>Name of the bot that received the upvote.</td>
-                                <td><code>Nora</code></td>
+                                <td><code>Nora Assistant</code></td>
                             </tr>
                             <tr>
                                 <td><code>{streak}</code></td>
                                 <td>Current consecutive vote streak count.</td>
-                                <td><code>3</code></td>
+                                <td><code>4</code></td>
                             </tr>
                             <tr>
                                 <td><code>{multiplier}</code></td>
-                                <td>Active weekend multiplier status.</td>
+                                <td>Active multiplier badge text.</td>
                                 <td><code>⭐ 2x Weekend</code> or <code>⚡ 1x Standard</code></td>
                             </tr>
                             <tr>
                                 <td><code>{xp}</code></td>
-                                <td>Amount of Leveling XP points awarded.</td>
+                                <td>Amount of Leveling XP awarded.</td>
                                 <td><code>300</code></td>
                             </tr>
                             <tr>
                                 <td><code>{rewards}</code></td>
-                                <td>Combined summary of roles and XP granted.</td>
+                                <td>Summary of granted roles and XP.</td>
                                 <td><code>Role Assigned • +300 XP</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{role}</code></td>
+                                <td>Mentions the configured Voter Role.</td>
+                                <td><code>@Voter</code></td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <h3>Top.gg Slash Commands</h3>
-                    <p>Members and administrators can manage and view vote progress directly from Discord:</p>
-                    <ul>
-                        <li><code>/vote</code> — Generates the direct Top.gg voting link, shows the user's active streak, and displays current weekend multiplier status.</li>
-                        <li><code>/setup topgg</code> — Quick interactive setup panel in Discord to configure voter roles, rewards, and logging channels.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2><i class="fas fa-cubes-stacked"></i> Automated Roblox Group Rank Sync</h2>
-                    <p>Seamlessly connect your Roblox group hierarchy to Discord server roles:</p>
-                    <ul>
-                        <li><strong>Group Binding:</strong> Use <code>/roblox profile</code> or configure your Group ID in the web dashboard under Onboarding & Safety.</li>
-                        <li><strong>Automated Role Mapping:</strong> Assign Discord roles directly matching Roblox group ranks (Guest, Member, Officer, Developer, Owner).</li>
-                        <li><strong>Zero-Friction Verification:</strong> Members verify using single-click bio description matching or cryptographic web handshake.</li>
-                    </ul>
-                    <div class="callout-box">
-                        <div class="callout-icon"><i class="fas fa-shield-check"></i></div>
-                        <div class="callout-text">
-                            <h4>Roblox Group Anti-Impersonation</h4>
-                            <p>Nora caches group rank tokens securely and checks against the public Roblox Cloud API. Suspicious rapid rank manipulation triggers automated audit warnings in your logging channel.</p>
+                    <h3>Announcement Presets</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 24px;">
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
+                            <strong style="color: #fff; font-size: 0.85rem;">Standard</strong>
+                            <p style="font-size: 0.78rem; margin: 4px 0 0; color: var(--muted);">Thank you {user} for upvoting {bot}! You gained {rewards}.</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
+                            <strong style="color: #fff; font-size: 0.85rem;">Streak Focus</strong>
+                            <p style="font-size: 0.78rem; margin: 4px 0 0; color: var(--muted);">🔥 {user} is on a {streak}x streak upvoting {bot}! Rewards: {rewards}.</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
+                            <strong style="color: #fff; font-size: 0.85rem;">Full Rewards</strong>
+                            <p style="font-size: 0.78rem; margin: 4px 0 0; color: var(--muted);">🎉 Upvote confirmed! {user} received {rewards} with {multiplier} in {server}.</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
+                            <strong style="color: #fff; font-size: 0.85rem;">Compact Ping</strong>
+                            <p style="font-size: 0.78rem; margin: 4px 0 0; color: var(--muted);">⚡ Upvote received from {user}! (+{xp} XP)</p>
                         </div>
                     </div>
                 </section>
 
-                <section>
-                    <h2><i class="fas fa-star"></i> Dynamic Starboard v3.0</h2>
-                    <p>Highlight your community's funniest and most memorable messages with dynamic tier styling:</p>
+                <!-- 3. Leveling & XP Progression -->
+                <section id="leveling">
+                    <h2><i class="fas fa-layer-group"></i> Leveling & XP Progression Engine</h2>
+                    <p>Drive daily chat engagement with custom leveling rank cards, voice channel XP accrual, and milestone role rewards:</p>
+                    <ul>
+                        <li><strong>Chat & Voice XP:</strong> Earn 15–25 XP per message (with anti-spam rate limiting) and background voice XP every 5 minutes in unmuted voice channels.</li>
+                        <li><strong>Role Rewards with Stacking:</strong> Automatically grant cosmetic or privilege roles at specific level milestones (e.g. Level 5, 10, 25, 50, 100), with optional role stacking.</li>
+                        <li><strong>Custom Rank Cards:</strong> Personalize rank cards with custom accent colors, background themes, and progress bars via <code>/rank</code>.</li>
+                        <li><strong>Leaderboards:</strong> View global and server level leaderboards using <code>/leaderboard</code>.</li>
+                    </ul>
+                </section>
+
+                <!-- 4. Roblox Verification & Group Rank Sync -->
+                <section id="roblox">
+                    <h2><i class="fas fa-cubes-stacked"></i> Automated Roblox Group Rank Sync v2.6</h2>
+                    <p>Seamlessly bind your Roblox group hierarchy to Discord server roles:</p>
+                    <ul>
+                        <li><strong>Group Binding:</strong> Bind numeric Roblox Group IDs to Discord roles in the dashboard or via <code>/setup verify</code>.</li>
+                        <li><strong>Automated Role Mapping:</strong> Map group ranks (Guest, Member, Officer, Developer, Owner) to distinct Discord roles.</li>
+                        <li><strong>Bio & Direct OAuth Verification:</strong> Members verify in seconds via secure code verification or web link.</li>
+                        <li><strong>Unverified Role Protection:</strong> Automatically assign an Unverified role to newcomers and remove it upon verification.</li>
+                    </ul>
+                </section>
+
+                <!-- 5. Support Ticketing System -->
+                <section id="tickets">
+                    <h2><i class="fas fa-ticket-alt"></i> Support Ticketing & Mod-Mail Engine</h2>
+                    <p>Professional ticket management for inquiries, reports, appeals, and staff support:</p>
+                    <ul>
+                        <li><strong>Interactive Panel:</strong> Deploy persistent ticket panels with customizable buttons (Support, Reporting, Appeals, Custom).</li>
+                        <li><strong>Modal Intake Forms:</strong> Collect user issue details upfront using custom pop-up modal questionnaires.</li>
+                        <li><strong>Ticket Claiming & Transcripts:</strong> Staff can claim tickets, add collaborators, and automatically archive formatted HTML transcripts to an audit log channel.</li>
+                    </ul>
+                </section>
+
+                <!-- 6. Reaction Roles & Autoresponders -->
+                <section id="automation">
+                    <h2><i class="fas fa-magic"></i> Reaction Roles & Custom Autoresponders</h2>
+                    <p>Empower members with self-assignable roles and automate repetitive answers:</p>
+                    <ul>
+                        <li><strong>Reaction Roles v2.0:</strong> Create embed-based role menus with button or dropdown selection, supporting single-select (exclusive) or multi-select modes.</li>
+                        <li><strong>Autoresponders v2.1:</strong> Configure keyword or regex triggers with rich embed replies, role/channel whitelists, and ignore-staff protections. Up to 200 custom triggers for Premium servers.</li>
+                    </ul>
+                </section>
+
+                <!-- 7. Safety & Native AutoMod Defense -->
+                <section id="safety">
+                    <h2><i class="fas fa-shield-virus"></i> Native Discord AutoMod & Chat Defense v2.5</h2>
+                    <p>Protect your server with sub-4ms native gateway filtering and automated action escalation:</p>
+                    <ul>
+                        <li><strong>Phishing & Malicious Link Blocker:</strong> Instantly detects and purges fake Nitro links and scam domains.</li>
+                        <li><strong>Anti-Spam & Mass Mention Shield:</strong> Stops duplicate message flooding, mention spam, discord invite leaks, and zalgo text.</li>
+                        <li><strong>Warning Escalation Rules:</strong> Set automated punishment thresholds (e.g. 3 warns &rarr; 1-hour mute, 5 warns &rarr; tempban).</li>
+                        <li><strong>Quarantine System:</strong> Isolate suspicious raiding accounts into a sandboxed channel with restricted permissions.</li>
+                    </ul>
+                </section>
+
+                <!-- 8. Interactive Games & Starboard -->
+                <section id="games">
+                    <h2><i class="fas fa-gamepad"></i> Entertainment, Counting & Starboard v3.0</h2>
+                    <p>Keep your community lively and reward creativity:</p>
+                    <ul>
+                        <li><strong>Collaborative Math Counting:</strong> Sequential counting supporting math expressions (<code>50+50</code>, <code>10^2</code>) with strict anti-double-count checks and streak records.</li>
+                        <li><strong>One-Word Story:</strong> Collaborative storytelling channel where members build stories one word at a time.</li>
+                        <li><strong>Rock Paper Scissors & Guess Game:</strong> Wager XP in interactive mini-games against Nora or friends.</li>
+                        <li><strong>Tiered Starboard v3.0:</strong> Pins top community messages with progressive visual flares (Bronze &rarr; Golden &rarr; Radiant &rarr; Supernova &rarr; Cosmic Mythic).</li>
+                    </ul>
+                </section>
+
+                <!-- 9. Premium Tier Features -->
+                <section id="premium">
+                    <h2><i class="fas fa-crown" style="color: #ffd700;"></i> Nora Premium & Lifetime Perks</h2>
+                    <p>Expand server capacities with Nora's official Discord Store subscription:</p>
                     <table class="cmd-table">
                         <thead>
                             <tr>
-                                <th>Stars Required</th>
-                                <th>Tier Title</th>
-                                <th>Embed Color</th>
-                                <th>Visual Flare</th>
+                                <th>Feature</th>
+                                <th>Standard Community</th>
+                                <th>Premium Subscription</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>3+ Stars</td>
-                                <td>⭐ Bronze Star</td>
-                                <td>Gold (#FFD700)</td>
-                                <td>Clean single-reaction pin</td>
+                                <td><strong>Custom Autoresponders</strong></td>
+                                <td>Up to 5 triggers</td>
+                                <td><strong>Up to 200 triggers</strong> with regex support</td>
                             </tr>
                             <tr>
-                                <td>6+ Stars</td>
-                                <td>🌟 Golden Flare</td>
-                                <td>Warm Orange (#FFA500)</td>
-                                <td>Highlighted community post</td>
+                                <td><strong>Reaction Role Menus</strong></td>
+                                <td>Up to 5 menus</td>
+                                <td><strong>Up to 25 menus</strong> with custom dropdowns</td>
                             </tr>
                             <tr>
-                                <td>10+ Stars</td>
-                                <td>✨ Radiant Sparkles</td>
-                                <td>Vibrant Flare (#FF7700)</td>
-                                <td>Server top-feed contender</td>
+                                <td><strong>Split Audit Logging</strong></td>
+                                <td>Single unified channel</td>
+                                <td><strong>6 Dedicated Channels</strong> (Mod, Member, Voice, Chat, Safety, Server)</td>
                             </tr>
                             <tr>
-                                <td>20+ Stars</td>
-                                <td>💫 Supernova Star</td>
-                                <td>Fiery Red (#FF2200)</td>
-                                <td>Hall of Fame milestone</td>
+                                <td><strong>Roblox Group Sync</strong></td>
+                                <td>Periodic polling</td>
+                                <td><strong>Instant Real-Time Bindings</strong></td>
                             </tr>
                             <tr>
-                                <td>50+ Stars</td>
-                                <td>🌠 Cosmic Mythic</td>
-                                <td>Amethyst Purple (#9B59B6)</td>
-                                <td>Legendary community highlight</td>
+                                <td><strong>XP Boost Multiplier</strong></td>
+                                <td>1.0x Base Rate</td>
+                                <td><strong>Activatable 2x Community Boost</strong></td>
                             </tr>
                         </tbody>
                     </table>
-                    <p>Configure star channel, reaction thresholds, and self-star restrictions with <code>/setup starboard</code> or in the dashboard.</p>
                 </section>
 
-                <section>
-                    <h2><i class="fas fa-calculator"></i> Collaborative Math Counting</h2>
-                    <p>Keep channels active with sequential math counting:</p>
-                    <ul>
-                        <li><strong>Mathematical Parser:</strong> Members can submit numbers directly (<code>100</code>) or valid math expressions (<code>50 + 50</code>, <code>10^2</code>, <code>25 * 4</code>).</li>
-                        <li><strong>Strict Anti-Double-Count:</strong> A user cannot count twice in a row. Teamwork is mandatory.</li>
-                        <li><strong>Streak Records:</strong> Track highest server count streaks with <code>/counting stats</code> and top contributors with <code>/counting leaderboard</code>.</li>
-                        <li><strong>Configurable Strict Mode:</strong> Choose whether incorrect numbers reset the counter back to 0 or simply get deleted with a warning.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2><i class="fas fa-shield-virus"></i> Native Discord AutoMod & Chat Defense</h2>
-                    <p>Protect server chat with sub-4ms native gateway filtering:</p>
-                    <ul>
-                        <li><strong>Phishing & Scam Link Blocker:</strong> Automatically detects and removes newly registered malicious domains and fake Nitro links.</li>
-                        <li><strong>Mass Mention & Raid Shield:</strong> Blocks messages containing >5 mentions and prevents mass spam joins.</li>
-                        <li><strong>Custom Mod Responses:</strong> Configure automatic timeout actions and tailored rule violation warnings via <code>/setup automod</code>.</li>
-                    </ul>
-                </section>
-
-                <section>
+                <!-- 10. Command Catalog -->
+                <section id="commands">
                     <h2><i class="fas fa-terminal"></i> Essential Command Catalog</h2>
                     <table class="cmd-table">
                         <thead>
@@ -709,52 +760,62 @@
                             <tr>
                                 <td><code>/setup topgg</code></td>
                                 <td>Integrations</td>
-                                <td>Configure Top.gg vote rewards, voter roles, XP boosts, and webhook pipeline.</td>
+                                <td>Interactive Discord wizard to configure Top.gg vote rewards, voter roles, and webhooks.</td>
                             </tr>
                             <tr>
                                 <td><code>/vote</code></td>
                                 <td>Community</td>
-                                <td>Display server Top.gg voting link, current streak, and weekend multiplier status.</td>
+                                <td>Display server Top.gg voting link, voter streak, and weekend multiplier status.</td>
                             </tr>
                             <tr>
                                 <td><code>/setup dashboard</code></td>
                                 <td>Setup</td>
-                                <td>Open interactive server management and settings interface.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/counting stats</code></td>
-                                <td>Games</td>
-                                <td>View current count, server record streak, and last counter.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/starboard stats</code></td>
-                                <td>Games</td>
-                                <td>Inspect starboard channel, threshold, and top starred posts.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/verify check</code></td>
-                                <td>Utility</td>
-                                <td>Check and synchronize member verification and Roblox ranks.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/afk [reason]</code></td>
-                                <td>Utility</td>
-                                <td>Set AFK status with mention alerts and auto-nickname prefix.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/ticket</code></td>
-                                <td>Support</td>
-                                <td>Open private staff inquiry ticket with automated HTML transcript.</td>
+                                <td>Open interactive server management and dashboard link.</td>
                             </tr>
                             <tr>
                                 <td><code>/rank [@user]</code></td>
                                 <td>Leveling</td>
-                                <td>View XP level, chat rank, and custom card progression.</td>
+                                <td>Inspect member Level, Total XP, progress bar, and leaderboard standing.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/leaderboard</code></td>
+                                <td>Leveling</td>
+                                <td>Display server top-ranked members in chat.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/verify check</code></td>
+                                <td>Utility</td>
+                                <td>Verify account binding and synchronize Roblox group roles.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/ticket</code></td>
+                                <td>Support</td>
+                                <td>Open private staff inquiry ticket with auto-transcript logging.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/counting stats</code></td>
+                                <td>Games</td>
+                                <td>View current count, record streak, and top contributors.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/starboard stats</code></td>
+                                <td>Games</td>
+                                <td>Inspect starboard threshold, star count, and top starred posts.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/afk [reason]</code></td>
+                                <td>Utility</td>
+                                <td>Set AFK status with mention notices and automated nickname prefix.</td>
                             </tr>
                             <tr>
                                 <td><code>/purge [count]</code></td>
                                 <td>Moderation</td>
-                                <td>Bulk clean recent channel messages with audit logging.</td>
+                                <td>Bulk clean recent messages with audit log tracking.</td>
+                            </tr>
+                            <tr>
+                                <td><code>/warn [@user] [reason]</code></td>
+                                <td>Moderation</td>
+                                <td>Issue official rule violation warning with escalation rules.</td>
                             </tr>
                         </tbody>
                     </table>
