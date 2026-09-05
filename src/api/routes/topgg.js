@@ -104,9 +104,9 @@ module.exports = (client) => {
                 }
             }
 
-            // 3. Handle Top.gg Test/Verification Ping on Webhook creation or "Send Test"
-            if (isTest || !voterId) {
-                console.log('[Top.gg Webhook Ping] Successfully received test/ping payload from Top.gg:', payload);
+            // 3. Handle reachability ping with no voter payload
+            if (!voterId) {
+                console.log('[Top.gg Webhook Reachability Ping] Successfully verified reachability:', payload);
                 return res.status(200).json({
                     success: true,
                     message: 'Top.gg webhook endpoint verified successfully',
@@ -115,7 +115,8 @@ module.exports = (client) => {
                 });
             }
 
-            targetBotId = targetBotId || client?.user?.id || '593420060990005248';
+            targetBotId = targetBotId || client?.user?.id || '1375943730951098549';
+            const isNoraBot = (!targetBotId || targetBotId === '1375943730951098549' || targetBotId === '593420060990005248' || targetBotId === client?.user?.id);
 
             // Find matching guild(s) configured for this bot or specific guild route
             let targetGuilds = [];
@@ -143,7 +144,7 @@ module.exports = (client) => {
                     if (authHeader && s.topggWebhookAuth && s.topggWebhookAuth === authHeader) return true;
 
                     // Match Nora primary bot if guild has any Top.gg config active
-                    if ((targetBotId === '593420060990005248' || targetBotId === client?.user?.id) && (s.topggVoteChannelId || s.topggRewardRoleId || s.topggVerified)) {
+                    if (isNoraBot && (s.topggVoteChannelId || s.topggRewardRoleId || s.topggVerified)) {
                         return true;
                     }
 
@@ -162,6 +163,11 @@ module.exports = (client) => {
                             }
                         }
                     }
+                }
+
+                // If still empty and there are guilds with vote channels, use them
+                if (targetGuilds.length === 0) {
+                    targetGuilds = allSettings.filter(s => s.topggVoteChannelId);
                 }
             }
 
@@ -240,12 +246,18 @@ module.exports = (client) => {
                         const voterTag = voterUser ? voterUser.tag : `@User (${voterId})`;
                         const voterAvatar = voterUser ? voterUser.displayAvatarURL({ dynamic: true }) : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
+                        let desc = isTest
+                            ? `Test ping from **Top.gg Developer Portal** received for <@${voterId}>!\nYour Discord vote channel is actively connected and listening.`
+                            : (setting.topggVoteMessage
+                                ? setting.topggVoteMessage.replace(/{user}/g, `<@${voterId}>`).replace(/{bot}/g, client.user?.username || 'Nora').replace(/{streak}/g, `${currentStreak}`).replace(/{rewards}/g, rewardStatus.join(' • ') || 'Vote Verified')
+                                : `Thank you <@${voterId}> for supporting our server on **Top.gg**!`);
+
                         const embed = new EmbedBuilder()
-                            .setTitle('🎉 New Top.gg Upvote Received!')
-                            .setURL(`https://top.gg/bot/${targetBotId || client.user?.id || '593420060990005248'}/vote`)
+                            .setTitle(isTest ? '🧪 Top.gg Webhook Test Payload Received!' : '🎉 New Top.gg Upvote Received!')
+                            .setURL(`https://top.gg/bot/${targetBotId || client.user?.id || '1375943730951098549'}/vote`)
                             .setColor('#FF3366') // Top.gg Signature Pink
                             .setThumbnail(voterAvatar)
-                            .setDescription(`Thank you <@${voterId}> for supporting our server on **Top.gg**!`)
+                            .setDescription(desc)
                             .addFields(
                                 { name: 'Voter', value: `\`${voterTag}\``, inline: true },
                                 { name: 'Streak', value: `🔥 **${currentStreak}** Consecutive`, inline: true },

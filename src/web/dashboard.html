@@ -8513,9 +8513,6 @@
                                 <button class="action-btn" onclick="simulateTopggTestVote()" style="background: rgba(255, 51, 102, 0.15); border: 1px solid rgba(255, 51, 102, 0.3); color: #FF3366; font-weight: 700; padding: 9px 16px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
                                     <i class="fas fa-bolt"></i> Simulate Test Vote
                                 </button>
-                                <button class="save-btn" onclick="saveTopggSettings()" style="background: #FF3366; color: #fff; font-weight: 800; padding: 9px 20px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4);">
-                                    <i class="fas fa-save"></i> Save Settings
-                                </button>
                             </div>
                         </div>
 
@@ -12402,6 +12399,27 @@
             const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say', 'reactionrole', 'autoresponder', 'youtube'];
             allCmds.forEach(c => { const cmdCheck = document.getElementById('cmd-'+c); if(cmdCheck && !cmdCheck.checked) d.push(c); });
             payload.disabledCommands = JSON.stringify(d);
+
+            // Top.gg Integration Settings
+            const topggWebhookAuthEl = document.getElementById('setting-topggWebhookAuth');
+            if (topggWebhookAuthEl) payload.topggWebhookAuth = topggWebhookAuthEl.value;
+            const topggApiTokenEl = document.getElementById('setting-topggApiToken');
+            if (topggApiTokenEl) payload.topggApiToken = topggApiTokenEl.value;
+            const topggVoteChannelIdEl = document.getElementById('setting-topggVoteChannelId');
+            if (topggVoteChannelIdEl) payload.topggVoteChannelId = topggVoteChannelIdEl.value || null;
+            const topggVoteMessageEl = document.getElementById('setting-topggVoteMessage');
+            if (topggVoteMessageEl) payload.topggVoteMessage = topggVoteMessageEl.value || '';
+            const topggRewardRoleIdEl = document.getElementById('setting-topggRewardRoleId');
+            if (topggRewardRoleIdEl) payload.topggRewardRoleId = topggRewardRoleIdEl.value || null;
+            const topggRewardXpEl = document.getElementById('setting-topggRewardXp');
+            if (topggRewardXpEl) payload.topggRewardXp = parseInt(topggRewardXpEl.value, 10) || 150;
+            const topggWeekendMultiplierEl = document.getElementById('setting-topggWeekendMultiplier');
+            if (topggWeekendMultiplierEl) payload.topggWeekendMultiplier = !!topggWeekendMultiplierEl.checked;
+            const topggStreakBonusEnabledEl = document.getElementById('setting-topggStreakBonusEnabled');
+            if (topggStreakBonusEnabledEl) payload.topggStreakBonusEnabled = !!topggStreakBonusEnabledEl.checked;
+            const topggRemindersEl = document.getElementById('setting-topggReminders');
+            if (topggRemindersEl) payload.topggReminders = !!topggRemindersEl.checked;
+            if (window.topggMultiBots) payload.topggMultiBots = JSON.stringify(window.topggMultiBots);
 
             const skipConfirm = localStorage.getItem('skip_save_confirm') === 'true';
             if (skipConfirm) {
@@ -22512,7 +22530,7 @@ async function saveTopggSettings() {
 }
 
 async function simulateTopggTestVote() {
-    const guildId = window.currentServerId || window.currentGuildId;
+    const guildId = (typeof currentServerId !== 'undefined' ? currentServerId : null) || window.currentServerId || window.currentGuildId || window.activeGuildId || (document.getElementById('server-select')?.value);
     if (!guildId) {
         if (typeof showToast === 'function') showToast('Please select a server first.', 'error');
         return;
