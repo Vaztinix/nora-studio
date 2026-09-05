@@ -4542,7 +4542,7 @@
                             <i class="fas fa-sparkles"></i> Personal Identity Hub
                         </div>
                         <h1 style="font-size: 2.3rem; font-weight: 800; color: #fff; margin-bottom: 8px; letter-spacing: -0.02em;">My Identity & Profile</h1>
-                        <p style="color: rgba(255,255,255,0.75); font-size: 0.95rem; font-weight: 400; line-height: 1.5; margin: 0;">Express yourself across the Nora network. Personalize your public bio, social links, and custom animated GIF rank card.</p>
+                        <p style="color: rgba(255,255,255,0.75); font-size: 0.95rem; font-weight: 400; line-height: 1.5; margin: 0;">Express yourself across Nora. Personalize your global bio, custom animated GIF rank card, and manage connected gaming identities.</p>
                     </div>
                     <i class="fas fa-fingerprint" style="font-size: 6.5rem; position: absolute; right: 40px; top: 50%; transform: translateY(-50%) rotate(12deg); opacity: 0.08; color: #fff;"></i>
                 </div>
@@ -4551,105 +4551,76 @@
                     <!-- Identity & Customization (Left Column) -->
                     <div style="display: flex; flex-direction: column; gap: 24px;">
                         
-                        <!-- Things That Make You YOU Panel -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px;">
+                        <!-- Global Bio / About Me Panel -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 26px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+                            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px;">
                                 <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                                    <i class="fas fa-user-astronaut"></i>
+                                    <i class="fas fa-feather-alt"></i>
                                 </div>
                                 <div>
-                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">About You & Social Presence</h3>
-                                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Information that showcases your personality across all servers.</p>
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Global About Me / Bio</h3>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Your public bio shown across Nora server profile cards.</p>
                                 </div>
                             </div>
 
-                            <div style="display: flex; flex-direction: column; gap: 18px;">
-                                <div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 700; color: #fff;">
-                                            <i class="fas fa-feather-alt" style="color: var(--primary);"></i> Global About Me / Bio
-                                        </label>
-                                        <span id="user-pref-bio-counter" style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">0/250</span>
-                                    </div>
-                                    <textarea id="user-pref-bio" placeholder="Write a short bio, your favorite games, or what makes you unique..." maxlength="250" oninput="checkTextareaLimit(this, 250); if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; min-height: 100px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 14px; border-radius: 12px; resize: vertical; outline: none; transition: 0.3s; font-size: 0.88rem; line-height: 1.5;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(0,0,0,0.35)';" onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(0,0,0,0.25)';"></textarea>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="font-size: 0.84rem; font-weight: 700; color: #fff;">Profile Bio</label>
+                                    <span id="user-pref-bio-counter" style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">0/250</span>
                                 </div>
-
-                                <!-- Social Links Grid -->
-                                <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 14px; padding: 16px;">
-                                    <h4 style="font-size: 0.85rem; font-weight: 700; color: #fff; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-share-alt" style="color: #a855f7;"></i> Showcase & Community Links
-                                    </h4>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.76rem; color: var(--muted);"><i class="fab fa-github"></i> GitHub</label>
-                                            <input type="text" id="user-pref-linkGithub" placeholder="https://github.com/..." oninput="if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem;">
-                                        </div>
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.76rem; color: var(--muted);"><i class="fab fa-twitter"></i> Twitter / X</label>
-                                            <input type="text" id="user-pref-linkTwitter" placeholder="https://x.com/..." oninput="if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem;">
-                                        </div>
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.76rem; color: var(--muted);"><i class="fab fa-youtube"></i> YouTube</label>
-                                            <input type="text" id="user-pref-linkYoutube" placeholder="https://youtube.com/@..." oninput="if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem;">
-                                        </div>
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.76rem; color: var(--muted);"><i class="fas fa-globe"></i> Website</label>
-                                            <input type="text" id="user-pref-linkWeb" placeholder="https://yourwebsite.com" oninput="if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem;">
-                                        </div>
-                                    </div>
-                                </div>
+                                <textarea id="user-pref-bio" placeholder="Write a short bio, your favorite games, or what makes you unique..." maxlength="250" oninput="checkTextareaLimit(this, 250); if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; min-height: 95px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 14px; border-radius: 12px; resize: vertical; outline: none; transition: 0.3s; font-size: 0.88rem; line-height: 1.5;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(0,0,0,0.35)';" onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(0,0,0,0.25)';"></textarea>
                             </div>
                         </div>
 
                         <!-- Leveling Rank Card & Animated GIF Studio Panel -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 26px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px; flex-wrap: wrap; gap: 12px;">
                                 <div style="display: flex; align-items: center; gap: 14px;">
                                     <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);">
                                         <i class="fas fa-palette"></i>
                                     </div>
                                     <div>
-                                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Rank Card & Animated GIF Studio</h3>
-                                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Design your custom rank card with animated GIFs and custom color accents.</p>
+                                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Rank Card & Animated Background</h3>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Design your custom rank card with Klipy GIFs, image backgrounds, and colors.</p>
                                     </div>
                                 </div>
                                 <span class="badge" style="background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); padding: 4px 10px; font-size: 0.75rem; border-radius: 99px; font-weight: 700;">Live Canvas</span>
                             </div>
 
                             <!-- Overwrite Server Presets Master Toggle -->
-                            <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(79, 70, 229, 0.08) 100%); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 14px; padding: 16px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+                            <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(79, 70, 229, 0.08) 100%); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
                                 <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-                                    <div style="font-size: 1.4rem; color: #c084fc;"><i class="fas fa-wand-magic-sparkles"></i></div>
+                                    <div style="font-size: 1.3rem; color: #c084fc;"><i class="fas fa-wand-magic-sparkles"></i></div>
                                     <div>
-                                        <h4 style="margin: 0; font-size: 0.95rem; color: #fff; font-weight: 700;">Overwrite Server Presets</h4>
-                                        <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: #cbd5e1; line-height: 1.4;">Force all Discord servers to display your personal custom colors and animated GIF background instead of server presets.</p>
+                                        <h4 style="margin: 0; font-size: 0.92rem; color: #fff; font-weight: 700;">Overwrite Server Presets</h4>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: #cbd5e1; line-height: 1.4;">Display your personal custom colors and animated background across all servers.</p>
                                     </div>
                                 </div>
                                 <label class="switch"><input type="checkbox" id="user-pref-overwriteServerPresets" onchange="if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview(); saveUserProfile();"><span class="slider"></span></label>
                             </div>
 
-                            <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <div style="display: flex; flex-direction: column; gap: 18px;">
                                 <!-- Theme Mode Selection -->
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">Card Customization Mode</label>
                                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-preset" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
-                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Default Server Preset
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-preset" style="cursor: pointer; padding: 9px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
+                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Server Preset
                                         </label>
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-custom" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
-                                            <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Custom Accent Color
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-custom" style="cursor: pointer; padding: 9px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
+                                            <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Custom Accent
                                         </label>
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-image" style="cursor: pointer; padding: 10px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-image" style="cursor: pointer; padding: 9px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
                                             <input type="radio" name="userRankCardThemeMode" value="image" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Animated GIF / Image
                                         </label>
                                     </div>
                                 </div>
 
                                 <!-- Hex Circle & Interactive Color Picker -->
-                                <div id="user-rankcard-color-picker-section" style="background: rgba(0,0,0,0.25); padding: 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px;">
+                                <div id="user-rankcard-color-picker-section" style="background: rgba(0,0,0,0.25); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 12px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                        <label style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                            <i class="fas fa-eye-dropper" style="color: #38bdf8;"></i> Custom Accent Color (Hex Circle & Swatches)
+                                        <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-eye-dropper" style="color: #38bdf8;"></i> Custom Accent Color
                                         </label>
                                         <div style="display: flex; align-items: center; gap: 8px;">
                                             <span id="hex-color-preview-badge" style="width: 22px; height: 22px; border-radius: 50%; background: #7c3aed; border: 2px solid #fff; display: inline-block;"></span>
@@ -4673,42 +4644,42 @@
                                 </div>
 
                                 <!-- Device GIF & Image Direct Upload Zone -->
-                                <div id="user-rankcard-image-upload-section" style="background: rgba(0,0,0,0.25); padding: 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px;">
+                                <div id="user-rankcard-image-upload-section" style="background: rgba(0,0,0,0.25); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 12px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                                        <label style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                            <i class="fas fa-file-image" style="color: #a855f7;"></i> Upload GIF or Image from Device
+                                        <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-file-image" style="color: #a855f7;"></i> Upload Media or Paste Link
                                         </label>
-                                        <span style="font-size: 0.72rem; color: var(--muted);">Supports animated .GIF, .PNG, .JPG, .WEBP (Up to 10MB)</span>
+                                        <span style="font-size: 0.72rem; color: var(--muted);">Supports Klipy, Tenor, Giphy, Discord CDN, Uploads (Up to 10MB)</span>
                                     </div>
 
                                     <!-- Drag and drop / Click upload container -->
-                                    <div id="rankcard-dropzone" onclick="document.getElementById('user-rank-card-file-input').click()" ondragover="event.preventDefault(); this.style.borderColor='#a855f7'; this.style.background='rgba(168,85,247,0.08)';" ondragleave="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.background='rgba(0,0,0,0.2)';" ondrop="handleRankCardFileDrop(event)" style="border: 2px dashed rgba(255,255,255,0.15); border-radius: 14px; padding: 24px 16px; text-align: center; cursor: pointer; background: rgba(0,0,0,0.2); transition: all 0.25s ease;">
+                                    <div id="rankcard-dropzone" onclick="document.getElementById('user-rank-card-file-input').click()" ondragover="event.preventDefault(); this.style.borderColor='#a855f7'; this.style.background='rgba(168,85,247,0.08)';" ondragleave="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.background='rgba(0,0,0,0.2)';" ondrop="handleRankCardFileDrop(event)" style="border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 18px 14px; text-align: center; cursor: pointer; background: rgba(0,0,0,0.2); transition: all 0.25s ease;">
                                         <input type="file" id="user-rank-card-file-input" accept=".gif,image/*" style="display: none;" onchange="handleRankCardFileUpload(event)">
-                                        <div style="font-size: 2rem; color: #c084fc; margin-bottom: 8px;"><i class="fas fa-cloud-arrow-up"></i></div>
-                                        <div style="font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 4px;">Click to Upload Animated GIF or Image</div>
-                                        <div style="font-size: 0.75rem; color: var(--muted);">or drag & drop your media file directly here</div>
+                                        <div style="font-size: 1.8rem; color: #c084fc; margin-bottom: 6px;"><i class="fas fa-cloud-arrow-up"></i></div>
+                                        <div style="font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 2px;">Click to Upload Animated GIF or Image</div>
+                                        <div style="font-size: 0.72rem; color: var(--muted);">or drag & drop your media file directly here</div>
                                     </div>
 
-                                    <!-- Direct URL Link Input Fallback -->
+                                    <!-- Direct URL Link Input Fallback (with Klipy support) -->
                                     <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-size: 0.78rem; color: var(--muted);">Or paste direct GIF / Image Link (Tenor, Giphy, Imgur, Discord CDN)</label>
+                                        <label style="font-size: 0.76rem; color: var(--muted);">Or paste direct GIF / Image Link (Klipy, Tenor, Giphy, Imgur, Discord CDN)</label>
                                         <div style="display: flex; gap: 8px;">
-                                            <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="https://media.tenor.com/... or https://i.imgur.com/...gif" oninput="updateLiveRankCardPreview()" style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem;">
+                                            <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="https://klipy.com/gifs/... or https://media.tenor.com/... or https://i.imgur.com/...gif" oninput="handleRankCardBgInput(this.value)" style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem;">
                                             <button type="button" class="btn-outline" style="padding: 0 14px; font-size: 0.8rem; color: #ff5555; border-color: rgba(255,85,85,0.3); white-space: nowrap;" onclick="clearUserRankCardBg()"><i class="fas fa-trash-alt"></i> Clear</button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <button class="save-btn" style="width: 100%; padding: 14px; font-size: 0.92rem; font-weight: 700; border-radius: 12px; background: #ffffff; color: #000000; box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="saveUserProfile()"><i class="fas fa-check-circle"></i> Save Profile & Rank Card Changes</button>
+                                <button class="save-btn" style="width: 100%; padding: 13px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; background: #ffffff; color: #000000; box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="saveUserProfile()"><i class="fas fa-check-circle"></i> Save Profile & Rank Card Changes</button>
                             </div>
                         </div>
 
                         <!-- Connected Roblox Accounts Panel -->
                         <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 26px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 16px; flex-wrap: wrap; gap: 14px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px; flex-wrap: wrap; gap: 14px;">
                                 <div style="display: flex; align-items: center; gap: 14px;">
-                                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); color: #ef4444; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg">
+                                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255, 255, 255, 0.08); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M5.166 0L0 18.834 18.834 24 24 5.166 5.166 0zm9.498 14.168l-4.708-1.292 1.292-4.708 4.708 1.292-1.292 4.708z"/>
                                         </svg>
                                     </div>
@@ -4754,174 +4725,112 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Team Card Customization (if user has Team Card clearance) -->
-                        <div id="team-card-customization-panel" style="display: none; background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                                        <i class="fas fa-id-badge"></i>
-                                    </div>
-                                    <div>
-                                        <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
-                                            Team Card Customization
-                                            <span style="font-size: 0.7rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 2px 8px; border-radius: 99px; border: 1px solid rgba(245, 158, 11, 0.3);">Verified Team Member</span>
-                                        </h3>
-                                        <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--muted);">Manage what your official Team Card displays across Nora directories and team showcases.</p>
-                                    </div>
-                                </div>
-                                <button type="button" onclick="saveTeamCardPrefs()" style="padding: 8px 16px; font-size: 0.82rem; background: #5865F2; color: #ffffff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;">
-                                    <i class="fas fa-save"></i> Save Team Card
-                                </button>
-                            </div>
-
-                            <div style="display: flex; flex-direction: column; gap: 14px;">
-                                <div class="input-group" style="margin-bottom: 0;">
-                                    <label style="font-weight: 600; font-size: 0.8rem;">Team Display Name</label>
-                                    <input type="text" id="user-pref-teamDisplayName" placeholder="e.g. Vazzy | Lead Founder" style="width: 100%; box-sizing: border-box;">
-                                </div>
-
-                                <div class="input-group" style="margin-bottom: 0;">
-                                    <label style="font-weight: 600; font-size: 0.8rem;">Custom Badges / Role Tag</label>
-                                    <input type="text" id="user-pref-teamBadges" placeholder="e.g. 👑 Founder • 💻 Core Developer" style="width: 100%; box-sizing: border-box;">
-                                </div>
-
-                                <div class="input-group" style="margin-bottom: 0;">
-                                    <label style="font-weight: 600; font-size: 0.8rem;">Team Card Bio & Description</label>
-                                    <textarea id="user-pref-teamDescription" placeholder="Full-stack bot developer & community architect..." rows="3" style="width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
-                                </div>
-
-                                <div style="background: rgba(0,0,0,0.15); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                                        <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 0;">Social & Integration Links</label>
-                                        <button type="button" class="config-btn" style="width: auto; padding: 4px 10px; font-size: 0.72rem; border-radius: 6px;" onclick="addCustomTeamLink()">
-                                            <i class="fas fa-plus" style="margin-right: 4px;"></i> Add More Links
-                                        </button>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.75rem;">Website URL</label>
-                                            <input type="text" id="user-pref-teamLinkWeb" placeholder="https://vaztinix.dev" style="width: 100%; box-sizing: border-box;">
-                                        </div>
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.75rem;">GitHub URL</label>
-                                            <input type="text" id="user-pref-teamLinkGithub" placeholder="https://github.com/vaztinix" style="width: 100%; box-sizing: border-box;">
-                                        </div>
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.75rem;">Roblox Profile URL</label>
-                                            <input type="text" id="user-pref-teamLinkRoblox" placeholder="https://roblox.com/users/..." style="width: 100%; box-sizing: border-box;">
-                                        </div>
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.75rem;">Discord Community Link</label>
-                                            <input type="text" id="user-pref-teamLinkDiscord" placeholder="https://discord.gg/..." style="width: 100%; box-sizing: border-box;">
-                                        </div>
-                                    </div>
-                                    <div id="custom-team-links-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Live Previews Column (Right Column) -->
+                    <!-- Account Profile Overview (Right Column) -->
                     <div style="display: flex; flex-direction: column; gap: 24px;">
-                        
-                        <!-- Live Real-Time Animated Rank Card Preview -->
-                        <div class="panel" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <i class="fas fa-id-card-clip" style="color: #c084fc; font-size: 1.1rem;"></i>
-                                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Live Rank Card Preview</h3>
-                                </div>
-                                <span id="rank-card-preview-tag" style="font-size: 0.7rem; color: #10b981; font-weight: 700; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 12px;">Active Canvas</span>
-                            </div>
-
-                            <div id="live-rank-card-preview-frame" style="position: relative; width: 100%; min-height: 160px; border-radius: 16px; overflow: hidden; background: #0b0c10; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; padding: 20px; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-                                <!-- Animated GIF / Custom Background Layer -->
-                                <div id="live-rank-card-bg-layer" style="position: absolute; inset: 0; background-size: cover; background-position: center; transition: all 0.3s ease; opacity: 0.85;"></div>
-                                <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,10,16,0.85) 0%, rgba(9,10,16,0.65) 60%, rgba(9,10,16,0.45) 100%); pointer-events: none;"></div>
-
-                                <!-- Card Overlay Content -->
-                                <div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 16px; width: 100%;">
-                                    <div style="position: relative; flex-shrink: 0;">
-                                        <img id="live-rank-card-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 68px; height: 68px; border-radius: 50%; border: 3px solid #7c3aed; object-fit: cover; box-shadow: 0 4px 15px rgba(0,0,0,0.6);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
-                                    </div>
-                                    
-                                    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
-                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                            <div style="display: flex; flex-direction: column; min-width: 0;">
-                                                <span id="live-rank-card-name" style="font-weight: 800; font-size: 1.05rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@User</span>
-                                                <span id="live-rank-card-level-badge" style="font-size: 0.72rem; font-weight: 800; color: #c084fc; letter-spacing: 0.5px;">LEVEL 12</span>
-                                            </div>
-                                            <div style="background: rgba(0,0,0,0.65); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); font-size: 0.72rem; font-weight: 800; color: #fff; white-space: nowrap;">
-                                                RANK <span id="live-rank-card-rank-val" style="color: #7c3aed;">#1</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- XP Progress Bar -->
-                                        <div style="display: flex; flex-direction: column; gap: 3px;">
-                                            <div style="width: 100%; height: 10px; background: rgba(0,0,0,0.6); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-                                                <div id="live-rank-card-progress-bar" style="width: 68%; height: 100%; background: linear-gradient(90deg, #7c3aed, #38bdf8); border-radius: 6px; transition: all 0.3s ease;"></div>
-                                            </div>
-                                            <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: rgba(255,255,255,0.75); font-weight: 600;">
-                                                <span>PROGRESS</span>
-                                                <span>1,420 / 2,000 XP (71%)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Live Profile Card Preview -->
                         <div class="panel" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06); padding: 0; overflow: hidden; border-radius: 20px; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="padding: 20px 22px 0 22px; display: flex; align-items: center; gap: 10px;">
-                                <i class="fas fa-id-badge" style="color: var(--primary); font-size: 1.1rem;"></i>
-                                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Live Profile Showcase</h3>
-                            </div>
-                            <div id="profile-card-preview" data-no-translate style="background: #111214; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); margin: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
-                                <div id="profile-banner" style="height: 100px; background: linear-gradient(135deg, #7c3aed 0%, #38bdf8 100%); position: relative;">
-                                    <div style="position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); opacity: 0.25;"></div>
+                            <div style="padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.01);">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-id-card" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Account Profile Overview</h3>
                                 </div>
-                                <div style="padding: 18px; position: relative; margin-top: -55px;">
-                                    <img id="profile-preview-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 84px; height: 84px; border-radius: 50%; border: 5px solid #111214; background: #111214; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                                    <div style="margin-top: 10px; background: #1b1c1e; padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
+                                <span class="badge" style="background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 4px 10px; font-size: 0.72rem; border-radius: 99px; font-weight: 700;">Live Sync</span>
+                            </div>
+
+                            <div id="profile-card-preview" data-no-translate style="background: #0d0e12; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); margin: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+                                <!-- Custom Discord Banner Layer -->
+                                <div id="profile-banner" style="height: 120px; background: linear-gradient(135deg, #7c3aed 0%, #38bdf8 100%); background-size: cover; background-position: center; position: relative;">
+                                    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(13,14,18,0.7) 100%); pointer-events: none;"></div>
+                                </div>
+
+                                <div style="padding: 16px 18px 20px 18px; position: relative; margin-top: -55px;">
+                                    <!-- Avatar & Profile Header -->
+                                    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
+                                        <img id="profile-preview-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #0d0e12; background: #0d0e12; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;">
+                                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;">
+                                            <span style="background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.3); color: #818cf8; font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;"><i class="fab fa-discord"></i> Discord</span>
+                                            <span style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#ffffff"><path d="M5.166 0L0 18.834 18.834 24 24 5.166 5.166 0zm9.498 14.168l-4.708-1.292 1.292-4.708 4.708 1.292-1.292 4.708z"/></svg> Roblox
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-bottom: 14px;">
                                         <h2 id="profile-preview-name" style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.01em;">Username</h2>
-                                        <div id="profile-preview-handle" style="color: rgba(255,255,255,0.45); font-size: 0.82rem; margin-bottom: 10px; font-weight: 500;">@handle</div>
-                                        <div id="profile-preview-bio" style="font-size: 0.85rem; margin-bottom: 15px; color: rgba(255,255,255,0.85); line-height: 1.45; background: rgba(0, 0, 0, 0.2); padding: 10px 12px; border-radius: 8px; border-left: 3px solid #7c3aed; min-height: 42px;">Tell the community about yourself...</div>
-                                        
-                                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                                            <div style="background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.15); padding: 9px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-                                                <i class="fab fa-discord" style="color: #5865F2; font-size: 1.15rem;"></i>
-                                                <div style="flex: 1;">
-                                                    <div style="font-size: 0.68rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Discord Identity</div>
-                                                    <div style="color: var(--success); font-weight: 600; font-size: 0.82rem; display: flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%;"></span> Connected</div>
+                                        <div id="profile-preview-handle" style="color: rgba(255,255,255,0.5); font-size: 0.82rem; font-weight: 500; margin-top: 2px;">@handle</div>
+                                    </div>
+
+                                    <!-- Bio Section -->
+                                    <div style="margin-bottom: 16px;">
+                                        <div style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-feather-alt" style="color: #38bdf8;"></i> About Me
+                                        </div>
+                                        <div id="profile-preview-bio" style="font-size: 0.84rem; color: rgba(255,255,255,0.88); line-height: 1.5; background: rgba(255, 255, 255, 0.03); padding: 11px 13px; border-radius: 10px; border-left: 3px solid #7c3aed; border-top: 1px solid rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); min-height: 44px;">Tell the community about yourself...</div>
+                                    </div>
+
+                                    <!-- Integrated Leveling Rank Card -->
+                                    <div style="margin-bottom: 16px;">
+                                        <div style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+                                            <span style="display: flex; align-items: center; gap: 6px;"><i class="fas fa-award" style="color: #c084fc;"></i> Leveling Rank Card</span>
+                                            <span id="rank-card-preview-tag" style="font-size: 0.65rem; color: #10b981; font-weight: 700; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 2px 7px; border-radius: 10px;">Active</span>
+                                        </div>
+                                        <div id="live-rank-card-preview-frame" style="position: relative; width: 100%; min-height: 135px; border-radius: 14px; overflow: hidden; background: #0b0c10; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; padding: 14px; box-sizing: border-box; box-shadow: 0 8px 20px rgba(0,0,0,0.4);">
+                                            <div id="live-rank-card-bg-layer" style="position: absolute; inset: 0; background-size: cover; background-position: center; transition: all 0.3s ease; opacity: 0.85;"></div>
+                                            <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,10,16,0.85) 0%, rgba(9,10,16,0.65) 60%, rgba(9,10,16,0.45) 100%); pointer-events: none;"></div>
+
+                                            <div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 12px; width: 100%;">
+                                                <div style="position: relative; flex-shrink: 0;">
+                                                    <img id="live-rank-card-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 54px; height: 54px; border-radius: 50%; border: 3px solid #7c3aed; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
+                                                </div>
+                                                
+                                                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                                        <div style="display: flex; flex-direction: column; min-width: 0;">
+                                                            <span id="live-rank-card-name" style="font-weight: 800; font-size: 0.92rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@User</span>
+                                                            <span id="live-rank-card-level-badge" style="font-size: 0.68rem; font-weight: 800; color: #c084fc; letter-spacing: 0.5px;">LEVEL 12</span>
+                                                        </div>
+                                                        <div style="background: rgba(0,0,0,0.65); padding: 3px 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); font-size: 0.68rem; font-weight: 800; color: #fff; white-space: nowrap;">
+                                                            RANK <span id="live-rank-card-rank-val" style="color: #7c3aed;">#1</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                                                        <div style="width: 100%; height: 7px; background: rgba(0,0,0,0.6); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                                                            <div id="live-rank-card-progress-bar" style="width: 68%; height: 100%; background: linear-gradient(90deg, #7c3aed, #38bdf8); border-radius: 6px; transition: all 0.3s ease;"></div>
+                                                        </div>
+                                                        <div style="display: flex; justify-content: space-between; font-size: 0.64rem; color: rgba(255,255,255,0.75); font-weight: 600;">
+                                                            <span>PROGRESS</span>
+                                                            <span>1,420 / 2,000 XP (71%)</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div id="profile-roblox-container" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                                        </div>
+                                    </div>
+
+                                    <!-- Connected Accounts / Identities -->
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <div style="background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.18); padding: 9px 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                                            <i class="fab fa-discord" style="color: #5865F2; font-size: 1.15rem;"></i>
+                                            <div style="flex: 1;">
+                                                <div style="font-size: 0.65rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Discord Identity</div>
+                                                <div style="color: var(--success); font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%;"></span> Connected</div>
+                                            </div>
+                                        </div>
+                                        <div id="profile-roblox-container" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 9px 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                                            <div style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
                                                     <path d="M5.166 0L0 18.834 18.834 24 24 5.166 5.166 0zm9.498 14.168l-4.708-1.292 1.292-4.708 4.708 1.292-1.292 4.708z"/>
                                                 </svg>
-                                                <div id="profile-roblox-val" style="flex: 1;">
-                                                    <div style="font-size: 0.68rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roblox Connection</div>
-                                                    <div style="color: rgba(255,255,255,0.5); font-weight: 500; font-size: 0.82rem;">Checking status...</div>
-                                                </div>
+                                            </div>
+                                            <div id="profile-roblox-val" style="flex: 1;">
+                                                <div style="font-size: 0.65rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roblox Connection</div>
+                                                <div style="color: rgba(255,255,255,0.5); font-weight: 500; font-size: 0.8rem;">Checking status...</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Nora Premium Center Card -->
-                        <div id="profile-premium-center" class="panel" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <h3 style="font-size: 1.1rem; font-weight: 700; color: #ffd700; display: flex; align-items: center; gap: 8px; margin: 0 0 8px 0;"><i class="fas fa-crown"></i> Nora Premium Center</h3>
-                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; line-height: 1.4;">Unlock priority AI limits, instant automation speeds, and exclusive animated profile styles.</p>
-                            
-                            <div id="premium-center-status" data-no-translate style="padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.85rem; line-height: 1.4; color: #fff; font-weight: 600; margin-bottom: 14px;">Loading subscription details...</div>
-                            
-                            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                                <button class="save-btn" style="width: auto; padding: 9px 16px; font-size: 0.82rem; background: linear-gradient(135deg, #ffd700 0%, #ffa502 100%); color: #000; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">Discord Shop</button>
-                                <button class="config-btn" style="width: auto; padding: 9px 16px; font-size: 0.82rem; border-radius: 8px;" onclick="navigator.clipboard.writeText('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534'); showToast('Store link copied to clipboard!', 'success');">Copy Link</button>
                             </div>
                         </div>
                     </div>
@@ -5180,6 +5089,19 @@
                                 <option value="300">5 Minutes</option>
                                 <option value="600">10 Minutes</option>
                             </select>
+                        </div>
+
+                        <!-- Nora Premium Center Card in Settings -->
+                        <div id="profile-premium-center" class="panel" style="margin-bottom: 25px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; background: rgba(255, 215, 0, 0.02); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 16px; padding: 22px;">
+                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffd700; display: flex; align-items: center; gap: 8px; margin: 0 0 8px 0;"><i class="fas fa-crown"></i> Nora Premium Center</h3>
+                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">Unlock priority automation, instant live sync limits, custom animated profile styles, and VIP features across all Nora nodes.</p>
+                            
+                            <div id="premium-center-status" data-no-translate style="padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.85rem; line-height: 1.4; color: #fff; font-weight: 600; margin-bottom: 14px;">Loading subscription details...</div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                                <button class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; background: linear-gradient(135deg, #ffd700 0%, #ffa502 100%); color: #000; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">Open Discord Shop</button>
+                                <button class="config-btn" style="width: auto; padding: 9px 16px; font-size: 0.82rem; border-radius: 8px;" onclick="navigator.clipboard.writeText('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534'); showToast('Store link copied to clipboard!', 'success');">Copy Store Link</button>
+                            </div>
                         </div>
 
                         <div style="margin-bottom: 25px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
@@ -10816,9 +10738,15 @@
                     if (d.banner) {
                         if (d.banner.startsWith('#')) {
                             prevBanner.style.background = d.banner;
-                        } else {
+                        } else if (d.banner.startsWith('http')) {
                             prevBanner.style.background = `url('${d.banner}') center/cover`;
+                        } else {
+                            const ext = d.banner.startsWith('a_') ? 'gif' : 'png';
+                            prevBanner.style.background = `url('https://cdn.discordapp.com/banners/${d.id}/${d.banner}.${ext}?size=1024') center/cover`;
                         }
+                    } else if (d.accent_color) {
+                        const hex = typeof d.accent_color === 'number' ? '#' + d.accent_color.toString(16).padStart(6, '0') : d.accent_color;
+                        prevBanner.style.background = hex;
                     } else {
                         prevBanner.style.background = 'linear-gradient(135deg, var(--primary) 0%, #4b69ff 100%)';
                     }
@@ -11497,6 +11425,41 @@
             reader.readAsDataURL(file);
         };
 
+        let klipyDebounceTimer = null;
+        window.handleRankCardBgInput = function(val) {
+            if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+            if (!val || typeof val !== 'string') return;
+            
+            // Auto-resolve Klipy URLs
+            if (val.includes('klipy.com')) {
+                const slugMatch = val.match(/klipy\.com\/(?:gifs|watch|clips|stickers|media)\/([a-zA-Z0-9_-]+)/i);
+                if (slugMatch && slugMatch[1]) {
+                    const slug = slugMatch[1];
+                    clearTimeout(klipyDebounceTimer);
+                    klipyDebounceTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`https://api.klipy.com/api/v1/gifs/${slug}`);
+                            if (res.ok) {
+                                const kData = await res.json();
+                                const directUrl = kData?.data?.file?.hd?.gif?.url || kData?.data?.file?.md?.gif?.url || kData?.data?.file?.hd?.webp?.url || kData?.data?.file?.sm?.gif?.url;
+                                if (directUrl) {
+                                    const bgInput = document.getElementById('user-pref-rankCardBackgroundImage');
+                                    if (bgInput) bgInput.value = directUrl;
+                                    const imageRadio = document.querySelector('input[name="userRankCardThemeMode"][value="image"]');
+                                    if (imageRadio) {
+                                        imageRadio.checked = true;
+                                        if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
+                                    }
+                                    if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+                                    showToast('Resolved Klipy GIF link!', 'success');
+                                }
+                            }
+                        } catch(e) {}
+                    }, 400);
+                }
+            }
+        };
+
         window.clearUserRankCardBg = function() {
             const bgInput = document.getElementById('user-pref-rankCardBackgroundImage');
             if (bgInput) bgInput.value = '';
@@ -11509,18 +11472,39 @@
         window.syncLiveProfileCardPreview = function() {
             const bioVal = document.getElementById('user-pref-bio')?.value || '';
             const counterEl = document.getElementById('user-pref-bio-counter');
-            if (counterEl) counterEl.textContent = bioVal.length + '/300';
+            if (counterEl) counterEl.textContent = bioVal.length + '/250';
 
             const nameEl = document.getElementById('profile-preview-name');
             const handleEl = document.getElementById('profile-preview-handle');
             const avatarEl = document.getElementById('profile-preview-avatar');
             const bioEl = document.getElementById('profile-preview-bio');
+            const bannerEl = document.getElementById('profile-banner');
 
             if (window.currentUser) {
                 if (nameEl) nameEl.textContent = window.currentUser.global_name || window.currentUser.username || 'User';
                 if (handleEl) handleEl.textContent = '@' + (window.currentUser.username || 'handle');
                 if (avatarEl && window.currentUser.avatar) {
                     avatarEl.src = (typeof formatDiscordAvatar === 'function' ? formatDiscordAvatar(window.currentUser) : null) || (window.currentUser.avatar.startsWith('http') ? window.currentUser.avatar : 'https://cdn.discordapp.com/avatars/' + window.currentUser.id + '/' + window.currentUser.avatar + '.' + (window.currentUser.avatar.startsWith('a_') ? 'gif' : 'png') + '?size=256');
+                }
+
+                // Custom Discord Banner handling
+                if (bannerEl) {
+                    if (window.currentUser.banner) {
+                        const isGif = window.currentUser.banner.startsWith('a_');
+                        const ext = isGif ? 'gif' : 'png';
+                        const bannerUrl = `https://cdn.discordapp.com/banners/${window.currentUser.id}/${window.currentUser.banner}.${ext}?size=1024`;
+                        bannerEl.style.backgroundImage = `url("${bannerUrl}")`;
+                        bannerEl.style.backgroundColor = 'transparent';
+                    } else if (window.currentUser.accent_color || window.currentUser.banner_color) {
+                        const hex = typeof window.currentUser.accent_color === 'number' 
+                            ? '#' + window.currentUser.accent_color.toString(16).padStart(6, '0') 
+                            : (window.currentUser.banner_color || '#7c3aed');
+                        bannerEl.style.backgroundImage = 'none';
+                        bannerEl.style.backgroundColor = hex;
+                    } else {
+                        const customColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#7c3aed';
+                        bannerEl.style.backgroundImage = `linear-gradient(135deg, ${customColor} 0%, #38bdf8 100%)`;
+                    }
                 }
             }
             if (bioEl) {
@@ -11543,12 +11527,12 @@
 
             if (previewTag) {
                 if (overwritePresets) {
-                    previewTag.textContent = 'Personal Overwrite Active';
+                    previewTag.textContent = 'Personal Overwrite';
                     previewTag.style.color = '#c084fc';
                     previewTag.style.borderColor = 'rgba(192, 132, 252, 0.4)';
                     previewTag.style.background = 'rgba(192, 132, 252, 0.15)';
                 } else {
-                    previewTag.textContent = 'Server Preset Fallback';
+                    previewTag.textContent = 'Server Preset';
                     previewTag.style.color = '#38bdf8';
                     previewTag.style.borderColor = 'rgba(56, 189, 248, 0.3)';
                     previewTag.style.background = 'rgba(56, 189, 248, 0.1)';

@@ -30,9 +30,31 @@ async function fetchImageBuffer(url, timeoutMs = 1500) {
     }
 }
 
-async function resolveDirectMediaUrl(url, timeoutMs = 1500) {
+async function resolveDirectMediaUrl(url, timeoutMs = 2500) {
     if (!url || typeof url !== 'string') return url;
     if (url.startsWith('data:image')) return url;
+
+    // Klipy URL direct API resolver
+    if (url.includes('klipy.com')) {
+        const slugMatch = url.match(/klipy\.com\/(?:gifs|watch|clips|stickers|media)\/([a-zA-Z0-9_-]+)/i);
+        if (slugMatch && slugMatch[1]) {
+            const slug = slugMatch[1];
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                const klipyRes = await fetch(`https://api.klipy.com/api/v1/gifs/${slug}`, {
+                    signal: controller.signal,
+                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+                });
+                clearTimeout(timeoutId);
+                if (klipyRes.ok) {
+                    const kData = await klipyRes.json();
+                    const directUrl = kData?.data?.file?.hd?.gif?.url || kData?.data?.file?.md?.gif?.url || kData?.data?.file?.hd?.webp?.url || kData?.data?.file?.md?.webp?.url || kData?.data?.file?.sm?.gif?.url;
+                    if (directUrl) return directUrl;
+                }
+            } catch (e) {}
+        }
+    }
 
     const lower = url.toLowerCase();
     if (lower.match(/\.(gif|jpg|jpeg|png|webp)($|\?)/i)) {
