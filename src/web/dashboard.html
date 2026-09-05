@@ -8019,7 +8019,7 @@
                                     <div style="margin-bottom: 16px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                             <span style="font-size: 0.78rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                                                <i class="fas fa-list-ul" style="color: #38bdf8;"></i> Embed Fields (Up to 25)
+                                                <i class="fas fa-list-ul" style="color: #38bdf8;"></i> <span id="broadcast-embed-fields-label-text">Embed Fields (0/5)</span>
                                             </span>
                                             <button type="button" class="btn-outline" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 6px;" onclick="addBroadcastEmbedField()">+ Add Field</button>
                                         </div>
@@ -14415,7 +14415,6 @@
 
         // Rebuild standard color inputs to modern custom swatch select menus
         makeModernColorPicker('theme-color-picker', ['#ffffff', '#aeefff', '#4b69ff', '#2ecc71', '#ff8e3c', '#ff6b8b', '#ffd700', '#9b5de5', '#00f5d4']);
-        makeModernColorPicker('broadcast-embed-color', ['#ffffff', '#aeefff', '#4b69ff', '#2ecc71', '#ff8e3c', '#ff6b8b', '#ffd700', '#9b5de5', '#00f5d4']);
 
         // Form change tracking to enable Save Data button
         document.addEventListener('input', (e) => {
@@ -15987,9 +15986,25 @@
         }
         window.setBroadcastColor = setBroadcastColor;
 
+        function getMaxBroadcastEmbedFields() {
+            const isPrem = (typeof window.currentServerIsPremium !== 'undefined' && window.currentServerIsPremium) ||
+                           (typeof currentServerIsPremium !== 'undefined' && currentServerIsPremium) ||
+                           (typeof isUserPremium === 'function' && isUserPremium()) ||
+                           (typeof window.userIsPremium !== 'undefined' && window.userIsPremium) ||
+                           (window.currentUser && (window.currentUser.isPremium || window.currentUser.noraPremium || window.currentUser.isOwner || window.currentUser.premium));
+            return isPrem ? 10 : 5;
+        }
+        window.getMaxBroadcastEmbedFields = getMaxBroadcastEmbedFields;
+
         function addBroadcastEmbedField() {
-            if (window.broadcastEmbedFields.length >= 25) {
-                return showToast('Maximum 25 fields allowed per embed.', 'warning');
+            const maxFields = getMaxBroadcastEmbedFields();
+            const isPrem = maxFields > 5;
+            if (window.broadcastEmbedFields.length >= maxFields) {
+                if (!isPrem) {
+                    return showToast('Free tier is limited to 5 embed fields. Upgrade to Nora Plus for up to 10 fields!', 'warning');
+                } else {
+                    return showToast('Maximum 10 embed fields reached.', 'warning');
+                }
             }
             window.broadcastEmbedFields.push({ name: '', value: '', inline: false });
             renderBroadcastEmbedFields();
@@ -16014,9 +16029,17 @@
 
         function renderBroadcastEmbedFields() {
             const container = document.getElementById('broadcast-embed-fields-container');
+            const countLabel = document.getElementById('broadcast-embed-fields-label-text');
+            const maxFields = getMaxBroadcastEmbedFields();
+            const isPrem = maxFields > 5;
+
+            if (countLabel) {
+                countLabel.textContent = `Embed Fields (${window.broadcastEmbedFields.length}/${maxFields}${isPrem ? ' 👑' : ''})`;
+            }
+
             if (!container) return;
             if (window.broadcastEmbedFields.length === 0) {
-                container.innerHTML = '<div style="font-size: 0.78rem; color: var(--muted); text-align: center; padding: 10px;">No custom embed fields added yet. Click "+ Add Field" to create one.</div>';
+                container.innerHTML = `<div style="font-size: 0.78rem; color: var(--muted); text-align: center; padding: 10px;">No custom embed fields added yet. Click "+ Add Field" to create one (up to ${maxFields}${isPrem ? ' with Nora Plus' : ''}).</div>`;
                 return;
             }
             container.innerHTML = window.broadcastEmbedFields.map((f, idx) => `
@@ -21539,6 +21562,9 @@
                     modalUpgradeBtn.href = "https://discord.com/discovery/applications/1375943730951098549/store/1490857354609168534";
                     modalUpgradeBtn.innerHTML = '<i class="fas fa-crown"></i> Upgrade to Studio Plus';
                 }
+            }
+            if (typeof renderBroadcastEmbedFields === 'function') {
+                renderBroadcastEmbedFields();
             }
         };
 

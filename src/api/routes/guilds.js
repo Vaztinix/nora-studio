@@ -1078,9 +1078,13 @@ router.post('/webhook-send', async (req, res) => {
             }
             
             if (embedFields && Array.isArray(embedFields)) {
-                const validFields = embedFields.filter(f => f.name && f.name.trim() !== '' && f.value && f.value.trim() !== '');
+                const GuildSettings = require('../../database/models/GuildSettings');
+                const settings = await GuildSettings.findOne({ where: { guildId } }).catch(() => null);
+                const isPremium = settings?.isPremium || false;
+                const maxFields = isPremium ? 10 : 5;
+                const validFields = embedFields.filter(f => f.name && f.name.trim() !== '' && f.value && f.value.trim() !== '').slice(0, maxFields);
                 validFields.forEach(f => {
-                    embed.addFields({ name: f.name, value: f.value, inline: !!f.inline });
+                    embed.addFields({ name: String(f.name).slice(0, 256), value: String(f.value).slice(0, 1024), inline: !!f.inline });
                 });
             }
             
