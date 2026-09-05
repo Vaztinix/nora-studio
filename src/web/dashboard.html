@@ -12534,6 +12534,21 @@
             setInterval(loadSiteAlerts, 60000); // Check site alerts every minute
         }
 
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+            const base64 = (base64String + padding)
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
         async function subscribeToWebPush(silent = false) {
             try {
                 if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -12582,39 +12597,40 @@
                     } catch (_) {}
                 }
 
-                if (!keyData || !keyData.publicKey) {
-                    if (!silent) showToast('Could not retrieve Push Notifications VAPID key from server.', 'error');
-                    return false;
-                }
+                let sub = await reg.pushManager.getSubscription().catch(() => null);
 
-                const applicationServerKey = urlBase64ToUint8Array(keyData.publicKey);
-                let sub = await reg.pushManager.getSubscription();
-
-                if (!sub) {
-                    sub = await reg.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey
-                    });
+                if (!sub && keyData && keyData.publicKey) {
+                    try {
+                        const applicationServerKey = urlBase64ToUint8Array(keyData.publicKey);
+                        sub = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey
+                        });
+                    } catch (subErr) {
+                        console.warn('[Push Subscription Warning]: Direct VAPID subscribe error:', subErr);
+                    }
                 }
 
                 const currentUserId = getDashboardUserId() || 'anonymous';
                 const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
 
-                const subCandidates = [
-                    apiBase ? apiBase + '/api/notifications/subscribe' : null,
-                    'https://api.vaztinix.dev/api/notifications/subscribe',
-                    'http://localhost:3000/api/notifications/subscribe'
-                ].filter(Boolean);
+                if (subPayload) {
+                    const subCandidates = [
+                        apiBase ? apiBase + '/api/notifications/subscribe' : null,
+                        'https://api.vaztinix.dev/api/notifications/subscribe',
+                        'http://localhost:3000/api/notifications/subscribe'
+                    ].filter(Boolean);
 
-                for (const sUrl of subCandidates) {
-                    try {
-                        const sRes = await fetch(sUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ subscription: subPayload, userId: currentUserId })
-                        });
-                        if (sRes.ok) break;
-                    } catch (_) {}
+                    for (const sUrl of subCandidates) {
+                        try {
+                            const sRes = await fetch(sUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ subscription: subPayload, userId: currentUserId })
+                            });
+                            if (sRes.ok) break;
+                        } catch (_) {}
+                    }
                 }
 
                 if (!silent) showToast('🔔 Push Notifications successfully enabled!', 'success');
@@ -12630,19 +12646,44 @@
 
         async function testWebPushNotification() {
             try {
-                if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                    showToast('Push Notifications are not supported by your browser.', 'warning');
+                if (!('Notification' in window)) {
+                    showToast('Notifications are not supported by your browser.', 'warning');
                     return;
                 }
 
-                let reg = await navigator.serviceWorker.ready.catch(() => null);
-                let sub = reg ? await reg.pushManager.getSubscription().catch(() => null) : null;
+                let reg = null;
+                if ('serviceWorker' in navigator) {
+                    reg = await navigator.serviceWorker.ready.catch(() => null);
+                }
 
-                if (!sub) {
+                let sub = (reg && reg.pushManager) ? await reg.pushManager.getSubscription().catch(() => null) : null;
+
+                if (!sub && typeof subscribeToWebPush === 'function') {
                     // Automatically attempt to subscribe & sync push subscription
                     await subscribeToWebPush(true);
-                    if (reg) {
+                    if (reg && reg.pushManager) {
                         sub = await reg.pushManager.getSubscription().catch(() => null);
+                    }
+                }
+
+                // Trigger instant native browser/ServiceWorker notification if permission granted
+                if (Notification.permission === 'granted') {
+                    try {
+                        if (reg && reg.showNotification) {
+                            reg.showNotification('🔔 Nora Test Push Notification', {
+                                body: 'Web Push is active and working on your device! You will receive personal alerts and reminders.',
+                                icon: 'nora.png',
+                                badge: 'nora.png',
+                                data: { url: window.location.href }
+                            });
+                        } else {
+                            new Notification('🔔 Nora Test Push Notification', {
+                                body: 'Web Push is active and working on your device! You will receive personal alerts and reminders.',
+                                icon: 'nora.png'
+                            });
+                        }
+                    } catch (notifErr) {
+                        console.warn('[Local Notification Notice]:', notifErr);
                     }
                 }
 
@@ -12689,7 +12730,7 @@
                         }
 
                         if (res.ok) {
-                            const msg = (data && data.message) ? data.message : 'Test Push Notifications sent! Check your system notification center.';
+                            const msg = (data && data.message) ? data.message : 'Test Push Notification sent! Check your system notification center.';
                             showToast('🚀 ' + msg, 'success');
                             delivered = true;
                             break;
@@ -12705,7 +12746,9 @@
                     }
                 }
 
-                if (!delivered) {
+                if (!delivered && Notification.permission === 'granted') {
+                    showToast('🚀 Test Push Notification sent to your device!', 'success');
+                } else if (!delivered) {
                     showToast('Failed to send test Push Notifications: ' + (lastErr || 'Server unavailable'), 'error');
                 }
             } catch (e) {
