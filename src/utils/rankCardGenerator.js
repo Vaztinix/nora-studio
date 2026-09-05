@@ -147,10 +147,10 @@ async function generateRankCard({
                 new Promise((r) => setTimeout(() => r(finalBgImage), 1500))
             ]);
 
-            let rawBuffer = await fetchImageBuffer(resolvedUrl, 1500);
+            let rawBuffer = await fetchImageBuffer(resolvedUrl, 2500);
             if (rawBuffer) {
                 const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
-                if (isPremium && (isGifHeader || (typeof resolvedUrl === 'string' && (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy'))))) {
+                if (isGifHeader || (typeof resolvedUrl === 'string' && (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')))) {
                     isAnimatedGif = true;
                 }
 

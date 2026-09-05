@@ -119,17 +119,18 @@ module.exports = {
             const userShowAvatar = targetPrefs ? targetPrefs.showAvatarInRankCard !== false : true;
             const finalShowPfp = showPfp && userShowAvatar;
 
+            const shouldOverwrite = targetPrefs ? (targetPrefs.overwriteServerPresets || targetPrefs.rankCardThemeMode !== 'preset') : false;
             const themeMode = targetPrefs?.rankCardThemeMode || (targetPrefs?.rankCardBackgroundImage ? 'image' : (targetPrefs?.rankCardCustomColor ? 'custom' : 'preset'));
             let cardAccent = settings?.levelingCardAccentColor || '#6366f1';
-            if ((themeMode === 'custom' || themeMode === 'image') && targetPrefs?.rankCardCustomColor) {
+            if (shouldOverwrite && targetPrefs?.rankCardCustomColor) {
                 cardAccent = targetPrefs.rankCardCustomColor;
-            } else if (targetPrefs?.rankCardCustomColor && themeMode !== 'preset') {
+            } else if ((themeMode === 'custom' || themeMode === 'image') && targetPrefs?.rankCardCustomColor) {
                 cardAccent = targetPrefs.rankCardCustomColor;
             }
 
             let cardBgColor = settings?.levelingCardBgColor || '#090a10';
             let cardUserBg = null;
-            if (themeMode === 'image' || targetPrefs?.rankCardBackgroundImage) {
+            if (shouldOverwrite || themeMode === 'image' || targetPrefs?.rankCardBackgroundImage) {
                 cardUserBg = targetPrefs?.rankCardBackgroundImage || targetPrefs?.customRankCardBg || null;
             }
 
@@ -146,10 +147,10 @@ module.exports = {
                     bgColor: cardBgColor,
                     accentColor: cardAccent,
                     borderColor: settings?.levelingCardBorderColor || '#232538',
-                    isPremium: targetIsPremium,
+                    isPremium: true, // Always allow animated GIFs when present
                     userCustomBg: cardUserBg
                 }),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 5000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 6500))
             ]);
 
             const isGifBuffer = imageBuffer.slice(0, 3).toString() === 'GIF';

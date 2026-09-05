@@ -18,18 +18,17 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.TEXT,
         allowNull: true
     },
-
     customTheme: {
         type: DataTypes.STRING,
         defaultValue: 'default'
     },
     integrations: {
         type: DataTypes.TEXT,
-        defaultValue: '{}' // JSON string for future expansion
+        defaultValue: '{}'
     },
     dashboardSettings: {
         type: DataTypes.TEXT,
-        defaultValue: '{}' // JSON string for UI preferences (theme, view mode)
+        defaultValue: '{}'
     },
     joinMeEnabled: {
         type: DataTypes.BOOLEAN,
@@ -119,6 +118,10 @@ const UserPrefs = sequelize.define('UserPrefs', {
         defaultValue: null
     },
     // ---- Member Card & Image Customization ----
+    overwriteServerPresets: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     showAvatarInRankCard: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -129,7 +132,7 @@ const UserPrefs = sequelize.define('UserPrefs', {
     },
     rankCardCustomColor: {
         type: DataTypes.STRING,
-        defaultValue: '#4f46e5'
+        defaultValue: '#7c3aed'
     },
     rankCardBackgroundImage: {
         type: DataTypes.TEXT,
@@ -146,7 +149,6 @@ const UserPrefs = sequelize.define('UserPrefs', {
         allowNull: true,
         defaultValue: null
     },
-    
     // ---- Team Card Customization ----
     teamCardDisplayName: {
         type: DataTypes.STRING,
@@ -169,9 +171,8 @@ const UserPrefs = sequelize.define('UserPrefs', {
     },
     customCardShape: {
         type: DataTypes.STRING,
-        defaultValue: 'default' // 'default' allows fallback to GuildSettings server shape
+        defaultValue: 'default'
     }
 });
 
 module.exports = UserPrefs;
-
