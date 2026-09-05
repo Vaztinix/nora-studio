@@ -4,6 +4,7 @@ const { EmbedBuilder } = require('discord.js');
 const axios = require('axios');
 const GuildSettings = require('../../database/models/GuildSettings');
 const UserPrefs = require('../../database/models/UserPrefs');
+const UserLevel = require('../../database/models/UserLevel');
 const { getDiscordUser } = require('../../utils/security');
 
 function formatTopggTemplate(template, ctx) {
@@ -24,6 +25,84 @@ function formatTopggTemplate(template, ctx) {
         .replace(/{xp}/gi, `${ctx.earnedXP || 150}`)
         .replace(/{role}/gi, ctx.roleMention || 'Voter Role');
 }
+
+/**
+ * Resilient Discord announcement dispatcher.
+ * Attempts direct message sending; if Discord returns Missing Permissions (common in restricted announcement/vote channels),
+ * seamlessly uses or creates a Webhook in the target channel to deliver the announcement.
+ */
+async function deliverVoteToDiscordChannel(client, channelId, embed, fallbackText, botName = 'Top.gg Vote Tracker', avatarUrl = 'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg') {
+    if (!channelId || !client) return { success: false, reason: 'No channel or client specified' };
+
+    try {
+        const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
+        if (!channel) {
+            return { success: false, reason: `Channel ${channelId} could not be fetched` };
+        }
+
+        const guild = channel.guild;
+        const me = guild?.members?.me || (guild ? await guild.members.fetch(client.user.id).catch(() => null) : null);
+        const perms = me ? channel.permissionsFor(me) : null;
+
+        // 1. Direct message attempt if bot has SendMessages
+        if (perms && perms.has('SendMessages')) {
+            try {
+                if (perms.has('EmbedLinks')) {
+                    await channel.send({ embeds: [embed] });
+                    return { success: true, method: 'direct_embed' };
+                } else {
+                    await channel.send({ content: fallbackText });
+                    return { success: true, method: 'direct_text' };
+                }
+            } catch (sendErr) {
+                console.warn(`[Top.gg Delivery] Direct channel.send failed (${sendErr.message}), falling back to Webhook...`);
+            }
+        }
+
+        // 2. Webhook fallback if channel restricts standard user/bot sending
+        if (perms && (perms.has('ManageWebhooks') || perms.has('Administrator'))) {
+            try {
+                const webhooks = await channel.fetchWebhooks().catch(() => null);
+                let targetWebhook = webhooks ? (webhooks.find(w => w.owner?.id === client.user.id || w.name.toLowerCase().includes('top.gg') || w.name.toLowerCase().includes('nora')) || webhooks.first()) : null;
+
+                if (!targetWebhook && webhooks && webhooks.size < 10) {
+                    targetWebhook = await channel.createWebhook({
+                        name: botName || 'Top.gg Vote Tracker',
+                        avatar: avatarUrl || 'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg',
+                        reason: 'Automated Top.gg Vote Announcements'
+                    }).catch(whCreateErr => {
+                        console.warn('[Top.gg Webhook Create Error]:', whCreateErr.message);
+                        return null;
+                    });
+                }
+
+                if (targetWebhook) {
+                    await targetWebhook.send({
+                        username: botName || 'Top.gg Vote Tracker',
+                        avatarURL: avatarUrl || 'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg',
+                        embeds: [embed]
+                    });
+                    return { success: true, method: 'webhook' };
+                }
+            } catch (whErr) {
+                console.warn('[Top.gg Webhook Dispatch Error]:', whErr.message);
+            }
+        }
+
+        // 3. Fallback raw send
+        try {
+            await channel.send({ embeds: [embed] });
+            return { success: true, method: 'fallback_embed' };
+        } catch (rawErr) {
+            await channel.send({ content: fallbackText });
+            return { success: true, method: 'fallback_text' };
+        }
+    } catch (finalErr) {
+        console.error(`[Top.gg Delivery Error in ${channelId}]:`, finalErr.message);
+        return { success: false, reason: finalErr.message };
+    }
+}
+
 
 module.exports = (client) => {
     /**
@@ -243,13 +322,15 @@ module.exports = (client) => {
                 if (earnedXP > 0) {
                     rewardStatus.push(`+${earnedXP} XP`);
                     try {
-                        const UserXP = require('../../database/models/UserXP');
-                        if (UserXP) {
-                            const [userXpRecord] = await UserXP.findOrCreate({
+                        if (UserLevel) {
+                            const [userXpRecord] = await UserLevel.findOrCreate({
                                 where: { userId: voterId, guildId: guildId },
-                                defaults: { xp: 0, level: 0 }
+                                defaults: { xp: 0, level: 0, totalXp: 0, voteCount: 0 }
                             });
                             userXpRecord.xp = (userXpRecord.xp || 0) + earnedXP;
+                            userXpRecord.totalXp = (userXpRecord.totalXp || 0) + earnedXP;
+                            userXpRecord.voteCount = (userXpRecord.voteCount || 0) + 1;
+                            userXpRecord.lastVoteTimestamp = new Date();
                             await userXpRecord.save();
                         }
                     } catch (xpErr) {
@@ -259,62 +340,61 @@ module.exports = (client) => {
 
                 // 3. Dispatch Announcement Embed to Channel
                 if (setting.topggVoteChannelId && client) {
-                    const channel = client.channels?.cache?.get(setting.topggVoteChannelId) || await client.channels?.fetch(setting.topggVoteChannelId).catch(() => null);
-                    if (channel && channel.send) {
-                        const voterUser = client.users?.cache?.get(voterId) || await client.users?.fetch(voterId).catch(() => null);
-                        const voterTag = voterUser ? voterUser.tag : `@User (${voterId})`;
-                        const voterAvatar = voterUser ? voterUser.displayAvatarURL({ dynamic: true }) : 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    const voterUser = client.users?.cache?.get(voterId) || await client.users?.fetch(voterId).catch(() => null);
+                    const voterTag = voterUser ? voterUser.tag : `@User (${voterId})`;
+                    const voterAvatar = voterUser ? voterUser.displayAvatarURL({ dynamic: true }) : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
-                        const templateCtx = {
-                            voterId,
-                            username: voterUser ? voterUser.username : voterTag.split('#')[0],
-                            voterTag,
-                            userMention: `<@${voterId}>`,
-                            serverName: guild ? guild.name : 'Server',
-                            channelMention: `<#${setting.topggVoteChannelId}>`,
-                            botName: client.user?.username || 'Nora',
-                            streak: currentStreak,
-                            isWeekend,
-                            multiplierText: isWeekend ? '⭐ 2x Weekend' : '⚡ 1x Standard',
-                            rewards: rewardStatus.join(' • ') || 'Vote Verified',
-                            earnedXP,
-                            roleMention: setting.topggRewardRoleId ? `<@&${setting.topggRewardRoleId}>` : 'Voter Role'
-                        };
+                    const templateCtx = {
+                        voterId,
+                        username: voterUser ? voterUser.username : voterTag.split('#')[0],
+                        voterTag,
+                        userMention: `<@${voterId}>`,
+                        serverName: guild ? guild.name : 'Server',
+                        channelMention: `<#${setting.topggVoteChannelId}>`,
+                        botName: client.user?.username || 'Nora',
+                        streak: currentStreak,
+                        isWeekend,
+                        multiplierText: isWeekend ? '⭐ 2x Weekend' : '⚡ 1x Standard',
+                        rewards: rewardStatus.join(' • ') || 'Vote Verified',
+                        earnedXP,
+                        roleMention: setting.topggRewardRoleId ? `<@&${setting.topggRewardRoleId}>` : 'Voter Role'
+                    };
 
-                        const defaultDesc = isTest
-                            ? `Test ping from **Top.gg Developer Portal** received for <@${voterId}>!\nYour Discord vote channel is actively connected and listening.`
-                            : `Thank you <@${voterId}> for supporting **${guild ? guild.name : 'our server'}** on **Top.gg**!`;
+                    const defaultDesc = isTest
+                        ? `Test ping from **Top.gg Developer Portal** received for <@${voterId}>!\nYour Discord vote channel is actively connected and listening.`
+                        : `Thank you <@${voterId}> for supporting **${guild ? guild.name : 'our server'}** on **Top.gg**!`;
 
-                        const customDesc = setting.topggVoteMessage
-                            ? formatTopggTemplate(setting.topggVoteMessage, templateCtx)
-                            : defaultDesc;
+                    const customDesc = setting.topggVoteMessage
+                        ? formatTopggTemplate(setting.topggVoteMessage, templateCtx)
+                        : defaultDesc;
 
-                        const embed = new EmbedBuilder()
-                            .setTitle(isTest ? '🧪 Top.gg Webhook Test Payload Received!' : '🎉 New Top.gg Upvote Received!')
-                            .setURL(`https://top.gg/bot/${targetBotId || client.user?.id || '1375943730951098549'}/vote`)
-                            .setColor('#FF3366') // Top.gg Signature Pink
-                            .setThumbnail(voterAvatar)
-                            .setDescription(customDesc)
-                            .addFields(
-                                { name: 'Voter', value: `\`${voterTag}\``, inline: true },
-                                { name: 'Streak', value: `🔥 **${currentStreak}** Consecutive`, inline: true },
-                                { name: 'Multiplier', value: isWeekend ? '⭐ **2x Weekend Multiplier**' : '⚡ **1x Standard**', inline: true },
-                                { name: 'Rewards Granted', value: rewardStatus.join(' • ') || 'Vote Verified', inline: false }
-                            )
-                            .setFooter({ text: 'Top.gg Official Integration • Nora Studio', iconURL: 'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg' })
-                            .setTimestamp();
+                    const embed = new EmbedBuilder()
+                        .setTitle(isTest ? '🧪 Top.gg Webhook Test Payload Received!' : '🎉 New Top.gg Upvote Received!')
+                        .setURL(`https://top.gg/bot/${targetBotId || client.user?.id || '1375943730951098549'}/vote`)
+                        .setColor('#FF3366') // Top.gg Signature Pink
+                        .setThumbnail(voterAvatar)
+                        .setDescription(customDesc)
+                        .addFields(
+                            { name: 'Voter', value: `\`${voterTag}\``, inline: true },
+                            { name: 'Streak', value: `🔥 **${currentStreak}** Consecutive`, inline: true },
+                            { name: 'Multiplier', value: isWeekend ? '⭐ **2x Weekend Multiplier**' : '⚡ **1x Standard**', inline: true },
+                            { name: 'Rewards Granted', value: rewardStatus.join(' • ') || 'Vote Verified', inline: false }
+                        )
+                        .setFooter({ text: 'Top.gg Official Integration • Nora Studio', iconURL: 'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg' })
+                        .setTimestamp();
 
-                        try {
-                            await channel.send({ embeds: [embed] });
-                        } catch (embedErr) {
-                            console.warn(`[Top.gg Embed Failed, Sending Text Fallback in ${guildId}]:`, embedErr.message);
-                            const fallbackText = `🎉 **${isTest ? 'Top.gg Webhook Test Payload Received' : 'New Top.gg Upvote Received!'}**\n${customDesc}\n\n🔥 **Streak:** ${currentStreak} • ⭐ **Multiplier:** ${isWeekend ? '2x Weekend' : '1x Standard'}\n🎁 **Rewards:** ${rewardStatus.join(' • ') || 'Vote Verified'}`;
-                            await channel.send({ content: fallbackText }).catch(err => {
-                                console.error(`[Top.gg Text Fallback Failed in ${guildId}]:`, err.message);
-                            });
-                        }
-                    }
+                    const fallbackText = `🎉 **${isTest ? 'Top.gg Webhook Test Payload Received' : 'New Top.gg Upvote Received!'}**\n${customDesc}\n\n🔥 **Streak:** ${currentStreak} • ⭐ **Multiplier:** ${isWeekend ? '2x Weekend' : '1x Standard'}\n🎁 **Rewards:** ${rewardStatus.join(' • ') || 'Vote Verified'}`;
+
+                    await deliverVoteToDiscordChannel(
+                        client,
+                        setting.topggVoteChannelId,
+                        embed,
+                        fallbackText,
+                        'Top.gg Vote Tracker',
+                        'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg'
+                    );
                 }
+
 
                 // 4. Send Direct Message to Voter (if voter permits DMs)
                 try {
@@ -466,6 +546,20 @@ module.exports = (client) => {
             const voterTag = req.body.voterTag || 'TestVoter#0001';
             const isWeekend = req.body.isWeekend !== undefined ? Boolean(req.body.isWeekend) : true;
 
+            // If test payload provided latest UI settings, sync them
+            if (req.body.channelId !== undefined && req.body.channelId) {
+                settings.topggVoteChannelId = req.body.channelId;
+            }
+            if (req.body.voteMessage !== undefined) {
+                settings.topggVoteMessage = req.body.voteMessage;
+            }
+            if (req.body.rewardRoleId !== undefined) {
+                settings.topggRewardRoleId = req.body.rewardRoleId;
+            }
+            if (req.body.rewardXp !== undefined) {
+                settings.topggRewardXp = parseInt(req.body.rewardXp, 10) || 150;
+            }
+
             let voteLogs = [];
             try {
                 voteLogs = typeof settings.topggVoteLogs === 'string' ? JSON.parse(settings.topggVoteLogs || '[]') : (settings.topggVoteLogs || []);
@@ -480,7 +574,7 @@ module.exports = (client) => {
                 voterId: voterId,
                 voterTag: voterTag,
                 voterAvatar: 'https://vaztinix.dev/nora.png',
-                targetBotId: settings.topggBotId || '593420060990005248',
+                targetBotId: settings.topggBotId || client?.user?.id || '593420060990005248',
                 isWeekend: isWeekend,
                 multiplier: multiplier,
                 streak: 1,
@@ -496,58 +590,65 @@ module.exports = (client) => {
             settings.topggVerified = true;
             await settings.save();
 
+            let deliveryResult = { success: false, reason: 'No channel configured' };
+
             // Broadcast test embed if channel is set
-            if (settings.topggVoteChannelId && client) {
-                const channel = client.channels?.cache?.get(settings.topggVoteChannelId) || await client.channels?.fetch(settings.topggVoteChannelId).catch(() => null);
+            const targetChannelId = req.body.channelId || settings.topggVoteChannelId;
+            if (targetChannelId && client) {
                 const guild = client.guilds?.cache?.get(guildId) || await client.guilds?.fetch(guildId).catch(() => null);
 
-                if (channel && channel.send) {
-                    const templateCtx = {
-                        voterId,
-                        username: voterTag.split('#')[0],
-                        voterTag,
-                        userMention: `<@${voterId}>`,
-                        serverName: guild ? guild.name : 'Server',
-                        channelMention: `<#${settings.topggVoteChannelId}>`,
-                        botName: client.user?.username || 'Nora',
-                        streak: 1,
-                        isWeekend,
-                        multiplierText: isWeekend ? '⭐ 2x Weekend' : '⚡ 1x Standard',
-                        rewards: `+${earnedXP} XP${settings.topggRewardRoleId ? ', Role Assigned' : ''}`,
-                        earnedXP,
-                        roleMention: settings.topggRewardRoleId ? `<@&${settings.topggRewardRoleId}>` : 'Voter Role'
-                    };
+                const templateCtx = {
+                    voterId,
+                    username: voterTag.split('#')[0],
+                    voterTag,
+                    userMention: `<@${voterId}>`,
+                    serverName: guild ? guild.name : 'Server',
+                    channelMention: `<#${targetChannelId}>`,
+                    botName: client.user?.username || 'Nora',
+                    streak: 1,
+                    isWeekend,
+                    multiplierText: isWeekend ? '⭐ 2x Weekend' : '⚡ 1x Standard',
+                    rewards: `+${earnedXP} XP${settings.topggRewardRoleId ? ', Role Assigned' : ''}`,
+                    earnedXP,
+                    roleMention: settings.topggRewardRoleId ? `<@&${settings.topggRewardRoleId}>` : 'Voter Role'
+                };
 
-                    const defaultDesc = `Test simulation fired from **Nora Studio** for **${voterTag}**.\nWebhook pipeline is operational and listening for live upvotes!`;
-                    const customDesc = settings.topggVoteMessage
-                        ? formatTopggTemplate(settings.topggVoteMessage, templateCtx)
-                        : defaultDesc;
+                const defaultDesc = `Test simulation fired from **Nora Studio** for **${voterTag}**.\nWebhook pipeline is operational and listening for live upvotes!`;
+                const customDesc = (req.body.voteMessage || settings.topggVoteMessage)
+                    ? formatTopggTemplate(req.body.voteMessage || settings.topggVoteMessage, templateCtx)
+                    : defaultDesc;
 
-                    const testEmbed = new EmbedBuilder()
-                        .setTitle('🧪 Top.gg Webhook Test Payload Received!')
-                        .setColor('#38BDF8')
-                        .setDescription(customDesc)
-                        .addFields(
-                            { name: 'Simulated Voter', value: `\`${voterTag}\``, inline: true },
-                            { name: 'Multiplier Mode', value: isWeekend ? '⭐ 2x Weekend Active' : '1x Standard', inline: true },
-                            { name: 'Calculated Rewards', value: `+${earnedXP} XP`, inline: true }
-                        )
-                        .setFooter({ text: 'Top.gg Webhook Simulator • Nora Studio', iconURL: 'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg' })
-                        .setTimestamp();
+                const testEmbed = new EmbedBuilder()
+                    .setTitle('🧪 Top.gg Webhook Test Payload Received!')
+                    .setColor('#38BDF8')
+                    .setDescription(customDesc)
+                    .addFields(
+                        { name: 'Simulated Voter', value: `\`${voterTag}\``, inline: true },
+                        { name: 'Multiplier Mode', value: isWeekend ? '⭐ 2x Weekend Active' : '1x Standard', inline: true },
+                        { name: 'Calculated Rewards', value: `+${earnedXP} XP`, inline: true }
+                    )
+                    .setFooter({ text: 'Top.gg Webhook Simulator • Nora Studio', iconURL: 'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg' })
+                    .setTimestamp();
 
-                    try {
-                        await channel.send({ embeds: [testEmbed] });
-                    } catch (embedErr) {
-                        console.warn(`[Top.gg Test Embed Failed, Sending Text Fallback in ${guildId}]:`, embedErr.message);
-                        const fallbackText = `🧪 **Top.gg Webhook Test Payload Received!**\n${customDesc}\n\n🔥 **Multiplier:** ${isWeekend ? '2x Weekend' : '1x Standard'} • 🎁 **Rewards:** +${earnedXP} XP`;
-                        await channel.send({ content: fallbackText }).catch(err => {
-                            console.error(`[Top.gg Test Text Fallback Failed in ${guildId}]:`, err.message);
-                        });
-                    }
-                }
+                const fallbackText = `🧪 **Top.gg Webhook Test Payload Received!**\n${customDesc}\n\n🔥 **Multiplier:** ${isWeekend ? '2x Weekend' : '1x Standard'} • 🎁 **Rewards:** +${earnedXP} XP`;
+
+                deliveryResult = await deliverVoteToDiscordChannel(
+                    client,
+                    targetChannelId,
+                    testEmbed,
+                    fallbackText,
+                    'Top.gg Vote Tracker',
+                    'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg'
+                );
             }
 
-            res.json({ success: true, log: testEntry });
+            res.json({
+                success: true,
+                log: testEntry,
+                channelDelivered: deliveryResult.success,
+                deliveryMethod: deliveryResult.method,
+                channelWarning: deliveryResult.success ? null : deliveryResult.reason
+            });
         } catch (e) {
             console.error('[Top.gg Test Webhook Error]:', e);
             res.status(500).json({ error: e.message });

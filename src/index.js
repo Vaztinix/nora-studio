@@ -1420,20 +1420,20 @@ app.use('/api/status', statusRouter);
 const { initReminderScheduler } = require('./utils/reminderScheduler');
 initReminderScheduler(client);
 
+// Mount Top.gg Official Webhook & Integration Router
+const topggRouter = require('./api/routes/topgg')(client);
+app.use(topggRouter);
+
+// Mount BotBoard.gg Webhook Router
+const botboardRouter = require('./api/routes/botboard')(client);
+app.use(['/webhooks/botboard', '/api/webhooks/botboard', '/api/botboard'], botboardRouter);
+
 // Mount the API Router for settings
 const settingsRouter = require('./api/routes/settings');
 app.use('/api/guilds/:guildId/settings', settingsRouter);
 
 const guildsRouter = require('./api/routes/guilds');
 app.use('/api/guilds/:guildId', guildsRouter);
-
-// Mount BotBoard.gg Webhook Router
-const botboardRouter = require('./api/routes/botboard')(client);
-app.use(['/webhooks/botboard', '/api/webhooks/botboard', '/api/botboard'], botboardRouter);
-
-// Mount Top.gg Official Webhook & Integration Router
-const topggRouter = require('./api/routes/topgg')(client);
-app.use(topggRouter);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 📈 BOTBOARD.GG STATS AUTO-POSTER (Co-exists alongside Top.gg)

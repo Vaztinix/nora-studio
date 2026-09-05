@@ -4453,7 +4453,7 @@
             </button>
 
             <!-- Premium Ad in Sidebar -->
-            <div id="sidebar-premium-ad" class="premium-ad" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')" style="background: #ffffff; border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px; width: 100%; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2); text-align: center;" onmouseover="this.style.background='#e4e4e7';" onmouseout="this.style.background='#ffffff';">
+            <div id="sidebar-premium-ad" class="premium-ad sidebar-premium-cta" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')" style="background: #ffffff; border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px; width: 100%; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2); text-align: center;" onmouseover="this.style.background='#e4e4e7';" onmouseout="this.style.background='#ffffff';">
                 <h4 style="font-size: 0.85rem; font-weight: 900; color: #000000; margin: 0; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fas fa-crown" style="color: #000;"></i> Get Premium</h4>
                 <p style="font-size: 0.72rem; color: #27272a; margin: 4px 0 0 0; line-height: 1.3; font-weight: 600;">Unlock Leveling Boosts, Advanced Verification & More</p>
             </div>
@@ -5533,8 +5533,8 @@
                         <button class="h-tab" data-tab="tab-reactionroles" onclick="showTab('tab-reactionroles')"><span><i class="fas fa-magic"></i> Reaction Roles</span><span class="badge stable">v2.0</span></button>
                         <button class="h-tab" data-tab="tab-topgg" onclick="showTab('tab-topgg')"><span style="display: inline-flex; align-items: center; gap: 8px;"><img src="https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg" alt="Top.gg" style="width: 16px; height: 16px; border-radius: 4px; object-fit: cover; flex-shrink: 0;"> Top.gg Votes</span></button>
                         
-                        <div style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
-                            <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-weight: 800; font-size: 0.85rem; text-align: center; justify-content: center; width: 100%; padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown" style="color: #000;"></i> Get Premium</button>
+                        <div id="sidebar-server-premium-container" class="sidebar-premium-cta" style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
+                            <button id="sidebar-server-premium-btn" class="save-btn sidebar-premium-cta" style="background: #ffffff !important; color: #000000 !important; font-weight: 800; font-size: 0.85rem; text-align: center; justify-content: center; width: 100%; padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown" style="color: #000;"></i> Get Premium</button>
                         </div>
 
                         <!-- Compact System Pulse in Sidebar -->
@@ -19128,6 +19128,9 @@
 
                 // Load split logging configuration for Premium
                 const isPremium = !!s.isPremium || !!s.isManualPremium || (s.paidExpiresAt && (new Date(s.paidExpiresAt).getTime() + (s.expandedTimeMs ? Number(s.expandedTimeMs) : 0) > Date.now()));
+                if (typeof checkAndHidePremiumCTAs === 'function') {
+                    checkAndHidePremiumCTAs(isPremium);
+                }
                 const premiumSection = document.getElementById('premium-split-logging-section');
                 if (premiumSection) {
                     premiumSection.style.display = isPremium ? 'block' : 'none';
@@ -22563,6 +22566,31 @@ async function saveTopggSettings() {
     }
 }
 
+function checkAndHidePremiumCTAs(forcePremiumState = null) {
+    const user = window.currentUser;
+    const settings = window.previousSettings || window.currentSettings;
+
+    let isPremium = false;
+    if (forcePremiumState !== null) {
+        isPremium = !!forcePremiumState;
+    } else {
+        const isOwner = user && (user.id === '1214048435632603137' || user.id === '593420060990005248' || user.isOwner);
+        const isUserPremium = user && (user.isPremium || user.isManualPremium || (user.prefs && (user.prefs.isPremium || user.prefs.isManualPremium)));
+        const isServerPremium = settings && (settings.isPremium || settings.isManualPremium || (settings.paidExpiresAt && new Date(settings.paidExpiresAt).getTime() > Date.now()));
+        isPremium = Boolean(isOwner || isUserPremium || isServerPremium);
+    }
+
+    const ctaElements = document.querySelectorAll('.sidebar-premium-cta, #sidebar-premium-ad, #sidebar-server-premium-container, #sidebar-server-premium-btn, .premium-ad');
+    ctaElements.forEach(el => {
+        if (isPremium) {
+            el.style.setProperty('display', 'none', 'important');
+        } else {
+            el.style.display = '';
+        }
+    });
+}
+window.checkAndHidePremiumCTAs = checkAndHidePremiumCTAs;
+
 async function simulateTopggTestVote() {
     const guildId = (typeof currentServerId !== 'undefined' ? currentServerId : null) || window.currentServerId || window.currentGuildId || window.activeGuildId || (document.getElementById('server-select')?.value);
     if (!guildId) {
@@ -22572,6 +22600,12 @@ async function simulateTopggTestVote() {
 
     const t = sessionStorage.getItem('discord_token');
     const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+
+    const channelId = document.getElementById('setting-topggVoteChannelId')?.value || null;
+    const voteMessage = document.getElementById('setting-topggVoteMessage')?.value || '';
+    const rewardRoleId = document.getElementById('setting-topggRewardRoleId')?.value || null;
+    const rewardXp = parseInt(document.getElementById('setting-topggRewardXp')?.value, 10) || 150;
+    const weekendMultiplier = !!document.getElementById('setting-topggWeekendMultiplier')?.checked;
 
     if (typeof showToast === 'function') showToast('🚀 Dispatching test webhook payload...', 'info');
 
@@ -22585,14 +22619,22 @@ async function simulateTopggTestVote() {
             body: JSON.stringify({
                 voterTag: window.currentUser ? `${window.currentUser.username}#${window.currentUser.discriminator || '0'}` : 'Voter#0001',
                 voterId: window.currentUser ? window.currentUser.id : '593420060990005248',
-                isWeekend: true
+                isWeekend: weekendMultiplier,
+                channelId: channelId,
+                voteMessage: voteMessage,
+                rewardRoleId: rewardRoleId,
+                rewardXp: rewardXp
             })
         });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${res.status}`);
+        }
         const data = await res.json();
 
         if (data.log) {
+            if (!window.topggVoteLogs) window.topggVoteLogs = [];
             window.topggVoteLogs.unshift(data.log);
             renderTopggVoteLogs(window.topggVoteLogs);
             const statVotes = document.getElementById('topgg-stat-votes');
@@ -22600,7 +22642,13 @@ async function simulateTopggTestVote() {
         }
 
         if (typeof showToast === 'function') {
-            showToast('✅ Test vote verified! Inbound log stream updated.', 'success');
+            if (data.channelDelivered) {
+                showToast(`✅ Test vote sent to Discord channel and recorded in stream! (${data.deliveryMethod || 'delivered'})`, 'success');
+            } else if (data.channelWarning) {
+                showToast(`⚠️ Vote logged to stream. Note: ${data.channelWarning}`, 'info');
+            } else {
+                showToast('✅ Test vote verified! Inbound log stream updated.', 'success');
+            }
         }
     } catch (e) {
         console.error('[Top.gg Test Error]:', e);
@@ -22876,6 +22924,8 @@ window.filterTopggLogs = filterTopggLogs;
 try {
     renderTopggBots(window.topggMultiBots || [], '593420060990005248');
     renderTopggVoteLogs(window.topggVoteLogs || []);
+    checkAndHidePremiumCTAs();
+    setInterval(checkAndHidePremiumCTAs, 2500);
 } catch (e) {}
 </script>
 
