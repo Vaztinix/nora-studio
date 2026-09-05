@@ -456,10 +456,10 @@
             <p class="subtitle">Last Updated: September 5, 2026</p>
 
             <div class="switch-container">
-                <div class="legal-switch" id="legal-switch" onclick="toggleLegal()">
-                    <div class="switch-slider"></div>
-                    <div class="switch-label" id="label-tos">Terms of Service</div>
-                    <div class="switch-label" id="label-privacy">Privacy Policy</div>
+                <div class="legal-switch" id="legal-switch">
+                    <div class="switch-slider" onclick="toggleLegal()"></div>
+                    <div class="switch-label" id="label-tos" onclick="setLegalTab('tos', true)">Terms of Service</div>
+                    <div class="switch-label" id="label-privacy" onclick="setLegalTab('privacy', true)">Privacy Policy</div>
                 </div>
             </div>
 
@@ -665,27 +665,54 @@
     </footer>
 
     <script>
-        function toggleLegal() {
+        function setLegalTab(tab, updateHash = true) {
             const switcher = document.getElementById('legal-switch');
             const tos = document.getElementById('tos-content');
             const privacy = document.getElementById('privacy-content');
             const labelTos = document.getElementById('label-tos');
             const labelPrivacy = document.getElementById('label-privacy');
-            
-            switcher.classList.toggle('active');
-            
-            if (switcher.classList.contains('active')) {
+            if (!switcher || !tos || !privacy) return;
+
+            const isPrivacy = (tab === 'privacy');
+            if (isPrivacy) {
+                switcher.classList.add('active');
                 tos.classList.remove('active');
                 privacy.classList.add('active');
-                labelTos.classList.remove('active');
-                labelPrivacy.classList.add('active');
+                if (labelTos) labelTos.classList.remove('active');
+                if (labelPrivacy) labelPrivacy.classList.add('active');
+                if (updateHash && window.location.hash !== '#privacy') {
+                    history.replaceState(null, '', '#privacy');
+                }
             } else {
+                switcher.classList.remove('active');
                 tos.classList.add('active');
                 privacy.classList.remove('active');
-                labelTos.classList.add('active');
-                labelPrivacy.classList.remove('active');
+                if (labelTos) labelTos.classList.add('active');
+                if (labelPrivacy) labelPrivacy.classList.remove('active');
+                if (updateHash && window.location.hash !== '#tos') {
+                    history.replaceState(null, '', '#tos');
+                }
             }
         }
+
+        function toggleLegal() {
+            const switcher = document.getElementById('legal-switch');
+            const isPrivacy = switcher && switcher.classList.contains('active');
+            setLegalTab(isPrivacy ? 'tos' : 'privacy', true);
+        }
+
+        function handleHashRouting() {
+            const hash = (window.location.hash || '').toLowerCase();
+            if (hash === '#privacy' || hash === '#privacypolicy' || hash === '#privacy-policy') {
+                setLegalTab('privacy', false);
+            } else if (hash === '#tos' || hash === '#terms' || hash === '#termsofservice' || hash === '#terms-of-service') {
+                setLegalTab('tos', false);
+            }
+        }
+
+        window.addEventListener('hashchange', handleHashRouting);
+        window.addEventListener('DOMContentLoaded', handleHashRouting);
+        handleHashRouting();
 
         function toggleLegalMenu() {
             const drawer = document.getElementById('mobile-drawer');

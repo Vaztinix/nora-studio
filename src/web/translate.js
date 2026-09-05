@@ -1868,6 +1868,13 @@
     window.DASHBOARD_I18N = DASHBOARD_I18N;
     window.isTranslating = false;
 
+    window.translateText = function(text) {
+        if (!text || typeof text !== 'string') return text || '';
+        const lang = localStorage.getItem('nora_language') || (window.currentUser?.prefs?.language) || 'en';
+        if (lang === 'en' || !DASHBOARD_I18N || !DASHBOARD_I18N[lang]) return text;
+        return DASHBOARD_I18N[lang][text] || text;
+    };
+
     // Detect language: LocalStorage first, then browser language, fallback to English
     function getDeviceLanguage() {
         const saved = localStorage.getItem('nora_language');

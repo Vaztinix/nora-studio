@@ -1020,29 +1020,30 @@
         .premium-ad p { font-size: 0.75rem; opacity: 0.8; font-weight: 600; }
 
         .notif-filter-btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #94a3b8;
-            padding: 8px 18px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            white-space: nowrap;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            color: #94a3b8 !important;
+            padding: 7px 18px !important;
+            border-radius: 999px !important;
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            white-space: nowrap !important;
+            user-select: none !important;
         }
         .notif-filter-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: #ffffff;
-            border-color: rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
             transform: translateY(-1px);
         }
         .notif-filter-btn.active {
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.35) 0%, rgba(79, 70, 229, 0.35) 100%);
+            background: #5865f2 !important;
             color: #ffffff !important;
-            border: 1px solid rgba(167, 139, 250, 0.5);
-            box-shadow: 0 0 16px rgba(124, 58, 237, 0.25);
-            font-weight: 700;
+            border: 1px solid #5865f2 !important;
+            box-shadow: 0 4px 14px rgba(88, 101, 242, 0.4) !important;
+            font-weight: 700 !important;
         }
 
         input[type="color"] {
@@ -5285,11 +5286,11 @@
                         <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
                                 <div class="filter-bar" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;">
-                                    <button class="notif-filter-btn active" onclick="filterNotifs('all', this)" style="padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s;">All Alerts</button>
-                                    <button class="notif-filter-btn" data-type="info" onclick="filterNotifs('info', this)" style="padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s;">Info</button>
-                                    <button class="notif-filter-btn" data-type="success" onclick="filterNotifs('success', this)" style="padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s;">Success</button>
-                                    <button class="notif-filter-btn" data-type="warning" onclick="filterNotifs('warning', this)" style="padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s;">Warnings</button>
-                                    <button class="notif-filter-btn" data-type="error" onclick="filterNotifs('error', this)" style="padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s;">Errors</button>
+                                    <button class="notif-filter-btn active" onclick="filterNotifs('all', this)">All Alerts</button>
+                                    <button class="notif-filter-btn" data-type="info" onclick="filterNotifs('info', this)">Info</button>
+                                    <button class="notif-filter-btn" data-type="success" onclick="filterNotifs('success', this)">Success</button>
+                                    <button class="notif-filter-btn" data-type="warning" onclick="filterNotifs('warning', this)">Warnings</button>
+                                    <button class="notif-filter-btn" data-type="error" onclick="filterNotifs('error', this)">Errors</button>
                                 </div>
                                 <div style="display: flex; gap: 10px;">
                                     <button class="btn-outline" style="width: auto; padding: 8px 16px; font-size: 0.8rem; border-radius: 8px;" onclick="markAllRead()">Mark All Read</button>
@@ -9428,6 +9429,13 @@
         window.redirectToDiscordLogin = redirectToDiscordLogin;
         window.getDiscordLoginUrl = getDiscordLoginUrl;
 
+        window.translateText = function(text) {
+            if (!text || typeof text !== 'string') return text || '';
+            const lang = localStorage.getItem('nora_language') || (window.currentUser?.prefs?.language) || 'en';
+            if (lang === 'en' || !window.DASHBOARD_I18N || !window.DASHBOARD_I18N[lang]) return text;
+            return window.DASHBOARD_I18N[lang][text] || text;
+        };
+
         // Instant Token Capture from URL Hash (preserves token before DOM parsing)
         try {
             if (window.location.hash && window.location.hash.includes('access_token=')) {
@@ -12444,16 +12452,12 @@
             currentNotifFilter = type;
             document.querySelectorAll('.notif-filter-btn').forEach(b => {
                 b.classList.remove('active');
-                b.style.background = 'transparent';
-                b.style.color = '#94a3b8';
-                b.style.borderColor = 'rgba(255,255,255,0.08)';
+                b.removeAttribute('style');
             });
             const activeBtn = btn || document.querySelector(`.notif-filter-btn[data-type="${type}"]`) || (type === 'all' ? document.querySelector('.notif-filter-btn') : null);
             if (activeBtn) {
                 activeBtn.classList.add('active');
-                activeBtn.style.background = 'var(--primary, #5865f2)';
-                activeBtn.style.color = '#fff';
-                activeBtn.style.borderColor = 'var(--primary, #5865f2)';
+                activeBtn.removeAttribute('style');
             }
             renderNotifications();
         }
@@ -12723,9 +12727,24 @@
             }
         }
 
+        function isLocalhostEnvironment() {
+            try {
+                const host = window.location.hostname || '';
+                return host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host.endsWith('.local');
+            } catch (_) {
+                return false;
+            }
+        }
+
         function renderPushNotificationWidget() {
             const existing = document.getElementById('web-push-control-widget');
             if (existing) existing.remove();
+
+            // If user is accessing on localhost, suppress floating banner completely
+            if (isLocalhostEnvironment()) {
+                updateSettingsPushUI();
+                return;
+            }
 
             const isGranted = ('Notification' in window) && Notification.permission === 'granted';
             const isDenied = ('Notification' in window) && Notification.permission === 'denied';
@@ -12792,6 +12811,17 @@
             const statusBadgeEl = document.getElementById('settings-push-status-badge');
             const actionsEl = document.getElementById('settings-push-actions');
             if (!statusBadgeEl || !actionsEl) return;
+
+            if (isLocalhostEnvironment()) {
+                statusBadgeEl.innerHTML = `<span style="background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-lock"></i> Disabled on Localhost</span>`;
+                actionsEl.innerHTML = `
+                    <div style="display: inline-flex; align-items: center; gap: 8px; color: #cbd5e1; font-size: 0.8rem; background: rgba(0,0,0,0.35); padding: 7px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+                        <i class="fas fa-lock" style="color: #f59e0b;"></i>
+                        <span>Disabled due to the use of localhost.</span>
+                    </div>
+                `;
+                return;
+            }
 
             const isGranted = ('Notification' in window) && Notification.permission === 'granted';
             const isDenied = ('Notification' in window) && Notification.permission === 'denied';
