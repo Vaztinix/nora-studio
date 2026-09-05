@@ -157,22 +157,10 @@ module.exports = {
             const fileName = isGifBuffer ? 'rank-card.gif' : 'rank-card.png';
             const { AttachmentBuilder } = require('discord.js');
             const attachment = new AttachmentBuilder(imageBuffer, { name: fileName });
-            
-            const embed = new EmbedBuilder()
-                .setAuthor({ name: `${target.username}'s Rank Profile`, iconURL: target.displayAvatarURL() })
-                .setColor(0x6366F1)
-                .setImage(`attachment://${fileName}`)
-                .setTimestamp();
-
-            if (hasNoXp) {
-                embed.setDescription(`👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:`);
-            }
 
             await interaction.editReply({ 
-                content: hasNoXp 
-                    ? `👋 **${target.username}** has not earned any XP in this server yet. Here is their starting rank profile:` 
-                    : `📊 **${target.username}**'s Official Rank Card`,
-                embeds: [embed],
+                content: null,
+                embeds: [],
                 files: [attachment] 
             });
         } catch (err) {

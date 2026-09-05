@@ -259,11 +259,11 @@ async function generateRankCard({
             </radialGradient>
 
             <pattern id="bgPattern" width="860" height="240" patternUnits="userSpaceOnUse">
-                <rect width="860" height="240" fill="url(#obsidianGlass)" />
+                ${isAnimatedGif ? `<rect width="860" height="240" fill="rgba(9, 10, 16, 0.65)" />` : `<rect width="860" height="240" fill="url(#obsidianGlass)" />`}
                 <rect width="860" height="240" fill="url(#rankGlow1)" />
                 <rect width="860" height="240" fill="url(#rankGlow2)" />
                 ${(!isAnimatedGif && customBgBase64) ? `<image href="${customBgBase64}" x="0" y="0" width="860" height="240" preserveAspectRatio="xMidYMid slice" />` : ''}
-                <rect width="860" height="240" fill="${svgOverlayFill}" />
+                ${!isAnimatedGif ? `<rect width="860" height="240" fill="${svgOverlayFill}" />` : ''}
             </pattern>
         </defs>
 
@@ -318,7 +318,7 @@ async function generateRankCard({
     if (isAnimatedGif && animatedBgBuffer) {
         try {
             return await sharp(animatedBgBuffer, { animated: true })
-                .composite([{ input: composited, tile: false }])
+                .composite([{ input: composited, tile: true }])
                 .gif({ loop: 0 })
                 .toBuffer();
         } catch(compErr) {
