@@ -488,19 +488,19 @@
                     <div style="display: flex; flex-direction: column; gap: 14px; margin: 16px 0 24px;">
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
                             <strong style="color: #FF3366; font-size: 0.95rem;">Step 1: Get Webhook Credentials from Nora Studio</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Open the <a href="/dashboard" style="color: #a5b4fc;">Nora Dashboard</a> and navigate to the <b>Top.gg Votes</b> tab. Under <b>1. Webhook Setup</b>, copy your unique <code>Top.gg Webhook URL</code> and <code>Webhook Authorization Secret</code>.</p>
+                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Open the <a href="/dashboard" style="color: #a5b4fc;">Nora Dashboard</a> and navigate to the <b>Top.gg Votes</b> tab. Under <b>1. Connect on Top.gg</b>, copy your unique <code>Webhook URL</code> and <code>Webhook Authorization Secret</code>.</p>
                         </div>
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 2: Connect Webhooks on Top.gg</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Log in to <a href="https://top.gg" target="_blank" rel="noopener" style="color: #a5b4fc;">top.gg</a> &rarr; Open your Bot Page &rarr; Click <b>Edit</b> &rarr; Scroll down to the <b>Webhooks</b> section. Paste your Webhook URL into the <b>Webhook URL</b> field and your secret into the <b>Authorization</b> field, then click <b>Save changes</b>.</p>
+                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 2: Connect Webhooks on Top.gg Developer Portal</strong>
+                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Log in to <a href="https://top.gg" target="_blank" rel="noopener" style="color: #a5b4fc;">top.gg</a> &rarr; Open your Bot's Dashboard (e.g. <code>top.gg/discord/bots/YOUR_BOT_ID/dashboard/integrations</code>) &rarr; Go to <b>Integrations & API</b> &rarr; Scroll to <b>Webhooks</b>. Paste your <b>Webhook URL</b> and <b>Authorization Secret</b> into their respective fields, click <b>Save</b>, and then click <b>Send Test</b> to verify instant connectivity.</p>
                         </div>
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 3: Configure Voter Rewards & Roles</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">In the Nora Dashboard under <b>2. Voter Rewards & Multipliers</b>, select your <b>Discord Voter Role</b>, configure base <b>Leveling XP</b> (default: <code>150 XP</code>), and pick an <b>Announcement Channel</b> for public celebration embeds.</p>
+                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 3: Configure Voter Rewards & Role Hierarchy</strong>
+                            <p style="margin: 6px 0 0; font-size: 0.88rem;">In Nora Dashboard under <b>2. Voter Rewards & Roles</b>, pick the <b>Discord Voter Role</b> to grant and set your base <b>Leveling XP</b> (default: <code>150 XP</code>). Ensure the <b>@Nora</b> role is placed above the Voter reward role in Discord Server Settings.</p>
                         </div>
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 4: Test Your Integration</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Click the <b>Simulate Test Vote</b> button in the dashboard to dispatch a simulated vote payload. Verify that your voter role is assigned and check the <b>Live Inbound Vote Stream</b> table for real-time confirmation.</p>
+                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 4: Announcements & 12-Hour Reminders</strong>
+                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Select a dedicated <b>Vote Announcement Channel</b> for public celebration embeds and toggle <b>12-Hour Vote Reminders</b>. Nora will automatically notify voters via DM when their 12-hour vote cooldown expires so they can vote again and keep their streak alive.</p>
                         </div>
                     </div>
 

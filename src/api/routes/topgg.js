@@ -235,6 +235,8 @@ module.exports = (client) => {
                     topggRewardXp: settings.topggRewardXp || 150,
                     topggWeekendMultiplier: settings.topggWeekendMultiplier !== false,
                     topggStreakBonusEnabled: settings.topggStreakBonusEnabled !== false,
+                    topggReminders: settings.topggReminders !== false,
+                    topggVoteMessage: settings.topggVoteMessage || 'Thank you {user} for upvoting {bot}! You gained {rewards}.',
                     multiBots,
                     voteLogs
                 }
@@ -264,6 +266,8 @@ module.exports = (client) => {
                 topggRewardXp,
                 topggWeekendMultiplier,
                 topggStreakBonusEnabled,
+                topggReminders,
+                topggVoteMessage,
                 multiBots
             } = req.body;
 
@@ -275,6 +279,8 @@ module.exports = (client) => {
             if (topggRewardXp !== undefined) settings.topggRewardXp = parseInt(topggRewardXp, 10) || 150;
             if (topggWeekendMultiplier !== undefined) settings.topggWeekendMultiplier = Boolean(topggWeekendMultiplier);
             if (topggStreakBonusEnabled !== undefined) settings.topggStreakBonusEnabled = Boolean(topggStreakBonusEnabled);
+            if (topggReminders !== undefined) settings.topggReminders = Boolean(topggReminders);
+            if (topggVoteMessage !== undefined) settings.topggVoteMessage = topggVoteMessage;
             if (multiBots !== undefined) settings.topggMultiBots = typeof multiBots === 'object' ? JSON.stringify(multiBots) : multiBots;
 
             settings.topggVerified = true;
