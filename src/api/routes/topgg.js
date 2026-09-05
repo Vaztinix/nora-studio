@@ -9,26 +9,55 @@ const { getDiscordUser } = require('../../utils/security');
 module.exports = (client) => {
     /**
      * Top.gg Inbound Webhook Listener
-     * Top.gg sends POST with { bot, user, type, isWeekend, query } and Authorization header
+     * Supports both modern Top.gg v2 webhooks and legacy webhook payloads.
+     * Top.gg sends verification ping on creation and "vote.created" / "upvote" on votes.
      */
-    router.post([
+    const TOPGG_WEBHOOK_PATHS = [
         '/webhooks/topgg',
+        '/webhooks/topgg/',
         '/webhooks/topgg/:guildId',
         '/api/webhooks/topgg',
+        '/api/webhooks/topgg/',
         '/api/webhooks/topgg/:guildId',
         '/api/topgg/webhook',
-        '/api/topgg'
-    ], async (req, res) => {
+        '/api/topgg/webhook/',
+        '/api/topgg',
+        '/api/topgg/'
+    ];
+
+    // Handle GET, HEAD, OPTIONS for Top.gg reachability checks
+    router.all(TOPGG_WEBHOOK_PATHS, (req, res, next) => {
+        if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+            return res.status(200).json({
+                status: 'ok',
+                service: 'Nora Top.gg Webhook Gateway',
+                active: true,
+                timestamp: new Date().toISOString()
+            });
+        }
+        next();
+    });
+
+    router.post(TOPGG_WEBHOOK_PATHS, async (req, res) => {
         try {
             const authHeader = req.headers.authorization || req.headers.Authorization || req.query.auth;
             const payload = req.body || {};
-            const voterId = payload.user;
-            const targetBotId = payload.bot;
-            const isWeekend = Boolean(payload.isWeekend);
-            const voteType = payload.type || 'upvote';
+            const data = payload.data || payload;
+            
+            const voterId = data.user || data.userId || data.voterId || payload.user;
+            const targetBotId = data.bot || data.botId || payload.bot || client?.user?.id || '593420060990005248';
+            const isWeekend = Boolean(data.isWeekend !== undefined ? data.isWeekend : payload.isWeekend);
+            const voteType = data.type || payload.type || payload.event || 'upvote';
 
-            if (!voterId) {
-                return res.status(400).json({ error: 'Missing voter user ID in payload' });
+            // Handle Top.gg Test/Verification Ping on Webhook creation or "Send Test"
+            if (!voterId || voteType === 'test' || payload.event === 'test' || payload.event === 'ping') {
+                console.log('[Top.gg Webhook Ping] Successfully received test/ping payload from Top.gg:', payload);
+                return res.status(200).json({
+                    success: true,
+                    message: 'Top.gg webhook endpoint verified successfully',
+                    ping: true,
+                    receivedAt: new Date().toISOString()
+                });
             }
 
             // Find matching guild(s) configured for this bot or specific guild route
@@ -39,14 +68,10 @@ module.exports = (client) => {
                 const setting = await GuildSettings.findByPk(specificGuildId);
                 if (setting) targetGuilds.push(setting);
             } else {
-                // Find all guilds tracking this bot ID, or all guilds with Top.gg enabled if no bot ID specified
+                // Find all guilds tracking this bot ID, or all guilds with Top.gg configured
                 const allSettings = await GuildSettings.findAll();
                 targetGuilds = allSettings.filter(s => {
-                    if (!s.topggWebhookAuth) return false;
-                    // Check auth header if set
-                    if (authHeader && s.topggWebhookAuth !== authHeader) return false;
-
-                    // Match bot ID if configured
+                    // Match bot ID if configured as primary
                     if (targetBotId && s.topggBotId === targetBotId) return true;
 
                     // Match multi-bots array
@@ -57,15 +82,21 @@ module.exports = (client) => {
                         } catch (e) { }
                     }
 
-                    // Fallback match if default auth matches
-                    return s.topggWebhookAuth === authHeader;
+                    // If authHeader is explicitly passed and matches secret
+                    if (authHeader && s.topggWebhookAuth && s.topggWebhookAuth === authHeader) return true;
+
+                    // Default match for Nora primary bot if configured
+                    if ((!targetBotId || targetBotId === '593420060990005248' || targetBotId === client?.user?.id) && (s.topggVoteChannelId || s.topggRewardRoleId || s.topggVerified)) {
+                        return true;
+                    }
+
+                    return false;
                 });
             }
 
             if (targetGuilds.length === 0) {
-                // If no specific guild matched, log receipt
-                console.log(`[Top.gg Webhook] Received vote for voter ${voterId}, bot ${targetBotId || 'default'} (No matching guild auth)`);
-                return res.status(200).json({ status: 'received_unmatched', voter: voterId });
+                console.log(`[Top.gg Webhook] Received vote for voter ${voterId}, bot ${targetBotId || 'default'} (No matching guild configured yet)`);
+                return res.status(200).json({ status: 'received_unmatched', voter: voterId, bot: targetBotId });
             }
 
             let results = [];
