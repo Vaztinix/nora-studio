@@ -466,6 +466,58 @@
                 </section>
 
                 <section>
+                    <h2><i class="fas fa-arrow-alt-circle-up" style="color: #FF3366;"></i> Top.gg Official Integration Studio</h2>
+                    <p>Nora Studio features a full-stack, multi-bot <strong>Top.gg Integration Module</strong> with real-time webhook ingestion, streak multipliers, and role/XP automation:</p>
+                    <ul>
+                        <li><strong>Multi-Bot Tracker:</strong> Track votes for Nora or any custom Discord bot you own with signature Authorization validation.</li>
+                        <li><strong>Inbound Webhook Delivery:</strong> Receive instant POST payloads at <code>https://vaztinix.dev/api/webhooks/topgg</code> with zero third-party latency.</li>
+                        <li><strong>Vote Streaks & Loyalty Multipliers:</strong> Rewards voters with +25 bonus XP per consecutive vote within 36-hour cycles.</li>
+                        <li><strong>Weekend 2x Multiplier:</strong> Automatically doubles XP rewards every Friday, Saturday, and Sunday (UTC).</li>
+                        <li><strong>Automated Role & Channel Embeds:</strong> Assign voter Discord roles instantly and dispatch signature Pink Top.gg embeds to your announcement channel.</li>
+                    </ul>
+
+                    <div class="callout-box" style="background: rgba(255, 51, 102, 0.08); border-color: rgba(255, 51, 102, 0.3);">
+                        <div class="callout-icon"><i class="fas fa-bolt" style="color: #FF3366;"></i></div>
+                        <div class="callout-text">
+                            <h4 style="color: #FF3366;">Quick Webhook Configuration</h4>
+                            <p>To configure on Top.gg: Open your Bot Page &rarr; Edit &rarr; Webhooks &rarr; Set <code>https://vaztinix.dev/api/webhooks/topgg</code> as the Webhook URL and paste your secret token into the Authorization field.</p>
+                        </div>
+                    </div>
+
+                    <table class="cmd-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Default Value</th>
+                                <th>Behavior</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Base XP Reward</td>
+                                <td><code>150 XP</code></td>
+                                <td>Awarded to the voter's server leveling profile upon verified upvote.</td>
+                            </tr>
+                            <tr>
+                                <td>Weekend Multiplier</td>
+                                <td><code>2x XP</code></td>
+                                <td>Active Friday through Sunday (Top.gg official weekend window).</td>
+                            </tr>
+                            <tr>
+                                <td>Consecutive Streak</td>
+                                <td><code>+25 XP / vote</code></td>
+                                <td>Calculated across 36-hour rolling windows with streak counters.</td>
+                            </tr>
+                            <tr>
+                                <td>Reward Role</td>
+                                <td>Custom Role</td>
+                                <td>Automatically assigned to the voter in your Discord guild.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section>
                     <h2><i class="fas fa-cubes-stacked"></i> Automated Roblox Group Rank Sync</h2>
                     <p>Seamlessly connect your Roblox group hierarchy to Discord server roles:</p>
                     <ul>

@@ -21,8 +21,12 @@ sequelize.authenticate().then(async () => {
         await sequelize.query('PRAGMA journal_mode=WAL;');
         await sequelize.query('PRAGMA busy_timeout=5000;');
         await sequelize.query('PRAGMA synchronous=NORMAL;');
+        
+        // Auto-migrate schema to ensure all columns exist
+        const { autoMigrateDatabase } = require('./autoMigrate');
+        await autoMigrateDatabase();
     } catch (e) {
-        console.error('[DB] Pragma Init Failed:', e.message);
+        console.error('[DB] Init & Auto-Migrate Failed:', e.message);
     }
 }).catch(() => {});
 

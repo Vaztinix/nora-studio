@@ -5,7 +5,7 @@ const sequelize = require('./src/database/db');
 // Dynamically load all models so Sequelize registers them
 const modelsDir = path.join(__dirname, 'src/database/models');
 fs.readdirSync(modelsDir).forEach(file => {
-    if (file.endsWith('.js')) {
+    if (file.endsWith('.js') && !file.startsWith('migrate_')) {
         require(path.join(modelsDir, file));
     }
 });
@@ -148,6 +148,10 @@ async function syncDB() {
         try {
             await sequelize.query("ALTER TABLE `Autoresponders` ADD COLUMN `allowedRoles` TEXT DEFAULT '[]';");
         } catch (e) {}
+
+        console.log('Running automated column auto-migration...');
+        const { autoMigrateDatabase } = require('./src/database/autoMigrate');
+        await autoMigrateDatabase();
 
         console.log('Syncing database tables...');
         // Sync without alter: true to avoid SQLite backup recreation table mismatch bug

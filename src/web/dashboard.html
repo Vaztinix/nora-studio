@@ -5500,6 +5500,7 @@
                         <button class="h-tab" data-tab="tab-applications" onclick="showTab('tab-applications')"><span><i class="fas fa-file-signature"></i> Apps Builder</span><span class="badge dev">Dev</span></button>
                         <button class="h-tab" data-tab="tab-feeds" onclick="showTab('tab-feeds')"><span><i class="fas fa-broadcast-tower"></i> Content Feeds</span><span class="badge beta">Beta</span></button>
                         <button class="h-tab" data-tab="tab-webhooks" onclick="showTab('tab-webhooks')"><span><i class="fas fa-network-wired"></i> Webhooks</span><span class="badge stable">v2.1</span></button>
+                        <button class="h-tab" data-tab="tab-topgg" onclick="showTab('tab-topgg')"><span><i class="fas fa-arrow-alt-circle-up" style="color: #FF3366;"></i> Top.gg Integration</span><span class="badge stable" style="background: rgba(255, 51, 102, 0.2); color: #FF3366; border-color: rgba(255, 51, 102, 0.3);">Official</span></button>
                         
                         <div style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
                             <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-weight: 800; font-size: 0.85rem; text-align: center; justify-content: center; width: 100%; padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown" style="color: #000;"></i> Get Premium</button>
@@ -8455,6 +8456,341 @@
                                     </div>
                                 </div>
                                                         </div>
+                        </div>
+                    </div>
+                <!-- Top.gg Official Integration Studio -->
+                <div id="tab-topgg" class="tab-content" style="display: none;">
+                    <!-- Hero Header & Telemetry Banner -->
+                    <div class="panel" style="background: linear-gradient(135deg, rgba(255, 51, 102, 0.12) 0%, rgba(20, 20, 35, 0.7) 100%); border: 1px solid rgba(255, 51, 102, 0.3); border-radius: 20px; padding: 24px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(255, 51, 102, 0.08);">
+                        <div style="position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(255, 51, 102, 0.25) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; position: relative; z-index: 2;">
+                            <div style="display: flex; gap: 18px; align-items: center;">
+                                <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #FF3366 0%, #BA1A46 100%); display: flex; align-items: center; justify-content: center; font-size: 1.7rem; color: #fff; box-shadow: 0 8px 20px rgba(255, 51, 102, 0.35); flex-shrink: 0;">
+                                    <i class="fas fa-arrow-alt-circle-up"></i>
+                                </div>
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 800; color: #fff;">Top.gg Official Integration Studio</h2>
+                                        <span class="badge stable" style="background: rgba(255, 51, 102, 0.2); color: #FF3366; border-color: rgba(255, 51, 102, 0.4);"><i class="fas fa-check-circle"></i> Official Partner Engine</span>
+                                    </div>
+                                    <p style="margin: 6px 0 0; color: var(--muted); font-size: 0.88rem; max-width: 680px;">
+                                        Receive real-time vote webhooks, automate custom XP and Discord role rewards, configure multi-bot trackers, and reward loyalty with weekend 2x multipliers and streak bonuses.
+                                    </p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <button class="action-btn" onclick="simulateTopggTestVote()" style="background: rgba(255, 51, 102, 0.15); border: 1px solid rgba(255, 51, 102, 0.3); color: #FF3366; font-weight: 700; padding: 9px 16px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                                    <i class="fas fa-bolt"></i> Simulate Test Vote
+                                </button>
+                                <button class="action-btn" onclick="openAddTopggBotModal()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; font-weight: 700; padding: 9px 16px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                                    <i class="fas fa-plus"></i> Track Another Bot
+                                </button>
+                                <button class="save-btn" onclick="saveTopggSettings()" style="background: #FF3366; color: #fff; font-weight: 800; padding: 9px 20px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4);">
+                                    <i class="fas fa-save"></i> Save Settings
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Telemetry Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 22px;">
+                            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 14px 16px;">
+                                <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Tracked Bots</div>
+                                <div id="topgg-stat-bots" style="font-size: 1.25rem; font-weight: 800; color: #fff;">1 Bot Connected</div>
+                            </div>
+                            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 14px 16px;">
+                                <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Inbound Upvotes</div>
+                                <div id="topgg-stat-votes" style="font-size: 1.25rem; font-weight: 800; color: #FF3366;">0 Total Votes</div>
+                            </div>
+                            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 14px 16px;">
+                                <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Multiplier Status</div>
+                                <div id="topgg-stat-multiplier" style="font-size: 1.25rem; font-weight: 800; color: #FFD166;">⭐ 2x Weekend Multiplier</div>
+                            </div>
+                            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 14px 16px;">
+                                <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Webhook Pipeline</div>
+                                <div id="topgg-stat-pipeline" style="font-size: 1.25rem; font-weight: 800; color: var(--success); display: flex; align-items: center; gap: 8px;">
+                                    <div class="pulse-dot" style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></div>
+                                    <span>Listening Live</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integration Ecosystem Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 51, 102, 0.25); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-arrow-alt-circle-up" style="font-size: 1.3rem; color: #FF3366;"></i>
+                                        <span style="font-weight: 800; font-size: 1.05rem; color: #fff;">Top.gg Vote Tracker</span>
+                                    </div>
+                                    <span class="badge stable" style="background: rgba(46, 160, 67, 0.2); color: var(--success); border-color: rgba(46, 160, 67, 0.3);">Active</span>
+                                </div>
+                                <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 14px;">Direct webhook reception pipeline with signature authentication, streak counting, and instant Discord embed notifications.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="https://top.gg" target="_blank" style="font-size: 0.78rem; color: #FF3366; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                                    Top.gg Portal <i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-star" style="font-size: 1.3rem; color: #7289DA;"></i>
+                                        <span style="font-weight: 800; font-size: 1.05rem; color: #fff;">BotBoard.gg Reviews</span>
+                                    </div>
+                                    <span class="badge stable" style="background: rgba(114, 137, 218, 0.2); color: #7289DA; border-color: rgba(114, 137, 218, 0.3);">Connected</span>
+                                </div>
+                                <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 14px;">Auto-post stats every 30 minutes and dispatch rich 5-star review embeds to staff and community announcement channels.</p>
+                            </div>
+                            <div>
+                                <button onclick="showTab('tab-webhooks')" style="background: transparent; border: none; padding: 0; font-size: 0.78rem; color: var(--blurple); text-decoration: underline; font-weight: 700; cursor: pointer;">Manage in Webhooks Tab</button>
+                            </div>
+                        </div>
+
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-cube" style="font-size: 1.3rem; color: #00A2FF;"></i>
+                                        <span style="font-weight: 800; font-size: 1.05rem; color: #fff;">Roblox Connect Suite</span>
+                                    </div>
+                                    <span class="badge stable" style="background: rgba(0, 162, 255, 0.2); color: #00A2FF; border-color: rgba(0, 162, 255, 0.3);">Connected</span>
+                                </div>
+                                <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 14px;">Sync verified Roblox avatars, ranks, and live gameplay activity directly into Discord server roles and profile cards.</p>
+                            </div>
+                            <div>
+                                <button onclick="showTab('tab-verify')" style="background: transparent; border: none; padding: 0; font-size: 0.78rem; color: #00A2FF; text-decoration: underline; font-weight: 700; cursor: pointer;">Manage in Verification Tab</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Two-Column Configuration Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 24px;">
+                        
+                        <!-- Left Column: Webhook Suite & Connected Bots -->
+                        <div style="display: flex; flex-direction: column; gap: 24px;">
+                            
+                            <!-- Webhook & API Token Setup -->
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 18px; padding: 22px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+                                    <i class="fas fa-link" style="color: #FF3366; font-size: 1.2rem;"></i>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 1.15rem; color: #fff; font-weight: 800;">Webhook & API Credentials</h3>
+                                        <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--muted);">Paste these credentials into your Top.gg bot settings dashboard.</p>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
+                                        Top.gg Webhook URL <span style="color: #FF3366;">*</span>
+                                    </label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" id="topgg-webhook-url-display" readonly style="flex: 1; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: #fff;" value="Loading webhook endpoint...">
+                                        <button class="action-btn" onclick="copyTopggWebhookUrl()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border); color: #fff; border-radius: 10px; padding: 0 16px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-copy"></i> Copy
+                                        </button>
+                                    </div>
+                                    <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Set this as the <b>Webhook URL</b> on your Top.gg Bot Edit page.</span>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
+                                        Webhook Authorization Secret <span style="color: #FF3366;">*</span>
+                                    </label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" id="setting-topggWebhookAuth" style="flex: 1; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: #fff;" placeholder="Enter or generate secret...">
+                                        <button class="action-btn" onclick="regenerateTopggAuthSecret()" title="Generate new secure secret" style="background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border); color: #fff; border-radius: 10px; padding: 0 14px; cursor: pointer;">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                    <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Place this exact string in the <b>Authorization</b> field on Top.gg.</span>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 6px;">
+                                    <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
+                                        Top.gg API Token (Optional)
+                                    </label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="password" id="setting-topggApiToken" style="flex: 1; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: #fff;" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6...">
+                                        <button class="action-btn" onclick="validateTopggApiToken()" style="background: rgba(255, 51, 102, 0.15); border: 1px solid rgba(255, 51, 102, 0.3); color: #FF3366; border-radius: 10px; padding: 0 14px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-shield-alt"></i> Verify
+                                        </button>
+                                    </div>
+                                    <span id="topgg-token-status" style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Used to fetch official bot stats, vote rankings, and widget badges.</span>
+                                </div>
+                            </div>
+
+                            <!-- Tracked Bots Studio -->
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 18px; padding: 22px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-robot" style="color: #FF3366; font-size: 1.2rem;"></i>
+                                        <div>
+                                            <h3 style="margin: 0; font-size: 1.15rem; color: #fff; font-weight: 800;">Multi-Bot Tracker</h3>
+                                            <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--muted);">Track votes for Nora or any custom bot you own.</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="openAddTopggBotModal()" style="background: rgba(255, 51, 102, 0.15); border: 1px solid rgba(255, 51, 102, 0.3); color: #FF3366; font-weight: 700; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer;">
+                                        <i class="fas fa-plus"></i> Add Bot
+                                    </button>
+                                </div>
+
+                                <div id="topgg-bots-container" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <!-- Dynamic Bot Cards populated by JS -->
+                                    <div style="text-align: center; padding: 20px; color: var(--muted); font-size: 0.85rem;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading tracked bots...
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Right Column: Rewards & Automation Studio -->
+                        <div style="display: flex; flex-direction: column; gap: 24px;">
+                            
+                            <div class="panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 18px; padding: 22px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+                                    <i class="fas fa-gift" style="color: #FF3366; font-size: 1.2rem;"></i>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 1.15rem; color: #fff; font-weight: 800;">Vote Rewards & Multiplier Studio</h3>
+                                        <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--muted);">Automate perks, XP bonuses, and community announcements.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Reward Role -->
+                                <div class="input-group" style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
+                                        Discord Voter Reward Role
+                                    </label>
+                                    <select id="setting-topggRewardRoleId" style="width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 0.88rem; color: #fff;">
+                                        <option value="">No role selected (XP rewards only)</option>
+                                    </select>
+                                    <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Automatically assigned to the voter upon receipt of verified Top.gg vote.</span>
+                                </div>
+
+                                <!-- Base XP Reward -->
+                                <div class="input-group" style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
+                                        Base Leveling XP Reward
+                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="number" id="setting-topggRewardXp" min="0" max="5000" step="25" value="150" style="width: 130px; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; font-weight: 700; color: #fff;">
+                                        <span style="font-size: 0.85rem; color: var(--muted);">XP points per vote</span>
+                                    </div>
+                                </div>
+
+                                <!-- Announcement Channel -->
+                                <div class="input-group" style="margin-bottom: 20px;">
+                                    <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
+                                        Live Vote Announcement Channel
+                                    </label>
+                                    <select id="setting-topggVoteChannelId" style="width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 0.88rem; color: #fff;">
+                                        <option value="">Select announcement channel...</option>
+                                    </select>
+                                    <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">A signature Top.gg embed is dispatched when an upvote is registered.</span>
+                                </div>
+
+                                <!-- Multiplier Switches -->
+                                <div style="display: flex; flex-direction: column; gap: 14px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 16px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <div style="font-size: 0.88rem; font-weight: 800; color: #fff;">⭐ Weekend 2x Multiplier</div>
+                                            <div style="font-size: 0.75rem; color: var(--muted);">Double vote XP rewards on Friday, Saturday, and Sunday (Top.gg standard).</div>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="setting-topggWeekendMultiplier" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 14px;">
+                                        <div>
+                                            <div style="font-size: 0.88rem; font-weight: 800; color: #fff;">🔥 Vote Streak Loyalty Multiplier</div>
+                                            <div style="font-size: 0.75rem; color: var(--muted);">Awards +25 extra bonus XP per consecutive vote within 36-hour cycles.</div>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="setting-topggStreakBonusEnabled" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Live Inbound Vote Stream Log Viewer -->
+                    <div class="panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 18px; padding: 22px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-stream" style="color: #FF3366; font-size: 1.2rem;"></i>
+                                <div>
+                                    <h3 style="margin: 0; font-size: 1.15rem; color: #fff; font-weight: 800;">Live Inbound Vote Stream</h3>
+                                    <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--muted);">Real-time audit log of incoming Top.gg webhook deliveries and reward processing.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="topgg-log-search" oninput="filterTopggLogs()" placeholder="Search voters, bot ID..." style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 7px 14px; font-size: 0.82rem; color: #fff; width: 200px;">
+                                <button onclick="loadTopggSettings()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border); color: #fff; padding: 7px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Responsive Table Container -->
+                        <div style="overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                                <thead>
+                                    <tr style="background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px;">
+                                        <th style="padding: 12px 16px;">Voter</th>
+                                        <th style="padding: 12px 16px;">Target Bot</th>
+                                        <th style="padding: 12px 16px;">Streak & Multiplier</th>
+                                        <th style="padding: 12px 16px;">Rewards Granted</th>
+                                        <th style="padding: 12px 16px;">Timestamp</th>
+                                        <th style="padding: 12px 16px;">Delivery Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topgg-vote-logs-body">
+                                    <tr>
+                                        <td colspan="6" style="padding: 30px; text-align: center; color: var(--muted);">
+                                            <i class="fas fa-inbox" style="font-size: 1.8rem; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                                            No votes recorded yet. Click <b>Simulate Test Vote</b> above to test your pipeline!
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Tracked Bot Modal -->
+                <div id="modal-add-topgg-bot" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+                    <div style="background: #14141E; border: 1px solid rgba(255, 51, 102, 0.3); border-radius: 20px; padding: 26px; max-width: 480px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #fff;"><i class="fas fa-robot" style="color: #FF3366; margin-right: 8px;"></i> Track Custom Discord Bot</h3>
+                            <button onclick="closeAddTopggBotModal()" style="background: transparent; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 14px;">
+                            <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Discord Bot ID <span style="color: #FF3366;">*</span></label>
+                            <input type="text" id="new-topgg-bot-id" placeholder="e.g. 593420060990005248" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: #fff; font-family: monospace;">
+                        </div>
+                        <div class="input-group" style="margin-bottom: 14px;">
+                            <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Bot Display Name</label>
+                            <input type="text" id="new-topgg-bot-name" placeholder="e.g. Nora Assistant" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: #fff;">
+                        </div>
+                        <div class="input-group" style="margin-bottom: 22px;">
+                            <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Avatar URL (Optional)</label>
+                            <input type="text" id="new-topgg-bot-avatar" placeholder="https://cdn.discordapp.com/..." style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: #fff;">
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button onclick="closeAddTopggBotModal()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 700;">Cancel</button>
+                            <button onclick="registerTopggBot()" style="background: #FF3366; color: #fff; border: none; padding: 10px 22px; border-radius: 10px; cursor: pointer; font-weight: 800; box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4);">Save & Track</button>
                         </div>
                     </div>
                 </div>
@@ -13662,7 +13998,8 @@
                         'tab-automod': 'AutoMod',
                         'tab-autoresponder': 'Autoresponder',
                         'tab-feeds': 'Content Feeds',
-                        'tab-webhooks': 'Webhooks'
+                        'tab-webhooks': 'Webhooks',
+                        'tab-topgg': 'Top.gg Integration'
                     };
                     const breadcrumbTab = document.getElementById('breadcrumb-tab-name');
                     if (breadcrumbTab && friendlyTabNames[tabId]) {
@@ -13704,6 +14041,8 @@
                         if (typeof fetchApplications === 'function') fetchApplications();
                     } else if (tabId === 'tab-feeds') {
                         if (typeof fetchFeeds === 'function') fetchFeeds();
+                    } else if (tabId === 'tab-topgg') {
+                        if (typeof loadTopggSettings === 'function') loadTopggSettings();
                     }
                 } else if (tabId === 'servers') {
                     document.body.classList.remove('in-config');
@@ -18381,7 +18720,8 @@
                     document.getElementById('setting-loggingChannelId'),
                     document.getElementById('setting-starboardChannelId'),
                     document.getElementById('setting-welcomeChannelId'),
-                    document.getElementById('setting-verifyChannelId')
+                    document.getElementById('setting-verifyChannelId'),
+                    document.getElementById('setting-topggVoteChannelId')
                 ];
 
                 targetChannelSelects.forEach(select => {
@@ -21876,6 +22216,419 @@ document.addEventListener('keydown', (e) => {
     syncStatus();
     setInterval(syncStatus, 30000);
 })();
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 TOP.GG OFFICIAL INTEGRATION CONTROLLERS & TELEMETRY
+// ─────────────────────────────────────────────────────────────────────────────
+window.topggMultiBots = [];
+window.topggVoteLogs = [];
+
+async function loadTopggSettings() {
+    const guildId = window.currentServerId || window.currentGuildId;
+    const urlDisplay = document.getElementById('topgg-webhook-url-display');
+    if (urlDisplay) {
+        urlDisplay.value = `${window.location.origin}/api/webhooks/topgg/${guildId || ''}`;
+    }
+
+    if (!guildId) return;
+    const t = sessionStorage.getItem('discord_token');
+    const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+
+    try {
+        const res = await fetch(`${apiBase}/api/guilds/${guildId}/topgg`, {
+            headers: { 'Authorization': `Bearer ${t}` }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const config = data.config || {};
+
+        window.topggMultiBots = config.multiBots || [];
+        window.topggVoteLogs = config.voteLogs || [];
+
+        // Populate Form Controls
+        const authEl = document.getElementById('setting-topggWebhookAuth');
+        if (authEl) authEl.value = config.topggWebhookAuth || ('nora_' + Math.random().toString(36).substring(2, 10));
+
+        const roleEl = document.getElementById('setting-topggRewardRoleId');
+        if (roleEl && config.topggRewardRoleId) roleEl.value = config.topggRewardRoleId;
+
+        const xpEl = document.getElementById('setting-topggRewardXp');
+        if (xpEl) xpEl.value = config.topggRewardXp !== undefined ? config.topggRewardXp : 150;
+
+        const chanEl = document.getElementById('setting-topggVoteChannelId');
+        if (chanEl && config.topggVoteChannelId) chanEl.value = config.topggVoteChannelId;
+
+        const wkEl = document.getElementById('setting-topggWeekendMultiplier');
+        if (wkEl) wkEl.checked = config.topggWeekendMultiplier !== false;
+
+        const strkEl = document.getElementById('setting-topggStreakBonusEnabled');
+        if (strkEl) strkEl.checked = config.topggStreakBonusEnabled !== false;
+
+        // Telemetry Badges
+        const botCount = 1 + (window.topggMultiBots ? window.topggMultiBots.length : 0);
+        const statBots = document.getElementById('topgg-stat-bots');
+        if (statBots) statBots.textContent = `${botCount} Bot${botCount > 1 ? 's' : ''} Connected`;
+
+        const statVotes = document.getElementById('topgg-stat-votes');
+        if (statVotes) statVotes.textContent = `${window.topggVoteLogs.length} Total Vote${window.topggVoteLogs.length === 1 ? '' : 's'}`;
+
+        const isWeekend = [0, 5, 6].includes(new Date().getUTCDay());
+        const statMult = document.getElementById('topgg-stat-multiplier');
+        if (statMult) {
+            statMult.innerHTML = isWeekend ? '⭐ <b>2x Weekend Active</b>' : '⚡ <b>1x Standard</b>';
+            statMult.style.color = isWeekend ? '#FFD166' : '#38BDF8';
+        }
+
+        renderTopggBots(window.topggMultiBots, config.topggBotId);
+        renderTopggVoteLogs(window.topggVoteLogs);
+    } catch (e) {
+        console.warn('[Top.gg Load Warning]:', e.message);
+    }
+}
+
+async function saveTopggSettings() {
+    const guildId = window.currentServerId || window.currentGuildId;
+    if (!guildId) return;
+    const t = sessionStorage.getItem('discord_token');
+    const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+
+    const payload = {
+        topggWebhookAuth: document.getElementById('setting-topggWebhookAuth')?.value || '',
+        topggApiToken: document.getElementById('setting-topggApiToken')?.value || '',
+        topggVoteChannelId: document.getElementById('setting-topggVoteChannelId')?.value || null,
+        topggRewardRoleId: document.getElementById('setting-topggRewardRoleId')?.value || null,
+        topggRewardXp: parseInt(document.getElementById('setting-topggRewardXp')?.value, 10) || 150,
+        topggWeekendMultiplier: !!document.getElementById('setting-topggWeekendMultiplier')?.checked,
+        topggStreakBonusEnabled: !!document.getElementById('setting-topggStreakBonusEnabled')?.checked,
+        multiBots: window.topggMultiBots || []
+    };
+
+    try {
+        const res = await fetch(`${apiBase}/api/guilds/${guildId}/topgg`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${t}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (typeof showToast === 'function') {
+            showToast('🎉 Top.gg Integration settings saved successfully!', 'success');
+        }
+        loadTopggSettings();
+    } catch (e) {
+        console.error('[Top.gg Save Error]:', e);
+        if (typeof showToast === 'function') {
+            showToast(`Failed to save settings: ${e.message}`, 'error');
+        }
+    }
+}
+
+async function simulateTopggTestVote() {
+    const guildId = window.currentServerId || window.currentGuildId;
+    if (!guildId) {
+        if (typeof showToast === 'function') showToast('Please select a server first.', 'error');
+        return;
+    }
+
+    const t = sessionStorage.getItem('discord_token');
+    const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+
+    if (typeof showToast === 'function') showToast('🚀 Dispatching test webhook payload...', 'info');
+
+    try {
+        const res = await fetch(`${apiBase}/api/guilds/${guildId}/topgg/test`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${t}`
+            },
+            body: JSON.stringify({
+                voterTag: window.currentUser ? `${window.currentUser.username}#${window.currentUser.discriminator || '0'}` : 'Voter#0001',
+                voterId: window.currentUser ? window.currentUser.id : '593420060990005248',
+                isWeekend: true
+            })
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (data.log) {
+            window.topggVoteLogs.unshift(data.log);
+            renderTopggVoteLogs(window.topggVoteLogs);
+            const statVotes = document.getElementById('topgg-stat-votes');
+            if (statVotes) statVotes.textContent = `${window.topggVoteLogs.length} Total Votes`;
+        }
+
+        if (typeof showToast === 'function') {
+            showToast('✅ Test vote verified! Inbound log stream updated.', 'success');
+        }
+    } catch (e) {
+        console.error('[Top.gg Test Error]:', e);
+        if (typeof showToast === 'function') {
+            showToast(`Test failed: ${e.message}`, 'error');
+        }
+    }
+}
+
+async function validateTopggApiToken() {
+    const guildId = window.currentServerId || window.currentGuildId;
+    const token = document.getElementById('setting-topggApiToken')?.value;
+    const statusEl = document.getElementById('topgg-token-status');
+    if (!token) {
+        if (typeof showToast === 'function') showToast('Please enter a Top.gg API token to verify.', 'error');
+        return;
+    }
+
+    const t = sessionStorage.getItem('discord_token');
+    const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+
+    if (statusEl) {
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating token with Top.gg v2 API...';
+        statusEl.style.color = '#FFD166';
+    }
+
+    try {
+        const res = await fetch(`${apiBase}/api/guilds/${guildId}/topgg/validate-token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${t}`
+            },
+            body: JSON.stringify({ token })
+        });
+
+        const data = await res.json();
+        if (data.valid) {
+            if (statusEl) {
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> <b>Token Verified!</b> Official Top.gg API connected.';
+                statusEl.style.color = 'var(--success)';
+            }
+            if (typeof showToast === 'function') showToast('✅ Top.gg API Token validated successfully!', 'success');
+        } else {
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="fas fa-times-circle"></i> <b>Invalid Token:</b> ${data.error || 'Check authorization'}`;
+                statusEl.style.color = '#ef4444';
+            }
+            if (typeof showToast === 'function') showToast(`Token validation failed: ${data.error || 'Unauthorized'}`, 'error');
+        }
+    } catch (e) {
+        if (statusEl) {
+            statusEl.textContent = 'Verification error: ' + e.message;
+            statusEl.style.color = '#ef4444';
+        }
+    }
+}
+
+function copyTopggWebhookUrl() {
+    const input = document.getElementById('topgg-webhook-url-display');
+    if (!input) return;
+    navigator.clipboard.writeText(input.value).then(() => {
+        if (typeof showToast === 'function') showToast('📋 Webhook URL copied to clipboard!', 'success');
+    }).catch(() => {
+        input.select();
+        document.execCommand('copy');
+        if (typeof showToast === 'function') showToast('📋 Webhook URL copied!', 'success');
+    });
+}
+
+function regenerateTopggAuthSecret() {
+    const newSecret = 'nora_auth_' + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
+    const input = document.getElementById('setting-topggWebhookAuth');
+    if (input) {
+        input.value = newSecret;
+        if (typeof showToast === 'function') showToast('🔑 New authorization secret generated. Click "Save Settings" to apply.', 'info');
+    }
+}
+
+function openAddTopggBotModal() {
+    const modal = document.getElementById('modal-add-topgg-bot');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeAddTopggBotModal() {
+    const modal = document.getElementById('modal-add-topgg-bot');
+    if (modal) modal.style.display = 'none';
+}
+
+function registerTopggBot() {
+    const id = document.getElementById('new-topgg-bot-id')?.value?.trim();
+    const name = document.getElementById('new-topgg-bot-name')?.value?.trim() || `Bot (${id})`;
+    const avatar = document.getElementById('new-topgg-bot-avatar')?.value?.trim() || 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+    if (!id || !/^\d{17,21}$/.test(id)) {
+        if (typeof showToast === 'function') showToast('Please enter a valid numeric Discord Bot ID (17-21 digits).', 'error');
+        return;
+    }
+
+    if (!window.topggMultiBots) window.topggMultiBots = [];
+    if (window.topggMultiBots.some(b => b.id === id)) {
+        if (typeof showToast === 'function') showToast('This bot is already registered in your tracker.', 'error');
+        return;
+    }
+
+    window.topggMultiBots.push({ id, name, avatar, active: true });
+    closeAddTopggBotModal();
+
+    // Clear inputs
+    const idEl = document.getElementById('new-topgg-bot-id');
+    const nameEl = document.getElementById('new-topgg-bot-name');
+    const avEl = document.getElementById('new-topgg-bot-avatar');
+    if (idEl) idEl.value = '';
+    if (nameEl) nameEl.value = '';
+    if (avEl) avEl.value = '';
+
+    saveTopggSettings();
+    if (typeof showToast === 'function') showToast(`🤖 Added ${name} to Top.gg vote tracker!`, 'success');
+}
+
+function removeTopggBot(botId) {
+    if (!window.topggMultiBots) return;
+    window.topggMultiBots = window.topggMultiBots.filter(b => b.id !== botId);
+    saveTopggSettings();
+    if (typeof showToast === 'function') showToast('Tracked bot removed.', 'info');
+}
+
+function renderTopggBots(bots, defaultBotId) {
+    const container = document.getElementById('topgg-bots-container');
+    if (!container) return;
+
+    let html = `
+        <!-- Default Nora Bot Entry -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 51, 102, 0.2); border-radius: 12px; padding: 10px 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="nora.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #FF3366;" alt="Nora">
+                <div>
+                    <div style="font-weight: 800; font-size: 0.92rem; color: #fff; display: flex; align-items: center; gap: 6px;">
+                        Nora Assistant <span class="badge stable" style="font-size: 0.65rem; background: rgba(255, 51, 102, 0.2); color: #FF3366;">Primary Bot</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--muted); font-family: monospace;">ID: ${defaultBotId || '593420060990005248'}</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.72rem; color: var(--success); font-weight: 700; background: rgba(46, 160, 67, 0.15); padding: 3px 8px; border-radius: 6px;">Listening</span>
+            </div>
+        </div>
+    `;
+
+    if (Array.isArray(bots) && bots.length > 0) {
+        bots.forEach(b => {
+            html += `
+                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 10px 14px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="${b.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15);" alt="${b.name}">
+                        <div>
+                            <div style="font-weight: 800; font-size: 0.92rem; color: #fff;">${b.name || 'Custom Bot'}</div>
+                            <div style="font-size: 0.75rem; color: var(--muted); font-family: monospace;">ID: ${b.id}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button onclick="removeTopggBot('${b.id}')" title="Remove bot" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-trash-alt" style="font-size: 0.75rem;"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    container.innerHTML = html;
+}
+
+function renderTopggVoteLogs(logs) {
+    const tbody = document.getElementById('topgg-vote-logs-body');
+    if (!tbody) return;
+
+    if (!Array.isArray(logs) || logs.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="padding: 30px; text-align: center; color: var(--muted);">
+                    <i class="fas fa-inbox" style="font-size: 1.8rem; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                    No votes recorded yet. Click <b>Simulate Test Vote</b> above to test your pipeline!
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    let html = '';
+    logs.forEach(log => {
+        const timeStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Just now';
+        const streak = log.streak || 1;
+        const isWk = log.isWeekend;
+
+        html += `
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04); transition: background 0.2s ease;">
+                <td style="padding: 12px 16px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <img src="${log.voterAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="">
+                        <div>
+                            <div style="font-weight: 700; color: #fff;">${log.voterTag || `@User (${log.voterId?.substring(0, 6)}...)`}</div>
+                            <div style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">${log.voterId || ''}</div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding: 12px 16px; font-family: monospace; font-size: 0.8rem; color: #a5b4fc;">
+                    ${log.targetBotId ? (log.targetBotId.substring(0, 10) + '...') : 'Nora'}
+                </td>
+                <td style="padding: 12px 16px;">
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <span style="background: rgba(255, 51, 102, 0.15); color: #FF3366; border: 1px solid rgba(255, 51, 102, 0.3); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
+                            🔥 ${streak}x Streak
+                        </span>
+                        ${isWk ? '<span style="background: rgba(255, 209, 102, 0.15); color: #FFD166; border: 1px solid rgba(255, 209, 102, 0.3); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;">⭐ Weekend 2x</span>' : ''}
+                    </div>
+                </td>
+                <td style="padding: 12px 16px; font-weight: 600; color: #fff;">
+                    ${log.rewards || 'Vote Processed'}
+                </td>
+                <td style="padding: 12px 16px; font-size: 0.78rem; color: var(--muted);">
+                    ${timeStr}
+                </td>
+                <td style="padding: 12px 16px;">
+                    <span style="display: inline-flex; align-items: center; gap: 5px; color: var(--success); font-size: 0.76rem; font-weight: 700;">
+                        <i class="fas fa-check-circle"></i> Delivered
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+function filterTopggLogs() {
+    const query = document.getElementById('topgg-log-search')?.value?.toLowerCase() || '';
+    if (!window.topggVoteLogs) return;
+
+    if (!query) {
+        renderTopggVoteLogs(window.topggVoteLogs);
+        return;
+    }
+
+    const filtered = window.topggVoteLogs.filter(l => {
+        return (l.voterTag && l.voterTag.toLowerCase().includes(query)) ||
+               (l.voterId && l.voterId.includes(query)) ||
+               (l.targetBotId && l.targetBotId.includes(query)) ||
+               (l.rewards && l.rewards.toLowerCase().includes(query));
+    });
+
+    renderTopggVoteLogs(filtered);
+}
+
+// Global exports
+window.loadTopggSettings = loadTopggSettings;
+window.saveTopggSettings = saveTopggSettings;
+window.simulateTopggTestVote = simulateTopggTestVote;
+window.validateTopggApiToken = validateTopggApiToken;
+window.copyTopggWebhookUrl = copyTopggWebhookUrl;
+window.regenerateTopggAuthSecret = regenerateTopggAuthSecret;
+window.openAddTopggBotModal = openAddTopggBotModal;
+window.closeAddTopggBotModal = closeAddTopggBotModal;
+window.registerTopggBot = registerTopggBot;
+window.removeTopggBot = removeTopggBot;
+window.filterTopggLogs = filterTopggLogs;
 </script>
 
 </body>

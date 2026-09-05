@@ -1431,6 +1431,10 @@ app.use('/api/guilds/:guildId', guildsRouter);
 const botboardRouter = require('./api/routes/botboard')(client);
 app.use(['/webhooks/botboard', '/api/webhooks/botboard', '/api/botboard'], botboardRouter);
 
+// Mount Top.gg Official Webhook & Integration Router
+const topggRouter = require('./api/routes/topgg')(client);
+app.use(topggRouter);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 📈 BOTBOARD.GG STATS AUTO-POSTER (Co-exists alongside Top.gg)
 // ─────────────────────────────────────────────────────────────────────────────

@@ -901,6 +901,62 @@ const GuildSettings = sequelize.define('GuildSettings', {
     afkCleanMessage: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+    },
+
+    // ---- Top.gg Integration Suite ----
+    topggVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    topggBotId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    topggWebhookAuth: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    topggApiToken: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    topggVoteChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    topggRewardRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    topggRewardXp: {
+        type: DataTypes.INTEGER,
+        defaultValue: 150
+    },
+    topggWeekendMultiplier: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    topggStreakBonusEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    topggMultiBots: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    topggVoteLogs: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    topggLegacyOwnerId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
     }
 });
 
