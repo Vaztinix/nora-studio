@@ -7022,7 +7022,7 @@
                                 <h4>Enable One Word Story Game</h4>
                                 <p>Allow members to play the story game in your server.</p>
                             </div>
-                            <input type="checkbox" id="setting-oneWordStoryEnabled">
+                            <label class="switch"><input type="checkbox" id="setting-oneWordStoryEnabled"><span class="slider"></span></label>
                         </div>
 
                         <div class="row" style="margin-top: 15px;">
@@ -12279,10 +12279,25 @@
 
         async function testWebPushNotification() {
             try {
-                const reg = await navigator.serviceWorker.ready.catch(() => null);
+                if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                    showToast('Push Notifications are not supported by your browser.', 'warning');
+                    return;
+                }
+
+                let reg = await navigator.serviceWorker.ready.catch(() => null);
                 let sub = reg ? await reg.pushManager.getSubscription().catch(() => null) : null;
+
+                if (!sub) {
+                    // Automatically attempt to subscribe & sync push subscription
+                    await subscribeToWebPush(true);
+                    if (reg) {
+                        sub = await reg.pushManager.getSubscription().catch(() => null);
+                    }
+                }
+
                 const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '').replace(/\/$/, '');
-                const currentUserId = getDashboardUserId() || 'anonymous';
+                const currentUserId = getDashboardUserId() || (window.currentUser ? window.currentUser.id : 'anonymous');
+                const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token');
                 const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
 
                 // Priority candidate endpoints to attempt
@@ -12302,8 +12317,16 @@
                     try {
                         const res = await fetch(url, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ userId: currentUserId, subscription: subPayload, endpoint: sub ? sub.endpoint : null })
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': t ? `Bearer ${t}` : '',
+                                'x-user-id': currentUserId || ''
+                            },
+                            body: JSON.stringify({
+                                userId: currentUserId,
+                                subscription: subPayload,
+                                endpoint: sub ? sub.endpoint : null
+                            })
                         });
 
                         const text = await res.text().catch(() => '');

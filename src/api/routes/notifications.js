@@ -151,20 +151,33 @@ router.post('/subscribe', async (req, res) => {
  */
 router.post('/test-push', async (req, res) => {
     try {
-        const { userId, endpoint, subscription } = req.body || {};
-        const PushSubscription = require('../../database/models/PushSubscription');
-        
-        if (subscription && subscription.endpoint && subscription.keys) {
-            await pushManager.saveSubscription(userId || 'anonymous', subscription);
+        let userId = req.query.userId || req.headers['x-user-id'] || (req.body && req.body.userId);
+        const authHeader = req.headers.authorization;
+        if (!userId && authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const { getDiscordUser } = require('../middleware/auth');
+                const user = await getDiscordUser(authHeader.split(' ')[1]).catch(() => null);
+                if (user && user.id) userId = user.id;
+            } catch (_) {}
         }
 
+        const { endpoint, subscription } = req.body || {};
+        const PushSubscription = require('../../database/models/PushSubscription');
+        
         let subRecord = null;
-        if (endpoint || (subscription && subscription.endpoint)) {
+        if (subscription && subscription.endpoint && subscription.keys) {
+            subRecord = await pushManager.saveSubscription(userId || 'anonymous', subscription);
+        }
+
+        if (!subRecord && (endpoint || (subscription && subscription.endpoint))) {
             const targetEndpoint = endpoint || (subscription && subscription.endpoint);
             subRecord = await PushSubscription.findOne({ where: { endpoint: targetEndpoint } });
         }
         if (!subRecord && userId && userId !== 'anonymous') {
             subRecord = await PushSubscription.findOne({ where: { userId }, order: [['updatedAt', 'DESC']] });
+        }
+        if (!subRecord) {
+            subRecord = await PushSubscription.findOne({ order: [['updatedAt', 'DESC']] });
         }
 
         if (!subRecord) {
