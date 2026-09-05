@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="nora.png">
     <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/translate.js"></script>
     <script>
         window.__KNOWN_NORA_GUILDS__ = ["1380094048882266112","1471582546151346359","1502569432785092618","1408523665573810296","1487342521133830174","1493517644815536180","1542284395891920896","1331685485759955016","1492598604643434570","1516656405904363530","1492594051713863710","1505315717921112154","1495210302894116894","1497716213973782588","1528497353680621588","1501092925516546173","1371510828712464565","1351304498185900184","1311022958843658351","1515800329889779954","1514002757110206505","1518640702161027263","1493022018055176387","1484683779137208420","1457481176112431347","1492601244374794543","1311634850607927306","1452453746859577481","1492600701530935407","1392140968551252010","1368269183011393637","1456729601551106125","1520426496991166655","1324215030366867456","1492598096167964722","1492599093992751135","1216119597976256522","1506147817427828809","1469895571413270740","1492593551291187290","1412901825174048800","939395110519603220","1520149842163269672","1460360514730201276","1406717813913030757","1492593292410355812","1492592049147609298","1492983186496425984","1265014058290122783","1484256847727952114","1444403869097656412","1428110154121084968","1231664152615981238","1506664856227418163","1492600447683526778","1492602875044565134","1492598348916723822","1525511322849120428","1148276609762205709","1246976150874624050","1425663262166614030","1429166136695590924","1492601497563955330","1391954867215667200","1492600988799074434"];
@@ -12098,7 +12098,38 @@
         }
 
         function getNotifKey() {
-            return 'nora_notifs_' + (window.currentUser ? window.currentUser.id : 'guest');
+            return 'nora_notifs_' + ((window.currentUser && window.currentUser.id) || 'guest');
+        }
+
+        function getReadNotifKeys() {
+            try {
+                const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : 'guest');
+                const stored = localStorage.getItem('nora_read_notifs_' + uid);
+                return stored ? JSON.parse(stored) : [];
+            } catch (_) { return []; }
+        }
+
+        function persistReadNotif(n) {
+            if (!n) return;
+            try {
+                const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : 'guest');
+                const list = new Set(getReadNotifKeys());
+                if (n.id) list.add(String(n.id));
+                if (n.title) list.add(`${n.title}|${n.content || n.message || ''}`);
+                localStorage.setItem('nora_read_notifs_' + uid, JSON.stringify([...list]));
+            } catch (_) {}
+        }
+
+        function persistAllReadNotifs(notifList) {
+            try {
+                const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : 'guest');
+                const list = new Set(getReadNotifKeys());
+                (notifList || []).forEach(n => {
+                    if (n && n.id) list.add(String(n.id));
+                    if (n && n.title) list.add(`${n.title}|${n.content || n.message || ''}`);
+                });
+                localStorage.setItem('nora_read_notifs_' + uid, JSON.stringify([...list]));
+            } catch (_) {}
         }
 
         let isFetchingNotifications = false;
@@ -12752,7 +12783,11 @@
             }
 
             if (Array.isArray(listData)) {
-                notifications = listData;
+                const readKeys = new Set(getReadNotifKeys());
+                notifications = listData.map(n => {
+                    const isRead = n.read === true || readKeys.has(String(n.id)) || readKeys.has(`${n.title}|${n.content || n.message || ''}`);
+                    return { ...n, read: isRead };
+                });
             }
 
             try {
@@ -12853,23 +12888,24 @@
             let cardBorder = isRead ? 'rgba(255, 255, 255, 0.05)' : 'rgba(88, 101, 242, 0.25)';
 
             if (cat === 'error') {
-                icon = 'fas fa-circle-exclamation';
+                icon = 'fas fa-exclamation-circle';
                 iconColor = '#ef4444';
                 cardBg = isRead ? 'rgba(255, 255, 255, 0.015)' : 'rgba(239, 68, 68, 0.06)';
                 cardBorder = isRead ? 'rgba(255, 255, 255, 0.05)' : 'rgba(239, 68, 68, 0.25)';
             } else if (cat === 'warning') {
-                icon = 'fas fa-triangle-exclamation';
+                icon = 'fas fa-exclamation-triangle';
                 iconColor = '#f59e0b';
                 cardBg = isRead ? 'rgba(255, 255, 255, 0.015)' : 'rgba(245, 158, 11, 0.06)';
                 cardBorder = isRead ? 'rgba(255, 255, 255, 0.05)' : 'rgba(245, 158, 11, 0.25)';
             } else if (cat === 'success') {
-                icon = 'fas fa-circle-check';
+                icon = 'fas fa-check-circle';
                 iconColor = '#10b981';
                 cardBg = isRead ? 'rgba(255, 255, 255, 0.015)' : 'rgba(16, 185, 129, 0.06)';
                 cardBorder = isRead ? 'rgba(255, 255, 255, 0.05)' : 'rgba(16, 185, 129, 0.25)';
             } else {
                 const title = String(n.title || '').toLowerCase();
-                if (title.includes('announcement') || title.includes('broadcast')) {
+                const content = String(n.content || n.message || '').toLowerCase();
+                if (title.includes('announcement') || title.includes('broadcast') || content.includes('announcement') || content.includes('community')) {
                     icon = 'fas fa-bullhorn';
                 }
             }
@@ -12937,56 +12973,82 @@
         async function clearNotifications() {
             if (!confirm('Clear all notifications?')) return;
             logToTerminal('Clearing notifications.', 'SYSTEM_ACTION');
+            persistAllReadNotifs(notifications);
             notifications = [];
             saveNotifications();
             renderNotifications();
 
             try {
-                const apiBase = window.getApiBaseUrl();
+                const apiBase = window.getApiBaseUrl ? window.getApiBaseUrl() : '';
+                const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token');
+                const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : null);
                 await fetch(`${apiBase}/api/notifications/clear`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_token')}`
+                        'Authorization': t ? `Bearer ${t}` : '',
+                        'x-user-id': uid || ''
                     },
-                    body: JSON.stringify({ all: true })
-                });
+                    body: JSON.stringify({ all: true, userId: uid })
+                }).catch(() => {});
             } catch (e) { console.error(e); }
         }
 
         async function markAllRead() {
             logToTerminal('Marking all notifications as read.', 'SYSTEM_ACTION');
             notifications.forEach(n => n.read = true);
+            persistAllReadNotifs(notifications);
             saveNotifications();
             renderNotifications();
 
             try {
-                const apiBase = window.getApiBaseUrl();
+                const apiBase = window.getApiBaseUrl ? window.getApiBaseUrl() : '';
+                const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token');
+                const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : null);
                 await fetch(`${apiBase}/api/notifications/read`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionStorage.getItem('discord_token') || localStorage.getItem('nora_token')}`
+                        'Authorization': t ? `Bearer ${t}` : '',
+                        'x-user-id': uid || ''
                     },
-                    body: JSON.stringify({ all: true })
-                });
+                    body: JSON.stringify({ all: true, userId: uid })
+                }).catch(() => {});
             } catch (e) { console.error(e); }
         }
 
         async function deleteNotification(id, event) {
             if (event) event.stopPropagation();
-            notifications = notifications.filter(n => n.id !== id);
+            const notif = notifications.find(n => n.id === id || String(n.id) === String(id));
+            if (notif) persistReadNotif(notif);
+            notifications = notifications.filter(n => n.id !== id && String(n.id) !== String(id));
             saveNotifications();
             renderNotifications();
         }
 
         function markNotificationRead(id, event) {
             if (event) event.stopPropagation();
-            const notif = notifications.find(n => n.id === id);
+            const notif = notifications.find(n => n.id === id || String(n.id) === String(id));
             if (notif) {
                 notif.read = true;
+                persistReadNotif(notif);
                 saveNotifications();
                 renderNotifications();
+
+                try {
+                    const apiBase = window.getApiBaseUrl ? window.getApiBaseUrl() : '';
+                    const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token');
+                    const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : null);
+                    fetch(`${apiBase}/api/notifications/read`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': t ? `Bearer ${t}` : '',
+                            'x-user-id': uid || ''
+                        },
+                        body: JSON.stringify({ id: notif.id, userId: uid })
+                    }).catch(() => {});
+                } catch (_) {}
             }
         }
 

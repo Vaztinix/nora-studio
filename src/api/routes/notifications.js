@@ -56,6 +56,80 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * POST Mark Notification(s) as Read
+ */
+router.post('/read', async (req, res) => {
+    try {
+        let userId = req.query.userId || req.headers['x-user-id'] || (req.body && req.body.userId);
+        const authHeader = req.headers.authorization;
+        if (!userId && authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const { getDiscordUser } = require('../middleware/auth');
+                const user = await getDiscordUser(authHeader.split(' ')[1]).catch(() => null);
+                if (user && user.id) userId = user.id;
+            } catch (_) {}
+        }
+
+        const { id, all } = req.body || {};
+        const { Op } = require('sequelize');
+
+        if (id) {
+            await Notification.update({ read: true }, { where: { id } }).catch(() => {});
+        } else if (all) {
+            await Notification.update({ read: true }, {
+                where: {
+                    [Op.or]: [
+                        { userId: userId || 'anonymous' },
+                        { userId: 'global' }
+                    ]
+                }
+            }).catch(() => {});
+        }
+
+        res.json({ status: 'ok', message: 'Notifications marked as read.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * POST Clear Notifications
+ */
+router.post('/clear', async (req, res) => {
+    try {
+        let userId = req.query.userId || req.headers['x-user-id'] || (req.body && req.body.userId);
+        const authHeader = req.headers.authorization;
+        if (!userId && authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const { getDiscordUser } = require('../middleware/auth');
+                const user = await getDiscordUser(authHeader.split(' ')[1]).catch(() => null);
+                if (user && user.id) userId = user.id;
+            } catch (_) {}
+        }
+
+        const { id, all } = req.body || {};
+        const { Op } = require('sequelize');
+
+        if (id) {
+            await Notification.destroy({ where: { id } }).catch(() => {});
+        } else if (all) {
+            await Notification.destroy({
+                where: {
+                    [Op.or]: [
+                        { userId: userId || 'anonymous' },
+                        { userId: 'global' }
+                    ]
+                }
+            }).catch(() => {});
+        }
+
+        res.json({ status: 'ok', message: 'Notifications cleared.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * POST Subscribe to Web Push Notifications
  */
 router.post('/subscribe', async (req, res) => {
