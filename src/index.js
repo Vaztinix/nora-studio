@@ -2523,198 +2523,9 @@ app.get('/api/bot/guild-ids', (req, res) => {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 🎮 ROBLOX USER PROFILE & VERIFICATION API ROUTES
+// 🎮 ROBLOX USER PROFILE & VERIFICATION API ROUTES (Refer to main handlers below)
 // ─────────────────────────────────────────────────────────────────────────────
 const RobloxVerify = require('./database/models/RobloxVerify');
-
-app.get('/api/user/roblox/accounts', async (req, res) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-        const token = authHeader.split(' ')[1];
-        const user = await getDiscordUser(token);
-        if (!user) return res.status(401).json({ error: 'Invalid token' });
-
-        const records = await RobloxVerify.findAll({ where: { userId: user.id } });
-        const accounts = await Promise.all(records.map(async (r) => {
-            let robloxUsername = 'RobloxUser';
-            let avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${r.robloxId}&size=150x150&format=Png&isCircular=false`;
-            try {
-                if (r.robloxId) {
-                    const rRes = await fetch(`https://users.roblox.com/v1/users/${r.robloxId}`).then(res => res.json()).catch(() => null);
-                    if (rRes && rRes.name) robloxUsername = rRes.name;
-                }
-            } catch (e) { }
-
-            return {
-                id: r.id,
-                robloxId: r.robloxId,
-                robloxUsername: robloxUsername,
-                avatarUrl: avatarUrl,
-                verified: r.status === 'VERIFIED',
-                verifyCode: r.verifyCode,
-                isActive: r.isActive !== false
-            };
-        }));
-
-        res.json({ success: true, accounts });
-    } catch (e) {
-        handleRouteError(res, e, '/api/user/roblox/accounts');
-    }
-});
-
-app.post('/api/user/roblox/link', async (req, res) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-        const token = authHeader.split(' ')[1];
-        const user = await getDiscordUser(token);
-        if (!user) return res.status(401).json({ error: 'Invalid token' });
-
-        const { username } = req.body || {};
-        if (!username || typeof username !== 'string') {
-            return res.status(400).json({ error: 'Please provide a valid Roblox username.' });
-        }
-
-        // 1. Resolve Roblox username to Roblox ID via Roblox API
-        const lookupRes = await fetch('https://users.roblox.com/v1/usernames/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usernames: [username.trim()], excludeBannedUsers: false })
-        }).then(r => r.json()).catch(() => null);
-
-        if (!lookupRes || !lookupRes.data || !lookupRes.data.length) {
-            return res.status(404).json({ error: `Could not find Roblox account with username "${username}".` });
-        }
-
-        const robloxUser = lookupRes.data[0];
-        const robloxId = String(robloxUser.id);
-        const robloxName = robloxUser.name;
-
-        // Generate friendly verification code
-        const codeNum = Math.floor(1000 + Math.random() * 9000);
-        const verifyCode = `Nora-${codeNum}`;
-
-        // Check if already linked
-        let existing = await RobloxVerify.findOne({ where: { userId: user.id, robloxId } });
-        if (existing) {
-            existing.verifyCode = verifyCode;
-            await existing.save();
-        } else {
-            existing = await RobloxVerify.create({
-                userId: user.id,
-                robloxId,
-                verifyCode,
-                status: 'PENDING',
-                isActive: true
-            });
-        }
-
-        const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`;
-
-        res.json({
-            success: true,
-            account: {
-                id: existing.id,
-                robloxId,
-                robloxUsername: robloxName,
-                avatarUrl,
-                verified: existing.status === 'VERIFIED',
-                verifyCode: existing.verifyCode,
-                isActive: existing.isActive
-            }
-        });
-    } catch (e) {
-        handleRouteError(res, e, '/api/user/roblox/link');
-    }
-});
-
-app.post('/api/user/roblox/check', async (req, res) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-        const token = authHeader.split(' ')[1];
-        const user = await getDiscordUser(token);
-        if (!user) return res.status(401).json({ error: 'Invalid token' });
-
-        const { robloxId } = req.body || {};
-        if (!robloxId) return res.status(400).json({ error: 'Missing robloxId' });
-
-        const record = await RobloxVerify.findOne({ where: { userId: user.id, robloxId: String(robloxId) } });
-        if (!record) return res.status(404).json({ error: 'Roblox verification record not found.' });
-
-        // Query Roblox profile description
-        const profileRes = await fetch(`https://users.roblox.com/v1/users/${robloxId}`).then(r => r.json()).catch(() => null);
-        const description = (profileRes && profileRes.description) ? profileRes.description : '';
-
-        if (description.includes(record.verifyCode)) {
-            record.status = 'VERIFIED';
-            record.isActive = true;
-            await record.save();
-            return res.json({ success: true, verified: true, message: 'Account verified successfully!' });
-        } else {
-            return res.json({
-                success: false,
-                verified: false,
-                message: `Verification code "${record.verifyCode}" was not found in your Roblox "About" description. Please update your profile description and try again.`
-            });
-        }
-    } catch (e) {
-        handleRouteError(res, e, '/api/user/roblox/check');
-    }
-});
-
-app.post('/api/user/roblox/unlink', async (req, res) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-        const token = authHeader.split(' ')[1];
-        const user = await getDiscordUser(token);
-        if (!user) return res.status(401).json({ error: 'Invalid token' });
-
-        const { robloxId } = req.body || {};
-        if (robloxId) {
-            await RobloxVerify.destroy({ where: { userId: user.id, robloxId: String(robloxId) } });
-        }
-        res.json({ success: true, message: 'Account unlinked.' });
-    } catch (e) {
-        handleRouteError(res, e, '/api/user/roblox/unlink');
-    }
-});
-
-app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-        const token = authHeader.split(' ')[1];
-        const user = await getDiscordUser(token);
-        if (!user) return res.status(401).json({ error: 'Invalid token' });
-
-        const { robloxId, active } = req.body || {};
-        const record = await RobloxVerify.findOne({ where: { userId: user.id, robloxId: String(robloxId) } });
-        if (record) {
-            record.isActive = !!active;
-            await record.save();
-        }
-        res.json({ success: true });
-    } catch (e) {
-        handleRouteError(res, e, '/api/user/roblox/accounts/toggle');
-    }
-});
-
-app.get('/api/user/roblox/avatar', async (req, res) => {
-    try {
-        const { userId } = req.query;
-        if (!userId) return res.redirect('/nora.png');
-        const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`).then(r => r.json()).catch(() => null);
-        if (thumbRes && thumbRes.data && thumbRes.data[0] && thumbRes.data[0].imageUrl) {
-            return res.redirect(thumbRes.data[0].imageUrl);
-        }
-        res.redirect('/nora.png');
-    } catch (e) {
-        res.redirect('/nora.png');
-    }
-});
 
 app.get('/api/user/guilds', async (req, res) => {
     const authHeader = req.headers.authorization;
@@ -2822,66 +2633,7 @@ app.get('/api/user/guilds', async (req, res) => {
     }
 });
 
-// Trigger On-Demand Underage Member Sweep
-app.all('/api/moderation/underage-sweep', async (req, res) => {
-    try {
-        const { runUnderageSweep } = require('./utils/underageSweep');
-        console.log('[API] Manual on-demand Underage Sweep triggered via /api/moderation/underage-sweep');
-        // Run sweep asynchronously or await
-        const result = await runUnderageSweep(req.client);
-        res.json({
-            success: true,
-            message: 'Underage sweep executed successfully. Hourly background check remains active.',
-            result
-        });
-    } catch (e) {
-        handleRouteError(res, e, '/api/moderation/underage-sweep');
-    }
-});
-
-app.get('/api/debug-roles', async (req, res) => {
-    try {
-        const guild = req.client.guilds.cache.get('1487342521133830174') || await req.client.guilds.fetch('1487342521133830174').catch(() => null);
-        if (!guild) return res.json({ error: 'Guild not found' });
-        const roles = await guild.roles.fetch();
-        res.json(roles.map(r => ({ id: r.id, name: r.name, memberCount: r.members.size })));
-    } catch (e) {
-        res.json({ error: e.message });
-    }
-});
-
-// Roblox Verification API endpoints
-app.get('/api/user/roblox', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-    const token = authHeader.split(' ')[1];
-    try {
-        const user = await getDiscordUser(token);
-        const record = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } }) ||
-            await RobloxVerify.findOne({ where: { userId: user.id, status: 'VERIFIED' } }) ||
-            await RobloxVerify.findOne({ where: { userId: user.id } });
-
-        if (!record) return res.json({ linked: false });
-
-        let username = record.robloxId;
-        if (/^\d+$/.test(record.robloxId)) {
-            try {
-                const profileRes = await fetchRoblox(`https://users.roblox.com/v1/users/${record.robloxId}`);
-                if (profileRes.ok) {
-                    const data = await profileRes.json();
-                    username = data.name;
-                }
-            } catch (e) {
-                console.error('Failed to fetch Roblox username by ID:', e);
-            }
-        }
-
-        res.json({ linked: true, status: record.status, robloxId: record.robloxId, robloxUsername: username, verifyCode: record.verifyCode, isActive: record.isActive });
-    } catch (e) {
-        handleRouteError(res, e, '/api/user/roblox');
-    }
-});
-
+// GET /api/user/roblox/accounts
 app.get('/api/user/roblox/accounts', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
@@ -2914,20 +2666,237 @@ app.get('/api/user/roblox/accounts', async (req, res) => {
 
         const accounts = records.map(r => {
             const profile = profileMap.get(r.robloxId);
+            const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${r.robloxId}&size=150x150&format=Png&isCircular=false`;
             return {
                 id: r.id,
                 robloxId: r.robloxId,
                 robloxUsername: profile ? profile.name : r.robloxId,
-                robloxDisplayName: profile ? profile.displayName : r.robloxId,
+                robloxDisplayName: profile ? profile.displayName : (profile ? profile.name : r.robloxId),
+                avatar: avatarUrl,
+                avatarUrl: avatarUrl,
                 status: r.status,
-                isActive: r.isActive,
+                verified: r.status === 'VERIFIED',
+                isActive: r.isActive !== false,
                 verifyCode: r.verifyCode
             };
         });
 
+        if (req.query.format === 'object') {
+            return res.json({ success: true, accounts });
+        }
         res.json(accounts);
     } catch (e) {
         handleRouteError(res, e, '/api/user/roblox/accounts');
+    }
+});
+
+// POST /api/user/roblox/link (Manual username link)
+app.post('/api/user/roblox/link', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token);
+        if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+        const { username } = req.body || {};
+        if (!username || typeof username !== 'string') {
+            return res.status(400).json({ error: 'Please provide a valid Roblox username.' });
+        }
+
+        const lookupRes = await fetchRoblox('https://users.roblox.com/v1/usernames/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usernames: [username.trim()], excludeBannedUsers: false })
+        });
+
+        if (!lookupRes.ok) {
+            return res.status(500).json({ error: 'Roblox API lookup failed.' });
+        }
+
+        const lookupData = await lookupRes.json();
+        if (!lookupData.data || lookupData.data.length === 0) {
+            return res.status(404).json({ error: `Could not find Roblox account with username "${username}".` });
+        }
+
+        const robloxUser = lookupData.data[0];
+        const robloxId = String(robloxUser.id);
+        const robloxName = robloxUser.name;
+        const verifyCode = `Nora-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+
+        let existing = await RobloxVerify.findOne({ where: { userId: user.id, robloxId } });
+        if (existing) {
+            existing.verifyCode = verifyCode;
+            await existing.save();
+        } else {
+            const count = await RobloxVerify.count({ where: { userId: user.id } });
+            existing = await RobloxVerify.create({
+                userId: user.id,
+                robloxId,
+                verifyCode,
+                status: 'PENDING',
+                isActive: count === 0
+            });
+        }
+
+        const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`;
+
+        res.json({
+            success: true,
+            account: {
+                id: existing.id,
+                robloxId,
+                robloxUsername: robloxName,
+                robloxDisplayName: robloxUser.displayName || robloxName,
+                avatar: avatarUrl,
+                avatarUrl,
+                status: existing.status,
+                verified: existing.status === 'VERIFIED',
+                verifyCode: existing.verifyCode,
+                isActive: existing.isActive
+            }
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/link');
+    }
+});
+
+// POST /api/user/roblox/check (Check description for manual verify code)
+app.post('/api/user/roblox/check', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+        const token = authHeader.split(' ')[1];
+        const user = await getDiscordUser(token);
+        if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+        const { robloxId, guildId } = req.body || {};
+        if (!robloxId) return res.status(400).json({ error: 'Missing robloxId' });
+
+        const record = await RobloxVerify.findOne({ where: { userId: user.id, robloxId: String(robloxId) } });
+        if (!record) return res.status(404).json({ error: 'Roblox verification record not found.' });
+
+        // If already verified, immediately trigger role sync
+        if (record.status === 'VERIFIED') {
+            await syncUserRolesAcrossGuilds(user.id, record.robloxId, guildId);
+            return res.json({ success: true, verified: true, message: 'Account is verified and roles are synced!' });
+        }
+
+        // Query Roblox profile description
+        const profileRes = await fetchRoblox(`https://users.roblox.com/v1/users/${robloxId}`);
+        if (!profileRes.ok) return res.status(500).json({ error: 'Failed to contact Roblox API' });
+        const profileData = await profileRes.json();
+        const description = profileData.description || '';
+
+        if (description.includes(record.verifyCode)) {
+            record.status = 'VERIFIED';
+            record.isActive = true;
+            await record.save();
+
+            // Deactivate other profiles
+            await RobloxVerify.update({ isActive: false }, {
+                where: {
+                    userId: user.id,
+                    robloxId: { [require('sequelize').Op.ne]: String(robloxId) }
+                }
+            });
+
+            await syncUserRolesAcrossGuilds(user.id, record.robloxId, guildId);
+            return res.json({ success: true, verified: true, message: 'Roblox account successfully verified and server roles assigned!' });
+        } else {
+            return res.status(400).json({
+                success: false,
+                verified: false,
+                message: `Verification code "${record.verifyCode}" was not found in your Roblox "About" description. Please update your profile description and try again.`
+            });
+        }
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/check');
+    }
+});
+
+// Helper function to sync roles for a user across guilds
+async function syncUserRolesAcrossGuilds(userId, robloxId, specificGuildId = null) {
+    const robloxSystem = require('./utils/robloxSystem');
+    const settingsCache = require('./utils/settingsCache');
+    const guilds = specificGuildId 
+        ? [client.guilds.cache.get(specificGuildId)].filter(Boolean)
+        : Array.from(client.guilds.cache.values());
+
+    for (const guild of guilds) {
+        try {
+            const member = await guild.members.fetch(userId).catch(() => null);
+            if (member) {
+                const settings = await settingsCache.get(guild.id);
+                if (settings && (settings.robloxVerifyEnabled || settings.verifyRoleId)) {
+                    // Grant base verification role
+                    if (settings.robloxVerifyRoleId) {
+                        const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
+                        if (role) await member.roles.add(role).catch(() => {});
+                    }
+                    if (settings.verifyRoleId) {
+                        const roles = settings.verifyRoleId.split(',').map(r => r.trim()).filter(Boolean);
+                        for (const rId of roles) {
+                            const role = guild.roles.cache.get(rId);
+                            if (role) await member.roles.add(role).catch(() => {});
+                        }
+                    }
+
+                    // Remove unverified role if configured
+                    if (settings.removeUnverifiedRoleOnVerify !== false) {
+                        const unvId = settings.unverifiedRoleId || member.roles.cache.find(r => r.name.toLowerCase() === 'unverified')?.id;
+                        if (unvId && member.roles.cache.has(unvId)) {
+                            await member.roles.remove(unvId).catch(() => {});
+                        }
+                    }
+
+                    let groupBindings = [];
+                    try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) { }
+                    if (groupBindings.length > 0) {
+                        await robloxSystem.syncRobloxRolesWithBackoff(member, robloxId, groupBindings);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error(`[Roblox API Sync] Guild roles sync failed for guild ${guild.id}:`, err.message);
+        }
+    }
+}
+
+// POST /api/user/roblox/sync
+app.post('/api/user/roblox/sync', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    const { guildId } = req.body || {};
+    try {
+        const user = await getDiscordUser(token);
+        const record = await RobloxVerify.findOne({
+            where: { userId: user.id, status: 'VERIFIED', isActive: true }
+        }) || await RobloxVerify.findOne({
+            where: { userId: user.id, status: 'VERIFIED' }
+        });
+
+        if (!record) {
+            return res.status(400).json({ error: 'No verified Roblox account linked. Please connect your Roblox account first.' });
+        }
+
+        await syncUserRolesAcrossGuilds(user.id, record.robloxId, guildId);
+
+        let targetGuildName = null;
+        if (guildId) {
+            const g = client.guilds.cache.get(guildId);
+            if (g) targetGuildName = g.name;
+        }
+
+        res.json({
+            success: true,
+            message: targetGuildName 
+                ? `Roles successfully synced in ${targetGuildName}!` 
+                : 'Roles successfully synced across all connected servers!'
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/sync');
     }
 });
 
@@ -2958,43 +2927,8 @@ app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
         targetRecord.isActive = true;
         await targetRecord.save();
 
-        // Immediately trigger role sync with backoff
-        const robloxSystem = require('./utils/robloxSystem');
-        const settingsCache = require('./utils/settingsCache');
-
-        for (const guild of client.guilds.cache.values()) {
-            try {
-                const member = await guild.members.fetch(user.id).catch(() => null);
-                if (member) {
-                    const settings = await settingsCache.get(guild.id);
-                    if (settings && settings.robloxVerifyEnabled) {
-                        // Grant base verification role
-                        if (settings.robloxVerifyRoleId) {
-                            const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
-                            if (role) {
-                                await member.roles.add(role).catch(e => console.error(`Failed to grant base Roblox role in guild ${guild.id}:`, e));
-                            }
-                        }
-
-                        // Remove unverified role if present
-                        if (settings.removeUnverifiedRoleOnVerify !== false) {
-                            const unvId = settings.unverifiedRoleId || member.roles.cache.find(r => r.name.toLowerCase() === 'unverified')?.id;
-                            if (unvId && member.roles.cache.has(unvId)) {
-                                await member.roles.remove(unvId).catch(() => {});
-                            }
-                        }
-
-                        let groupBindings = [];
-                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) { }
-                        if (groupBindings.length > 0) {
-                            await robloxSystem.syncRobloxRolesWithBackoff(member, robloxId, groupBindings);
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error(`[Roblox API Sync] Guild roles sync failed for guild ${guild.id}:`, err.message);
-            }
-        }
+        // Immediately trigger role sync
+        await syncUserRolesAcrossGuilds(user.id, targetRecord.robloxId);
 
         res.json({ success: true, isActive: true });
     } catch (e) {
@@ -3003,7 +2937,7 @@ app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
 });
 
 // State mapping for Roblox OAuth2 handshake
-const robloxStateMap = new Map(); // state -> { userId, token }
+const robloxStateMap = new Map(); // state -> { userId, token, guildId }
 const robloxMockCodes = new Map(); // code -> { robloxId, robloxUsername }
 
 // Profile Telemetry Cache
@@ -3014,10 +2948,11 @@ app.get('/api/user/roblox/oauth-link', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
+    const guildId = req.query.guild || null;
     try {
         const user = await getDiscordUser(token);
         const state = crypto.randomBytes(8).toString('hex');
-        robloxStateMap.set(state, { userId: user.id, token });
+        robloxStateMap.set(state, { userId: user.id, token, guildId });
 
         // Timeout to clean up state after 15 minutes
         setTimeout(() => robloxStateMap.delete(state), 15 * 60 * 1000);
@@ -3142,9 +3077,10 @@ app.get('/api/user/roblox/callback', async (req, res) => {
             robloxUsername = userInfo.preferred_username || userInfo.nickname || `RobloxUser_${robloxId}`;
         }
 
+        const requestedGuildId = session.guildId || null;
         robloxStateMap.delete(state);
 
-        // Bind Roblox Account
+        // Bind Roblox Account in DB
         const [record] = await RobloxVerify.findOrCreate({
             where: { userId: session.userId, robloxId: robloxId.toString() },
             defaults: {
@@ -3180,58 +3116,151 @@ app.get('/api/user/roblox/callback', async (req, res) => {
             await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
         }
 
-        // Sync roles for all guilds in background
-        const robloxSystem = require('./utils/robloxSystem');
-        const settingsCache = require('./utils/settingsCache');
-        let syncError = null;
+        // Execute role synchronization across guilds
+        await syncUserRolesAcrossGuilds(session.userId, record.robloxId, requestedGuildId);
 
-        for (const guild of client.guilds.cache.values()) {
-            try {
-                const member = await guild.members.fetch(session.userId).catch(() => null);
-                if (member) {
-                    const settings = await settingsCache.get(guild.id);
-                    if (settings && settings.robloxVerifyEnabled) {
-                        if (settings.robloxVerifyRoleId) {
-                            const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
-                            if (role) await member.roles.add(role).catch(() => { });
-                        }
-                        // Remove unverified role if present
-                        if (settings.removeUnverifiedRoleOnVerify !== false) {
-                            const unvId = settings.unverifiedRoleId || member.roles.cache.find(r => r.name.toLowerCase() === 'unverified')?.id;
-                            if (unvId && member.roles.cache.has(unvId)) {
-                                await member.roles.remove(unvId).catch(() => {});
-                            }
-                        }
-                        let groupBindings = [];
-                        try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) { }
-                        if (groupBindings.length > 0) {
-                            await robloxSystem.syncRobloxRolesWithBackoff(member, record.robloxId, groupBindings);
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error(`[Roblox API Sync] Callback roles sync failed for guild ${guild.id}:`, err.message);
-            }
+        let targetGuild = null;
+        if (requestedGuildId) {
+            targetGuild = client.guilds.cache.get(requestedGuildId);
         }
+
+        const returnUrl = requestedGuildId 
+            ? `https://vaztinix.dev/verify?guild=${requestedGuildId}&verified=true`
+            : `https://vaztinix.dev/verify?verified=true`;
 
         res.send(`
             <!DOCTYPE html>
-            <html>
+            <html lang="en">
             <head>
-                <title>Success</title>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Verification Complete • Nora Studio</title>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                 <style>
-                    body { font-family: 'Inter', sans-serif; background: #070706; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-                    .container { background: #111110; padding: 40px; border-radius: 12px; border: 1px solid #191918; max-width: 400px; }
-                    h1 { color: #2ea043; margin-top: 0; }
-                    p { color: #9d9d9d; line-height: 1.5; font-size: 0.95rem; }
+                    :root {
+                        --bg: #070706;
+                        --surface: #111110;
+                        --border: #191918;
+                        --primary: #5865F2;
+                        --success: #10b981;
+                    }
+                    body {
+                        font-family: 'Plus Jakarta Sans', sans-serif;
+                        background: var(--bg);
+                        color: #ffffff;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100vh;
+                        margin: 0;
+                        padding: 20px;
+                        box-sizing: border-box;
+                    }
+                    .card {
+                        background: var(--surface);
+                        border: 1px solid var(--border);
+                        border-radius: 20px;
+                        padding: 36px 32px;
+                        max-width: 440px;
+                        width: 100%;
+                        text-align: center;
+                        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+                    }
+                    .check-badge {
+                        width: 64px;
+                        height: 64px;
+                        border-radius: 50%;
+                        background: rgba(16, 185, 129, 0.12);
+                        color: var(--success);
+                        border: 1px solid rgba(16, 185, 129, 0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.8rem;
+                        margin: 0 auto 20px auto;
+                    }
+                    .guild-tag {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid var(--border);
+                        padding: 6px 14px;
+                        border-radius: 99px;
+                        font-size: 0.82rem;
+                        font-weight: 700;
+                        margin-bottom: 16px;
+                    }
+                    .roblox-box {
+                        background: rgba(0,0,0,0.3);
+                        border: 1px solid var(--border);
+                        border-radius: 14px;
+                        padding: 14px;
+                        display: flex;
+                        align-items: center;
+                        gap: 14px;
+                        text-align: left;
+                        margin: 20px 0;
+                    }
+                    .roblox-avatar {
+                        width: 46px;
+                        height: 46px;
+                        border-radius: 50%;
+                        border: 1px solid var(--border);
+                        background: #000;
+                    }
+                    .btn-primary {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        width: 100%;
+                        padding: 14px;
+                        background: #ffffff;
+                        color: #000000;
+                        font-weight: 800;
+                        font-size: 0.92rem;
+                        border-radius: 12px;
+                        text-decoration: none;
+                        transition: 0.2s;
+                        box-sizing: border-box;
+                    }
+                    .btn-primary:hover {
+                        opacity: 0.9;
+                        transform: translateY(-1px);
+                    }
                 </style>
             </head>
             <body>
-                <div class="container">
-                    <h1>Verification Complete!</h1>
-                    <p>Your Roblox account <strong>@${String(robloxUsername || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</strong> has been successfully verified and connected to your profile.</p>
-                    <p>You may now close this browser window and return to Nora.</p>
+                <div class="card">
+                    <div class="check-badge">
+                        <i class="fas fa-check"></i>
+                    </div>
+
+                    ${targetGuild ? `
+                        <div class="guild-tag">
+                            <img src="${targetGuild.iconURL({ size: 32 }) || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 18px; height: 18px; border-radius: 50%;">
+                            <span>Verified for ${String(targetGuild.name).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                        </div>
+                    ` : ''}
+
+                    <h1 style="font-size: 1.45rem; font-weight: 800; margin: 0 0 8px 0;">Verification Complete!</h1>
+                    <p style="color: #9d9d9d; font-size: 0.88rem; line-height: 1.5; margin: 0;">Your Roblox identity has been successfully authenticated and server roles have been granted.</p>
+
+                    <div class="roblox-box">
+                        <img class="roblox-avatar" src="https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false" alt="Avatar">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.95rem; color: #fff;">@${String(robloxUsername || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                            <div style="font-size: 0.75rem; color: var(--success); font-weight: 600;"><i class="fas fa-shield-check"></i> Roles Synchronized</div>
+                        </div>
+                    </div>
+
+                    <a href="${returnUrl}" class="btn-primary">
+                        <i class="fas fa-arrow-left"></i> Return to Nora Portal
+                    </a>
                 </div>
             </body>
             </html>

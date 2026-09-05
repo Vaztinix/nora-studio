@@ -4704,21 +4704,51 @@
                         </div>
 
                         <!-- Connected Roblox Accounts Panel -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-gamepad" style="color: var(--primary);"></i> Roblox Integration</h3>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 18px;">Manage multi-account Roblox links to customize automation hooks.</p>
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 26px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 16px; flex-wrap: wrap; gap: 14px;">
+                                <div style="display: flex; align-items: center; gap: 14px;">
+                                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                            Roblox Integration
+                                            <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 99px; font-weight: 700;">OAuth2 Verified</span>
+                                        </h3>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Link your Roblox profile to unlock automatic Discord role sync and clan ranks.</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <button type="button" class="btn-primary" onclick="startRobloxOAuth()" style="padding: 9px 16px; font-size: 0.84rem; font-weight: 700; border-radius: 10px; background: #ffffff; color: #000000; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+                                        <i class="fas fa-link"></i> Connect Roblox
+                                    </button>
+                                    <button type="button" class="btn-outline" onclick="syncAllRobloxRoles()" style="padding: 9px 14px; font-size: 0.84rem; font-weight: 600; border-radius: 10px; background: rgba(255,255,255,0.04); color: #fff; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                                        <i class="fas fa-rotate"></i> Sync Roles
+                                    </button>
+                                </div>
+                            </div>
                             
-                            <div id="roblox-accounts-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
-                                <!-- Dynamic Roblox Accounts -->
+                            <!-- Dynamic Roblox Accounts Container -->
+                            <div id="roblox-accounts-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
+                                <div style="text-align: center; padding: 20px; color: var(--muted); font-size: 0.85rem;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading Roblox profile status...
+                                </div>
                             </div>
 
-                            <div id="roblox-link-new-account-form" style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; border: 1px dashed var(--border);">
-                                <h5 style="margin-top: 0; margin-bottom: 10px; font-size: 0.85rem; font-weight: 600; color: #fff;">Link New Roblox Username</h5>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                                        <input type="text" id="roblox-link-username" placeholder="Roblox Username" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; border-radius: 8px; padding: 10px; font-size: 0.85rem; outline: none;">
+                            <!-- Manual Username Link Fallback Accordion -->
+                            <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; overflow: hidden;">
+                                <div onclick="toggleRobloxManualForm()" style="padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; transition: 0.2s; background: rgba(255,255,255,0.02);">
+                                    <span style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-code" style="color: #c084fc;"></i> Manual Code Verification (Alternative)
+                                    </span>
+                                    <i id="roblox-manual-arrow" class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted); transition: transform 0.2s;"></i>
+                                </div>
+                                <div id="roblox-link-new-account-form" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.15);">
+                                    <p style="margin: 0 0 12px 0; font-size: 0.78rem; color: var(--muted);">Enter your exact Roblox username to generate a verification code for your Roblox profile bio.</p>
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <input type="text" id="roblox-link-username" placeholder="Roblox Username (e.g. Builderman)" style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: #fff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none;">
+                                        <button type="button" class="btn-outline" style="padding: 0 16px; height: 38px; font-size: 0.85rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #fff;" onclick="linkRoblox()">Generate Code</button>
                                     </div>
-                                    <button class="save-btn" style="background: #ffffff; color: #000000; height: 38px; width: auto; padding: 0 16px; font-size: 0.85rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);" onclick="linkRoblox()">Link Account</button>
                                 </div>
                             </div>
                         </div>
@@ -4865,11 +4895,11 @@
                                                     <div style="color: var(--success); font-weight: 600; font-size: 0.82rem; display: flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%;"></span> Connected</div>
                                                 </div>
                                             </div>
-                                            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); padding: 9px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-                                                <i class="fas fa-gamepad" style="color: rgba(255,255,255,0.7); font-size: 1.15rem;"></i>
-                                                <div style="flex: 1;">
+                                            <div id="profile-roblox-container" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
+                                                <i class="fas fa-cube" style="color: #ef4444; font-size: 1.15rem;"></i>
+                                                <div id="profile-roblox-val" style="flex: 1;">
                                                     <div style="font-size: 0.68rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roblox Connection</div>
-                                                    <div id="profile-roblox-val" style="color: rgba(255,255,255,0.5); font-weight: 500; font-size: 0.82rem;">Private</div>
+                                                    <div style="color: rgba(255,255,255,0.5); font-weight: 500; font-size: 0.82rem;">Checking status...</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -10883,12 +10913,17 @@
 
         async function fetchRobloxStatus(t) {
             try {
-                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/accounts', { headers: { Authorization: `Bearer ${t}` } });
+                const token = t || sessionStorage.getItem('discord_token');
+                if (!token) return;
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/accounts', { 
+                    headers: { Authorization: `Bearer ${token}` } 
+                });
                 if (!res.ok) {
                     const errData = await res.json().catch(() => ({}));
                     throw new Error(errData.error || `HTTP ${res.status}`);
                 }
-                const accounts = await res.json();
+                const raw = await res.json();
+                const accounts = Array.isArray(raw) ? raw : (raw.accounts || []);
                 window.currentRobloxAccounts = accounts;
                 if (typeof updateProfileRobloxPreview === 'function') updateProfileRobloxPreview();
                 
@@ -10898,68 +10933,77 @@
 
                 if (accounts.length === 0) {
                     container.innerHTML = `
-                        <div style="padding: 15px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: 8px; text-align: center; color: var(--muted); font-size: 0.85rem;">
-                            No Roblox accounts linked yet. Use the form below to connect your first account.
+                        <div style="padding: 24px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(239,68,68,0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">No Roblox Account Linked</div>
+                            <p style="color: var(--muted); font-size: 0.82rem; margin: 0; max-width: 380px; line-height: 1.4;">Connect your Roblox account via official 1-click OAuth2 to verify your identity and automatically receive your Discord server roles.</p>
+                            <button type="button" onclick="startRobloxOAuth()" style="margin-top: 6px; padding: 8px 20px; font-size: 0.84rem; font-weight: 700; border-radius: 8px; background: #ffffff; color: #000; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(255,255,255,0.15);">
+                                <i class="fas fa-link"></i> Connect with Roblox
+                            </button>
                         </div>
                     `;
-                    
-                    // Lock advanced features
-                    const advancedRoblox = document.getElementById('roblox-advanced-features');
-                    if (advancedRoblox) {
-                        advancedRoblox.classList.add('locked-feature');
-                        const overlay = advancedRoblox.querySelector('.locked-overlay-text');
-                        if (overlay) overlay.style.display = 'block';
-                    }
                     return;
                 }
 
-                let hasVerified = false;
-
                 accounts.forEach(acc => {
                     const isVerified = acc.status === 'VERIFIED';
-                    if (isVerified) hasVerified = true;
+                    const avatarUrl = acc.avatar || acc.avatarUrl || `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${acc.robloxId}&size=150x150&format=Png&isCircular=false`;
 
                     const card = document.createElement('div');
-                    card.className = 'panel';
-                    card.style = `
-                        display: flex; 
-                        flex-direction: column; 
-                        background: ${acc.isActive ? 'rgba(79, 70, 229, 0.08)' : 'rgba(0,0,0,0.15)'}; 
-                        border: 1px solid ${acc.isActive ? 'var(--primary)' : 'var(--border)'}; 
-                        padding: 15px; 
-                        border-radius: 12px;
-                        gap: 12px;
-                        margin-bottom: 0px;
+                    card.style.cssText = `
+                        display: flex;
+                        flex-direction: column;
+                        background: ${acc.isActive ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.08) 100%)' : 'rgba(255,255,255,0.02)'};
+                        border: 1px solid ${acc.isActive ? 'rgba(99, 102, 241, 0.4)' : 'rgba(255,255,255,0.08)'};
+                        padding: 16px 18px;
+                        border-radius: 16px;
+                        gap: 14px;
+                        box-shadow: ${acc.isActive ? '0 6px 20px rgba(99, 102, 241, 0.15)' : 'none'};
+                        transition: border-color 0.2s;
                     `;
 
-                    // Main info row
                     let infoHtml = `
-                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
                                 <div style="position: relative;">
-                                    <img src="${(typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '')}/api/user/roblox/avatar?userId=${acc.robloxId}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #000;" onerror="this.onerror=null; this.src='nora.png';">
-                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #2ea043; border: 2px solid #1a1b1e; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff;">✓</div>' : ''}
+                                    <img src="${avatarUrl}" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid ${acc.isActive ? '#6366f1' : 'rgba(255,255,255,0.15)'}; background: #000; object-fit: cover;" onerror="this.onerror=null; this.src='nora.png';">
+                                    ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; border-radius: 50%; background: #10b981; border: 2px solid #0f172a; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #fff;" title="Verified Profile"><i class="fas fa-check"></i></div>' : ''}
                                 </div>
                                 <div>
-                                    <div style="font-weight: 700; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                        <span data-no-translate>${acc.robloxUsername}</span>
-                                        ${acc.robloxDisplayName && acc.robloxDisplayName !== acc.robloxUsername ? `<span data-no-translate style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">(${acc.robloxDisplayName})</span>` : ''}
+                                    <div style="font-weight: 800; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                        <span data-no-translate>${acc.robloxDisplayName || acc.robloxUsername}</span>
+                                        ${acc.robloxDisplayName && acc.robloxDisplayName !== acc.robloxUsername ? `<span data-no-translate style="font-weight: 500; font-size: 0.8rem; color: var(--muted);">@${acc.robloxUsername}</span>` : ''}
+                                        ${acc.isActive ? '<span style="font-size: 0.68rem; background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.35); padding: 1px 7px; border-radius: 99px; font-weight: 700;">Primary</span>' : ''}
                                     </div>
-                                    <div style="font-size: 0.75rem; color: var(--muted); display: flex; gap: 8px;">
-                                        <span data-no-translate>ID: ${acc.robloxId}</span>
+                                    <div style="font-size: 0.76rem; color: var(--muted); display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                                        <span data-no-translate style="font-family: monospace;">ID: ${acc.robloxId}</span>
                                         <span>•</span>
-                                        <span style="color: ${isVerified ? 'var(--success)' : 'var(--warning)'}; font-weight: 600;">${isVerified ? 'Verified' : 'Pending Verification'}</span>
+                                        <span style="color: ${isVerified ? 'var(--success)' : 'var(--warning)'}; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                            <span style="width: 6px; height: 6px; border-radius: 50%; background: ${isVerified ? 'var(--success)' : 'var(--warning)'};"></span>
+                                            ${isVerified ? 'Verified' : 'Pending Verification'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <a href="https://www.roblox.com/users/${acc.robloxId}/profile" target="_blank" rel="noopener noreferrer" class="btn-outline" style="padding: 6px 10px; font-size: 0.75rem; text-decoration: none; color: #cbd5e1; border-color: rgba(255,255,255,0.12); display: inline-flex; align-items: center; gap: 5px;" title="View Roblox Profile">
+                                    <i class="fas fa-external-link-alt"></i> Profile
+                                </a>
                                 ${isVerified ? `
-                                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: ${acc.isActive ? 'var(--primary)' : 'var(--muted)'}; font-weight: 600; margin-bottom: 0;">
-                                        <input type="radio" name="roblox-active-account" ${acc.isActive ? 'checked' : ''} onchange="toggleRobloxActive('${acc.robloxId}')" style="accent-color: var(--primary);">
-                                        Active Profile
-                                    </label>
+                                    <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; color: #818cf8; border-color: rgba(99, 102, 241, 0.3); display: inline-flex; align-items: center; gap: 5px;" onclick="syncAllRobloxRoles()" title="Sync Roles for this account">
+                                        <i class="fas fa-rotate"></i> Sync
+                                    </button>
+                                    ${!acc.isActive ? `
+                                        <button type="button" class="btn-outline" style="padding: 6px 12px; font-size: 0.75rem; color: #fff;" onclick="toggleRobloxActive('${acc.robloxId}')">
+                                            Set Primary
+                                        </button>
+                                    ` : ''}
                                 ` : ''}
-                                <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.75rem; color: var(--danger); border-color: rgba(255,85,85,0.25);" onclick="unlinkRobloxSpecific('${acc.robloxId}', '${acc.robloxUsername}')">Unlink</button>
+                                <button type="button" class="config-btn" style="width: auto; padding: 6px 10px; font-size: 0.75rem; color: var(--danger); border-color: rgba(255,85,85,0.25);" onclick="unlinkRobloxSpecific('${acc.robloxId}', '${acc.robloxUsername}')" title="Unlink Account">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -10967,12 +11011,14 @@
                     let pendingHtml = '';
                     if (!isVerified) {
                         pendingHtml = `
-                            <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px;">
-                                <div style="font-size: 0.8rem; color: var(--muted);">Add this code to your Roblox profile description / "About" section:</div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.25); display: flex; flex-direction: column; gap: 10px;">
+                                <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-info-circle"></i> Place this verification code in your Roblox profile "About" / bio:
+                                </div>
                                 <div style="display: flex; gap: 8px; align-items: center;">
-                                    <code data-no-translate style="background: #000; padding: 6px 10px; border-radius: 4px; font-size: 0.95rem; flex: 1; text-align: center; color: var(--primary); font-weight: 700; border: 1px solid rgba(79, 70, 229, 0.2);">${acc.verifyCode}</code>
-                                    <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.75rem;" onclick="navigator.clipboard.writeText('${acc.verifyCode}').then(() => showToast('Code copied!', 'success'))">Copy</button>
-                                    <button class="save-btn" style="width: auto; padding: 0 15px; font-size: 0.75rem; height: 32px; line-height: 32px; background: var(--primary); color: #000;" onclick="checkRobloxSpecific('${acc.robloxId}')">Verify</button>
+                                    <code data-no-translate style="background: #000; padding: 8px 12px; border-radius: 6px; font-size: 0.95rem; flex: 1; text-align: center; color: #38bdf8; font-weight: 800; border: 1px solid rgba(56, 189, 248, 0.3);">${acc.verifyCode}</code>
+                                    <button type="button" class="config-btn" style="width: auto; padding: 7px 14px; font-size: 0.78rem;" onclick="navigator.clipboard.writeText('${acc.verifyCode}').then(() => showToast('Verification code copied!', 'success'))">Copy</button>
+                                    <button type="button" class="save-btn" style="width: auto; padding: 0 16px; font-size: 0.78rem; height: 34px; line-height: 34px; background: #10b981; color: #fff;" onclick="checkRobloxSpecific('${acc.robloxId}')">Verify Bio</button>
                                 </div>
                             </div>
                         `;
@@ -10982,8 +11028,7 @@
                     container.appendChild(card);
                 });
             } catch (e) {
-                /* silent roblox sync notice */
-                /* silent notice */
+                console.warn('[Roblox Status Error]:', e);
             }
         }
 
@@ -11592,21 +11637,101 @@
 
             const accs = window.currentRobloxAccounts || [];
             if (accs.length === 0) {
-                robloxVal.textContent = 'Not Connected';
-                robloxVal.style.color = 'rgba(255,255,255,0.4)';
+                robloxVal.innerHTML = `
+                    <div style="font-size: 0.68rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roblox Connection</div>
+                    <div style="color: rgba(255,255,255,0.4); font-weight: 500; font-size: 0.82rem; display: flex; align-items: center; gap: 6px;">
+                        <span>Not Connected</span>
+                        <a href="javascript:void(0)" onclick="startRobloxOAuth()" style="color: #818cf8; text-decoration: underline; font-size: 0.75rem; font-weight: 600;">Link Now</a>
+                    </div>
+                `;
             } else {
-                const verifiedAcc = accs.find(a => a.status === 'VERIFIED' && a.isActive) || accs.find(a => a.status === 'VERIFIED');
-                if (verifiedAcc) {
-                    robloxVal.textContent = robloxPublic ? `@${verifiedAcc.robloxUsername}` : 'Private';
-                    robloxVal.style.color = robloxPublic ? 'var(--success)' : 'var(--muted)';
+                const verifiedAcc = accs.find(a => a.status === 'VERIFIED' && a.isActive) || accs.find(a => a.status === 'VERIFIED') || accs[0];
+                if (verifiedAcc && verifiedAcc.status === 'VERIFIED') {
+                    const avatarImg = verifiedAcc.avatar || verifiedAcc.avatarUrl || `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${verifiedAcc.robloxId}&size=150x150&format=Png&isCircular=false`;
+                    robloxVal.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                            <div>
+                                <div style="font-size: 0.68rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roblox Identity</div>
+                                <div style="color: #fff; font-weight: 700; font-size: 0.82rem; display: flex; align-items: center; gap: 6px;">
+                                    <img src="${avatarImg}" style="width: 18px; height: 18px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='nora.png'">
+                                    <span>${robloxPublic ? '@' + (verifiedAcc.robloxUsername || verifiedAcc.robloxId) : 'Private'}</span>
+                                    <span style="color: var(--success); font-size: 0.7rem;" title="Verified Profile"><i class="fas fa-check-circle"></i></span>
+                                </div>
+                            </div>
+                            <a href="https://www.roblox.com/users/${verifiedAcc.robloxId}/profile" target="_blank" rel="noopener noreferrer" style="color: #c084fc; font-size: 0.75rem; text-decoration: none; display: flex; align-items: center; gap: 4px; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.25); padding: 2px 8px; border-radius: 6px;">
+                                <span>Profile</span> <i class="fas fa-external-link-alt" style="font-size: 0.65rem;"></i>
+                            </a>
+                        </div>
+                    `;
                 } else {
-                    robloxVal.textContent = 'Pending Verification';
-                    robloxVal.style.color = 'var(--warning)';
+                    robloxVal.innerHTML = `
+                        <div style="font-size: 0.68rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roblox Connection</div>
+                        <div style="color: var(--warning); font-weight: 600; font-size: 0.82rem; display: flex; align-items: center; gap: 5px;">
+                            <i class="fas fa-clock"></i> Pending Verification
+                        </div>
+                    `;
                 }
             }
         }
         window.updateProfileRobloxPreview = updateProfileRobloxPreview;
 
+        function toggleRobloxManualForm() {
+            const form = document.getElementById('roblox-link-new-account-form');
+            const arrow = document.getElementById('roblox-manual-arrow');
+            if (!form) return;
+            const isHidden = form.style.display === 'none' || !form.style.display;
+            form.style.display = isHidden ? 'block' : 'none';
+            if (arrow) arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+        window.toggleRobloxManualForm = toggleRobloxManualForm;
+
+        async function startRobloxOAuth() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return showToast('Please log in with Discord first.', 'warning');
+            if (typeof toggleLoading === 'function') toggleLoading(true);
+            try {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/oauth-link', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!res.ok || !data.url) throw new Error(data.error || 'Failed to generate OAuth URL');
+                window.location.href = data.url;
+            } catch (e) {
+                console.error('[Roblox OAuth Error]:', e);
+                showToast(`Roblox Connect Error: ${e.message}`, 'error');
+            } finally {
+                if (typeof toggleLoading === 'function') toggleLoading(false);
+            }
+        }
+        window.startRobloxOAuth = startRobloxOAuth;
+
+        async function syncAllRobloxRoles() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return showToast('Please log in with Discord first.', 'warning');
+            if (typeof toggleLoading === 'function') toggleLoading(true);
+            try {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/roblox/sync', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to sync roles');
+                showToast(data.message || 'Roles synchronized successfully across all Nora servers!', 'success');
+                if (typeof addNotification === 'function') {
+                    addNotification('Roles Synchronized', data.message || 'Roblox roles and group bindings synced across your Discord servers.', 'success', 'Roblox Integration');
+                }
+            } catch (e) {
+                console.error('[Roblox Sync Error]:', e);
+                showToast(`Role Sync Failed: ${e.message}`, 'error');
+            } finally {
+                if (typeof toggleLoading === 'function') toggleLoading(false);
+            }
+        }
+        window.syncAllRobloxRoles = syncAllRobloxRoles;
 
         async function linkRoblox() {
             const usernameInput = document.getElementById('roblox-link-username');
@@ -11621,8 +11746,10 @@
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ username })
                 });
-                showToast(`Roblox link initiated for @${username}!`, 'success');
-                addNotification('Roblox Link Started', `Link initiated for user: ${username}. Please verify.`, 'info', 'System');
+                showToast(`Roblox link initiated for @${username}! Check the code below.`, 'success');
+                if (typeof addNotification === 'function') {
+                    addNotification('Roblox Link Started', `Verification code generated for @${username}. Add it to your bio to verify.`, 'info', 'Roblox Integration');
+                }
                 fetchRobloxStatus(t);
                 if (usernameInput) usernameInput.value = '';
             } catch (e) {
@@ -11643,36 +11770,45 @@
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ robloxId })
                 });
-                showToast('Active Roblox profile updated!', 'success');
+                showToast('Primary Roblox profile updated!', 'success');
                 fetchRobloxStatus(t);
+                syncAllRobloxRoles();
             } catch (e) {
                 console.error('[Roblox Active Toggle Error]:', e);
                 showToast(`Error: ${e.message}`, 'error');
             }
         }
+        window.toggleRobloxActive = toggleRobloxActive;
 
         async function checkRobloxSpecific(robloxId) {
             logToTerminal(`Verifying Roblox account ID: ${robloxId}`, 'ROBLOX_VERIFY');
             const t = sessionStorage.getItem('discord_token');
+            if (typeof toggleLoading === 'function') toggleLoading(true);
             try {
                 const { data: d } = await safeFetch('/api/user/roblox/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
                     body: JSON.stringify({ robloxId })
                 });
-                showToast('Account successfully verified!', 'success');
-                addNotification('Roblox Verified', `Your Roblox account "${d.robloxUsername || robloxId}" has been successfully linked and verified.`, 'success', 'System');
+                showToast(d.message || 'Account successfully verified and roles assigned!', 'success');
+                if (typeof addNotification === 'function') {
+                    addNotification('Roblox Verified', `Your Roblox account "${d.robloxUsername || robloxId}" has been verified and roles assigned.`, 'success', 'Roblox Integration');
+                }
                 fetchRobloxStatus(t);
             } catch (e) {
                 console.error('[Roblox Check Error]:', e);
-                showToast(`Error: ${e.message}`, 'error');
+                showToast(`Verification Failed: ${e.message}`, 'error');
+            } finally {
+                if (typeof toggleLoading === 'function') toggleLoading(false);
             }
         }
+        window.checkRobloxSpecific = checkRobloxSpecific;
 
         async function unlinkRobloxSpecific(robloxId, username) {
-            if (!confirm(`Are you sure you want to unlink the Roblox account "${username}"?`)) return;
+            if (!confirm(`Are you sure you want to unlink the Roblox account "${username || robloxId}"?`)) return;
             logToTerminal(`Unlinking Roblox account ID: ${robloxId}`, 'ROBLOX_UNLINK');
             const t = sessionStorage.getItem('discord_token');
+            if (typeof toggleLoading === 'function') toggleLoading(true);
             try {
                 await safeFetch('/api/user/roblox/unlink', {
                     method: 'POST',
@@ -11684,8 +11820,11 @@
             } catch (e) {
                 console.error('[Roblox Unlink Error]:', e);
                 showToast(`Error: ${e.message}`, 'error');
+            } finally {
+                if (typeof toggleLoading === 'function') toggleLoading(false);
             }
         }
+        window.unlinkRobloxSpecific = unlinkRobloxSpecific;
 
         
         function toggleOverviewAccordion(header) {

@@ -773,6 +773,8 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const guildParam = urlParams.get('guild');
+            const isVerifiedReturn = urlParams.get('verified') === 'true' || urlParams.get('status') === 'success';
+
             if (guildParam) {
                 sessionStorage.setItem('verify_guild_id', guildParam);
                 loadGuildBanner(guildParam);
@@ -788,18 +790,18 @@
             if (accessToken) {
                 sessionStorage.setItem('discord_token', accessToken);
                 window.history.replaceState(null, null, window.location.pathname + (window.location.search || ''));
-                verifyDiscordToken(accessToken);
+                verifyDiscordToken(accessToken, isVerifiedReturn);
             } else {
                 const token = sessionStorage.getItem('discord_token');
                 if (token) {
-                    verifyDiscordToken(token);
+                    verifyDiscordToken(token, isVerifiedReturn);
                 } else {
                     document.getElementById('view-auth').style.display = 'block';
                 }
             }
         });
 
-        async function verifyDiscordToken(token) {
+        async function verifyDiscordToken(token, autoSync = false) {
             toggleLoading(true);
             try {
                 const res = await fetch(getApiBaseUrl() + '/api/user/me', {
@@ -818,6 +820,10 @@
                     : 'nora.png';
 
                 await loadRobloxAccounts();
+
+                if (autoSync && activeAccount) {
+                    await syncServerRoles(true);
+                }
             } catch (err) {
                 console.error('[Discord Auth Error]:', err);
                 sessionStorage.removeItem('discord_token');
@@ -838,7 +844,8 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) return;
-                userAccounts = await res.json() || [];
+                const rawData = await res.json();
+                userAccounts = Array.isArray(rawData) ? rawData : (rawData.accounts || []);
 
                 const active = userAccounts.find(a => a.isActive) || userAccounts[0];
                 activeAccount = active;
@@ -849,14 +856,10 @@
                     document.getElementById('roblox-username').textContent = `@${active.robloxUsername || active.robloxId}`;
                     document.getElementById('roblox-id').textContent = `Roblox ID: ${active.robloxId}`;
                     
-                    if (active.avatar) {
-                        document.getElementById('roblox-avatar').src = active.avatar;
+                    if (active.avatar || active.avatarUrl) {
+                        document.getElementById('roblox-avatar').src = active.avatar || active.avatarUrl;
                     } else {
-                        // Fetch avatar thumbnail from proxy
-                        fetch(getApiBaseUrl() + `/api/user/roblox/avatar-url?robloxId=${active.robloxId}`)
-                            .then(r => r.json())
-                            .then(d => { if (d.avatar) document.getElementById('roblox-avatar').src = d.avatar; })
-                            .catch(() => {});
+                        document.getElementById('roblox-avatar').src = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${active.robloxId}&size=150x150&format=Png&isCircular=false`;
                     }
                 } else {
                     document.getElementById('active-roblox-container').style.display = 'none';
@@ -907,8 +910,11 @@
             }
 
             toggleLoading(true);
+            const guildId = sessionStorage.getItem('verify_guild_id') || new URLSearchParams(window.location.search).get('guild');
+            const query = guildId ? `?guild=${encodeURIComponent(guildId)}` : '';
+
             try {
-                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/oauth-link', {
+                const res = await fetch(getApiBaseUrl() + `/api/user/roblox/oauth-link${query}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
@@ -923,7 +929,7 @@
             }
         }
 
-        async function syncServerRoles() {
+        async function syncServerRoles(isAuto = false) {
             if (!activeAccount) {
                 showToast('No active Roblox account linked.', 'warning');
                 return;
@@ -931,17 +937,16 @@
 
             toggleLoading(true);
             const token = sessionStorage.getItem('discord_token');
-            const guildId = sessionStorage.getItem('verify_guild_id');
+            const guildId = sessionStorage.getItem('verify_guild_id') || new URLSearchParams(window.location.search).get('guild');
 
             try {
-                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/check', {
+                const res = await fetch(getApiBaseUrl() + '/api/user/roblox/sync', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        robloxId: activeAccount.robloxId,
                         guildId: guildId || undefined
                     })
                 });
@@ -949,11 +954,7 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Role sync failed');
 
-                if (data.syncError) {
-                    showToast(`Verified, but role assignment warning: ${data.syncError}`, 'warning');
-                } else {
-                    showToast('🎉 Discord roles and group ranks synced successfully!', 'success');
-                }
+                showToast(data.message || '🎉 Discord roles and group ranks synced successfully!', 'success');
             } catch (err) {
                 console.error('[Role Sync Error]:', err);
                 showToast(`Role sync error: ${err.message}`, 'error');
