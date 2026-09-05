@@ -776,7 +776,10 @@
         }
 
         async function fetchStatusData() {
+            const apiBase = getApiBaseUrl();
             const endpoints = [
+                `${apiBase}/api/status/public`,
+                '/api/status/public',
                 'https://api.vaztinix.dev/api/status/public',
                 'http://localhost:3000/api/status/public',
                 'http://127.0.0.1:3000/api/status/public'
@@ -800,7 +803,7 @@
 
             // If all endpoints fail or time out, render true offline state
             renderStatus({
-                systemStatus: 'outage',
+                systemStatus: 'offline',
                 statusText: 'Offline',
                 statusDesc: 'Unable to establish connection to Nora bot core and API gateway.',
                 shards: [
@@ -842,24 +845,28 @@
             // Reset classes
             hero.className = 'status-hero';
             
-            if (data.systemStatus === 'outage' || data.systemStatus === 'offline') {
+            const rawStatus = String(data.systemStatus || '').toLowerCase();
+            const rawText = String(data.statusText || '').toLowerCase();
+
+            if (rawStatus === 'outage' || rawStatus === 'offline' || rawText === 'all systems offline' || rawText === 'offline') {
                 hero.classList.add('outage');
                 icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-                title.textContent = data.statusText || 'Offline';
+                title.textContent = (data.statusText && rawText !== 'all systems offline' && rawText !== 'all systems operational' && rawText !== 'operational') ? data.statusText : 'Offline';
                 desc.textContent = data.statusDesc || 'Our automated systems have flagged that the Nora backend is currently offline.';
-            } else if (data.systemStatus === 'degraded') {
+            } else if (rawStatus === 'degraded' || rawText.includes('degraded')) {
                 hero.classList.add('degraded');
                 icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
-                title.textContent = data.statusText || 'Degraded Performance';
+                title.textContent = 'Degraded Performance';
                 desc.textContent = 'High gateway latency or degraded response times detected.';
-            } else if (data.systemStatus === 'maintenance') {
+            } else if (rawStatus === 'maintenance' || rawText.includes('maintenance')) {
                 hero.classList.add('maintenance');
                 icon.innerHTML = '<i class="fas fa-wrench"></i>';
-                title.textContent = data.statusText || 'Scheduled Maintenance';
+                title.textContent = 'Scheduled Maintenance';
                 desc.textContent = 'Upgrades or database maintenance currently under execution.';
             } else {
+                // Online state (replaces any 'operational' or 'all systems operational')
                 icon.innerHTML = '<i class="fas fa-check-circle"></i>';
-                title.textContent = data.statusText || 'Online';
+                title.textContent = 'Online';
                 desc.textContent = 'All cluster shards, API services, and gateway connectors are running smoothly.';
             }
 
