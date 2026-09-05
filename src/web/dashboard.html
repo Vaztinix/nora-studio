@@ -8721,8 +8721,20 @@
                             </button>
                         </div>
                         <div id="topgg-bots-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
-                            <div style="text-align: center; padding: 14px; color: var(--muted); font-size: 0.82rem;">
-                                <i class="fas fa-spinner fa-spin"></i> Loading bots...
+                            <!-- Default Nora Bot Entry -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 51, 102, 0.2); border-radius: 12px; padding: 10px 14px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <img src="nora.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #FF3366;" alt="Nora">
+                                    <div>
+                                        <div style="font-weight: 800; font-size: 0.92rem; color: #fff; display: flex; align-items: center; gap: 6px;">
+                                            Nora Assistant <span class="badge stable" style="font-size: 0.65rem; background: rgba(255, 51, 102, 0.2); color: #FF3366;">Primary Bot</span>
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--muted); font-family: monospace;">ID: 593420060990005248</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 0.72rem; color: var(--success); font-weight: 700; background: rgba(46, 160, 67, 0.15); padding: 3px 8px; border-radius: 6px;">Listening</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -22373,6 +22385,10 @@ async function loadTopggSettings() {
         urlDisplay.value = `${window.location.origin}/api/webhooks/topgg/${guildId || ''}`;
     }
 
+    // Always render immediate local state first so UI is never stuck on loading
+    renderTopggBots(window.topggMultiBots || [], '593420060990005248');
+    renderTopggVoteLogs(window.topggVoteLogs || []);
+
     if (!guildId) return;
     const t = sessionStorage.getItem('discord_token');
     const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
@@ -22428,10 +22444,12 @@ async function loadTopggSettings() {
             statMult.style.color = isWeekend ? '#FFD166' : '#38BDF8';
         }
 
-        renderTopggBots(window.topggMultiBots, config.topggBotId);
+        renderTopggBots(window.topggMultiBots, config.topggBotId || '593420060990005248');
         renderTopggVoteLogs(window.topggVoteLogs);
     } catch (e) {
         console.warn('[Top.gg Load Warning]:', e.message);
+        renderTopggBots(window.topggMultiBots || [], '593420060990005248');
+        renderTopggVoteLogs(window.topggVoteLogs || []);
     }
 }
 
@@ -22621,6 +22639,7 @@ function registerTopggBot() {
     }
 
     window.topggMultiBots.push({ id, name, avatar, active: true });
+    renderTopggBots(window.topggMultiBots, '593420060990005248');
     closeAddTopggBotModal();
 
     // Clear inputs
@@ -22638,6 +22657,7 @@ function registerTopggBot() {
 function removeTopggBot(botId) {
     if (!window.topggMultiBots) return;
     window.topggMultiBots = window.topggMultiBots.filter(b => b.id !== botId);
+    renderTopggBots(window.topggMultiBots, '593420060990005248');
     saveTopggSettings();
     if (typeof showToast === 'function') showToast('Tracked bot removed.', 'info');
 }
@@ -22780,7 +22800,15 @@ window.openAddTopggBotModal = openAddTopggBotModal;
 window.closeAddTopggBotModal = closeAddTopggBotModal;
 window.registerTopggBot = registerTopggBot;
 window.removeTopggBot = removeTopggBot;
+window.renderTopggBots = renderTopggBots;
+window.renderTopggVoteLogs = renderTopggVoteLogs;
 window.filterTopggLogs = filterTopggLogs;
+
+// Auto-render default bots & logs immediately
+try {
+    renderTopggBots(window.topggMultiBots || [], '593420060990005248');
+    renderTopggVoteLogs(window.topggVoteLogs || []);
+} catch (e) {}
 </script>
 
 </body>
