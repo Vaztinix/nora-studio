@@ -252,7 +252,7 @@ module.exports = (client) => {
                                 { name: 'Multiplier', value: isWeekend ? '⭐ **2x Weekend Multiplier**' : '⚡ **1x Standard**', inline: true },
                                 { name: 'Rewards Granted', value: rewardStatus.join(' • ') || 'Vote Verified', inline: false }
                             )
-                            .setFooter({ text: 'Top.gg Official Integration • Nora Studio', iconURL: 'https://vaztinix.dev/nora.png' })
+                            .setFooter({ text: 'Top.gg Official Integration • Nora Studio', iconURL: 'https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg' })
                             .setTimestamp();
 
                         await channel.send({ embeds: [embed] }).catch(() => { });
