@@ -8502,7 +8502,6 @@
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                         <h2 style="margin: 0; font-size: 1.4rem; font-weight: 800; color: #fff;">Top.gg Vote Integration</h2>
-                                        <span class="badge stable" style="background: rgba(255, 51, 102, 0.2); color: #FF3366; border-color: rgba(255, 51, 102, 0.4);"><i class="fas fa-check-circle"></i> Official Partner</span>
                                     </div>
                                     <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.85rem;">
                                         Track upvotes from Top.gg in real-time, automate voter role assignment, reward Leveling XP, and send 12-hour vote reminders.
@@ -8547,7 +8546,7 @@
                                 <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 51, 102, 0.15); color: #FF3366; display: flex; align-items: center; justify-content: center; font-weight: 800;">1</div>
                                 <div>
                                     <h3 style="margin: 0; font-size: 1.15rem; color: #fff; font-weight: 800;">Connect on Top.gg</h3>
-                                    <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--muted);">Create a webhook in <b>Top.gg Developer Portal &rarr; Webhooks</b>.</p>
+                                    <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--muted);">Setup your Top.gg webhook gateway.</p>
                                 </div>
                             </div>
 
@@ -8561,51 +8560,29 @@
                                         <i class="fas fa-copy"></i> Copy
                                     </button>
                                 </div>
-                                <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Paste as the <b>Webhook URL</b> when creating a webhook on Top.gg.</span>
+                                <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Paste as the <b>Webhook URL</b> in your Top.gg Bot Dashboard &rarr; Webhooks.</span>
                             </div>
 
-                            <div style="background: rgba(255, 51, 102, 0.08); border: 1px solid rgba(255, 51, 102, 0.25); border-radius: 12px; padding: 14px; font-size: 0.82rem; color: #ddd; display: flex; flex-direction: column; gap: 8px;">
+                            <div class="input-group">
+                                <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
+                                    Webhook Authorization Secret
+                                </label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="setting-topggWebhookAuth" style="flex: 1; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: #fff;" placeholder="Paste your whs_... secret from Top.gg">
+                                </div>
+                                <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">After creating the webhook on Top.gg, paste the <code>whs_...</code> secret provided by Top.gg here.</span>
+                            </div>
+
+                            <div style="background: rgba(255, 51, 102, 0.06); border: 1px solid rgba(255, 51, 102, 0.2); border-radius: 12px; padding: 14px; font-size: 0.8rem; color: #ddd; display: flex; flex-direction: column; gap: 6px;">
                                 <div style="font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
-                                    <i class="fas fa-check-circle" style="color: #FF3366;"></i> Modern Top.gg Setup Guide:
+                                    <i class="fas fa-bolt" style="color: #FF3366;"></i> Quick Setup Instructions:
                                 </div>
-                                <div style="line-height: 1.5; font-size: 0.8rem;">
-                                    1. Go to your bot's <b>Webhooks</b> tab on Top.gg.<br>
-                                    2. Click <b>Create New Webhook</b>.<br>
-                                    3. Paste the <b>Webhook URL</b> above and label it <code>Nora</code>.<br>
-                                    4. Toggle <b style="color: #FF3366;">Vote Created</b> to <b>ON</b>.<br>
-                                    5. Click <b>Create</b> &rarr; done! <i>(No secret required)</i>.
+                                <div style="line-height: 1.5; color: var(--muted);">
+                                    1. Go to <b>Top.gg Developer Portal &rarr; Webhooks</b>.<br>
+                                    2. Click <b>Create Webhook</b> and paste the <b>Webhook URL</b>.<br>
+                                    3. Toggle <b>Vote Created</b> to <b>ON</b>.<br>
+                                    4. Copy the generated secret (<code>whs_...</code>) and paste it into the field above.
                                 </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
-                                    Webhook Authorization Secret <span style="font-size: 0.72rem; color: var(--muted);">(Legacy / Optional)</span>
-                                </label>
-                                <div style="display: flex; gap: 8px;">
-                                    <input type="text" id="setting-topggWebhookAuth" style="flex: 1; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: #fff;" placeholder="Enter or generate secret...">
-                                    <button class="action-btn" onclick="regenerateTopggAuthSecret()" title="Generate new secure secret" style="background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border); color: #fff; border-radius: 10px; padding: 0 14px; cursor: pointer;">
-                                        <i class="fas fa-sync-alt"></i>
-                                    </button>
-                                </div>
-                                <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Only needed if using Top.gg Legacy Webhooks.</span>
-                            </div>
-
-                            <div style="background: rgba(255, 51, 102, 0.06); border: 1px solid rgba(255, 51, 102, 0.2); border-radius: 12px; padding: 12px; font-size: 0.8rem; color: var(--muted);">
-                                <strong style="color: #fff; display: block; margin-bottom: 4px;"><i class="fas fa-lightbulb" style="color: #FFD166;"></i> Quick Verification Tip</strong>
-                                After saving on Top.gg, click Top.gg's <b>Send Test</b> button to verify the webhook connection live.
-                            </div>
-
-                            <div class="input-group">
-                                <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
-                                    Top.gg API Token (Optional)
-                                </label>
-                                <div style="display: flex; gap: 8px;">
-                                    <input type="password" id="setting-topggApiToken" style="flex: 1; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: #fff;" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6...">
-                                    <button class="action-btn" onclick="validateTopggApiToken()" style="background: rgba(255, 51, 102, 0.15); border: 1px solid rgba(255, 51, 102, 0.3); color: #FF3366; border-radius: 10px; padding: 0 14px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                                        <i class="fas fa-shield-alt"></i> Verify
-                                    </button>
-                                </div>
-                                <span id="topgg-token-status" style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Used for automatic bot vote count synchronization.</span>
                             </div>
                         </div>
 
@@ -8667,13 +8644,13 @@
                             </div>
                         </div>
 
-                        <!-- Step 3: Notifications & Reminders (Vote Tracker Style) -->
+                        <!-- Step 3: Announcements & Reminders -->
                         <div class="panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 51, 102, 0.15); color: #FF3366; display: flex; align-items: center; justify-content: center; font-weight: 800;">3</div>
                                 <div>
                                     <h3 style="margin: 0; font-size: 1.15rem; color: #fff; font-weight: 800;">Announcements & Reminders</h3>
-                                    <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--muted);">Public celebration messages and 12-hour vote reminders.</p>
+                                    <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--muted);">Celebration messages and 12-hour vote reminders.</p>
                                 </div>
                             </div>
 
@@ -8688,13 +8665,38 @@
                                 <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Sends celebratory vote embeds to this channel when votes arrive.</span>
                             </div>
 
+                            <!-- Quick Presets -->
+                            <div class="input-group">
+                                <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
+                                    Announcement Presets
+                                </label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                    <button type="button" onclick="applyTopggPreset('standard')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.74rem; cursor: pointer; font-weight: 600;">🌟 Standard</button>
+                                    <button type="button" onclick="applyTopggPreset('streak')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.74rem; cursor: pointer; font-weight: 600;">🔥 Streak Focus</button>
+                                    <button type="button" onclick="applyTopggPreset('rewards')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.74rem; cursor: pointer; font-weight: 600;">💎 Full Rewards</button>
+                                    <button type="button" onclick="applyTopggPreset('compact')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.74rem; cursor: pointer; font-weight: 600;">⚡ Compact Ping</button>
+                                </div>
+                            </div>
+
                             <!-- Custom Message -->
                             <div class="input-group">
                                 <label style="display: block; font-size: 0.83rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;">
                                     Custom Announcement Message
                                 </label>
                                 <input type="text" id="setting-topggVoteMessage" style="width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 0.85rem; color: #fff;" placeholder="Thank you {user} for upvoting {bot}! You gained {rewards}.">
-                                <span style="font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: block;">Placeholders: <code>{user}</code>, <code>{bot}</code>, <code>{streak}</code>, <code>{rewards}</code></span>
+                                
+                                <!-- Clickable Placeholder Chips -->
+                                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;">
+                                    <span onclick="insertTopggPlaceholder('{user}')" style="background: rgba(255, 51, 102, 0.12); color: #FF3366; border: 1px solid rgba(255, 51, 102, 0.25); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{user}</span>
+                                    <span onclick="insertTopggPlaceholder('{username}')" style="background: rgba(255, 255, 255, 0.06); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{username}</span>
+                                    <span onclick="insertTopggPlaceholder('{server}')" style="background: rgba(255, 255, 255, 0.06); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{server}</span>
+                                    <span onclick="insertTopggPlaceholder('{channel}')" style="background: rgba(255, 255, 255, 0.06); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{channel}</span>
+                                    <span onclick="insertTopggPlaceholder('{bot}')" style="background: rgba(255, 255, 255, 0.06); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{bot}</span>
+                                    <span onclick="insertTopggPlaceholder('{streak}')" style="background: rgba(255, 255, 255, 0.06); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{streak}</span>
+                                    <span onclick="insertTopggPlaceholder('{rewards}')" style="background: rgba(255, 255, 255, 0.06); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{rewards}</span>
+                                    <span onclick="insertTopggPlaceholder('{xp}')" style="background: rgba(255, 255, 255, 0.06); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{xp}</span>
+                                    <span onclick="insertTopggPlaceholder('{multiplier}')" style="background: rgba(255, 255, 255, 0.06); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: monospace;" title="Click to insert">{multiplier}</span>
+                                </div>
                             </div>
 
                             <!-- 12-Hour Vote Reminders Switch -->
@@ -22409,8 +22411,40 @@ document.addEventListener('keydown', (e) => {
 window.topggMultiBots = [];
 window.topggVoteLogs = [];
 
+window.applyTopggPreset = function(presetKey) {
+    const msgEl = document.getElementById('setting-topggVoteMessage');
+    if (!msgEl) return;
+    const presets = {
+        standard: 'Thank you {user} for upvoting {bot} on Top.gg! You gained {rewards}.',
+        streak: '🔥 {user} upvoted {server}! Current streak: {streak} votes ({multiplier})! Rewards: {rewards}',
+        rewards: '🎉 {user} supported {server}! +{xp} XP awarded! Next vote available in 12 hours.',
+        compact: '{user} just upvoted {bot} on Top.gg! (+{xp} XP)'
+    };
+    if (presets[presetKey]) {
+        msgEl.value = presets[presetKey];
+        if (typeof showToast === 'function') showToast('Preset applied! Click Save Data to save changes.', 'info');
+    }
+};
+
+window.insertTopggPlaceholder = function(tag) {
+    const msgEl = document.getElementById('setting-topggVoteMessage');
+    if (!msgEl) return;
+    const start = msgEl.selectionStart || msgEl.value.length;
+    const end = msgEl.selectionEnd || msgEl.value.length;
+    const text = msgEl.value;
+    msgEl.value = text.substring(0, start) + ' ' + tag + ' ' + text.substring(end);
+    msgEl.focus();
+};
+
+window.updatePremiumCTA = function(isPremium) {
+    const cta = document.getElementById('sidebar-premium-cta');
+    const btn = document.getElementById('sidebar-get-premium-btn');
+    if (cta) cta.style.display = isPremium ? 'none' : 'flex';
+    if (btn) btn.style.display = isPremium ? 'none' : 'inline-flex';
+};
+
 async function loadTopggSettings() {
-    const guildId = window.currentServerId || window.currentGuildId;
+    const guildId = (typeof currentServerId !== 'undefined' ? currentServerId : null) || window.currentServerId || window.currentGuildId;
     const urlDisplay = document.getElementById('topgg-webhook-url-display');
     if (urlDisplay) {
         const publicBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -22438,9 +22472,9 @@ async function loadTopggSettings() {
         window.topggMultiBots = config.multiBots || [];
         window.topggVoteLogs = config.voteLogs || [];
 
-        // Populate Form Controls
+        // Populate Form Controls (Keep secret empty if not configured by user)
         const authEl = document.getElementById('setting-topggWebhookAuth');
-        if (authEl) authEl.value = config.topggWebhookAuth || ('nora_' + Math.random().toString(36).substring(2, 10));
+        if (authEl) authEl.value = config.topggWebhookAuth || '';
 
         const roleEl = document.getElementById('setting-topggRewardRoleId');
         if (roleEl && config.topggRewardRoleId) roleEl.value = config.topggRewardRoleId;

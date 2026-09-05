@@ -542,6 +542,65 @@
                         </tbody>
                     </table>
 
+                    <h3>Announcement Message Placeholders & Variables</h3>
+                    <p>Customize your vote celebration embeds with dynamic placeholders. Nora replaces these tags in real-time when votes arrive:</p>
+                    <table class="cmd-table">
+                        <thead>
+                            <tr>
+                                <th>Placeholder Tag</th>
+                                <th>Description</th>
+                                <th>Example Output</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>{user}</code></td>
+                                <td>Mentions the Discord voter.</td>
+                                <td><code>@Lunar</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{username}</code></td>
+                                <td>Voter's clean Discord username (without ping).</td>
+                                <td><code>Lunar</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{server}</code> / <code>{serverName}</code></td>
+                                <td>Name of the Discord server receiving the vote.</td>
+                                <td><code>Nora's Hub</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{channel}</code></td>
+                                <td>Mentions the vote announcement channel.</td>
+                                <td><code>#votes</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{bot}</code></td>
+                                <td>Name of the bot that received the upvote.</td>
+                                <td><code>Nora</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{streak}</code></td>
+                                <td>Current consecutive vote streak count.</td>
+                                <td><code>3</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{multiplier}</code></td>
+                                <td>Active weekend multiplier status.</td>
+                                <td><code>⭐ 2x Weekend</code> or <code>⚡ 1x Standard</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{xp}</code></td>
+                                <td>Amount of Leveling XP points awarded.</td>
+                                <td><code>300</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>{rewards}</code></td>
+                                <td>Combined summary of roles and XP granted.</td>
+                                <td><code>Role Assigned • +300 XP</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
                     <h3>Top.gg Slash Commands</h3>
                     <p>Members and administrators can manage and view vote progress directly from Discord:</p>
                     <ul>
