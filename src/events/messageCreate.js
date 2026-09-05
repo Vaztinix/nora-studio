@@ -360,6 +360,35 @@ module.exports = {
                 }
             }
 
+            // 🚫 Blacklist Checks (Ignored Channels & Ignored Roles)
+            if (settings?.levelingIgnoredChannels) {
+                try {
+                    const ignoredChannels = typeof settings.levelingIgnoredChannels === 'string'
+                        ? JSON.parse(settings.levelingIgnoredChannels || '[]')
+                        : (settings.levelingIgnoredChannels || []);
+                    if (Array.isArray(ignoredChannels) && (ignoredChannels.includes(message.channel.id) || (message.channel.parentId && ignoredChannels.includes(message.channel.parentId)))) {
+                        return;
+                    }
+                } catch (_) {}
+            }
+
+            if (settings?.levelingIgnoredRoles && message.member) {
+                try {
+                    const ignoredRoles = typeof settings.levelingIgnoredRoles === 'string'
+                        ? JSON.parse(settings.levelingIgnoredRoles || '[]')
+                        : (settings.levelingIgnoredRoles || []);
+                    if (Array.isArray(ignoredRoles) && ignoredRoles.some(roleId => message.member.roles.cache.has(roleId))) {
+                        return;
+                    }
+                } catch (_) {}
+            }
+
+            // 🛡️ Minimum Message Length Anti-Spam Check
+            const minMsgLen = settings?.levelingMinMsgLength !== undefined && settings?.levelingMinMsgLength !== null ? parseInt(settings.levelingMinMsgLength, 10) : 1;
+            if (minMsgLen > 1 && (!message.content || message.content.trim().length < minMsgLen)) {
+                return;
+            }
+
             // Get or create XP record retries
             let userLevel = null;
             for (let attempt = 1; attempt <= 3; attempt++) {
@@ -369,9 +398,10 @@ module.exports = {
             }
             if (!userLevel) return;
 
-            // Cooldown Monitor (15s Anti-Farming)
+            // Cooldown Monitor (Customizable Anti-Farming Cooldown)
+            const cdSec = settings?.levelingCooldownSec !== undefined && settings?.levelingCooldownSec !== null ? parseInt(settings.levelingCooldownSec, 10) : 15;
             const lastMs = userLevel.lastMessageTimestamp ? new Date(userLevel.lastMessageTimestamp).getTime() : 0;
-            const isOffCooldown = NoraLeveling.checkCooldown(lastMs);
+            const isOffCooldown = NoraLeveling.checkCooldown(lastMs, cdSec);
             if (!isOffCooldown) return;
 
             // Check for XP Multipliers (Role-based, Channel-based, Promoter)
@@ -410,8 +440,10 @@ module.exports = {
             // Cap at tier maximum (Free: 2.0x, Studio Plus: 10.0x)
             multiplier = Math.min(multiplier, maxAllowedMultiplier);
 
-            // Atomic Progress Processor
-            const res = await NoraLeveling.addExperience(userLevel, null, multiplier);
+            // Atomic Progress Processor with Custom Min/Max XP Bounds
+            const minXp = settings?.levelingMinXp !== undefined && settings?.levelingMinXp !== null ? parseInt(settings.levelingMinXp, 10) : 15;
+            const maxXp = settings?.levelingMaxXp !== undefined && settings?.levelingMaxXp !== null ? parseInt(settings.levelingMaxXp, 10) : 25;
+            const res = await NoraLeveling.addExperience(userLevel, null, multiplier, minXp, maxXp);
             await userLevel.save();
 
             // 🎭 Dynamic Role Reward Sync (Free: 5 roles, Studio Plus: 25 roles)
@@ -460,14 +492,21 @@ module.exports = {
             // Level-Up Notification
             if (res.didLevelUp) {
                 const level = res.newLevel;
-                const notifyChannelId = settings?.levelUpChannelId || message.channel.id;
-                const notifyChannel = message.guild.channels.cache.get(notifyChannelId) || message.channel;
+                const announceMode = settings?.levelingAnnounceMode || 'channel'; // 'channel', 'current', 'dm', 'disabled'
+                
+                let notifyChannel = null;
+                if (announceMode === 'current') {
+                    notifyChannel = message.channel;
+                } else if (announceMode === 'channel') {
+                    const notifyChannelId = settings?.levelUpChannelId || message.channel.id;
+                    notifyChannel = message.guild.channels.cache.get(notifyChannelId) || message.channel;
+                }
 
                 const template = settings?.levelUpMessage;
                 const desc = template ? formatMessage(template, message.member || message.author, level) : `<@${message.author.id}> has reached level **${level}**. GG!`;
                 const showPfp = settings?.levelingPfpEnabled !== false;
 
-                if (settings?.levelUpNotificationsEnabled !== false) {
+                if (announceMode !== 'disabled' && announceMode !== 'dm' && notifyChannel && settings?.levelUpNotificationsEnabled !== false) {
                     try {
                         const { generateLevelUpCard } = require('../utils/levelUpGenerator');
                         const imageBuffer = await generateLevelUpCard({

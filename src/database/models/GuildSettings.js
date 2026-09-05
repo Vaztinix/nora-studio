@@ -600,6 +600,42 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
+    levelingIgnoredChannels: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    levelingIgnoredRoles: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    levelingMinXp: {
+        type: DataTypes.INTEGER,
+        defaultValue: 15
+    },
+    levelingMaxXp: {
+        type: DataTypes.INTEGER,
+        defaultValue: 25
+    },
+    levelingCooldownSec: {
+        type: DataTypes.INTEGER,
+        defaultValue: 15
+    },
+    levelingMinMsgLength: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1
+    },
+    levelingAnnounceMode: {
+        type: DataTypes.STRING,
+        defaultValue: 'channel' // 'channel', 'current', 'dm', 'disabled'
+    },
+    levelingVoiceRequiresUnmuted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    levelingVoiceMinMembers: {
+        type: DataTypes.INTEGER,
+        defaultValue: 2
+    },
     rankCardColorPrimary: {
         type: DataTypes.STRING,
         defaultValue: '#23a55a'

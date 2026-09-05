@@ -3702,7 +3702,7 @@
                             val = null;
                         }
                     }
-                    if (k === 'customBlockedContexts' || k === 'countingBlacklistedUsers' || k === 'starboardIgnoredChannels') {
+                    if (k === 'customBlockedContexts' || k === 'countingBlacklistedUsers' || k === 'starboardIgnoredChannels' || k === 'levelingIgnoredChannels' || k === 'levelingIgnoredRoles') {
                         if (typeof val === 'string' && !val.trim().startsWith('[')) {
                             const arr = val.split(',').map(s => s.trim()).filter(Boolean);
                             val = JSON.stringify(arr);
@@ -6504,188 +6504,387 @@
                 <div id="tab-leveling" class="tab-content">
                     <input type="hidden" id="setting-roleRewards">
                     <input type="hidden" id="setting-xpRoleMultipliers">
+                    <input type="hidden" id="setting-levelingIgnoredChannels" value="[]">
+                    <input type="hidden" id="setting-levelingIgnoredRoles" value="[]">
+
+                    <!-- Top Banner & Quick Navigation -->
                     <div class="panel">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h3>Leveling Engine</h3>
-                            <div id="leveling-premium-badge" class="premium-badge" style="display: none;">NORA+ ACTIVATED</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h3 style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                                    <i class="fas fa-layer-group" style="color: var(--primary);"></i> Leveling & Progression Engine
+                                </h3>
+                                <p style="font-size: 0.78rem; color: var(--muted); margin: 4px 0 0 0;">
+                                    Drive server engagement with customizable XP gain, voice tracking, role rewards, and live customizable rank cards.
+                                </p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button type="button" class="config-btn" onclick="openRoleRewards()" style="padding: 8px 14px; font-size: 0.8rem; background: rgba(124, 58, 237, 0.15); border-color: rgba(124, 58, 237, 0.3); color: #c084fc;">
+                                    <i class="fas fa-trophy"></i> Role Rewards
+                                </button>
+                                <button type="button" class="config-btn" onclick="openXpMultipliers()" style="padding: 8px 14px; font-size: 0.8rem; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8;">
+                                    <i class="fas fa-chart-line"></i> XP Multipliers
+                                </button>
+                                <div id="leveling-premium-badge" class="premium-badge" style="display: none;">NORA+ ACTIVATED</div>
+                            </div>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px;">
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <!-- Core Controls & Announcement Router Grid -->
+                        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px;">
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
                                 <div class="log-row-compact">
                                     <div style="display: flex; flex-direction: column; gap: 2px;">
                                         <strong>Enable Tracking</strong>
-                                        <p style="font-size: 0.7rem; color: var(--muted);">Track user activity and levels</p>
+                                        <p style="font-size: 0.7rem; color: var(--muted);">Track member activity, message XP, and voice levels</p>
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-levelingEnabled"><span class="slider"></span></label>
                                 </div>
                                 <div class="log-row-compact">
                                     <div style="display: flex; flex-direction: column; gap: 2px;">
                                         <strong>Display Profile Pictures</strong>
-                                        <p style="font-size: 0.7rem; color: var(--muted);">Show user avatar in rank card and alerts</p>
+                                        <p style="font-size: 0.7rem; color: var(--muted);">Show Discord user avatar in generated rank cards and level-up alerts</p>
                                     </div>
-                                    <label class="switch small"><input type="checkbox" id="setting-levelingPfpEnabled"><span class="slider"></span></label>
+                                    <label class="switch small"><input type="checkbox" id="setting-levelingPfpEnabled" onchange="updateRankCardLivePreview()"><span class="slider"></span></label>
                                 </div>
                                 <div class="log-row-compact">
                                     <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <strong>Use Image Cards</strong>
-                                        <p style="font-size: 0.7rem; color: var(--muted);">Display rank/level up as beautiful images; if disabled, uses text/embed fallback</p>
+                                        <strong>Use Canvas Image Cards</strong>
+                                        <p style="font-size: 0.7rem; color: var(--muted);">Render rank and level-up milestones as graphical cards; fallback to embeds if disabled</p>
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-levelingUseImages"><span class="slider"></span></label>
                                 </div>
-                            <div class="log-row-container" style="display: flex; flex-direction: column;">
-                                <div class="log-row-compact" onclick="toggleRowDropdown(this)" style="cursor: pointer; border-radius: 12px; transition: border-radius 0.2s;">
-                                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <strong>Level Up Alerts</strong>
-                                        <p style="font-size: 0.7rem; color: var(--muted);">Send message to channel</p>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 12px;">
-                                        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted);"></i>
-                                        <label class="switch small" onclick="event.stopPropagation()"><input type="checkbox" id="setting-levelUpNotificationsEnabled"><span class="slider"></span></label>
-                                    </div>
-                                </div>
-                                <div class="log-row-dropdown" style="display: none; padding: 15px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; margin-top: -1px;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">Custom Level Up Alert Message</span>
-                                        <div style="position: relative; display: inline-block;">
-                                            <i class="far fa-question-circle placeholder-help-icon" style="color: var(--primary); cursor: pointer; font-size: 0.9rem;" onclick="togglePlaceholderHelp(event)"></i>
-                                            <div class="placeholder-tooltip">
-                                                <strong>Available Placeholders:</strong><br>
-                                                <code style="color: var(--primary);">{user}</code> - Mentions the user<br>
-                                                <code style="color: var(--primary);">{username}</code> - Plain name<br>
-                                                <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
-                                                <code style="color: var(--primary);">{guild}</code> - Server name<br>
-                                                <code style="color: var(--primary);">{membercount}</code> - Member count<br>
-                                                <code style="color: var(--primary);">{level}</code> - User new level<br>
-                                                <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Markdown.</em>
-                                            </div>
+                                <div class="log-row-container" style="display: flex; flex-direction: column;">
+                                    <div class="log-row-compact" onclick="toggleRowDropdown(this)" style="cursor: pointer; border-radius: 12px; transition: border-radius 0.2s;">
+                                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                                            <strong>Level Up Alerts</strong>
+                                            <p style="font-size: 0.7rem; color: var(--muted);">Celebrate milestones with announcement messages</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted);"></i>
+                                            <label class="switch small" onclick="event.stopPropagation()"><input type="checkbox" id="setting-levelUpNotificationsEnabled"><span class="slider"></span></label>
                                         </div>
                                     </div>
-                                    <input type="text" id="setting-levelUpMessage" class="custom-msg-input" placeholder="Congratulations {user}! You've climbed to Level {level}!">
-                                    <div style="font-size: 0.7rem; color: var(--muted); line-height: 1.3; margin-top: 8px;">
-                                        <strong>Default fallback:</strong> Congratulations {user}! You've climbed to Level {level}!
+                                    <div class="log-row-dropdown" style="display: none; padding: 15px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; margin-top: -1px;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                            <span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">Custom Level Up Alert Message</span>
+                                            <div style="position: relative; display: inline-block;">
+                                                <i class="far fa-question-circle placeholder-help-icon" style="color: var(--primary); cursor: pointer; font-size: 0.9rem;" onclick="togglePlaceholderHelp(event)"></i>
+                                                <div class="placeholder-tooltip">
+                                                    <strong>Available Placeholders:</strong><br>
+                                                    <code style="color: var(--primary);">{user}</code> - Mentions user<br>
+                                                    <code style="color: var(--primary);">{username}</code> - User username<br>
+                                                    <code style="color: var(--primary);">{id}</code> - User Discord ID<br>
+                                                    <code style="color: var(--primary);">{guild}</code> - Server name<br>
+                                                    <code style="color: var(--primary);">{membercount}</code> - Member count<br>
+                                                    <code style="color: var(--primary);">{level}</code> - Reached Level<br>
+                                                    <em style="display:block; margin-top: 5px; font-size: 0.7rem;">Supports standard Discord Markdown.</em>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input type="text" id="setting-levelUpMessage" class="custom-msg-input" placeholder="Congratulations {user}! You've climbed to Level {level}!">
+                                        <div style="font-size: 0.7rem; color: var(--muted); line-height: 1.3; margin-top: 8px;">
+                                            <strong>Default:</strong> Congratulations {user}! You've climbed to Level {level}!
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="log-row-compact">
+                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                        <strong>Direct Message (DM) Alerts</strong>
+                                        <p style="font-size: 0.7rem; color: var(--muted);">Deliver level-up congratulations directly to users in private DMs</p>
+                                    </div>
+                                    <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled"><span class="slider"></span></label>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 14px;">
+                                <div class="input-group">
+                                    <label><i class="fas fa-bullhorn" style="color: #38bdf8; margin-right: 4px;"></i> Announcement Destination Mode</label>
+                                    <select id="setting-levelingAnnounceMode" class="custom-msg-input" style="padding: 9px 12px; background: rgba(0,0,0,0.35);">
+                                        <option value="channel">Designated Announce Channel</option>
+                                        <option value="current">Current Channel (Where leveled up)</option>
+                                        <option value="dm">Direct Message Only (Private)</option>
+                                        <option value="disabled">Silent / Disabled</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fas fa-hashtag" style="color: #38bdf8; margin-right: 4px;"></i> Designated Announce Channel</label>
+                                    <select id="setting-levelUpChannelId"><option value="">Select channel...</option></select>
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fas fa-award" style="color: #fbbf24; margin-right: 4px;"></i> Status Promoter Booster Role</label>
+                                    <select id="setting-promoterRoleId"><option value="">No role selected</option></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- XP Math & Anti-Spam Safeguards Panel -->
+                    <div class="panel" style="margin-top: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                            <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.95rem;">
+                                <i class="fas fa-sliders-h" style="color: #10b981;"></i> XP Tuning & Anti-Spam Protections
+                            </h3>
+                            <span style="font-size: 0.75rem; color: var(--muted);">Fine-tune chat accrual rates and prevent farming</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px;">
+                            <div class="input-group">
+                                <label>Min XP / Message</label>
+                                <input type="number" id="setting-levelingMinXp" placeholder="15" min="1" max="1000" class="custom-msg-input">
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">Default: 15 XP</span>
+                            </div>
+                            <div class="input-group">
+                                <label>Max XP / Message</label>
+                                <input type="number" id="setting-levelingMaxXp" placeholder="25" min="1" max="1000" class="custom-msg-input">
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">Default: 25 XP</span>
+                            </div>
+                            <div class="input-group">
+                                <label>XP Cooldown (Seconds)</label>
+                                <input type="number" id="setting-levelingCooldownSec" placeholder="15" min="1" max="300" class="custom-msg-input">
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">Anti-spam delay (Default: 15s)</span>
+                            </div>
+                            <div class="input-group">
+                                <label>Min Message Length (Chars)</label>
+                                <input type="number" id="setting-levelingMinMsgLength" placeholder="1" min="1" max="100" class="custom-msg-input">
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">Ignore 1-letter spam / emojis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No-XP Blacklists Panel -->
+                    <div class="panel" style="margin-top: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                            <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.95rem;">
+                                <i class="fas fa-ban" style="color: #ef4444;"></i> No-XP Blacklists
+                            </h3>
+                            <span style="font-size: 0.75rem; color: var(--muted);">Exclude bot channels, spam rooms, and staff roles from gaining XP</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="input-group">
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-hashtag" style="color: #ef4444;"></i> Ignored Channels & Categories
+                                </label>
+                                <div id="setting-levelingIgnoredChannels-container" class="multiselect-container"></div>
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">No XP will be awarded in these channels or categories.</span>
+                            </div>
+                            <div class="input-group">
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-user-shield" style="color: #ef4444;"></i> Ignored Roles
+                                </label>
+                                <div id="setting-levelingIgnoredRoles-container" class="multiselect-container"></div>
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">Members with these roles will not accumulate XP.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Voice XP & Anti-AFK Safeguards Panel -->
+                    <div class="panel" style="margin-top: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                            <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.95rem;">
+                                <i class="fas fa-microphone-alt" style="color: #a855f7;"></i> Voice Leveling & Anti-AFK Safeguards
+                            </h3>
+                            <span style="font-size: 0.75rem; color: var(--muted);">Automate XP accrual for active voice participants</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: center;">
+                            <div class="input-group">
+                                <label>Voice XP Rate</label>
+                                <input type="number" id="setting-voiceXpRate" placeholder="10" min="1" max="500" class="custom-msg-input">
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">XP awarded per voice tick</span>
+                            </div>
+                            <div class="input-group">
+                                <label>Tick Interval (s)</label>
+                                <input type="number" id="setting-voiceXpInterval" placeholder="60" min="10" max="600" class="custom-msg-input">
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">Accrual interval in seconds</span>
+                            </div>
+                            <div class="input-group">
+                                <label>Min Active VC Members</label>
+                                <input type="number" id="setting-levelingVoiceMinMembers" placeholder="2" min="1" max="50" class="custom-msg-input">
+                                <span style="font-size: 0.68rem; color: var(--muted); margin-top: 4px;">Requires 2+ members to prevent solo farming</span>
+                            </div>
+                            <div class="log-row-compact" style="margin-top: 8px; background: rgba(0,0,0,0.25);">
+                                <div style="display: flex; flex-direction: column; gap: 2px;">
+                                    <strong>Require Unmuted</strong>
+                                    <p style="font-size: 0.68rem; color: var(--muted);">Skip muted or deafened users</p>
+                                </div>
+                                <label class="switch small"><input type="checkbox" id="setting-levelingVoiceRequiresUnmuted"><span class="slider"></span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rank Card Studio & Live Real-Time Card Preview -->
+                    <div class="panel" style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+                            <div>
+                                <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1rem;">
+                                    <i class="fas fa-palette" style="color: #ec4899;"></i> Rank Card Studio & Live Interactive Preview
+                                </h3>
+                                <p style="font-size: 0.78rem; color: var(--muted); margin: 4px 0 0 0;">
+                                    Customize server-wide rank cards with real-time visual synchronization.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-outline" style="font-size: 0.75rem; padding: 5px 12px;" onclick="updateRankCardLivePreview()">
+                                <i class="fas fa-sync-alt"></i> Refresh Preview
+                            </button>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; align-items: start;">
+                            <!-- Visual Controls -->
+                            <div style="display: flex; flex-direction: column; gap: 14px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                                    <div class="input-group">
+                                        <label style="font-size: 0.75rem;">Background</label>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <input type="color" id="setting-levelingCardBgColor" style="width: 36px; height: 34px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; background: transparent; padding: 0;" oninput="updateRankCardLivePreview()">
+                                            <input type="text" class="custom-msg-input" style="font-family: monospace; font-size: 0.75rem; padding: 6px 8px;" placeholder="#111217" value="#111217" id="setting-levelingCardBgColor-text" oninput="updateRankCardLivePreview()">
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label style="font-size: 0.75rem;">Accent Color</label>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <input type="color" id="setting-levelingCardAccentColor" style="width: 36px; height: 34px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; background: transparent; padding: 0;" oninput="updateRankCardLivePreview()">
+                                            <input type="text" class="custom-msg-input" style="font-family: monospace; font-size: 0.75rem; padding: 6px 8px;" placeholder="#7c3aed" value="#7c3aed" id="setting-levelingCardAccentColor-text" oninput="updateRankCardLivePreview()">
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label style="font-size: 0.75rem;">Border Color</label>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <input type="color" id="setting-levelingCardBorderColor" style="width: 36px; height: 34px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; background: transparent; padding: 0;" oninput="updateRankCardLivePreview()">
+                                            <input type="text" class="custom-msg-input" style="font-family: monospace; font-size: 0.75rem; padding: 6px 8px;" placeholder="#23252e" value="#23252e" id="setting-levelingCardBorderColor-text" oninput="updateRankCardLivePreview()">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style="font-size: 0.8rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 6px;">
+                                        <i class="fas fa-image" style="color: var(--primary); margin-right: 4px;"></i> Custom Card Background (Image URL or Upload)
+                                    </label>
+                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                        <input type="text" id="setting-levelingCardBackgroundImage" class="custom-msg-input" placeholder="https://example.com/background.png..." style="flex: 1; min-width: 200px;" oninput="updateRankCardBgPreview(this.value)">
+                                        <label class="config-btn" style="width: auto; margin: 0; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); font-size: 0.78rem; color: #fff;">
+                                            <i class="fas fa-upload"></i> Upload
+                                            <input type="file" id="rank-card-bg-file" accept="image/*" style="display: none;" onchange="handleRankCardBgUpload(event)">
+                                        </label>
+                                        <button type="button" class="config-btn" style="width: auto; margin: 0; padding: 8px 10px; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #ef4444; font-size: 0.78rem;" onclick="clearRankCardBgImage()">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                    <div id="rank-card-bg-preview-container" style="margin-top: 8px; display: none;">
+                                        <img id="rank-card-bg-preview" src="" style="max-height: 80px; max-width: 100%; border-radius: 8px; border: 1px solid var(--border); object-fit: cover;">
                                     </div>
                                 </div>
                             </div>
-                            <div class="log-row-compact">
-                                <div style="display: flex; flex-direction: column; gap: 2px;">
-                                    <strong>DM Notifications</strong>
-                                    <p style="font-size: 0.7rem; color: var(--muted);">Send level up alerts to users' DMs (users can opt out individually with <code>/levelupdms</code>)</p>
-                                </div>
-                                <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled"><span class="slider"></span></label>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div class="input-group">
-                                <label>Announce Channel</label>
-                                <select id="setting-levelUpChannelId"><option value="">Select channel...</option></select>
-                            </div>
-                            <div class="input-group">
-                                <label>Status Promoter Role</label>
-                                <select id="setting-promoterRoleId"><option value="">No role selected</option></select>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <div class="input-group">
-                                    <label>Voice XP</label>
-                                    <input type="number" id="setting-voiceXpRate" placeholder="10">
-                                </div>
-                                <div class="input-group">
-                                    <label>Interval (s)</label>
-                                    <input type="number" id="setting-voiceXpInterval" placeholder="60">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="panel" style="margin-top: 20px;">
-                        <h3>Generated Cards Appearance</h3>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px;">
-                            Customize the color theme of rank cards, level up cards, and leaderboard cards generated for all users on this server.
-                        </p>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                            <div class="input-group">
-                                <label>Background Color</label>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="color" id="setting-levelingCardBgColor" style="width: 42px; height: 38px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
-                                    <input type="text" class="custom-msg-input" style="font-family: monospace;" oninput="document.getElementById('setting-levelingCardBgColor').value = this.value" placeholder="#111217" value="#111217" id="setting-levelingCardBgColor-text">
+                            <!-- Live Card Interactive Render Box -->
+                            <div id="live-rank-card-preview" style="width: 100%;">
+                                <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+                                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span> Real-Time Card Preview
                                 </div>
-                            </div>
-                            <div class="input-group">
-                                <label>Accent Color</label>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="color" id="setting-levelingCardAccentColor" style="width: 42px; height: 38px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
-                                    <input type="text" class="custom-msg-input" style="font-family: monospace;" oninput="document.getElementById('setting-levelingCardAccentColor').value = this.value" placeholder="#7c3aed" value="#7c3aed" id="setting-levelingCardAccentColor-text">
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label>Border Color</label>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="color" id="setting-levelingCardBorderColor" style="width: 42px; height: 38px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
-                                    <input type="text" class="custom-msg-input" style="font-family: monospace;" oninput="document.getElementById('setting-levelingCardBorderColor').value = this.value" placeholder="#23252e" value="#23252e" id="setting-levelingCardBorderColor-text">
-                                </div>
-                            </div>
-                        </div>
+                                <div id="rank-preview-box" style="position: relative; width: 100%; min-height: 175px; background: #111217; border: 2px solid #23252e; border-radius: 16px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.5); transition: all 0.25s ease;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
+                                        <div style="display: flex; align-items: center; gap: 14px;">
+                                            <div style="position: relative;">
+                                                <img id="rank-preview-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 58px; height: 58px; border-radius: 50%; border: 3px solid #7c3aed; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.4);" alt="Avatar">
+                                                <span style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #23a55a; border: 2px solid #111217; border-radius: 50%;"></span>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: -0.01em; display: flex; align-items: center; gap: 6px;">
+                                                    Nora Explorer <span style="font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: #e4e4e7; font-weight: 600;">★ VIP</span>
+                                                </div>
+                                                <div style="font-size: 0.75rem; color: #a1a1aa;">@nora.user • Server Top Contributor</div>
+                                            </div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 0.72rem; font-weight: 700; color: #a1a1aa; text-transform: uppercase;">Rank</div>
+                                            <div style="font-size: 1.3rem; font-weight: 900; color: #fff; line-height: 1;">
+                                                #<span class="rank-preview-accent" style="color: #7c3aed;">1</span>
+                                            </div>
+                                            <div style="font-size: 0.72rem; font-weight: 700; color: #a1a1aa; margin-top: 4px;">Level <span class="rank-preview-accent" style="color: #7c3aed; font-size: 1.05rem; font-weight: 900;">42</span></div>
+                                        </div>
+                                    </div>
 
-                        <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border);">
-                            <label style="font-size: 0.85rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 8px;">
-                                <i class="fas fa-image" style="color: var(--primary); margin-right: 6px;"></i> Custom Rank Card Background Image (Upload File or URL)
-                            </label>
-                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                                <input type="text" id="setting-levelingCardBackgroundImage" class="custom-msg-input" placeholder="https://example.com/rank-background.png or upload below..." style="flex: 1; min-width: 260px;" oninput="updateRankCardBgPreview(this.value)">
-                                <label class="config-btn" style="width: auto; margin: 0; padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); font-size: 0.82rem; color: #fff;">
-                                    <i class="fas fa-upload"></i> Upload Image
-                                    <input type="file" id="rank-card-bg-file" accept="image/*" style="display: none;" onchange="handleRankCardBgUpload(event)">
-                                </label>
-                                <button type="button" class="config-btn" style="width: auto; margin: 0; padding: 10px 14px; background: rgba(255,85,85,0.1); border-color: rgba(255,85,85,0.25); color: #ff5555; font-size: 0.82rem;" onclick="clearRankCardBgImage()">
-                                    <i class="fas fa-trash-alt"></i> Clear
-                                </button>
-                            </div>
-                            <div id="rank-card-bg-preview-container" style="margin-top: 12px; display: none;">
-                                <div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 6px;">Image Preview:</div>
-                                <img id="rank-card-bg-preview" src="" style="max-height: 120px; max-width: 100%; border-radius: 10px; border: 1px solid var(--border); object-fit: cover;">
+                                    <div style="z-index: 2; margin-top: 14px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem; font-weight: 700; margin-bottom: 6px; color: #e4e4e7;">
+                                            <span>Progress to Level 43</span>
+                                            <span style="font-family: monospace;">3,420 / 5,000 XP (68%)</span>
+                                        </div>
+                                        <div style="width: 100%; height: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; padding: 2px; box-sizing: border-box;">
+                                            <div id="rank-preview-progress-bar" style="width: 68%; height: 100%; background: linear-gradient(90deg, #7c3aed, #a78bfa); border-radius: 999px; box-shadow: 0 0 10px rgba(124, 58, 237, 0.5); transition: all 0.25s ease;"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-
+                    <!-- Client-Side Sync Script -->
                     <script>
-                        // Keep text input and color picker synced
+                        function updateRankCardLivePreview() {
+                            const previewBox = document.getElementById('rank-preview-box');
+                            const avatar = document.getElementById('rank-preview-avatar');
+                            const progressBar = document.getElementById('rank-preview-progress-bar');
+                            const accentTexts = document.querySelectorAll('.rank-preview-accent');
+
+                            const bgVal = document.getElementById('setting-levelingCardBgColor')?.value || '#111217';
+                            const accentVal = document.getElementById('setting-levelingCardAccentColor')?.value || '#7c3aed';
+                            const borderVal = document.getElementById('setting-levelingCardBorderColor')?.value || '#23252e';
+                            const bgImg = document.getElementById('setting-levelingCardBackgroundImage')?.value?.trim() || '';
+                            const showPfp = document.getElementById('setting-levelingPfpEnabled')?.checked !== false;
+
+                            if (previewBox) {
+                                if (bgImg) {
+                                    previewBox.style.backgroundImage = `linear-gradient(rgba(17, 18, 23, 0.78), rgba(17, 18, 23, 0.88)), url('${bgImg}')`;
+                                    previewBox.style.backgroundSize = 'cover';
+                                    previewBox.style.backgroundPosition = 'center';
+                                } else {
+                                    previewBox.style.backgroundImage = 'none';
+                                    previewBox.style.backgroundColor = bgVal;
+                                }
+                                previewBox.style.borderColor = borderVal;
+                                previewBox.style.boxShadow = `0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px ${borderVal}33`;
+                            }
+
+                            if (avatar) {
+                                avatar.style.visibility = showPfp ? 'visible' : 'hidden';
+                                avatar.style.borderColor = accentVal;
+                            }
+
+                            accentTexts.forEach(el => {
+                                el.style.color = accentVal;
+                            });
+
+                            if (progressBar) {
+                                progressBar.style.background = `linear-gradient(90deg, ${accentVal}, #a78bfa)`;
+                                progressBar.style.boxShadow = `0 0 12px ${accentVal}66`;
+                            }
+                        }
+                        window.updateRankCardLivePreview = updateRankCardLivePreview;
+
+                        // Sync text inputs with color pickers and trigger live preview
                         document.addEventListener('DOMContentLoaded', () => {
-                            const bgPicker = document.getElementById('setting-levelingCardBgColor');
-                            const bgText = document.getElementById('setting-levelingCardBgColor-text');
-                            const accentPicker = document.getElementById('setting-levelingCardAccentColor');
-                            const accentText = document.getElementById('setting-levelingCardAccentColor-text');
-                            const borderPicker = document.getElementById('setting-levelingCardBorderColor');
-                            const borderText = document.getElementById('setting-levelingCardBorderColor-text');
-
-                            if (bgPicker && bgText) {
-                                bgPicker.addEventListener('input', () => { bgText.value = bgPicker.value.toUpperCase(); });
-                                bgText.addEventListener('input', () => { if (/^#[0-9A-F]{6}$/i.test(bgText.value)) bgPicker.value = bgText.value; });
-                            }
-                            if (accentPicker && accentText) {
-                                accentPicker.addEventListener('input', () => { accentText.value = accentPicker.value.toUpperCase(); });
-                                accentText.addEventListener('input', () => { if (/^#[0-9A-F]{6}$/i.test(accentText.value)) accentPicker.value = accentText.value; });
-                            }
-                            if (borderPicker && borderText) {
-                                borderPicker.addEventListener('input', () => { borderText.value = borderPicker.value.toUpperCase(); });
-                                borderText.addEventListener('input', () => { if (/^#[0-9A-F]{6}$/i.test(borderText.value)) borderPicker.value = borderText.value; });
-                            }
+                            ['BgColor', 'AccentColor', 'BorderColor'].forEach(type => {
+                                const picker = document.getElementById('setting-levelingCard' + type);
+                                const text = document.getElementById('setting-levelingCard' + type + '-text');
+                                if (picker && text) {
+                                    picker.addEventListener('input', () => {
+                                        text.value = picker.value.toUpperCase();
+                                        updateRankCardLivePreview();
+                                    });
+                                    text.addEventListener('input', () => {
+                                        if (/^#[0-9A-F]{6}$/i.test(text.value)) {
+                                            picker.value = text.value;
+                                            updateRankCardLivePreview();
+                                        }
+                                    });
+                                }
+                            });
                         });
-                    </script>
 
-                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <button class="config-btn" onclick="openRoleRewards()"><i class="fas fa-trophy"></i> Role Rewards</button>
-                        <button class="config-btn" onclick="openXpMultipliers()"><i class="fas fa-chart-line"></i> XP Multipliers</button>
-                    </div>
-                    </div>
-                    <script>
                         function openRoleRewards() {
-                            document.getElementById('role-rewards-modal').style.display = 'flex';
+                            const modal = document.getElementById('role-rewards-modal');
+                            if (modal) modal.style.display = 'flex';
                         }
                         function openXpMultipliers() {
-                            document.getElementById('role-multipliers-modal').style.display = 'flex';
+                            const modal = document.getElementById('role-multipliers-modal');
+                            if (modal) modal.style.display = 'flex';
                         }
                     </script>
                 </div>
@@ -9443,7 +9642,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers'];
 
 
 
@@ -12059,7 +12258,7 @@
                         val = null;
                     }
                 }
-                if (k === 'customBlockedContexts' || k === 'countingBlacklistedUsers' || k === 'starboardIgnoredChannels') {
+                if (k === 'customBlockedContexts' || k === 'countingBlacklistedUsers' || k === 'starboardIgnoredChannels' || k === 'levelingIgnoredChannels' || k === 'levelingIgnoredRoles') {
                     if (typeof val === 'string' && !val.trim().startsWith('[')) {
                         const arr = val.split(',').map(s => s.trim()).filter(Boolean);
                         val = JSON.stringify(arr);
@@ -17917,14 +18116,16 @@
                 initCustomDropdown('new-feed-channel');
                 initCustomDropdown('new-feed-ping');
 
-                // Initialize custom multiselect dropdowns for verify roles and immune roles
+                // Initialize custom multiselect dropdowns for verify roles, immune roles, and leveling blacklists
                 const roleLimit = window.currentServerIsPremium ? 5 : 3;
                 initMultiselect('setting-verifyRoleId', roles, roleLimit);
                 initMultiselect('setting-welcomeRoleId', roles, roleLimit);
                 initMultiselect('setting-automodImmuneRoles', roles);
                 initMultiselect('setting-countingWhitelistedRoles', roles);
+                initMultiselect('setting-levelingIgnoredRoles', roles);
                 const chList = (typeof textChannels !== 'undefined' ? textChannels : (window.currentTextChannels || []));
                 initMultiselect('setting-starboardIgnoredChannels', (window.currentTextChannels || []));
+                initMultiselect('setting-levelingIgnoredChannels', (window.currentChannels || window.currentTextChannels || []));
 
             } catch (e) {
                 console.error('[Roles Apply Error]:', e);
@@ -19045,8 +19246,10 @@
                 syncMultiselectUI('setting-automodImmuneRoles');
                 syncMultiselectUI('setting-countingWhitelistedRoles');
                 syncMultiselectUI('setting-starboardIgnoredChannels');
+                syncMultiselectUI('setting-levelingIgnoredRoles');
+                syncMultiselectUI('setting-levelingIgnoredChannels');
 
-
+                if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
                 if (typeof refreshTopggAvatarPreview === 'function') refreshTopggAvatarPreview();
                 if (typeof updateAiSummary === 'function') updateAiSummary();
                 applyThemeVariables();
@@ -19451,13 +19654,17 @@
         function updateRankCardBgPreview(url) {
             const container = document.getElementById('rank-card-bg-preview-container');
             const img = document.getElementById('rank-card-bg-preview');
-            if (!container || !img) return;
-            if (url && url.trim()) {
-                img.src = url.trim();
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
-                img.src = '';
+            if (img) {
+                if (url && url.trim()) {
+                    img.src = url.trim();
+                    if (container) container.style.display = 'block';
+                } else {
+                    if (container) container.style.display = 'none';
+                    img.src = '';
+                }
+            }
+            if (typeof updateRankCardLivePreview === 'function') {
+                updateRankCardLivePreview();
             }
         }
 
@@ -19477,6 +19684,7 @@
                     input.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 updateRankCardBgPreview(dataUrl);
+                if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
                 if (typeof showToast === 'function') showToast('Rank card background image loaded successfully!', 'success');
             };
             reader.readAsDataURL(file);
@@ -19491,6 +19699,7 @@
             }
             if (fileInput) fileInput.value = '';
             updateRankCardBgPreview('');
+            if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
         }
 
         async function fetchContentFeeds(force = false) {

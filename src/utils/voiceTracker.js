@@ -31,16 +31,53 @@ module.exports = {
                     // Scan voice channels
                     for (const [, channel] of guild.channels.cache.filter(c => c.isVoiceBased())) {
                         const allMembers = channel.members.filter(m => !m.user.bot);
-                        const activeMembers = allMembers.filter(m => !m.voice.selfDeaf && !m.voice.serverDeaf);
                         
+                        // Parse ignored channels and roles
+                        let ignoredChannels = [];
+                        let ignoredRoles = [];
+                        try {
+                            if (settings.levelingIgnoredChannels) {
+                                ignoredChannels = typeof settings.levelingIgnoredChannels === 'string'
+                                    ? JSON.parse(settings.levelingIgnoredChannels || '[]')
+                                    : (settings.levelingIgnoredChannels || []);
+                            }
+                            if (settings.levelingIgnoredRoles) {
+                                ignoredRoles = typeof settings.levelingIgnoredRoles === 'string'
+                                    ? JSON.parse(settings.levelingIgnoredRoles || '[]')
+                                    : (settings.levelingIgnoredRoles || []);
+                            }
+                        } catch (_) {}
+
+                        // Skip if channel or parent category is blacklisted
+                        if (ignoredChannels.includes(channel.id) || (channel.parentId && ignoredChannels.includes(channel.parentId))) {
+                            continue;
+                        }
+
+                        // Anti-AFK / Active member filtering
+                        const requireUnmuted = settings.levelingVoiceRequiresUnmuted !== false;
+                        const activeMembers = allMembers.filter(m => {
+                            if (m.voice.selfDeaf || m.voice.serverDeaf) return false;
+                            if (requireUnmuted && (m.voice.selfMute || m.voice.serverMute)) return false;
+                            if (ignoredRoles.length > 0 && ignoredRoles.some(rId => m.roles.cache.has(rId))) return false;
+                            return true;
+                        });
+                        
+                        const minVoiceMembers = settings.levelingVoiceMinMembers !== undefined && settings.levelingVoiceMinMembers !== null
+                            ? parseInt(settings.levelingVoiceMinMembers, 10)
+                            : 2;
+
                         // --- Part 1: Engagement Rewards (Leveling) ---
-                        if (settings.levelingEnabled && activeMembers.size >= 2) {
+                        if (settings.levelingEnabled && activeMembers.size >= minVoiceMembers) {
+                            const customVoiceXp = settings.voiceXpRate !== undefined && settings.voiceXpRate !== null && parseInt(settings.voiceXpRate, 10) > 0
+                                ? parseInt(settings.voiceXpRate, 10)
+                                : MEDIUM_XP;
+
                             for (const [, member] of activeMembers) {
                                 try {
                                     const userLevel = await NoraLeveling.getOrInitializeUser(member.id, guildId);
                                     if (!userLevel) continue;
 
-                                    const res = await NoraLeveling.addExperience(userLevel, MEDIUM_XP);
+                                    const res = await NoraLeveling.addExperience(userLevel, customVoiceXp);
                                     await userLevel.save();
 
                                     if (res.didLevelUp) {

@@ -24,9 +24,12 @@ module.exports = {
     getXPForLevel: (level) => NORA_CONFIG.getXPNeeded(level),
     getTotalXPForLevel: (level) => NORA_CONFIG.getTotalXP(level),
     
-    checkCooldown: (lastMs) => {
+    checkCooldown: (lastMs, customCooldownSec = null) => {
         const now = Date.now();
-        return (now - lastMs >= NORA_CONFIG.COOLDOWN);
+        const cdMs = customCooldownSec !== null && !isNaN(customCooldownSec) && customCooldownSec >= 1 
+            ? Math.floor(customCooldownSec * 1000) 
+            : NORA_CONFIG.COOLDOWN;
+        return (now - lastMs >= cdMs);
     },
 
     getMediumXP: () => NORA_CONFIG.VOICE_XP,
@@ -54,10 +57,16 @@ module.exports = {
         }
     },
 
-    addExperience: async (userRecord, manualXp = null, multiplier = 1.0) => {
+    addExperience: async (userRecord, manualXp = null, multiplier = 1.0, minXp = null, maxXp = null) => {
         if (!userRecord) return { xpGained: 0, didLevelUp: false, newLevel: 0 };
         
-        let xpGained = manualXp !== null ? manualXp : Math.floor(Math.random() * (NORA_CONFIG.XP_RANGE[1] - NORA_CONFIG.XP_RANGE[0] + 1)) + NORA_CONFIG.XP_RANGE[0];
+        let lowerBound = minXp !== null && !isNaN(minXp) && minXp >= 1 ? parseInt(minXp, 10) : NORA_CONFIG.XP_RANGE[0];
+        let upperBound = maxXp !== null && !isNaN(maxXp) && maxXp >= lowerBound ? parseInt(maxXp, 10) : NORA_CONFIG.XP_RANGE[1];
+        if (upperBound < lowerBound) upperBound = lowerBound;
+
+        let xpGained = manualXp !== null 
+            ? manualXp 
+            : Math.floor(Math.random() * (upperBound - lowerBound + 1)) + lowerBound;
         
         // 3000+ Users Global Event: 50% XP Boost for 14 Days (Until May 1, 2026)
         const EVENT_BOOST_EXPIRY = new Date('2026-05-01T13:53:43-04:00').getTime();
