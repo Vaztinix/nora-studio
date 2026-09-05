@@ -40,17 +40,72 @@ module.exports = (client) => {
 
     router.post(TOPGG_WEBHOOK_PATHS, async (req, res) => {
         try {
-            const authHeader = req.headers.authorization || req.headers.Authorization || req.query.auth;
+            const authHeader = req.headers.authorization || req.headers.Authorization || req.query.auth || req.headers['x-topgg-signature'];
             const payload = req.body || {};
-            const data = payload.data || payload;
             
-            const voterId = data.user || data.userId || data.voterId || payload.user;
-            const targetBotId = data.bot || data.botId || payload.bot || client?.user?.id || '593420060990005248';
-            const isWeekend = Boolean(data.isWeekend !== undefined ? data.isWeekend : payload.isWeekend);
-            const voteType = data.type || payload.type || payload.event || 'upvote';
+            let voterId = null;
+            let voterName = null;
+            let targetBotId = null;
+            let isWeekend = false;
+            let isTest = false;
 
-            // Handle Top.gg Test/Verification Ping on Webhook creation or "Send Test"
-            if (!voterId || voteType === 'test' || payload.event === 'test' || payload.event === 'ping') {
+            // 1. Check Modern Top.gg v1/v2 Webhook Event (type: "vote.create" or "webhook.test")
+            if (payload.type === 'vote.create' || payload.type === 'webhook.test' || payload.event === 'vote.create' || payload.event === 'webhook.test') {
+                if (payload.type === 'webhook.test' || payload.event === 'webhook.test') isTest = true;
+                const d = payload.data || {};
+                
+                if (d.user) {
+                    if (typeof d.user === 'object' && d.user !== null) {
+                        voterId = d.user.platform_id || d.user.id;
+                        voterName = d.user.name || d.user.username;
+                    } else if (typeof d.user === 'string') {
+                        voterId = d.user;
+                    }
+                }
+                
+                if (d.project) {
+                    if (typeof d.project === 'object' && d.project !== null) {
+                        targetBotId = d.project.platform_id || d.project.id;
+                    } else if (typeof d.project === 'string') {
+                        targetBotId = d.project;
+                    }
+                }
+                
+                if (d.weight !== undefined) {
+                    isWeekend = Number(d.weight) > 1;
+                }
+            }
+
+            // 2. Check Legacy Top.gg / Standard Flat Format
+            if (!voterId) {
+                const d = payload.data || payload;
+                if (typeof d.user === 'object' && d.user !== null) {
+                    voterId = d.user.platform_id || d.user.id;
+                    voterName = d.user.name || d.user.username;
+                } else if (typeof d.user === 'string') {
+                    voterId = d.user;
+                } else if (d.userId) {
+                    voterId = d.userId;
+                } else if (d.voterId) {
+                    voterId = d.voterId;
+                }
+
+                if (typeof d.bot === 'object' && d.bot !== null) {
+                    targetBotId = d.bot.platform_id || d.bot.id;
+                } else if (typeof d.bot === 'string') {
+                    targetBotId = d.bot;
+                } else if (d.botId) {
+                    targetBotId = d.botId;
+                }
+
+                if (d.isWeekend !== undefined) isWeekend = Boolean(d.isWeekend);
+                if (d.type === 'test' || payload.type === 'test' || payload.event === 'test' || payload.event === 'ping') {
+                    isTest = true;
+                }
+            }
+
+            // 3. Handle Top.gg Test/Verification Ping on Webhook creation or "Send Test"
+            if (isTest || !voterId) {
                 console.log('[Top.gg Webhook Ping] Successfully received test/ping payload from Top.gg:', payload);
                 return res.status(200).json({
                     success: true,
@@ -59,6 +114,8 @@ module.exports = (client) => {
                     receivedAt: new Date().toISOString()
                 });
             }
+
+            targetBotId = targetBotId || client?.user?.id || '593420060990005248';
 
             // Find matching guild(s) configured for this bot or specific guild route
             let targetGuilds = [];
@@ -82,20 +139,34 @@ module.exports = (client) => {
                         } catch (e) { }
                     }
 
-                    // If authHeader is explicitly passed and matches secret
+                    // Match secret if provided
                     if (authHeader && s.topggWebhookAuth && s.topggWebhookAuth === authHeader) return true;
 
-                    // Default match for Nora primary bot if configured
-                    if ((!targetBotId || targetBotId === '593420060990005248' || targetBotId === client?.user?.id) && (s.topggVoteChannelId || s.topggRewardRoleId || s.topggVerified)) {
+                    // Match Nora primary bot if guild has any Top.gg config active
+                    if ((targetBotId === '593420060990005248' || targetBotId === client?.user?.id) && (s.topggVoteChannelId || s.topggRewardRoleId || s.topggVerified)) {
                         return true;
                     }
 
                     return false;
                 });
+
+                // Fallback: If no server explicitly configured for this custom bot, check if voter is in any guild where Nora is present
+                if (targetGuilds.length === 0 && voterId && client?.guilds?.cache) {
+                    for (const [, g] of client.guilds.cache) {
+                        const m = g.members?.cache?.get(voterId);
+                        if (m) {
+                            const s = await GuildSettings.findByPk(g.id);
+                            if (s && (s.topggVoteChannelId || s.topggRewardRoleId)) {
+                                targetGuilds.push(s);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
             if (targetGuilds.length === 0) {
-                console.log(`[Top.gg Webhook] Received vote for voter ${voterId}, bot ${targetBotId || 'default'} (No matching guild configured yet)`);
+                console.log(`[Top.gg Webhook] Received vote for voter ${voterId} (${voterName || 'N/A'}), bot ${targetBotId || 'default'} (No matching guild configured yet)`);
                 return res.status(200).json({ status: 'received_unmatched', voter: voterId, bot: targetBotId });
             }
 

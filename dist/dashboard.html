@@ -22400,7 +22400,10 @@ async function loadTopggSettings() {
     const guildId = window.currentServerId || window.currentGuildId;
     const urlDisplay = document.getElementById('topgg-webhook-url-display');
     if (urlDisplay) {
-        urlDisplay.value = `${window.location.origin}/api/webhooks/topgg/${guildId || ''}`;
+        const publicBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? window.location.origin
+            : 'https://api.vaztinix.dev';
+        urlDisplay.value = `${publicBase}/api/webhooks/topgg`;
     }
 
     // Always render immediate local state first so UI is never stuck on loading
