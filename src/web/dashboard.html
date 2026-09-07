@@ -150,12 +150,6 @@
 
         /* Ticket King Layout - Sidebar toggling */
         body .sidebar { display: none !important; }
-        body:not(.in-config) .sidebar-backdrop {
-            display: none !important;
-        }
-        body:not(.in-config) .mobile-burger-btn {
-            display: none !important;
-        }
         body:not(.in-config) .app-layout {
             padding-left: 20px !important;
             padding-right: 20px !important;
@@ -4246,6 +4240,492 @@
             padding: 36px 40px !important;
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
         }
+
+        /* ==========================================================================
+           PREMIER MOBILE NAVIGATION & ACCESSIBILITY SUITE
+           ========================================================================== */
+
+        /* Mobile Navigation Backdrop */
+        .mobile-nav-backdrop {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(4, 6, 14, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 99998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mobile-nav-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Mobile Slide-Out Navigation Drawer */
+        .mobile-nav-drawer {
+            position: fixed;
+            top: 0;
+            left: -330px;
+            width: 300px;
+            max-width: 86vw;
+            height: 100vh;
+            min-height: 100vh;
+            z-index: 99999;
+            background: rgba(10, 13, 24, 0.98);
+            backdrop-filter: blur(30px) saturate(190%);
+            -webkit-backdrop-filter: blur(30px) saturate(190%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 20px 0 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(88, 101, 242, 0.15);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 16px max(20px, env(safe-area-inset-bottom)) 16px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mobile-nav-drawer.open {
+            left: 0;
+        }
+
+        body.theme-light .mobile-nav-drawer {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 20px 0 60px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        body.theme-light .mobile-drawer-header {
+            border-bottom-color: rgba(0, 0, 0, 0.08);
+        }
+        .mobile-drawer-brand {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+        .mobile-drawer-close {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        body.theme-light .mobile-drawer-close {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #1a1c23;
+        }
+        .mobile-drawer-close:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--primary);
+        }
+
+        /* User Card in Drawer */
+        .mobile-drawer-user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        body.theme-light .mobile-drawer-user-card {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+        .mobile-drawer-user-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(88, 101, 242, 0.3);
+        }
+        .mobile-drawer-user-card img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(88, 101, 242, 0.4);
+        }
+        .mobile-drawer-status-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #23a55a;
+            border: 2px solid #0a0d18;
+        }
+        body.theme-light .mobile-drawer-status-dot {
+            border-color: #ffffff;
+        }
+        .mobile-drawer-user-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .mobile-drawer-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        body.theme-light .mobile-drawer-name {
+            color: #1a1c23;
+        }
+        .mobile-drawer-handle {
+            font-size: 0.75rem;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile-drawer-section-label {
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            padding-left: 6px;
+        }
+
+        .mobile-drawer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            color: #949ba4;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            background: transparent;
+            border: 1px solid transparent;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            box-sizing: border-box;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        body.theme-light .mobile-nav-item {
+            color: #5c6068;
+        }
+        .mobile-nav-item i {
+            font-size: 1.05rem;
+            width: 20px;
+            text-align: center;
+            color: var(--muted);
+            transition: color 0.2s ease;
+        }
+        .mobile-nav-item:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        body.theme-light .mobile-nav-item:hover {
+            color: #1a1c23;
+            background: rgba(0, 0, 0, 0.04);
+        }
+        .mobile-nav-item:hover i {
+            color: #fff;
+        }
+        body.theme-light .mobile-nav-item:hover i {
+            color: #1a1c23;
+        }
+        .mobile-nav-item.active {
+            color: #fff !important;
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.25) 0%, rgba(139, 92, 246, 0.2) 100%) !important;
+            border-color: rgba(88, 101, 242, 0.4) !important;
+            font-weight: 700 !important;
+        }
+        body.theme-light .mobile-nav-item.active {
+            color: #5865F2 !important;
+            background: rgba(88, 101, 242, 0.1) !important;
+        }
+        .mobile-nav-item.active i {
+            color: var(--primary) !important;
+        }
+        body.theme-light .mobile-nav-item.active i {
+            color: #5865F2 !important;
+        }
+
+        .mobile-nav-plus-item {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #A7F3D0;
+            margin-top: 4px;
+        }
+        body.theme-light .mobile-nav-plus-item {
+            color: #059669;
+        }
+        .mobile-nav-plus-item:hover {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.08) 100%);
+            color: #fff;
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+        .mobile-plus-badge {
+            margin-left: auto;
+            font-size: 0.65rem;
+            font-weight: 900;
+            background: #10B981;
+            color: #000;
+            padding: 2px 7px;
+            border-radius: 999px;
+            letter-spacing: 0.5px;
+        }
+
+        .mobile-drawer-footer {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        body.theme-light .mobile-drawer-footer {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+        .mobile-drawer-theme-btn,
+        .mobile-drawer-logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        body.theme-light .mobile-drawer-theme-btn {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #1a1c23;
+        }
+        .mobile-drawer-theme-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        body.theme-light .mobile-drawer-theme-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+        .mobile-drawer-logout-btn {
+            color: #ED4245;
+            background: rgba(237, 66, 69, 0.08);
+            border-color: rgba(237, 66, 69, 0.2);
+        }
+        .mobile-drawer-logout-btn:hover {
+            background: rgba(237, 66, 69, 0.16);
+            color: #ff5e61;
+        }
+
+        /* ==========================================================================
+           MOBILE BOTTOM NAVIGATION BAR (DOCK)
+           ========================================================================== */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100vw;
+            height: auto;
+            min-height: 58px;
+            padding: 6px 8px max(10px, env(safe-area-inset-bottom)) 8px;
+            background: rgba(8, 11, 22, 0.95);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
+            z-index: 99990;
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        body.theme-light .mobile-bottom-nav {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .mobile-bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            background: transparent;
+            border: none;
+            color: #8b90a5;
+            padding: 4px 6px;
+            border-radius: 12px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 0;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            -webkit-tap-highlight-color: transparent;
+        }
+        body.theme-light .mobile-bottom-nav-item {
+            color: #717682;
+        }
+        .mobile-bottom-nav-icon {
+            font-size: 1.15rem;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .mobile-bottom-nav-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: -0.1px;
+            white-space: nowrap;
+        }
+        .mobile-bottom-nav-item:hover,
+        .mobile-bottom-nav-item.active {
+            color: #ffffff;
+        }
+        body.theme-light .mobile-bottom-nav-item:hover,
+        body.theme-light .mobile-bottom-nav-item.active {
+            color: #1a1c23;
+        }
+        .mobile-bottom-nav-item.active .mobile-bottom-nav-icon {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        body.theme-light .mobile-bottom-nav-item.active .mobile-bottom-nav-icon {
+            color: #5865F2;
+        }
+        .mobile-bottom-nav-item.active .mobile-bottom-nav-label {
+            color: #ffffff;
+            font-weight: 700;
+        }
+        body.theme-light .mobile-bottom-nav-item.active .mobile-bottom-nav-label {
+            color: #5865F2;
+        }
+
+        .mobile-bottom-plus {
+            position: relative;
+            top: -6px;
+        }
+        .mobile-bottom-plus-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);
+            transition: transform 0.2s ease;
+        }
+        .mobile-bottom-plus:active .mobile-bottom-plus-icon {
+            transform: scale(0.92);
+        }
+
+        .mobile-bottom-badge {
+            position: absolute;
+            top: -4px;
+            right: -8px;
+            font-size: 0.62rem;
+            min-width: 15px;
+            height: 15px;
+            padding: 0 4px;
+            line-height: 15px;
+        }
+
+        /* Mobile Viewport Overrides & Safeguards */
+        @media (max-width: 992px) {
+            .mobile-bottom-nav {
+                display: flex !important;
+            }
+            .mobile-burger-btn {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 40px !important;
+                height: 40px !important;
+                border-radius: 10px !important;
+                background: rgba(255, 255, 255, 0.06) !important;
+                border: 1px solid rgba(255, 255, 255, 0.12) !important;
+                color: #fff !important;
+                cursor: pointer !important;
+                font-size: 1.1rem !important;
+            }
+            body.theme-light .mobile-burger-btn {
+                background: rgba(0, 0, 0, 0.05) !important;
+                border-color: rgba(0, 0, 0, 0.1) !important;
+                color: #1a1c23 !important;
+            }
+            .app-layout {
+                padding-bottom: 95px !important;
+                max-width: 100vw !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .main-content {
+                padding-bottom: 95px !important;
+                max-width: 100vw !important;
+                box-sizing: border-box !important;
+            }
+            .config-container {
+                padding-bottom: 95px !important;
+            }
+            #global-nav-links {
+                display: none !important;
+            }
+            #cfg-breadcrumbs {
+                display: none !important;
+            }
+            .hide-on-mobile {
+                display: none !important;
+            }
+            .modal-content,
+            .premium-modal-card {
+                width: 95vw !important;
+                max-width: 95vw !important;
+                max-height: 88vh !important;
+            }
+            #nora-premium-modal div[style*="grid-template-columns: 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            #nora-premium-modal h2#premium-modal-title {
+                font-size: 1.5rem !important;
+            }
+        }
     </style>
 </head>
 <body class="nora-theme">
@@ -4425,7 +4905,95 @@
                 </div>
             </div>
         </header>
-    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- Mobile Slide-Out Navigation Drawer & Backdrop -->
+    <div id="mobile-nav-backdrop" class="mobile-nav-backdrop" onclick="closeMobileNav()"></div>
+    <aside id="mobile-nav-drawer" class="mobile-nav-drawer" aria-label="Mobile Navigation">
+        <div class="mobile-drawer-header">
+            <a href="/dashboard" class="brand mobile-drawer-brand">
+                <img src="nora.png" alt="Nora Logo">
+                <span>NORA STUDIO</span>
+            </a>
+            <button class="mobile-drawer-close" onclick="closeMobileNav()" aria-label="Close Menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- User Profile Card in Drawer -->
+        <div class="mobile-drawer-user-card" onclick="showTab('profile'); closeMobileNav();">
+            <div style="position: relative; display: inline-block;">
+                <img id="mobile-drawer-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" alt="Avatar">
+                <div id="mobile-drawer-status-dot" class="mobile-drawer-status-dot"></div>
+            </div>
+            <div class="mobile-drawer-user-info">
+                <div id="mobile-drawer-name" class="mobile-drawer-name">Nora User</div>
+                <div id="mobile-drawer-handle" class="mobile-drawer-handle">@user</div>
+            </div>
+            <i class="fas fa-chevron-right" style="color: var(--muted); font-size: 0.8rem; margin-left: auto;"></i>
+        </div>
+
+        <!-- Main Navigation Links -->
+        <div class="mobile-drawer-section-label">MAIN NAVIGATION</div>
+        <div class="mobile-drawer-nav">
+            <button class="mobile-nav-item active" data-tab="servers" onclick="showTab('servers'); closeMobileNav();">
+                <i class="fas fa-server"></i>
+                <span>Servers Hub</span>
+            </button>
+            <button class="mobile-nav-item" data-tab="profile" onclick="showTab('profile'); closeMobileNav();">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile Studio</span>
+            </button>
+            <button class="mobile-nav-item" data-tab="notifications" onclick="showTab('notifications'); closeMobileNav();">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span id="mobile-drawer-notif-badge" class="notif-badge" style="display: none; margin-left: auto;">0</span>
+            </button>
+            <button class="mobile-nav-item" data-tab="prefs" onclick="showTab('prefs'); closeMobileNav();">
+                <i class="fas fa-sliders-h"></i>
+                <span>Preferences & Settings</span>
+            </button>
+            <button class="mobile-nav-item mobile-nav-plus-item" onclick="openPremiumModal(); closeMobileNav();">
+                <i class="fas fa-crown" style="color: #ffd700;"></i>
+                <span>Nora Studio Plus</span>
+                <span class="mobile-plus-badge">PRO</span>
+            </button>
+        </div>
+
+        <!-- Quick Resources Links -->
+        <div class="mobile-drawer-section-label" style="margin-top: 18px;">RESOURCES & LINKS</div>
+        <div class="mobile-drawer-nav">
+            <a href="/docs" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fas fa-book"></i>
+                <span>Documentation</span>
+            </a>
+            <a href="/status.html" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fas fa-signal"></i>
+                <span>System Status</span>
+            </a>
+            <a href="https://discord.gg/Uxb2tNAxtp" target="_blank" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fab fa-discord"></i>
+                <span>Community Support</span>
+            </a>
+            <a href="/" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fas fa-home"></i>
+                <span>Home Page</span>
+            </a>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="mobile-drawer-footer">
+            <button class="mobile-drawer-theme-btn" onclick="toggleTheme()">
+                <i id="mobile-theme-icon" class="fas fa-moon"></i>
+                <span id="mobile-theme-text">Toggle Theme</span>
+            </button>
+            <button class="mobile-drawer-logout-btn" onclick="performLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sign Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeMobileNav()"></div>
 
     <div class="app-layout">
         <aside class="sidebar" style="display: none;">
@@ -9760,19 +10328,45 @@
                 });
             }
 
-            // Mobile sidebar hamburger toggle listeners
-            const burgerBtn = document.getElementById('mobile-burger-btn');
-            const sidebarEl = document.querySelector('.sidebar');
-            const backdropEl = document.getElementById('sidebar-backdrop');
-            
-            if (burgerBtn && sidebarEl && backdropEl) {
-                burgerBtn.addEventListener('click', () => {
+            // Mobile Navigation Helpers & Toggle Listeners
+            window.toggleMobileNav = function() {
+                const drawer = document.getElementById('mobile-nav-drawer');
+                const backdrop = document.getElementById('mobile-nav-backdrop');
+                const sidebarEl = document.querySelector('.sidebar');
+                const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+                
+                if (drawer && backdrop) {
+                    const isOpen = drawer.classList.contains('open');
+                    if (isOpen) {
+                        drawer.classList.remove('open');
+                        backdrop.classList.remove('open');
+                    } else {
+                        drawer.classList.add('open');
+                        backdrop.classList.add('open');
+                    }
+                } else if (sidebarEl && sidebarBackdrop) {
                     sidebarEl.classList.toggle('open');
-                    backdropEl.classList.toggle('open');
-                });
-                backdropEl.addEventListener('click', () => {
-                    sidebarEl.classList.remove('open');
-                    backdropEl.classList.remove('open');
+                    sidebarBackdrop.classList.toggle('open');
+                }
+            };
+
+            window.closeMobileNav = function() {
+                const drawer = document.getElementById('mobile-nav-drawer');
+                const backdrop = document.getElementById('mobile-nav-backdrop');
+                const sidebarEl = document.querySelector('.sidebar');
+                const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+                
+                if (drawer) drawer.classList.remove('open');
+                if (backdrop) backdrop.classList.remove('open');
+                if (sidebarEl) sidebarEl.classList.remove('open');
+                if (sidebarBackdrop) sidebarBackdrop.classList.remove('open');
+            };
+
+            const burgerBtn = document.getElementById('mobile-burger-btn');
+            if (burgerBtn) {
+                burgerBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.toggleMobileNav();
                 });
             }
 
@@ -10471,19 +11065,32 @@
                     userDropdownSub.textContent = `@${d.username}`;
                 }
                 
-                // Populate Settings
+                // Populate Sidebar & Mobile Drawer
                 const avatarElSidebar = document.getElementById('user-avatar');
                 if (avatarElSidebar) {
                     avatarElSidebar.src = userAvatarFormatted;
+                }
+                const avatarElMobileDrawer = document.getElementById('mobile-drawer-avatar');
+                if (avatarElMobileDrawer) {
+                    avatarElMobileDrawer.src = userAvatarFormatted;
                 }
 
                 const userNameElSidebar = document.getElementById('user-name');
                 if (userNameElSidebar) {
                     userNameElSidebar.textContent = (d.prefs && d.prefs.displayName) || d.username;
                 }
+                const userNameElMobileDrawer = document.getElementById('mobile-drawer-name');
+                if (userNameElMobileDrawer) {
+                    userNameElMobileDrawer.textContent = (d.prefs && d.prefs.displayName) || d.username;
+                }
+
                 const userHandleElSidebar = document.getElementById('user-handle');
                 if (userHandleElSidebar) {
                     userHandleElSidebar.textContent = `@${d.username}`;
+                }
+                const userHandleElMobileDrawer = document.getElementById('mobile-drawer-handle');
+                if (userHandleElMobileDrawer) {
+                    userHandleElMobileDrawer.textContent = `@${d.username}`;
                 }
 
                 // Populate Settings
@@ -14142,6 +14749,10 @@
                 if (typeof closeAllEmojiPickers === 'function') closeAllEmojiPickers();
                 logToTerminal(`Switching to tab: ${tabId}`, 'TAB_CHANGE');
                 
+                if (typeof window.closeMobileNav === 'function') {
+                    window.closeMobileNav();
+                }
+                
                 const sidebarEl = document.querySelector('.sidebar');
                 const backdropEl = document.getElementById('sidebar-backdrop');
                 if (sidebarEl && sidebarEl.classList.contains('open')) {
@@ -14227,6 +14838,15 @@
                     document.querySelectorAll('.global-nav-btn').forEach(btn => btn.classList.remove('active'));
                     const activeBtn = document.querySelector(`.global-nav-btn[data-tab="${tabId}"]`);
                     if (activeBtn) activeBtn.classList.add('active');
+
+                    // Highlight mobile navigation tabs
+                    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+                    const activeDrawerBtn = document.querySelector(`.mobile-nav-item[data-tab="${tabId}"]`);
+                    if (activeDrawerBtn) activeDrawerBtn.classList.add('active');
+
+                    document.querySelectorAll('.mobile-bottom-nav-item').forEach(btn => btn.classList.remove('active'));
+                    const activeBottomBtn = document.querySelector(`.mobile-bottom-nav-item[data-tab="${tabId}"]`);
+                    if (activeBottomBtn) activeBottomBtn.classList.add('active');
                 } else {
                     document.body.classList.remove('in-config');
                     const targetServers = viewServers || document.getElementById('view-greeting');
@@ -14246,6 +14866,15 @@
                     document.querySelectorAll('.global-nav-btn').forEach(btn => btn.classList.remove('active'));
                     const activeBtn = document.querySelector(`.global-nav-btn[data-tab="${tabId}"]`);
                     if (activeBtn) activeBtn.classList.add('active');
+
+                    // Highlight mobile navigation tabs
+                    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+                    const activeDrawerBtn = document.querySelector(`.mobile-nav-item[data-tab="${tabId}"]`);
+                    if (activeDrawerBtn) activeDrawerBtn.classList.add('active');
+
+                    document.querySelectorAll('.mobile-bottom-nav-item').forEach(btn => btn.classList.remove('active'));
+                    const activeBottomBtn = document.querySelector(`.mobile-bottom-nav-item[data-tab="${tabId}"]`);
+                    if (activeBottomBtn) activeBottomBtn.classList.add('active');
                     
                     const content = document.getElementById(tabId === 'members' ? 'view-config' : 'view-' + tabId);
                     if (content && content.style) {
@@ -14278,13 +14907,15 @@
         function updateNotifBadge() {
             const badge = document.getElementById('notif-badge');
             const topbarBadge = document.getElementById('topbar-notif-badge');
+            const drawerBadge = document.getElementById('mobile-drawer-notif-badge');
+            const bottomBadge = document.getElementById('mobile-bottom-notif-badge');
             const unread = notifications.filter(n => !n.read);
             const unreadCount = unread.length;
             
             const updateBadgeEl = (el) => {
                 if (!el) return;
                 if (unreadCount > 0) {
-                    el.textContent = unreadCount;
+                    el.textContent = unreadCount > 99 ? '99+' : unreadCount;
                     el.style.display = 'inline-block';
                     
                     const hasSpecial = unread.some(n => n.isSpecial || n.isOwnerAction || n.type === 'special');
@@ -14304,6 +14935,8 @@
             
             updateBadgeEl(badge);
             updateBadgeEl(topbarBadge);
+            updateBadgeEl(drawerBadge);
+            updateBadgeEl(bottomBadge);
         }
 
         // Theme & Preferences Logic
@@ -23140,6 +23773,33 @@ try {
     setInterval(checkAndHidePremiumCTAs, 2500);
 } catch (e) {}
 </script>
+
+    <!-- Mobile Bottom Navigation Dock -->
+    <nav id="mobile-bottom-nav" class="mobile-bottom-nav" aria-label="Mobile Bottom Navigation">
+        <button class="mobile-bottom-nav-item active" data-tab="servers" onclick="showTab('servers')">
+            <i class="fas fa-server mobile-bottom-nav-icon"></i>
+            <span class="mobile-bottom-nav-label">Servers</span>
+        </button>
+        <button class="mobile-bottom-nav-item" data-tab="profile" onclick="showTab('profile')">
+            <i class="fas fa-user-circle mobile-bottom-nav-icon"></i>
+            <span class="mobile-bottom-nav-label">Profile</span>
+        </button>
+        <button class="mobile-bottom-nav-item mobile-bottom-plus" data-tab="plus" onclick="openPremiumModal()">
+            <div class="mobile-bottom-plus-icon"><i class="fas fa-crown"></i></div>
+            <span class="mobile-bottom-nav-label" style="color: #10B981; font-weight: 800;">Plus</span>
+        </button>
+        <button class="mobile-bottom-nav-item" data-tab="notifications" onclick="showTab('notifications')">
+            <div style="position: relative; display: inline-flex;">
+                <i class="fas fa-bell mobile-bottom-nav-icon"></i>
+                <span id="mobile-bottom-notif-badge" class="notif-badge mobile-bottom-badge" style="display: none;">0</span>
+            </div>
+            <span class="mobile-bottom-nav-label">Alerts</span>
+        </button>
+        <button class="mobile-bottom-nav-item" data-tab="prefs" onclick="showTab('prefs')">
+            <i class="fas fa-sliders-h mobile-bottom-nav-icon"></i>
+            <span class="mobile-bottom-nav-label">Settings</span>
+        </button>
+    </nav>
 
 </body>
 </html>
