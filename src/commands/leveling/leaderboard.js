@@ -107,21 +107,15 @@ module.exports = {
                             accentColor: settings?.levelingCardAccentColor || '#6366f1',
                             borderColor: settings?.levelingCardBorderColor || '#232538'
                         }),
-                        new Promise((_, r) => setTimeout(() => r(new Error('Image render timeout')), 5000))
+                        new Promise((_, r) => setTimeout(() => r(new Error('Image render timeout')), 12000))
                     ]);
 
                     const { AttachmentBuilder } = require('discord.js');
                     const attachment = new AttachmentBuilder(imageBuffer, { name: `leaderboard-p${clampedPage}.png` });
-                    const embed = new EmbedBuilder()
-                        .setTitle(`🏆 Server XP Leaderboard — ${interaction.guild.name}`)
-                        .setColor(0x6366F1)
-                        .setImage(`attachment://leaderboard-p${clampedPage}.png`)
-                        .setFooter({ text: `Page ${clampedPage} of ${totalPages} • Total Members Tracked: ${count}` })
-                        .setTimestamp();
 
                     return {
                         content: statsText,
-                        embeds: [embed],
+                        embeds: [],
                         files: [attachment],
                         components: [paginationRow]
                     };
