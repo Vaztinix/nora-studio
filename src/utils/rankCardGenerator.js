@@ -184,7 +184,7 @@ async function generateRankCard({
                     try {
                         const safePages = Math.min(totalPages, 30);
                         animatedBgBuffer = await sharp(rawBuffer, { animated: true, page: 0, pages: safePages })
-                            .resize(860, 240, { fit: 'cover' })
+                            .resize(860, 240 * safePages, { fit: 'fill' })
                             .toBuffer();
                     } catch(gifErr) {
                         console.warn('[Rank Generator] Animated background resize failed, falling back to static:', gifErr.message);
