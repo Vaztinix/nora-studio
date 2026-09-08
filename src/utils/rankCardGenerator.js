@@ -351,7 +351,7 @@ async function generateRankCard({
                     { input: maskBuffer, blend: 'dest-in', tile: true },
                     { input: composited, blend: 'over', tile: true }
                 ])
-                .gif({ loop: 0, effort: 1, colours: 160, dither: 0.8 })
+                .gif({ loop: 0, effort: 1, colours: 128, dither: 0.8 })
                 .toBuffer();
         } catch(compErr) {
             console.error('Error compositing animated GIF rank card:', compErr.message);
