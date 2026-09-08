@@ -207,7 +207,8 @@ async function generateRankCard({
     }
 
     const progressPercent = Math.min(100, Math.max(0, (finalCurrentXp / Math.max(1, finalNextLevelXp)) * 100));
-    const barWidth = Math.round((progressPercent / 100) * 480);
+    const totalBarWidth = 616;
+    const barWidth = Math.round((progressPercent / 100) * totalBarWidth);
 
     // Dynamic Shape Clips
     let cardClipSvg = '<rect width="860" height="240" rx="22" fill="url(#bgPattern)" />';
@@ -228,7 +229,7 @@ async function generateRankCard({
     }
 
     const svgBgFill = isAnimatedGif ? 'none' : (bgColor || '#090a10');
-    const svgOverlayFill = isAnimatedGif ? 'rgba(9, 10, 16, 0.65)' : 'rgba(9, 10, 16, 0.55)';
+    const svgOverlayFill = isAnimatedGif ? 'rgba(7, 9, 16, 0.72)' : 'rgba(7, 9, 16, 0.60)';
 
     const safeUsername = String(username || 'User').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
@@ -241,6 +242,13 @@ async function generateRankCard({
                 <stop offset="100%" stop-color="#07080d" />
             </linearGradient>
 
+            <linearGradient id="dynamicScrimGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#05070d" stop-opacity="0.88" />
+                <stop offset="35%" stop-color="#080a14" stop-opacity="0.80" />
+                <stop offset="70%" stop-color="#090c18" stop-opacity="0.75" />
+                <stop offset="100%" stop-color="#05070d" stop-opacity="0.85" />
+            </linearGradient>
+
             <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="${accentColor}" />
                 <stop offset="100%" stop-color="#38bdf8" />
@@ -248,26 +256,30 @@ async function generateRankCard({
 
             <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="${accentColor}" stop-opacity="0.8" />
-                <stop offset="50%" stop-color="rgba(255,255,255,0.12)" />
-                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.6" />
+                <stop offset="50%" stop-color="rgba(255,255,255,0.15)" />
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.7" />
             </linearGradient>
 
             <radialGradient id="rankGlow1" cx="20%" cy="30%" r="60%">
-                <stop offset="0%" stop-color="rgba(99, 102, 241, 0.25)" />
+                <stop offset="0%" stop-color="rgba(99, 102, 241, 0.22)" />
                 <stop offset="100%" stop-color="transparent" />
             </radialGradient>
 
             <radialGradient id="rankGlow2" cx="80%" cy="80%" r="60%">
-                <stop offset="0%" stop-color="rgba(56, 189, 248, 0.18)" />
+                <stop offset="0%" stop-color="rgba(56, 189, 248, 0.16)" />
                 <stop offset="100%" stop-color="transparent" />
             </radialGradient>
 
+            <filter id="textShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="1.5" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.95" />
+            </filter>
+
             <pattern id="bgPattern" width="860" height="240" patternUnits="userSpaceOnUse">
-                ${isAnimatedGif ? `<rect width="860" height="240" fill="rgba(9, 10, 16, 0.65)" />` : `<rect width="860" height="240" fill="url(#obsidianGlass)" />`}
+                ${isAnimatedGif ? `<rect width="860" height="240" fill="url(#dynamicScrimGrad)" />` : `<rect width="860" height="240" fill="url(#obsidianGlass)" />`}
                 <rect width="860" height="240" fill="url(#rankGlow1)" />
                 <rect width="860" height="240" fill="url(#rankGlow2)" />
                 ${(!isAnimatedGif && customBgBase64) ? `<image href="${customBgBase64}" x="0" y="0" width="860" height="240" preserveAspectRatio="xMidYMid slice" />` : ''}
-                ${!isAnimatedGif ? `<rect width="860" height="240" fill="${svgOverlayFill}" />` : ''}
+                ${(!isAnimatedGif && customBgBase64) ? `<rect width="860" height="240" fill="url(#dynamicScrimGrad)" />` : (!isAnimatedGif ? `<rect width="860" height="240" fill="${svgOverlayFill}" />` : '')}
             </pattern>
         </defs>
 
@@ -275,39 +287,47 @@ async function generateRankCard({
         ${cardClipSvg}
         
         <!-- Subtle Tech Mesh -->
-        <path d="M 0 60 L 860 60 M 0 120 L 860 120 M 0 180 L 860 180" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
-        <path d="M 215 0 L 215 240 M 430 0 L 430 240 M 645 0 L 645 240" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+        <path d="M 0 60 L 860 60 M 0 120 L 860 120 M 0 180 L 860 180" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+        <path d="M 215 0 L 215 240 M 430 0 L 430 240 M 645 0 L 645 240" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+
+        <!-- Frosted Glass Plate for Content Area -->
+        <rect x="184" y="20" width="652" height="200" rx="18" fill="rgba(8, 10, 18, 0.70)" stroke="rgba(255, 255, 255, 0.09)" stroke-width="1.2" />
 
         <!-- Shape Outline -->
         ${borderSvg}
 
-        <!-- Avatar glow backdrop & ring -->
-        <circle cx="106" cy="120" r="70" fill="none" stroke="${accentColor}" stroke-opacity="0.25" stroke-width="6" />
+        <!-- Avatar glass backing disc, glow & ring -->
+        <circle cx="106" cy="120" r="68" fill="rgba(8, 10, 18, 0.88)" />
+        <circle cx="106" cy="120" r="70" fill="none" stroke="${accentColor}" stroke-opacity="0.3" stroke-width="6" />
         <circle cx="106" cy="120" r="66" fill="none" stroke="${accentColor}" stroke-width="2.5" />
         ${!avatarPngBuffer ? `<circle cx="106" cy="120" r="62" fill="#13141f" /><text x="106" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="38" font-weight="900" fill="${accentColor}" text-anchor="middle">@</text>` : ''}
 
         <!-- Rank Pill Badge -->
-        <rect x="696" y="36" width="124" height="38" rx="19" fill="rgba(10, 12, 20, 0.85)" stroke="${accentColor}" stroke-width="1.5" />
-        <circle cx="718" cy="55" r="4.5" fill="${accentColor}" />
-        <text x="764" y="60" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">RANK #${rank}</text>
+        <rect x="696" y="34" width="124" height="36" rx="18" fill="rgba(11, 14, 24, 0.92)" stroke="${accentColor}" stroke-width="1.5" />
+        <circle cx="718" cy="52" r="4.5" fill="${accentColor}" />
+        <text x="764" y="57" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">RANK #${rank}</text>
 
         <!-- Username Header -->
-        <text x="204" y="78" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="34" font-weight="900" fill="#ffffff" letter-spacing="-0.5">@${safeUsername}</text>
+        <text x="204" y="72" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="32" font-weight="900" fill="#ffffff" filter="url(#textShadow)" letter-spacing="-0.3">@${safeUsername}</text>
 
         <!-- Level Pill & Stats -->
-        <rect x="204" y="104" width="108" height="28" rx="14" fill="rgba(99, 102, 241, 0.18)" stroke="${accentColor}" stroke-opacity="0.5" stroke-width="1" />
-        <text x="258" y="123" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="900" fill="#818cf8" text-anchor="middle" letter-spacing="0.5">LEVEL ${level}</text>
+        <rect x="204" y="94" width="112" height="28" rx="14" fill="rgba(15, 23, 42, 0.90)" stroke="${accentColor}" stroke-opacity="0.7" stroke-width="1.2" />
+        <text x="260" y="113" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="900" fill="#e0e7ff" text-anchor="middle" letter-spacing="0.5">LEVEL ${level}</text>
 
         <!-- XP Info -->
-        <text x="684" y="124" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="15" font-weight="800" fill="#ffffff" text-anchor="end">${finalCurrentXp.toLocaleString()} <tspan fill="#64748b" font-weight="600">/ ${finalNextLevelXp.toLocaleString()} XP</tspan> <tspan fill="${accentColor}" font-weight="800">(${Math.round(progressPercent)}%)</tspan></text>
+        <text x="820" y="114" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" filter="url(#textShadow)">
+            <tspan fill="#ffffff" font-weight="900">${finalCurrentXp.toLocaleString()}</tspan>
+            <tspan fill="#cbd5e1" font-weight="700"> / ${finalNextLevelXp.toLocaleString()} XP </tspan>
+            <tspan fill="${accentColor}" font-weight="900">(${Math.round(progressPercent)}%)</tspan>
+        </text>
 
         <!-- Progress Bar container -->
-        <rect x="204" y="146" width="480" height="22" rx="11" fill="rgba(5, 6, 10, 0.75)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+        <rect x="204" y="136" width="${totalBarWidth}" height="22" rx="11" fill="rgba(5, 7, 14, 0.95)" stroke="rgba(255,255,255,0.14)" stroke-width="1.2" />
         <!-- Progress fill -->
-        ${barWidth > 0 ? `<rect x="204" y="146" width="${barWidth}" height="22" rx="11" fill="url(#progressGrad)" />` : ''}
+        ${barWidth > 0 ? `<rect x="204" y="136" width="${barWidth}" height="22" rx="11" fill="url(#progressGrad)" />` : ''}
 
         <!-- Footer Tag -->
-        <text x="204" y="196" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="700" fill="#64748b" letter-spacing="0.5">NORA PROGRESSION NETWORK • VAZTINIX.DEV</text>
+        <text x="204" y="188" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#94a3b8" filter="url(#textShadow)" letter-spacing="0.8">NORA PROGRESSION NETWORK • VAZTINIX.DEV</text>
     </svg>
     `.trim();
 
