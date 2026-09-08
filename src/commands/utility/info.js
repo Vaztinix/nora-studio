@@ -32,33 +32,29 @@ module.exports = {
             }).catch(() => []);
         } catch (e) {}
 
-        let statusText = 'Online';
-        let statusLabel = 'ONLINE';
+        let statusText = 'Operational';
         let statusColor = '#10b981';
-        let statusFill = 'rgba(16, 185, 129, 0.15)';
-        let statusStroke = '#10b981';
+        let statusFill = 'rgba(16, 185, 129, 0.10)';
+        let statusBorder = 'rgba(16, 185, 129, 0.25)';
         let statusEmoji = '🟢';
 
         if (activeFlags.some(f => f.severity === 'outage')) {
             statusText = 'Partial Outage';
-            statusLabel = 'PARTIAL OUTAGE';
             statusColor = '#ef4444';
-            statusFill = 'rgba(239, 68, 68, 0.18)';
-            statusStroke = '#ef4444';
+            statusFill = 'rgba(239, 68, 68, 0.10)';
+            statusBorder = 'rgba(239, 68, 68, 0.25)';
             statusEmoji = '🔴';
         } else if (activeFlags.some(f => f.severity === 'degraded') || ping > 250) {
-            statusText = 'Degraded Performance';
-            statusLabel = 'DEGRADED PERFORMANCE';
+            statusText = 'Degraded';
             statusColor = '#f59e0b';
-            statusFill = 'rgba(245, 158, 11, 0.18)';
-            statusStroke = '#f59e0b';
+            statusFill = 'rgba(245, 158, 11, 0.10)';
+            statusBorder = 'rgba(245, 158, 11, 0.25)';
             statusEmoji = '🟡';
         } else if (activeFlags.some(f => f.severity === 'maintenance')) {
-            statusText = 'Scheduled Maintenance';
-            statusLabel = 'MAINTENANCE';
+            statusText = 'Maintenance';
             statusColor = '#8b5cf6';
-            statusFill = 'rgba(139, 92, 246, 0.18)';
-            statusStroke = '#8b5cf6';
+            statusFill = 'rgba(139, 92, 246, 0.10)';
+            statusBorder = 'rgba(139, 92, 246, 0.25)';
             statusEmoji = '🔧';
         }
 
@@ -88,112 +84,79 @@ module.exports = {
         );
 
         // Status pill width calculation
-        const pillWidth = Math.max(130, statusLabel.length * 10 + 44);
-        const pillX = 840 - pillWidth - 40;
+        const pillWidth = Math.max(120, statusText.length * 8 + 38);
+        const pillX = 880 - 36 - pillWidth;
 
         const svgCard = `
-        <svg width="880" height="460" viewBox="0 0 880 460" xmlns="http://www.w3.org/2000/svg">
+        <svg width="880" height="420" viewBox="0 0 880 420" xmlns="http://www.w3.org/2000/svg" text-rendering="geometricPrecision" shape-rendering="geometricPrecision">
             <defs>
-                <linearGradient id="obsidianBg" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#090a0f" />
-                    <stop offset="50%" stop-color="#11131f" />
-                    <stop offset="100%" stop-color="#07080d" />
+                <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#0b0e17" />
+                    <stop offset="50%" stop-color="#0f1322" />
+                    <stop offset="100%" stop-color="#090c15" />
                 </linearGradient>
 
-                <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#6366f1" />
-                    <stop offset="50%" stop-color="#8b5cf6" />
-                    <stop offset="100%" stop-color="#38bdf8" />
+                <linearGradient id="tileGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                    <stop offset="100%" stop-color="rgba(255,255,255,0.01)" />
                 </linearGradient>
-
-                <linearGradient id="cardGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="rgba(99, 102, 241, 0.15)" />
-                    <stop offset="100%" stop-color="rgba(56, 189, 248, 0.05)" />
-                </linearGradient>
-
-                <radialGradient id="ambientGlow1" cx="15%" cy="15%" r="65%">
-                    <stop offset="0%" stop-color="rgba(99, 102, 241, 0.22)" />
-                    <stop offset="100%" stop-color="transparent" />
-                </radialGradient>
-
-                <radialGradient id="ambientGlow2" cx="85%" cy="85%" r="65%">
-                    <stop offset="0%" stop-color="rgba(56, 189, 248, 0.14)" />
-                    <stop offset="100%" stop-color="transparent" />
-                </radialGradient>
             </defs>
 
-            <!-- Outer Canvas -->
-            <rect width="880" height="460" rx="28" fill="url(#obsidianBg)"/>
-            <rect width="880" height="460" rx="28" fill="url(#ambientGlow1)"/>
-            <rect width="880" height="460" rx="28" fill="url(#ambientGlow2)"/>
+            <!-- Main Card Canvas -->
+            <rect width="880" height="420" rx="20" fill="url(#bgGrad)"/>
+            <rect x="1" y="1" width="878" height="418" rx="19" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1.2"/>
 
-            <!-- Subtle Grid Mesh -->
-            <path d="M 0 80 L 880 80 M 0 160 L 880 160 M 0 240 L 880 240 M 0 320 L 880 320 M 0 400 L 880 400" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
-            <path d="M 176 0 L 176 460 M 352 0 L 352 460 M 528 0 L 528 460 M 704 0 L 704 460" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+            <!-- Header: Clean Title (No bar, No generic subtitle) -->
+            <text x="36" y="58" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="24" font-weight="800" fill="#f8fafc" letter-spacing="-0.3">Nora Status</text>
 
-            <!-- Outer Glass Border -->
-            <rect x="1.5" y="1.5" width="877" height="457" rx="26.5" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
-
-            <!-- Brand Header -->
-            <rect x="40" y="38" width="6" height="48" rx="3" fill="url(#brandGrad)" />
-            <text x="58" y="66" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="28" font-weight="900" fill="#ffffff" letter-spacing="-0.5">Nora Core Status</text>
-            <text x="58" y="90" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#94a3b8" letter-spacing="1">REAL-TIME SYSTEM DIAGNOSTICS &amp; TELEMETRY</text>
-
-            <!-- Dynamic Live Status Badge -->
-            <rect x="${pillX}" y="42" width="${pillWidth}" height="38" rx="19" fill="${statusFill}" stroke="${statusStroke}" stroke-width="1.5" />
-            <circle cx="${pillX + 20}" cy="61" r="5.5" fill="${statusColor}" />
-            <text x="${pillX + 34}" y="66" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="800" fill="${statusColor}" letter-spacing="0.5">${statusLabel}</text>
+            <!-- Status Pill: Minimalist & Clean -->
+            <g transform="translate(${pillX}, 34)">
+                <rect width="${pillWidth}" height="34" rx="8" fill="${statusFill}" stroke="${statusBorder}" stroke-width="1"/>
+                <circle cx="18" cy="17" r="4" fill="${statusColor}"/>
+                <text x="30" y="22" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="${statusColor}">${statusText}</text>
+            </g>
 
             <!-- Top Metric Tiles -->
-            <!-- Tile 1: Latency & Shards -->
-            <g transform="translate(40, 126)">
-                <rect width="254" height="130" rx="18" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-                <rect x="20" y="20" width="32" height="32" rx="10" fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
-                <text x="36" y="41" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="900" fill="#818cf8" text-anchor="middle">⚡</text>
-                
-                <text x="62" y="40" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#818cf8" letter-spacing="1">LATENCY &amp; SHARDS</text>
-                <text x="20" y="88" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff">${ping}<tspan font-size="18" font-weight="700" fill="#94a3b8">ms</tspan></text>
-                <text x="20" y="112" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Active Shards: <tspan fill="#e2e8f0" font-weight="700">${shardCount}</tspan></text>
+            <!-- Tile 1: Ping & Shards -->
+            <g transform="translate(36, 96)">
+                <rect width="254" height="136" rx="14" fill="url(#tileGrad)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <text x="24" y="38" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#94a3b8" letter-spacing="0.5">PING</text>
+                <text x="24" y="86" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">${ping}<tspan font-size="18" font-weight="600" fill="#64748b"> ms</tspan></text>
+                <text x="24" y="114" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="500" fill="#64748b">Shard <tspan fill="#94a3b8" font-weight="600">0 / ${shardCount}</tspan></text>
             </g>
 
-            <!-- Tile 2: Total Servers & Reach -->
-            <g transform="translate(313, 126)">
-                <rect width="254" height="130" rx="18" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-                <rect x="20" y="20" width="32" height="32" rx="10" fill="rgba(56,189,248,0.15)" stroke="rgba(56,189,248,0.3)" stroke-width="1"/>
-                <text x="36" y="41" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="900" fill="#38bdf8" text-anchor="middle">🌐</text>
-                
-                <text x="62" y="40" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#38bdf8" letter-spacing="1">SERVER NETWORK</text>
-                <text x="20" y="88" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff">${totalServers}</text>
-                <text x="20" y="112" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Members: <tspan fill="#e2e8f0" font-weight="700">${totalMembers.toLocaleString()}</tspan></text>
+            <!-- Tile 2: Servers & Members -->
+            <g transform="translate(313, 96)">
+                <rect width="254" height="136" rx="14" fill="url(#tileGrad)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <text x="24" y="38" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#94a3b8" letter-spacing="0.5">SERVERS</text>
+                <text x="24" y="86" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">${totalServers}</text>
+                <text x="24" y="114" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="500" fill="#64748b"><tspan fill="#94a3b8" font-weight="600">${totalMembers.toLocaleString()}</tspan> members</text>
             </g>
 
-            <!-- Tile 3: System Uptime -->
-            <g transform="translate(586, 126)">
-                <rect width="254" height="130" rx="18" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-                <rect x="20" y="20" width="32" height="32" rx="10" fill="rgba(168,85,247,0.15)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
-                <text x="36" y="41" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="900" fill="#c084fc" text-anchor="middle">⏱️</text>
-
-                <text x="62" y="40" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#c084fc" letter-spacing="1">SYSTEM UPTIME</text>
-                <text x="20" y="88" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff">${uptimeStr}</text>
-                <text x="20" y="112" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Status: <tspan fill="${statusColor}" font-weight="700">${statusText}</tspan></text>
+            <!-- Tile 3: Uptime -->
+            <g transform="translate(590, 96)">
+                <rect width="254" height="136" rx="14" fill="url(#tileGrad)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <text x="24" y="38" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#94a3b8" letter-spacing="0.5">UPTIME</text>
+                <text x="24" y="86" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">${uptimeStr}</text>
+                <text x="24" y="114" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="500" fill="#64748b">Health: <tspan fill="${statusColor}" font-weight="600">${statusText}</tspan></text>
             </g>
 
-            <!-- Bottom Wide Platform Diagnostics Bar -->
-            <g transform="translate(40, 276)">
-                <rect width="800" height="142" rx="20" fill="rgba(255,255,255,0.025)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <!-- Bottom Platform Bar -->
+            <g transform="translate(36, 252)">
+                <rect width="808" height="132" rx="14" fill="url(#tileGrad)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
                 
-                <!-- Left: Memory & Heap -->
-                <text x="30" y="42" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="800" fill="#818cf8" letter-spacing="1">RESOURCE ALLOCATION</text>
-                <text x="30" y="80" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="26" font-weight="900" fill="#ffffff">${heapUsedMB} <tspan font-size="16" font-weight="700" fill="#94a3b8">MB</tspan></text>
-                <text x="30" y="106" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="600" fill="#64748b">Heap RAM Active Usage</text>
+                <!-- Left: Memory -->
+                <text x="28" y="38" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#94a3b8" letter-spacing="0.5">MEMORY USAGE</text>
+                <text x="28" y="80" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="28" font-weight="800" fill="#ffffff">${heapUsedMB} <tspan font-size="16" font-weight="600" fill="#64748b">MB</tspan></text>
+                <text x="28" y="108" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="500" fill="#64748b">Active Node.js heap memory</text>
 
-                <!-- Center Divider -->
-                <line x1="400" y1="20" x2="400" y2="122" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <!-- Divider -->
+                <line x1="404" y1="20" x2="404" y2="112" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
-                <!-- Right: Node & Discord Environment -->
-                <text x="430" y="42" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="800" fill="#38bdf8" letter-spacing="1">PLATFORM ENVIRONMENT</text>
-                <text x="430" y="80" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="#ffffff">Node.js ${process.version}</text>
-                <text x="430" y="106" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="600" fill="#64748b">Discord.js v${require('discord.js').version} • vaztinix.dev</text>
+                <!-- Right: System Info -->
+                <text x="432" y="38" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#94a3b8" letter-spacing="0.5">SYSTEM INFO</text>
+                <text x="432" y="80" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff">Node.js ${process.version}</text>
+                <text x="432" y="108" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="500" fill="#64748b">Discord.js v${require('discord.js').version} • vaztinix.dev</text>
             </g>
         </svg>
         `;
