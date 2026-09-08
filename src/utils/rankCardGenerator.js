@@ -239,7 +239,7 @@ async function generateRankCard({
     const safeUsername = String(username || 'User').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
     const svgString = `
-    <svg width="860" height="240" viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg">
+    <svg width="860" height="240" viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" image-rendering="optimizeQuality">
         <defs>
             <linearGradient id="obsidianGlass" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#090a10" />
@@ -316,7 +316,7 @@ async function generateRankCard({
         <rect x="204" y="94" width="112" height="28" rx="14" fill="rgba(10, 12, 22, 0.65)" stroke="${accentColor}" stroke-opacity="0.75" stroke-width="1.2" filter="url(#crispShadow)" />
         <text x="260" y="113" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="900" fill="#e0e7ff" text-anchor="middle" letter-spacing="0.5">LEVEL ${level}</text>
 
-        <!-- XP Info -->
+        <!-- XP Info with subtle glass backplate for extreme contrast -->
         <text x="820" y="114" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="end" filter="url(#crispShadow)">
             <tspan fill="#ffffff" font-weight="900">${finalCurrentXp.toLocaleString()}</tspan>
             <tspan fill="#cbd5e1" font-weight="700"> / ${finalNextLevelXp.toLocaleString()} XP </tspan>
@@ -334,7 +334,7 @@ async function generateRankCard({
     `.trim();
 
     const basePngBuffer = await sharp(Buffer.from(svgString))
-        .png({ compressionLevel: 8, quality: 85 })
+        .png({ compressionLevel: 6, quality: 100 })
         .toBuffer();
 
     const composited = avatarPngBuffer 
@@ -351,7 +351,7 @@ async function generateRankCard({
                     { input: maskBuffer, blend: 'dest-in', tile: true },
                     { input: composited, blend: 'over', tile: true }
                 ])
-                .gif({ loop: 0, effort: 1, colours: 128 })
+                .gif({ loop: 0, effort: 7, colours: 256, dither: 0.8 })
                 .toBuffer();
         } catch(compErr) {
             console.error('Error compositing animated GIF rank card:', compErr.message);
