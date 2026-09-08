@@ -210,20 +210,25 @@ async function generateRankCard({
     const totalBarWidth = 616;
     const barWidth = Math.round((progressPercent / 100) * totalBarWidth);
 
-    // Dynamic Shape Clips
+    // Dynamic Shape Clips & Masks
+    let cardMaskShapeSvg = '<rect width="860" height="240" rx="22" fill="#ffffff" />';
     let cardClipSvg = '<rect width="860" height="240" rx="22" fill="url(#bgPattern)" />';
     let borderSvg = '<rect x="1" y="1" width="858" height="238" rx="21" fill="none" stroke="url(#borderGrad)" stroke-width="1.5" />';
 
     if (shape === 'capsule') {
+        cardMaskShapeSvg = '<rect width="860" height="240" rx="44" fill="#ffffff" />';
         cardClipSvg = '<rect width="860" height="240" rx="44" fill="url(#bgPattern)" />';
         borderSvg = '<rect x="1" y="1" width="858" height="238" rx="43" fill="none" stroke="url(#borderGrad)" stroke-width="1.5" />';
     } else if (shape === 'hexagon') {
+        cardMaskShapeSvg = '<polygon points="44,0 816,0 860,120 816,240 44,240 0,120" fill="#ffffff" />';
         cardClipSvg = '<polygon points="44,0 816,0 860,120 816,240 44,240 0,120" fill="url(#bgPattern)" />';
         borderSvg = '<polygon points="44,0 816,0 860,120 816,240 44,240 0,120" fill="none" stroke="url(#borderGrad)" stroke-width="1.5" />';
     } else if (shape === 'classic') {
+        cardMaskShapeSvg = '<rect width="860" height="240" rx="6" fill="#ffffff" />';
         cardClipSvg = '<rect width="860" height="240" rx="6" fill="url(#bgPattern)" />';
         borderSvg = '<rect x="1" y="1" width="858" height="238" rx="5" fill="none" stroke="url(#borderGrad)" stroke-width="1.5" />';
     } else if (shape === 'diamond') {
+        cardMaskShapeSvg = '<rect width="860" height="240" rx="28" fill="#ffffff" />';
         cardClipSvg = '<rect width="860" height="240" rx="28" fill="url(#bgPattern)" />';
         borderSvg = '<rect x="1" y="1" width="858" height="238" rx="27" fill="none" stroke="url(#borderGrad)" stroke-width="2" />';
     }
@@ -341,8 +346,14 @@ async function generateRankCard({
 
     if (isAnimatedGif && animatedBgBuffer) {
         try {
+            const maskSvg = `<svg width="860" height="240">${cardMaskShapeSvg}</svg>`;
+            const maskBuffer = await sharp(Buffer.from(maskSvg)).png().toBuffer();
+
             return await sharp(animatedBgBuffer, { animated: true })
-                .composite([{ input: composited, tile: true }])
+                .composite([
+                    { input: maskBuffer, blend: 'dest-in', tile: true },
+                    { input: composited, blend: 'over', tile: true }
+                ])
                 .gif({ loop: 0, effort: 1, colours: 128 })
                 .toBuffer();
         } catch(compErr) {
