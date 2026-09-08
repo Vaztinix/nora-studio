@@ -1939,12 +1939,26 @@ app.get('/api/user/me', async (req, res) => {
             }
         }
 
-        // Construct full CDN avatar URL
+        // Construct full CDN avatar URL safely without mutating cached user object
+        let avatarUrl = '';
         if (user.avatar) {
-            const isAnimated = user.avatar.startsWith('a_');
-            user.avatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`;
+            if (typeof user.avatar === 'string' && (user.avatar.startsWith('http://') || user.avatar.startsWith('https://'))) {
+                const match = user.avatar.match(/avatars\/([0-9]+)\/([a-zA-Z0-9_]+)\.(png|gif|webp)/);
+                if (match) {
+                    const uid = match[1];
+                    const hash = match[2];
+                    const isAnimated = hash.startsWith('a_');
+                    avatarUrl = `https://cdn.discordapp.com/avatars/${uid}/${hash}.${isAnimated ? 'gif' : 'png'}?size=256`;
+                } else {
+                    avatarUrl = user.avatar;
+                }
+            } else {
+                const isAnimated = typeof user.avatar === 'string' && user.avatar.startsWith('a_');
+                avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`;
+            }
         } else {
-            user.avatar = `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) % 5n) + 1n}.png`;
+            const defaultIndex = user.id ? Number(BigInt(user.id) % 5n) : 0;
+            avatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
         }
 
         // Determine if user is owner of the bot
@@ -1962,7 +1976,6 @@ app.get('/api/user/me', async (req, res) => {
                 }
             } catch (e) { }
         }
-        user.isOwner = isOwner;
 
         // Fetch user preferences/badges from DB
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
@@ -1983,9 +1996,6 @@ app.get('/api/user/me', async (req, res) => {
             }
         }
 
-        user.prefs = prefs;
-        user.sessionHardened = !!prefs.sessionHardened;
-
         // Dynamic Premium Verification Check
         const checkPremium = (p) => {
             if (isOwner) return true;
@@ -1995,9 +2005,17 @@ app.get('/api/user/me', async (req, res) => {
             const expandedMs = p.expandedTimeMs ? Number(p.expandedTimeMs) : 0;
             return (paidTime + expandedMs) > Date.now();
         };
-        user.noraPremium = checkPremium(prefs);
 
-        res.json(user);
+        const responseUser = {
+            ...user,
+            avatar: avatarUrl,
+            isOwner,
+            prefs,
+            sessionHardened: !!prefs.sessionHardened,
+            noraPremium: checkPremium(prefs)
+        };
+
+        res.json(responseUser);
     } catch (e) {
         console.error('Error in /api/user/me:', e);
         res.status(401).json({ error: 'Unauthorized' });
