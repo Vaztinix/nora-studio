@@ -182,7 +182,7 @@ async function generateRankCard({
 
                 if (isAnimatedGif && totalPages > 1) {
                     try {
-                        const safePages = Math.min(totalPages, 30);
+                        const safePages = Math.min(totalPages, 20);
                         animatedBgBuffer = await sharp(rawBuffer, { animated: true, page: 0, pages: safePages })
                             .resize(860, 240 * safePages, { fit: 'fill' })
                             .toBuffer();
@@ -351,7 +351,7 @@ async function generateRankCard({
                     { input: maskBuffer, blend: 'dest-in', tile: true },
                     { input: composited, blend: 'over', tile: true }
                 ])
-                .gif({ loop: 0, effort: 7, colours: 256, dither: 0.8 })
+                .gif({ loop: 0, effort: 1, colours: 160, dither: 0.8 })
                 .toBuffer();
         } catch(compErr) {
             console.error('Error compositing animated GIF rank card:', compErr.message);
