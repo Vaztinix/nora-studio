@@ -598,7 +598,7 @@
                     <!-- Active Linked Roblox Identity -->
                     <div id="active-roblox-container" style="display: none;">
                         <div class="roblox-identity-card">
-                            <img id="roblox-avatar" class="roblox-avatar-img" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Roblox Avatar">
+                            <img id="roblox-avatar" class="roblox-avatar-img" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Roblox Avatar" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                             <div class="roblox-identity-details">
                                 <div class="roblox-display-name">
                                     <span id="roblox-display-name">Roblox User</span>
@@ -890,11 +890,10 @@
                     document.getElementById('roblox-username').textContent = `@${active.robloxUsername || active.robloxId}`;
                     document.getElementById('roblox-id').textContent = `Roblox ID: ${active.robloxId}`;
                     
-                    if (active.avatar || active.avatarUrl) {
-                        document.getElementById('roblox-avatar').src = active.avatar || active.avatarUrl;
-                    } else {
-                        document.getElementById('roblox-avatar').src = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${active.robloxId}&size=150x150&format=Png&isCircular=false`;
-                    }
+                    const robloxAvatarUrl = (active.avatar && !active.avatar.includes('thumbnails.roblox.com')) 
+                        ? active.avatar 
+                        : (getApiBaseUrl() + `/api/user/roblox/avatar?userId=${active.robloxId}`);
+                    document.getElementById('roblox-avatar').src = robloxAvatarUrl;
                 } else {
                     document.getElementById('active-roblox-container').style.display = 'none';
                 }

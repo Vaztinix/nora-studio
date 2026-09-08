@@ -2662,14 +2662,19 @@ app.get('/api/user/roblox/accounts', async (req, res) => {
 
         const userIds = records.map(r => parseInt(r.robloxId)).filter(id => !isNaN(id));
         let profileMap = new Map();
+        let avatarMap = new Map();
         if (userIds.length > 0) {
             try {
-                const usersRes = await fetchRoblox('https://users.roblox.com/v1/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userIds, excludeBannedUsers: false })
-                });
-                if (usersRes.ok) {
+                const [usersRes, thumbsRes] = await Promise.all([
+                    fetchRoblox('https://users.roblox.com/v1/users', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userIds, excludeBannedUsers: false })
+                    }).catch(e => null),
+                    fetchRoblox(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userIds.join(',')}&size=150x150&format=Png&isCircular=false`).catch(e => null)
+                ]);
+
+                if (usersRes && usersRes.ok) {
                     const usersData = await usersRes.json();
                     if (usersData.data) {
                         for (const u of usersData.data) {
@@ -2677,21 +2682,33 @@ app.get('/api/user/roblox/accounts', async (req, res) => {
                         }
                     }
                 }
+
+                if (thumbsRes && thumbsRes.ok) {
+                    const thumbsData = await thumbsRes.json();
+                    if (thumbsData.data) {
+                        for (const t of thumbsData.data) {
+                            if (t.imageUrl && t.targetId) {
+                                avatarMap.set(t.targetId.toString(), t.imageUrl);
+                                setCachedAvatar(t.targetId.toString(), t.imageUrl);
+                            }
+                        }
+                    }
+                }
             } catch (e) {
-                console.error('Failed to batch fetch Roblox users:', e);
+                console.error('Failed to batch fetch Roblox users & thumbnails:', e);
             }
         }
 
         const accounts = records.map(r => {
             const profile = profileMap.get(r.robloxId);
-            const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${r.robloxId}&size=150x150&format=Png&isCircular=false`;
+            const directAvatar = avatarMap.get(r.robloxId) || getCachedAvatar(r.robloxId) || `/api/user/roblox/avatar?userId=${r.robloxId}`;
             return {
                 id: r.id,
                 robloxId: r.robloxId,
                 robloxUsername: profile ? profile.name : r.robloxId,
                 robloxDisplayName: profile ? profile.displayName : (profile ? profile.name : r.robloxId),
-                avatar: avatarUrl,
-                avatarUrl: avatarUrl,
+                avatar: directAvatar,
+                avatarUrl: directAvatar,
                 status: r.status,
                 verified: r.status === 'VERIFIED',
                 isActive: r.isActive !== false,
@@ -2757,7 +2774,7 @@ app.post('/api/user/roblox/link', async (req, res) => {
             });
         }
 
-        const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false`;
+        const avatarUrl = getCachedAvatar(robloxId) || `/api/user/roblox/avatar?userId=${robloxId}`;
 
         res.json({
             success: true,
@@ -3269,7 +3286,7 @@ app.get('/api/user/roblox/callback', async (req, res) => {
                     <p style="color: #9d9d9d; font-size: 0.88rem; line-height: 1.5; margin: 0;">Your Roblox identity has been successfully authenticated and server roles have been granted.</p>
 
                     <div class="roblox-box">
-                        <img class="roblox-avatar" src="https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxId}&size=150x150&format=Png&isCircular=false" alt="Avatar">
+                        <img class="roblox-avatar" src="/api/user/roblox/avatar?userId=${robloxId}" alt="Avatar">
                         <div>
                             <div style="font-weight: 700; font-size: 0.95rem; color: #fff;">@${String(robloxUsername || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
                             <div style="font-size: 0.75rem; color: var(--success); font-weight: 600;"><i class="fas fa-shield-check"></i> Roles Synchronized</div>

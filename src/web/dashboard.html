@@ -11426,7 +11426,9 @@
 
                 accounts.forEach(acc => {
                     const isVerified = acc.status === 'VERIFIED';
-                    const avatarUrl = acc.avatar || acc.avatarUrl || `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${acc.robloxId}&size=150x150&format=Png&isCircular=false`;
+                    const avatarUrl = (acc.avatar && !acc.avatar.includes('thumbnails.roblox.com')) 
+                        ? acc.avatar 
+                        : ((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/roblox/avatar?userId=${acc.robloxId}`);
 
                     const card = document.createElement('div');
                     card.style.cssText = `
@@ -11445,7 +11447,7 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                             <div style="display: flex; align-items: center; gap: 14px;">
                                 <div style="position: relative;">
-                                    <img src="${avatarUrl}" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid ${acc.isActive ? '#6366f1' : 'rgba(255,255,255,0.15)'}; background: #000; object-fit: cover;" onerror="this.onerror=null; this.src='nora.png';">
+                                    <img src="${avatarUrl}" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid ${acc.isActive ? '#6366f1' : 'rgba(255,255,255,0.15)'}; background: #000; object-fit: cover;" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                                     ${isVerified ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; border-radius: 50%; background: #10b981; border: 2px solid #0f172a; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #fff;" title="Verified Profile"><i class="fas fa-check"></i></div>' : ''}
                                 </div>
                                 <div>
@@ -12180,13 +12182,15 @@
             } else {
                 const verifiedAcc = accs.find(a => a.status === 'VERIFIED' && a.isActive) || accs.find(a => a.status === 'VERIFIED') || accs[0];
                 if (verifiedAcc && verifiedAcc.status === 'VERIFIED') {
-                    const avatarImg = verifiedAcc.avatar || verifiedAcc.avatarUrl || `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${verifiedAcc.robloxId}&size=150x150&format=Png&isCircular=false`;
+                    const avatarImg = (verifiedAcc.avatar && !verifiedAcc.avatar.includes('thumbnails.roblox.com')) 
+                        ? verifiedAcc.avatar 
+                        : ((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/roblox/avatar?userId=${verifiedAcc.robloxId}`);
                     robloxVal.innerHTML = `
                         <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                             <div>
                                 <div style="font-size: 0.68rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roblox Identity</div>
                                 <div style="color: #fff; font-weight: 700; font-size: 0.82rem; display: flex; align-items: center; gap: 6px;">
-                                    <img src="${avatarImg}" style="width: 18px; height: 18px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='nora.png'">
+                                    <img src="${avatarImg}" style="width: 18px; height: 18px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                                     <span>${robloxPublic ? '@' + (verifiedAcc.robloxUsername || verifiedAcc.robloxId) : 'Private'}</span>
                                     <span style="color: var(--success); font-size: 0.7rem;" title="Verified Profile"><i class="fas fa-check-circle"></i></span>
                                 </div>
