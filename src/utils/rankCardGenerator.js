@@ -171,25 +171,29 @@ async function generateRankCard({
 
             let rawBuffer = await fetchImageBuffer(resolvedUrl, 2500);
             if (rawBuffer) {
-                const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
-                if (isGifHeader || (typeof resolvedUrl === 'string' && (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')))) {
-                    isAnimatedGif = true;
-                }
+                let meta = null;
+                try {
+                    meta = await sharp(rawBuffer, { animated: true }).metadata();
+                } catch (e) {}
 
-                if (isAnimatedGif) {
+                const totalPages = meta?.pages || 1;
+                const isGifHeader = rawBuffer.slice(0, 3).toString() === 'GIF';
+                isAnimatedGif = totalPages > 1 || isGifHeader || (typeof resolvedUrl === 'string' && (resolvedUrl.toLowerCase().includes('.gif') || resolvedUrl.includes('klipy') || resolvedUrl.includes('tenor') || resolvedUrl.includes('giphy')));
+
+                if (isAnimatedGif && totalPages > 1) {
                     try {
-                        animatedBgBuffer = await sharp(rawBuffer, { animated: true, pages: 25 })
+                        const safePages = Math.min(totalPages, 30);
+                        animatedBgBuffer = await sharp(rawBuffer, { animated: true, page: 0, pages: safePages })
                             .resize(860, 240, { fit: 'cover' })
                             .toBuffer();
                     } catch(gifErr) {
+                        console.warn('[Rank Generator] Animated background resize failed, falling back to static:', gifErr.message);
                         isAnimatedGif = false;
-                        const pngBuffer = await sharp(rawBuffer)
-                            .resize(860, 240, { fit: 'cover' })
-                            .png()
-                            .toBuffer();
-                        customBgBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
                     }
-                } else {
+                }
+
+                if (!isAnimatedGif || !animatedBgBuffer) {
+                    isAnimatedGif = false;
                     const pngBuffer = await sharp(rawBuffer)
                         .resize(860, 240, { fit: 'cover' })
                         .png()
