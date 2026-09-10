@@ -37,36 +37,36 @@ function buildGiveawayEmbed(g, isEnded = false, winners = []) {
     const embed = new EmbedBuilder();
 
     if (isEnded) {
-        embed.setTitle(`🎉 GIVEAWAY ENDED — ${g.title}`)
-            .setColor(0x2ed573)
-            .setFooter({ text: 'Nora Giveaway System • Ended' });
+        embed.setTitle(`Giveaway Concluded — ${g.title}`)
+            .setColor(0x10B981)
+            .setFooter({ text: 'Nora Giveaway System • Concluded' });
 
         let desc = g.description ? `${g.description}\n\n` : '';
-        desc += `🏁 **Ended:** <t:${endTimestamp}:R>\n`;
-        desc += `👑 **Host:** <@${g.hostId}>\n`;
+        desc += `• **Ended:** <t:${endTimestamp}:R>\n`;
+        desc += `• **Host:** <@${g.hostId}>\n`;
         if (g.requiredRoleId) {
-            desc += `🔒 **Required Role:** <@&${g.requiredRoleId}>\n`;
+            desc += `• **Required Role:** <@&${g.requiredRoleId}>\n`;
         }
 
         if (winners && winners.length > 0) {
             const winnerMentions = winners.map(w => `<@${w}>`).join(', ');
-            desc += `\n🏆 **Winner(s):** ${winnerMentions}`;
+            desc += `\n**Winner(s):** ${winnerMentions}`;
         } else {
-            desc += `\n🏆 **Winner(s):** No valid entries`;
+            desc += `\n**Winner(s):** No valid entries`;
         }
 
         embed.setDescription(desc);
     } else {
-        embed.setTitle(`🎉 GIVEAWAY — ${g.title}`)
-            .setColor(0xff4757)
-            .setFooter({ text: 'Nora Giveaway System • Click button below to enter!' });
+        embed.setTitle(`Giveaway — ${g.title}`)
+            .setColor(0x5865F2)
+            .setFooter({ text: 'Click the button below to enter.' });
 
         let desc = g.description ? `${g.description}\n\n` : '';
-        desc += `⏳ **Ends:** <t:${endTimestamp}:R> (<t:${endTimestamp}:F>)\n`;
-        desc += `👑 **Host:** <@${g.hostId}>\n`;
-        desc += `🏆 **Winners:** ${g.winnerCount}\n`;
+        desc += `• **Ends:** <t:${endTimestamp}:R> (<t:${endTimestamp}:f>)\n`;
+        desc += `• **Host:** <@${g.hostId}>\n`;
+        desc += `• **Winners:** ${g.winnerCount}\n`;
         if (g.requiredRoleId) {
-            desc += `🔒 **Required Role:** <@&${g.requiredRoleId}>\n`;
+            desc += `• **Required Role:** <@&${g.requiredRoleId}>\n`;
         }
 
         embed.setDescription(desc);
@@ -86,7 +86,7 @@ function buildGiveawayEmbed(g, isEnded = false, winners = []) {
 function buildGiveawayComponents(isEnded = false, participantCount = 0) {
     const button = new ButtonBuilder()
         .setCustomId('giveaway_enter')
-        .setLabel(`🎉 Enter Giveaway (${participantCount})`)
+        .setLabel(`Enter Giveaway (${participantCount})`)
         .setStyle(ButtonStyle.Primary)
         .setDisabled(isEnded);
 

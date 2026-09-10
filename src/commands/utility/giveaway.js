@@ -1,22 +1,83 @@
-const { SlashCommandBuilder, EmbedBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ChannelType, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const Giveaway = require('../../database/models/Giveaway');
 const { parseDuration, buildGiveawayEmbed, buildGiveawayComponents, endGiveaway, rerollGiveaway } = require('../../utils/giveawayManager');
 const { handleError, handleSuccess } = require('../../utils/embeds');
 
+async function buildGiveawayManagerPanel(guild) {
+    const giveaways = await Giveaway.findAll({
+        where: { guildId: guild.id },
+        order: [['createdAt', 'DESC']],
+        limit: 15
+    });
+
+    const activeList = giveaways.filter(g => !g.ended && new Date(g.endTime).getTime() > Date.now());
+    const endedList = giveaways.filter(g => g.ended || new Date(g.endTime).getTime() <= Date.now());
+
+    const embed = new EmbedBuilder()
+        .setTitle('Giveaway Management Control Panel')
+        .setDescription(
+            `Overview of active and recent giveaways in **${guild.name}**.\n\n` +
+            `**Active Giveaways:** \`${activeList.length}\`  •  **Concluded:** \`${endedList.length}\``
+        )
+        .setColor(0x5865F2)
+        .setFooter({ text: 'Nora Giveaway Manager • Use buttons or subcommands to manage' })
+        .setTimestamp();
+
+    if (activeList.length > 0) {
+        const activeSummary = activeList.slice(0, 5).map(g => {
+            let count = 0;
+            try { count = JSON.parse(g.participants || '[]').length; } catch (e) {}
+            const endSec = Math.floor(new Date(g.endTime).getTime() / 1000);
+            return `• **${g.title}** (<#${g.channelId}>)\n  ID: \`${g.messageId}\` • Entries: **${count}** • Ends: <t:${endSec}:R>`;
+        }).join('\n\n');
+        embed.addFields({ name: 'Active Giveaways', value: activeSummary, inline: false });
+    } else {
+        embed.addFields({ name: 'Active Giveaways', value: '*No active giveaways currently running.*', inline: false });
+    }
+
+    if (endedList.length > 0) {
+        const endedSummary = endedList.slice(0, 3).map(g => {
+            let winners = [];
+            try { winners = JSON.parse(g.winners || '[]'); } catch (e) {}
+            const winnerText = winners.length > 0 ? winners.map(w => `<@${w}>`).join(', ') : 'None';
+            return `• **${g.title}** (ID: \`${g.messageId}\`)\n  Winners: ${winnerText}`;
+        }).join('\n');
+        embed.addFields({ name: 'Recently Concluded', value: endedSummary, inline: false });
+    }
+
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('gw_panel_refresh')
+            .setLabel('Refresh List')
+            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setLabel('Dashboard Manager')
+            .setStyle(ButtonStyle.Link)
+            .setURL('https://vaztinix.dev/dashboard')
+    );
+
+    return { embeds: [embed], components: [row] };
+}
+
 module.exports = {
     category: 'utility',
     ephemeral: false,
+    buildGiveawayManagerPanel,
     data: new SlashCommandBuilder()
         .setName('giveaway')
-        .setDescription('Manage server giveaways with prize names, custom banners, timers, and rerolls.')
+        .setDescription('Manage server giveaways, view control panel, timers, and rerolls.')
         .setDMPermission(false)
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents | PermissionFlagsBits.ManageGuild)
+        .addSubcommand(sub =>
+            sub.setName('panel')
+                .setDescription('Open the interactive Giveaway Manager dashboard.')
+        )
         .addSubcommand(sub =>
             sub.setName('start')
                 .setDescription('Start a new giveaway in a channel.')
                 .addStringOption(opt =>
                     opt.setName('prize')
-                        .setDescription('The prize or item name being given away (e.g. Discord Nitro 1 Month)')
+                        .setDescription('The prize or item name being given away')
                         .setRequired(true))
                 .addStringOption(opt =>
                     opt.setName('duration')
@@ -30,7 +91,7 @@ module.exports = {
                         .setRequired(false))
                 .addStringOption(opt =>
                     opt.setName('description')
-                        .setDescription('Additional details, rules, or instructions for the giveaway')
+                        .setDescription('Additional details, rules, or instructions')
                         .setRequired(false))
                 .addStringOption(opt =>
                     opt.setName('image')
@@ -70,7 +131,12 @@ module.exports = {
                 .setDescription('List active and recently completed giveaways on this server.')),
 
     async execute(interaction) {
-        const subcommand = interaction.options.getSubcommand();
+        const subcommand = interaction.options.getSubcommand(false) || 'panel';
+
+        if (subcommand === 'panel') {
+            const panelData = await buildGiveawayManagerPanel(interaction.guild);
+            return await interaction.reply(panelData);
+        }
 
         if (subcommand === 'start') {
             const prize = interaction.options.getString('prize');
@@ -100,7 +166,6 @@ module.exports = {
 
             const endTime = new Date(Date.now() + durationMs);
 
-            // Construct dummy model instance for embed builder
             const tempGiveaway = {
                 title: prize,
                 description,
@@ -143,10 +208,10 @@ module.exports = {
 
             return await handleSuccess(
                 interaction,
-                '🎉 Giveaway Created!',
-                `Your giveaway for **${prize}** has been posted in <#${targetChannel.id}>!\n\n` +
-                `⏳ **Ends:** <t:${Math.floor(endTime.getTime() / 1000)}:R>\n` +
-                `🆔 **Message ID:** \`${giveawayMsg.id}\``
+                'Giveaway Created',
+                `Your giveaway for **${prize}** has been posted in <#${targetChannel.id}>.\n\n` +
+                `• **Ends:** <t:${Math.floor(endTime.getTime() / 1000)}:R>\n` +
+                `• **Message ID:** \`${giveawayMsg.id}\``
             );
         }
 
@@ -160,9 +225,9 @@ module.exports = {
 
             return await handleSuccess(
                 interaction,
-                '🎉 Giveaway Ended',
-                `Giveaway **${result.giveaway.title}** has been manually ended!\n` +
-                `🏆 **Winner(s):** ${result.winners.length > 0 ? result.winners.map(w => `<@${w}>`).join(', ') : 'None'}`
+                'Giveaway Concluded',
+                `Giveaway **${result.giveaway.title}** has been ended.\n` +
+                `**Winner(s):** ${result.winners.length > 0 ? result.winners.map(w => `<@${w}>`).join(', ') : 'None'}`
             );
         }
 
@@ -177,9 +242,9 @@ module.exports = {
 
             return await handleSuccess(
                 interaction,
-                '🎲 Giveaway Rerolled!',
-                `Selected new winner(s) for giveaway!\n` +
-                `🏆 **New Winner(s):** ${result.winners.map(w => `<@${w}>`).join(', ')}`
+                'Giveaway Rerolled',
+                `Selected new winner(s) for giveaway **${result.giveaway.title}**.\n` +
+                `**New Winner(s):** ${result.winners.map(w => `<@${w}>`).join(', ')}`
             );
         }
 
@@ -195,8 +260,8 @@ module.exports = {
             }
 
             const listEmbed = new EmbedBuilder()
-                .setTitle(`🎉 Giveaway List — ${interaction.guild.name}`)
-                .setColor('#ff4757')
+                .setTitle(`Giveaway List — ${interaction.guild.name}`)
+                .setColor(0x5865F2)
                 .setTimestamp();
 
             let desc = '';
@@ -207,9 +272,9 @@ module.exports = {
                 } catch (e) {}
 
                 const endTimestamp = Math.floor(new Date(g.endTime).getTime() / 1000);
-                const statusStr = g.ended ? '🏁 Ended' : `⏳ Active (<t:${endTimestamp}:R>)`;
-                desc += `• **${g.title}** | ${statusStr}\n` +
-                        `  ↳ **Message ID:** \`${g.messageId}\` | **Entries:** ${participantsCount} | **Host:** <@${g.hostId}>\n\n`;
+                const statusStr = g.ended ? 'Concluded' : `Active (<t:${endTimestamp}:R>)`;
+                desc += `• **${g.title}** (${statusStr})\n` +
+                        `  Message ID: \`${g.messageId}\` • Entries: **${participantsCount}** • Host: <@${g.hostId}>\n\n`;
             }
 
             listEmbed.setDescription(desc || 'No giveaways recorded.');

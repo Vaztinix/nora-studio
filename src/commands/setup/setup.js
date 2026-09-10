@@ -314,50 +314,51 @@ module.exports = {
             }
 
             // ==========================================
-            // WELCOMER & STARTER ROLES
+            // WELCOMER & GOODBYE SUITE
             // ==========================================
             if (viewName === 'view_welcomer') {
                 const isPremium = settings.isPremium === true || settings.isManualPremium === true;
                 const maxAutoRoles = isPremium ? 5 : 3;
                 const currentRoles = (settings.welcomeRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
 
-                embed.setTitle('Welcomer & Starter Auto-Roles')
+                embed.setTitle('Welcomer & Goodbye Configuration Suite')
                     .setDescription(
-                        `Configure automated welcome cards, join channels, and starter roles for new members.\n` +
-                        `Tier Limits: Free servers can assign up to **3 roles** on join. Nora Plus unlocks up to **5 roles**.`
+                        `Configure dedicated welcome cards, goodbye announcements, and join auto-roles.\n` +
+                        `Welcomer (Joins) and Goodbye (Leaves) can be broadcast to distinct channels.`
                     )
                     .addFields(
-                        { name: 'Welcomer System', value: settings.welcomerEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Welcome System', value: settings.welcomerEnabled ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: 'Welcome Channel', value: settings.welcomeChannelId ? `<#${settings.welcomeChannelId}>` : '*None*', inline: true },
+                        { name: 'Join DM Alert', value: settings.welcomeDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Goodbye System', value: settings.goodbyeEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Goodbye Channel', value: settings.goodbyeChannelId ? `<#${settings.goodbyeChannelId}>` : (settings.welcomeChannelId ? `<#${settings.welcomeChannelId}> *(Fallback)*` : '*None*'), inline: true },
+                        { name: 'Goodbye DM Alert', value: settings.goodbyeDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: `Starter Auto-Roles (${currentRoles.length}/${maxAutoRoles})`, value: currentRoles.length > 0 ? currentRoles.map(id => `<@&${id}>`).join(' ') : '*None*', inline: true },
                         { name: 'Quarantine Role', value: settings.unverifiedRoleId ? `<@&${settings.unverifiedRoleId}>` : '*None*', inline: true },
-                        { name: 'Join DM Alerts', value: settings.welcomeDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
-                        { name: 'Tier Cap', value: isPremium ? '**Nora Plus (5 Max)**' : '**Free Tier (3 Max)**', inline: true }
+                        { name: 'Tier Status', value: isPremium ? '**Studio Plus (5 Roles Max)**' : '**Free Tier (3 Roles Max)**', inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_welcomer_toggle').setLabel(settings.welcomerEnabled ? 'Disable Welcomer' : 'Enable Welcomer').setStyle(settings.welcomerEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_welcomedm_toggle').setLabel(settings.welcomeDmEnabled ? 'Disable Join DM' : 'Enable Join DM').setStyle(settings.welcomeDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                    new ButtonBuilder().setCustomId('action_welcomer_toggle').setLabel(settings.welcomerEnabled ? 'Disable Welcome' : 'Enable Welcome').setStyle(settings.welcomerEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_welcomedm_toggle').setLabel(settings.welcomeDmEnabled ? 'Disable Join DM' : 'Enable Join DM').setStyle(settings.welcomeDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_goodbye_toggle').setLabel(settings.goodbyeEnabled ? 'Disable Goodbye' : 'Enable Goodbye').setStyle(settings.goodbyeEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_goodbyedm_toggle').setLabel(settings.goodbyeDmEnabled ? 'Disable Leave DM' : 'Enable Leave DM').setStyle(settings.goodbyeDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder().setCustomId('action_welcome_channel').setPlaceholder('Select Welcome Channel...').setChannelTypes(ChannelType.GuildText)
+                    new ChannelSelectMenuBuilder().setCustomId('action_welcome_channel').setPlaceholder('Select Welcome Channel (Joins)...').setChannelTypes(ChannelType.GuildText)
                 );
 
                 const rowC = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_goodbye_channel').setPlaceholder('Select Dedicated Goodbye Channel (Leaves)...').setChannelTypes(ChannelType.GuildText)
+                );
+
+                const rowD = new ActionRowBuilder().addComponents(
                     new RoleSelectMenuBuilder()
                         .setCustomId('action_welcome_role')
                         .setPlaceholder(`Select Auto-Roles on Join (Up to ${maxAutoRoles} roles)...`)
                         .setMinValues(0)
                         .setMaxValues(maxAutoRoles)
-                );
-
-                const rowD = new ActionRowBuilder().addComponents(
-                    new RoleSelectMenuBuilder()
-                        .setCustomId('action_unverified_role')
-                        .setPlaceholder('Select Quarantine Role (Given on join, removed on verify)...')
-                        .setMinValues(0)
-                        .setMaxValues(1)
                 );
 
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
@@ -367,28 +368,48 @@ module.exports = {
             // LEVELING & EXPERIENCE
             // ==========================================
             if (viewName === 'view_leveling') {
-                embed.setTitle('Leveling & XP Rewards')
-                    .setDescription('Reward active community members with Chat XP, Voice XP, custom rank cards, and level roles.')
+                const isPremium = settings.isPremium === true || settings.isManualPremium === true;
+                const cdSec = settings.levelingCooldownSec || 60;
+                const xpRate = settings.levelingXpRate || 1.0;
+
+                embed.setTitle('Leveling & Progression Suite')
+                    .setDescription('Configure community leveling, XP cooldowns, multipliers, level-up alerts, and custom rank card styling.')
                     .addFields(
-                        { name: 'Chat Leveling', value: settings.levelingEnabled ? '**Enabled**' : '**Disabled**', inline: true },
-                        { name: 'Level-Up Alerts', value: settings.levelUpNotificationsEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
-                        { name: 'Level-Up Channel', value: settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : '*Current Channel*', inline: true },
-                        { name: 'Direct Message Alerts', value: settings.levelUpDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Leveling System', value: settings.levelingEnabled ? '**Active**' : '**Disabled**', inline: true },
+                        { name: 'XP Cooldown', value: `**${cdSec} seconds**`, inline: true },
+                        { name: 'XP Rate Multiplier', value: `**${xpRate}x**`, inline: true },
+                        { name: 'Level-Up Alerts', value: settings.levelUpNotificationsEnabled !== false ? '**Active**' : '**Disabled**', inline: true },
+                        { name: 'Alert Channel', value: settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : '*Current Channel*', inline: true },
+                        { name: 'DM Notification', value: settings.levelUpDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: 'Rank Card Avatars', value: settings.levelingPfpEnabled !== false ? '**Shown**' : '**Hidden**', inline: true },
-                        { name: 'Voice XP Rate', value: `${settings.voiceXpRate || 10} XP / ${settings.voiceXpInterval || 300}s`, inline: true }
+                        { name: 'Role Stacking', value: settings.roleRewardsStack !== false ? '**Stacking**' : '**Highest Only**', inline: true },
+                        { name: 'Tier Status', value: isPremium ? '**Studio Plus** (Up to 10x XP & 25 Roles)' : '**Free Tier** (Up to 2x XP & 5 Roles)', inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_leveling_toggle').setLabel(settings.levelingEnabled ? 'Disable Leveling' : 'Enable Leveling').setStyle(settings.levelingEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_levelalert_toggle').setLabel(settings.levelUpNotificationsEnabled !== false ? 'Disable Alerts' : 'Enable Alerts').setStyle(settings.levelUpNotificationsEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_leveldm_toggle').setLabel(settings.levelUpDmEnabled ? 'Disable DM Alerts' : 'Enable DM Alerts').setStyle(settings.levelUpDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                    new ButtonBuilder().setCustomId('action_leveldm_toggle').setLabel(settings.levelUpDmEnabled ? 'Disable DM Alerts' : 'Enable DM Alerts').setStyle(settings.levelUpDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_rolestack_toggle').setLabel(settings.roleRewardsStack !== false ? 'Stack Roles: ON' : 'Stack Roles: OFF').setStyle(ButtonStyle.Secondary)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('action_leveling_cooldown')
+                        .setPlaceholder('Configure XP Message Cooldown...')
+                        .addOptions([
+                            { label: 'Fast (15 seconds)', value: '15', description: 'Fast-paced chatting servers', default: cdSec === 15 },
+                            { label: 'Standard (60 seconds - Recommended)', value: '60', description: 'Balanced anti-farming cooldown', default: cdSec === 60 },
+                            { label: 'Relaxed (120 seconds)', value: '120', description: 'Slow-burn community progression', default: cdSec === 120 },
+                            { label: 'Anti-Farm (300 seconds / 5 mins)', value: '300', description: 'Strict rate limit for large servers', default: cdSec === 300 }
+                        ])
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
                     new ChannelSelectMenuBuilder().setCustomId('action_levelalert_channel').setPlaceholder('Select Dedicated Level-Up Channel...').setChannelTypes(ChannelType.GuildText)
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, backRow] };
+                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
             }
 
             // ==========================================
@@ -405,59 +426,88 @@ module.exports = {
                 const activeSection = state.selectedLogCategory || 'default';
                 const categoryLabels = {
                     default: 'Default Fallback Log Channel',
-                    verify: 'Verification & Gatekeeper Logs',
+                    memberJoins: 'Member Joins Log Channel',
+                    memberLeaves: 'Member Leaves Log Channel',
                     messages: 'Message Logs (Edits & Deletes)',
-                    members: 'Member Logs (Joins, Leaves & Boosts)',
                     channels: 'Channel Logs (Creates, Edits & Deletes)',
                     voice: 'Voice Logs (Joins, Leaves & Moves)',
-                    automod: 'AutoMod & Security Logs'
+                    automod: 'AutoMod & Security Logs',
+                    moderation: 'Moderation Actions & Cases',
+                    commands: 'Slash Command Execution Logs',
+                    roles: 'Role & Permission Change Logs',
+                    boosts: 'Server Boost Logs',
+                    verify: 'Verification & Gatekeeper Logs',
+                    tickets: 'Support Tickets Log Channel'
                 };
 
-                embed.setTitle('Audit Logging & Channel Routing')
+                const getCatVal = (catKey) => {
+                    if (catKey === 'default') return settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*';
+                    if (catKey === 'moderation') return settings.modLogChannelId ? `<#${settings.modLogChannelId}>` : (logChannels.moderation ? `<#${logChannels.moderation}>` : `*(Fallback)*`);
+                    if (catKey === 'verify') return settings.verificationLogChannelId ? `<#${settings.verificationLogChannelId}>` : (logChannels.verify ? `<#${logChannels.verify}>` : `*(Fallback)*`);
+                    if (catKey === 'tickets') return settings.ticketLogChannelId ? `<#${settings.ticketLogChannelId}>` : (logChannels.tickets ? `<#${logChannels.tickets}>` : `*(Fallback)*`);
+                    if (catKey === 'boosts') return logChannels.boosts ? `<#${logChannels.boosts}>` : (settings.boostChannelId ? `<#${settings.boostChannelId}>` : `*(Fallback)*`);
+                    return logChannels[catKey] ? `<#${logChannels[catKey]}>` : `*(Fallback)*`;
+                };
+
+                embed.setTitle('Audit Logging & Channel Routing Suite')
                     .setDescription(
                         `**Configuring Category:** ${categoryLabels[activeSection] || 'Default Fallback'}\n` +
-                        `Select a category from the dropdown below, then choose the destination channel.`
+                        `Select a specific log category from the dropdown below, then choose the destination channel.`
                     )
                     .addFields(
-                        { name: 'Default Fallback', value: settings.loggingChannelId ? `<#${settings.loggingChannelId}>` : '*None*', inline: true },
-                        { name: 'Verification Log', value: settings.verificationLogChannelId ? `<#${settings.verificationLogChannelId}>` : `*(Fallback)*`, inline: true },
-                        { name: 'Messages Log', value: logChannels.messages ? `<#${logChannels.messages}>` : `*(Fallback)*`, inline: true },
-                        { name: 'Members Log', value: logChannels.members ? `<#${logChannels.members}>` : `*(Fallback)*`, inline: true },
-                        { name: 'Channels Log', value: logChannels.channels ? `<#${logChannels.channels}>` : `*(Fallback)*`, inline: true },
-                        { name: 'Voice Log', value: logChannels.voice ? `<#${logChannels.voice}>` : `*(Fallback)*`, inline: true }
+                        { name: 'Master Fallback', value: getCatVal('default'), inline: true },
+                        { name: 'Member Joins', value: getCatVal('memberJoins'), inline: true },
+                        { name: 'Member Leaves', value: getCatVal('memberLeaves'), inline: true },
+                        { name: 'Message Logs', value: getCatVal('messages'), inline: true },
+                        { name: 'Channel Changes', value: getCatVal('channels'), inline: true },
+                        { name: 'Voice Activity', value: getCatVal('voice'), inline: true },
+                        { name: 'AutoMod Alerts', value: getCatVal('automod'), inline: true },
+                        { name: 'Moderation Logs', value: getCatVal('moderation'), inline: true },
+                        { name: 'Command Usage', value: getCatVal('commands'), inline: true },
+                        { name: 'Role Changes', value: getCatVal('roles'), inline: true },
+                        { name: 'Server Boosts', value: getCatVal('boosts'), inline: true },
+                        { name: 'Verification Logs', value: getCatVal('verify'), inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder().setCustomId('action_log_part_select').setPlaceholder('Choose Log Category to Assign...').addOptions([
-                        { label: 'Default Fallback Channel', value: 'default', description: 'Catch-all channel for all unassigned log types', default: activeSection === 'default' },
-                        { label: 'Verification Logs', value: 'verify', description: 'Member verification passes, challenges, and audits', default: activeSection === 'verify' },
-                        { label: 'Message Logs', value: 'messages', description: 'Edits, deletes, and bulk deletions', default: activeSection === 'messages' },
-                        { label: 'Member Logs', value: 'members', description: 'Joins, leaves, kicks, and boosts', default: activeSection === 'members' },
-                        { label: 'Channel Logs', value: 'channels', description: 'Channel creates, updates, and deletes', default: activeSection === 'channels' },
-                        { label: 'Voice Logs', value: 'voice', description: 'Voice joins, leaves, and moves', default: activeSection === 'voice' },
-                        { label: 'AutoMod Logs', value: 'automod', description: 'Blocked content, spam filters, and raids', default: activeSection === 'automod' }
+                    new StringSelectMenuBuilder().setCustomId('action_log_part_select').setPlaceholder('Choose Log Category to Assign Channel...').addOptions([
+                        { label: 'Default Master Fallback', value: 'default', description: 'Catch-all channel for unassigned log categories', default: activeSection === 'default' },
+                        { label: 'Member Joins', value: 'memberJoins', description: 'Audit logs for new members joining', default: activeSection === 'memberJoins' },
+                        { label: 'Member Leaves', value: 'memberLeaves', description: 'Audit logs for members departing', default: activeSection === 'memberLeaves' },
+                        { label: 'Message Edits & Deletes', value: 'messages', description: 'Message modifications and purges', default: activeSection === 'messages' },
+                        { label: 'Channel Events', value: 'channels', description: 'Channel creations, renames, and deletions', default: activeSection === 'channels' },
+                        { label: 'Voice Activity', value: 'voice', description: 'Voice channel joins, leaves, and moves', default: activeSection === 'voice' },
+                        { label: 'AutoMod Violations', value: 'automod', description: 'Blocked words, spam limits, and raid triggers', default: activeSection === 'automod' },
+                        { label: 'Moderation Actions', value: 'moderation', description: 'Bans, mutes, kicks, and warnings', default: activeSection === 'moderation' },
+                        { label: 'Command Executions', value: 'commands', description: 'Slash command usage records', default: activeSection === 'commands' },
+                        { label: 'Role & Permission Events', value: 'roles', description: 'Role creations, edits, and deletions', default: activeSection === 'roles' },
+                        { label: 'Server Boosts', value: 'boosts', description: 'Server boost notifications and logs', default: activeSection === 'boosts' },
+                        { label: 'Verification Logs', value: 'verify', description: 'Captcha passes, button clicks, and Roblox links', default: activeSection === 'verify' },
+                        { label: 'Support Ticket Logs', value: 'tickets', description: 'Ticket creations, closures, and transcripts', default: activeSection === 'tickets' }
                     ])
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder().setCustomId('action_log_channel').setPlaceholder(`Set channel for ${categoryLabels[activeSection]}...`).setChannelTypes(ChannelType.GuildText)
+                    new ChannelSelectMenuBuilder().setCustomId('action_log_channel').setPlaceholder(`Assign channel for ${categoryLabels[activeSection] || 'Category'}...`).setChannelTypes(ChannelType.GuildText)
                 );
 
                 const rowC = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder()
                         .setCustomId('action_log_toggle')
-                        .setPlaceholder('Toggle Monitored Events (Select Multiple)...')
+                        .setPlaceholder('Toggle Monitored Event Types (Multi-Select)...')
                         .setMinValues(0)
-                        .setMaxValues(8)
+                        .setMaxValues(10)
                         .addOptions([
-                            { label: 'Member Joins', value: 'logMemberJoins', description: 'Log when users join the server', default: !!settings.logMemberJoins },
-                            { label: 'Member Leaves', value: 'logMemberLeaves', description: 'Log when users leave the server', default: !!settings.logMemberLeaves },
+                            { label: 'Member Joins', value: 'logMemberJoins', description: 'Log user join events', default: !!settings.logMemberJoins },
+                            { label: 'Member Leaves', value: 'logMemberLeaves', description: 'Log user departure events', default: !!settings.logMemberLeaves },
                             { label: 'Message Edits', value: 'logMessageEdits', description: 'Log edited message content', default: !!settings.logMessageEdits },
-                            { label: 'Message Deletes', value: 'logMessageDeletes', description: 'Log deleted messages', default: !!settings.logMessageDeletes },
-                            { label: 'AutoMod Violations', value: 'logAutomod', description: 'Log caught AutoMod actions', default: !!settings.logAutomod },
-                            { label: 'Channel Updates', value: 'logChannelEdits', description: 'Log channel creation & changes', default: !!settings.logChannelEdits },
+                            { label: 'Message Deletes', value: 'logMessageDeletes', description: 'Log deleted message content', default: !!settings.logMessageDeletes },
+                            { label: 'AutoMod Violations', value: 'logAutomod', description: 'Log caught AutoMod rule infractions', default: !!settings.logAutomod },
+                            { label: 'Channel Updates', value: 'logChannelEdits', description: 'Log channel create/edit/delete events', default: !!settings.logChannelEdits },
                             { label: 'Voice Activity', value: 'logVoiceJoins', description: 'Log VC joins, leaves, and moves', default: !!settings.logVoiceJoins },
-                            { label: 'Server Boosts', value: 'logMemberBoosts', description: 'Log when members boost the server', default: !!settings.logMemberBoosts }
+                            { label: 'Server Boosts', value: 'logMemberBoosts', description: 'Log server boost events', default: !!settings.logMemberBoosts },
+                            { label: 'Command Usage', value: 'logCommands', description: 'Log slash command executions', default: !!settings.logCommands },
+                            { label: 'Role Changes', value: 'logRoleEvents', description: 'Log role creations and modifications', default: !!settings.logRoleEvents }
                         ])
                 );
 
@@ -580,18 +630,22 @@ module.exports = {
             // SUPPORT TICKETS
             // ==========================================
             if (viewName === 'view_tickets') {
-                embed.setTitle('Support Ticket System')
-                    .setDescription('Configure private support tickets with customizable panel titles, descriptions, and staff roles.')
+                embed.setTitle('Support Ticket Management Suite')
+                    .setDescription(
+                        'Configure private support tickets, multi-topic dispatch panels, staff claim routing, and auto-transcripts.\n\n' +
+                        'Click **Deploy Multi-Topic Panel** to post a support station into any channel.'
+                    )
                     .addFields(
-                        { name: 'Parent Category', value: settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : '*Unset*', inline: true },
-                        { name: 'Panel Channel', value: settings.ticketChannelId ? `<#${settings.ticketChannelId}>` : '*Unset*', inline: true },
-                        { name: 'Support Staff Role', value: settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : '*Unset*', inline: true },
-                        { name: 'Auto-Archive', value: settings.ticketAutoArchive ? '**Enabled**' : '**Disabled**', inline: true },
-                        { name: 'Tickets Created', value: `#${settings.ticketLastNumber || 0}`, inline: true }
+                        { name: 'Parent Category', value: settings.ticketCategoryId ? `<#${settings.ticketCategoryId}>` : '*None (Top of channel list)*', inline: true },
+                        { name: 'Support Staff Role', value: settings.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : '*None (Admins only)*', inline: true },
+                        { name: 'Auto-Archive Inactive', value: settings.ticketAutoArchive ? '**Enabled (24h)**' : '**Disabled**', inline: true },
+                        { name: 'Total Created', value: `#${settings.ticketLastNumber || 0}`, inline: true },
+                        { name: 'Panel Title', value: `\`${settings.ticketPanelTitle || 'Support & Assistance Hub'}\``, inline: true },
+                        { name: 'Intake Fields', value: settings.ticketFormInputs ? '**Custom Modal Configured**' : '**Standard Topic Intakes**', inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_ticket_spawn').setLabel('Spawn Ticket Panel').setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_ticket_deploy_panel').setLabel('Deploy Multi-Topic Panel').setStyle(ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_ticket_customize_panel').setLabel('Edit Panel Text').setStyle(ButtonStyle.Primary),
                     new ButtonBuilder().setCustomId('action_ticket_autoarchive_toggle').setLabel(settings.ticketAutoArchive ? 'Disable Auto-Archive' : 'Enable Auto-Archive').setStyle(settings.ticketAutoArchive ? ButtonStyle.Danger : ButtonStyle.Secondary)
                 );
@@ -718,10 +772,13 @@ module.exports = {
                 if (i.customId === 'action_automod_mentions') { settings.automodMentions = parseInt(i.values[0]); update = true; sync = 'mentions'; }
                 if (i.customId === 'action_automod_immune') { settings.automodImmuneRoles = JSON.stringify(i.values); update = true; sync = 'all'; }
 
-                // Welcomer & Auto-Roles
+                // Welcomer, Goodbye & Auto-Roles
                 if (i.customId === 'action_welcomer_toggle') { settings.welcomerEnabled = !settings.welcomerEnabled; update = true; }
                 if (i.customId === 'action_welcomedm_toggle') { settings.welcomeDmEnabled = !settings.welcomeDmEnabled; update = true; }
                 if (i.customId === 'action_welcome_channel') { settings.welcomeChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_goodbye_toggle') { settings.goodbyeEnabled = !settings.goodbyeEnabled; update = true; }
+                if (i.customId === 'action_goodbyedm_toggle') { settings.goodbyeDmEnabled = !settings.goodbyeDmEnabled; update = true; }
+                if (i.customId === 'action_goodbye_channel') { settings.goodbyeChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_welcome_role') {
                     const isPremium = settings.isPremium === true || settings.isManualPremium === true;
                     const maxRoles = isPremium ? 5 : 3;
@@ -734,6 +791,8 @@ module.exports = {
                 if (i.customId === 'action_leveling_toggle') { settings.levelingEnabled = !settings.levelingEnabled; update = true; }
                 if (i.customId === 'action_levelalert_toggle') { settings.levelUpNotificationsEnabled = !settings.levelUpNotificationsEnabled; update = true; }
                 if (i.customId === 'action_leveldm_toggle') { settings.levelUpDmEnabled = !settings.levelUpDmEnabled; update = true; }
+                if (i.customId === 'action_rolestack_toggle') { settings.roleRewardsStack = settings.roleRewardsStack !== false ? false : true; update = true; }
+                if (i.customId === 'action_leveling_cooldown') { settings.levelingCooldownSec = parseInt(i.values[0], 10); update = true; }
                 if (i.customId === 'action_levelalert_channel') { settings.levelUpChannelId = i.values[0]; update = true; }
 
                 // Games & AFK
@@ -755,26 +814,34 @@ module.exports = {
                     const targetChannelId = i.values[0];
                     if (selectedCategory === 'default') {
                         settings.loggingChannelId = targetChannelId;
+                    } else if (selectedCategory === 'moderation') {
+                        settings.modLogChannelId = targetChannelId;
                     } else if (selectedCategory === 'verify') {
                         settings.verificationLogChannelId = targetChannelId;
-                    } else {
-                        let currentMap = {};
-                        if (typeof settings.loggingChannels === 'object' && settings.loggingChannels !== null) {
-                            currentMap = { ...settings.loggingChannels };
-                        } else if (typeof settings.loggingChannels === 'string') {
-                            try { currentMap = JSON.parse(settings.loggingChannels); } catch(e) { currentMap = {}; }
-                        }
-                        currentMap[selectedCategory] = targetChannelId;
-                        settings.loggingChannels = currentMap;
-                        if (typeof settings.changed === 'function') settings.changed('loggingChannels', true);
+                    } else if (selectedCategory === 'tickets') {
+                        settings.ticketLogChannelId = targetChannelId;
+                    } else if (selectedCategory === 'boosts') {
+                        settings.boostChannelId = targetChannelId;
                     }
+
+                    let currentMap = {};
+                    if (typeof settings.loggingChannels === 'object' && settings.loggingChannels !== null) {
+                        currentMap = { ...settings.loggingChannels };
+                    } else if (typeof settings.loggingChannels === 'string') {
+                        try { currentMap = JSON.parse(settings.loggingChannels); } catch(e) { currentMap = {}; }
+                    }
+                    currentMap[selectedCategory] = targetChannelId;
+                    settings.loggingChannels = currentMap;
+                    if (typeof settings.changed === 'function') settings.changed('loggingChannels', true);
+
                     update = true;
                 }
                 if (i.customId === 'action_log_toggle') {
                     const values = i.values;
                     const logFields = [
                         'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes',
-                        'logAutomod', 'logChannelEdits', 'logVoiceJoins', 'logMemberBoosts'
+                        'logAutomod', 'logChannelEdits', 'logVoiceJoins', 'logMemberBoosts',
+                        'logCommands', 'logRoleEvents'
                     ];
                     for (const field of logFields) {
                         settings[field] = values.includes(field);
@@ -940,21 +1007,19 @@ module.exports = {
                         return;
                     }
                 }
-                if (i.customId === 'action_ticket_spawn') {
-                    if (!settings.ticketCategoryId) return i.reply({ content: '⚠️ You must select a Ticket Category above first!', ephemeral: true });
+                if (i.customId === 'action_ticket_deploy_panel' || i.customId === 'action_ticket_spawn') {
+                    const ticketsEngine = require('../../bot/engines/tickets');
                     const targetChannelId = settings.ticketChannelId || i.channel.id;
                     const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
-                    const panelTitle = settings.ticketPanelTitle || 'Support Center';
-                    const panelDesc = settings.ticketPanelDesc || 'Need assistance? Select a category below to open a private ticket with our staff team.';
-                    const pEmbed = new EmbedBuilder().setTitle(panelTitle).setDescription(panelDesc).setColor(getRoleColor(interaction)).setFooter({ text: 'Support Ticketing System' });
-                    const pRow = new ActionRowBuilder().addComponents(
-                        new ButtonBuilder().setCustomId('ticket_Support').setLabel('Support').setStyle(ButtonStyle.Primary),
-                        new ButtonBuilder().setCustomId('ticket_Reporting').setLabel('Reporting').setStyle(ButtonStyle.Danger),
-                        new ButtonBuilder().setCustomId('ticket_Appeals').setLabel('Appeals').setStyle(ButtonStyle.Secondary),
-                        new ButtonBuilder().setCustomId('ticket_Other').setLabel('Other').setStyle(ButtonStyle.Secondary)
-                    );
-                    await channel.send({ embeds: [pEmbed], components: [pRow] });
-                    return i.reply({ content: `✅ Ticket panel spawned in <#${channel.id}>!`, ephemeral: true });
+                    try {
+                        await ticketsEngine.sendTicketPanel(channel, {
+                            title: settings.ticketPanelTitle || 'Support & Assistance Hub',
+                            description: settings.ticketPanelDesc || 'Need help or want to contact server staff? Select a topic below to open a private, dedicated support ticket.'
+                        });
+                        return i.reply({ content: `Ticket panel deployed in <#${channel.id}>!`, ephemeral: true });
+                    } catch (spawnErr) {
+                        return i.reply({ content: `Failed to deploy ticket panel: ${spawnErr.message}`, ephemeral: true });
+                    }
                 }
 
                 // Self Roles & AI

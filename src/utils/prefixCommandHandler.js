@@ -253,6 +253,195 @@ function createMockInteraction(message, commandName, subcommand, parsedOptions) 
     return interaction;
 }
 
+const TICKET_BLACKLIST_OPERATOR_ROLES = [
+    '1526775737590349854',
+    '1530184301398982737',
+    '1510711738020921344',
+    '1487865300316590130'
+];
+const TICKET_BLACKLIST_ROLE_ID = '1487865300316590130';
+
+/**
+ * Handles Milo's World Ticket Blacklist Prefix Command (n!bl @user / n!unbl @user)
+ */
+async function handleTicketBlacklistPrefixCommand(message, rawCmdName, tokens) {
+    // 1. Permission Verification (Only authorized operator roles or administrators)
+    const hasAuthorizedRole = message.member?.roles?.cache?.some(r => TICKET_BLACKLIST_OPERATOR_ROLES.includes(r.id));
+    const isAdmin = message.member?.permissions?.has(PermissionsBitField.Flags.Administrator) || message.guild.ownerId === message.author.id;
+
+    if (!hasAuthorizedRole && !isAdmin) {
+        const permEmbed = new EmbedBuilder()
+            .setTitle('⛔ Permission Denied')
+            .setDescription('You lack the required staff permissions to use the ticket blacklist command.')
+            .setColor(0xED4245)
+            .setFooter({ text: 'Nora Ticket Security' })
+            .setTimestamp();
+
+        await message.reply({ embeds: [permEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+
+    // 2. Target Resolution
+    const targetInput = tokens[1];
+    if (!targetInput) {
+        const usageEmbed = new EmbedBuilder()
+            .setTitle('⚠️ Missing Target User')
+            .setDescription('Please mention a user or provide their User ID to blacklist from creating tickets.\n\n**Usage:** `n!bl @user`')
+            .setColor(0xFEE75C)
+            .setFooter({ text: 'Nora Ticket Security' });
+
+        await message.reply({ embeds: [usageEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+
+    const targetUser = await resolveUser(message.guild, targetInput);
+    if (!targetUser) {
+        const notFoundEmbed = new EmbedBuilder()
+            .setTitle('⚠️ User Not Found')
+            .setDescription(`Could not find a member matching \`${targetInput}\`.\n\nPlease provide a valid **@mention**, **Username**, or **Discord User ID**.`)
+            .setColor(0xFEE75C);
+
+        await message.reply({ embeds: [notFoundEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+
+    const targetMember = await message.guild.members.fetch(targetUser.id).catch(() => null);
+    if (!targetMember) {
+        const notInGuildEmbed = new EmbedBuilder()
+            .setTitle('⚠️ Member Not Found')
+            .setDescription(`**${targetUser.tag}** (\`${targetUser.id}\`) is not currently in this server.`)
+            .setColor(0xFEE75C);
+
+        await message.reply({ embeds: [notInGuildEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+
+    // 3. Resolve Blacklist Role
+    let blacklistRole = message.guild.roles.cache.get(TICKET_BLACKLIST_ROLE_ID);
+    if (!blacklistRole) {
+        blacklistRole = await message.guild.roles.fetch(TICKET_BLACKLIST_ROLE_ID).catch(() => null);
+    }
+
+    if (!blacklistRole) {
+        const missingRoleEmbed = new EmbedBuilder()
+            .setTitle('⚠️ Role Missing')
+            .setDescription(`The Ticket Blacklist role (<@&${TICKET_BLACKLIST_ROLE_ID}> / \`${TICKET_BLACKLIST_ROLE_ID}\`) was not found in this server.`)
+            .setColor(0xED4245);
+
+        await message.reply({ embeds: [missingRoleEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+
+    const isUnblacklist = ['unbl', 'unblacklist', 'ticketunbl'].includes(rawCmdName) || (tokens[2] && tokens[2].toLowerCase() === 'remove');
+
+    // 4. Unblacklist handling
+    if (isUnblacklist) {
+        if (!targetMember.roles.cache.has(TICKET_BLACKLIST_ROLE_ID)) {
+            const notBlEmbed = new EmbedBuilder()
+                .setTitle('Ticket Blacklist')
+                .setDescription(`**${targetUser.tag}** (<@${targetUser.id}>) is not blacklisted from creating tickets.`)
+                .setColor(0x5865F2);
+
+            await message.reply({ embeds: [notBlEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+            return true;
+        }
+
+        try {
+            await targetMember.roles.remove(blacklistRole, `Ticket Unblacklist by ${message.author.tag} (${message.author.id})`);
+            const unblEmbed = new EmbedBuilder()
+                .setTitle('🛡️ Ticket Blacklist Removed')
+                .setDescription(`**${targetUser.tag}** (<@${targetUser.id}>) has been removed from the ticket blacklist and can now create tickets.`)
+                .addFields(
+                    { name: 'Target User', value: `${targetUser.tag} (\`${targetUser.id}\`)`, inline: true },
+                    { name: 'Staff Moderator', value: `<@${message.author.id}>`, inline: true }
+                )
+                .setColor(0x57F287)
+                .setFooter({ text: 'Nora Ticket Security' })
+                .setTimestamp();
+
+            await message.reply({ embeds: [unblEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+            return true;
+        } catch (err) {
+            const errEmbed = new EmbedBuilder()
+                .setTitle('⚠️ Action Failed')
+                .setDescription(`Failed to remove blacklist role: ${err.message}`)
+                .setColor(0xED4245);
+            await message.reply({ embeds: [errEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+            return true;
+        }
+    }
+
+    // 5. Blacklist handling
+    const MODERATOR_PROTECTED_ROLES = [
+        '1526775737590349854',
+        '1530184301398982737',
+        '1510711738020921344'
+    ];
+
+    const isTargetModerator = targetMember.roles?.cache?.some(r => MODERATOR_PROTECTED_ROLES.includes(r.id))
+        || targetMember.permissions?.has(PermissionsBitField.Flags.Administrator)
+        || message.guild.ownerId === targetUser.id;
+
+    if (isTargetModerator) {
+        const modProtectedEmbed = new EmbedBuilder()
+            .setTitle('⛔ Action Restricted')
+            .setDescription(`**${targetUser.tag}** (<@${targetUser.id}>) is a moderator / staff member and cannot be blacklisted from creating tickets.`)
+            .setColor(0xED4245)
+            .setFooter({ text: 'Nora Ticket Security' })
+            .setTimestamp();
+
+        await message.reply({ embeds: [modProtectedEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+
+    if (targetUser.bot) {
+        const botProtectedEmbed = new EmbedBuilder()
+            .setTitle('⛔ Action Restricted')
+            .setDescription('Bots cannot be blacklisted from support tickets.')
+            .setColor(0xED4245);
+
+        await message.reply({ embeds: [botProtectedEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+
+    if (targetMember.roles.cache.has(TICKET_BLACKLIST_ROLE_ID)) {
+        const alreadyBlEmbed = new EmbedBuilder()
+            .setTitle('🛡️ Ticket Blacklist')
+            .setDescription(`**${targetUser.tag}** (<@${targetUser.id}>) is already blacklisted from creating future tickets.`)
+            .setColor(0xFEE75C)
+            .setFooter({ text: 'Nora Ticket Security' });
+
+        await message.reply({ embeds: [alreadyBlEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+
+    try {
+        await targetMember.roles.add(blacklistRole, `Ticket Blacklist by ${message.author.tag} (${message.author.id})`);
+
+        const successEmbed = new EmbedBuilder()
+            .setTitle('🛡️ Ticket Blacklist Applied')
+            .setDescription(`**${targetUser.tag}** (<@${targetUser.id}>) has been blacklisted from creating future tickets.`)
+            .addFields(
+                { name: 'Target User', value: `${targetUser.tag} (\`${targetUser.id}\`)`, inline: true },
+                { name: 'Staff Moderator', value: `<@${message.author.id}>`, inline: true },
+                { name: 'Role Assigned', value: `<@&${TICKET_BLACKLIST_ROLE_ID}>`, inline: true }
+            )
+            .setColor(0xED4245)
+            .setFooter({ text: 'Nora Ticket Security' })
+            .setTimestamp();
+
+        await message.reply({ embeds: [successEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    } catch (err) {
+        const errEmbed = new EmbedBuilder()
+            .setTitle('⚠️ Action Failed')
+            .setDescription(`Failed to assign blacklist role: ${err.message}\nMake sure Nora's highest role is positioned above the <@&${TICKET_BLACKLIST_ROLE_ID}> role in Server Settings.`)
+            .setColor(0xED4245);
+        await message.reply({ embeds: [errEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+        return true;
+    }
+}
+
 /**
  * Main prefix command handler called on every messageCreate
  */
@@ -271,6 +460,9 @@ async function handlePrefixCommand(message, client) {
     } else if (content.toLowerCase().startsWith('n?')) {
         prefix = 'n?';
         rawCommandText = content.slice(2).trim();
+    } else if (content.toLowerCase().startsWith('!bl') || content.toLowerCase().startsWith('!unbl')) {
+        prefix = '!';
+        rawCommandText = content.slice(1).trim();
     } else if (botMentionPrefix.test(content)) {
         const match = content.match(botMentionPrefix);
         prefix = match[0];
@@ -283,6 +475,12 @@ async function handlePrefixCommand(message, client) {
     if (!tokens.length) return false;
 
     const rawCmdName = tokens[0].toLowerCase();
+
+    // 🛡️ Milo's World Ticket Blacklist System (n!bl, n!unbl)
+    if (['bl', 'blacklist', 'ticketbl', 'ticketblacklist', 'unbl', 'unblacklist', 'ticketunbl'].includes(rawCmdName)) {
+        return await handleTicketBlacklistPrefixCommand(message, rawCmdName, tokens);
+    }
+
     const resolvedName = COMMAND_ALIASES[rawCmdName] || rawCmdName;
     const command = client.commands.get(resolvedName);
 

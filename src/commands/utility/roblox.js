@@ -1,91 +1,128 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const axios = require('axios');
 
 module.exports = {
     category: 'utility',
     data: new SlashCommandBuilder()
         .setName('roblox')
-        .setDescription('Roblox integration utility commands. (Beta)')
+        .setDescription('Lookup Roblox user profiles, avatar thumbnails, and group info.')
         .addSubcommand(sub =>
             sub.setName('profile')
-                .setDescription('View a Roblox user\'s profile details and avatar. (Beta)')
-                .addStringOption(opt => opt.setName('user').setDescription('Roblox Username or User ID').setRequired(true))
+                .setDescription('View profile details and avatar for a Roblox user or ID.')
+                .addStringOption(opt => 
+                    opt.setName('user')
+                        .setDescription('Roblox username or numeric user ID')
+                        .setRequired(true)
+                )
         )
         .addSubcommand(sub =>
             sub.setName('group')
-                .setDescription('View details about a Roblox group. (Beta)')
-                .addStringOption(opt => opt.setName('id').setDescription('Roblox Group ID').setRequired(true))
+                .setDescription('View group information, member count, and owner.')
+                .addStringOption(opt => 
+                    opt.setName('id')
+                        .setDescription('Roblox Group ID')
+                        .setRequired(true)
+                )
         ),
 
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
-        await interaction.deferReply();
+        await interaction.deferReply().catch(() => {});
 
+        // -------------------------------------------------------------
+        // Subcommand: PROFILE
+        // -------------------------------------------------------------
         if (subcommand === 'profile') {
             const userInput = interaction.options.getString('user').trim();
             let userId = null;
-            let username = userInput;
 
             try {
                 // Try resolving as username first
                 const resolveRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
                     usernames: [userInput],
                     excludeBannedUsers: false
-                });
+                }).catch(() => null);
 
-                if (resolveRes.data && resolveRes.data.data && resolveRes.data.data.length > 0) {
+                if (resolveRes?.data?.data && resolveRes.data.data.length > 0) {
                     userId = resolveRes.data.data[0].id;
-                    username = resolveRes.data.data[0].name;
                 } else if (/^\d+$/.test(userInput)) {
-                    // Fall back to treating it directly as a User ID
                     userId = userInput;
                 }
 
                 if (!userId) {
-                    return interaction.editReply(`Could not find a Roblox user matching \`${userInput}\`.`);
+                    return interaction.editReply(`Could not find a Roblox account matching \`${userInput}\`.`);
                 }
 
-                // Fetch full profile details
-                const profileRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+                // Fetch profile details
+                const profileRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`).catch(() => null);
+                if (!profileRes || !profileRes.data) {
+                    return interaction.editReply('Failed to retrieve profile details from the Roblox API.');
+                }
                 const data = profileRes.data;
 
-                // Fetch avatar thumbnail
-                let avatarUrl = null;
-                try {
-                    const thumbRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=352x352&format=Png&isCircular=false`);
-                    if (thumbRes.data && thumbRes.data.data && thumbRes.data.data.length > 0) {
-                        avatarUrl = thumbRes.data.data[0].imageUrl;
-                    }
-                } catch (thumbErr) {
-                    console.error('Error fetching Roblox avatar thumbnail:', thumbErr);
-                }
+                // Fetch thumbnails & follower count in parallel
+                const [headshotRes, fullBodyRes, followerCountRes] = await Promise.all([
+                    axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=352x352&format=Png&isCircular=false`).catch(() => null),
+                    axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=352x352&format=Png&isCircular=false`).catch(() => null),
+                    axios.get(`https://friends.roblox.com/v1/users/${userId}/followers/count`).catch(() => null)
+                ]);
 
-                const createdDate = data.created ? new Date(data.created).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown';
+                const headshotUrl = headshotRes?.data?.data?.[0]?.imageUrl || null;
+                const fullBodyUrl = fullBodyRes?.data?.data?.[0]?.imageUrl || null;
+                const followersCount = followerCountRes?.data?.count !== undefined ? Number(followerCountRes.data.count).toLocaleString() : 'N/A';
+
+                const createdDate = data.created 
+                    ? `<t:${Math.floor(new Date(data.created).getTime() / 1000)}:D> (<t:${Math.floor(new Date(data.created).getTime() / 1000)}:R>)`
+                    : 'Unknown';
+
+                const verifiedBadge = data.hasVerifiedBadge ? ' [Verified]' : '';
+                const accountStatus = data.isBanned ? 'Banned / Terminated' : 'Active';
 
                 const embed = new EmbedBuilder()
-                    .setTitle(`${data.displayName} (@${data.name}) (Beta)`)
+                    .setAuthor({ 
+                        name: `@${data.name}`, 
+                        iconURL: headshotUrl || 'https://www.roblox.com/favicon.ico' 
+                    })
+                    .setTitle(`${data.displayName} (@${data.name})${verifiedBadge}`)
                     .setURL(`https://www.roblox.com/users/${data.id}/profile`)
-                    .setDescription(data.description || '*No bio provided.*')
+                    .setDescription(data.description ? `*${data.description.length > 250 ? data.description.substring(0, 247) + '...' : data.description}*` : '*No description provided.*')
+                    .setColor(data.isBanned ? 0xED4245 : 0x5865F2)
                     .addFields(
                         { name: 'User ID', value: `\`${data.id}\``, inline: true },
+                        { name: 'Status', value: accountStatus, inline: true },
+                        { name: 'Followers', value: followersCount, inline: true },
                         { name: 'Join Date', value: createdDate, inline: true },
-                        { name: 'Status', value: data.isBanned ? 'Banned' : 'Active', inline: true }
+                        { name: 'Display Name', value: data.displayName, inline: true }
                     )
-                    .setColor(0x00A2FF)
+                    .setFooter({ text: 'Roblox Profile' })
                     .setTimestamp();
 
-                if (avatarUrl) {
-                    embed.setThumbnail(avatarUrl);
+                if (fullBodyUrl) {
+                    embed.setThumbnail(fullBodyUrl);
                 }
 
-                await interaction.editReply({ embeds: [embed] });
+                const buttonRow = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setLabel('View on Roblox')
+                        .setURL(`https://www.roblox.com/users/${data.id}/profile`)
+                        .setStyle(ButtonStyle.Link),
+                    new ButtonBuilder()
+                        .setLabel('Inventory')
+                        .setURL(`https://www.roblox.com/users/${data.id}/inventory`)
+                        .setStyle(ButtonStyle.Link)
+                );
+
+                await interaction.editReply({ embeds: [embed], components: [buttonRow] });
 
             } catch (err) {
-                console.error('Roblox Profile Command Error:', err);
-                await interaction.editReply('An error occurred while fetching details from the Roblox API.');
+                console.error('Roblox Profile Error:', err);
+                await interaction.editReply('An error occurred while retrieving data from Roblox.');
             }
         }
 
+        // -------------------------------------------------------------
+        // Subcommand: GROUP
+        // -------------------------------------------------------------
         if (subcommand === 'group') {
             const groupId = interaction.options.getString('id').trim();
 
@@ -94,57 +131,55 @@ module.exports = {
             }
 
             try {
-                // Fetch group details
-                const groupRes = await axios.get(`https://groups.roblox.com/v1/groups/${groupId}`);
-                const data = groupRes.data;
+                const [groupRes, iconRes] = await Promise.all([
+                    axios.get(`https://groups.roblox.com/v1/groups/${groupId}`).catch(() => null),
+                    axios.get(`https://thumbnails.roblox.com/v1/groups/icons?groupIds=${groupId}&size=150x150&format=Png`).catch(() => null)
+                ]);
 
-                // Fetch group icon thumbnail
-                let iconUrl = null;
-                try {
-                    const iconRes = await axios.get(`https://thumbnails.roblox.com/v1/groups/icons?groupIds=${groupId}&size=150x150&format=Png`);
-                    if (iconRes.data && iconRes.data.data && iconRes.data.data.length > 0) {
-                        iconUrl = iconRes.data.data[0].imageUrl;
-                    }
-                } catch (iconErr) {
-                    console.error('Error fetching Roblox group icon:', iconErr);
+                if (!groupRes || !groupRes.data) {
+                    return interaction.editReply(`Could not find a Roblox group with ID \`${groupId}\`.`);
                 }
 
-                const ownerName = data.owner ? `${data.owner.displayName} (@${data.owner.username})` : 'No Owner';
-                const ownerLink = data.owner ? `https://www.roblox.com/users/${data.owner.id}/profile` : null;
+                const data = groupRes.data;
+                const iconUrl = iconRes?.data?.data?.[0]?.imageUrl || null;
+                const ownerName = data.owner ? `[${data.owner.displayName || data.owner.username}](https://www.roblox.com/users/${data.owner.userId}/profile)` : '*None (Locked)*';
+                const memberCount = (data.memberCount || 0).toLocaleString();
 
                 const embed = new EmbedBuilder()
-                    .setTitle(`${data.name} (Beta)`)
+                    .setAuthor({ 
+                        name: 'Roblox Group Directory', 
+                        iconURL: iconUrl || 'https://www.roblox.com/favicon.ico' 
+                    })
+                    .setTitle(`${data.name}${data.hasVerifiedBadge ? ' [Verified]' : ''}`)
                     .setURL(`https://www.roblox.com/groups/${data.id}`)
-                    .setDescription(data.description || '*No description provided.*')
+                    .setDescription(data.description ? `*${data.description.length > 300 ? data.description.substring(0, 297) + '...' : data.description}*` : '*No description provided.*')
+                    .setColor(0x5865F2)
                     .addFields(
                         { name: 'Group ID', value: `\`${data.id}\``, inline: true },
-                        { name: 'Members', value: (data.memberCount || 0).toLocaleString(), inline: true },
-                        { name: 'Owner', value: ownerLink ? `[${ownerName}](${ownerLink})` : ownerName, inline: true }
+                        { name: 'Owner', value: ownerName, inline: true },
+                        { name: 'Members', value: memberCount, inline: true },
+                        { name: 'Entry Policy', value: data.publicEntryAllowed ? 'Public (Open Join)' : 'Private (Approval Required)', inline: true },
+                        { name: 'Group Shout', value: data.shout?.body ? `"${data.shout.body}"\n*— ${data.shout.poster?.username || 'Staff'}*` : '*No active shout*', inline: false }
                     )
-                    .setColor(0x00A2FF)
+                    .setFooter({ text: 'Roblox Group' })
                     .setTimestamp();
-
-                if (data.shout) {
-                    const posterName = data.shout.poster ? `${data.shout.poster.displayName} (@${data.shout.poster.username})` : 'Unknown';
-                    embed.addFields({
-                        name: 'Current Shout',
-                        value: `**Posted by ${posterName}:**\n${data.shout.body}`
-                    });
-                }
 
                 if (iconUrl) {
                     embed.setThumbnail(iconUrl);
                 }
 
-                await interaction.editReply({ embeds: [embed] });
+                const groupBtnRow = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setLabel('View Group')
+                        .setURL(`https://www.roblox.com/groups/${data.id}`)
+                        .setStyle(ButtonStyle.Link)
+                );
+
+                await interaction.editReply({ embeds: [embed], components: [groupBtnRow] });
 
             } catch (err) {
-                console.error('Roblox Group Command Error:', err);
-                if (err.response && err.response.status === 404) {
-                    await interaction.editReply(`Roblox Group with ID \`${groupId}\` was not found.`);
-                } else {
-                    await interaction.editReply('An error occurred while fetching details from the Roblox API.');
-                }
+                console.error('Roblox Group Error:', err);
+                await interaction.editReply('An error occurred while retrieving group details from Roblox.');
             }
         }
     }

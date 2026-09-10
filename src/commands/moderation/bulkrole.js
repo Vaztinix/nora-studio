@@ -17,11 +17,11 @@ module.exports = {
                 .setDescription('Which members to target')
                 .setRequired(true)
                 .addChoices(
-                    { name: '👥 All Members (Humans & Bots)', value: 'all' },
-                    { name: '👤 Humans Only (No Bots)', value: 'humans' },
-                    { name: '🤖 Bots Only', value: 'bots' },
-                    { name: '✅ Members With a Specific Role', value: 'has_role' },
-                    { name: '❌ Members Without a Specific Role', value: 'lacks_role' }
+                    { name: 'All Members (Humans & Bots)', value: 'all' },
+                    { name: 'Humans Only (No Bots)', value: 'humans' },
+                    { name: 'Bots Only', value: 'bots' },
+                    { name: 'Members With Specific Role', value: 'has_role' },
+                    { name: 'Members Without Specific Role', value: 'lacks_role' }
                 )
             )
             .addRoleOption(opt => opt.setName('filter_role').setDescription('Role to check if using "Members With/Without a Specific Role"').setRequired(false))
@@ -40,11 +40,11 @@ module.exports = {
                 .setDescription('Which members to target')
                 .setRequired(true)
                 .addChoices(
-                    { name: '👥 All Members (Humans & Bots)', value: 'all' },
-                    { name: '👤 Humans Only (No Bots)', value: 'humans' },
-                    { name: '🤖 Bots Only', value: 'bots' },
-                    { name: '✅ Members With a Specific Role', value: 'has_role' },
-                    { name: '❌ Members Without a Specific Role', value: 'lacks_role' }
+                    { name: 'All Members (Humans & Bots)', value: 'all' },
+                    { name: 'Humans Only (No Bots)', value: 'humans' },
+                    { name: 'Bots Only', value: 'bots' },
+                    { name: 'Members With Specific Role', value: 'has_role' },
+                    { name: 'Members Without Specific Role', value: 'lacks_role' }
                 )
             )
             .addRoleOption(opt => opt.setName('filter_role').setDescription('Role to check if using "Members With/Without a Specific Role"').setRequired(false))

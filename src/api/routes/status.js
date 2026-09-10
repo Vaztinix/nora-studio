@@ -36,9 +36,13 @@ module.exports = function(client) {
             const shards = [];
 
             const totalGuilds = client && client.guilds ? client.guilds.cache.size : 0;
-            const totalMembers = client && client.guilds 
-                ? client.guilds.cache.reduce((acc, g) => acc + (g.memberCount || 0), 0)
-                : 0;
+            let totalMembers = 0;
+            if (client && client.guilds) {
+                const uniqueSet = new Set();
+                client.guilds.cache.forEach(g => g.members.cache.forEach((_, id) => uniqueSet.add(id)));
+                if (client.users) client.users.cache.forEach((_, id) => uniqueSet.add(id));
+                totalMembers = uniqueSet.size > 0 ? uniqueSet.size : (client.users ? client.users.cache.size : 0);
+            }
 
             const wsPing = client && client.ws ? Math.round(client.ws.ping) : 0;
             const heapMB = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);

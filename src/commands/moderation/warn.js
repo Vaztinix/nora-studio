@@ -6,10 +6,10 @@ const { handleError, handleSuccess } = require('../../utils/embeds');
 
 // Severity badge mapping for embeds
 const SEVERITY_BADGES = {
-    low: '🟢 Low',
-    medium: '🟡 Medium',
-    high: '🟠 High',
-    critical: '🔴 Critical'
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    critical: 'Critical'
 };
 
 const SEVERITY_COLORS = {
@@ -36,10 +36,10 @@ module.exports = {
                         .setDescription('Severity level of the warning')
                         .setRequired(false)
                         .addChoices(
-                            { name: '🟢 Low', value: 'low' },
-                            { name: '🟡 Medium', value: 'medium' },
-                            { name: '🟠 High', value: 'high' },
-                            { name: '🔴 Critical', value: 'critical' }
+                            { name: 'Low', value: 'low' },
+                            { name: 'Medium', value: 'medium' },
+                            { name: 'High', value: 'high' },
+                            { name: 'Critical', value: 'critical' }
                         )))
         .addSubcommand(sub =>
             sub.setName('view')

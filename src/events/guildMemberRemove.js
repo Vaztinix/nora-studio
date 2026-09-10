@@ -44,24 +44,42 @@ module.exports = {
                 console.error('[Privacy Reset Error] Failed to reset user leveling data:', xpResetErr.message);
             }
 
-            // 1. Leave Announcement (Welcomer Module)
-            if (settings.welcomerEnabled && settings.welcomeChannelId) {
-                let welcomeChannel = member.guild.channels.cache.get(settings.welcomeChannelId);
-                if (!welcomeChannel) welcomeChannel = await member.guild.channels.fetch(settings.welcomeChannelId).catch(() => null);
-                
-                if (welcomeChannel) {
-                    const template = settings.logLeaveMessage;
-                    const desc = template ? formatMessage(template, member) : `<@${member.id}> has left the server. See you later!`;
+            // 1. Goodbye Announcement System (Decoupled from Welcomer)
+            const isGoodbyeActive = settings.goodbyeEnabled === true || 
+                (settings.goodbyeEnabled !== false && settings.welcomerEnabled && (settings.goodbyeChannelId || settings.welcomeChannelId));
+            const goodbyeChannelTargetId = settings.goodbyeChannelId || settings.welcomeChannelId;
+            const template = settings.goodbyeMessage || settings.logLeaveMessage;
+            const desc = template ? formatMessage(template, member) : `<@${member.id}> has left the server. See you later!`;
 
+            if (isGoodbyeActive && goodbyeChannelTargetId) {
+                let goodbyeChannel = member.guild.channels.cache.get(goodbyeChannelTargetId);
+                if (!goodbyeChannel) goodbyeChannel = await member.guild.channels.fetch(goodbyeChannelTargetId).catch(() => null);
+                
+                if (goodbyeChannel) {
                     const embed = new EmbedBuilder()
                         .setTitle(`Goodbye from ${member.guild.name}`)
                         .setDescription(desc)
                         .setColor(0x57acf2)
                         .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
-                        .setFooter({ text: `Member Count: ${member.guild.memberCount}` });
+                        .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
+                        .setTimestamp();
 
-                    await welcomeChannel.send({ embeds: [embed] }).catch(() => {});
+                    await goodbyeChannel.send({ embeds: [embed] }).catch(() => {});
                 }
+            }
+
+            // 1.5. Goodbye Direct Message Alert
+            if (settings.goodbyeDmEnabled) {
+                try {
+                    const dmEmbed = new EmbedBuilder()
+                        .setTitle(`Goodbye from ${member.guild.name}`)
+                        .setDescription(desc)
+                        .setColor(0x57acf2)
+                        .setThumbnail(member.guild.iconURL({ dynamic: true, size: 256 }))
+                        .setFooter({ text: `Server: ${member.guild.name}` })
+                        .setTimestamp();
+                    await member.send({ embeds: [dmEmbed] }).catch(() => {});
+                } catch (dmErr) {}
             }
 
             // 2. Logging Module (Audit Logs)

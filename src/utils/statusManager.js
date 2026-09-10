@@ -91,14 +91,19 @@ async function updateBotStatus(client) {
         }
 
         const serverCount = client.guilds.cache.size;
-        const memberCount = client.guilds.cache.reduce((acc, g) => acc + (g.memberCount || 0), 0);
+        const uniqueMembers = new Set();
+        client.guilds.cache.forEach(g => {
+            g.members.cache.forEach((_, id) => uniqueMembers.add(id));
+        });
+        client.users.cache.forEach((_, id) => uniqueMembers.add(id));
+        const memberCount = uniqueMembers.size > 0 ? uniqueMembers.size : client.users.cache.size;
         const shardId = client.shard ? client.shard.ids[0] : 0;
         const pingMs = Math.round(client.ws.ping) || 0;
         const uptimeStr = formatUptime(process.uptime());
 
         const SHARD_METRICS = [
             `📡 Shard #${shardId} | Serving ${serverCount} servers`,
-            `👥 Shard #${shardId} | Protecting ${memberCount.toLocaleString()} members`,
+            `👥 Shard #${shardId} | Protecting ${memberCount.toLocaleString()} unique members`,
             `⚡ Shard #${shardId} | Ping: ${pingMs}ms • Uptime: ${uptimeStr}`,
             `🛡️ Shard #${shardId} | 100% Online`
         ];

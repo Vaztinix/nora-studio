@@ -66,14 +66,14 @@ module.exports = {
         let replyContent;
 
         if (!urls) {
-            replyContent = `💤 I set your AFK: **${status}**`;
+            replyContent = `Set your AFK: **${status}**`;
         } else {
             const textOnly = status.replace(urlRegex, '').replace(/\s+/g, ' ').trim();
             const urlString = urls.join('\n');
             if (!textOnly) {
-                replyContent = `💤 I set your AFK:\n${urlString}`;
+                replyContent = `Set your AFK:\n${urlString}`;
             } else {
-                replyContent = `💤 I set your AFK: **${textOnly}**\n${urlString}`;
+                replyContent = `Set your AFK: **${textOnly}**\n${urlString}`;
             }
         }
 

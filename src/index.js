@@ -178,52 +178,9 @@ console.warn = (...args) => {
 const fs = require('fs');
 const path = require('path');
 
-// ─── Single Instance Lock Protection & PID Registration ───
-const PID_FILE = path.join(__dirname, '../.nora.pid');
-
-try {
-    // 1. Check PID File
-    if (fs.existsSync(PID_FILE)) {
-        const oldPidStr = fs.readFileSync(PID_FILE, 'utf8').trim();
-        const oldPid = parseInt(oldPidStr, 10);
-        if (!isNaN(oldPid) && oldPid > 0 && oldPid !== process.pid) {
-            let isAlive = false;
-            try {
-                process.kill(oldPid, 0);
-                isAlive = true;
-            } catch (e) {
-                isAlive = false;
-            }
-
-            if (isAlive) {
-                console.log(`[Single Instance Lock] Terminating existing background Nora instance (PID ${oldPid}) to prevent duplicate bot instances...`);
-                try {
-                    process.kill(oldPid, 'SIGKILL');
-                } catch (err) { }
-                if (process.platform === 'win32') {
-                    try {
-                        const { execSync } = require('child_process');
-                        execSync(`taskkill /F /PID ${oldPid} 2>nul`, { stdio: 'ignore' });
-                    } catch (err) { }
-                }
-            }
-        }
-    }
-
-    // 2. Comprehensive OS Sweep for any other orphaned Nora bot instances
-    if (process.platform === 'win32') {
-        try {
-            const { execSync } = require('child_process');
-            const psScript = `Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { ($_.CommandLine -like '*src/index.js*' -or $_.CommandLine -like '*src\\\\index.js*') -and $_.ProcessId -ne ${process.pid} } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
-            execSync(`powershell -NoProfile -NonInteractive -Command "${psScript}"`, { stdio: 'ignore' });
-        } catch (e) { }
-    }
-
-    fs.writeFileSync(PID_FILE, process.pid.toString());
-    console.log(`[System Lock] Single instance protection active. Running under PID ${process.pid}.`);
-} catch (e) {
-    console.warn('[System Lock] Warning checking PID lock:', e.message);
-}
+// ─── Single Instance Lock Protection & Continuous Double-Instance Watchdog ───
+const { ensureSingleInstance, findPidByPort, killPid } = require('./utils/instanceLock');
+ensureSingleInstance();
 
 
 
@@ -3801,7 +3758,18 @@ const mainServer = app.listen(PORT, '0.0.0.0', () => {
 });
 mainServer.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-        console.error(`[System Error] Port ${PORT} is already in use by another process!`);
+        console.error(`[System Error] Port ${PORT} is in use by another process! Identifying occupying process...`);
+        const stalePid = findPidByPort(PORT);
+        if (stalePid && stalePid !== process.pid) {
+            console.log(`[System Recovery] Freeing port ${PORT} by terminating stale process (PID ${stalePid})...`);
+            killPid(stalePid, `Port ${PORT} collision recovery`);
+            setTimeout(() => {
+                try {
+                    mainServer.close();
+                    mainServer.listen(PORT, '0.0.0.0');
+                } catch (_) {}
+            }, 600);
+        }
     } else {
         console.error('[System Error] Primary Web Dashboard server error:', err.message);
     }

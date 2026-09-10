@@ -411,6 +411,7 @@ async function processBulkRole({
     activeGuildOperations.set(guildId, opState);
 
     let lastProgressUpdate = Date.now();
+    const errorLog = [];
 
     // Helper to send progress updates safely
     const updateProgressEmbed = async (completed) => {
@@ -422,14 +423,14 @@ async function processBulkRole({
         const remainingSecs = avgPerSec > 0 ? Math.max(Math.round((totalTargets - completed) / avgPerSec), 0) : 0;
 
         const progressEmbed = new EmbedBuilder()
-            .setTitle(`⚙️ Bulk Role ${isAdd ? 'Assignment' : 'Revocation'} in Progress...`)
-            .setDescription(`Target: ${role}\n**Filter**: \`${filterLabel}\`\n\n\`${bar}\` **${percent}%** (${completed}/${totalTargets})\n\n` +
-                `✅ **Completed**: ${opState.successCount}\n` +
-                `⚠️ **Failed**: ${opState.failedCount}\n` +
-                `⏱️ **Elapsed**: ${elapsedSecs}s | **Est. Remaining**: ${remainingSecs}s\n\n` +
-                `*💡 Run \`/bulkrole cancel\` to stop this operation at any time.*`)
-            .setColor(0xF1C40F)
-            .setFooter({ text: `Op ID: ${opState.id} • Nora Rate-Limit Protected` });
+            .setTitle(`Bulk Role ${isAdd ? 'Assignment' : 'Revocation'}`)
+            .setDescription(`Target: ${role}\nFilter: \`${filterLabel}\`\n\n[\`${bar}\`] **${percent}%** (${completed} of ${totalTargets})\n\n` +
+                `• Updated: **${opState.successCount}**\n` +
+                `• Failed / Skipped: **${opState.failedCount}**\n` +
+                `• Elapsed: **${elapsedSecs}s** (Est. remaining: **${remainingSecs}s**)\n\n` +
+                `*Use \`/bulkrole cancel\` to stop this operation.*`)
+            .setColor(0x5865F2)
+            .setFooter({ text: `Task ID: ${opState.id}` });
 
         await interaction.editReply({ embeds: [progressEmbed] }).catch(() => {});
     };
@@ -454,6 +455,11 @@ async function processBulkRole({
                 if (res.retries > 0) opState.rateLimitsEncountered += res.retries;
             } else {
                 opState.failedCount++;
+                errorLog.push({
+                    name: member.user?.tag || member.user?.username || member.id,
+                    id: member.id,
+                    error: res.error || 'Permission / Hierarchy rejection'
+                });
             }
 
             opState.completed = i + 1;
@@ -479,7 +485,7 @@ async function processBulkRole({
         // Save to operations history
         if (!operationsHistory.has(guildId)) operationsHistory.set(guildId, []);
         const historyList = operationsHistory.get(guildId);
-        historyList.unshift({ ...opState, durationSecs: totalElapsedSecs });
+        historyList.unshift({ ...opState, durationSecs: totalElapsedSecs, errors: errorLog });
         if (historyList.length > 5) historyList.pop();
 
         // Create Case record
@@ -496,29 +502,39 @@ async function processBulkRole({
 
         // Build final completion / cancellation embed
         const finalEmbed = new EmbedBuilder()
-            .setTitle(opState.isCancelled ? `🛑 Bulk Role ${isAdd ? 'Addition' : 'Removal'} Cancelled` : `✅ Bulk Role ${isAdd ? 'Addition' : 'Removal'} Complete!`)
-            .setColor(opState.isCancelled ? 0xE67E22 : (isAdd ? 0x2ECC71 : 0xE74C3C))
+            .setTitle(`Bulk Role ${isAdd ? 'Assignment' : 'Revocation'} ${opState.isCancelled ? 'Cancelled' : 'Complete'}`)
+            .setColor(opState.isCancelled ? 0xF59E0B : (opState.failedCount > 0 && opState.successCount === 0 ? 0xEF4444 : 0x10B981))
             .addFields(
-                { name: '🎯 Target Role', value: `${role} (\`${role.id}\`)`, inline: true },
-                { name: '⚡ Action', value: isAdd ? '➕ Bulk Role Add' : '➖ Bulk Role Remove', inline: true },
-                { name: '🔍 Filter Applied', value: `\`${filterLabel}\``, inline: true },
-                { name: opState.isCancelled ? '⏸️ Modified Before Cancel' : '✅ Successfully Updated', value: `**${opState.successCount}** / ${totalTargets} members`, inline: true },
-                { name: '⚠️ Failed / Skipped', value: `**${opState.failedCount}** members`, inline: true },
-                { name: '⏱️ Total Elapsed Time', value: `\`${totalElapsedSecs}s\` ${opState.rateLimitsEncountered > 0 ? `(${opState.rateLimitsEncountered} rate limits handled)` : ''}`, inline: true }
+                { name: 'Target Role', value: `${role} (\`${role.id}\`)`, inline: true },
+                { name: 'Action', value: isAdd ? 'Bulk Add' : 'Bulk Remove', inline: true },
+                { name: 'Filter', value: `\`${filterLabel}\``, inline: true },
+                { name: 'Updated Members', value: `**${opState.successCount}** / ${totalTargets}`, inline: true },
+                { name: 'Failed / Skipped', value: `**${opState.failedCount}**`, inline: true },
+                { name: 'Duration', value: `${totalElapsedSecs}s`, inline: true }
             )
-            .setFooter({ text: `Op ID: ${opState.id} • Status: ${opState.status.toUpperCase()}` })
+            .setFooter({ text: `Task ID: ${opState.id} • Status: ${opState.status.toUpperCase()}` })
             .setTimestamp();
+
+        if (errorLog.length > 0) {
+            const errorSnippet = errorLog.slice(0, 6).map(e => `• \`${e.name}\` (${e.id}): ${e.error}`).join('\n');
+            const remainingCount = errorLog.length - 6;
+            finalEmbed.addFields({
+                name: `Error Log (${errorLog.length} skipped)`,
+                value: errorSnippet + (remainingCount > 0 ? `\n*...and ${remainingCount} more members.*` : ''),
+                inline: false
+            });
+        }
 
         if (opState.isCancelled) {
             finalEmbed.addFields({
-                name: '🛑 Cancelled By',
-                value: opState.cancelledBy ? `<@${opState.cancelledBy}>` : 'Moderator Command',
+                name: 'Cancelled By',
+                value: opState.cancelledBy ? `<@${opState.cancelledBy}>` : 'Moderator',
                 inline: false
             });
         }
 
         if (customReason) {
-            finalEmbed.addFields({ name: '📝 Reason', value: `\`${customReason}\``, inline: false });
+            finalEmbed.addFields({ name: 'Audit Reason', value: `\`${customReason}\``, inline: false });
         }
 
         try {

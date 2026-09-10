@@ -222,176 +222,151 @@ module.exports = {
                 .setFooter({ text: `Nora Assistant • Prefix: n! or / • Type n!help <command> for syntax` });
 
             if (category === 'main') {
-                embed.setTitle('💖 Nora Help & Commands Center')
+                embed.setTitle('Nora Help & Commands Manual')
                     .setDescription(
-                        `**Welcome to Nora!** Nora is an all-in-one community engagement, safety, and automation assistant.\n\n` +
-                        `✨ **Command Prefixes:** Use **\`/\`** (Slash) or **\`n!\`** / **\`n?\`** for any command!\n` +
-                        `💡 **Command Manual:** Type **\`n!help <command>\`** (e.g. \`n!help warn\` or \`n!help afk\`) to see full argument requirements and examples!\n` +
-                        `🌐 **Web Dashboard:** [https://vaztinix.dev/dashboard](https://vaztinix.dev/dashboard)\n\n` +
-                        `Select a category below to explore available commands.`
+                        `**Welcome to Nora.** A streamlined community engagement, moderation, and automation assistant.\n\n` +
+                        `• **Command Prefixes:** Use **\`/\`** (Slash) or **\`n!\`** / **\`n?\`** for any command.\n` +
+                        `• **Command Manual:** Type **\`n!help <command>\`** (e.g. \`n!help warn\` or \`n!help giveaway\`) for parameters and syntax.\n` +
+                        `• **Web Dashboard:** [vaztinix.dev/dashboard](https://vaztinix.dev/dashboard)\n\n` +
+                        `Select a category below to explore commands.`
                     )
                     .addFields(
                         { 
-                            name: '🛡️ Safety & Moderation', 
-                            value: '`n!warn`, `n!ban`, `n!kick`, `n!timeout`, `n!purge`, `n!afkclear`, AutoMod Threat Shield' 
+                            name: 'Safety & Moderation', 
+                            value: '`n!warn`, `n!case`, `n!ban`, `n!tempban`, `n!kick`, `n!timeout`, `n!purge`, `n!bulkrole`, `n!lock`, `n!unlock`' 
                         },
                         { 
-                            name: '👤 Profiles, Leveling & AFK', 
-                            value: '`n!rank`, `n!leaderboard`, `n!mycard`, `n!afk [status]`, Chat/Voice XP rewards' 
+                            name: 'Profiles, Leveling & AFK', 
+                            value: '`n!rank`, `n!leaderboard`, `n!mycard`, `n!afk [status]`, `n!levelupdms`, `n!invites`' 
                         },
                         { 
-                            name: '🔢 Advanced Counting Game', 
-                            value: '`n!counting [stats|top|rules|channel|reset]`, sandboxed math equations, records & milestones' 
+                            name: 'Counting Game', 
+                            value: '`n!counting [stats|top|rules|channel|reset]`, sandboxed math parser, records & milestones' 
                         },
                         { 
-                            name: '🎮 Community Games & Fun', 
-                            value: '`n!story`, `n!guess`, `n!rps`, `n!ask [prompt]`, `n!poll`, `n!giveaway`' 
+                            name: 'Community & Giveaways', 
+                            value: '`n!giveaway`, `n!story`, `n!guess`, `n!rps`, `n!ask [prompt]`, `n!poll`' 
                         },
                         { 
-                            name: '⚙️ Server Setup & Verification', 
-                            value: '`n!setup`, 4 Verification Types (1-Click, CAPTCHA, React, Roblox), Welcomer, Logging' 
+                            name: 'Server Setup & Verification', 
+                            value: '`n!setup` (1-Click, CAPTCHA, Reaction, Roblox), Welcomer, AutoMod, Logging' 
                         },
                         { 
-                            name: '🎫 Support Tickets & Utility', 
-                            value: '`n!ticket`, `n!apply`, `n!avatar`, `n!botinfo`, `n!ping`, `n!translate`, `n!invite`' 
-                        },
-                        { 
-                            name: '💎 Nora Premium', 
-                            value: 'Real-time Roblox rank sync, 200 autoresponder slots, custom GIF rank cards, and 10x XP multipliers' 
+                            name: 'Support & Utility', 
+                            value: '`n!ticket`, `n!apply`, `n!avatar`, `n!info`, `n!ping`, `n!translate`, `n!invite`' 
                         }
                     );
             } else if (category === 'counting') {
-                embed.setTitle('🔢 Nora Counting Game Manual')
+                embed.setTitle('Counting Game Guide')
                     .setDescription(
-                        'Nora features an **advanced sequential counting engine** with sandboxed math parsing, server streak records, contributor leaderboards, and XP rewards!\n\n' +
+                        'Nora features a **sequential counting engine** with sandboxed math evaluation, server streak records, contributor leaderboards, and XP rewards.\n\n' +
                         '**How it works:** Members take turns counting up sequentially in the designated channel. Chat or emojis are ignored, but wrong numbers or counting twice in a row resets the count.'
                     )
                     .addFields(
                         { 
-                            name: '🎮 Core Rules & Mechanics', 
+                            name: 'Rules & Mechanics', 
                             value: '• Start counting at **1** and increment by **1** with each message.\n' +
-                                   '• **Alternating Turns:** You cannot count twice in a row! Another member must count next.\n' +
-                                   '• Entering the wrong number or double counting resets the count to **0** while keeping the all-time server record.'
+                                   '• **Alternating Turns:** You cannot count twice in a row. Another member must count next.\n' +
+                                   '• Entering the wrong number or double counting resets the count to **0** while preserving the server record.'
                         },
                         { 
-                            name: '🧮 Advanced Math Expression Sandbox', 
+                            name: 'Math Expression Support', 
                             value: '• Nora evaluates mathematical expressions safely in a secure sandbox.\n' +
                                    '• Supported operators: `+`, `-`, `*`, `/`, `^` (power), `%` (modulo), and parentheses `( )`.\n' +
                                    '• Examples: `5 + 5` (=10), `10 * 2 + 5` (=25), `(8 - 2) * 4` (=24), `2^4` (=16).'
                         },
                         { 
-                            name: '🏆 Reactions & Milestone Celebrations', 
-                            value: '• ✅ **Verified Count:** Valid number progressing towards the record.\n' +
-                                   '• ☑️ **New Server Record:** When your count exceeds the server\'s all-time high score!\n' +
-                                   '• 💯 **Century Milestone:** Milestone reaction when hitting numbers ending in 00.\n' +
-                                   '• 🎉 **Milestone Alerts:** Nora sends celebratory chat announcements at 50, 100, 500, and 1000.'
-                        },
-                        { 
-                            name: '📜 Counting Commands (`n!` or `/`)', 
-                            value: '• `n!counting` or `/counting stats` — View live count, next required number, and server records.\n' +
-                                   '• `n!counting top` or `/counting leaderboard` — View top counting contributors on this server.\n' +
-                                   '• `n!counting rules` — In-chat quick guide and math syntax.\n' +
-                                   '• `n!counting channel <#channel>` — Assign or change the counting channel (Staff).\n' +
-                                   '• `n!counting reset [count]` — Calibrate or reset current count (Staff).'
-                        },
-                        { 
-                            name: '⭐ Leveling & XP Rewards', 
-                            value: 'Every correct count automatically awards XP towards your server rank card and global levels (customizable in `/setup games`).'
+                            name: 'Counting Commands', 
+                            value: '• `n!counting` or `/counting stats` — Live count and server records.\n' +
+                                   '• `n!counting top` or `/counting leaderboard` — Top counting contributors.\n' +
+                                   '• `n!counting rules` — In-chat quick guide.\n' +
+                                   '• `n!counting channel <#channel>` — Set counting channel (Staff).\n' +
+                                   '• `n!counting reset [count]` — Calibrate count (Staff).'
                         }
                     );
             } else if (category === 'safety') {
-                embed.setTitle('🛡️ Safety & Moderation Commands')
-                    .setDescription('Tools to keep your chat secure, enforce rules, and audit member activity.\n*Type `n!help <command>` for detailed parameters.*')
+                embed.setTitle('Safety & Moderation Commands')
+                    .setDescription('Tools to keep your server secure, enforce rules, and audit member activity.\n*Type `n!help <command>` for detailed parameters.*')
                     .addFields(
-                        { name: '`n!warn <user> [reason]`', value: 'Issue a formal server strike/warning to a user.' },
-                        { name: '`n!ban <user> [reason]`', value: 'Permanently ban a user from the server.' },
-                        { name: '`n!kick <user> [reason]`', value: 'Kick a user from the server.' },
-                        { name: '`n!timeout <user> <duration> [reason]`', value: 'Mute/timeout a member (e.g. `n!timeout @user 10m spamming`).' },
+                        { name: '`n!warn <add|view|remove|clear|edit>`', value: 'Manage formal server strikes and auto-moderation thresholds.' },
+                        { name: '`n!case <view|edit|history|resolve>`', value: 'Inspect, edit, and track moderation audit cases.' },
+                        { name: '`n!ban <user> [reason]`', value: 'Permanently ban a member with optional message purge.' },
+                        { name: '`n!tempban <user> <duration> [reason]`', value: 'Temporarily ban a user with automated unban timer.' },
+                        { name: '`n!kick <user> [reason]`', value: 'Kick a member from the server.' },
+                        { name: '`n!timeout <user> <duration> [reason]`', value: 'Timeout / mute a member for up to 28 days.' },
                         { name: '`n!untimeout <user>`', value: 'Remove an active timeout from a member.' },
-                        { name: '`n!purge <amount>`', value: 'Bulk delete up to 100 recent messages in the current channel.' },
-                        { name: '`n!afkclear <user>`', value: 'Force remove a user\'s AFK status and clean their nickname.' },
-                        { name: '`n!role <user> <role>`', value: 'Quickly assign or remove a role from a user.' }
+                        { name: '`n!purge <amount>`', value: 'Bulk delete up to 250 recent messages with keyword/user filters.' },
+                        { name: '`n!bulkrole <add|remove|view|cancel>`', value: 'Bulk assign or remove roles from filtered members with live progress & audit logs.' },
+                        { name: '`n!lock` / `n!unlock`', value: 'Lock or unlock the current channel for regular members.' },
+                        { name: '`n!slowmode <seconds>`', value: 'Set message cooldown interval on the current channel.' }
                     );
             } else if (category === 'profile') {
-                embed.setTitle('👤 Profiles, Leveling & AFK Commands')
-                    .setDescription('Engage active chatters with experience points, custom rank cards, and AFK status.')
+                embed.setTitle('Profiles, Leveling & AFK Commands')
+                    .setDescription('Member experience points, customized rank cards, and AFK status.')
                     .addFields(
-                        { name: '`n!afk [status]`', value: 'Set an AFK status (adds `[AFK]` to nick, alerts users when mentioned, auto-removes on return).' },
-                        { name: '`n!rank [@user]`', value: 'Display your or another user\'s current server level, XP progress, and ranking.' },
-                        { name: '`n!leaderboard`', value: 'View the top active server members ranked by total XP (Aliases: `n!lb`, `n!top`).' },
-                        { name: '`n!mycard [@user]`', value: 'Display a rich interactive profile card with badges, custom bio, and linked accounts.' },
-                        { name: '`n!levelupdms`', value: 'Toggle direct message notifications when you level up.' },
-                        { name: '`n!invites [@user]`', value: 'Check your total tracked server invites and earned invite rewards.' }
+                        { name: '`n!afk [status]`', value: 'Set AFK status (prefixes `[AFK]` to nickname, notifies on mention, auto-removes on return).' },
+                        { name: '`n!rank [@user]`', value: 'Display current server level, XP progress, and rank card.' },
+                        { name: '`n!leaderboard`', value: 'View server members ranked by total XP (Aliases: `n!lb`, `n!top`).' },
+                        { name: '`n!mycard [@user]`', value: 'Display interactive digital profile pass with stats, badges, and Roblox identity.' },
+                        { name: '`n!levelupdms`', value: 'Toggle direct message notifications upon leveling up.' },
+                        { name: '`n!invites [@user]`', value: 'Check tracked server invites and statistics.' }
                     );
             } else if (category === 'games') {
-                embed.setTitle('🎮 Community Games & Fun Commands')
-                    .setDescription('Interactive chat games and engagement tools for your community.')
+                embed.setTitle('Community Games & Giveaways')
+                    .setDescription('Interactive chat activities, games, and giveaway management.')
                     .addFields(
-                        { name: '`n!counting`', value: 'Advanced sequential counting game with math sandbox, milestone alerts, and XP rewards.' },
-                        { name: '`n!starboard [stats|top|hof|random]`', value: 'Starboard system with dynamic star tiers, Hall of Fame, and author XP rewards (Alias: `n!star`).' },
-                        { name: '`n!story [start|stop|history|stats]`', value: 'Collaborative One Word Story game with auto-restart milestones (Alias: `n!story`).' },
-                        { name: '`n!guess <number>`', value: 'Play the number guessing game against Nora for bonus XP.' },
-                        { name: '`n!rps <rock|paper|scissors>`', value: 'Play Rock Paper Scissors against Nora with optional XP bets.' },
-                        { name: '`n!ask <question>`', value: 'Chat with Nora\'s AI engine (Powered by Google Gemini / GPT-4o Mini).' },
-                        { name: '`n!poll <question>`', value: 'Create quick interactive voting polls with reactions or buttons.' },
-                        { name: '`n!giveaway <start|reroll|end>`', value: 'Host automated server giveaways with countdown timers.' }
+                        { name: '`n!giveaway [panel|start|end|reroll|list]`', value: 'Full Giveaway Manager to host, track, and conclude server giveaways.' },
+                        { name: '`n!counting`', value: 'Sequential counting game with math evaluation and milestones.' },
+                        { name: '`n!starboard`', value: 'Starboard system with dynamic star tiers and Hall of Fame.' },
+                        { name: '`n!story`', value: 'Collaborative One Word Story game.' },
+                        { name: '`n!guess <number>`', value: 'Number guessing game against Nora for XP.' },
+                        { name: '`n!rps <choice>`', value: 'Rock Paper Scissors with optional XP bets.' },
+                        { name: '`n!ask <prompt>`', value: 'Guidance and feature explanations from Nora.' },
+                        { name: '`n!poll <question>`', value: 'Create interactive voting polls.' }
                     );
             } else if (category === 'setup') {
-                embed.setTitle('⚙️ Setup & Verification Commands')
+                embed.setTitle('Setup & Verification Commands')
                     .setDescription('Configure server features, automated verification gates, and logging.')
                     .addFields(
-                        { name: '`n!setup`', value: 'Open the full interactive server management dashboard (Manage Server only).' },
-                        { name: '`n!setup verify`', value: 'Configure **4 Verification Types**: 1-Click Button, Image CAPTCHA, Reaction, or Roblox.' },
-                        { name: '`n!setup welcomer`', value: 'Configure automated welcome cards, welcome channel, and starter auto-roles.' },
-                        { name: '`n!setup leveling`', value: 'Configure chat/voice XP rates, level-up channels, and role rewards.' },
-                        { name: '`n!setup automod`', value: 'Enable Discord native AutoMod filters for profanity, slurs, spam, and scam links.' },
-                        { name: '`n!setup logging`', value: 'Route audit logs across dedicated channels for messages, members, voice, and AutoMod.' },
-                        { name: '`n!setup games`', value: 'Configure Counting channel, One Word Story, and Starboard.' }
+                        { name: '`n!setup`', value: 'Open the full server configuration menu (Manage Server only).' },
+                        { name: '`n!setup verify`', value: 'Configure Verification: 1-Click Button, CAPTCHA, Reaction, or Roblox.' },
+                        { name: '`n!setup welcomer`', value: 'Configure automated welcome cards, channel, and auto-roles.' },
+                        { name: '`n!setup leveling`', value: 'Configure chat/voice XP rates, level-up channels, and rewards.' },
+                        { name: '`n!setup automod`', value: 'Configure filters for profanity, slurs, spam, and invite links.' },
+                        { name: '`n!setup logging`', value: 'Route audit logs across dedicated channels.' }
                     );
             } else if (category === 'utility') {
-                embed.setTitle('🎫 Support Tickets & Utilities')
-                    .setDescription('Support ticket desks, applications, translations, and bot information.')
+                embed.setTitle('Support & Utilities')
+                    .setDescription('Support tickets, applications, translations, and bot information.')
                     .addFields(
                         { name: '`n!ticket`', value: 'Open a private support ticket with server staff.' },
-                        { name: '`n!apply`', value: 'Fill out custom application forms for server staff or whitelist positions.' },
-                        { name: '`n!verify link <username>`', value: 'Link your Roblox account to gain verified server roles.' },
-                        { name: '`n!verify check`', value: 'Finalize Roblox verification by checking your profile description.' },
-                        { name: '`n!roblox profile <user>`', value: 'Inspect a Roblox user\'s avatar, profile details, and groups.' },
-                        { name: '`n!avatar [@user]`', value: 'View and download high-resolution user avatars (Alias: `n!pfp`).' },
-                        { name: '`n!botinfo`', value: 'View Nora\'s system uptime, server count, latency, and host specs.' },
-                        { name: '`n!ping`', value: 'Test Discord Gateway WebSocket ping and REST API response latency.' },
-                        { name: '`n!translate <text>`', value: 'Translate text across 100+ languages in real-time.' },
-                        { name: '`n!invite`', value: 'Get the official link to invite Nora to your own Discord servers.' }
-                    );
-            } else if (category === 'premium') {
-                embed.setTitle('💎 Nora Studio Premium Benefits')
-                    .setDescription('Supercharge your server with maximum automation power, instant sync speed, and custom branding for just $1.99/mo!')
-                    .addFields(
-                        { name: '⚡ Real-Time Roblox Rank Sync', value: 'Zero polling delay! Rank changes and verification roles update instantly.' },
-                        { name: '🤖 Nora AI Co-Pilot', value: 'Powered by Gemini 2.5 & GPT-4o for 24/7 AI server assistance & custom personas.' },
-                        { name: '🚀 200 Custom Autoresponder Slots', value: '40x capacity with granular role ignored and allowed filters.' },
-                        { name: '🎨 Custom GIF Rank Cards & HEX Colors', value: 'Personalize level rank cards with GIF backdrops and custom HEX styling.' },
-                        { name: '🛡️ AutoMod Threat Shield & Multi-Audit Routing', value: 'Zero-latency native filters and dedicated audit log channels.' },
-                        { name: '💖 Instant Activation', value: 'Run `/premium` or upgrade online at [https://vaztinix.dev/dashboard](https://vaztinix.dev/dashboard).' }
+                        { name: '`n!apply`', value: 'Submit custom application forms for server positions.' },
+                        { name: '`n!verify link <username>`', value: 'Link Roblox account to gain verified server roles.' },
+                        { name: '`n!verify check`', value: 'Finalize Roblox verification check.' },
+                        { name: '`n!roblox profile <user>`', value: 'Inspect a Roblox user avatar and profile.' },
+                        { name: '`n!avatar [@user]`', value: 'View high-resolution user avatars (Alias: `n!pfp`).' },
+                        { name: '`n!info`', value: 'View Nora uptime, health metrics, and server count.' },
+                        { name: '`n!ping`', value: 'Test Discord Gateway WebSocket ping and REST API latency.' },
+                        { name: '`n!translate <text>`', value: 'Translate text across 100+ languages.' },
+                        { name: '`n!invite`', value: 'Official invite link for Nora Bot.' }
                     );
             }
             return embed;
         };
 
         const dropdownOptions = [
-            { label: 'Main Menu', value: 'main', description: 'Overview of all Nora features', emoji: '💖' },
-            { label: 'Counting Game', value: 'counting', description: 'Rules, math expressions, milestones, and stats', emoji: '🔢' },
-            { label: 'Safety & Moderation', value: 'safety', description: 'Warns, bans, timeouts, and AutoMod', emoji: '🛡️' },
-            { label: 'Profiles, Leveling & AFK', value: 'profile', description: 'Rank cards, XP leaderboards, and AFK status', emoji: '👤' },
-            { label: 'Community Games & Fun', value: 'games', description: 'Story, RPS, Guess, Polls, and AI', emoji: '🎮' },
-            { label: 'Setup & Verification', value: 'setup', description: 'Server dashboard, 4 verification types, and logs', emoji: '⚙️' },
-            { label: 'Tickets & Utility', value: 'utility', description: 'Tickets, applications, roblox, and info', emoji: '🎫' },
-            { label: 'Premium Perks', value: 'premium', description: 'Exclusive perks and server upgrades', emoji: '💎' }
+            { label: 'Main Menu', value: 'main', description: 'Overview of all Nora features' },
+            { label: 'Safety & Moderation', value: 'safety', description: 'Warns, cases, bans, timeouts, and bulk roles' },
+            { label: 'Profiles & Leveling', value: 'profile', description: 'Rank cards, XP leaderboards, and AFK' },
+            { label: 'Counting Game', value: 'counting', description: 'Rules, math expressions, and records' },
+            { label: 'Community & Giveaways', value: 'games', description: 'Giveaway manager, story, and polls' },
+            { label: 'Setup & Verification', value: 'setup', description: 'Server dashboard, 4 verification types, and logs' },
+            { label: 'Support & Utility', value: 'utility', description: 'Tickets, applications, roblox, and info' }
         ];
 
         const dropdown = new StringSelectMenuBuilder()
             .setCustomId('help_select')
-            .setPlaceholder('🚀 Choose a help category...')
+            .setPlaceholder('Select a help category...')
             .addOptions(dropdownOptions.map(opt => ({ ...opt, default: opt.value === 'main' })));
 
         const row = new ActionRowBuilder().addComponents(dropdown);

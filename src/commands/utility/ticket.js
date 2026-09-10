@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 const ticketsEngine = require('../../bot/engines/tickets');
 const settingsCache = require('../../utils/settingsCache');
 const { handleError } = require('../../utils/embeds');
@@ -7,7 +7,7 @@ module.exports = {
     category: 'utility',
     data: new SlashCommandBuilder()
         .setName('ticket')
-        .setDescription('Support ticket management system.')
+        .setDescription('Advanced support ticket management suite.')
         .setDMPermission(false)
         .addSubcommandGroup(group =>
             group
@@ -29,6 +29,22 @@ module.exports = {
                             opt.setName('user')
                                 .setDescription('The user to remove from this ticket')
                                 .setRequired(true))))
+        .addSubcommandGroup(group =>
+            group
+                .setName('note')
+                .setDescription('Internal staff notes for this ticket')
+                .addSubcommand(sub =>
+                    sub
+                        .setName('add')
+                        .setDescription('Add an internal staff note')
+                        .addStringOption(opt =>
+                            opt.setName('content')
+                                .setDescription('Note text')
+                                .setRequired(true)))
+                .addSubcommand(sub =>
+                    sub
+                        .setName('view')
+                        .setDescription('View all internal staff notes for this ticket')))
         .addSubcommand(sub =>
             sub
                 .setName('claim')
@@ -37,6 +53,28 @@ module.exports = {
             sub
                 .setName('unclaim')
                 .setDescription('Unclaim the current ticket'))
+        .addSubcommand(sub =>
+            sub
+                .setName('transfer')
+                .setDescription('Transfer ticket assignment to another staff member')
+                .addUserOption(opt =>
+                    opt.setName('staff')
+                        .setDescription('The staff member to assign this ticket to')
+                        .setRequired(true)))
+        .addSubcommand(sub =>
+            sub
+                .setName('priority')
+                .setDescription('Set the priority level of this ticket')
+                .addStringOption(opt =>
+                    opt.setName('level')
+                        .setDescription('Priority level')
+                        .setRequired(true)
+                        .addChoices(
+                            { name: 'Low', value: 'Low' },
+                            { name: 'Normal', value: 'Normal' },
+                            { name: 'High', value: 'High' },
+                            { name: 'Urgent', value: 'Urgent' }
+                        )))
         .addSubcommand(sub =>
             sub
                 .setName('rename')
@@ -51,7 +89,7 @@ module.exports = {
                 .setDescription('Open a new support ticket')
                 .addStringOption(opt =>
                     opt.setName('topic')
-                        .setDescription('Topic/category of your issue (e.g. Support, Billing, Bug)')
+                        .setDescription('Topic/category of your issue (e.g. General Support, Bug Report, Billing)')
                         .setRequired(false))
                 .addStringOption(opt =>
                     opt.setName('reason')
@@ -60,10 +98,15 @@ module.exports = {
         .addSubcommand(sub =>
             sub
                 .setName('close')
-                .setDescription('Close the current ticket channel and compile transcript')
-                .addStringOption(opt =>
-                    opt.setName('reason')
-                        .setDescription('Reason for closing this ticket')
+                .setDescription('Close the current ticket channel and compile transcript'))
+        .addSubcommand(sub =>
+            sub
+                .setName('panel')
+                .setDescription('Deploy an interactive support ticket panel into a channel')
+                .addChannelOption(opt =>
+                    opt.setName('channel')
+                        .setDescription('The channel to send the ticket panel to')
+                        .addChannelTypes(ChannelType.GuildText)
                         .setRequired(false)))
         .addSubcommand(sub =>
             sub
@@ -89,10 +132,25 @@ module.exports = {
                 }
             }
 
+            if (group === 'note') {
+                if (subcommand === 'add') {
+                    const content = interaction.options.getString('content');
+                    return await ticketsEngine.handleTicketStaffNote(interaction, 'add', content);
+                } else if (subcommand === 'view') {
+                    return await ticketsEngine.handleTicketStaffNote(interaction, 'view');
+                }
+            }
+
             if (subcommand === 'claim') {
-                return await ticketsEngine.handleTicketClaim(interaction);
+                return await ticketsEngine.handleTicketClaimButton(interaction, settings);
             } else if (subcommand === 'unclaim') {
-                return await ticketsEngine.handleTicketUnclaim(interaction);
+                return await ticketsEngine.handleTicketUnclaimButton(interaction, settings);
+            } else if (subcommand === 'transfer') {
+                const targetStaff = interaction.options.getUser('staff');
+                return await ticketsEngine.handleTicketTransfer(interaction, targetStaff);
+            } else if (subcommand === 'priority') {
+                const level = interaction.options.getString('level');
+                return await ticketsEngine.handleTicketPriority(interaction, level);
             } else if (subcommand === 'rename') {
                 const newName = interaction.options.getString('name');
                 return await ticketsEngine.handleTicketRename(interaction, newName);
@@ -105,6 +163,16 @@ module.exports = {
             } else if (subcommand === 'autoclose-exclude') {
                 const enabled = interaction.options.getBoolean('enabled');
                 return await ticketsEngine.handleTicketAutocloseExclude(interaction, enabled);
+            } else if (subcommand === 'panel') {
+                if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+                    return interaction.reply({ content: 'You must have Manage Server permissions to deploy ticket panels.', ephemeral: true });
+                }
+                const targetChannel = interaction.options.getChannel('channel') || interaction.channel;
+                await ticketsEngine.sendTicketPanel(targetChannel, {
+                    title: settings.ticketPanelTitle || 'Support & Assistance Hub',
+                    description: settings.ticketPanelDesc || 'Need help or want to contact server staff? Select a topic below to open a private, dedicated support ticket.'
+                });
+                return interaction.reply({ content: `Ticket panel successfully deployed in <#${targetChannel.id}>!`, ephemeral: true });
             }
         } catch (err) {
             console.error(`Error executing /ticket ${group ? `${group} ` : ''}${subcommand}:`, err);

@@ -35,6 +35,18 @@ const ActiveTicket = sequelize.define('ActiveTicket', {
     excludeAutoClose: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    topic: {
+        type: DataTypes.STRING,
+        defaultValue: 'General Support'
+    },
+    priority: {
+        type: DataTypes.STRING,
+        defaultValue: 'Normal' // 'Low', 'Normal', 'High', 'Urgent'
+    },
+    staffNotes: {
+        type: DataTypes.TEXT, // JSON string array: [ { authorId, authorTag, note, timestamp } ]
+        defaultValue: '[]'
     }
 });
 

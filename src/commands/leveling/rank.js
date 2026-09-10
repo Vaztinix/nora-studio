@@ -150,7 +150,7 @@ module.exports = {
                     isPremium: true, // Always allow animated GIFs when present
                     userCustomBg: cardUserBg
                 }),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 15000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 25000))
             ]);
 
             const isGifBuffer = imageBuffer.slice(0, 3).toString() === 'GIF';

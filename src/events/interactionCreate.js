@@ -382,6 +382,21 @@ module.exports = {
             return;
         }
 
+        // Handle Ticket Topic Select Menu
+        if (interaction.isStringSelectMenu() && interaction.customId === 'ticket_topic_select') {
+            const ticketsEngine = require('../bot/engines/tickets');
+            const settings = await settingsCache.get(interaction.guildId);
+            await ticketsEngine.handleTicketSelectMenu(interaction, settings);
+            return;
+        }
+
+        // Handle Ticket Rating Feedback (1-5 stars)
+        if (interaction.isButton() && interaction.customId.startsWith('ticket_rate_')) {
+            const ticketsEngine = require('../bot/engines/tickets');
+            await ticketsEngine.handleTicketRating(interaction);
+            return;
+        }
+
         // Handle Ticket Spawn Panel Button Click (Pop Modals)
         if (interaction.isButton() && interaction.customId.startsWith('ticket_') && !interaction.customId.startsWith('ticket_close')) {
             const ticketsEngine = require('../bot/engines/tickets');
@@ -433,6 +448,14 @@ module.exports = {
             const ticketsEngine = require('../bot/engines/tickets');
             const settings = await settingsCache.get(interaction.guildId);
             await ticketsEngine.handleTicketSubmit(interaction, settings);
+            return;
+        }
+
+        // Handle Ticket Close Reason Modal Submission
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('ticket_close_modal_')) {
+            const ticketsEngine = require('../bot/engines/tickets');
+            const settings = await settingsCache.get(interaction.guildId);
+            await ticketsEngine.handleTicketCloseModalSubmit(interaction, settings);
             return;
         }
 
@@ -629,26 +652,30 @@ module.exports = {
             }
         }
 
-        // 🗑️ Handle Self-Wipe Leveling Data Confirmation
-        if (interaction.isButton() && interaction.customId === 'confirm_delete_levels') {
+        // Handle Self-Wipe Leveling Data Confirmation
+        if (interaction.isButton() && interaction.customId.startsWith('confirm_delete_levels')) {
             const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
             
-            // SECURITY PASS: Verify the person clicking the confirmation is the same person who owns the data!
-            // The original 'mycard' was ephemeral and only showed a button for yourself, but we double-check here.
-            const ownerId = interaction.message.embeds[0]?.footer?.text?.split('ID: ')[1];
-            if (ownerId && interaction.user.id !== ownerId) {
-                return interaction.reply({ content: '⛔ Security Violation: You cannot confirm a data wipe for another user.', ephemeral: true });
+            let targetId = interaction.customId.replace('confirm_delete_levels_', '');
+            if (targetId === 'confirm_delete_levels') {
+                // Fallback: extract ID from footer or message
+                const match = interaction.message.embeds[0]?.footer?.text?.match(/ID:\s*(\d+)/);
+                targetId = match ? match[1] : interaction.user.id;
+            }
+
+            if (targetId && interaction.user.id !== targetId) {
+                return interaction.reply({ content: 'You can only delete your own leveling data.', ephemeral: true });
             }
 
             const embed = new EmbedBuilder()
-                .setTitle('Critical Data Purge Request')
-                .setDescription('Warning: You are about to permanently delete all your leveling status, XP, and rank on this server. This cannot be undone.\n\nAre you absolutely sure you want to proceed?')
-                .setColor(0xff0000);
+                .setTitle('Delete Leveling Data')
+                .setDescription('This will permanently delete your leveling progression, rank, and XP in this server.\n\nAre you sure you want to proceed?')
+                .setColor(0xEF4444);
             
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId(`execute_delete_levels_${interaction.user.id}`)
-                    .setLabel('Yes, Wipe My Data')
+                    .setLabel('Yes, Delete My Data')
                     .setStyle(ButtonStyle.Danger),
                 new ButtonBuilder()
                     .setCustomId('cancel_delete_levels')
@@ -660,26 +687,35 @@ module.exports = {
         }
 
         if (interaction.isButton() && interaction.customId.startsWith('execute_delete_levels_')) {
-            const targetId = interaction.customId.split('_').pop();
+            const targetId = interaction.customId.replace('execute_delete_levels_', '');
             
-            // SECONDARY FIREWALL: Direct ID verification
             if (interaction.user.id !== targetId) {
-                return interaction.reply({ content: '⛔ Security Violation: Identity mismatch detected.', ephemeral: true });
+                return interaction.reply({ content: 'Action denied: identity mismatch.', ephemeral: true });
             }
 
             const UserLevel = require('../database/models/UserLevel');
             await UserLevel.destroy({ where: { userId: interaction.user.id, guildId: interaction.guild.id } });
             
             const { handleSuccess } = require('../utils/embeds');
-            return handleSuccess(interaction, 'Data Purged', 'Your personal leveling records have been physically removed from our database. You will start at Level 0 next time you speak.');
+            return handleSuccess(interaction, 'Data Deleted', 'Your server leveling progression has been deleted from our database.');
         }
 
         if (interaction.isButton() && interaction.customId === 'cancel_delete_levels') {
-            const member = await interaction.guild.members.fetch(interaction.user.id);
-            return interaction.reply({ content: 'Operation cancelled. Your data remains intact.', ephemeral: true });
+            return interaction.reply({ content: 'Deletion cancelled. Your data remains unchanged.', ephemeral: true });
         }
 
-        // 🎟️ Handle Giveaway Entry Button
+        // Giveaway Manager Panel Refresh
+        if (interaction.isButton() && interaction.customId === 'gw_panel_refresh') {
+            try {
+                const { buildGiveawayManagerPanel } = require('../commands/utility/giveaway');
+                const panelData = await buildGiveawayManagerPanel(interaction.guild);
+                return await interaction.update(panelData);
+            } catch (e) {
+                return await interaction.reply({ content: 'Failed to refresh panel.', ephemeral: true }).catch(() => {});
+            }
+        }
+
+        // Handle Giveaway Entry Button
         if (interaction.isButton() && interaction.customId === 'giveaway_enter') {
             try {
                 const Giveaway = require('../database/models/Giveaway');
@@ -851,8 +887,11 @@ module.exports = {
             }
             if (interaction.deferred || interaction.replied) {
                 return await originalEditReply(options);
-            } else {
+            }
+            try {
                 return await originalReply(options);
+            } catch (err) {
+                return await originalEditReply(options);
             }
         };
 
@@ -864,13 +903,19 @@ module.exports = {
             }
             if (interaction.deferred || interaction.replied) {
                 return await originalEditReply(options);
-            } else {
+            }
+            try {
                 return await originalReply(options);
+            } catch (err) {
+                if (err.code === 40060 || err.message?.includes('acknowledged') || interaction.deferred || interaction.replied) {
+                    return await originalEditReply(options);
+                }
+                throw err;
             }
         };
 
         // ⚡ INSTANT DEFERRAL (<10ms) to beat Discord's 3-second Gateway interaction timeout
-        if (!command.showModal && !interaction.deferred && !interaction.replied) {
+        if (!command.showModal && !command.noAutoDefer && !interaction.deferred && !interaction.replied) {
             const { MessageFlags } = require('discord.js');
             activeDeferPromise = originalDeferReply(isEphemeralCmd ? { flags: MessageFlags.Ephemeral } : {}).catch(() => {});
         }

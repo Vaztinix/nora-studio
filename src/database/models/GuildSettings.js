@@ -23,6 +23,35 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    welcomeMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    welcomeDmEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    // ---- Goodbye / Member Leave Announcement System ----
+    goodbyeEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    goodbyeChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    goodbyeMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    goodbyeUseEmbed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    goodbyeDmEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     moderationEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -68,6 +97,34 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: true // true = keep previous milestone roles; false = remove previous milestone role
     },
+    levelingCooldownSec: {
+        type: DataTypes.INTEGER,
+        defaultValue: 60
+    },
+    levelingXpRate: {
+        type: DataTypes.FLOAT,
+        defaultValue: 1.0
+    },
+    levelingIgnoredChannels: {
+        type: DataTypes.TEXT, // JSON array of channel IDs
+        defaultValue: '[]'
+    },
+    levelingIgnoredRoles: {
+        type: DataTypes.TEXT, // JSON array of role IDs
+        defaultValue: '[]'
+    },
+    levelingChannelMultipliers: {
+        type: DataTypes.TEXT, // JSON object mapping channelId -> multiplier
+        defaultValue: '{}'
+    },
+    levelingRoleMultipliers: {
+        type: DataTypes.TEXT, // JSON object mapping roleId -> multiplier
+        defaultValue: '{}'
+    },
+    levelingNotifyDestination: {
+        type: DataTypes.STRING,
+        defaultValue: 'current' // 'current', 'channel', 'dm', 'disabled'
+    },
     // ---- Dynamic Logging Framework ----
     loggingChannelId: {
         type: DataTypes.STRING,
@@ -100,6 +157,50 @@ const GuildSettings = sequelize.define('GuildSettings', {
     logAutomod: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    logCommands: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logCommandUsage: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logRoleEvents: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logMemberBoosts: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logChannelCreates: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logChannelEdits: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logChannelDeletes: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logVoiceJoins: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logVoiceLeaves: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logVoiceMoves: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    logDashboardActions: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     },
     isPremium: {
         type: DataTypes.BOOLEAN,

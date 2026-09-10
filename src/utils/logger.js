@@ -152,19 +152,33 @@ class Logger {
         }
 
         if (channelsObj && typeof channelsObj === 'object') {
-            // 1. Direct category match e.g. 'messages', 'members', 'channels', 'voice', 'automod', 'moderation'
+            // 1. Direct category match
             if (channelsObj[category] && channelsObj[category] !== 'none') {
                 return channelsObj[category];
             }
 
-            // 2. Event key to section group mapping
+            // 2. Specific feature overrides
+            if ((category === 'moderation' || category === 'mod') && settings.modLogChannelId) {
+                return settings.modLogChannelId;
+            }
+            if ((category === 'verify' || category === 'verification') && settings.verificationLogChannelId) {
+                return settings.verificationLogChannelId;
+            }
+            if ((category === 'tickets' || category === 'ticket') && settings.ticketLogChannelId) {
+                return settings.ticketLogChannelId;
+            }
+            if ((category === 'boosts' || category === 'memberBoosts') && settings.boostChannelId) {
+                return settings.boostChannelId;
+            }
+
+            // 3. Event key to section group mapping
             const groupMap = {
                 messageEdits: 'messages',
                 messageDeletes: 'messages',
                 memberJoins: 'members',
                 memberLeaves: 'members',
                 memberUpdates: 'members',
-                memberBoosts: 'members',
+                memberBoosts: 'boosts',
                 channelCreates: 'channels',
                 channelEdits: 'channels',
                 channelDeletes: 'channels',
@@ -173,12 +187,28 @@ class Logger {
                 voiceMoves: 'voice',
                 automod: 'automod',
                 roles: 'roles',
-                moderation: 'moderation'
+                moderation: 'moderation',
+                commands: 'commands',
+                commandUsage: 'commands'
             };
             const group = groupMap[category];
             if (group && channelsObj[group] && channelsObj[group] !== 'none') {
                 return channelsObj[group];
             }
+        }
+
+        // Special fallbacks for dedicated columns
+        if ((category === 'moderation' || category === 'mod') && settings.modLogChannelId) {
+            return settings.modLogChannelId;
+        }
+        if ((category === 'verify' || category === 'verification') && settings.verificationLogChannelId) {
+            return settings.verificationLogChannelId;
+        }
+        if ((category === 'tickets' || category === 'ticket') && settings.ticketLogChannelId) {
+            return settings.ticketLogChannelId;
+        }
+        if ((category === 'boosts' || category === 'memberBoosts') && settings.boostChannelId) {
+            return settings.boostChannelId;
         }
 
         return settings.loggingChannelId || null;
@@ -196,9 +226,17 @@ class Logger {
         try {
             const GuildSettings = require('../database/models/GuildSettings');
             const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
-            if (!settings || !settings.logDashboardActions) return;
+            if (!settings) return;
 
-            const logChannelId = this.resolveLogChannelId(settings, 'dashboardActions');
+            const isCommand = String(title || '').toLowerCase().includes('command');
+            if (isCommand) {
+                if (settings.logCommands === false || settings.logCommandUsage === false) return;
+            } else {
+                if (settings.logDashboardActions === false) return;
+            }
+
+            const targetCategory = isCommand ? 'commands' : 'dashboardActions';
+            const logChannelId = this.resolveLogChannelId(settings, targetCategory);
             if (!logChannelId) return;
 
             let logChannel = guild.channels.cache.get(logChannelId);
@@ -222,7 +260,7 @@ class Logger {
                 };
             });
             const embed = new EmbedBuilder()
-                .setTitle(String(title || 'Dashboard Action').substring(0, 256))
+                .setTitle(String(title || 'Action Log').substring(0, 256))
                 .setColor(color)
                 .setTimestamp();
 
@@ -254,6 +292,7 @@ class Logger {
                 'memberJoin': 'logMemberJoins',
                 'memberLeave': 'logMemberLeaves',
                 'memberUpdate': 'logMemberUpdates',
+                'memberBoost': 'logMemberBoosts',
                 'channelCreate': 'logChannelCreates',
                 'channelUpdate': 'logChannelEdits',
                 'channelDelete': 'logChannelDeletes',
@@ -263,7 +302,8 @@ class Logger {
                 'automod': 'logAutomod',
                 'roleCreate': 'logRoleEvents',
                 'roleDelete': 'logRoleEvents',
-                'roleUpdate': 'logRoleEvents'
+                'roleUpdate': 'logRoleEvents',
+                'commandUsage': 'logCommands'
             };
             const toggleField = channelToggleMap[eventKey];
             if (toggleField && (settings[toggleField] !== false)) {
@@ -273,6 +313,7 @@ class Logger {
                     'memberJoin': 'memberJoins',
                     'memberLeave': 'memberLeaves',
                     'memberUpdate': 'memberUpdates',
+                    'memberBoost': 'boosts',
                     'channelCreate': 'channelCreates',
                     'channelUpdate': 'channelEdits',
                     'channelDelete': 'channelDeletes',
@@ -282,7 +323,8 @@ class Logger {
                     'automod': 'automod',
                     'roleCreate': 'roles',
                     'roleDelete': 'roles',
-                    'roleUpdate': 'roles'
+                    'roleUpdate': 'roles',
+                    'commandUsage': 'commands'
                 };
                 const category = categoryMap[eventKey] || 'general';
                 const logChannelId = this.resolveLogChannelId(settings, category);

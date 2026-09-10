@@ -290,17 +290,17 @@ module.exports = {
 
             // 3. --- Welcome Announcement (Welcomer Module) ---
             const isWelcomerActive = settings.welcomerEnabled === true || settings.welcomerEnabled === 1 || settings.welcomerEnabled === 'true' || settings.welcomerEnabled === '1';
+            const welcomeTemplate = settings.welcomeMessage || settings.logJoinMessage;
+            const welcomeDesc = welcomeTemplate ? formatMessage(welcomeTemplate, member) : `Welcome, <@${member.id}>! We're glad you're here!`;
+
             if (isWelcomerActive && settings.welcomeChannelId) {
                 let welcomeChannel = member.guild.channels.cache.get(settings.welcomeChannelId);
                 if (!welcomeChannel) welcomeChannel = await member.guild.channels.fetch(settings.welcomeChannelId).catch(() => null);
 
                 if (welcomeChannel) {
-                    const template = settings.logJoinMessage;
-                    const desc = template ? formatMessage(template, member) : `Welcome, <@${member.id}>! We're glad you're here!`;
-
                     const embed = new EmbedBuilder()
                         .setTitle(`Welcome to ${member.guild.name}!`)
-                        .setDescription(desc)
+                        .setDescription(welcomeDesc)
                         .setColor(0xffffff) // Pure white theme for Nora Studio
                         .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                         .setFooter({ text: `Member #${member.guild.memberCount}` })
@@ -309,6 +309,20 @@ module.exports = {
                         console.error(`[Welcomer Error] Could not send welcome message in channel ${settings.welcomeChannelId}:`, err.message);
                     });
                 }
+            }
+
+            // 3.5. --- Direct Message Welcome Alert ---
+            if (settings.welcomeDmEnabled) {
+                try {
+                    const dmEmbed = new EmbedBuilder()
+                        .setTitle(`Welcome to ${member.guild.name}!`)
+                        .setDescription(welcomeDesc)
+                        .setColor(0x5865f2)
+                        .setThumbnail(member.guild.iconURL({ dynamic: true, size: 256 }))
+                        .setFooter({ text: `Server Member Count: ${member.guild.memberCount}` })
+                        .setTimestamp();
+                    await member.send({ embeds: [dmEmbed] }).catch(() => {});
+                } catch (dmErr) {}
             }
 
             // 4. --- Always-On Invite Tracker & Rewards Engine ---

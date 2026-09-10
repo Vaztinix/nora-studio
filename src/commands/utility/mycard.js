@@ -82,9 +82,9 @@ async function buildMyCardPayload({ interaction, targetUser }) {
     }
 
     // Role & Member Info
-    let rolesDisplay = 'N/A (Global DM Card)';
+    let rolesDisplay = 'None';
     let joinedAt = 'N/A';
-    let permissionText = 'Member';
+    let permissionText = 'Community Member';
 
     if (!isDM && member) {
         const rolesList = member.roles.cache
@@ -97,13 +97,13 @@ async function buildMyCardPayload({ interaction, targetUser }) {
         joinedAt = member.joinedAt ? `<t:${Math.floor(member.joinedAt.getTime() / 1000)}:R>` : 'Unknown';
 
         const keyPerms = [];
-        if (member.permissions.has(PermissionFlagsBits.Administrator)) keyPerms.push('👑 Administrator');
+        if (member.permissions.has(PermissionFlagsBits.Administrator)) keyPerms.push('Administrator');
         else {
-            if (member.permissions.has(PermissionFlagsBits.ManageGuild)) keyPerms.push('🛡️ Manager');
-            if (member.permissions.has(PermissionFlagsBits.ModerateMembers) || member.permissions.has(PermissionFlagsBits.BanMembers) || member.permissions.has(PermissionFlagsBits.KickMembers)) keyPerms.push('⚔️ Moderator');
-            if (member.permissions.has(PermissionFlagsBits.ManageMessages)) keyPerms.push('💬 Chat Mod');
+            if (member.permissions.has(PermissionFlagsBits.ManageGuild)) keyPerms.push('Manager');
+            if (member.permissions.has(PermissionFlagsBits.ModerateMembers) || member.permissions.has(PermissionFlagsBits.BanMembers) || member.permissions.has(PermissionFlagsBits.KickMembers)) keyPerms.push('Moderator');
+            if (member.permissions.has(PermissionFlagsBits.ManageMessages)) keyPerms.push('Chat Moderator');
         }
-        permissionText = keyPerms.length > 0 ? keyPerms.join(' | ') : '👤 Community Member';
+        permissionText = keyPerms.length > 0 ? keyPerms.join(' • ') : 'Community Member';
     }
 
     const createdAt = `<t:${Math.floor(targetUser.createdAt.getTime() / 1000)}:R>`;
@@ -117,9 +117,9 @@ async function buildMyCardPayload({ interaction, targetUser }) {
         const hasGolden = eggs.includes(99);
 
         if (standardCount >= 10 && hasGolden) {
-            completedEvents.push('🐰 **Easter 2026:** Perfect Masterpiece ✨ (10 Eggs + Golden Egg)');
+            completedEvents.push('Easter 2026: Perfect Masterpiece (10 Eggs + Golden Egg)');
         } else if (standardCount >= 10) {
-            completedEvents.push('🐰 **Easter 2026:** Completed (10 Eggs)');
+            completedEvents.push('Easter 2026: Completed (10 Eggs)');
         }
     }
     const eventsDisplay = completedEvents.length > 0 ? completedEvents.join('\n') : '*No events completed.*';
@@ -130,31 +130,31 @@ async function buildMyCardPayload({ interaction, targetUser }) {
 
     // Badges
     const badgesList = [];
-    if (isOwner) badgesList.push('👑 Nora Founder');
-    if (isPremium) badgesList.push('💎 Nora Studio Premium');
-    if (isPromoting) badgesList.push('⚡ Affiliate Promoter');
+    if (isOwner) badgesList.push('Nora Founder');
+    if (isPremium) badgesList.push('Nora Studio Premium');
+    if (isPromoting) badgesList.push('Affiliate Promoter');
 
     if (targetUser.flags) {
         const flags = targetUser.flags.toArray();
         const badgeMap = {
-            Staff: '🛡️ Discord Staff',
-            Partner: '🤝 Discord Partner',
-            Hypesquad: '🦁 HypeSquad Events',
-            BugHunterLevel1: '🐛 Bug Hunter I',
-            BugHunterLevel2: '🪲 Bug Hunter II',
-            HypeSquadOnlineHouse1: '🔮 Bravery',
-            HypeSquadOnlineHouse2: '🧪 Brilliance',
-            HypeSquadOnlineHouse3: '🛡️ Balance',
-            PremiumEarlySupporter: '🏎️ Early Supporter',
-            VerifiedDeveloper: '👨‍💻 Developer',
-            ActiveDeveloper: '💻 Active Developer'
+            Staff: 'Discord Staff',
+            Partner: 'Discord Partner',
+            Hypesquad: 'HypeSquad Events',
+            BugHunterLevel1: 'Bug Hunter I',
+            BugHunterLevel2: 'Bug Hunter II',
+            HypeSquadOnlineHouse1: 'HypeSquad Bravery',
+            HypeSquadOnlineHouse2: 'HypeSquad Brilliance',
+            HypeSquadOnlineHouse3: 'HypeSquad Balance',
+            PremiumEarlySupporter: 'Early Supporter',
+            VerifiedDeveloper: 'Developer',
+            ActiveDeveloper: 'Active Developer'
         };
         flags.forEach(f => {
             if (badgeMap[f]) badgesList.push(badgeMap[f]);
         });
     }
 
-    const badgesDisplay = badgesList.length > 0 ? badgesList.map(b => `\`${b}\``).join(' ') : '*No global badges.*';
+    const badgesDisplay = badgesList.length > 0 ? badgesList.map(b => `\`[${b}]\``).join(' ') : '*No global badges.*';
 
     // Roblox Integration
     let robloxDisplay = '*No Roblox account verified.*';
@@ -179,32 +179,32 @@ async function buildMyCardPayload({ interaction, targetUser }) {
             if (presenceResult.status === 'fulfilled' && presenceResult.value.data && presenceResult.value.data.userPresences?.length > 0) {
                 const p = presenceResult.value.data.userPresences[0];
                 const type = p.userPresenceType;
-                if (type === 1) status = '🟢 Online on website';
+                if (type === 1) status = '● Online on website';
                 else if (type === 2) {
-                    status = `🎮 Playing **${p.lastLocation || 'Roblox'}**`;
+                    status = `● In Game: **${p.lastLocation || 'Roblox'}**`;
                     if (targetPrefs?.joinMeEnabled && targetPrefs?.joinLink) {
                         joinUrl = targetPrefs.joinLink;
                     }
                 } else if (type === 3) {
-                    status = '🛠️ Editing in Studio';
+                    status = '● Editing in Studio';
                 }
             }
         } catch (e) {}
 
         robloxDisplay = `**Account:** [${username}](https://www.roblox.com/users/${robloxRecord.robloxId}/profile)\n**Status:** ${status}`;
         if (joinUrl) {
-            robloxDisplay += `\n👉 [**Join Experience**](${joinUrl})`;
+            robloxDisplay += `\n[**Join Game Experience**](${joinUrl})`;
         }
     }
 
     // Bio
-    const bioDisplay = targetPrefs?.bio ? targetPrefs.bio : '*No personal bio set. Customize in Nora Dashboard!*';
+    const bioDisplay = targetPrefs?.bio ? targetPrefs.bio : '*No bio configured. Set your bio on the dashboard.*';
 
     // Theme & Styling
     const cardStyleText = targetPrefs ? (
         targetPrefs.rankCardThemeMode === 'custom' ? `Custom Color (${targetPrefs.rankCardCustomColor || '#4f46e5'})` :
         targetPrefs.rankCardThemeMode === 'image' ? 'Custom Canvas' : 'Server Preset'
-    ) : 'Default Dark Theme';
+    ) : 'Default Dark';
 
     // Generate Custom Digital ID Card Image Pass
     const { generateUserIdCard } = require('../../utils/rankCardGenerator');
@@ -233,7 +233,7 @@ async function buildMyCardPayload({ interaction, targetUser }) {
             bio: targetPrefs?.bio || '',
             robloxText,
             badges: badgesList,
-            accentColor: targetPrefs?.rankCardCustomColor || '#7c3aed'
+            accentColor: targetPrefs?.rankCardCustomColor || '#5865F2'
         });
 
         cardAttachment = cardBuffer ? { attachment: cardBuffer, name: 'nora-id-card.png' } : null;
@@ -241,44 +241,43 @@ async function buildMyCardPayload({ interaction, targetUser }) {
         console.error('[ID Card Image Gen Error]:', e);
     }
 
-    let color = 0x06B6D4; // Standard Cyan
-    if (isOwner || isPremium) color = 0xFFD700; // Gold
-    else if (isPromoting) color = 0xFF007A; // Pink
+    let color = 0x5865F2; // Discord Blurple
+    if (isOwner || isPremium) color = 0xF59E0B; // Gold
+    else if (isPromoting) color = 0xEC4899; // Pink
     else if (member && member.permissions && member.permissions.has(PermissionFlagsBits.ManageGuild)) color = 0x3B82F6; // Blue
 
     const embed = new EmbedBuilder()
         .setAuthor({ 
-            name: `${targetUser.username}'s Personal Digital ID Card ${isPremium ? '⭐' : ''}`, 
+            name: `${targetUser.username}'s Profile Card`, 
             iconURL: targetUser.displayAvatarURL({ dynamic: true }) 
         })
         .setColor(color)
         .setDescription(`>>> ${bioDisplay}`)
         .addFields(
             {
-                name: '📈 Leveling & Rank Stats',
-                value: `**Level:** \`${isDM ? 'N/A' : level}\` | **Server Rank:** \`${isDM ? 'N/A' : serverRank}\`\n` +
+                name: 'Leveling & Progression',
+                value: `**Level:** \`${isDM ? 'N/A' : level}\`  •  **Server Rank:** \`${isDM ? 'N/A' : serverRank}\`\n` +
                        `**XP:** \`${isDM ? 'N/A' : `${xp.toLocaleString()} / ${nextLevelXp.toLocaleString()}`}\` *(Total: ${isDM ? 'N/A' : totalXpRaw.toLocaleString()} XP)*\n` +
                        `**Progress:** ${progressBar}`,
                 inline: false
             },
             {
-                name: '💎 Nora Premium & Status',
-                value: `**Plan:** ${isPremium ? '💎 **Nora Studio Plus**' : '🆓 Standard Free Tier'}\n` +
-                       `**Privileges:** ${isPremium ? 'Instant Rank Sync • Aura AI • GIF Rank Cards • 10x XP Boosters' : 'Standard AutoMod & Leveling Access'}`,
+                name: 'Membership & Tier',
+                value: `**Plan:** ${isPremium ? '**Nora Studio Plus**' : 'Standard Tier'}\n` +
+                       `**Features:** ${isPremium ? 'Instant Rank Sync, Custom GIF Cards, Priority Boosters' : 'Standard Leveling & Commands'}`,
                 inline: false
             },
             {
-                name: '🛡️ Server & Security Identity',
-                value: `**Current Server:** ${isDM ? 'Direct Messages' : `**${interaction.guild.name}**`}\n` +
-                       `**Joined Server:** ${joinedAt}\n` +
-                       `**Account Created:** ${createdAt}\n` +
-                       `**Clearance:** ${permissionText} | **Warnings:** \`${warningsCount}\``,
+                name: 'Server Identity',
+                value: `**Server:** ${isDM ? 'Direct Messages' : `**${interaction.guild.name}**`}\n` +
+                       `**Joined:** ${joinedAt}  •  **Created:** ${createdAt}\n` +
+                       `**Clearance:** ${permissionText}  •  **Warnings:** \`${warningsCount}\``,
                 inline: false
             },
-            { name: '🏷️ Top Server Roles', value: rolesDisplay, inline: false },
-            { name: '🎮 Roblox Integration', value: robloxDisplay, inline: false },
-            { name: '🏆 Nora Badges', value: badgesDisplay, inline: false },
-            { name: '🎉 Special Events', value: eventsDisplay, inline: false }
+            { name: 'Top Roles', value: rolesDisplay, inline: false },
+            { name: 'Roblox Integration', value: robloxDisplay, inline: false },
+            { name: 'Badges & Honors', value: badgesDisplay, inline: false },
+            { name: 'Special Events', value: eventsDisplay, inline: false }
         )
         .setFooter({ 
             text: `ID: ${targetUser.id} • Theme: ${cardStyleText}`, 
@@ -294,12 +293,10 @@ async function buildMyCardPayload({ interaction, targetUser }) {
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`mycard_refresh_${targetUser.id}`)
-            .setLabel('Refresh Card')
-            .setEmoji('🔄')
+            .setLabel('Refresh')
             .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
             .setLabel('Customize Card')
-            .setEmoji('🎨')
             .setStyle(ButtonStyle.Link)
             .setURL('https://vaztinix.dev/dashboard')
     );
@@ -308,14 +305,13 @@ async function buildMyCardPayload({ interaction, targetUser }) {
     if (targetUser.id === interaction.user.id) {
         row.addComponents(
             new ButtonBuilder()
-                .setCustomId('confirm_delete_levels')
-                .setLabel('Delete My Personal Leveling Data')
-                .setEmoji('🗑️')
+                .setCustomId(`confirm_delete_levels_${targetUser.id}`)
+                .setLabel('Delete Leveling Data')
                 .setStyle(ButtonStyle.Danger)
         );
     }
 
-    return { content: `📇 **${targetUser.username}**'s Official Nora Digital ID Card`, embeds: [embed], files: cardAttachment ? [cardAttachment] : [], components: [row] };
+    return { embeds: [embed], files: cardAttachment ? [cardAttachment] : [], components: [row] };
 }
 
 module.exports = {

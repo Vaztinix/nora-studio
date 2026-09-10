@@ -182,9 +182,9 @@ async function generateRankCard({
 
                 if (isAnimatedGif && totalPages > 1) {
                     try {
-                        const safePages = Math.min(totalPages, 20);
+                        const safePages = Math.min(totalPages, 12);
                         animatedBgBuffer = await sharp(rawBuffer, { animated: true, page: 0, pages: safePages })
-                            .resize(860, 240 * safePages, { fit: 'fill' })
+                            .resize(860, 240, { fit: 'cover' })
                             .toBuffer();
                     } catch(gifErr) {
                         console.warn('[Rank Generator] Animated background resize failed, falling back to static:', gifErr.message);
@@ -411,106 +411,92 @@ async function generateUserIdCard({
         }
     }
 
-    let headerAccent = accentColor || '#6366f1';
-    if (isOwner || isPremium) headerAccent = '#FFD700';
-    else if (isPromoter) headerAccent = '#FF007A';
+    let accent = accentColor || '#5865F2';
+    if (isOwner || isPremium) accent = '#F59E0B';
+    else if (isPromoter) accent = '#EC4899';
 
     const progressPct = Math.min(100, Math.max(0, Math.floor((currentXp / Math.max(1, nextLevelXp)) * 100)));
     const barWidth = Math.floor((progressPct / 100) * 350);
 
     const safeUser = String(username || 'User').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const safeGuild = String(guildName || 'Nora Network').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const safeBio = String(bio || 'No bio set. Customize in Nora Dashboard!').substring(0, 75).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const safeBio = String(bio || 'No bio set. Customize in Nora Dashboard.').substring(0, 75).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const safeClearance = String(clearance || 'MEMBER').toUpperCase();
     const safeRoblox = String(robloxText || 'Not Verified').substring(0, 45).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-    const badgesStr = badges.length > 0 ? badges.slice(0, 4).join('  •  ') : 'OFFICIAL MEMBER PASS';
+    const badgesStr = badges.length > 0 ? badges.slice(0, 4).join('  •  ') : 'STANDARD MEMBER';
 
     const svg = `
     <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#090a10" />
-          <stop offset="50%" stop-color="#121320" />
-          <stop offset="100%" stop-color="#07080d" />
-        </linearGradient>
-
-        <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="${headerAccent}" stop-opacity="0.9" />
-          <stop offset="100%" stop-color="#4F46E5" stop-opacity="0.75" />
-        </linearGradient>
-
-        <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="${headerAccent}" />
-          <stop offset="100%" stop-color="#38bdf8" />
+          <stop offset="0%" stop-color="#0b0c10" />
+          <stop offset="50%" stop-color="#12141a" />
+          <stop offset="100%" stop-color="#0b0c10" />
         </linearGradient>
       </defs>
 
       <!-- Outer Base Canvas -->
-      <rect width="${width}" height="${height}" rx="26" fill="url(#bgGrad)"/>
-
-      <!-- Tech Background Grid Lines -->
-      <path d="M 0 60 L 900 60 M 0 120 L 900 120 M 0 180 L 900 180 M 0 240 L 900 240 M 0 300 L 900 300 M 0 360 L 900 360 M 0 420 L 900 420" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
-      <path d="M 150 0 L 150 520 M 300 0 L 300 520 M 450 0 L 450 520 M 600 0 L 600 520 M 750 0 L 750 520" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+      <rect width="${width}" height="${height}" rx="20" fill="url(#bgGrad)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
 
       <!-- Inner Glass Container -->
-      <rect x="16" y="16" width="${width - 32}" height="${height - 32}" rx="20" fill="rgba(255, 255, 255, 0.025)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1.5"/>
+      <rect x="16" y="16" width="${width - 32}" height="${height - 32}" rx="14" fill="rgba(255, 255, 255, 0.015)" stroke="rgba(255, 255, 255, 0.05)" stroke-width="1"/>
 
       <!-- Top Header Bar -->
-      <rect x="16" y="16" width="${width - 32}" height="54" rx="20" fill="url(#headerGrad)"/>
-      <rect x="16" y="52" width="${width - 32}" height="18" fill="url(#headerGrad)"/>
+      <rect x="16" y="16" width="${width - 32}" height="48" rx="14" fill="rgba(255, 255, 255, 0.03)"/>
+      <line x1="16" y1="64" x2="${width - 16}" y2="64" stroke="rgba(255, 255, 255, 0.06)" stroke-width="1"/>
 
       <!-- Top Header Text -->
-      <text x="36" y="48" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="15" font-weight="900" fill="#FFFFFF" letter-spacing="1.5">NORA IDENTIFICATION PASS</text>
-      <text x="${width - 36}" y="48" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="end" letter-spacing="1">VERIFIED DIGITAL ID • 🟢 ONLINE</text>
+      <text x="36" y="46" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#94A3B8" letter-spacing="1">MEMBER IDENTIFICATION</text>
+      <text x="${width - 36}" y="46" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#64748B" text-anchor="end" letter-spacing="0.5">VERIFIED PASS</text>
 
       <!-- Left Column: Avatar Border -->
-      <rect x="40" y="95" width="148" height="148" rx="24" fill="rgba(255,255,255,0.04)" stroke="${headerAccent}" stroke-width="2"/>
+      <rect x="40" y="88" width="148" height="148" rx="18" fill="rgba(255,255,255,0.03)" stroke="${accent}" stroke-width="2"/>
 
       <!-- Left Column: Clearance Pill -->
-      <rect x="40" y="255" width="148" height="28" rx="10" fill="rgba(99, 102, 241, 0.2)" stroke="${headerAccent}" stroke-opacity="0.6" stroke-width="1"/>
-      <text x="114" y="273" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">${safeClearance}</text>
+      <rect x="40" y="248" width="148" height="28" rx="8" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+      <text x="114" y="266" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="10" font-weight="800" fill="#E2E8F0" text-anchor="middle" letter-spacing="0.8">${safeClearance}</text>
 
       <!-- Left Column: Dates -->
-      <text x="40" y="308" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10" font-weight="800" fill="#8E9297" letter-spacing="1">JOINED SERVER</text>
-      <text x="40" y="324" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">${joinedAt}</text>
+      <text x="40" y="302" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#64748B" letter-spacing="0.8">JOINED SERVER</text>
+      <text x="40" y="318" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#CBD5E1">${joinedAt}</text>
 
-      <text x="40" y="352" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10" font-weight="800" fill="#8E9297" letter-spacing="1">ACCOUNT CREATED</text>
-      <text x="40" y="368" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">${createdAt}</text>
+      <text x="40" y="348" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#64748B" letter-spacing="0.8">ACCOUNT CREATED</text>
+      <text x="40" y="364" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#CBD5E1">${createdAt}</text>
 
       <!-- Right Main Panel -->
-      <text x="215" y="125" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="28" font-weight="900" fill="#FFFFFF" letter-spacing="-0.5">${safeUser}</text>
-      <text x="215" y="148" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="${headerAccent}">${badgesStr}</text>
-      <text x="215" y="172" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-style="italic" fill="#94a3b8">"${safeBio}"</text>
+      <text x="215" y="118" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="26" font-weight="800" fill="#F8FAFC" letter-spacing="-0.3">${safeUser}</text>
+      <text x="215" y="140" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="12" font-weight="600" fill="${accent}">${badgesStr}</text>
+      <text x="215" y="164" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="12" font-style="italic" fill="#64748B">"${safeBio}"</text>
 
-      <line x1="215" y1="188" x2="860" y2="188" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+      <line x1="215" y1="180" x2="860" y2="180" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
       <!-- Stats Box -->
-      <rect x="215" y="200" width="645" height="120" rx="16" fill="rgba(0,0,0,0.45)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+      <rect x="215" y="194" width="645" height="120" rx="12" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
       
-      <text x="235" y="230" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#8E9297" letter-spacing="1">LEVEL</text>
-      <text x="235" y="258" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="#FFFFFF">${level}</text>
+      <text x="235" y="224" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#64748B" letter-spacing="0.8">LEVEL</text>
+      <text x="235" y="252" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="22" font-weight="800" fill="#F8FAFC">${level}</text>
 
-      <text x="340" y="230" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#8E9297" letter-spacing="1">SERVER RANK</text>
-      <text x="340" y="258" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="${headerAccent}">${rank}</text>
+      <text x="340" y="224" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#64748B" letter-spacing="0.8">SERVER RANK</text>
+      <text x="340" y="252" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="22" font-weight="800" fill="${accent}">${rank}</text>
 
-      <text x="490" y="230" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#8E9297" letter-spacing="1">XP PROGRESSION (${progressPct}%)</text>
-      <text x="490" y="256" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">${currentXp.toLocaleString()} / ${nextLevelXp.toLocaleString()} XP <tspan font-size="11" fill="#8E9297">(Total: ${totalXp.toLocaleString()})</tspan></text>
+      <text x="490" y="224" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#64748B" letter-spacing="0.8">PROGRESSION (${progressPct}%)</text>
+      <text x="490" y="248" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#CBD5E1">${currentXp.toLocaleString()} / ${nextLevelXp.toLocaleString()} XP <tspan font-size="11" fill="#64748B">(Total: ${totalXp.toLocaleString()})</tspan></text>
 
-      <rect x="490" y="272" width="350" height="12" rx="6" fill="rgba(255,255,255,0.08)"/>
-      <rect x="490" y="272" width="${barWidth}" height="12" rx="6" fill="url(#progressGrad)"/>
+      <rect x="490" y="264" width="350" height="10" rx="5" fill="rgba(255,255,255,0.08)"/>
+      <rect x="490" y="264" width="${barWidth}" height="10" rx="5" fill="${accent}"/>
 
       <!-- Integrations Box -->
-      <rect x="215" y="332" width="645" height="98" rx="16" fill="rgba(0,0,0,0.45)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-      <text x="235" y="358" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#8E9297" letter-spacing="1">ROBLOX IDENTITY &amp; INTEGRATIONS</text>
-      <text x="235" y="382" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">${safeRoblox}</text>
-      <text x="235" y="406" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="600" fill="#8E9297">CURRENT GUILD: <tspan fill="#FFFFFF">${safeGuild}</tspan></text>
+      <rect x="215" y="328" width="645" height="98" rx="12" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      <text x="235" y="354" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#64748B" letter-spacing="0.8">ROBLOX IDENTITY</text>
+      <text x="235" y="378" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#F8FAFC">${safeRoblox}</text>
+      <text x="235" y="402" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="11" font-weight="500" fill="#64748B">CURRENT GUILD: <tspan fill="#CBD5E1">${safeGuild}</tspan></text>
 
       <!-- Footer Divider -->
-      <line x1="16" y1="450" x2="884" y2="450" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+      <line x1="16" y1="446" x2="884" y2="446" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
-      <text x="36" y="484" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="700" fill="#8E9297" letter-spacing="1">USER ID: ${userId}</text>
-      <text x="${width - 36}" y="484" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="700" fill="#8E9297" text-anchor="end" letter-spacing="1">OFFICIAL NORA PERSONAL ID • 2026</text>
+      <text x="36" y="480" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#64748B" letter-spacing="0.5">USER ID: ${userId}</text>
+      <text x="${width - 36}" y="480" font-family="Segoe UI, Inter, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#64748B" text-anchor="end" letter-spacing="0.5">NORA PROFILE PASS</text>
     </svg>
     `;
 
@@ -518,7 +504,7 @@ async function generateUserIdCard({
 
     if (avatarPngBuffer) {
         baseBuffer = await sharp(baseBuffer)
-            .composite([{ input: avatarPngBuffer, top: 99, left: 44 }])
+            .composite([{ input: avatarPngBuffer, top: 92, left: 44 }])
             .png()
             .toBuffer();
     }

@@ -46,6 +46,18 @@ const TicketHistory = sequelize.define('TicketHistory', {
     intakeResponses: {
         type: DataTypes.TEXT, // Stored as JSON string
         allowNull: true
+    },
+    priority: {
+        type: DataTypes.STRING,
+        defaultValue: 'Normal'
+    },
+    closeReason: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    rating: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 });
 

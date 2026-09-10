@@ -4,15 +4,15 @@ const { handleError, handleSuccess } = require('../../utils/embeds');
 
 // Type badge and color mapping
 const TYPE_BADGES = {
-    'WARN': '⚠️ Warning',
-    'MUTE': '🔇 Mute',
-    'UNMUTE': '🔊 Unmute',
-    'KICK': '👢 Kick',
-    'BAN': '🔨 Ban',
-    'UNBAN': '🔓 Unban',
-    'TEMPBAN': '⏱️ Temp Ban',
-    'ROLE_ADD': '➕ Role Add',
-    'ROLE_REMOVE': '➖ Role Remove'
+    'WARN': 'Warning',
+    'MUTE': 'Mute',
+    'UNMUTE': 'Unmute',
+    'KICK': 'Kick',
+    'BAN': 'Ban',
+    'UNBAN': 'Unban',
+    'TEMPBAN': 'Temp Ban',
+    'ROLE_ADD': 'Role Add',
+    'ROLE_REMOVE': 'Role Remove'
 };
 
 const TYPE_COLORS = {
@@ -28,10 +28,10 @@ const TYPE_COLORS = {
 };
 
 const STATUS_BADGES = {
-    'active': '🟢 Active',
-    'resolved': '✅ Resolved',
-    'appealed': '📋 Appealed',
-    'expired': '⏰ Expired'
+    'active': 'Active',
+    'resolved': 'Resolved',
+    'appealed': 'Appealed',
+    'expired': 'Expired'
 };
 
 module.exports = {
@@ -71,11 +71,11 @@ module.exports = {
                         .setDescription('Filter by case type')
                         .setRequired(false)
                         .addChoices(
-                            { name: '⚠️ Warning', value: 'WARN' },
-                            { name: '🔇 Mute', value: 'MUTE' },
-                            { name: '👢 Kick', value: 'KICK' },
-                            { name: '🔨 Ban', value: 'BAN' },
-                            { name: '⏱️ Temp Ban', value: 'TEMPBAN' }
+                            { name: 'Warning', value: 'WARN' },
+                            { name: 'Mute', value: 'MUTE' },
+                            { name: 'Kick', value: 'KICK' },
+                            { name: 'Ban', value: 'BAN' },
+                            { name: 'Temp Ban', value: 'TEMPBAN' }
                         )))
         .addSubcommand(sub =>
             sub.setName('resolve')

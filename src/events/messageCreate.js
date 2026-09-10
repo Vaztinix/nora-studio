@@ -46,15 +46,21 @@ module.exports = {
                     if (elapsed > 5000) {
                         await afkManager.removeAfk(message.guild.id, message.author.id);
 
-                        // Restore original nickname if it was altered and member is manageable
-                        if (authorAfk.autoNicknameChanged && message.member && message.member.manageable) {
+                        // Restore original nickname if it was altered or prefixed
+                        if (message.member && message.member.manageable) {
                             try {
-                                await message.member.setNickname(authorAfk.originalNickname).catch(() => {});
+                                const currentNick = message.member.displayName;
+                                if (currentNick.startsWith('[AFK]') || currentNick.startsWith('{AFK]') || currentNick.startsWith('{AFK}')) {
+                                    const targetRestore = (authorAfk.originalNickname !== undefined) 
+                                        ? authorAfk.originalNickname 
+                                        : currentNick.replace(/^(\[AFK\]|\{AFK\]|\{AFK\})\s*/i, '');
+                                    await message.member.setNickname(targetRestore).catch(() => {});
+                                }
                             } catch (e) {}
                         }
 
                         const welcomeMsg = await message.reply({
-                            content: `👋 Welcome back ${message.author}, I removed your AFK. *(You were away <t:${Math.floor(authorAfk.timestamp / 1000)}:R>)*`,
+                            content: `Welcome back ${message.author}, your AFK status has been removed. *(Away <t:${Math.floor(authorAfk.timestamp / 1000)}:R>)*`,
                             allowedMentions: { repliedUser: false }
                         }).catch(() => null);
 
@@ -74,21 +80,21 @@ module.exports = {
                             // Check 10s cooldown per user per channel
                             if (afkManager.checkMentionCooldown(message.guild.id, mentionedId, message.channel.id)) {
                                 const targetMember = message.guild.members.cache.get(mentionedId);
-                                const displayName = targetMember ? targetMember.displayName.replace(/^\[AFK\]\s*/, '') : mentionedUser.username;
+                                const displayName = targetMember ? targetMember.displayName.replace(/^(\[AFK\]|\{AFK\]|\{AFK\})\s*/i, '') : mentionedUser.username;
                                 const timeTag = `<t:${Math.floor(targetAfk.timestamp / 1000)}:R>`;
                                 const urlRegex = /(https?:\/\/[^\s]+)/gi;
                                 const urls = (targetAfk.status || '').match(urlRegex);
                                 let noticeContent;
 
                                 if (!urls) {
-                                    noticeContent = `💤 **${displayName}** is AFK: ${targetAfk.status} — ${timeTag}`;
+                                    noticeContent = `**${displayName}** is AFK: ${targetAfk.status} — ${timeTag}`;
                                 } else {
                                     const textOnly = (targetAfk.status || '').replace(urlRegex, '').replace(/\s+/g, ' ').trim();
                                     const urlString = urls.join('\n');
                                     if (!textOnly) {
-                                        noticeContent = `💤 **${displayName}** is AFK (${timeTag}):\n${urlString}`;
+                                        noticeContent = `**${displayName}** is AFK (${timeTag}):\n${urlString}`;
                                     } else {
-                                        noticeContent = `💤 **${displayName}** is AFK: ${textOnly} — ${timeTag}\n${urlString}`;
+                                        noticeContent = `**${displayName}** is AFK: ${textOnly} — ${timeTag}\n${urlString}`;
                                     }
                                 }
 
