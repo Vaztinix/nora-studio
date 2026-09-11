@@ -54,13 +54,40 @@ const TOPIC_PRESETS = {
             { customId: 'ticket_inquiry_details', label: 'Details & Proposal', placeholder: 'Include links, details, or context...', style: 'paragraph', required: true }
         ]
     },
-    report: {
-        label: 'Player / Rule Report',
+    support: {
+        label: 'General Support',
+        description: 'Assistance with server features, commands, or general questions.',
+        emoji: '💬',
+        fields: [
+            { customId: 'ticket_subject', label: 'Subject', placeholder: 'Brief summary of your inquiry', style: 'short', required: true },
+            { customId: 'ticket_details', label: 'Detailed Description', placeholder: 'Explain what you need assistance with...', style: 'paragraph', required: true }
+        ]
+    },
+    reporting: {
+        label: 'Member / Rule Report',
         description: 'Confidential report of rule violations or harassment.',
         emoji: '🛡️',
         fields: [
             { customId: 'ticket_report_target', label: 'User ID or Username Being Reported', placeholder: 'e.g. 123456789012345678 or @username', style: 'short', required: true },
             { customId: 'ticket_report_reason', label: 'Violation Details & Evidence Links', placeholder: 'Describe the incident and provide image/message links...', style: 'paragraph', required: true }
+        ]
+    },
+    appeals: {
+        label: 'Moderation Appeal',
+        description: 'Appeal a mute, ban, warn, or moderation action taken against you.',
+        emoji: '⚖️',
+        fields: [
+            { customId: 'ticket_appeal_action', label: 'Action Appealed', placeholder: 'e.g. Server Ban, Timeout, Warning', style: 'short', required: true },
+            { customId: 'ticket_appeal_reason', label: 'Reason for Appeal & Context', placeholder: 'Explain why the action should be reconsidered...', style: 'paragraph', required: true }
+        ]
+    },
+    other: {
+        label: 'General Inquiry',
+        description: 'Other questions or assistance from the staff team.',
+        emoji: '❓',
+        fields: [
+            { customId: 'ticket_other_subject', label: 'Subject', placeholder: 'Brief topic of your inquiry', style: 'short', required: true },
+            { customId: 'ticket_other_details', label: 'Explanation', placeholder: 'Describe your request or inquiry in detail...', style: 'paragraph', required: true }
         ]
     }
 };

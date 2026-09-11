@@ -181,6 +181,12 @@ module.exports = {
             console.error('[Underage Sweep Startup Error]:', err);
         }
 
+        // Reaction Role & Verification Catch-Up Scheduler: runs on startup and every 15 minutes (silent, no logs)
+        try {
+            const { startReactionCatchUpScheduler } = require('../utils/reactionCatchUp');
+            startReactionCatchUpScheduler(client);
+        } catch (_) {}
+
         console.log(`[System Check] Keeping an eye on things! Heartbeat active.`);
     },
 };

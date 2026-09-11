@@ -2718,32 +2718,34 @@
     
 
         /* Robust Flex Layout & Sidebar-Content Isolation Rules */
-        .config-container {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            align-items: flex-start !important;
-            gap: 28px !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            margin-top: 20px !important;
-            box-sizing: border-box !important;
-        }
+        @media (min-width: 993px) {
+            .config-container {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: flex-start !important;
+                gap: 28px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin-top: 20px !important;
+                box-sizing: border-box !important;
+            }
 
-        .config-sidebar {
-            width: 260px !important;
-            min-width: 260px !important;
-            max-width: 260px !important;
-            flex-shrink: 0 !important;
-            box-sizing: border-box !important;
-        }
+            .config-sidebar {
+                width: 260px !important;
+                min-width: 260px !important;
+                max-width: 260px !important;
+                flex-shrink: 0 !important;
+                box-sizing: border-box !important;
+            }
 
-        .config-main {
-            flex: 1 !important;
-            min-width: 0 !important;
-            width: calc(100% - 288px) !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
+            .config-main {
+                flex: 1 !important;
+                min-width: 0 !important;
+                width: calc(100% - 288px) !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
         }
 
         .tab-content {
@@ -3859,39 +3861,141 @@
         </script>
         
 <style>
-        /* Permanent Two-Column Desktop & Laptop Side-by-Side Flex Layout */
-        .config-container {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            align-items: flex-start !important;
-            gap: 28px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
+        /* ==========================================================================
+           TWO-COLUMN DESKTOP & HORIZONTAL MOBILE RAIL GUILD CONFIG LAYOUT
+           ========================================================================== */
+        @media (min-width: 993px) {
+            .config-container {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: flex-start !important;
+                gap: 28px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .config-sidebar {
+                width: 260px !important;
+                min-width: 260px !important;
+                max-width: 260px !important;
+                flex-shrink: 0 !important;
+                position: sticky !important;
+                top: 20px !important;
+            }
+
+            .config-main {
+                flex: 1 !important;
+                min-width: 0 !important;
+                width: calc(100% - 288px) !important;
+                max-width: calc(100% - 288px) !important;
+                box-sizing: border-box !important;
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+            }
         }
 
-        .config-sidebar {
-            width: 260px !important;
-            min-width: 260px !important;
-            max-width: 260px !important;
-            flex-shrink: 0 !important;
-            position: sticky !important;
-            top: 20px !important;
-        }
+        @media (max-width: 992px) {
+            .config-container {
+                display: flex !important;
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                gap: 12px !important;
+                margin-top: 10px !important;
+                box-sizing: border-box !important;
+            }
 
-        .config-main {
-            flex: 1 !important;
-            min-width: 0 !important;
-            width: calc(100% - 288px) !important;
-            max-width: calc(100% - 288px) !important;
-            box-sizing: border-box !important;
-            margin-top: 0 !important;
-            padding-top: 0 !important;
+            .config-sidebar {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 100% !important;
+                flex-shrink: 0 !important;
+                position: sticky !important;
+                top: 68px !important;
+                z-index: 100 !important;
+                background: rgba(9, 12, 22, 0.96) !important;
+                backdrop-filter: blur(24px) saturate(180%) !important;
+                -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 16px !important;
+                padding: 10px 8px !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 8px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+                box-sizing: border-box !important;
+                margin-bottom: 8px !important;
+            }
+
+            .config-sidebar::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            .config-sidebar > div[style*="font-size: 0.68rem"],
+            .config-sidebar > .brand,
+            .config-sidebar #sidebar-server-selector-card,
+            .config-sidebar #sidebar-server-premium-container,
+            .config-sidebar > .panel {
+                display: none !important;
+            }
+
+            .config-sidebar .h-tab {
+                width: auto !important;
+                flex-shrink: 0 !important;
+                white-space: nowrap !important;
+                padding: 10px 18px !important;
+                border-radius: 999px !important;
+                font-size: 0.85rem !important;
+                font-weight: 700 !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                background: rgba(255, 255, 255, 0.04) !important;
+                border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                color: var(--muted) !important;
+                min-height: 42px !important;
+                touch-action: manipulation !important;
+                cursor: pointer !important;
+                box-sizing: border-box !important;
+            }
+
+            .config-sidebar .h-tab:hover,
+            .config-sidebar .h-tab:active {
+                background: rgba(255, 255, 255, 0.08) !important;
+                color: #ffffff !important;
+            }
+
+            .config-sidebar .h-tab.active {
+                background: linear-gradient(135deg, rgba(88, 101, 242, 0.45) 0%, rgba(139, 92, 246, 0.45) 100%) !important;
+                border-color: #5865F2 !important;
+                color: #ffffff !important;
+                box-shadow: 0 0 16px rgba(88, 101, 242, 0.35) !important;
+            }
+
+            .config-sidebar .h-tab .badge {
+                display: none !important;
+            }
+
+            .config-main {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
         }
 
         .tab-content {
             display: none !important;
             width: 100% !important;
+            max-width: 100% !important;
             margin-top: 0 !important;
             padding-top: 0 !important;
             box-sizing: border-box !important;
@@ -4957,6 +5061,63 @@
                 <span>Nora Studio Plus</span>
                 <span class="mobile-plus-badge">PRO</span>
             </button>
+        </div>
+
+        <!-- Server / Guild Modules (Direct Mobile Tab Access) -->
+        <div id="mobile-drawer-guild-section" style="margin-top: 18px;">
+            <div class="mobile-drawer-section-label" style="color: var(--primary); display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-sliders-h" style="font-size: 0.75rem;"></i> SERVER MODULES
+            </div>
+            <div class="mobile-drawer-nav">
+                <button class="mobile-nav-item" data-tab="tab-overview" onclick="showTab('tab-overview'); closeMobileNav();">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard Overview</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-leveling" onclick="showTab('tab-leveling'); closeMobileNav();">
+                    <i class="fas fa-trophy"></i>
+                    <span>Leveling & XP</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-tickets" onclick="showTab('tab-tickets'); closeMobileNav();">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Support Ticketing</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-safety" onclick="showTab('tab-safety'); closeMobileNav();">
+                    <i class="fas fa-shield-virus"></i>
+                    <span>AutoMod & Anti-Raid</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-verify" onclick="showTab('tab-verify'); closeMobileNav();">
+                    <i class="fas fa-user-check"></i>
+                    <span>Verification & Roblox</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-logging" onclick="showTab('tab-logging'); closeMobileNav();">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Welcomer & Audit Logs</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-welcome" onclick="showTab('tab-welcome'); closeMobileNav();">
+                    <i class="fas fa-calculator"></i>
+                    <span>Games & Counting</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-starboard" onclick="showTab('tab-starboard'); closeMobileNav();">
+                    <i class="fas fa-star"></i>
+                    <span>Starboard</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-reactionroles" onclick="showTab('tab-reactionroles'); closeMobileNav();">
+                    <i class="fas fa-magic"></i>
+                    <span>Reaction Roles</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-autoresponder" onclick="showTab('tab-autoresponder'); closeMobileNav();">
+                    <i class="fas fa-reply"></i>
+                    <span>Autoresponder</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-webhooks" onclick="showTab('tab-webhooks'); closeMobileNav();">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Webhooks & Embeds</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-topgg" onclick="showTab('tab-topgg'); closeMobileNav();">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Top.gg Votes</span>
+                </button>
+            </div>
         </div>
 
         <!-- Quick Resources Links -->
@@ -8133,49 +8294,81 @@
                                 <span style="background: rgba(88, 101, 242, 0.25); color: #5865F2; font-size: 0.72rem; padding: 3px 10px; border-radius: 999px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(88, 101, 242, 0.4);">Support System</span>
                             </div>
                             <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Support Ticket Panel & Help Desk</h1>
-                            <p style="color: rgba(255,255,255,0.75); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">Create private, multi-category support ticket channels with customizable Discord buttons and live preview.</p>
+                            <p style="color: rgba(255,255,255,0.75); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">Create private, multi-category support ticket channels with staff role routing, automated transcripts, custom button labels, and live simulator.</p>
                         </div>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 28px; align-items: start;">
                         <!-- Left Panel: Controls & Customization -->
                         <div class="panel" style="margin: 0; padding: 28px; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Ticket Panel Configuration</h3>
-                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 24px;">Configure channels, category parent, embed titles, and button colors.</p>
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Ticket Core Configuration</h3>
+                            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 24px;">Configure channels, staff roles, transcripts, auto-close timers, and panel layout.</p>
 
                             <div class="input-group" style="margin-bottom: 18px;">
                                 <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Ticket Spawn Channel</label>
+                                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 6px;">Channel where the public interactive ticket panel will be posted.</p>
                                 <select id="setting-ticketChannelId" style="width: 100%; box-sizing: border-box;">
                                     <option value="">Select channel...</option>
                                 </select>
                             </div>
 
                             <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Support Staff Role</label>
+                                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 6px;">Staff members with this role will be added to every created ticket and can claim/manage tickets.</p>
+                                <select id="setting-ticketSupportRoleId" style="width: 100%; box-sizing: border-box;">
+                                    <option value="">No role selected (Admins only)</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Ticket Transcripts & Audit Log Channel</label>
+                                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 6px;">Channel where ticket creations, closures, and complete HTML transcripts are saved.</p>
+                                <select id="setting-ticketLogChannelId" style="width: 100%; box-sizing: border-box;">
+                                    <option value="">Select log channel...</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
                                 <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Ticket Category Parent ID</label>
+                                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 6px;">Discord Category ID where newly opened ticket channels are created.</p>
                                 <input type="text" id="setting-ticketCategoryId" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box;">
                             </div>
 
                             <div class="input-group" style="margin-bottom: 18px;">
-                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Embed Title</label>
-                                <input type="text" id="setting-ticketEmbedTitle" placeholder="Support Center" value="🎫 Support & Help Desk" style="width: 100%; box-sizing: border-box;" oninput="updateTicketPreview()">
-                            </div>
-
-                            <div class="input-group" style="margin-bottom: 18px;">
-                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Embed Description</label>
-                                <textarea id="setting-ticketEmbedDesc" placeholder="Describe how members can open a ticket..." style="width: 100%; min-height: 80px; box-sizing: border-box;" oninput="updateTicketPreview()">Need help or have a question? Click one of the buttons below to open a private support ticket with our team!</textarea>
-                            </div>
-
-                            <div class="input-group" style="margin-bottom: 24px;">
-                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Accent Color</label>
-                                <input type="color" id="setting-ticketEmbedColor" value="#5865F2" style="height: 42px; width: 100%; cursor: pointer; padding: 4px;" oninput="updateTicketPreview()">
+                                <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Auto-Close Inactive Tickets</label>
+                                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 6px;">Automatically archive tickets after 24 hours of inactivity.</p>
+                                <select id="setting-ticketAutoArchive" style="width: 100%; box-sizing: border-box;">
+                                    <option value="1">Enabled (Auto-archive after 24 hours)</option>
+                                    <option value="0">Disabled (Manual staff closure only)</option>
+                                </select>
                             </div>
 
                             <div style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
-                                <h4 style="margin: 0 0 16px 0; font-size: 1rem; font-weight: 800; color: #fff;">Button Styles</h4>
+                                <h4 style="margin: 0 0 16px 0; font-size: 1rem; font-weight: 800; color: #fff;">Panel Embed Customization</h4>
+
+                                <div class="input-group" style="margin-bottom: 18px;">
+                                    <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Embed Title</label>
+                                    <input type="text" id="setting-ticketEmbedTitle" placeholder="Support Center" value="🎫 Support & Help Desk" style="width: 100%; box-sizing: border-box;" oninput="updateTicketPreview()">
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 18px;">
+                                    <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Embed Description</label>
+                                    <textarea id="setting-ticketEmbedDesc" placeholder="Describe how members can open a ticket..." style="width: 100%; min-height: 80px; box-sizing: border-box;" oninput="updateTicketPreview()">Need help or have a question? Click one of the buttons below to open a private support ticket with our team!</textarea>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 24px;">
+                                    <label style="font-weight: 700; color: #fff; font-size: 0.85rem;">Accent Color</label>
+                                    <input type="color" id="setting-ticketEmbedColor" value="#5865F2" style="height: 42px; width: 100%; cursor: pointer; padding: 4px;" oninput="updateTicketPreview()">
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
+                                <h4 style="margin: 0 0 16px 0; font-size: 1rem; font-weight: 800; color: #fff;">Button Customization (Labels & Styles)</h4>
                                 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
                                     <div>
-                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Support</label>
+                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Support Button Label</label>
+                                        <input type="text" id="setting-ticketBtnLabelSupport" value="Support" placeholder="Support" style="width: 100%; box-sizing: border-box; margin-bottom: 6px;" oninput="updateTicketPreview()">
                                         <select id="setting-ticketBtnStyleSupport" style="width: 100%;" onchange="updateTicketPreview()">
                                             <option value="Primary">Blurple</option>
                                             <option value="Secondary">Grey</option>
@@ -8184,7 +8377,8 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Reporting</label>
+                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Reporting Button Label</label>
+                                        <input type="text" id="setting-ticketBtnLabelReporting" value="Reporting" placeholder="Reporting" style="width: 100%; box-sizing: border-box; margin-bottom: 6px;" oninput="updateTicketPreview()">
                                         <select id="setting-ticketBtnStyleReporting" style="width: 100%;" onchange="updateTicketPreview()">
                                             <option value="Danger">Red</option>
                                             <option value="Primary">Blurple</option>
@@ -8196,7 +8390,8 @@
 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
                                     <div>
-                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Appeals</label>
+                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Appeals Button Label</label>
+                                        <input type="text" id="setting-ticketBtnLabelAppeals" value="Appeals" placeholder="Appeals" style="width: 100%; box-sizing: border-box; margin-bottom: 6px;" oninput="updateTicketPreview()">
                                         <select id="setting-ticketBtnStyleAppeals" style="width: 100%;" onchange="updateTicketPreview()">
                                             <option value="Secondary">Grey</option>
                                             <option value="Primary">Blurple</option>
@@ -8205,7 +8400,8 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Other</label>
+                                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Other Button Label</label>
+                                        <input type="text" id="setting-ticketBtnLabelOther" value="Other" placeholder="Other" style="width: 100%; box-sizing: border-box; margin-bottom: 6px;" oninput="updateTicketPreview()">
                                         <select id="setting-ticketBtnStyleOther" style="width: 100%;" onchange="updateTicketPreview()">
                                             <option value="Secondary">Grey</option>
                                             <option value="Primary">Blurple</option>
@@ -10254,7 +10450,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers'];
 
 
 
@@ -14831,6 +15027,15 @@
                 // Toggle Ticket King layout view classes on body
                 if (tabId.startsWith('tab-')) {
                     document.body.classList.add('in-config');
+
+                    // Ensure guild config container is visible and non-config views are hidden
+                    const targetServers = (typeof viewServers !== 'undefined' && viewServers) || document.getElementById('view-greeting');
+                    const targetConfig = (typeof viewConfig !== 'undefined' && viewConfig) || document.getElementById('view-config');
+                    const targetPrefs = (typeof viewPrefs !== 'undefined' && viewPrefs) || document.getElementById('view-prefs');
+                    const targetNotifs = (typeof viewNotifications !== 'undefined' && viewNotifications) || document.getElementById('view-notifications');
+                    const targetProfile = (typeof viewProfile !== 'undefined' && viewProfile) || document.getElementById('view-profile');
+                    [targetServers, targetPrefs, targetNotifs, targetProfile].forEach(v => { if (v && v.style) v.style.display = 'none'; });
+                    if (targetConfig && targetConfig.style) targetConfig.style.display = 'block';
                     
                     // Update breadcrumbs
                     const friendlyTabNames = {
@@ -14846,7 +15051,10 @@
                         'tab-autoresponder': 'Autoresponder',
                         'tab-feeds': 'Content Feeds',
                         'tab-webhooks': 'Webhooks',
-                        'tab-topgg': 'Top.gg Integration'
+                        'tab-topgg': 'Top.gg Integration',
+                        'tab-starboard': 'Starboard',
+                        'tab-applications': 'Applications',
+                        'tab-members': 'Members'
                     };
                     const breadcrumbTab = document.getElementById('breadcrumb-tab-name');
                     if (breadcrumbTab && friendlyTabNames[tabId]) {
@@ -14860,7 +15068,18 @@
                     });
                     document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
                     const btn = document.querySelector(`.h-tab[data-tab="${tabId}"]`) || document.querySelector(`.h-tab[onclick*="${tabId}"]`);
-                    if (btn) btn.classList.add('active');
+                    if (btn) {
+                        btn.classList.add('active');
+                        try {
+                            btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                        } catch (_) {}
+                    }
+
+                    // Highlight mobile drawer guild section item
+                    document.querySelectorAll('#mobile-drawer-guild-section .mobile-nav-item').forEach(b => b.classList.remove('active'));
+                    const drawerActiveBtn = document.querySelector(`#mobile-drawer-guild-section .mobile-nav-item[data-tab="${tabId}"]`);
+                    if (drawerActiveBtn) drawerActiveBtn.classList.add('active');
+
                     const content = document.getElementById(tabId);
                     if (content) {
                         content.classList.add('active');
@@ -16708,6 +16927,7 @@
                     'setting-verifyChannelId',
                     'setting-verificationLogChannelId',
                     'setting-ticketChannelId',
+                    'setting-ticketLogChannelId',
                     'setting-robloxVerifyChannelId',
                     'setting-inviteTrackerChannelId',
                     'setting-oneWordStoryChannelId',
@@ -18751,6 +18971,7 @@
                     'setting-topggRewardRoleId',
                     'setting-boostRewardRoleId',
                     'setting-robloxVerifyRoleId',
+                    'setting-ticketSupportRoleId',
                     'setting-promoterRoleId',
                     'setting-unverifiedRoleId',
                     'rr-role-1',

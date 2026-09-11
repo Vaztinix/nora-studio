@@ -69,11 +69,12 @@ function generateSvgCaptcha(text) {
 /**
  * Universal helper to grant configured verification roles to a member and dispatch audit logs
  */
-async function grantVerificationRoles(member, settings, context = {}, method = 'Standard') {
+async function grantVerificationRoles(member, settings, context = {}, method = 'Standard', options = {}) {
     if (!member || !member.guild) {
         return { success: false, message: 'Could not resolve guild member profile.' };
     }
 
+    const isSilent = context?.silent === true || options?.silent === true;
     const guild = member.guild;
     const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;
     const maxVerifiedRoles = isPremium ? 5 : 3;
@@ -105,7 +106,9 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
                 await member.roles.add(rId);
                 rolesAdded++;
             } catch (err) {
-                console.error(`Failed to assign verified role ${rId}:`, err);
+                if (!isSilent) {
+                    console.error(`Failed to assign verified role ${rId}:`, err);
+                }
             }
         }
     }
@@ -133,7 +136,9 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
                     try {
                         await member.roles.remove(uId, `Nora Verification: Member completed ${method} verification, unverified role removed.`);
                     } catch (remErr) {
-                        console.error(`Failed to remove unverified role ${uId}:`, remErr.message);
+                        if (!isSilent) {
+                            console.error(`Failed to remove unverified role ${uId}:`, remErr.message);
+                        }
                     }
                 }
             }
@@ -144,34 +149,36 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
         return { success: true, alreadyVerified: true, message: 'You are already verified on this server!' };
     }
 
-    // Send Audit Log if configured
-    try {
-        let loggingChannels = {};
-        if (typeof settings?.loggingChannels === 'object' && settings.loggingChannels !== null) {
-            loggingChannels = settings.loggingChannels;
-        } else if (typeof settings?.loggingChannels === 'string') {
-            try { loggingChannels = JSON.parse(settings.loggingChannels); } catch(e) {}
-        }
-
-        const logChannelId = loggingChannels.members || settings?.loggingChannelId || settings?.verificationLogChannelId;
-        if (logChannelId) {
-            const logChannel = guild.channels.cache.get(logChannelId) || await guild.channels.fetch(logChannelId).catch(() => null);
-            if (logChannel) {
-                const logEmbed = new EmbedBuilder()
-                    .setTitle('✅ Member Verified')
-                    .setDescription(`${member.user} (${member.user.tag}) completed **${method}** verification.`)
-                    .addFields(
-                        { name: 'User ID', value: `\`${member.user.id}\``, inline: true },
-                        { name: 'Method', value: `\`${method}\``, inline: true },
-                        { name: 'Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
-                    )
-                    .setColor(0x2ea043)
-                    .setTimestamp();
-                await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
+    // Send Audit Log if configured and not silent
+    if (!isSilent) {
+        try {
+            let loggingChannels = {};
+            if (typeof settings?.loggingChannels === 'object' && settings.loggingChannels !== null) {
+                loggingChannels = settings.loggingChannels;
+            } else if (typeof settings?.loggingChannels === 'string') {
+                try { loggingChannels = JSON.parse(settings.loggingChannels); } catch(e) {}
             }
+
+            const logChannelId = loggingChannels.members || settings?.loggingChannelId || settings?.verificationLogChannelId;
+            if (logChannelId) {
+                const logChannel = guild.channels.cache.get(logChannelId) || await guild.channels.fetch(logChannelId).catch(() => null);
+                if (logChannel) {
+                    const logEmbed = new EmbedBuilder()
+                        .setTitle('✅ Member Verified')
+                        .setDescription(`${member.user} (${member.user.tag}) completed **${method}** verification.`)
+                        .addFields(
+                            { name: 'User ID', value: `\`${member.user.id}\``, inline: true },
+                            { name: 'Method', value: `\`${method}\``, inline: true },
+                            { name: 'Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
+                        )
+                        .setColor(0x2ea043)
+                        .setTimestamp();
+                    await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
+                }
+            }
+        } catch (logErr) {
+            console.error('[Verification Log Error]:', logErr);
         }
-    } catch (logErr) {
-        console.error('[Verification Log Error]:', logErr);
     }
 
     return { success: true, alreadyVerified: false, rolesAdded, message: '✅ **Verification Successful!** You have been verified and granted access.' };
