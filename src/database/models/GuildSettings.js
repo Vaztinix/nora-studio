@@ -785,6 +785,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.TEXT,
         defaultValue: '[]'
     },
+    countingBlacklistedRoles: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
     countingBlacklistedUsers: {
         type: DataTypes.TEXT,
         defaultValue: '[]'

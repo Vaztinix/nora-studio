@@ -586,7 +586,7 @@
                     <!-- Discord User Identity Badge -->
                     <div class="discord-user-badge">
                         <div class="discord-user-info">
-                            <img id="discord-avatar" class="discord-user-avatar" src="nora.png" alt="Discord Avatar">
+                            <img id="discord-avatar" class="discord-user-avatar" src="nora.png" alt="Discord Avatar" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                             <div>
                                 <div id="discord-name" class="discord-user-name">Username</div>
                                 <div id="discord-id" class="discord-user-id">ID: 000000000000000000</div>
@@ -598,7 +598,7 @@
                     <!-- Active Linked Roblox Identity -->
                     <div id="active-roblox-container" style="display: none;">
                         <div class="roblox-identity-card">
-                            <img id="roblox-avatar" class="roblox-avatar-img" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Roblox Avatar">
+                            <img id="roblox-avatar" class="roblox-avatar-img" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Roblox Avatar" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                             <div class="roblox-identity-details">
                                 <div class="roblox-display-name">
                                     <span id="roblox-display-name">Roblox User</span>
@@ -813,11 +813,45 @@
                 document.getElementById('view-auth').style.display = 'none';
                 document.getElementById('view-main').style.display = 'block';
 
+                function resolveDiscordUserAvatarUrl(user) {
+                    if (!user) return 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    const rawAvatar = typeof user === 'string' ? user : (user.avatar || '');
+                    const userId = typeof user === 'object' && user ? user.id : '';
+
+                    if (!rawAvatar) {
+                        if (userId) {
+                            try {
+                                const index = Number(BigInt(userId) % 5n);
+                                return `https://cdn.discordapp.com/embed/avatars/${index}.png`;
+                            } catch (e) {
+                                return 'https://cdn.discordapp.com/embed/avatars/0.png';
+                            }
+                        }
+                        return 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    }
+
+                    if (typeof rawAvatar === 'string' && (rawAvatar.startsWith('http://') || rawAvatar.startsWith('https://') || rawAvatar.startsWith('data:'))) {
+                        const match = rawAvatar.match(/avatars\/([0-9]+)\/([a-zA-Z0-9_]+)\.(png|gif|webp)/);
+                        if (match) {
+                            const uid = match[1];
+                            const hash = match[2];
+                            const isAnimated = hash.startsWith('a_');
+                            return `https://cdn.discordapp.com/avatars/${uid}/${hash}.${isAnimated ? 'gif' : 'png'}?size=256`;
+                        }
+                        return rawAvatar;
+                    }
+
+                    if (typeof rawAvatar === 'string' && userId) {
+                        const isAnimated = rawAvatar.startsWith('a_');
+                        return `https://cdn.discordapp.com/avatars/${userId}/${rawAvatar}.${isAnimated ? 'gif' : 'png'}?size=256`;
+                    }
+
+                    return 'https://cdn.discordapp.com/embed/avatars/0.png';
+                }
+
                 document.getElementById('discord-name').textContent = currentUser.global_name || currentUser.username;
                 document.getElementById('discord-id').textContent = `ID: ${currentUser.id}`;
-                document.getElementById('discord-avatar').src = currentUser.avatar 
-                    ? (currentUser.avatar.startsWith('http') ? currentUser.avatar : `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`)
-                    : 'nora.png';
+                document.getElementById('discord-avatar').src = resolveDiscordUserAvatarUrl(currentUser);
 
                 await loadRobloxAccounts();
 
@@ -856,11 +890,10 @@
                     document.getElementById('roblox-username').textContent = `@${active.robloxUsername || active.robloxId}`;
                     document.getElementById('roblox-id').textContent = `Roblox ID: ${active.robloxId}`;
                     
-                    if (active.avatar || active.avatarUrl) {
-                        document.getElementById('roblox-avatar').src = active.avatar || active.avatarUrl;
-                    } else {
-                        document.getElementById('roblox-avatar').src = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${active.robloxId}&size=150x150&format=Png&isCircular=false`;
-                    }
+                    const robloxAvatarUrl = (active.avatar && !active.avatar.includes('thumbnails.roblox.com')) 
+                        ? active.avatar 
+                        : (getApiBaseUrl() + `/api/user/roblox/avatar?userId=${active.robloxId}`);
+                    document.getElementById('roblox-avatar').src = robloxAvatarUrl;
                 } else {
                     document.getElementById('active-roblox-container').style.display = 'none';
                 }
@@ -971,8 +1004,9 @@
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!res.ok) throw new Error('Failed to set active account');
-                showToast('Switched active Roblox identity!', 'success');
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || 'Failed to set active account');
+                showToast(data.message || 'Switched active Roblox identity!', 'success');
                 await loadRobloxAccounts();
             } catch (err) {
                 showToast(err.message, 'error');
@@ -991,8 +1025,9 @@
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!res.ok) throw new Error('Failed to unlink account');
-                showToast('Roblox account unlinked.', 'info');
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || 'Failed to unlink account');
+                showToast(data.message || 'Roblox account unlinked.', 'info');
                 await loadRobloxAccounts();
             } catch (err) {
                 showToast(err.message, 'error');

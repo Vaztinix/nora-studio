@@ -529,8 +529,8 @@ router.get('/analytics', async (req, res) => {
 
 
         const nowTime = Date.now();
-
         const oneDayMs = 24 * 60 * 60 * 1000;
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
         // 📊 Fetch accurate 7-day server activity, real message counts, and historical breakdown
         const weeklyStats = await activityTracker.getWeeklyStats(guild, 7);

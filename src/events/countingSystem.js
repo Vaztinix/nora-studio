@@ -161,7 +161,19 @@ module.exports = {
             return; // Silently drop
         }
 
-        // 2. Whitelisted roles check
+        // 2. Blacklisted roles check
+        let blacklistedRoles = [];
+        try {
+            blacklistedRoles = JSON.parse(settings.countingBlacklistedRoles || '[]');
+        } catch (e) { }
+        if (blacklistedRoles.length > 0) {
+            const hasBlacklistedRole = message.member?.roles?.cache?.some(role => blacklistedRoles.includes(role.id));
+            if (hasBlacklistedRole) {
+                return; // Silently drop
+            }
+        }
+
+        // 3. Whitelisted roles check
         let whitelistedRoles = [];
         try {
             whitelistedRoles = JSON.parse(settings.countingWhitelistedRoles || '[]');

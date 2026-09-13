@@ -1072,12 +1072,24 @@
             box-shadow: 0 10px 30px rgba(255, 255, 255, 0.04);
         }
         .panel.has-open-dropdown,
+        .row.has-open-dropdown,
+        .input-group.has-open-dropdown,
+        .config-card.has-open-dropdown,
+        .row:has(.custom-dropdown-container.open),
+        .row:has(.multiselect-container.open),
+        .panel:has(.custom-dropdown-container.open),
+        .panel:has(.multiselect-container.open),
+        .input-group:has(.custom-dropdown-container.open),
+        .input-group:has(.multiselect-container.open),
+        .config-card:has(.custom-dropdown-container.open),
+        .config-card:has(.multiselect-container.open),
+        #sidebar-server-selector-card.has-open-dropdown,
         .panel:focus-within,
         .row:focus-within,
         .log-row-compact:focus-within,
         .input-group:focus-within,
         .config-card:focus-within {
-            z-index: 100 !important;
+            z-index: 10000 !important;
             position: relative;
         }
         .panel > h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
@@ -1845,6 +1857,9 @@
             border-color: rgba(255, 255, 255, 0.15);
             background: rgba(255, 255, 255, 0.02);
         }
+        .custom-dropdown-container.open {
+            z-index: 99999 !important;
+        }
         .custom-dropdown-container.open .custom-dropdown-trigger {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(174, 239, 255, 0.15);
@@ -1857,15 +1872,17 @@
             left: 0;
             min-width: 100%;
             width: max-content;
-            max-width: 320px;
-            background: #111424;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            max-height: 200px;
+            max-width: 380px;
+            background: #0f121e !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 10px;
+            max-height: 250px;
             overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
-            backdrop-filter: blur(20px);
+            z-index: 99999 !important;
+            box-shadow: 0 16px 45px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.05) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-sizing: border-box;
         }
         .custom-dropdown-item {
             padding: 10px 14px;
@@ -2424,7 +2441,7 @@
             width: 100%;
         }
         .multiselect-container.open {
-            z-index: 9999 !important;
+            z-index: 99999 !important;
         }
         .multiselect-trigger {
             background: rgba(255, 255, 255, 0.05);
@@ -2455,19 +2472,20 @@
             left: 0;
             min-width: 100%;
             width: max-content;
-            max-width: 320px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
+            max-width: 380px;
+            background: #0f121e !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
             border-radius: var(--radius-md);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            max-height: 250px;
+            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255,255,255,0.05) !important;
+            z-index: 99999 !important;
+            max-height: 260px;
             overflow-y: auto;
             padding: 10px;
             display: none;
             flex-direction: column;
             gap: 8px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
             box-sizing: border-box;
         }
         .multiselect-search {
@@ -6139,7 +6157,7 @@
                         
                         <!-- Server Selector Card Dropdown -->
                         <div id="sidebar-server-selector-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin: 0 14px 15px 14px; position: relative;">
-                            <div id="sidebar-server-trigger" onclick="const d = document.getElementById('sidebar-server-dropdown'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; event.stopPropagation();" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                            <div id="sidebar-server-trigger" onclick="const d = document.getElementById('sidebar-server-dropdown'); const card = document.getElementById('sidebar-server-selector-card'); const isNowOpen = d.style.display === 'none' || d.style.display === ''; d.style.display = isNowOpen ? 'block' : 'none'; if(card) { card.classList.toggle('has-open-dropdown', isNowOpen); } event.stopPropagation();" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
                                     <img id="sidebar-server-icon" src="nora.png" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;" onerror="this.onerror=null; this.src='nora.png';">
                                     <span id="sidebar-server-name" style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-no-translate>Select Server</span>
@@ -6147,7 +6165,7 @@
                                 <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted); margin-left: 8px;"></i>
                             </div>
                             <!-- Dropdown Menu of Servers -->
-                            <div id="sidebar-server-dropdown" style="display: none; position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; z-index: 1000; max-height: 250px; overflow-y: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+                            <div id="sidebar-server-dropdown" style="display: none; position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: #0f121e !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 12px; z-index: 99999 !important; max-height: 250px; overflow-y: auto; box-shadow: 0 16px 45px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.05) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;">
                                 <div id="sidebar-server-list" style="padding: 5px; display: flex; flex-direction: column; gap: 4px;">
                                     <!-- Populated dynamically via JS -->
                                 </div>
@@ -7719,6 +7737,10 @@
                         <div class="input-group" style="margin-top: 15px;">
                             <label>Counting Whitelisted Roles</label>
                             <input type="hidden" id="setting-countingWhitelistedRoles">
+                        </div>
+                        <div class="input-group" style="margin-top: 15px;">
+                            <label>Counting Blacklisted Roles</label>
+                            <input type="hidden" id="setting-countingBlacklistedRoles">
                         </div>
                         <div class="input-group" style="margin-top: 15px;">
                             <label>Counting Blacklisted Users (Comma-separated IDs)</label>
@@ -10450,7 +10472,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers'];
 
 
 
@@ -18429,6 +18451,7 @@
                 if (typeof updateVerifyLivePreview === 'function') updateVerifyLivePreview();
             syncMultiselectUI('setting-automodImmuneRoles');
             syncMultiselectUI('setting-countingWhitelistedRoles');
+            syncMultiselectUI('setting-countingBlacklistedRoles');
             if (typeof updatePreview === 'function') updatePreview();
             isApplyingHistoryState = false;
             updateUndoRedoButtons();
@@ -19044,6 +19067,7 @@
                 initMultiselect('setting-welcomeRoleId', roles, roleLimit);
                 initMultiselect('setting-automodImmuneRoles', roles);
                 initMultiselect('setting-countingWhitelistedRoles', roles);
+                initMultiselect('setting-countingBlacklistedRoles', roles);
                 initMultiselect('setting-levelingIgnoredRoles', roles);
                 const chList = (typeof textChannels !== 'undefined' ? textChannels : (window.currentTextChannels || []));
                 initMultiselect('setting-starboardIgnoredChannels', (window.currentTextChannels || []));
@@ -19218,6 +19242,8 @@
                         rebuildOptions();
                         menu.style.display = 'none';
                         container.classList.remove('open');
+                        const pRow = container.closest('.row, .panel, .input-group, .config-card');
+                        if (pRow) pRow.classList.remove('has-open-dropdown');
                     });
 
                     menu.appendChild(item);
@@ -19241,6 +19267,8 @@
                         c.classList.remove('open');
                         const m = c.querySelector('.custom-dropdown-menu');
                         if (m) m.style.display = 'none';
+                        const p = c.closest('.row, .panel, .input-group, .config-card');
+                        if (p) p.classList.remove('has-open-dropdown');
                     }
                 });
 
@@ -19248,10 +19276,14 @@
                 if (isOpen) {
                     menu.style.display = 'none';
                     container.classList.remove('open');
+                    const pRow = container.closest('.row, .panel, .input-group, .config-card');
+                    if (pRow) pRow.classList.remove('has-open-dropdown');
                 } else {
                     rebuildOptions(); // Refresh items in case options changed dynamically
                     menu.style.display = 'flex';
                     container.classList.add('open');
+                    const pRow = container.closest('.row, .panel, .input-group, .config-card');
+                    if (pRow) pRow.classList.add('has-open-dropdown');
                 }
             });
 
@@ -19260,6 +19292,8 @@
                 if (!container.contains(e.target)) {
                     menu.style.display = 'none';
                     container.classList.remove('open');
+                    const pRow = container.closest('.row, .panel, .input-group, .config-card');
+                    if (pRow) pRow.classList.remove('has-open-dropdown');
                 }
             });
 
@@ -19410,19 +19444,22 @@
                         c.classList.remove('open');
                         const d = c.querySelector('.multiselect-dropdown');
                         if (d) d.style.display = 'none';
+                        const p = c.closest('.row, .panel, .input-group, .config-card');
+                        if (p) p.classList.remove('has-open-dropdown');
                     }
                 });
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('has-open-dropdown'));
 
                 const isOpen = dropdown.style.display === 'flex';
                 if (isOpen) {
                     dropdown.style.display = 'none';
                     container.classList.remove('open');
+                    const parentContainer = container.closest('.row, .panel, .input-group, .config-card');
+                    if (parentContainer) parentContainer.classList.remove('has-open-dropdown');
                 } else {
                     dropdown.style.display = 'flex';
                     container.classList.add('open');
-                    const parentPanel = container.closest('.panel');
-                    if (parentPanel) parentPanel.classList.add('has-open-dropdown');
+                    const parentContainer = container.closest('.row, .panel, .input-group, .config-card');
+                    if (parentContainer) parentContainer.classList.add('has-open-dropdown');
                 }
             });
 
@@ -19440,8 +19477,8 @@
                 if (!container.contains(e.target)) {
                     dropdown.style.display = 'none';
                     container.classList.remove('open');
-                    const parentPanel = container.closest('.panel');
-                    if (parentPanel) parentPanel.classList.remove('has-open-dropdown');
+                    const parentContainer = container.closest('.row, .panel, .input-group, .config-card');
+                    if (parentContainer) parentContainer.classList.remove('has-open-dropdown');
                 }
             });
 
