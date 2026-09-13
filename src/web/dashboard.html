@@ -5223,48 +5223,49 @@
                 <button class="config-btn" style="width: auto; background: rgba(255,85,85,0.2); border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 8px 16px;" onclick="window.open('https://discord.gg/Uxb2tNAxtp', '_blank')">Appeal Suspension</button>
             </div>
             <div id="view-greeting" data-view-servers="true" class="view-panel active">
-                <div class="hero-banner" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);">
-                    <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: var(--primary); filter: blur(90px); opacity: 0.1; border-radius: 50%;"></div>
-                    <div style="position: relative; z-index: 2; max-width: 600px;">
-                        <h1 style="font-size: 2.4rem; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.02em; line-height: 1.1;">Nora Command Center</h1>
-                        <p style="color: rgba(255,255,255,0.7); font-size: 1.05rem; font-weight: 400; line-height: 1.5; margin: 0;">Select a server from the grid below to configure automations, moderation systems, and progression rewards.</p>
+                <div class="hero-banner" style="background: rgba(18, 22, 34, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
+                    <div style="max-width: 620px;">
+                        <h1 style="font-size: 1.85rem; font-weight: 700; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.02em;">Server Hub</h1>
+                        <p style="color: rgba(255,255,255,0.65); font-size: 0.92rem; font-weight: 400; line-height: 1.5; margin: 0;">Select a Discord server to configure automations, moderation systems, and leveling progression.</p>
                     </div>
-                    <i class="fas fa-server" style="font-size: 6rem; position: absolute; right: 40px; top: 50%; transform: translateY(-50%) rotate(15deg); opacity: 0.1; color: #fff;"></i>
+                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(35, 165, 90, 0.1); border: 1px solid rgba(35, 165, 90, 0.25); padding: 7px 14px; border-radius: 99px; font-size: 0.8rem; color: #23a55a; font-weight: 600; white-space: nowrap;">
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #23a55a; display: inline-block;"></span> Gateway Operational
+                    </div>
                 </div>
 
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; margin-top: 10px;">
                     <div>
-                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff;">Server Management</h2>
-                        <p style="color: var(--muted); font-size: 0.85rem;">Manage your Discord servers with Nora</p>
+                        <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">Your Servers</h2>
+                        <p style="color: var(--muted); font-size: 0.82rem; margin: 2px 0 0 0;">Servers you manage or have administrative access to</p>
                     </div>
-                    <button class="config-btn" style="width: auto; background: var(--card-bg); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" onclick="inviteBot()"><i class="fas fa-plus"></i> Invite Nora</button>
+                    <button class="config-btn" style="width: auto; background: var(--card-bg); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 10px;" onclick="inviteBot()"><i class="fas fa-plus"></i> Invite Nora</button>
                 </div>
 
                 <!-- Premium Callout Banner -->
-                <div id="premium-callout-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.1) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 18px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                <div id="premium-callout-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
                             <i class="fas fa-crown"></i>
                         </div>
                         <div>
-                            <h4 id="premium-banner-title" style="margin: 0 0 2px 0; font-size: 1rem; font-weight: 800; color: #fff;">Unlock Nora Studio Plus Premium</h4>
-                            <p id="premium-banner-desc" style="margin: 0; color: rgba(255,255,255,0.7); font-size: 0.83rem;">Instant Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.</p>
+                            <h4 id="premium-banner-title" style="margin: 0 0 2px 0; font-size: 0.95rem; font-weight: 700; color: #fff;">Nora Studio Plus</h4>
+                            <p id="premium-banner-desc" style="margin: 0; color: rgba(255,255,255,0.65); font-size: 0.82rem;">Unlock Roblox Rank Sync, Aura AI Co-Pilot, 200 Autoresponder Slots, and 10x XP Boosters.</p>
                         </div>
                     </div>
-                    <button type="button" id="premium-banner-btn" onclick="openPremiumModal()" style="background: #10B981 !important; color: #000 !important; font-weight: 800 !important; font-size: 0.85rem; padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
-                        ★ Upgrade Server ($1.99/mo)
+                    <button type="button" id="premium-banner-btn" onclick="openPremiumModal()" style="background: #10B981 !important; color: #000 !important; font-weight: 700 !important; font-size: 0.82rem; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; white-space: nowrap; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                        Upgrade Server ($1.99/mo)
                     </button>
                 </div>
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <div style="position: relative; flex: 1; min-width: 250px;">
-                        <input type="text" id="server-search" placeholder="Search for a server..." oninput="filterServers()" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 10px 16px 10px 38px; border-radius: 8px; color: white; outline: none; font-size: 0.9rem; border-color: rgba(255,255,255,0.08);">
+                        <input type="text" id="server-search" placeholder="Search servers..." oninput="filterServers()" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 10px 16px 10px 38px; border-radius: 10px; color: white; outline: none; font-size: 0.88rem; border-color: rgba(255,255,255,0.08);">
                         <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem;"></i>
                     </div>
                     <div style="display: flex; gap: 10px; font-size: 0.8rem; font-weight: 600;">
-                        <span class="badge" id="servers-count-active" style="background: rgba(35, 165, 90, 0.15); color: #23a55a; border: 1px solid rgba(35, 165, 90, 0.3); padding: 6px 12px; border-radius: 99px;">0 Active</span>
-                        <span class="badge" id="servers-count-not-config" style="background: rgba(255, 255, 255, 0.05); color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; border-radius: 99px;">0 Not Configured</span>
+                        <span class="badge" id="servers-count-active" style="background: rgba(35, 165, 90, 0.12); color: #23a55a; border: 1px solid rgba(35, 165, 90, 0.25); padding: 6px 12px; border-radius: 99px;">0 Active</span>
+                        <span class="badge" id="servers-count-not-config" style="background: rgba(255, 255, 255, 0.04); color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; border-radius: 99px;">0 Not Configured</span>
                     </div>
                 </div>
                 
@@ -5274,8 +5275,8 @@
                 <div id="role-access-section" style="margin-top: 40px; margin-bottom: 40px; display: none;">
 
                     <div style="margin-bottom: 20px;">
-                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff;">Servers You May Have Access To</h2>
-                        <p style="color: var(--muted); font-size: 0.85rem;">Servers where you have role-based access to the dashboard</p>
+                        <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Role-Accessible Servers</h2>
+                        <p style="color: var(--muted); font-size: 0.82rem;">Servers where you have dashboard permissions assigned via role</p>
                     </div>
                     <div class="server-grid" id="role-guilds-container"></div>
                 </div>
@@ -5283,192 +5284,169 @@
 
 
             <div id="view-profile" class="view-panel" style="display: none;">
-                <div class="hero-banner" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(56, 189, 248, 0.12) 100%); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 24px; padding: 36px 40px; margin-bottom: 30px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);">
-                    <div style="position: absolute; top: -60px; left: -60px; width: 280px; height: 280px; background: #7c3aed; filter: blur(100px); opacity: 0.15; border-radius: 50%;"></div>
-                    <div style="position: relative; z-index: 2; max-width: 650px;">
-                        <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; color: #c084fc; font-weight: 700; margin-bottom: 12px;">
-                            <i class="fas fa-sparkles"></i> Personal Identity Hub
-                        </div>
-                        <h1 style="font-size: 2.3rem; font-weight: 800; color: #fff; margin-bottom: 8px; letter-spacing: -0.02em;">My Identity & Profile</h1>
-                        <p style="color: rgba(255,255,255,0.75); font-size: 0.95rem; font-weight: 400; line-height: 1.5; margin: 0;">Express yourself across Nora. Personalize your global bio, custom animated GIF rank card, and manage connected gaming identities.</p>
+                <div class="hero-banner" style="background: rgba(18, 22, 34, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
+                    <div style="max-width: 650px;">
+                        <h1 style="font-size: 1.85rem; font-weight: 700; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.02em;">Profile & Rank Card</h1>
+                        <p style="color: rgba(255,255,255,0.65); font-size: 0.92rem; font-weight: 400; line-height: 1.5; margin: 0;">Customize your public bio, personalize leveling rank card themes and animated GIF backgrounds, and manage connected Roblox identities.</p>
                     </div>
-                    <i class="fas fa-fingerprint" style="font-size: 6.5rem; position: absolute; right: 40px; top: 50%; transform: translateY(-50%) rotate(12deg); opacity: 0.08; color: #fff;"></i>
+                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 7px 14px; border-radius: 99px; font-size: 0.8rem; color: rgba(255,255,255,0.7); font-weight: 600; white-space: nowrap;">
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; display: inline-block;"></span> Cloud Synced
+                    </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 30px;">
+                <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px;">
                     <!-- Identity & Customization (Left Column) -->
-                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
                         
                         <!-- Global Bio / About Me Panel -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 26px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px;">
-                                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                                    <i class="fas fa-feather-alt"></i>
-                                </div>
-                                <div>
-                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Global About Me / Bio</h3>
-                                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Your public bio shown across Nora server profile cards.</p>
-                                </div>
+                        <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            <div style="margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0;">Global About Me</h3>
+                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Your public bio shown on Nora server profile cards and member cards.</p>
                             </div>
 
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <label style="font-size: 0.84rem; font-weight: 700; color: #fff;">Profile Bio</label>
+                                    <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85);">Profile Bio</label>
                                     <span id="user-pref-bio-counter" style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">0/250</span>
                                 </div>
-                                <textarea id="user-pref-bio" placeholder="Write a short bio, your favorite games, or what makes you unique..." maxlength="250" oninput="checkTextareaLimit(this, 250); if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; min-height: 95px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 14px; border-radius: 12px; resize: vertical; outline: none; transition: 0.3s; font-size: 0.88rem; line-height: 1.5;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(0,0,0,0.35)';" onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(0,0,0,0.25)';"></textarea>
+                                <textarea id="user-pref-bio" placeholder="Write a short bio, your favorite games, or what makes you unique..." maxlength="250" oninput="checkTextareaLimit(this, 250); if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; min-height: 90px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 12px 14px; border-radius: 10px; resize: vertical; outline: none; transition: 0.2s; font-size: 0.88rem; line-height: 1.5;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(0,0,0,0.35)';" onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(0,0,0,0.25)';"></textarea>
                             </div>
                         </div>
 
                         <!-- Leveling Rank Card & Animated GIF Studio Panel -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 26px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px; flex-wrap: wrap; gap: 12px;">
-                                <div style="display: flex; align-items: center; gap: 14px;">
-                                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);">
-                                        <i class="fas fa-palette"></i>
-                                    </div>
-                                    <div>
-                                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">Rank Card & Animated Background</h3>
-                                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Design your custom rank card with Klipy GIFs, image backgrounds, and colors.</p>
-                                    </div>
-                                </div>
-                                <span class="badge" style="background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); padding: 4px 10px; font-size: 0.75rem; border-radius: 99px; font-weight: 700;">Live Canvas</span>
+                        <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            <div style="margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0;">Rank Card Appearance</h3>
+                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Choose custom accent colors or upload animated GIF / image backgrounds.</p>
                             </div>
 
                             <!-- Overwrite Server Presets Master Toggle -->
-                            <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(79, 70, 229, 0.08) 100%); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
-                                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-                                    <div style="font-size: 1.3rem; color: #c084fc;"><i class="fas fa-wand-magic-sparkles"></i></div>
-                                    <div>
-                                        <h4 style="margin: 0; font-size: 0.92rem; color: #fff; font-weight: 700;">Overwrite Server Presets</h4>
-                                        <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: #cbd5e1; line-height: 1.4;">Display your personal custom colors and animated background across all servers.</p>
-                                    </div>
+                            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.88rem; color: #fff; font-weight: 600;">Apply Across All Servers</h4>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--muted); line-height: 1.4;">Use your personal custom style instead of each server's default theme.</p>
                                 </div>
                                 <label class="switch"><input type="checkbox" id="user-pref-overwriteServerPresets" onchange="if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview(); saveUserProfile();"><span class="slider"></span></label>
                             </div>
 
-                            <div style="display: flex; flex-direction: column; gap: 18px;">
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
                                 <!-- Theme Mode Selection -->
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
-                                    <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">Card Customization Mode</label>
+                                    <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85);">Customization Mode</label>
                                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-preset" style="cursor: pointer; padding: 9px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-preset" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;">
                                             <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Server Preset
                                         </label>
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-custom" style="cursor: pointer; padding: 9px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-custom" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;">
                                             <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Custom Accent
                                         </label>
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-image" style="cursor: pointer; padding: 9px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s;">
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-image" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;">
                                             <input type="radio" name="userRankCardThemeMode" value="image" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Animated GIF / Image
                                         </label>
                                     </div>
                                 </div>
 
                                 <!-- Hex Circle & Interactive Color Picker -->
-                                <div id="user-rankcard-color-picker-section" style="background: rgba(0,0,0,0.25); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 12px;">
+                                <div id="user-rankcard-color-picker-section" style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                        <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                            <i class="fas fa-eye-dropper" style="color: #38bdf8;"></i> Custom Accent Color
+                                        <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85);">
+                                            Accent Color
                                         </label>
                                         <div style="display: flex; align-items: center; gap: 8px;">
-                                            <span id="hex-color-preview-badge" style="width: 22px; height: 22px; border-radius: 50%; background: #7c3aed; border: 2px solid #fff; display: inline-block;"></span>
-                                            <input type="text" id="user-pref-rankCardHexInput" value="#7c3aed" maxlength="7" style="width: 80px; padding: 5px 8px; font-size: 0.8rem; font-family: monospace; font-weight: 700; border-radius: 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; text-align: center;" oninput="handleHexDirectInput(this.value)">
-                                            <input type="color" id="user-pref-rankCardCustomColor" value="#7c3aed" style="width: 32px; height: 32px; cursor: pointer; border: none; border-radius: 6px; background: transparent;" oninput="handleNativeColorInput(this.value)">
+                                            <span id="hex-color-preview-badge" style="width: 20px; height: 20px; border-radius: 50%; background: #7c3aed; border: 2px solid rgba(255,255,255,0.6); display: inline-block;"></span>
+                                            <input type="text" id="user-pref-rankCardHexInput" value="#7c3aed" maxlength="7" style="width: 75px; padding: 4px 8px; font-size: 0.8rem; font-family: monospace; font-weight: 600; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; text-align: center;" oninput="handleHexDirectInput(this.value)">
+                                            <input type="color" id="user-pref-rankCardCustomColor" value="#7c3aed" style="width: 28px; height: 28px; cursor: pointer; border: none; border-radius: 6px; background: transparent;" oninput="handleNativeColorInput(this.value)">
                                         </div>
                                     </div>
 
                                     <!-- Quick Select Swatch Palette Circles -->
-                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Presets:</span>
-                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#7c3aed')" style="width: 26px; height: 26px; border-radius: 50%; background: #7c3aed; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Purple"></button>
-                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#5865f2')" style="width: 26px; height: 26px; border-radius: 50%; background: #5865f2; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Blurple"></button>
-                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#38bdf8')" style="width: 26px; height: 26px; border-radius: 50%; background: #38bdf8; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Cyan"></button>
-                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#10b981')" style="width: 26px; height: 26px; border-radius: 50%; background: #10b981; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Emerald"></button>
-                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#f59e0b')" style="width: 26px; height: 26px; border-radius: 50%; background: #f59e0b; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Amber"></button>
-                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#ec4899')" style="width: 26px; height: 26px; border-radius: 50%; background: #ec4899; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Pink"></button>
-                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#ef4444')" style="width: 26px; height: 26px; border-radius: 50%; background: #ef4444; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Red"></button>
-                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#ffffff')" style="width: 26px; height: 26px; border-radius: 50%; background: #ffffff; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="White"></button>
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 500;">Presets:</span>
+                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#7c3aed')" style="width: 22px; height: 22px; border-radius: 50%; background: #7c3aed; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Purple"></button>
+                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#5865f2')" style="width: 22px; height: 22px; border-radius: 50%; background: #5865f2; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Blurple"></button>
+                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#38bdf8')" style="width: 22px; height: 22px; border-radius: 50%; background: #38bdf8; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Cyan"></button>
+                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#10b981')" style="width: 22px; height: 22px; border-radius: 50%; background: #10b981; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Emerald"></button>
+                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#f59e0b')" style="width: 22px; height: 22px; border-radius: 50%; background: #f59e0b; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Amber"></button>
+                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#ec4899')" style="width: 22px; height: 22px; border-radius: 50%; background: #ec4899; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Pink"></button>
+                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#ef4444')" style="width: 22px; height: 22px; border-radius: 50%; background: #ef4444; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="Red"></button>
+                                        <button type="button" class="color-swatch-circle" onclick="setRankColor('#ffffff')" style="width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s;" title="White"></button>
                                     </div>
                                 </div>
 
                                 <!-- Device GIF & Image Direct Upload Zone -->
-                                <div id="user-rankcard-image-upload-section" style="background: rgba(0,0,0,0.25); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 12px;">
+                                <div id="user-rankcard-image-upload-section" style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                                        <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                            <i class="fas fa-file-image" style="color: #a855f7;"></i> Upload Media or Paste Link
+                                        <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85);">
+                                            Background Media
                                         </label>
-                                        <span style="font-size: 0.72rem; color: var(--muted);">Supports Klipy, Tenor, Giphy, Discord CDN, Uploads (Up to 10MB)</span>
+                                        <span style="font-size: 0.72rem; color: var(--muted);">GIF, PNG, JPG (Up to 10MB)</span>
                                     </div>
 
                                     <!-- Drag and drop / Click upload container -->
-                                    <div id="rankcard-dropzone" onclick="document.getElementById('user-rank-card-file-input').click()" ondragover="event.preventDefault(); this.style.borderColor='#a855f7'; this.style.background='rgba(168,85,247,0.08)';" ondragleave="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.background='rgba(0,0,0,0.2)';" ondrop="handleRankCardFileDrop(event)" style="border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 18px 14px; text-align: center; cursor: pointer; background: rgba(0,0,0,0.2); transition: all 0.25s ease;">
+                                    <div id="rankcard-dropzone" onclick="document.getElementById('user-rank-card-file-input').click()" ondragover="event.preventDefault(); this.style.borderColor='rgba(255,255,255,0.35)'; this.style.background='rgba(255,255,255,0.03)';" ondragleave="this.style.borderColor='rgba(255,255,255,0.12)'; this.style.background='rgba(0,0,0,0.2)';" ondrop="handleRankCardFileDrop(event)" style="border: 1px dashed rgba(255,255,255,0.15); border-radius: 10px; padding: 16px 12px; text-align: center; cursor: pointer; background: rgba(0,0,0,0.2); transition: all 0.2s ease;">
                                         <input type="file" id="user-rank-card-file-input" accept=".gif,image/*" style="display: none;" onchange="handleRankCardFileUpload(event)">
-                                        <div style="font-size: 1.8rem; color: #c084fc; margin-bottom: 6px;"><i class="fas fa-cloud-arrow-up"></i></div>
-                                        <div style="font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 2px;">Click to Upload Animated GIF or Image</div>
-                                        <div style="font-size: 0.72rem; color: var(--muted);">or drag & drop your media file directly here</div>
+                                        <div style="font-size: 1.3rem; color: var(--muted); margin-bottom: 4px;"><i class="fas fa-arrow-up-from-bracket"></i></div>
+                                        <div style="font-size: 0.84rem; font-weight: 600; color: #fff; margin-bottom: 2px;">Upload Animated GIF or Image</div>
+                                        <div style="font-size: 0.72rem; color: var(--muted);">or drag and drop file here</div>
                                     </div>
 
                                     <!-- Direct URL Link Input Fallback (with Klipy support) -->
                                     <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-size: 0.76rem; color: var(--muted);">Or paste direct GIF / Image Link (Klipy, Tenor, Giphy, Imgur, Discord CDN)</label>
+                                        <label style="font-size: 0.75rem; color: var(--muted);">Or direct URL link (Klipy, Tenor, Giphy, Discord CDN)</label>
                                         <div style="display: flex; gap: 8px;">
-                                            <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="https://klipy.com/gifs/... or https://media.tenor.com/... or https://i.imgur.com/...gif" oninput="handleRankCardBgInput(this.value)" style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem;">
-                                            <button type="button" class="btn-outline" style="padding: 0 14px; font-size: 0.8rem; color: #ff5555; border-color: rgba(255,85,85,0.3); white-space: nowrap;" onclick="clearUserRankCardBg()"><i class="fas fa-trash-alt"></i> Clear</button>
+                                            <input type="text" id="user-pref-rankCardBackgroundImage" placeholder="https://klipy.com/... or https://media.tenor.com/...gif" oninput="handleRankCardBgInput(this.value)" style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem;">
+                                            <button type="button" class="btn-outline" style="padding: 0 12px; font-size: 0.78rem; color: #ff5555; border-color: rgba(255,85,85,0.25); white-space: nowrap;" onclick="clearUserRankCardBg()"><i class="fas fa-trash-alt"></i> Clear</button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <button class="save-btn" style="width: 100%; padding: 13px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; background: #ffffff; color: #000000; box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="saveUserProfile()"><i class="fas fa-check-circle"></i> Save Profile & Rank Card Changes</button>
+                                <button class="save-btn" style="width: 100%; padding: 11px; font-size: 0.88rem; font-weight: 600; border-radius: 10px; background: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="saveUserProfile()"><i class="fas fa-check"></i> Save Changes</button>
                             </div>
                         </div>
 
                         <!-- Connected Roblox Accounts Panel -->
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; backdrop-filter: blur(20px); padding: 26px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px; flex-wrap: wrap; gap: 14px;">
-                                <div style="display: flex; align-items: center; gap: 14px;">
-                                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255, 255, 255, 0.08); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+                        <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+                                <div>
+                                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.9;">
                                             <path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/>
                                         </svg>
-                                    </div>
-                                    <div>
-                                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
-                                            Roblox Integration
-                                            <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 99px; font-weight: 700;">OAuth2 Verified</span>
-                                        </h3>
-                                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Link your Roblox profile to unlock automatic Discord role sync and clan ranks.</p>
-                                    </div>
+                                        Roblox Accounts
+                                    </h3>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--muted);">Link your Roblox profile for automatic role sync and group bindings.</p>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                    <button type="button" class="btn-primary" onclick="startRobloxOAuth()" style="padding: 9px 16px; font-size: 0.84rem; font-weight: 700; border-radius: 10px; background: #ffffff; color: #000000; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-                                        <i class="fas fa-link"></i> Connect Roblox
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <button type="button" class="btn-primary" onclick="startRobloxOAuth()" style="padding: 7px 14px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; background: #ffffff; color: #000000; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer;">
+                                        <i class="fas fa-link"></i> Connect Account
                                     </button>
-                                    <button type="button" class="btn-outline" onclick="syncAllRobloxRoles()" style="padding: 9px 14px; font-size: 0.84rem; font-weight: 600; border-radius: 10px; background: rgba(255,255,255,0.04); color: #fff; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <button type="button" class="btn-outline" onclick="syncAllRobloxRoles()" style="padding: 7px 12px; font-size: 0.82rem; font-weight: 500; border-radius: 8px; background: rgba(255,255,255,0.03); color: #fff; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
                                         <i class="fas fa-rotate"></i> Sync Roles
                                     </button>
                                 </div>
                             </div>
                             
                             <!-- Dynamic Roblox Accounts Container -->
-                            <div id="roblox-accounts-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
-                                <div style="text-align: center; padding: 20px; color: var(--muted); font-size: 0.85rem;">
-                                    <i class="fas fa-spinner fa-spin"></i> Loading Roblox profile status...
+                            <div id="roblox-accounts-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+                                <div style="text-align: center; padding: 18px; color: var(--muted); font-size: 0.82rem;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading linked accounts...
                                 </div>
                             </div>
 
                             <!-- Manual Username Link Fallback Accordion -->
-                            <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; overflow: hidden;">
-                                <div onclick="toggleRobloxManualForm()" style="padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; transition: 0.2s; background: rgba(255,255,255,0.02);">
-                                    <span style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-code" style="color: #c084fc;"></i> Manual Code Verification (Alternative)
+                            <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden;">
+                                <div onclick="toggleRobloxManualForm()" style="padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; transition: 0.2s; background: rgba(255,255,255,0.015);">
+                                    <span style="font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.75);">
+                                        Manual Verification Code (Alternative)
                                     </span>
-                                    <i id="roblox-manual-arrow" class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted); transition: transform 0.2s;"></i>
+                                    <i id="roblox-manual-arrow" class="fas fa-chevron-down" style="font-size: 0.72rem; color: var(--muted); transition: transform 0.2s;"></i>
                                 </div>
-                                <div id="roblox-link-new-account-form" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.15);">
-                                    <p style="margin: 0 0 12px 0; font-size: 0.78rem; color: var(--muted);">Enter your exact Roblox username to generate a verification code for your Roblox profile bio.</p>
-                                    <div style="display: flex; gap: 10px; align-items: center;">
-                                        <input type="text" id="roblox-link-username" placeholder="Roblox Username (e.g. Builderman)" style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: #fff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none;">
-                                        <button type="button" class="btn-outline" style="padding: 0 16px; height: 38px; font-size: 0.85rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #fff;" onclick="linkRoblox()">Generate Code</button>
+                                <div id="roblox-link-new-account-form" style="display: none; padding: 14px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.15);">
+                                    <p style="margin: 0 0 10px 0; font-size: 0.76rem; color: var(--muted);">Enter your Roblox username to generate a verification code for your Roblox profile bio.</p>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" id="roblox-link-username" placeholder="Roblox Username" style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; border-radius: 6px; padding: 8px 10px; font-size: 0.82rem; outline: none;">
+                                        <button type="button" class="btn-outline" style="padding: 0 14px; height: 34px; font-size: 0.8rem; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: #fff;" onclick="linkRoblox()">Generate Code</button>
                                     </div>
                                 </div>
                             </div>
@@ -5476,52 +5454,49 @@
                     </div>
 
                     <!-- Account Profile Overview (Right Column) -->
-                    <div style="display: flex; flex-direction: column; gap: 24px;">
-                        <div class="panel" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06); padding: 0; overflow: hidden; border-radius: 20px; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
-                            <div style="padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.01);">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <i class="fas fa-id-card" style="color: #38bdf8; font-size: 1.15rem;"></i>
-                                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Account Profile Overview</h3>
-                                </div>
-                                <span class="badge" style="background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 4px 10px; font-size: 0.72rem; border-radius: 99px; font-weight: 700;">Live Sync</span>
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); padding: 0; overflow: hidden; border-radius: 16px; backdrop-filter: blur(20px); box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            <div style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.01);">
+                                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Card Preview</h3>
+                                <span style="font-size: 0.72rem; color: var(--muted); font-weight: 500;">Live Update</span>
                             </div>
 
-                            <div id="profile-card-preview" data-no-translate style="background: #0d0e12; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); margin: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+                            <div id="profile-card-preview" data-no-translate style="background: #0d0e12; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); margin: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
                                 <!-- Custom Discord Banner Layer -->
-                                <div id="profile-banner" style="height: 120px; background: linear-gradient(135deg, #7c3aed 0%, #38bdf8 100%); background-size: cover; background-position: center; position: relative;">
+                                <div id="profile-banner" style="height: 110px; background: linear-gradient(135deg, #7c3aed 0%, #38bdf8 100%); background-size: cover; background-position: center; position: relative;">
                                     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(13,14,18,0.7) 100%); pointer-events: none;"></div>
                                 </div>
 
-                                <div style="padding: 16px 18px 20px 18px; position: relative; margin-top: -55px;">
+                                <div style="padding: 14px 16px 18px 16px; position: relative; margin-top: -50px;">
                                     <!-- Avatar & Profile Header -->
-                                    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
-                                        <img id="profile-preview-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #0d0e12; background: #0d0e12; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;">
-                                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;">
-                                            <span style="background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.3); color: #818cf8; font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;"><i class="fab fa-discord"></i> Discord</span>
-                                            <span style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
-                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#ffffff"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg> Roblox
+                                    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
+                                        <img id="profile-preview-avatar" src="nora.png" onerror="this.onerror=null; this.src='nora.png';" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #0d0e12; background: #0d0e12; position: relative; z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.5); object-fit: cover;">
+                                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;">
+                                            <span style="background: rgba(88,101,242,0.12); border: 1px solid rgba(88,101,242,0.25); color: #818cf8; font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;"><i class="fab fa-discord"></i> Discord</span>
+                                            <span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="#ffffff"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg> Roblox
                                             </span>
                                         </div>
                                     </div>
 
-                                    <div style="margin-bottom: 14px;">
-                                        <h2 id="profile-preview-name" style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.01em;">Username</h2>
-                                        <div id="profile-preview-handle" style="color: rgba(255,255,255,0.5); font-size: 0.82rem; font-weight: 500; margin-top: 2px;">@handle</div>
+                                    <div style="margin-bottom: 12px;">
+                                        <h2 id="profile-preview-name" style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0; letter-spacing: -0.01em;">Username</h2>
+                                        <div id="profile-preview-handle" style="color: rgba(255,255,255,0.5); font-size: 0.78rem; font-weight: 500; margin-top: 2px;">@handle</div>
                                     </div>
 
                                     <!-- Bio Section -->
-                                    <div style="margin-bottom: 16px;">
-                                        <div style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-                                            <i class="fas fa-feather-alt" style="color: #38bdf8;"></i> About Me
+                                    <div style="margin-bottom: 14px;">
+                                        <div style="font-size: 0.68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;">
+                                            About Me
                                         </div>
-                                        <div id="profile-preview-bio" style="font-size: 0.84rem; color: rgba(255,255,255,0.88); line-height: 1.5; background: rgba(255, 255, 255, 0.03); padding: 11px 13px; border-radius: 10px; border-left: 3px solid #7c3aed; border-top: 1px solid rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); min-height: 44px;">Tell the community about yourself...</div>
+                                        <div id="profile-preview-bio" style="font-size: 0.82rem; color: rgba(255,255,255,0.85); line-height: 1.45; background: rgba(255, 255, 255, 0.03); padding: 10px 12px; border-radius: 8px; border-left: 3px solid #7c3aed; border-top: 1px solid rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); min-height: 40px;">Tell the community about yourself...</div>
                                     </div>
 
                                     <!-- Integrated Leveling Rank Card -->
-                                    <div style="margin-bottom: 16px;">
-                                        <div style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-                                            <span style="display: flex; align-items: center; gap: 6px;"><i class="fas fa-award" style="color: #c084fc;"></i> Leveling Rank Card</span>
-                                            <span id="rank-card-preview-tag" style="font-size: 0.65rem; color: #10b981; font-weight: 700; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 2px 7px; border-radius: 10px;">Active</span>
+                                    <div style="margin-bottom: 14px;">
+                                        <div style="font-size: 0.68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;">
+                                            <span>Rank Card</span>
+                                            <span id="rank-card-preview-tag" style="font-size: 0.62rem; color: #10b981; font-weight: 600; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); padding: 1px 6px; border-radius: 6px;">Active</span>
                                         </div>
                                         <div id="live-rank-card-preview-frame" style="position: relative; width: 100%; min-height: 135px; border-radius: 14px; overflow: hidden; background: #0b0c10; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; padding: 14px; box-sizing: border-box; box-shadow: 0 8px 20px rgba(0,0,0,0.4);">
                                             <div id="live-rank-card-bg-layer" style="position: absolute; inset: 0; background-size: cover; background-position: center; transition: all 0.3s ease; opacity: 0.85;"></div>
@@ -5730,104 +5705,102 @@
                         <button class="config-btn" style="flex: 1;" onclick="document.getElementById('role-multipliers-modal').style.display = 'none'">Close & Save</button>
                     </div>
                 </div>
-            </div>
-
-
-            <div id="view-prefs" class="view-panel" style="display: none;">
-                <div class="hero-banner" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);">
-                    <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: #2ecc71; filter: blur(90px); opacity: 0.1; border-radius: 50%;"></div>
-                    <div style="position: relative; z-index: 2; max-width: 600px;">
-                        <h1 style="font-size: 2.4rem; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.02em;">Studio Settings</h1>
-                        <p style="color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 400; line-height: 1.5;">Personalize your Nora Studio experience, customize system languages, and manage telemetry data.</p>
+            </div>            <div id="view-prefs" class="view-panel" style="display: none;">
+                <div class="hero-banner" style="background: rgba(18, 22, 34, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
+                    <div style="max-width: 600px;">
+                        <h1 style="font-size: 1.85rem; font-weight: 700; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.02em;">Studio Settings</h1>
+                        <p style="color: rgba(255,255,255,0.65); font-size: 0.92rem; font-weight: 400; line-height: 1.5; margin: 0;">Configure dashboard themes, interface language, and account preferences.</p>
                     </div>
-                    <i class="fas fa-cog" style="font-size: 6rem; position: absolute; right: 40px; top: 50%; transform: translateY(-50%) rotate(15deg); opacity: 0.1; color: #fff;"></i>
+                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 7px 14px; border-radius: 99px; font-size: 0.8rem; color: rgba(255,255,255,0.7); font-weight: 600; white-space: nowrap;">
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #2ecc71; display: inline-block;"></span> Settings Synced
+                    </div>
                 </div>
                 
                 <div style="max-width: 800px; margin: 0 auto;">
                     <!-- Visual Theme & Transparency Customization Card -->
-                    <div class="panel" style="margin-bottom: 24px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-palette" style="color: var(--primary);"></i> Appearance & Color Modes
+                    <div class="panel" style="margin-bottom: 20px; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">
+                            Theme & Appearance
                         </h3>
-                        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Choose between Dark Glass and Light Glass modes, featuring ultra-transparent frosted glass panels and high contrast.</p>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">Choose between Dark Glass and Light Glass visual styling.</p>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px;">
                             <!-- Dark Mode Card -->
-                            <div id="theme-card-dark" onclick="selectThemeMode('dark')" style="border: 2px solid var(--primary); background: rgba(15, 23, 42, 0.7); border-radius: 16px; padding: 18px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; backdrop-filter: blur(12px);" class="theme-select-card">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <div id="theme-card-dark" onclick="selectThemeMode('dark')" style="border: 1px solid var(--primary); background: rgba(15, 23, 42, 0.7); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; backdrop-filter: blur(12px);" class="theme-select-card">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1.1rem;">
+                                        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 0.95rem;">
                                             <i class="fas fa-moon"></i>
                                         </div>
-                                        <span style="font-size: 1rem; font-weight: 700; color: var(--text);">Dark Glass</span>
+                                        <span style="font-size: 0.95rem; font-weight: 600; color: #fff;">Dark Glass</span>
                                     </div>
-                                    <div id="theme-radio-dark" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid #38bdf8; background: #38bdf8; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-check" style="font-size: 0.65rem; color: #000;"></i>
+                                    <div id="theme-radio-dark" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid #38bdf8; background: #38bdf8; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-check" style="font-size: 0.6rem; color: #000;"></i>
                                     </div>
                                 </div>
-                                <p style="font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4;">Deep obsidian frosted glass with glowing neon accents and low-light eye comfort.</p>
+                                <p style="font-size: 0.78rem; color: var(--muted); margin: 0; line-height: 1.4;">Deep obsidian frosted glass with crisp accents and low-light contrast.</p>
                             </div>
 
                             <!-- Light Mode Card -->
-                            <div id="theme-card-light" onclick="selectThemeMode('light')" style="border: 1px solid var(--border); background: rgba(255, 255, 255, 0.03); border-radius: 16px; padding: 18px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; backdrop-filter: blur(12px);" class="theme-select-card">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <div id="theme-card-light" onclick="selectThemeMode('light')" style="border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; backdrop-filter: blur(12px);" class="theme-select-card">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(37, 99, 235, 0.3); display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 1.1rem;">
+                                        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(37, 99, 235, 0.25); display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 0.95rem;">
                                             <i class="fas fa-sun"></i>
                                         </div>
-                                        <span style="font-size: 1rem; font-weight: 700; color: var(--text);">Light Glass</span>
+                                        <span style="font-size: 0.95rem; font-weight: 600; color: #fff;">Light Glass</span>
                                     </div>
-                                    <div id="theme-radio-light" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center;"></div>
+                                    <div id="theme-radio-light" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center;"></div>
                                 </div>
-                                <p style="font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4;">Crisp daylight frosted glass with optimal contrast, soft shadows, and clean readability.</p>
+                                <p style="font-size: 0.78rem; color: var(--muted); margin: 0; line-height: 1.4;">Crisp daylight frosted glass with high contrast and clean readability.</p>
                             </div>
                         </div>
                     </div>
                     <!-- Personal Identity Card -->
-                    <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-fingerprint" style="color: var(--primary);"></i> Personal Information</h3>
-                        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Manage display name, system language, and global telemetry data.</p>
+                    <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Account & Language</h3>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">Manage your display name, system language, and polling frequencies.</p>
                         
-                        <div class="row-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="row-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
                             <div class="input-group" style="margin-bottom: 0;">
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Discord User</label>
-                                <input type="text" id="pref-username" data-no-translate readonly disabled style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--muted); cursor: not-allowed; border-radius: 8px; padding: 10px 12px; font-size: 0.88rem;">
+                                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Discord User</label>
+                                <input type="text" id="pref-username" data-no-translate readonly disabled style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: var(--muted); cursor: not-allowed; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem;">
                             </div>
                             <div class="input-group" style="margin-bottom: 0;">
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Display Name</label>
-                                <input type="text" id="pref-display-name" data-no-translate placeholder="Display Name" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: #fff; border-radius: 8px; padding: 10px 12px; font-size: 0.88rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+                                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Display Name</label>
+                                <input type="text" id="pref-display-name" data-no-translate placeholder="Display Name" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">System Language</label>
-                            <select id="pref-language" onchange="syncAndSaveLanguage(this.value, 'pref-language')" style="width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.88rem; outline: none;">
+                        <div style="margin-bottom: 14px;">
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">System Language</label>
+                            <select id="pref-language" onchange="syncAndSaveLanguage(this.value, 'pref-language')" style="width: 100%; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.85rem; outline: none;">
                                 <option value="en">English (English)</option>
-                                <option value="es">EspaÃ±ol (Spanish)</option>
-                                <option value="fr">FranÃ§ais (French)</option>
+                                <option value="es">Español (Spanish)</option>
+                                <option value="fr">Français (French)</option>
                                 <option value="de">Deutsch (German)</option>
-                                <option value="pt">PortuguÃªs (Portuguese)</option>
+                                <option value="pt">Português (Portuguese)</option>
                                 <option value="it">Italiano (Italian)</option>
-                                <option value="ru">Ð ÑƒÑÑÐºÐ¸Ð¹ (Russian)</option>
-                                <option value="hi">à¤¹à¤¿à¤¨à¥à¤¦à¥€ (Hindi)</option>
-                                <option value="ja">æ—¥æœ¬èªž (Japanese)</option>
-                                <option value="ko">í•œêµ­ì–´ (Korean)</option>
-                                <option value="zh">ä¸­æ–‡ (Chinese)</option>
+                                <option value="ru">Русский (Russian)</option>
+                                <option value="hi">हिन्दी (Hindi)</option>
+                                <option value="ja">日本語 (Japanese)</option>
+                                <option value="ko">한국어 (Korean)</option>
+                                <option value="zh">中文 (Chinese)</option>
                             </select>
                         </div>
 
-                        <div style="margin-bottom: 20px;">
-                            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Membership Status</label>
-                            <div id="pref-premium-status" data-no-translate style="padding: 12px; font-weight: 600; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid var(--border); color: #fff; font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="margin-bottom: 18px;">
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Membership Status</label>
+                            <div id="pref-premium-status" data-no-translate style="padding: 10px 12px; font-weight: 600; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid var(--border); color: #fff; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
                                 <span>Nora Standard Member</span>
-                                <i class="fab fa-discord" style="color: #fff;"></i>
+                                <i class="fab fa-discord" style="color: #fff; opacity: 0.7;"></i>
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
-                            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Auto-Refresh & API Frequency</label>
-                            <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 10px;">Control how often page info and live API metrics update automatically.</p>
-                            <select id="setting-auto-refresh-pref" onchange="handleAutoRefreshChange(this.value)" style="width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.88rem; outline: none;">
+                        <div style="margin-bottom: 18px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Auto-Refresh & Polling Frequency</label>
+                            <p style="font-size: 0.76rem; color: var(--muted); margin-bottom: 10px;">Control how often dashboard statistics and live metrics refresh.</p>
+                            <select id="setting-auto-refresh-pref" onchange="handleAutoRefreshChange(this.value)" style="width: 100%; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.85rem; outline: none;">
                                 <option value="0">Off (Manual Refresh Only)</option>
                                 <option value="5" id="opt-pref-refresh-5">5 Seconds (Instant / Live 👑)</option>
                                 <option value="10" id="opt-pref-refresh-10">10 Seconds (👑 Premium)</option>
@@ -5840,9 +5813,11 @@
                         </div>
 
                         <!-- Nora Premium Center Card in Settings -->
-                        <div id="profile-premium-center" class="panel" style="margin-bottom: 25px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; background: rgba(255, 215, 0, 0.02); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 16px; padding: 22px;">
-                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffd700; display: flex; align-items: center; gap: 8px; margin: 0 0 8px 0;"><i class="fas fa-crown"></i> Nora Premium Center</h3>
-                            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">Unlock priority automation, instant live sync limits, custom animated profile styles, and VIP features across all Nora nodes.</p>
+                        <div id="profile-premium-center" class="panel" style="margin-bottom: 20px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; background: rgba(255, 215, 0, 0.02); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 16px; padding: 20px;">
+                            <h3 style="font-size: 1.05rem; font-weight: 700; color: #ffd700; display: flex; align-items: center; gap: 8px; margin: 0 0 6px 0;">
+                                <i class="fas fa-crown"></i> Nora Premium Center
+                            </h3>
+                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">Unlock priority automation, instant live sync limits, custom animated profile styles, and VIP features across all Nora nodes.</p>
                             
                             <div id="premium-center-status" data-no-translate style="padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.85rem; line-height: 1.4; color: #fff; font-weight: 600; margin-bottom: 14px;">Loading subscription details...</div>
                             
@@ -5852,235 +5827,225 @@
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 25px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
-                            <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 8px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-credit-card" style="color: var(--primary);"></i> Managing Subscription & Cancellations
+                        <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 18px;">
+                            <h4 style="font-size: 0.92rem; color: #fff; margin-bottom: 6px; font-weight: 700;">
+                                Managing Subscription & Cancellations
                             </h4>
-                            <p style="color: var(--muted); font-size: 0.82rem; margin-bottom: 12px; line-height: 1.5;">
-                                Premium upgrades and subscriptions for Nora Studio are processed and handled directly through the Discord client using App Subscriptions. If you need to modify, upgrade, or cancel your active subscription, please follow these steps:
+                            <p style="color: var(--muted); font-size: 0.8rem; margin-bottom: 12px; line-height: 1.5;">
+                                Premium upgrades and subscriptions for Nora Studio are handled directly through the Discord client using App Subscriptions.
                             </p>
-                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 15px; border-radius: 8px; font-size: 0.8rem; line-height: 1.6; color: rgba(255,255,255,0.85); margin-bottom: 15px;">
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.6; color: rgba(255,255,255,0.85); margin-bottom: 12px;">
                                 <ol style="margin: 0; padding-left: 20px;">
-                                    <li>Open your Discord client and navigate to <strong style="color: #fff;">User Settings</strong> (the gear icon next to your avatar).</li>
-                                    <li>Under the <strong style="color: #fff;">Billing Settings</strong> section on the left sidebar, click on <strong style="color: #fff;">Subscriptions</strong>.</li>
-                                    <li>Find your Nora Studio subscription card and click on <strong style="color: #fff;">Manage</strong> or <strong style="color: #fff;">Cancel Subscription</strong>.</li>
-                                    <li>Follow the prompts to finalize the cancellation or configuration of your plan.</li>
+                                    <li>Open Discord and navigate to <strong style="color: #fff;">User Settings</strong>.</li>
+                                    <li>Under <strong style="color: #fff;">Billing Settings</strong> on the sidebar, select <strong style="color: #fff;">Subscriptions</strong>.</li>
+                                    <li>Find your Nora Studio subscription and select <strong style="color: #fff;">Manage</strong> or <strong style="color: #fff;">Cancel Subscription</strong>.</li>
                                 </ol>
                             </div>
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <a href="https://support.discord.com/hc/en-us/articles/360017693772-Managing-Subscriptions-and-Billing-FAQ" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                                <a href="https://support.discord.com/hc/en-us/articles/360017693772-Managing-Subscriptions-and-Billing-FAQ" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 7px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                                     <i class="fas fa-question-circle"></i> Discord Billing FAQ
                                 </a>
-                                <a href="https://support.discord.com/" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                                <a href="https://support.discord.com/" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 7px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                                     <i class="fas fa-external-link-alt"></i> Discord Help Center
                                 </a>
                             </div>
                         </div>
 
-                        <button class="save-btn" style="width: 100%; padding: 13px; background: #ffffff; color: #000000;" onclick="savePersonalPrefs()">Update Personal Details</button>
+                        <button class="save-btn" style="width: 100%; padding: 11px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px;" onclick="savePersonalPrefs()">Update Personal Details</button>
                         
-                        <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
-                            <h4 style="font-size: 0.95rem; color: #ff5555; margin-bottom: 5px; font-weight: 700;">Data Sovereignty</h4>
-                            <p style="color: var(--muted); font-size: 0.78rem; margin-bottom: 12px; line-height: 1.4;">Permanently wipe personal data records across all Nora automation nodes.</p>
+                        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+                            <h4 style="font-size: 0.9rem; color: #ff5555; margin-bottom: 4px; font-weight: 700;">Data Sovereignty</h4>
+                            <p style="color: var(--muted); font-size: 0.78rem; margin-bottom: 10px; line-height: 1.4;">Permanently wipe personal data records across all Nora automation nodes.</p>
                             <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.2); background: rgba(255,85,85,0.02); font-size: 0.8rem;" onclick="clearGlobalData()">Purge My Global Data</button>
                         </div>
                     </div>
 
                     <!-- Notification & Push Notification Alerts Card -->
-                    <div class="panel" style="margin-top: 24px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-bell" style="color: #a855f7;"></i> Notification Preferences & Push Notification Alerts
+                    <div class="panel" style="margin-top: 20px; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">
+                            Push Notifications & Alerts
                         </h3>
-                        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Configure real-time device push notifications, security alerts, and browser audio chime preferences.</p>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">Configure real-time device push notifications, security alerts, and browser audio chime preferences.</p>
 
-                        <!-- Push Status Hero Card inside Settings -->
-                        <div id="settings-push-status-card" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 16px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-                            <div style="display: flex; align-items: center; gap: 14px;">
-                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-mobile-alt" style="font-size: 1.3rem; color: #a855f7;"></i>
+                        <!-- Push Status Card inside Settings -->
+                        <div id="settings-push-status-card" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); display: flex; align-items: center; justify-content: center; color: #c084fc;">
+                                    <i class="fas fa-mobile-alt"></i>
                                 </div>
                                 <div style="display: flex; flex-direction: column;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <strong style="font-size: 1rem; font-weight: 700; color: #fff;">Push Notification Alerts</strong>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <strong style="font-size: 0.92rem; font-weight: 600; color: #fff;">Device Push Alerts</strong>
                                         <span id="settings-push-status-badge"></span>
                                     </div>
-                                    <span style="font-size: 0.78rem; color: #94a3b8; margin-top: 3px;">Mobile, Tablet & Desktop Live Notifications</span>
+                                    <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Mobile, Tablet & Desktop Real-Time Delivery</span>
                                 </div>
                             </div>
-                            <div id="settings-push-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <div id="settings-push-actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                 <!-- Populated dynamically by updateSettingsPushUI -->
                             </div>
                         </div>
 
                         <!-- Notification Category Toggles -->
-                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-                            <!-- Toggle: System & Security Announcements -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+                            <!-- Toggle: System Announcements -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
                                 <div>
-                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-bullhorn" style="color: #3b82f6;"></i> System Announcements & Critical Alerts
-                                    </strong>
-                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Receive broadcast alerts, maintenance warnings, and high-priority incident notifications.</p>
+                                    <strong style="font-size: 0.85rem; color: #fff;">System Announcements & Critical Alerts</strong>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Receive broadcast alerts, maintenance warnings, and high-priority incident notifications.</p>
                                 </div>
-                                <input type="checkbox" id="pref-notif-system" checked onchange="saveNotificationToggles()" style="width: 20px; height: 20px; accent-color: #a855f7; cursor: pointer;">
+                                <input type="checkbox" id="pref-notif-system" checked onchange="saveNotificationToggles()" style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer;">
                             </div>
 
-                            <!-- Toggle: Moderation & Anti-Raid Events -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                            <!-- Toggle: Moderation & Security -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
                                 <div>
-                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-shield-alt" style="color: #ef4444;"></i> Moderation & Security Incident Events
-                                    </strong>
-                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Get notified when AutoMod blocks unauthorized actions or triggers anti-raid lockdowns.</p>
+                                    <strong style="font-size: 0.85rem; color: #fff;">Moderation & Incident Events</strong>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Get notified when AutoMod blocks unauthorized actions or triggers anti-raid lockdowns.</p>
                                 </div>
-                                <input type="checkbox" id="pref-notif-mod" checked onchange="saveNotificationToggles()" style="width: 20px; height: 20px; accent-color: #a855f7; cursor: pointer;">
+                                <input type="checkbox" id="pref-notif-mod" checked onchange="saveNotificationToggles()" style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer;">
                             </div>
 
                             <!-- Toggle: Audio Chime -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
                                 <div>
-                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-volume-up" style="color: #10b981;"></i> Notification Audio Chimes
-                                    </strong>
-                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Play a subtle chime sound when real-time updates and push alerts are delivered.</p>
+                                    <strong style="font-size: 0.85rem; color: #fff;">Audio Chimes</strong>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Play a subtle chime sound when real-time updates and push alerts are delivered.</p>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <button type="button" onclick="playNoraChime(true)" style="background: rgba(88, 101, 242, 0.12); border: 1px solid rgba(88, 101, 242, 0.35); color: #a5b4fc; border-radius: 8px; padding: 6px 14px; font-weight: 700; font-size: 0.76rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" title="Play Nora's Signature Audio Chime">
-                                        <i class="fas fa-play" style="font-size: 0.65rem;"></i> Test Chime
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <button type="button" onclick="playNoraChime(true)" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; border-radius: 6px; padding: 5px 12px; font-weight: 600; font-size: 0.74rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s;" title="Play Audio Chime">
+                                        <i class="fas fa-play" style="font-size: 0.6rem;"></i> Test
                                     </button>
-                                    <input type="checkbox" id="pref-notif-sound" checked onchange="saveNotificationToggles()" style="width: 20px; height: 20px; accent-color: #5865F2; cursor: pointer;">
+                                    <input type="checkbox" id="pref-notif-sound" checked onchange="saveNotificationToggles()" style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer;">
                                 </div>
                             </div>
                         </div>
 
-                        <button class="save-btn" style="width: 100%; padding: 13px; background: #ffffff; color: #000000; font-weight: 700;" onclick="saveNotificationPrefsAction()">Save Notification Settings</button>
+                        <button class="save-btn" style="width: 100%; padding: 11px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px;" onclick="saveNotificationPrefsAction()">Save Notification Settings</button>
                     </div>
-                    <!-- Privacy & Community Visibility Card (Moved from Profile) -->
-                    <div class="panel" style="margin-top: 24px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                        <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-user-shield" style="color: #38bdf8;"></i> Privacy & Community Visibility
-                        </h3>
-                        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px;">Control who can see your linked accounts, public profile card, and direct message notifications.</p>
 
-                        <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
+                    <!-- Privacy & Community Visibility Card -->
+                    <div class="panel" style="margin-top: 20px; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">
+                            Privacy & Community Visibility
+                        </h3>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">Control who can see your linked accounts, public profile card, and direct message notifications.</p>
+
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
                             <!-- Roblox Privacy Toggle -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
                                 <div>
-                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#e11d48"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg> Roblox Profile Visibility
-                                    </strong>
-                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Allow server members and team showcase visitors to see your linked Roblox profile.</p>
+                                    <strong style="font-size: 0.85rem; color: #fff;">Roblox Profile Visibility</strong>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Allow server members and team showcase visitors to see your linked Roblox profile.</p>
                                 </div>
                                 <label class="switch"><input type="checkbox" id="user-pref-robloxPublic" checked onchange="saveUserProfile()"><span class="slider"></span></label>
                             </div>
 
                             <!-- Public Profile Visibility Toggle -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
                                 <div>
-                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-globe" style="color: #10b981;"></i> Public Nora Profile Card
-                                    </strong>
-                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Display your verified user profile and custom badges when users inspect you across Nora directories.</p>
+                                    <strong style="font-size: 0.85rem; color: #fff;">Public Nora Profile Card</strong>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Display your verified user profile and badges when users view your profile.</p>
                                 </div>
                                 <label class="switch"><input type="checkbox" id="user-pref-profilePublic" checked onchange="saveUserProfile()"><span class="slider"></span></label>
                             </div>
 
                             <!-- Direct Message (DM) Notification Toggles -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; gap: 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
                                 <div>
-                                    <strong style="font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-envelope" style="color: #a855f7;"></i> Direct Message (DM) Notifications
-                                    </strong>
-                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 3px 0 0 0;">Receive real-time direct messages on Discord when level-ups, moderation strikes, or announcements occur.</p>
+                                    <strong style="font-size: 0.85rem; color: #fff;">Direct Message (DM) Notifications</strong>
+                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Receive real-time Discord DMs for level-ups, moderation notices, and announcements.</p>
                                 </div>
                                 <label class="switch"><input type="checkbox" id="user-pref-dmNotificationsEnabled" onchange="saveUserProfile()"><span class="slider"></span></label>
                             </div>
 
-                            <div id="user-pref-dm-suboptions" style="padding-left: 20px; display: flex; flex-direction: column; gap: 10px;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
-                                    <span style="font-size: 0.78rem; color: #cbd5e1;"><i class="fas fa-trophy" style="color: #f59e0b; margin-right: 6px;"></i> Level-Up DM Alerts</span>
-                                    <input type="checkbox" id="user-pref-dmNotifLevels" onchange="saveUserProfile()" style="accent-color: #a855f7;">
+                            <div id="user-pref-dm-suboptions" style="padding-left: 16px; display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                                    <span style="font-size: 0.78rem; color: #cbd5e1;">Level-Up DM Alerts</span>
+                                    <input type="checkbox" id="user-pref-dmNotifLevels" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
                                 </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
-                                    <span style="font-size: 0.78rem; color: #cbd5e1;"><i class="fas fa-shield-alt" style="color: #ef4444; margin-right: 6px;"></i> Moderation Logs & Infractions</span>
-                                    <input type="checkbox" id="user-pref-dmNotifModeration" onchange="saveUserProfile()" style="accent-color: #a855f7;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                                    <span style="font-size: 0.78rem; color: #cbd5e1;">Moderation Logs & Infractions</span>
+                                    <input type="checkbox" id="user-pref-dmNotifModeration" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
                                 </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
-                                    <span style="font-size: 0.78rem; color: #cbd5e1;"><i class="fas fa-broadcast-tower" style="color: #38bdf8; margin-right: 6px;"></i> Bot Broadcasts & Updates</span>
-                                    <input type="checkbox" id="user-pref-dmNotifBroadcasts" onchange="saveUserProfile()" style="accent-color: #a855f7;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                                    <span style="font-size: 0.78rem; color: #cbd5e1;">Bot Broadcasts & Updates</span>
+                                    <input type="checkbox" id="user-pref-dmNotifBroadcasts" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
                                 </div>
                             </div>
                         </div>
 
-                        <button class="save-btn" style="width: 100%; padding: 13px; background: #ffffff; color: #000000; font-weight: 700;" onclick="saveUserProfile()">Update Privacy Settings</button>
+                        <button class="save-btn" style="width: 100%; padding: 11px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px;" onclick="saveUserProfile()">Update Privacy Settings</button>
                     </div>
                 </div>
             </div>
 
-            <div id="view-notifications" style="display: none;">
-                <div class="hero-banner" style="background: linear-gradient(135deg, rgba(0, 214, 255, 0.15) 0%, rgba(88, 101, 242, 0.1) 100%); border: 1px solid rgba(0, 214, 255, 0.15); border-radius: 24px; padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);">
-                    <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: var(--primary); filter: blur(90px); opacity: 0.1; border-radius: 50%;"></div>
-                    <div style="position: relative; z-index: 2; max-width: 600px;">
-                        <h1 style="font-size: 2.4rem; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.02em;">Notification Center</h1>
-                        <p style="color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 400; line-height: 1.5;">Real-time logs, security alerts, and system health status updates across your connected network.</p>
+            <!-- View: Notification Center -->
+            <div id="view-notifications" class="view-panel" style="display: none;">
+                <div class="hero-banner" style="background: rgba(18, 22, 34, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
+                    <div style="max-width: 600px;">
+                        <h1 style="font-size: 1.85rem; font-weight: 700; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.02em;">Notification Center</h1>
+                        <p style="color: rgba(255,255,255,0.65); font-size: 0.92rem; font-weight: 400; line-height: 1.5; margin: 0;">Real-time logs, security notices, and system health status updates across your connected network.</p>
                     </div>
-                    <i class="fas fa-bell" style="font-size: 6rem; position: absolute; right: 40px; top: 50%; transform: translateY(-50%) rotate(10deg); opacity: 0.1; color: #fff;"></i>
+                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 7px 14px; border-radius: 99px; font-size: 0.8rem; color: rgba(255,255,255,0.7); font-weight: 600; white-space: nowrap;">
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; display: inline-block;"></span> Notifications Live
+                    </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 350px; gap: 30px; align-items: start;">
+                <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start;">
                     <!-- Notification Lists (Left) -->
-                    <div style="display: flex; flex-direction: column; gap: 24px;">
-                        <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(20px); padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
-                                <div class="filter-bar" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;">
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 14px; flex-wrap: wrap; gap: 12px;">
+                                <div class="filter-bar" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;">
                                     <button class="notif-filter-btn active" onclick="filterNotifs('all', this)">All Alerts</button>
                                     <button class="notif-filter-btn" data-type="info" onclick="filterNotifs('info', this)">Info</button>
                                     <button class="notif-filter-btn" data-type="success" onclick="filterNotifs('success', this)">Success</button>
                                     <button class="notif-filter-btn" data-type="warning" onclick="filterNotifs('warning', this)">Warnings</button>
                                     <button class="notif-filter-btn" data-type="error" onclick="filterNotifs('error', this)">Errors</button>
                                 </div>
-                                <div style="display: flex; gap: 10px;">
-                                    <button class="btn-outline" style="width: auto; padding: 8px 16px; font-size: 0.8rem; border-radius: 8px;" onclick="markAllRead()">Mark All Read</button>
-                                    <button class="btn-outline" style="width: auto; padding: 8px 16px; font-size: 0.8rem; border-radius: 8px; border-color: rgba(255,85,85,0.2); color: #ff5555;" onclick="clearNotifications()">Clear All</button>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px;" onclick="markAllRead()">Mark All Read</button>
+                                    <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px; border-color: rgba(255,85,85,0.2); color: #ff5555;" onclick="clearNotifications()">Clear All</button>
                                 </div>
                             </div>
                             
-                            <div id="notification-new-section" style="margin-bottom: 35px;">
-                                <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-weight: 700;">
-                                    Recent Updates <span id="new-notif-count-tag" data-no-translate class="badge-user" style="display: none; background: var(--primary); color: #000; font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; font-weight: 800;">0</span>
+                            <div id="notification-new-section" style="margin-bottom: 28px;">
+                                <h3 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+                                    Recent Updates <span id="new-notif-count-tag" data-no-translate class="badge-user" style="display: none; background: var(--primary); color: #000; font-size: 0.72rem; padding: 1px 6px; border-radius: 8px; font-weight: 800;">0</span>
                                 </h3>
-                                <div id="notification-list-new" data-no-translate style="display: flex; flex-direction: column; gap: 12px;">
-                                    <div id="no-notifications-new" style="padding: 50px 20px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px dashed var(--border);">
-                                        <div style="font-size: 2.2rem; margin-bottom: 12px; opacity: 0.4;">✨</div>
-                                        All caught up! No new notifications.
+                                <div id="notification-list-new" data-no-translate style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div id="no-notifications-new" style="padding: 40px 20px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.01); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.08);">
+                                        <div style="font-size: 1.6rem; margin-bottom: 8px; opacity: 0.5;"><i class="fas fa-bell-slash"></i></div>
+                                        <div style="font-size: 0.85rem;">No new notifications</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div id="notification-older-section" style="border-top: 1px solid rgba(255,255,255,0.03); padding-top: 25px;">
-                                <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 15px; font-weight: 700;">Previous History</h3>
-                                <div id="notification-list-older" data-no-translate style="display: flex; flex-direction: column; gap: 12px; opacity: 0.8;">
-                                    <div id="no-notifications-older" style="padding: 40px 20px; text-align: center; color: var(--muted); opacity: 0.6;">No notification history recorded yet.</div>
+                            <div id="notification-older-section" style="border-top: 1px solid rgba(255,255,255,0.04); padding-top: 20px;">
+                                <h3 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 12px; font-weight: 700;">History</h3>
+                                <div id="notification-list-older" data-no-translate style="display: flex; flex-direction: column; gap: 10px; opacity: 0.85;">
+                                    <div id="no-notifications-older" style="padding: 30px 20px; text-align: center; color: var(--muted); opacity: 0.6; font-size: 0.82rem;">No previous notification history recorded.</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Reminders Panel (Right) -->
-                    <div class="panel" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); height: fit-content;">
-                        <h3 style="font-size: 1.15rem; color: #fff; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px; font-weight: 700;">
-                            <i class="fas fa-clock" style="color: var(--primary);"></i> Reminders
+                    <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); height: fit-content;">
+                        <h3 style="font-size: 1.05rem; color: #fff; margin: 0 0 4px 0; font-weight: 700;">
+                            Reminders
                         </h3>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; line-height: 1.4;">Schedule quick alerts to notify you in-app or display notice counts.</p>
+                        <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 16px; line-height: 1.4;">Schedule in-dashboard alert reminders.</p>
                         
-                        <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; background: rgba(0,0,0,0.15); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.03);">
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <label style="font-size: 0.78rem; font-weight: 700; color: #eee;">Reminder Message</label>
-                                <input type="text" id="reminder-msg" placeholder="e.g. Restart bot config..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; background: rgba(0,0,0,0.15); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="font-size: 0.76rem; font-weight: 600; color: rgba(255,255,255,0.85);">Reminder Note</label>
+                                <input type="text" id="reminder-msg" placeholder="e.g. Check server moderation logs..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <label style="font-size: 0.78rem; font-weight: 700; color: #eee;">Duration / Delay</label>
-                                <select id="reminder-delay" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; cursor: pointer;">
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="font-size: 0.76rem; font-weight: 600; color: rgba(255,255,255,0.85);">Delay</label>
+                                <select id="reminder-delay" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; outline: none; cursor: pointer;">
                                     <option value="1">1 Minute</option>
                                     <option value="5">5 Minutes</option>
                                     <option value="15">15 Minutes</option>
@@ -6089,12 +6054,12 @@
                                     <option value="1440">1 Day</option>
                                 </select>
                             </div>
-                            <button class="config-btn" onclick="scheduleReminder()" style="margin-top: 5px; justify-content: center; height: 38px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-plus"></i> Set Reminder</button>
+                            <button class="config-btn" onclick="scheduleReminder()" style="margin-top: 4px; justify-content: center; height: 34px; font-size: 0.8rem; font-weight: 600; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-plus"></i> Set Reminder</button>
                         </div>
                         
-                        <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; font-weight: 700;">Active Tasks</h4>
-                        <div id="active-reminders-list" data-no-translate style="display: flex; flex-direction: column; gap: 10px;">
-                            <div style="font-size: 0.75rem; color: var(--muted); text-align: center; padding: 15px; border: 1px dashed rgba(255,255,255,0.06); border-radius: 10px; background: rgba(0,0,0,0.1);">No active reminders.</div>
+                        <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 10px; font-weight: 700;">Active Tasks</h4>
+                        <div id="active-reminders-list" data-no-translate style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="font-size: 0.75rem; color: var(--muted); text-align: center; padding: 12px; border: 1px dashed rgba(255,255,255,0.06); border-radius: 8px; background: rgba(0,0,0,0.1);">No active reminders.</div>
                         </div>
                     </div>
                 </div>
