@@ -996,9 +996,9 @@ app.use((req, res, next) => {
             "default-src 'self' https://discord.com https://cdn.discordapp.com; " +
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
-            "img-src 'self' data: blob: https://cdn.discordapp.com https://*.roblox.com https://thumbnails.roblox.com https://*.rbxcdn.com https://images.unsplash.com https://top.gg https://*.top.gg https://discord.do https://*.discord.do https://discord.com https://*.discord.com; " +
+            "img-src 'self' data: blob: https://cdn.discordapp.com https://media.discordapp.net https://images-ext-1.discordapp.net https://images-ext-2.discordapp.net https://*.roblox.com https://thumbnails.roblox.com https://*.rbxcdn.com https://images.unsplash.com https://top.gg https://*.top.gg https://discord.do https://*.discord.do https://discord.com https://*.discord.com https://*.klipy.com https://static.klipy.com https://*.tenor.com https://media.tenor.com https://c.tenor.com https://*.giphy.com https://media.giphy.com https://i.giphy.com https://*.imgur.com https://i.imgur.com https://*.githubusercontent.com https://*.googleusercontent.com; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
-            "connect-src 'self' https://discord.com https://api.vaztinix.dev https://vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com; " +
+            "connect-src 'self' https://discord.com https://api.vaztinix.dev https://vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com https://api.klipy.com https://*.klipy.com https://tenor.googleapis.com https://api.giphy.com; " +
             "frame-ancestors 'self'; " +
             "frame-src 'none'; " +
             "object-src 'none';"
