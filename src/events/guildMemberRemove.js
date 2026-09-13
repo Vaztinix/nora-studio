@@ -1,11 +1,17 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const { formatMessage } = require('../utils/messageFormatter');
+const activityTracker = require('../utils/activityTracker');
 
 module.exports = {
     name: Events.GuildMemberRemove,
     async execute(member) {
         try {
+            // Track leave for daily/weekly server activity analytics
+            if (member.guild) {
+                activityTracker.recordLeave(member.guild.id);
+            }
+
             const settings = await GuildSettings.findOne({ where: { guildId: member.guild.id } });
             // console.log(`[Logger DEBUG] MemberLeave event in ${member.guild.name}. LogChannelSet: ${!!settings?.loggingChannelId}, Toggle: ${settings?.logMemberLeaves}, WelcomeChannelSet: ${!!settings?.welcomeChannelId}, Toggle: ${settings?.welcomerEnabled}`);
             if (!settings) return;

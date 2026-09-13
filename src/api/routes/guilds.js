@@ -21,6 +21,7 @@ const TicketHistory = require('../../database/models/TicketHistory');
 const ActionLog = require('../../database/models/ActionLog');
 const { logServerAction } = require('../../utils/actionLogger');
 const settingsCache = require('../../utils/settingsCache');
+const activityTracker = require('../../utils/activityTracker');
 
 // Short-term in-memory cache for aggregated dashboard data (15s TTL) to prevent repeated heavy queries
 const dashboardDataCache = new Map();
@@ -448,7 +449,7 @@ router.get('/members', async (req, res) => {
 
                 xp: record.xp,
 
-                messageCount: Math.floor((record.totalXp || record.xp || 0) / 20),
+                messageCount: (record.messagesCount !== undefined && record.messagesCount !== null && record.messagesCount > 0) ? record.messagesCount : Math.floor((record.totalXp || record.xp || 0) / 20),
 
                 joinedAt: member.joinedAt,
 
@@ -531,294 +532,98 @@ router.get('/analytics', async (req, res) => {
 
         const oneDayMs = 24 * 60 * 60 * 1000;
 
-        const sevenDaysMs = 7 * oneDayMs;
+        // 📊 Fetch accurate 7-day server activity, real message counts, and historical breakdown
+        const weeklyStats = await activityTracker.getWeeklyStats(guild, 7);
 
-
+        let totalTextActivity = weeklyStats.totalWeeklyMessages;
+        let chartData = weeklyStats.chartData;
+        let activityTrend = weeklyStats.activityTrend;
+        let peakHourUTC = weeklyStats.peakHourUTC;
 
         let weeklyXpSum = 0;
-
         let maxMember = null;
-
         let minMember = null;
 
-
-
         activeGuildLevels.forEach(r => {
-
             const lastActive = r.lastMessageTimestamp ? new Date(r.lastMessageTimestamp).getTime() : 0;
-
-            // Only count weekly XP if user has been active within the last 7 days
-
             if (nowTime - lastActive <= sevenDaysMs) {
-
                 weeklyXpSum += (r.weeklyXp || 0);
-
             }
-
             const xp = r.totalXp || r.xp || 0;
-
             if (xp > 0) {
-
                 if (!maxMember || xp > (maxMember.totalXp || maxMember.xp || 0)) {
-
                     maxMember = r;
-
                 }
-
                 if (!minMember || xp < (minMember.totalXp || minMember.xp || 0)) {
-
                     minMember = r;
-
                 }
-
             }
-
         });
 
-
-
-        let totalTextActivity = Math.round(weeklyXpSum / 20); // estimate messages sent this week (real data)
-
-
-
         let peakActiveName = 'None';
-
         let leastActiveName = 'None';
 
-
-
         if (maxMember) {
-
             let member = guild.members.cache.get(maxMember.userId);
-
             if (!member) {
-
                 member = await guild.members.fetch(maxMember.userId).catch(() => null);
-
             }
-
             peakActiveName = member ? (member.displayName || member.user.globalName || member.user.username) : `User (${maxMember.userId})`;
-
         }
 
         if (minMember) {
-
             let member = guild.members.cache.get(minMember.userId);
-
             if (!member) {
-
                 member = await guild.members.fetch(minMember.userId).catch(() => null);
-
             }
-
             leastActiveName = member ? (member.displayName || member.user.globalName || member.user.username) : `User (${minMember.userId})`;
-
         }
-
-
-
-        // Get members from cache to prevent Discord API timeouts and ensure instant page loads
-
-        const membersList = Array.from(guild.members.cache.values());
-
-
-
-        // Generate actual chart data for the last 7 days
-
-        const chartData = [];
-
-        for (let i = 6; i >= 0; i--) {
-
-            const d = new Date();
-
-            d.setDate(d.getDate() - i);
-
-            d.setHours(0, 0, 0, 0);
-
-            const startOfDay = d.getTime();
-
-            const endOfDay = startOfDay + oneDayMs;
-
-
-
-            // Count real joins on this day
-
-            const joins = membersList.filter(m => {
-
-                if (!m.joinedAt) return false;
-
-                const joinedTime = new Date(m.joinedAt).getTime();
-
-                return joinedTime >= startOfDay && joinedTime < endOfDay;
-
-            }).length;
-
-
-
-            // Count real active users who sent their last message on this day
-
-            const activeUsers = activeGuildLevels.filter(r => {
-
-                if (!r.lastMessageTimestamp) return false;
-
-                const activeTime = new Date(r.lastMessageTimestamp).getTime();
-
-                return activeTime >= startOfDay && activeTime < endOfDay;
-
-            }).length;
-
-
-
-            chartData.push({
-
-                date: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-
-                joins: joins,
-
-                activity: activeUsers
-
-            });
-
-        }
-
-
-
-        // Calculate growth trend percentage by comparing last 3 days of message volume with the 3 days prior
-
-        const last3DaysCount = activeGuildLevels.filter(r => r.lastMessageTimestamp && (nowTime - new Date(r.lastMessageTimestamp).getTime() <= 3 * oneDayMs)).length;
-
-        const prior3DaysCount = activeGuildLevels.filter(r => {
-
-            const diff = nowTime - new Date(r.lastMessageTimestamp).getTime();
-
-            return diff > 3 * oneDayMs && diff <= 6 * oneDayMs;
-
-        }).length;
-
-
-
-        let activityTrend = 0;
-
-        if (prior3DaysCount > 0) {
-
-            activityTrend = parseFloat((((last3DaysCount - prior3DaysCount) / prior3DaysCount) * 100).toFixed(1));
-
-        } else if (last3DaysCount > 0) {
-
-            activityTrend = 100.0;
-
-        } else {
-
-            activityTrend = 0.0;
-
-        }
-
-
 
         const avgTextActivity = totalNoraUsers > 0 ? Math.floor(totalTextActivity / totalNoraUsers) : 0;
 
-        
-
         // Count active human members currently in voice channels
-
         const activeVoiceUsers = guild.voiceStates.cache.filter(vs => vs.channelId && vs.member && !vs.member.user.bot).size;
 
-
-
         // Calculate Active Communicators (active in last 7 days)
-
-        const activeCommunicators = activeGuildLevels.filter(r => r.lastMessageTimestamp && (Date.now() - new Date(r.lastMessageTimestamp).getTime() <= 7 * oneDayMs)).length;
-
-
-
-        // Calculate real peak hour from the database level timestamps (UTC hour)
-
-        const hours = Array(24).fill(0);
-
-        activeGuildLevels.forEach(r => {
-
-            if (r.lastMessageTimestamp) {
-
-                const hr = new Date(r.lastMessageTimestamp).getUTCHours();
-
-                hours[hr]++;
-
-            }
-
-        });
-
-        let peakHourUTC = null;
-
-        let maxHourCount = 0;
-
-        for (let h = 0; h < 24; h++) {
-
-            if (hours[h] > maxHourCount) {
-
-                maxHourCount = hours[h];
-
-                peakHourUTC = h;
-
-            }
-
-        }
-
-
+        const activeCommunicators = Math.max(
+            weeklyStats.uniqueActiveUsers || 0,
+            activeGuildLevels.filter(r => r.lastMessageTimestamp && (Date.now() - new Date(r.lastMessageTimestamp).getTime() <= 7 * oneDayMs)).length
+        );
 
         // Calculate actual Top Active Channel based on bot-logged message counts, falling back to lastMessageId
-
         let topChannelName = 'None';
-
-        const guildChannels = req.client.channelActivity?.[guildId] || {};
-
-        const activeChannelIds = Object.keys(guildChannels);
-
-        if (activeChannelIds.length > 0) {
-
-            activeChannelIds.sort((a, b) => guildChannels[b] - guildChannels[a]);
-
-            const topChannel = guild.channels.cache.get(activeChannelIds[0]);
-
-            if (topChannel) {
-
-                topChannelName = `#${topChannel.name}`;
-
-            }
-
+        if (weeklyStats.topChannelId) {
+            const ch = guild.channels.cache.get(weeklyStats.topChannelId);
+            if (ch) topChannelName = `#${ch.name}`;
         }
 
-
+        if (topChannelName === 'None') {
+            const guildChannels = req.client.channelActivity?.[guildId] || {};
+            const activeChannelIds = Object.keys(guildChannels);
+            if (activeChannelIds.length > 0) {
+                activeChannelIds.sort((a, b) => guildChannels[b] - guildChannels[a]);
+                const topChannel = guild.channels.cache.get(activeChannelIds[0]);
+                if (topChannel) {
+                    topChannelName = `#${topChannel.name}`;
+                }
+            }
+        }
 
         if (topChannelName === 'None') {
-
             const textChannels = Array.from(guild.channels.cache.filter(c => c.type === 0).values());
-
             if (textChannels.length > 0) {
-
                 textChannels.sort((a, b) => {
-
                     const idA = a.lastMessageId ? BigInt(a.lastMessageId) : 0n;
-
                     const idB = b.lastMessageId ? BigInt(b.lastMessageId) : 0n;
-
                     return idA > idB ? -1 : idA < idB ? 1 : 0;
-
                 });
-
                 const bestChannel = textChannels.find(c => c.lastMessageId);
-
                 if (bestChannel) {
-
                     topChannelName = `#${bestChannel.name}`;
-
                 } else {
-
                     topChannelName = `#${textChannels[0].name}`;
-
                 }
-
             }
-
         }
 
 

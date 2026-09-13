@@ -4,6 +4,8 @@ const GlobalSettings = require('../database/models/GlobalSettings');
 const NoraLeveling = require('../utils/noraLeveling');
 const { formatMessage } = require('../utils/messageFormatter');
 
+const activityTracker = require('../utils/activityTracker');
+
 module.exports = {
     name: Events.MessageCreate,
     async execute(message, client) {
@@ -18,12 +20,12 @@ module.exports = {
             return;
         }
 
-        // Track channel activity in-memory for top channel analytics
-        if (!client.channelActivity) {
-            client.channelActivity = {};
+        // 📊 High-Performance Activity Tracking across all servers
+        try {
+            activityTracker.recordMessage(message);
+        } catch (e) {
+            console.error('[ActivityTracker Record Error]:', e.message);
         }
-        const guildChannels = client.channelActivity[message.guild.id] || {};
-        guildChannels[message.channel.id] = (guildChannels[message.channel.id] || 0) + 1;
 
         // ⚡ Universal Prefix Command Engine (n!<command>, n?<command>, @Nora <command>)
         const prefixCommandHandler = require('../utils/prefixCommandHandler');

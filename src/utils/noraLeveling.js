@@ -88,16 +88,15 @@ module.exports = {
             nextGoal = NORA_CONFIG.getTotalXP(currentLevel + 1);
         }
 
-        // Auto-reset rolling daily and weekly XP if last active was too long ago
-        const lastActiveTime = userRecord.lastMessageTimestamp ? new Date(userRecord.lastMessageTimestamp).getTime() : 0;
-        const now = Date.now();
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        const sevenDaysMs = 7 * oneDayMs;
+        // Auto-reset daily and weekly XP accurately
+        const lastActiveTime = userRecord.lastMessageTimestamp ? new Date(userRecord.lastMessageTimestamp) : null;
+        const now = new Date();
 
-        if (now - lastActiveTime > sevenDaysMs) {
+        if (!lastActiveTime || (now.getTime() - lastActiveTime.getTime() > 7 * 24 * 60 * 60 * 1000) || (now.getUTCDay() !== lastActiveTime.getUTCDay() && now.getTime() - lastActiveTime.getTime() > 7 * 24 * 60 * 60 * 1000)) {
             userRecord.weeklyXp = 0;
+            userRecord.messagesWeek = 0;
         }
-        if (now - lastActiveTime > oneDayMs) {
+        if (!lastActiveTime || now.getUTCDate() !== lastActiveTime.getUTCDate() || now.getUTCMonth() !== lastActiveTime.getUTCMonth() || now.getUTCFullYear() !== lastActiveTime.getUTCFullYear()) {
             userRecord.dailyXp = 0;
         }
 
@@ -105,8 +104,10 @@ module.exports = {
         userRecord.totalXp = totalXp;
         userRecord.weeklyXp = (userRecord.weeklyXp || 0) + xpGained;
         userRecord.dailyXp = (userRecord.dailyXp || 0) + xpGained;
+        userRecord.messagesCount = (userRecord.messagesCount || 0) + 1;
+        userRecord.messagesWeek = (userRecord.messagesWeek || 0) + 1;
         userRecord.level = currentLevel;
-        userRecord.lastMessageTimestamp = new Date();
+        userRecord.lastMessageTimestamp = now;
 
         return { xpGained, didLevelUp, newLevel: currentLevel };
     }

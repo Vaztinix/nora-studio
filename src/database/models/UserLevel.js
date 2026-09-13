@@ -53,6 +53,14 @@ const UserLevel = sequelize.define('UserLevel', {
     invitesCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    messagesCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    messagesWeek: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 }, {
     indexes: [

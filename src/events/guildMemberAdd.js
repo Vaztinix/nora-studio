@@ -1,6 +1,7 @@
 const { Events, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const { formatMessage } = require('../utils/messageFormatter');
+const activityTracker = require('../utils/activityTracker');
 
 // In-memory Join Tracker for Anti-Raid
 const joinLog = new Map();
@@ -9,6 +10,11 @@ module.exports = {
     name: Events.GuildMemberAdd,
     async execute(member) {
         try {
+            // Track join for daily/weekly server activity analytics
+            if (member.guild) {
+                activityTracker.recordJoin(member.guild.id);
+            }
+
             const settings = await GuildSettings.findOne({ where: { guildId: member.guild.id } });
             // console.log(`[Logger DEBUG] MemberJoin event in ${member.guild.name}. LogChannelSet: ${!!settings?.loggingChannelId}, Toggle: ${settings?.logMemberJoins}, WelcomeChannelSet: ${!!settings?.welcomeChannelId}, Toggle: ${settings?.welcomerEnabled}`);
             if (!settings) return;
