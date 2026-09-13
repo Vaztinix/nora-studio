@@ -242,6 +242,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    ageVerifiedRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     ticketCategoryId: {
         type: DataTypes.STRING,
         allowNull: true

@@ -1004,8 +1004,9 @@
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!res.ok) throw new Error('Failed to set active account');
-                showToast('Switched active Roblox identity!', 'success');
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || 'Failed to set active account');
+                showToast(data.message || 'Switched active Roblox identity!', 'success');
                 await loadRobloxAccounts();
             } catch (err) {
                 showToast(err.message, 'error');
@@ -1024,8 +1025,9 @@
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!res.ok) throw new Error('Failed to unlink account');
-                showToast('Roblox account unlinked.', 'info');
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || 'Failed to unlink account');
+                showToast(data.message || 'Roblox account unlinked.', 'info');
                 await loadRobloxAccounts();
             } catch (err) {
                 showToast(err.message, 'error');

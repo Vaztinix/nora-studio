@@ -17,6 +17,46 @@ async function processUnderageMember(member, client) {
 
     console.log(`[Underage Sweep] [DETECTED] User: ${user.tag} (ID: ${user.id}) in Server: "${guild.name}" (ID: ${guild.id}) has target underage role ID ${UNDERAGE_ROLE_ID}`);
 
+    // 🛡️ 0. Age Verification Immunity Check
+    try {
+        const GuildSettings = require('../database/models/GuildSettings');
+        const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+        const verifiedRoleId = settings ? settings.ageVerifiedRoleId : null;
+
+        const isRoleVerified = verifiedRoleId && member.roles && member.roles.cache && member.roles.cache.has(verifiedRoleId);
+
+        if (isRoleVerified) {
+            console.log(`[Underage Sweep] [IMMUNITY BLOCKED] User ${user.tag} (${user.id}) holds Age-Verified Protected Role (${verifiedRoleId}). Aborting kick and stripping underage role.`);
+
+            // Automatically strip the accidental underage role
+            if (member.roles.cache.has(UNDERAGE_ROLE_ID)) {
+                await member.roles.remove(UNDERAGE_ROLE_ID, 'Automated Shield: Member has Age-Verified Immunity role.').catch(() => {});
+            }
+
+            // Log immunity protection to #modlog
+            let logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
+            if (!logChannel) logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+            if (logChannel && logChannel.isTextBased()) {
+                const immunityEmbed = new EmbedBuilder()
+                    .setTitle('🛡️ Age-Verified Member Shielded from Underage Action')
+                    .setColor(0x2ECC71)
+                    .setThumbnail(user.displayAvatarURL({ dynamic: true }))
+                    .setDescription(`User <@${user.id}> (\`${user.id}\`) is recognized as **Age Verified** with protected role <@&${verifiedRoleId}>.`)
+                    .addFields(
+                        { name: '👤 Member', value: `${user.tag} (\`${user.id}\`)\n<@${user.id}>`, inline: true },
+                        { name: '🛡️ Protected Role', value: `<@&${verifiedRoleId}>\n\`${verifiedRoleId}\``, inline: true },
+                        { name: '🛑 Shield Enforcement', value: 'Underage kick was **blocked**. Underage role was automatically removed.', inline: false }
+                    )
+                    .setFooter({ text: 'Nora Age Verification Shield • Complete Immunity' })
+                    .setTimestamp();
+                await logChannel.send({ embeds: [immunityEmbed] }).catch(() => {});
+            }
+            return;
+        }
+    } catch (immunityErr) {
+        console.error('[Underage Sweep] Immunity check error:', immunityErr.message);
+    }
+
     // 1. Send Direct Message to the user before kicking
     let dmDelivered = false;
     let dmErrorReason = null;
@@ -66,6 +106,35 @@ async function processUnderageMember(member, client) {
             await member.kick('Determined to be underage for Discord policy enforcement (Recommended to delete Discord until 13)');
             kickSuccess = true;
             console.log(`[Underage Sweep] [KICK SUCCESS] Successfully kicked ${user.tag} (${user.id}) from "${guild.name}".`);
+
+            // Record in database
+            try {
+                const UnderageSuspension = require('../database/models/UnderageSuspension');
+                const [record, created] = await UnderageSuspension.findOrCreate({
+                    where: {
+                        guildId: guild.id,
+                        userId: user.id
+                    },
+                    defaults: {
+                        guildId: guild.id,
+                        userId: user.id,
+                        userTag: user.tag,
+                        kickedAt: new Date(),
+                        status: 'suspended',
+                        reason: 'Determined underage for Discord (Recommended minimum age: 13)'
+                    }
+                });
+
+                if (!created) {
+                    await record.update({
+                        userTag: user.tag,
+                        kickedAt: new Date(),
+                        status: 'suspended'
+                    });
+                }
+            } catch (dbErr) {
+                console.error(`[Underage Sweep] [DB ERROR] Failed to save suspension record for ${user.id}:`, dbErr.message);
+            }
         }
     } catch (kickErr) {
         kickErrorReason = kickErr.message || 'Unknown kick error';
@@ -188,18 +257,113 @@ async function runUnderageSweep(client) {
 }
 
 /**
+ * Retroactively sync and backfill past underage kick logs from the audit channel into the database.
+ * @param {import('discord.js').Client} client
+ */
+async function syncPastUnderageKicks(client) {
+    if (!client || !client.isReady()) return 0;
+    const UnderageSuspension = require('../database/models/UnderageSuspension');
+    let backfilled = 0;
+
+    try {
+        let logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
+        if (!logChannel) {
+            logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+        }
+
+        if (!logChannel || !logChannel.isTextBased()) return 0;
+
+        let lastId = null;
+        let keepFetching = true;
+
+        while (keepFetching) {
+            const options = { limit: 100 };
+            if (lastId) options.before = lastId;
+
+            const messages = await logChannel.messages.fetch(options).catch(() => null);
+            if (!messages || messages.size === 0) {
+                keepFetching = false;
+                break;
+            }
+
+            lastId = messages.last().id;
+
+            for (const msg of messages.values()) {
+                for (const embed of msg.embeds) {
+                    const title = embed.title || '';
+                    const desc = embed.description || '';
+
+                    if (title.includes('Underage Member Auto-Kicked') || desc.includes('underage user with role') || title.includes('Underage')) {
+                        const userField = embed.fields.find(f => f.name && (f.name.includes('User') || f.name.includes('Member')));
+                        let userId = null;
+                        let userTag = null;
+
+                        if (userField) {
+                            const idMatch = userField.value.match(/`(\d{17,20})`/) || userField.value.match(/<@!?(\d{17,20})>/);
+                            if (idMatch) userId = idMatch[1];
+
+                            const tagMatch = userField.value.match(/^([^`\n(<]+)/);
+                            if (tagMatch) userTag = tagMatch[1].trim();
+                        }
+
+                        if (!userId && embed.thumbnail && embed.thumbnail.url) {
+                            const avatarMatch = embed.thumbnail.url.match(/avatars\/(\d{17,20})\//);
+                            if (avatarMatch) userId = avatarMatch[1];
+                        }
+
+                        if (userId) {
+                            const kickedTimestamp = msg.createdAt || new Date();
+                            const [rec, created] = await UnderageSuspension.findOrCreate({
+                                where: {
+                                    guildId: TARGET_GUILD_ID,
+                                    userId: userId
+                                },
+                                defaults: {
+                                    guildId: TARGET_GUILD_ID,
+                                    userId: userId,
+                                    userTag: userTag || `User_${userId}`,
+                                    kickedAt: kickedTimestamp,
+                                    status: 'suspended',
+                                    reason: 'Determined underage for Discord (Recommended minimum age: 13)'
+                                }
+                            });
+
+                            if (created) {
+                                backfilled++;
+                            } else if (userTag && (!rec.userTag || rec.userTag.includes('('))) {
+                                await rec.update({ userTag });
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (messages.size < 100) keepFetching = false;
+        }
+
+        if (backfilled > 0) {
+            console.log(`[Underage Sweep] Retroactively synchronized ${backfilled} past underage suspension records.`);
+        }
+    } catch (err) {
+        console.error('[Underage Sweep] Error during past kicks sync:', err.message);
+    }
+    return backfilled;
+}
+
+/**
  * Initialize the hourly underage sweep scheduler.
  * @param {import('discord.js').Client} client
  */
 function startUnderageSweepScheduler(client) {
     console.log(`[Underage Sweep] Initializing Underage Sweep Scheduler (Interval: 1 hour / ${SWEEP_INTERVAL_MS}ms, Target Role: ${UNDERAGE_ROLE_ID}, Log Channel: ${LOG_CHANNEL_ID})...`);
 
-    // Initial check after 10 seconds to allow bot caches to warm up
+    // Initial audit log sync and sweep after 5 seconds
     setTimeout(() => {
+        syncPastUnderageKicks(client).catch(() => {});
         runUnderageSweep(client).catch(err => {
             console.error('[Underage Sweep] Initial startup sweep error:', err);
         });
-    }, 10000);
+    }, 5000);
 
     // Schedule hourly recurring sweep
     const interval = setInterval(() => {
@@ -216,5 +380,6 @@ module.exports = {
     LOG_CHANNEL_ID,
     processUnderageMember,
     runUnderageSweep,
+    syncPastUnderageKicks,
     startUnderageSweepScheduler
 };

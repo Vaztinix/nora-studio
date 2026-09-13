@@ -2892,16 +2892,18 @@ app.post('/api/user/roblox/sync', async (req, res) => {
     }
 });
 
-app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
+const handleRobloxSetActive = async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
-    const { robloxId } = req.body || {};
+    const robloxId = req.params.robloxId || req.body?.robloxId;
     if (!robloxId) return res.status(400).json({ error: 'Missing robloxId' });
 
     try {
         const user = await getDiscordUser(token);
-        const targetRecord = await RobloxVerify.findOne({ where: { userId: user.id, robloxId } });
+        if (!user || !user.id) return res.status(401).json({ error: 'Invalid Discord session' });
+
+        const targetRecord = await RobloxVerify.findOne({ where: { userId: user.id, robloxId: String(robloxId) } });
         if (!targetRecord) {
             return res.status(404).json({ error: 'Roblox account verification record not found' });
         }
@@ -2920,13 +2922,21 @@ app.post('/api/user/roblox/accounts/toggle', async (req, res) => {
         await targetRecord.save();
 
         // Immediately trigger role sync
-        await syncUserRolesAcrossGuilds(user.id, targetRecord.robloxId);
+        try {
+            await syncUserRolesAcrossGuilds(user.id, targetRecord.robloxId);
+        } catch (syncErr) {
+            console.error('[Roblox Active Sync Error]:', syncErr.message);
+        }
 
-        res.json({ success: true, isActive: true });
+        res.json({ success: true, isActive: true, message: 'Switched active Roblox account' });
     } catch (e) {
         handleRouteError(res, e, '/api/user/roblox/accounts/toggle');
     }
-});
+};
+
+app.post('/api/user/roblox/accounts/toggle', handleRobloxSetActive);
+app.post('/api/user/roblox/active/:robloxId', handleRobloxSetActive);
+app.post('/api/user/roblox/active', handleRobloxSetActive);
 
 // State mapping for Roblox OAuth2 handshake
 const robloxStateMap = new Map(); // state -> { userId, token, guildId }
@@ -3318,22 +3328,23 @@ app.get('/api/user/roblox/profile/:robloxId', async (req, res) => {
     }
 });
 
-app.post('/api/user/roblox/unlink', async (req, res) => {
+const handleRobloxUnlink = async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
     const token = authHeader.split(' ')[1];
-    const { robloxId } = req.body || {};
+    const robloxId = req.params.robloxId || req.body?.robloxId || req.query?.robloxId;
     try {
         const user = await getDiscordUser(token);
+        if (!user || !user.id) return res.status(401).json({ error: 'Invalid Discord session' });
 
         if (robloxId) {
-            await RobloxVerify.destroy({ where: { userId: user.id, robloxId } });
+            await RobloxVerify.destroy({ where: { userId: user.id, robloxId: String(robloxId) } });
 
             const UserPrefs = require('./database/models/UserPrefs');
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             let handles = [];
             try { handles = JSON.parse(prefs.auxiliaryRobloxHandles || '[]'); } catch (e) { }
-            handles = handles.filter(h => h !== robloxId);
+            handles = handles.filter(h => String(h) !== String(robloxId));
             await prefs.update({ auxiliaryRobloxHandles: JSON.stringify(handles) });
 
             const remainingActive = await RobloxVerify.findOne({ where: { userId: user.id, isActive: true } });
@@ -3350,11 +3361,16 @@ app.post('/api/user/roblox/unlink', async (req, res) => {
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
             await prefs.update({ auxiliaryRobloxHandles: '[]' });
         }
-        res.json({ success: true });
+        res.json({ success: true, message: 'Roblox account unlinked successfully' });
     } catch (e) {
         handleRouteError(res, e, '/api/user/roblox/unlink');
     }
-});
+};
+
+app.delete('/api/user/roblox/accounts/:robloxId', handleRobloxUnlink);
+app.delete('/api/user/roblox/accounts', handleRobloxUnlink);
+app.post('/api/user/roblox/unlink', handleRobloxUnlink);
+app.delete('/api/user/roblox/unlink', handleRobloxUnlink);
 
 app.get('/api/user/roblox/avatar', async (req, res) => {
     const userId = req.query.userId || '1';
