@@ -760,7 +760,7 @@ router.get('/analytics', async (req, res) => {
 
             rolesCount: guild.roles.cache.size,
 
-            botsCount: membersList.filter(m => m.user.bot).length,
+            botsCount: guild.members.cache.filter(m => m.user && m.user.bot).size,
 
             emojisCount: guild.emojis.cache.size,
 

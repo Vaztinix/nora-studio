@@ -19399,14 +19399,18 @@
                 existingContainer.remove();
             }
 
-            const container = document.createElement('div');
+            const targetContainer = document.getElementById(hiddenInputId + '-container');
+            const container = targetContainer || document.createElement('div');
             container.className = 'multiselect-container';
             container.id = 'multiselect-container-' + hiddenInputId;
+            container.innerHTML = '';
 
             const trigger = document.createElement('div');
             trigger.className = 'multiselect-trigger';
             trigger.id = 'multiselect-trigger-' + hiddenInputId;
-            trigger.textContent = 'Select roles...';
+            const placeholder = hiddenInputId.toLowerCase().includes('channel') ? 'Select channels...' : 'Select roles...';
+            const emptyText = hiddenInputId.toLowerCase().includes('channel') ? 'No channels selected' : 'No roles selected';
+            trigger.textContent = placeholder;
 
             const dropdown = document.createElement('div');
             dropdown.className = 'multiselect-dropdown';
@@ -19414,7 +19418,7 @@
 
             const search = document.createElement('input');
             search.type = 'text';
-            search.placeholder = 'Search roles...';
+            search.placeholder = hiddenInputId.toLowerCase().includes('channel') ? 'Search channels...' : 'Search roles...';
             search.className = 'multiselect-search';
             search.style.marginBottom = '8px';
 
@@ -19424,14 +19428,10 @@
             dropdown.appendChild(search);
             dropdown.appendChild(optionsList);
 
-            const targetContainer = document.getElementById(hiddenInputId + '-container');
-            if (targetContainer) {
-                targetContainer.innerHTML = '';
-                targetContainer.appendChild(trigger);
-                targetContainer.appendChild(dropdown);
-            } else {
-                container.appendChild(trigger);
-                container.appendChild(dropdown);
+            container.appendChild(trigger);
+            container.appendChild(dropdown);
+
+            if (!targetContainer) {
                 input.parentNode.insertBefore(container, input.nextSibling);
             }
 
@@ -19495,7 +19495,9 @@
                 selectedValues = rawVal.split(',').map(s => s.trim()).filter(Boolean);
             }
 
-            roles.forEach(r => {
+            const items = Array.isArray(roles) ? roles : [];
+            items.forEach(r => {
+                if (!r || !r.id) return;
                 const option = document.createElement('div');
                 option.className = 'multiselect-option';
                 option.setAttribute('data-value', r.id);
@@ -19506,8 +19508,9 @@
                 if (r.higherThanBot) checkbox.disabled = true;
 
                 const label = document.createElement('span');
-                label.textContent = `${r.name}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}`;
-                label.style.color = r.color;
+                const displayName = r.name ? (hiddenInputId.toLowerCase().includes('channel') && !r.name.startsWith('#') ? '#' + r.name : r.name) : r.id;
+                label.textContent = `${displayName}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}`;
+                if (r.color) label.style.color = r.color;
                 if (r.higherThanBot) label.style.opacity = '0.5';
 
                 option.appendChild(checkbox);
@@ -19545,10 +19548,9 @@
                 const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
                 const vals = Array.from(checkedBoxes).map(cb => cb.parentNode.getAttribute('data-value'));
                 
-                if (hiddenInputId === 'setting-automodImmuneRoles' || hiddenInputId === 'setting-countingWhitelistedRoles' || hiddenInputId === 'setting-starboardIgnoredChannels' || hiddenInputId === 'setting-verifyRoleId') {
+                if (hiddenInputId === 'setting-automodImmuneRoles' || hiddenInputId === 'setting-countingWhitelistedRoles' || hiddenInputId === 'setting-countingBlacklistedRoles' || hiddenInputId === 'setting-starboardIgnoredChannels' || hiddenInputId === 'setting-verifyRoleId' || hiddenInputId === 'setting-levelingIgnoredRoles' || hiddenInputId === 'setting-levelingIgnoredChannels') {
                     input.value = JSON.stringify(vals);
                 } else {
-
                     input.value = vals.join(',');
                 }
                 
@@ -19557,16 +19559,19 @@
 
             function updateTrigger() {
                 const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
-                const trigger = container.querySelector('.multiselect-trigger');
+                const curTrigger = trigger || container.querySelector('.multiselect-trigger');
+                if (!curTrigger) return;
+
                 if (checkedBoxes.length === 0) {
-                    trigger.textContent = 'No roles selected';
+                    curTrigger.textContent = emptyText;
                     return;
                 }
 
-                trigger.innerHTML = '';
+                curTrigger.innerHTML = '';
                 checkedBoxes.forEach(cb => {
-                    const labelText = cb.nextSibling.textContent.replace(' (Requires Bot Role Higher)', '');
-                    const color = cb.nextSibling.style.color;
+                    const labelSpan = cb.nextSibling;
+                    const labelText = labelSpan ? labelSpan.textContent.replace(' (Requires Bot Role Higher)', '') : (cb.parentNode.getAttribute('data-value') || 'Item');
+                    const color = labelSpan ? labelSpan.style.color : '';
                     const tag = document.createElement('span');
                     tag.className = 'multiselect-tag';
                     tag.textContent = labelText;
@@ -19575,7 +19580,7 @@
                         tag.style.borderColor = color + '4d';
                         tag.style.background = color + '1a';
                     }
-                    trigger.appendChild(tag);
+                    curTrigger.appendChild(tag);
                 });
             }
 
@@ -19614,15 +19619,19 @@
             // Update trigger
             const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
             const trigger = container.querySelector('.multiselect-trigger');
+            if (!trigger) return;
+            const emptyText = hiddenInputId.toLowerCase().includes('channel') ? 'No channels selected' : 'No roles selected';
+
             if (checkedBoxes.length === 0) {
-                trigger.textContent = 'No roles selected';
+                trigger.textContent = emptyText;
                 return;
             }
 
             trigger.innerHTML = '';
             checkedBoxes.forEach(cb => {
-                const labelText = cb.nextSibling.textContent.replace(' (Requires Bot Role Higher)', '');
-                const color = cb.nextSibling.style.color;
+                const labelSpan = cb.nextSibling;
+                const labelText = labelSpan ? labelSpan.textContent.replace(' (Requires Bot Role Higher)', '') : (cb.parentNode.getAttribute('data-value') || 'Item');
+                const color = labelSpan ? labelSpan.style.color : '';
                 const tag = document.createElement('span');
                 tag.className = 'multiselect-tag';
                 tag.textContent = labelText;
