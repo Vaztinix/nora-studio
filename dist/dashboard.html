@@ -5014,8 +5014,11 @@
                     
                     <div class="user-dropdown-menu" id="user-dropdown-menu">
                         <div class="user-dropdown-header">
-                            <div class="user-dropdown-name" id="user-dropdown-name">Nora User</div>
-                            <div class="user-dropdown-sub" id="user-dropdown-sub">Discord Authenticated</div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 3px;">
+                                <div class="user-dropdown-name" id="user-dropdown-name" data-no-translate style="font-weight: 700; color: #fff; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</div>
+                                <div id="user-dropdown-badge"></div>
+                            </div>
+                            <div class="user-dropdown-sub" id="user-dropdown-sub" data-no-translate style="color: rgba(255,255,255,0.6); font-size: 0.78rem;">@user</div>
                         </div>
                         <div class="user-dropdown-divider"></div>
                         <a href="/" class="user-dropdown-item"><i class="fas fa-home"></i> Home Page</a>
@@ -11272,6 +11275,109 @@
 
                 const userAvatarFormatted = resolveDiscordUserAvatarUrl(d);
                 
+                function resolveStaffRoleBadge(user) {
+                    if (!user) return null;
+                    const uid = String(user.id || '');
+                    const uname = (user.username || '').toLowerCase();
+                    
+                    // Official Team Card Directory mappings
+                    if (uid === '1214048435632603137' || uname === 'vaztinix' || uname === 'vaz' || user.isOwner) {
+                        return {
+                            title: 'Founder & Lead Developer',
+                            badgeText: 'Founder',
+                            icon: 'fas fa-crown',
+                            color: '#fbbf24',
+                            bg: 'rgba(245, 158, 11, 0.15)',
+                            border: 'rgba(245, 158, 11, 0.35)'
+                        };
+                    }
+                    if (uid === '1366229304257544213' || uid === '1377095101116973187' || uname === 'strawberry_angel0000' || uname === 'strawberry._0000') {
+                        return {
+                            title: 'Co-Owner',
+                            badgeText: 'Co-Owner',
+                            icon: 'fas fa-gem',
+                            color: '#f472b6',
+                            bg: 'rgba(236, 72, 153, 0.15)',
+                            border: 'rgba(236, 72, 153, 0.35)'
+                        };
+                    }
+                    if (uid === '914530504718561351' || uname === 'charlieisme' || uname.includes('thecasualenderman') || uname.includes('endervarium')) {
+                        return {
+                            title: 'Administrator',
+                            badgeText: 'Admin',
+                            icon: 'fas fa-shield-alt',
+                            color: '#38bdf8',
+                            bg: 'rgba(56, 189, 248, 0.15)',
+                            border: 'rgba(56, 189, 248, 0.35)'
+                        };
+                    }
+                    if (uid === '1301949827701149697' || uname === 'discounted_chaos') {
+                        return {
+                            title: 'Administrator',
+                            badgeText: 'Admin',
+                            icon: 'fas fa-shield-alt',
+                            color: '#38bdf8',
+                            bg: 'rgba(56, 189, 248, 0.15)',
+                            border: 'rgba(56, 189, 248, 0.35)'
+                        };
+                    }
+                    if (uid === '1364634555977564230' || uname === 'poppys.ang3l' || uname === 'poppys_ang3l') {
+                        return {
+                            title: 'Administrator',
+                            badgeText: 'Admin',
+                            icon: 'fas fa-shield-alt',
+                            color: '#c084fc',
+                            bg: 'rgba(168, 85, 247, 0.15)',
+                            border: 'rgba(168, 85, 247, 0.35)'
+                        };
+                    }
+                    if (uid === '941084096673755188' || uname === 'solorads') {
+                        return {
+                            title: 'Tester & Contributor',
+                            badgeText: 'Tester',
+                            icon: 'fas fa-flask',
+                            color: '#34d399',
+                            bg: 'rgba(16, 185, 129, 0.15)',
+                            border: 'rgba(16, 185, 129, 0.35)'
+                        };
+                    }
+                    if (uid === '1387499169870254230' || uname === 'boris10106') {
+                        return {
+                            title: 'Community Team Friend',
+                            badgeText: 'Friend',
+                            icon: 'fas fa-heart',
+                            color: '#818cf8',
+                            bg: 'rgba(99, 102, 241, 0.15)',
+                            border: 'rgba(99, 102, 241, 0.35)'
+                        };
+                    }
+                    if (uid === '1127254357059047546' || uname === 'yunex0') {
+                        return {
+                            title: 'Security Bug Hunter & Moderator',
+                            badgeText: 'Bug Hunter',
+                            icon: 'fas fa-bug',
+                            color: '#f87171',
+                            bg: 'rgba(239, 68, 68, 0.15)',
+                            border: 'rgba(239, 68, 68, 0.35)'
+                        };
+                    }
+                    if (user.isStaff) {
+                        return {
+                            title: 'Nora Staff',
+                            badgeText: 'Staff',
+                            icon: 'fas fa-user-shield',
+                            color: '#38bdf8',
+                            bg: 'rgba(56, 189, 248, 0.15)',
+                            border: 'rgba(56, 189, 248, 0.35)'
+                        };
+                    }
+                    return null;
+                }
+                window.resolveStaffRoleBadge = resolveStaffRoleBadge;
+
+                const displayName = (d.prefs && d.prefs.displayName) || d.global_name || d.username;
+                const staffInfo = resolveStaffRoleBadge(d);
+
                 const avatarEl = document.getElementById('user-avatar-top');
                 if (avatarEl) {
                     avatarEl.src = userAvatarFormatted;
@@ -11279,15 +11385,29 @@
                 
                 const userNameEl = document.getElementById('user-name-top');
                 if (userNameEl) {
-                    userNameEl.textContent = (d.prefs && d.prefs.displayName) || d.username;
+                    userNameEl.textContent = displayName;
                 }
                 const userDropdownName = document.getElementById('user-dropdown-name');
                 if (userDropdownName) {
-                    userDropdownName.textContent = (d.prefs && d.prefs.displayName) || d.username;
+                    userDropdownName.textContent = displayName;
+                }
+                const userDropdownBadge = document.getElementById('user-dropdown-badge');
+                if (userDropdownBadge) {
+                    if (staffInfo) {
+                        userDropdownBadge.innerHTML = `<span style="background: ${staffInfo.bg}; border: 1px solid ${staffInfo.border}; color: ${staffInfo.color}; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;"><i class="${staffInfo.icon}"></i> ${staffInfo.badgeText}</span>`;
+                        userDropdownBadge.style.display = 'block';
+                    } else {
+                        userDropdownBadge.innerHTML = '';
+                        userDropdownBadge.style.display = 'none';
+                    }
                 }
                 const userDropdownSub = document.getElementById('user-dropdown-sub');
                 if (userDropdownSub) {
-                    userDropdownSub.textContent = `@${d.username}`;
+                    if (staffInfo) {
+                        userDropdownSub.textContent = `${staffInfo.title} • @${d.username}`;
+                    } else {
+                        userDropdownSub.textContent = `@${d.username}`;
+                    }
                 }
                 
                 // Populate Sidebar & Mobile Drawer
@@ -11302,11 +11422,11 @@
 
                 const userNameElSidebar = document.getElementById('user-name');
                 if (userNameElSidebar) {
-                    userNameElSidebar.textContent = (d.prefs && d.prefs.displayName) || d.username;
+                    userNameElSidebar.textContent = displayName;
                 }
                 const userNameElMobileDrawer = document.getElementById('mobile-drawer-name');
                 if (userNameElMobileDrawer) {
-                    userNameElMobileDrawer.textContent = (d.prefs && d.prefs.displayName) || d.username;
+                    userNameElMobileDrawer.textContent = displayName;
                 }
 
                 const userHandleElSidebar = document.getElementById('user-handle');
@@ -15471,8 +15591,13 @@
                 if (compactCheck.checked) document.body.classList.add('compact-mode');
             }
             
+            const cachedName = localStorage.getItem('nora_display_name');
             const oldUserNameEl = document.getElementById('user-name');
-            if (oldUserNameEl) oldUserNameEl.textContent = localStorage.getItem('nora_display_name') || 'Nora User';
+            if (oldUserNameEl && cachedName) oldUserNameEl.textContent = cachedName;
+            const topUserNameEl = document.getElementById('user-name-top');
+            if (topUserNameEl && cachedName) topUserNameEl.textContent = cachedName;
+            const dropdownUserNameEl = document.getElementById('user-dropdown-name');
+            if (dropdownUserNameEl && cachedName) dropdownUserNameEl.textContent = cachedName;
             
             if (typeof applyBackdropSettings === 'function') applyBackdropSettings();
         }
