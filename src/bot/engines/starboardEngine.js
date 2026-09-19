@@ -181,7 +181,7 @@ async function handleReactionAdd(reaction, user) {
                 : settings.starboardIgnoredChannels;
         } catch (e) {}
     }
-    if (Array.isArray(ignoredChannels) && ignoredChannels.includes(reaction.message.channel.id)) return;
+    if (Array.isArray(ignoredChannels) && (ignoredChannels.includes(reaction.message.channel.id) || (reaction.message.channel.parentId && ignoredChannels.includes(reaction.message.channel.parentId)))) return;
 
     // Trigger emoji match
     const triggerEmoji = settings.starboardEmoji || '⭐';

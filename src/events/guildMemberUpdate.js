@@ -66,7 +66,7 @@ module.exports = {
                         { name: 'New Nickname', value: newMember.nickname || '*Reset to Username*', inline: true }
                     )
                     .setTimestamp();
-                await loggerUtil.sendEventLog(newMember.guild, 'memberUpdate', nickEmbed, settings);
+                await loggerUtil.sendEventLog(newMember.guild, 'memberNicknames', nickEmbed, settings);
             }
 
             // 3. Role Changes Logging
@@ -90,7 +90,7 @@ module.exports = {
                     roleEmbed.addFields({ name: '➖ Roles Removed', value: removedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
                 }
                 roleEmbed.setTimestamp();
-                await loggerUtil.sendEventLog(newMember.guild, 'memberUpdate', roleEmbed, settings);
+                await loggerUtil.sendEventLog(newMember.guild, 'memberRoles', roleEmbed, settings);
 
                 // Check if the assigned role is the Underage Role (1539395288811446302)
                 if (newMember.guild.id === '1487342521133830174' && addedRoles.has('1539395288811446302')) {
@@ -120,7 +120,7 @@ module.exports = {
                         { name: 'Status', value: isTimedOut ? `Timed out until <t:${Math.floor(newMember.communicationDisabledUntilTimestamp / 1000)}:F>` : 'Timeout Lifted', inline: true }
                     )
                     .setTimestamp();
-                await loggerUtil.sendEventLog(newMember.guild, 'memberUpdate', timeoutEmbed, settings);
+                await loggerUtil.sendEventLog(newMember.guild, 'modTimeouts', timeoutEmbed, settings);
             }
 
         } catch (error) {

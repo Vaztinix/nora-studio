@@ -177,8 +177,14 @@ module.exports = {
                     if (roleIds.length > 0) {
                         const rolesToRestore = [];
                         const skippedRoles = [];
+                        const UNDERAGE_ROLE_ID = '1539395288811446302';
                         
                         for (const roleId of roleIds) {
+                            if (roleId === UNDERAGE_ROLE_ID) {
+                                skippedRoles.push('Underage Role (Quarantine Guard)');
+                                continue;
+                            }
+
                             const role = member.guild.roles.cache.get(roleId);
                             if (!role) continue;
                             

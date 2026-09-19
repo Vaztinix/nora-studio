@@ -198,6 +198,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    logMessagePurges: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    loggingIgnoredChannels: {
+        type: DataTypes.TEXT, // JSON array of channel IDs to ignore for logging
+        defaultValue: '[]'
+    },
     logDashboardActions: {
         type: DataTypes.BOOLEAN,
         defaultValue: true

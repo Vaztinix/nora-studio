@@ -35,13 +35,14 @@ module.exports = {
 
             const authorTag = author ? (author.discriminator && author.discriminator !== '0' ? `${author.username}#${author.discriminator}` : author.tag) : 'Uncached User';
             const displayName = member?.displayName || author?.globalName || author?.username || 'Unknown';
-            const authorFormatted = author ? `${authorTag} (@${displayName})` : 'Unknown User';
+            const authorId = author ? author.id : 'Unknown';
+            const authorFormatted = author ? `${authorTag} (@${displayName}) (<@${authorId}> • \`${authorId}\`)` : 'Unknown User';
 
             const createdTimeUnix = Math.floor((oldMessage.createdTimestamp || newMessage.createdTimestamp || Date.now()) / 1000);
 
             const description = [
-                `**Channel:** <#${oldMessage.channel.id}> (${oldMessage.channel.name})`,
-                `**Message ID:** ${newMessage.id}`,
+                `**Channel:** <#${oldMessage.channel.id}> (\`${oldMessage.channel.name}\`)`,
+                `**Message ID:** \`${newMessage.id}\``,
                 `**Message author:** ${authorFormatted}`,
                 `**Message created:** <t:${createdTimeUnix}:R>`
             ].join('\n');
@@ -64,7 +65,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setTitle('Message edited')
                 .setAuthor({
-                    name: author ? author.tag : 'Uncached User',
+                    name: author ? `${author.tag} (${author.id})` : 'Uncached User',
                     iconURL: author ? author.displayAvatarURL({ dynamic: true }) : undefined
                 })
                 .setColor(0xFEE75C)
@@ -75,7 +76,7 @@ module.exports = {
                 )
                 .setTimestamp();
 
-            await loggerUtil.sendEventLog(oldMessage.guild, 'messageUpdate', embed, settings);
+            await loggerUtil.sendEventLog(oldMessage.guild, 'messageUpdate', embed, settings, oldMessage.channel.id);
         } catch (error) {
             console.error('[Logger] Error in MessageUpdate:', error);
         }

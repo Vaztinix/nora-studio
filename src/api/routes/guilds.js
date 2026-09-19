@@ -1301,6 +1301,44 @@ router.post('/action', async (req, res) => {
 
         }
 
+        if (action === 'test_welcome') {
+            const settingsCache = require('../../utils/settingsCache');
+            const settings = await settingsCache.get(guildId);
+            const targetChannelId = settings?.welcomeChannelId;
+            let channel = targetChannelId ? guild.channels.cache.get(targetChannelId) : null;
+            if (!channel) {
+                channel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
+            }
+            if (!channel) {
+                return res.status(400).json({ error: 'No suitable text channel found. Please set a Welcome Channel in Welcomer settings.' });
+            }
+
+            const rawTemplate = settings?.welcomeMessage || settings?.logJoinMessage || 'Welcome {user} to {guild}! You are our #{membercount} member 🎉';
+            const welcomeText = rawTemplate
+                .replace(/\{user\}/g, `<@${user?.id || req.client.user.id}>`)
+                .replace(/\{user\.tag\}/g, user?.username || 'NewMember')
+                .replace(/\{user\.name\}/g, user?.username || 'NewMember')
+                .replace(/\{user\.id\}/g, user?.id || '000000000000000000')
+                .replace(/\{guild\}/g, guild.name)
+                .replace(/\{membercount\}/g, String(guild.memberCount || 1))
+                .replace(/\{created_ago\}/g, 'Just now');
+
+            const { EmbedBuilder } = require('discord.js');
+            const testEmbed = new EmbedBuilder()
+                .setTitle(`👋 Welcome to ${guild.name}!`)
+                .setDescription(welcomeText)
+                .setColor('#10B981')
+                .setThumbnail(user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : req.client.user.displayAvatarURL())
+                .setFooter({ text: '🧪 Simulated Test Welcome • Nora Welcomer Hub' })
+                .setTimestamp();
+
+            await channel.send({ embeds: [testEmbed] }).catch(err => {
+                throw new Error(`Failed to send message to #${channel.name}: ${err.message}`);
+            });
+
+            return res.json({ success: true, message: `Test welcome message sent to #${channel.name}!` });
+        }
+
 
 
         // ─── Member Moderation Actions (userId required) ───

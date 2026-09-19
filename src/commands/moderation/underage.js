@@ -284,16 +284,22 @@ module.exports = {
         // -------------------------------------------------------------
         if (subcommand === 'sync') {
             const { syncPastUnderageKicks } = require('../../utils/underageSweep');
-            const syncedCount = await syncPastUnderageKicks(interaction.client);
+            const stats = await syncPastUnderageKicks(interaction.client);
             const totalInDb = await UnderageSuspension.count({ where: { guildId: TARGET_GUILD_ID } });
+            const activeSuspensions = await UnderageSuspension.count({ where: { guildId: TARGET_GUILD_ID, status: 'suspended' } });
+            const liftedCount = await UnderageSuspension.count({ where: { guildId: TARGET_GUILD_ID, status: 'lifted' } });
 
             const syncEmbed = new EmbedBuilder()
-                .setTitle('🔄 Underage Registry Synchronized')
+                .setTitle('🔄 Underage Suspensions & Lifts Synchronized')
                 .setColor(0x2ECC71)
-                .setDescription(`Successfully scanned modlogs and synchronized past kicks into the database registry.`)
+                .setDescription(`Successfully scanned modlogs and synchronized all past suspensions and lifts into the registry.`)
                 .addFields(
-                    { name: '✨ Newly Added', value: `${syncedCount} records`, inline: true },
-                    { name: '📊 Total Suspensions Tracked', value: `${totalInDb} records`, inline: true }
+                    { name: '📊 Total Records Tracked', value: `${totalInDb} users`, inline: true },
+                    { name: '🔴 Active Suspensions', value: `${activeSuspensions} users`, inline: true },
+                    { name: '🟢 Lifted / Age Verified', value: `${liftedCount} users`, inline: true },
+                    { name: '✨ Newly Registered', value: `${stats.newlyAdded || 0} records`, inline: true },
+                    { name: '📝 Updated Records', value: `${stats.updated || 0} records`, inline: true },
+                    { name: '🛡️ Lift Shield Protection', value: 'Active. All lifted members are automatically protected and will **never** be repeatedly kicked by sweeps or role assignments.', inline: false }
                 )
                 .setFooter({ text: `Nora Underage Registry • ${interaction.guild.name}` })
                 .setTimestamp();
@@ -534,6 +540,37 @@ module.exports = {
                 }
             } catch (banErr) {
                 console.warn('[Underage Lift] Ban lookup/removal check:', banErr.message);
+            }
+
+            // If target member is in server, remove underage role and assign age-verified role
+            const UNDERAGE_ROLE_ID = '1539395288811446302';
+            try {
+                const member = await interaction.guild.members.fetch(target.id).catch(() => null);
+                if (member) {
+                    if (member.roles.cache.has(UNDERAGE_ROLE_ID)) {
+                        await member.roles.remove(UNDERAGE_ROLE_ID, `Underage suspension lifted by ${interaction.user.tag} (Age Verified)`).catch(() => {});
+                    }
+                    const GuildSettings = require('../../database/models/GuildSettings');
+                    const settings = await GuildSettings.findOne({ where: { guildId: TARGET_GUILD_ID } });
+                    if (settings && settings.ageVerifiedRoleId && !member.roles.cache.has(settings.ageVerifiedRoleId)) {
+                        await member.roles.add(settings.ageVerifiedRoleId, `Underage suspension lifted by ${interaction.user.tag} (Age Verified)`).catch(() => {});
+                    }
+                }
+            } catch (roleErr) {
+                console.warn('[Underage Lift] Member role update on lift:', roleErr.message);
+            }
+
+            // Clean underage role from MemberRolesHistory so it cannot be restored on rejoin
+            try {
+                const MemberRolesHistory = require('../../database/models/MemberRolesHistory');
+                const history = await MemberRolesHistory.findOne({ where: { userId: target.id, guildId: TARGET_GUILD_ID } });
+                if (history && history.roles) {
+                    const parsed = JSON.parse(history.roles || '[]');
+                    const filtered = parsed.filter(rId => rId !== UNDERAGE_ROLE_ID);
+                    await history.update({ roles: JSON.stringify(filtered) });
+                }
+            } catch (histErr) {
+                console.warn('[Underage Lift] History cleanup error:', histErr.message);
             }
 
             // Generate Invite & Send DM if enabled

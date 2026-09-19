@@ -26,13 +26,14 @@ module.exports = {
 
             const authorTag = author ? (author.discriminator && author.discriminator !== '0' ? `${author.username}#${author.discriminator}` : author.tag) : 'Uncached User';
             const displayName = member?.displayName || author?.globalName || author?.username || 'Unknown';
-            const authorFormatted = author ? `${authorTag} (@${displayName})` : 'Unknown User';
+            const authorId = author ? author.id : 'Unknown';
+            const authorFormatted = author ? `${authorTag} (@${displayName}) (<@${authorId}> • \`${authorId}\`)` : 'Unknown User';
 
             const createdTimeUnix = Math.floor((message.createdTimestamp || Date.now()) / 1000);
 
             const description = [
-                `**Channel:** <#${message.channel.id}> (${message.channel.name})`,
-                `**Message ID:** ${message.id}`,
+                `**Channel:** <#${message.channel.id}> (\`${message.channel.name}\`)`,
+                `**Message ID:** \`${message.id}\``,
                 `**Message author:** ${authorFormatted}`,
                 `**Message created:** <t:${createdTimeUnix}:R>`
             ].join('\n');
@@ -48,7 +49,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setTitle('Message deleted')
                 .setAuthor({
-                    name: author ? author.tag : 'Uncached User',
+                    name: author ? `${author.tag} (${author.id})` : 'Uncached User',
                     iconURL: author ? author.displayAvatarURL({ dynamic: true }) : undefined
                 })
                 .setColor(0xED4245)
@@ -73,7 +74,7 @@ module.exports = {
                 } catch (e) {}
             }
 
-            await loggerUtil.sendEventLog(message.guild, 'messageDelete', embed, settings);
+            await loggerUtil.sendEventLog(message.guild, 'messageDelete', embed, settings, message.channel.id);
         } catch (error) {
             console.error('[Logger] Error in MessageDelete:', error);
         }

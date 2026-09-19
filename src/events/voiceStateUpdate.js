@@ -56,12 +56,8 @@ module.exports = {
 
             if (!action || !logCategory) return; // Ignore mute/deafen updates
 
+            const originChannelId = newState.channelId || oldState.channelId;
             const loggerUtil = require('../utils/logger');
-            const logChannelId = loggerUtil.resolveLogChannelId(settings, logCategory);
-            if (!logChannelId) return;
-
-            let logChannel = oldState.guild.channels.cache.get(logChannelId) || await oldState.guild.channels.fetch(logChannelId).catch(() => null);
-            if (!logChannel) return;
 
             const embed = new EmbedBuilder()
                 .setTitle('🎤 Voice State Update')
@@ -70,7 +66,7 @@ module.exports = {
                 .setColor(color)
                 .setTimestamp();
 
-            await logChannel.send({ embeds: [embed] }).catch(e => console.error('[VoiceStateUpdate] Failed to send log:', e.message));
+            await loggerUtil.sendEventLog(oldState.guild, logCategory, embed, settings, originChannelId);
         } catch (error) {
             console.error('[Logger] Error in VoiceStateUpdate:', error);
         }

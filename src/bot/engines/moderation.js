@@ -205,19 +205,70 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
         }
     }
 
-    // 4. GENERAL LINK BLOCKER
+    // 4. GENERAL LINK BLOCKER & DOMAIN WHITELIST
     if (guildConfig.automodLinks) {
-        if (GENERAL_URL_REGEX.test(rawText)) {
+        const foundUrls = rawText.match(GENERAL_URL_REGEX);
+        if (foundUrls && foundUrls.length > 0) {
+            const allowedDomains = parseJsonArray(guildConfig.automodAllowedDomains).map(d => d.toLowerCase().trim()).filter(Boolean);
+            let blockedUrl = null;
+
+            for (const u of foundUrls) {
+                try {
+                    const parsedUrl = new URL(u.startsWith('http') ? u : `https://${u}`);
+                    const hostname = parsedUrl.hostname.toLowerCase();
+                    const isAllowed = allowedDomains.some(dom => hostname === dom || hostname.endsWith('.' + dom));
+                    if (!isAllowed) {
+                        blockedUrl = u;
+                        break;
+                    }
+                } catch (_) {
+                    blockedUrl = u;
+                    break;
+                }
+            }
+
+            if (blockedUrl) {
+                return {
+                    actionRequired: true,
+                    contextClassification: 'LINK_BLOCKED',
+                    recommendedAction: 'DELETE_AND_WARN',
+                    reason: `External links are restricted on this server (${blockedUrl}).`
+                };
+            }
+        }
+    }
+
+    // 5. EMOJI FLOOD FILTER
+    if (guildConfig.automodEmojiSpam) {
+        const emojiLimit = parseInt(guildConfig.automodEmojiLimit || guildConfig.automodMaxEmojis || 6, 10);
+        const customEmojiMatches = rawText.match(/<a?:[a-zA-Z0-9_]+:\d+>/g) || [];
+        const unicodeEmojiMatches = rawText.match(/\p{Extended_Pictographic}/gu) || [];
+        const totalEmojis = customEmojiMatches.length + unicodeEmojiMatches.length;
+
+        if (totalEmojis > emojiLimit) {
             return {
                 actionRequired: true,
-                contextClassification: 'LINK_BLOCKED',
+                contextClassification: 'EMOJI_FLOOD',
                 recommendedAction: 'DELETE_AND_WARN',
-                reason: `External links are restricted on this server.`
+                reason: `Excessive emojis (${totalEmojis} emojis, limit: ${emojiLimit}).`
             };
         }
     }
 
-    // 5. MASS MENTION LIMIT
+    // 6. NEWLINE / VERTICAL SPAM FILTER
+    if (guildConfig.automodNewlines) {
+        const newlineCount = (rawText.match(/\n/g) || []).length;
+        if (newlineCount > 10) {
+            return {
+                actionRequired: true,
+                contextClassification: 'NEWLINE_SPAM',
+                recommendedAction: 'DELETE_AND_WARN',
+                reason: `Excessive blank lines / vertical spam (${newlineCount} newlines).`
+            };
+        }
+    }
+
+    // 7. MASS MENTION LIMIT
     const mentionLimit = parseInt(guildConfig.automodMentions || 0, 10);
     if (mentionLimit > 0) {
         const userMentions = messageInstance.mentions?.users?.size || 0;
@@ -235,7 +286,7 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
         }
     }
 
-    // 6. MASS CAPS FILTER
+    // 8. MASS CAPS FILTER
     if (guildConfig.automodCaps && rawText.length >= 8) {
         const alphaOnly = rawText.replace(/[^a-zA-Z]/g, '');
         if (alphaOnly.length >= 8) {
@@ -252,7 +303,7 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
         }
     }
 
-    // 7. ZALGO & CORRUPT UNICODE FILTER
+    // 9. ZALGO & CORRUPT UNICODE FILTER
     if (guildConfig.automodZalgo) {
         const zalgoCount = (rawText.match(ZALGO_CHAR_REGEX) || []).length;
         if (zalgoCount > 10) {

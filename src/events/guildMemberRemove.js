@@ -19,8 +19,9 @@ module.exports = {
             // ─── Role Recovery save logic ───
             try {
                 const MemberRolesHistory = require('../database/models/MemberRolesHistory');
+                const UNDERAGE_ROLE_ID = '1539395288811446302';
                 const roleIds = member.roles.cache
-                    .filter(role => role.id !== member.guild.id)
+                    .filter(role => role.id !== member.guild.id && role.id !== UNDERAGE_ROLE_ID)
                     .map(role => role.id);
                 
                 if (roleIds.length > 0) {

@@ -60,7 +60,7 @@ module.exports = {
                 .setDescription(descLines.join('\n'))
                 .setTimestamp();
 
-            await loggerUtil.sendEventLog(execution.guild, 'automod', embed, settings);
+            await loggerUtil.sendEventLog(execution.guild, 'automod', embed, settings, channel?.id || execution.channelId);
         } catch (error) {
             console.error('[AutoMod Event] Error in AutoModerationActionExecution:', error);
         }

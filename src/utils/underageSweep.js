@@ -17,7 +17,7 @@ async function processUnderageMember(member, client) {
 
     console.log(`[Underage Sweep] [DETECTED] User: ${user.tag} (ID: ${user.id}) in Server: "${guild.name}" (ID: ${guild.id}) has target underage role ID ${UNDERAGE_ROLE_ID}`);
 
-    // 🛡️ 0. Age Verification Immunity Check
+    // 🛡️ 0. Age Verification Immunity Check (Protected Role)
     try {
         const GuildSettings = require('../database/models/GuildSettings');
         const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
@@ -55,6 +55,51 @@ async function processUnderageMember(member, client) {
         }
     } catch (immunityErr) {
         console.error('[Underage Sweep] Immunity check error:', immunityErr.message);
+    }
+
+    // 🛡️ 0.5. Check if suspension is LIFTED in database registry
+    try {
+        const UnderageSuspension = require('../database/models/UnderageSuspension');
+        const record = await UnderageSuspension.findOne({
+            where: {
+                guildId: guild.id,
+                userId: user.id
+            }
+        });
+
+        if (record && record.status === 'lifted') {
+            console.log(`[Underage Sweep] [LIFT SHIELD ACTIVE] User ${user.tag} (${user.id}) suspension is LIFTED in registry. Aborting kick and stripping underage role.`);
+
+            // Automatically strip the underage role so they are not kicked repeatedly
+            if (member.roles.cache.has(UNDERAGE_ROLE_ID)) {
+                await member.roles.remove(UNDERAGE_ROLE_ID, 'Automated Shield: Underage suspension for this member has been lifted by staff.').catch(() => {});
+            }
+
+            // Log lift shield activation to #modlog
+            let logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
+            if (!logChannel) logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+            if (logChannel && logChannel.isTextBased()) {
+                const liftEmbed = new EmbedBuilder()
+                    .setTitle('🛡️ Underage Role Stripped: Member Suspension is Lifted')
+                    .setColor(0x2ECC71)
+                    .setThumbnail(user.displayAvatarURL({ dynamic: true }))
+                    .setDescription(`User <@${user.id}> (\`${user.id}\`) had the underage role <@&${UNDERAGE_ROLE_ID}> detected, but their suspension was **LIFTED / AGE PROVED** by staff.`)
+                    .addFields(
+                        { name: '👤 Member', value: `${user.tag} (\`${user.id}\`)\n<@${user.id}>`, inline: true },
+                        { name: '🟢 Registry Status', value: '✅ **Lifted / Age Verified**', inline: true },
+                        { name: '🛡️ Lifted By', value: record.liftedBy ? `<@${record.liftedBy}> (\`${record.liftedBy}\`)` : '*Staff / System*', inline: true },
+                        { name: '📅 Lifted Date', value: record.liftedAt ? `<t:${Math.floor(new Date(record.liftedAt).getTime() / 1000)}:F>` : '*Recorded*', inline: true },
+                        { name: '📝 Staff Note', value: record.staffNote || '*None recorded*', inline: false },
+                        { name: '🛑 Shield Action', value: 'Underage kick was **blocked**. Underage role was automatically removed to prevent repeated kicks.', inline: false }
+                    )
+                    .setFooter({ text: 'Nora Underage Shield • Lift Protection Active' })
+                    .setTimestamp();
+                await logChannel.send({ embeds: [liftEmbed] }).catch(() => {});
+            }
+            return;
+        }
+    } catch (dbCheckErr) {
+        console.error('[Underage Sweep] DB Lift check error:', dbCheckErr.message);
     }
 
     // 1. Send Direct Message to the user before kicking
@@ -125,7 +170,7 @@ async function processUnderageMember(member, client) {
                     }
                 });
 
-                if (!created) {
+                if (!created && record.status !== 'lifted') {
                     await record.update({
                         userTag: user.tag,
                         kickedAt: new Date(),
@@ -257,13 +302,146 @@ async function runUnderageSweep(client) {
 }
 
 /**
- * Retroactively sync and backfill past underage kick logs from the audit channel into the database.
+ * Helper to parse an audit log embed into a structured underage event.
+ */
+function extractEventFromEmbed(embed, msgDate) {
+    if (!embed) return null;
+    const title = embed.title || '';
+    const desc = embed.description || '';
+    const lowerTitle = title.toLowerCase();
+    const lowerDesc = desc.toLowerCase();
+
+    const isLift = (
+        lowerTitle.includes('lifted') ||
+        lowerTitle.includes('age-verified') ||
+        lowerTitle.includes('age verified') ||
+        lowerDesc.includes('lifted the underage suspension') ||
+        lowerDesc.includes('suspension has been lifted') ||
+        (lowerDesc.includes('suspension for') && lowerDesc.includes('lifted')) ||
+        lowerDesc.includes('granted complete underage protection') ||
+        lowerTitle.includes('granted age-verified')
+    );
+
+    const isKick = (
+        lowerTitle.includes('auto-kicked') ||
+        lowerTitle.includes('manually added') ||
+        lowerTitle.includes('added & suspended') ||
+        lowerDesc.includes('underage user with role') ||
+        lowerDesc.includes('determined to be underage') ||
+        (lowerTitle.includes('underage') && !isLift)
+    );
+
+    if (!isLift && !isKick) return null;
+
+    // Extract User ID & Tag
+    let userId = null;
+    let userTag = null;
+
+    if (embed.fields && embed.fields.length > 0) {
+        for (const field of embed.fields) {
+            const fName = (field.name || '').toLowerCase();
+            const fVal = field.value || '';
+            if (fName.includes('user') || fName.includes('member') || fName.includes('target')) {
+                const idMatch = fVal.match(/`(\d{17,20})`/) || fVal.match(/<@!?(\d{17,20})>/) || fVal.match(/\b(\d{17,20})\b/);
+                if (idMatch && !userId) userId = idMatch[1];
+
+                const tagMatch = fVal.match(/^([^`\n(<]+)/);
+                if (tagMatch && !userTag) {
+                    const candidate = tagMatch[1].trim();
+                    if (candidate && !candidate.startsWith('<@')) userTag = candidate;
+                }
+            }
+        }
+    }
+
+    if (!userId && desc) {
+        const idMatch = desc.match(/<@!?(\d{17,20})>/) || desc.match(/`(\d{17,20})`/);
+        if (idMatch) userId = idMatch[1];
+    }
+
+    if (!userId && embed.thumbnail && embed.thumbnail.url) {
+        const avatarMatch = embed.thumbnail.url.match(/avatars\/(\d{17,20})\//);
+        if (avatarMatch) userId = avatarMatch[1];
+    }
+
+    if (!userId) return null;
+
+    // Extract Moderator
+    let moderatorId = null;
+    if (embed.fields) {
+        const modField = embed.fields.find(f => {
+            const n = (f.name || '').toLowerCase();
+            return n.includes('moderator') || n.includes('verified by') || n.includes('staff') || n.includes('lifted by');
+        });
+        if (modField) {
+            const modMatch = modField.value.match(/<@!?(\d{17,20})>/) || modField.value.match(/`(\d{17,20})`/);
+            if (modMatch) moderatorId = modMatch[1];
+        }
+    }
+
+    // Extract Staff Note
+    let staffNote = null;
+    if (embed.fields) {
+        const noteField = embed.fields.find(f => {
+            const n = (f.name || '').toLowerCase();
+            return n.includes('note') || n.includes('staff note');
+        });
+        if (noteField && noteField.value && !noteField.value.includes('*None*') && !noteField.value.includes('*No specific note*')) {
+            staffNote = noteField.value.trim();
+        }
+    }
+
+    // Extract Reason
+    let reason = null;
+    if (embed.fields) {
+        const reasonField = embed.fields.find(f => (f.name || '').toLowerCase().includes('reason'));
+        if (reasonField && reasonField.value) {
+            reason = reasonField.value.trim();
+        }
+    }
+
+    // Extract Invite URL & Delivery
+    let inviteUrl = null;
+    let inviteSent = false;
+    if (embed.fields) {
+        const inviteField = embed.fields.find(f => {
+            const n = (f.name || '').toLowerCase();
+            return n.includes('invite') || n.includes('direct message');
+        });
+        if (inviteField && inviteField.value) {
+            const urlMatch = inviteField.value.match(/(https?:\/\/[^\s\)]+)/);
+            if (urlMatch) {
+                inviteUrl = urlMatch[1];
+                inviteSent = true;
+            } else if (inviteField.value.includes('Delivered') || inviteField.value.includes('Sent Successfully')) {
+                inviteSent = true;
+            }
+        }
+    }
+
+    const timestamp = embed.timestamp ? new Date(embed.timestamp) : msgDate;
+
+    return {
+        type: isLift ? 'LIFT' : 'SUSPEND',
+        userId,
+        userTag: userTag || `User_${userId}`,
+        timestamp,
+        moderatorId,
+        staffNote,
+        reason: reason || 'Determined underage for Discord (Recommended minimum age: 13)',
+        inviteUrl,
+        inviteSent
+    };
+}
+
+/**
+ * Retroactively sync and backfill ALL past underage kick and lift logs from the audit channel into the database.
+ * Accurately determines the latest state (suspended vs lifted) for each user.
  * @param {import('discord.js').Client} client
  */
 async function syncPastUnderageKicks(client) {
-    if (!client || !client.isReady()) return 0;
+    if (!client || !client.isReady()) return { suspensions: 0, lifts: 0, total: 0, newlyAdded: 0, updated: 0 };
     const UnderageSuspension = require('../database/models/UnderageSuspension');
-    let backfilled = 0;
 
     try {
         let logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
@@ -271,10 +449,13 @@ async function syncPastUnderageKicks(client) {
             logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
         }
 
-        if (!logChannel || !logChannel.isTextBased()) return 0;
+        if (!logChannel || !logChannel.isTextBased()) {
+            return { suspensions: 0, lifts: 0, total: 0, newlyAdded: 0, updated: 0 };
+        }
 
         let lastId = null;
         let keepFetching = true;
+        const allEvents = [];
 
         while (keepFetching) {
             const options = { limit: 100 };
@@ -289,50 +470,11 @@ async function syncPastUnderageKicks(client) {
             lastId = messages.last().id;
 
             for (const msg of messages.values()) {
-                for (const embed of msg.embeds) {
-                    const title = embed.title || '';
-                    const desc = embed.description || '';
-
-                    if (title.includes('Underage Member Auto-Kicked') || desc.includes('underage user with role') || title.includes('Underage')) {
-                        const userField = embed.fields.find(f => f.name && (f.name.includes('User') || f.name.includes('Member')));
-                        let userId = null;
-                        let userTag = null;
-
-                        if (userField) {
-                            const idMatch = userField.value.match(/`(\d{17,20})`/) || userField.value.match(/<@!?(\d{17,20})>/);
-                            if (idMatch) userId = idMatch[1];
-
-                            const tagMatch = userField.value.match(/^([^`\n(<]+)/);
-                            if (tagMatch) userTag = tagMatch[1].trim();
-                        }
-
-                        if (!userId && embed.thumbnail && embed.thumbnail.url) {
-                            const avatarMatch = embed.thumbnail.url.match(/avatars\/(\d{17,20})\//);
-                            if (avatarMatch) userId = avatarMatch[1];
-                        }
-
-                        if (userId) {
-                            const kickedTimestamp = msg.createdAt || new Date();
-                            const [rec, created] = await UnderageSuspension.findOrCreate({
-                                where: {
-                                    guildId: TARGET_GUILD_ID,
-                                    userId: userId
-                                },
-                                defaults: {
-                                    guildId: TARGET_GUILD_ID,
-                                    userId: userId,
-                                    userTag: userTag || `User_${userId}`,
-                                    kickedAt: kickedTimestamp,
-                                    status: 'suspended',
-                                    reason: 'Determined underage for Discord (Recommended minimum age: 13)'
-                                }
-                            });
-
-                            if (created) {
-                                backfilled++;
-                            } else if (userTag && (!rec.userTag || rec.userTag.includes('('))) {
-                                await rec.update({ userTag });
-                            }
+                if (msg.embeds && msg.embeds.length > 0) {
+                    for (const embed of msg.embeds) {
+                        const event = extractEventFromEmbed(embed, msg.createdAt || new Date());
+                        if (event) {
+                            allEvents.push(event);
                         }
                     }
                 }
@@ -341,13 +483,107 @@ async function syncPastUnderageKicks(client) {
             if (messages.size < 100) keepFetching = false;
         }
 
-        if (backfilled > 0) {
-            console.log(`[Underage Sweep] Retroactively synchronized ${backfilled} past underage suspension records.`);
+        // Sort events chronologically: oldest to newest
+        allEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+        // Group by user ID and determine the latest state + history
+        const userStateMap = new Map();
+        for (const ev of allEvents) {
+            if (!userStateMap.has(ev.userId)) {
+                userStateMap.set(ev.userId, {
+                    userId: ev.userId,
+                    userTag: ev.userTag,
+                    firstSuspendedAt: ev.type === 'SUSPEND' ? ev.timestamp : null,
+                    kickedAt: ev.type === 'SUSPEND' ? ev.timestamp : null,
+                    status: ev.type === 'LIFT' ? 'lifted' : 'suspended',
+                    liftedAt: ev.type === 'LIFT' ? ev.timestamp : null,
+                    liftedBy: ev.type === 'LIFT' ? ev.moderatorId : null,
+                    staffNote: ev.staffNote,
+                    reason: ev.reason,
+                    inviteUrl: ev.inviteUrl,
+                    inviteSent: ev.inviteSent
+                });
+            } else {
+                const state = userStateMap.get(ev.userId);
+                if (ev.userTag && (!state.userTag || state.userTag.startsWith('User_'))) {
+                    state.userTag = ev.userTag;
+                }
+                if (ev.type === 'SUSPEND') {
+                    state.status = 'suspended';
+                    state.kickedAt = ev.timestamp;
+                    if (ev.reason) state.reason = ev.reason;
+                    if (ev.staffNote) state.staffNote = ev.staffNote;
+                } else if (ev.type === 'LIFT') {
+                    state.status = 'lifted';
+                    state.liftedAt = ev.timestamp;
+                    if (ev.moderatorId) state.liftedBy = ev.moderatorId;
+                    if (ev.staffNote) state.staffNote = ev.staffNote;
+                    if (ev.inviteUrl) state.inviteUrl = ev.inviteUrl;
+                    if (ev.inviteSent) state.inviteSent = ev.inviteSent;
+                }
+            }
         }
+
+        let newlyAdded = 0;
+        let updated = 0;
+        let suspensionsCount = 0;
+        let liftsCount = 0;
+
+        for (const [userId, state] of userStateMap.entries()) {
+            if (state.status === 'lifted') liftsCount++;
+            else suspensionsCount++;
+
+            const [rec, created] = await UnderageSuspension.findOrCreate({
+                where: {
+                    guildId: TARGET_GUILD_ID,
+                    userId: userId
+                },
+                defaults: {
+                    guildId: TARGET_GUILD_ID,
+                    userId: userId,
+                    userTag: state.userTag || `User_${userId}`,
+                    kickedAt: state.kickedAt || state.firstSuspendedAt || new Date(),
+                    status: state.status,
+                    liftedAt: state.liftedAt,
+                    liftedBy: state.liftedBy,
+                    staffNote: state.staffNote,
+                    reason: state.reason || 'Determined underage for Discord (Recommended minimum age: 13)',
+                    inviteUrl: state.inviteUrl,
+                    inviteSent: state.inviteSent || false
+                }
+            });
+
+            if (created) {
+                newlyAdded++;
+            } else {
+                await rec.update({
+                    userTag: state.userTag || rec.userTag,
+                    status: state.status,
+                    kickedAt: state.kickedAt || rec.kickedAt,
+                    liftedAt: state.liftedAt || rec.liftedAt,
+                    liftedBy: state.liftedBy || rec.liftedBy,
+                    staffNote: state.staffNote || rec.staffNote,
+                    reason: state.reason || rec.reason,
+                    inviteUrl: state.inviteUrl || rec.inviteUrl,
+                    inviteSent: state.inviteSent !== undefined ? state.inviteSent : rec.inviteSent
+                });
+                updated++;
+            }
+        }
+
+        console.log(`[Underage Sweep] Synchronized ${userStateMap.size} user records: ${suspensionsCount} active suspensions, ${liftsCount} lifted suspensions (${newlyAdded} newly registered, ${updated} updated).`);
+
+        return {
+            total: userStateMap.size,
+            suspensions: suspensionsCount,
+            lifts: liftsCount,
+            newlyAdded,
+            updated
+        };
     } catch (err) {
-        console.error('[Underage Sweep] Error during past kicks sync:', err.message);
+        console.error('[Underage Sweep] Error during sync:', err);
+        return { suspensions: 0, lifts: 0, total: 0, newlyAdded: 0, updated: 0, error: err.message };
     }
-    return backfilled;
 }
 
 /**

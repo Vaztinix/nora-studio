@@ -613,6 +613,12 @@ runPreSyncMigrations().then(() => {
         await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `selectedLogCategory` VARCHAR(255) DEFAULT 'default';");
     } catch (e) { }
     try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `loggingIgnoredChannels` TEXT DEFAULT '[]';");
+    } catch (e) { }
+    try {
+        await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `logMessagePurges` TINYINT(1) DEFAULT 1;");
+    } catch (e) { }
+    try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dmNotificationsEnabled` TINYINT(1) DEFAULT 0;");
     } catch (e) { }
     try {

@@ -1,4 +1,13 @@
-const { WebhookClient } = require('discord.js');
+function parseJsonArray(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+        return String(val).split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+    }
+}
 
 /**
  * Centralized Nora Logging Engine
@@ -136,8 +145,12 @@ class Logger {
     }
 
     /**
-     * Resolve the target logging channel ID for a specific category.
-     * Fallback to the main settings.loggingChannelId if the split channel is not configured.
+     * Resolve the target logging channel ID for a specific category or fine-grained event key.
+     * Checks:
+     * 1. Direct key match in loggingChannels (e.g., 'modBans', 'memberJoins', 'messageDeletes')
+     * 2. Category group fallback (e.g., 'moderation', 'members', 'messages', 'channels', 'voice', 'games', 'utility')
+     * 3. Dedicated settings columns (modLogChannelId, verificationLogChannelId, ticketLogChannelId, boostChannelId, levelUpChannelId, topggVoteChannelId, welcomeChannelId)
+     * 4. Master default loggingChannelId
      */
     resolveLogChannelId(settings, category) {
         if (!settings) return null;
@@ -152,53 +165,79 @@ class Logger {
         }
 
         if (channelsObj && typeof channelsObj === 'object') {
-            // 1. Direct category match
+            // 1. Direct specific event key match
             if (channelsObj[category] && channelsObj[category] !== 'none') {
                 return channelsObj[category];
             }
 
-            // 2. Specific feature overrides
-            if ((category === 'moderation' || category === 'mod') && settings.modLogChannelId) {
-                return settings.modLogChannelId;
-            }
-            if ((category === 'verify' || category === 'verification') && settings.verificationLogChannelId) {
-                return settings.verificationLogChannelId;
-            }
-            if ((category === 'tickets' || category === 'ticket') && settings.ticketLogChannelId) {
-                return settings.ticketLogChannelId;
-            }
-            if ((category === 'boosts' || category === 'memberBoosts') && settings.boostChannelId) {
-                return settings.boostChannelId;
-            }
-
-            // 3. Event key to section group mapping
+            // 2. Section group fallbacks
             const groupMap = {
-                messageEdits: 'messages',
-                messageDeletes: 'messages',
+                // Moderation & Security
+                modBans: 'moderation',
+                modUnbans: 'moderation',
+                modKicks: 'moderation',
+                modTimeouts: 'moderation',
+                modWarns: 'moderation',
+                automod: 'moderation',
+                securityRaids: 'moderation',
+                verification: 'moderation',
+                
+                // Member Lifecycle & Welcomer
                 memberJoins: 'members',
                 memberLeaves: 'members',
+                memberNicknames: 'members',
+                memberRoles: 'members',
                 memberUpdates: 'members',
+                boosts: 'boosts',
                 memberBoosts: 'boosts',
+                invites: 'members',
+                
+                // Messages & Content
+                messageDeletes: 'messages',
+                messageEdits: 'messages',
+                messagePurges: 'messages',
+                messagePins: 'messages',
+                
+                // Channels, Categories & Roles
                 channelCreates: 'channels',
                 channelEdits: 'channels',
                 channelDeletes: 'channels',
+                roleCreates: 'roles',
+                roleEdits: 'roles',
+                roleDeletes: 'roles',
+                serverUpdates: 'channels',
+                
+                // Voice Activity
                 voiceJoins: 'voice',
                 voiceLeaves: 'voice',
                 voiceMoves: 'voice',
-                automod: 'automod',
-                roles: 'roles',
-                moderation: 'moderation',
-                commands: 'commands',
-                commandUsage: 'commands'
+                voiceMuteDeaf: 'voice',
+                voiceStream: 'voice',
+                
+                // Games, Economy & Leveling
+                levelUps: 'leveling',
+                levelingXp: 'leveling',
+                counting: 'games',
+                miniGames: 'games',
+                
+                // Utility, Automation & System
+                commands: 'utility',
+                commandUsage: 'utility',
+                dashboardActions: 'utility',
+                tickets: 'tickets',
+                reactionRoles: 'utility',
+                autoresponder: 'utility',
+                topggVotes: 'utility'
             };
+
             const group = groupMap[category];
             if (group && channelsObj[group] && channelsObj[group] !== 'none') {
                 return channelsObj[group];
             }
         }
 
-        // Special fallbacks for dedicated columns
-        if ((category === 'moderation' || category === 'mod') && settings.modLogChannelId) {
+        // Special dedicated column fallbacks
+        if ((category === 'moderation' || category === 'mod' || category === 'modBans' || category === 'modUnbans' || category === 'modKicks' || category === 'modTimeouts' || category === 'modWarns') && settings.modLogChannelId) {
             return settings.modLogChannelId;
         }
         if ((category === 'verify' || category === 'verification') && settings.verificationLogChannelId) {
@@ -209,6 +248,15 @@ class Logger {
         }
         if ((category === 'boosts' || category === 'memberBoosts') && settings.boostChannelId) {
             return settings.boostChannelId;
+        }
+        if ((category === 'levelUps' || category === 'leveling') && settings.levelUpChannelId) {
+            return settings.levelUpChannelId;
+        }
+        if ((category === 'topggVotes' || category === 'voteLog') && settings.topggVoteChannelId) {
+            return settings.topggVoteChannelId;
+        }
+        if (category === 'invites' && settings.inviteTrackerChannelId) {
+            return settings.inviteTrackerChannelId;
         }
 
         return settings.loggingChannelId || null;
@@ -276,7 +324,7 @@ class Logger {
         }
     }
 
-    async sendEventLog(guild, eventKey, embed, settings = null) {
+    async sendEventLog(guild, eventKey, embed, settings = null, originChannelId = null) {
         if (!guild) return;
         try {
             const GuildSettings = require('../database/models/GuildSettings');
@@ -285,48 +333,147 @@ class Logger {
             }
             if (!settings) return;
 
+            // Check Channel Exceptions / Ignored Logging Channels
+            if (originChannelId && settings.loggingIgnoredChannels) {
+                const ignored = parseJsonArray(settings.loggingIgnoredChannels);
+                if (ignored.includes(originChannelId)) {
+                    return;
+                }
+            }
+
             // 1. Send to standard Logging Channel if configured and toggled
             const channelToggleMap = {
+                // Messages
                 'messageDelete': 'logMessageDeletes',
+                'messageDeletes': 'logMessageDeletes',
                 'messageUpdate': 'logMessageEdits',
+                'messageEdits': 'logMessageEdits',
+                'messagePurges': 'logMessagePurges',
+                'messageBulkDelete': 'logMessagePurges',
+                'messagePins': 'logMessageEdits',
+                
+                // Members
                 'memberJoin': 'logMemberJoins',
+                'memberJoins': 'logMemberJoins',
                 'memberLeave': 'logMemberLeaves',
+                'memberLeaves': 'logMemberLeaves',
                 'memberUpdate': 'logMemberUpdates',
+                'memberNicknames': 'logMemberUpdates',
+                'memberRoles': 'logRoleEvents',
                 'memberBoost': 'logMemberBoosts',
+                'boosts': 'logMemberBoosts',
+                'invites': 'inviteTrackerEnabled',
+                
+                // Channels & Roles
                 'channelCreate': 'logChannelCreates',
+                'channelCreates': 'logChannelCreates',
                 'channelUpdate': 'logChannelEdits',
+                'channelEdits': 'logChannelEdits',
                 'channelDelete': 'logChannelDeletes',
-                'voiceJoin': 'logVoiceJoins',
-                'voiceLeave': 'logVoiceLeaves',
-                'voiceMove': 'logVoiceMoves',
-                'automod': 'logAutomod',
+                'channelDeletes': 'logChannelDeletes',
                 'roleCreate': 'logRoleEvents',
+                'roleCreates': 'logRoleEvents',
                 'roleDelete': 'logRoleEvents',
+                'roleDeletes': 'logRoleEvents',
                 'roleUpdate': 'logRoleEvents',
-                'commandUsage': 'logCommands'
+                'roleEdits': 'logRoleEvents',
+                'serverUpdates': 'logChannelEdits',
+                
+                // Voice
+                'voiceJoin': 'logVoiceJoins',
+                'voiceJoins': 'logVoiceJoins',
+                'voiceLeave': 'logVoiceLeaves',
+                'voiceLeaves': 'logVoiceLeaves',
+                'voiceMove': 'logVoiceMoves',
+                'voiceMoves': 'logVoiceMoves',
+                'voiceMuteDeaf': 'logVoiceMoves',
+                'voiceStream': 'logVoiceJoins',
+                
+                // Moderation & Security
+                'automod': 'logAutomod',
+                'modBans': 'moderationEnabled',
+                'modUnbans': 'moderationEnabled',
+                'modKicks': 'moderationEnabled',
+                'modTimeouts': 'moderationEnabled',
+                'modWarns': 'moderationEnabled',
+                'securityRaids': 'antiRaidEnabled',
+                'verification': 'verifyRoleId',
+                
+                // Utility & Games
+                'commandUsage': 'logCommands',
+                'commands': 'logCommands',
+                'dashboardActions': 'logDashboardActions',
+                'levelUps': 'levelUpNotificationsEnabled',
+                'levelingXp': 'levelingEnabled',
+                'counting': 'funEnabled',
+                'miniGames': 'funEnabled',
+                'tickets': 'utilityEnabled',
+                'reactionRoles': 'utilityEnabled',
+                'autoresponder': 'utilityEnabled',
+                'topggVotes': 'utilityEnabled'
             };
             const toggleField = channelToggleMap[eventKey];
-            if (toggleField && (settings[toggleField] !== false)) {
+            const isEnabled = !toggleField || (settings[toggleField] !== false);
+            if (isEnabled) {
                 const categoryMap = {
                     'messageDelete': 'messageDeletes',
+                    'messageDeletes': 'messageDeletes',
                     'messageUpdate': 'messageEdits',
+                    'messageEdits': 'messageEdits',
+                    'messagePurges': 'messagePurges',
+                    'messagePins': 'messagePins',
                     'memberJoin': 'memberJoins',
+                    'memberJoins': 'memberJoins',
                     'memberLeave': 'memberLeaves',
+                    'memberLeaves': 'memberLeaves',
                     'memberUpdate': 'memberUpdates',
+                    'memberNicknames': 'memberNicknames',
+                    'memberRoles': 'memberRoles',
                     'memberBoost': 'boosts',
+                    'boosts': 'boosts',
+                    'invites': 'invites',
                     'channelCreate': 'channelCreates',
+                    'channelCreates': 'channelCreates',
                     'channelUpdate': 'channelEdits',
+                    'channelEdits': 'channelEdits',
                     'channelDelete': 'channelDeletes',
+                    'channelDeletes': 'channelDeletes',
+                    'roleCreate': 'roleCreates',
+                    'roleCreates': 'roleCreates',
+                    'roleDelete': 'roleDeletes',
+                    'roleDeletes': 'roleDeletes',
+                    'roleUpdate': 'roleEdits',
+                    'roleEdits': 'roleEdits',
+                    'serverUpdates': 'serverUpdates',
                     'voiceJoin': 'voiceJoins',
+                    'voiceJoins': 'voiceJoins',
                     'voiceLeave': 'voiceLeaves',
+                    'voiceLeaves': 'voiceLeaves',
                     'voiceMove': 'voiceMoves',
+                    'voiceMoves': 'voiceMoves',
+                    'voiceMuteDeaf': 'voiceMuteDeaf',
+                    'voiceStream': 'voiceStream',
                     'automod': 'automod',
-                    'roleCreate': 'roles',
-                    'roleDelete': 'roles',
-                    'roleUpdate': 'roles',
-                    'commandUsage': 'commands'
+                    'modBans': 'modBans',
+                    'modUnbans': 'modUnbans',
+                    'modKicks': 'modKicks',
+                    'modTimeouts': 'modTimeouts',
+                    'modWarns': 'modWarns',
+                    'securityRaids': 'securityRaids',
+                    'verification': 'verification',
+                    'commandUsage': 'commands',
+                    'commands': 'commands',
+                    'dashboardActions': 'dashboardActions',
+                    'levelUps': 'levelUps',
+                    'levelingXp': 'levelingXp',
+                    'counting': 'counting',
+                    'miniGames': 'miniGames',
+                    'tickets': 'tickets',
+                    'reactionRoles': 'reactionRoles',
+                    'autoresponder': 'autoresponder',
+                    'topggVotes': 'topggVotes'
                 };
-                const category = categoryMap[eventKey] || 'general';
+                const category = categoryMap[eventKey] || eventKey;
                 const logChannelId = this.resolveLogChannelId(settings, category);
                 if (logChannelId) {
                     let logChannel = guild.channels.cache.get(logChannelId);

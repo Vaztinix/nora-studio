@@ -2,7 +2,7 @@ const { AutoModerationRuleEventType, AutoModerationRuleTriggerType, AutoModerati
 
 function parseImmuneRoles(immuneRolesString) {
     if (!immuneRolesString) return [];
-    const trimmed = immuneRolesString.trim();
+    const trimmed = String(immuneRolesString).trim();
     if (!trimmed) return [];
     
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
@@ -12,6 +12,21 @@ function parseImmuneRoles(immuneRolesString) {
         } catch (e) {}
     }
     
+    return trimmed.split(/[,\s]+/).map(id => id.trim()).filter(id => /^\d+$/.test(id));
+}
+
+function parseImmuneChannels(immuneChannelsString) {
+    if (!immuneChannelsString) return [];
+    const trimmed = String(immuneChannelsString).trim();
+    if (!trimmed) return [];
+
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) return parsed.map(String);
+        } catch (e) {}
+    }
+
     return trimmed.split(/[,\s]+/).map(id => id.trim()).filter(id => /^\d+$/.test(id));
 }
 
@@ -48,8 +63,6 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
 
     if (existingRules.error) return { success: false, error: existingRules.error };
 
-
-
     if (!settings) {
         try {
             const GuildSettings = require('../database/models/GuildSettings');
@@ -57,6 +70,7 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
         } catch (err) {}
     }
     const exemptRoles = settings ? parseImmuneRoles(settings.automodImmuneRoles) : [];
+    const exemptChannels = settings ? parseImmuneChannels(settings.automodImmuneChannels) : [];
 
     // Group 1: Native Keyword Presets (Combined due to Discord LIMIT)
     const isPreset = ['profanity', 'sexual', 'slurs'].includes(ruleType);
@@ -91,6 +105,7 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
                     triggerMetadata: { presets: activePresets },
                     actions,
                     exemptRoles,
+                    exemptChannels,
                     enabled: true
                 });
             } else {
@@ -101,6 +116,7 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
                     triggerMetadata: { presets: activePresets },
                     actions,
                     exemptRoles,
+                    exemptChannels,
                     enabled: true
                 });
             }
@@ -160,6 +176,7 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
                 triggerMetadata,
                 actions,
                 exemptRoles,
+                exemptChannels,
                 enabled: true
             });
         } else {
@@ -170,6 +187,7 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
                 triggerMetadata,
                 actions,
                 exemptRoles,
+                exemptChannels,
                 enabled: true
             });
         }
