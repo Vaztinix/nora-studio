@@ -5070,7 +5070,12 @@
                         <div class="user-dropdown-divider"></div>
                         <a href="/" class="user-dropdown-item"><i class="fas fa-home"></i> Home Page</a>
                         <a href="/docs" class="user-dropdown-item"><i class="fas fa-book"></i> Documentation</a>
-                        <a href="https://discord.gg/Uxb2tNAxtp" target="_blank" class="user-dropdown-item"><i class="fab fa-discord"></i> Community Support</a>
+                        <a href="/verify" class="user-dropdown-item"><i class="fas fa-user-check"></i> Roblox Verification</a>
+                        <a href="/team" class="user-dropdown-item"><i class="fas fa-users"></i> Team & Staff</a>
+                        <a href="/legal" class="user-dropdown-item"><i class="fas fa-shield-alt"></i> Legal Center</a>
+                        <a href="/support" class="user-dropdown-item"><i class="fas fa-headset"></i> Support & FAQ</a>
+                        <a href="/status.html" class="user-dropdown-item"><i class="fas fa-signal"></i> System Status</a>
+                        <a href="https://discord.gg/wKkG9zJj" target="_blank" class="user-dropdown-item"><i class="fab fa-discord"></i> Community Discord</a>
                         <div class="user-dropdown-divider"></div>
                         <button onclick="performLogout()" class="user-dropdown-item item-danger"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
                     </div>
@@ -5191,21 +5196,37 @@
         <!-- Quick Resources Links -->
         <div class="mobile-drawer-section-label" style="margin-top: 18px;">RESOURCES & LINKS</div>
         <div class="mobile-drawer-nav">
+            <a href="/" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fas fa-home"></i>
+                <span>Home Page</span>
+            </a>
             <a href="/docs" class="mobile-nav-item" onclick="closeMobileNav();">
                 <i class="fas fa-book"></i>
                 <span>Documentation</span>
+            </a>
+            <a href="/verify" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fas fa-user-check"></i>
+                <span>Roblox Verification</span>
+            </a>
+            <a href="/team" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fas fa-users"></i>
+                <span>Team & Staff</span>
+            </a>
+            <a href="/legal" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fas fa-shield-alt"></i>
+                <span>Legal & Privacy</span>
+            </a>
+            <a href="/support" class="mobile-nav-item" onclick="closeMobileNav();">
+                <i class="fas fa-headset"></i>
+                <span>Support & FAQ</span>
             </a>
             <a href="/status.html" class="mobile-nav-item" onclick="closeMobileNav();">
                 <i class="fas fa-signal"></i>
                 <span>System Status</span>
             </a>
-            <a href="https://discord.gg/Uxb2tNAxtp" target="_blank" class="mobile-nav-item" onclick="closeMobileNav();">
+            <a href="https://discord.gg/wKkG9zJj" target="_blank" class="mobile-nav-item" onclick="closeMobileNav();">
                 <i class="fab fa-discord"></i>
-                <span>Community Support</span>
-            </a>
-            <a href="/" class="mobile-nav-item" onclick="closeMobileNav();">
-                <i class="fas fa-home"></i>
-                <span>Home Page</span>
+                <span>Community Discord</span>
             </a>
         </div>
 
@@ -5270,21 +5291,25 @@
                         </p>
                     </div>
                 </div>
-                <button class="config-btn" style="width: auto; background: rgba(255,85,85,0.2); border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 8px 16px;" onclick="window.open('https://discord.gg/Uxb2tNAxtp', '_blank')">Appeal Suspension</button>
+                <button class="config-btn" style="width: auto; background: rgba(255,85,85,0.2); border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 8px 16px;" onclick="window.open('https://discord.gg/wKkG9zJj', '_blank')">Appeal Suspension</button>
             </div>
             <div id="view-greeting" data-view-servers="true" class="view-panel active">
-                <div class="hero-banner" style="background: rgba(18, 22, 34, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
-                    <h1 style="font-size: 1.85rem; font-weight: 700; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.02em;">Server Hub</h1>
-                    <p style="color: rgba(255,255,255,0.65); font-size: 0.92rem; font-weight: 400; line-height: 1.5; margin: 0;">Select a Discord server to configure automations, moderation systems, and leveling progression.</p>
+                <div class="hero-banner" style="background: linear-gradient(135deg, rgba(14, 17, 29, 0.85) 0%, rgba(20, 24, 42, 0.75) 100%); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; background: rgba(88, 101, 242, 0.12); border: 1px solid rgba(88, 101, 242, 0.28); border-radius: 9999px; font-size: 0.75rem; font-weight: 700; color: #a5b4fc; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px #22c55e;"></span>
+                        NORA GUILD CONTROL CENTER
+                    </div>
+                    <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin: 0 0 8px 0; letter-spacing: -0.02em;">Server Hub</h1>
+                    <p style="color: rgba(255,255,255,0.72); font-size: 0.92rem; font-weight: 400; line-height: 1.55; margin: 0; max-width: 680px;">Select a Discord server to configure automations, moderation defense, Roblox verification, leveling rewards, and community engagement.</p>
                 </div>
 
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; margin-top: 10px; flex-wrap: wrap; gap: 12px;">
                     <div>
                         <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0;">Your Servers</h2>
                         <p style="color: var(--muted); font-size: 0.82rem; margin: 2px 0 0 0;">Servers you manage or have administrative access to</p>
                     </div>
-                    <button class="config-btn" style="width: auto; background: var(--card-bg); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 10px;" onclick="inviteBot()"><i class="fas fa-plus"></i> Invite Nora</button>
+                    <button class="config-btn" style="width: auto; background: linear-gradient(135deg, #5865F2, #4338CA); border: 1px solid rgba(88, 101, 242, 0.5); color: #ffffff; padding: 9px 20px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 9999px; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.35); transition: all 0.2s ease;" onclick="inviteBot()"><i class="fas fa-plus"></i> Invite Nora</button>
                 </div>
 
                 <!-- Premium Callout Banner -->
@@ -5305,7 +5330,7 @@
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <div style="position: relative; flex: 1; min-width: 250px;">
-                        <input type="text" id="server-search" placeholder="Search servers..." oninput="filterServers()" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 10px 16px 10px 38px; border-radius: 10px; color: white; outline: none; font-size: 0.88rem; border-color: rgba(255,255,255,0.08);">
+                        <input type="text" id="server-search" placeholder="Search servers..." oninput="filterServers()" style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); padding: 10px 16px 10px 38px; border-radius: 12px; color: white; outline: none; font-size: 0.88rem; transition: border-color 0.2s;" onfocus="this.style.borderColor='rgba(88,101,242,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                         <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem;"></i>
                     </div>
                     <div style="display: flex; gap: 10px; font-size: 0.8rem; font-weight: 600;">
@@ -5314,7 +5339,7 @@
                     </div>
                 </div>
                 
-                                <div class="server-grid" id="guilds-container"></div>
+                <div class="server-grid" id="guilds-container"></div>
 
                 <!-- Role-Based Access Servers Section -->
                 <div id="role-access-section" style="margin-top: 40px; margin-bottom: 40px; display: none;">
@@ -12941,7 +12966,7 @@
         function renderGuilds(guilds, containerId = 'guilds-container', appendAddBtn = true) {
             const container = document.getElementById(containerId);
             if (!container) return;
-            container.innerHTML = guilds.length ? '' : '<p style="color: var(--muted); text-align: center; width: 100%; grid-column: 1/-1; padding: 40px 0;">No servers found matching search.</p>';
+            container.innerHTML = guilds.length ? '' : '<div style="color: var(--muted); text-align: center; width: 100%; grid-column: 1/-1; padding: 50px 20px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.08); border-radius: 16px;"><i class="fas fa-search" style="font-size: 1.5rem; margin-bottom: 10px; opacity: 0.5;"></i><p style="margin: 0; font-size: 0.95rem;">No servers found matching your search.</p></div>';
             
             guilds.forEach(g => {
                 const card = document.createElement('div');
@@ -12957,9 +12982,9 @@
 
                 // 🔵 Blue Distinct Look for servers where Nora is NOT in the server
                 if (isNotConfigured) {
-                    card.style.background = 'linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 58, 138, 0.28))';
-                    card.style.border = '1px solid rgba(59, 130, 246, 0.45)';
-                    card.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.15)';
+                    card.style.background = 'linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(30, 58, 138, 0.22))';
+                    card.style.border = '1px solid rgba(59, 130, 246, 0.35)';
+                    card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.35), 0 0 15px rgba(59, 130, 246, 0.1)';
                 }
 
                 // 🔴 Red Accent for servers user cannot manage (Role Access Only)
@@ -12972,15 +12997,22 @@
                 if (isUnmanaged) {
                     // 🔴 Red Lock Badge
                     badgeHtml = `
-                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #ef4444; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);" title="Red Lock: You do not have Manage Server permissions in Discord">
-                            <i class="fas fa-lock" style="font-size: 0.72rem;"></i>
+                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);" title="Role-Based Access (No Manage Guild Discord permission)">
+                            <i class="fas fa-lock" style="font-size: 0.75rem;"></i>
                         </div>
                     `;
                 } else if (isNotConfigured) {
-                    // 🔵 Blue Badge
+                    // 🔵 Blue Plus Badge
                     badgeHtml = `
-                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(59, 130, 246, 0.22); border: 1px solid rgba(59, 130, 246, 0.55); color: #60a5fa; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);" title="Blue: Nora is not in this server yet">
+                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(59, 130, 246, 0.18); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);" title="Nora is not in this server yet">
                             <i class="fas fa-plus" style="font-size: 0.75rem;"></i>
+                        </div>
+                    `;
+                } else {
+                    // 🟢 Active Green Status Indicator
+                    badgeHtml = `
+                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #22c55e; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);" title="Active Nora Server">
+                            <i class="fas fa-check" style="font-size: 0.72rem;"></i>
                         </div>
                     `;
                 }
@@ -12989,23 +13021,23 @@
                 let btn = '';
                 if (g.hasNora) {
                     if (isUnmanaged) {
-                        btn = `<button class="config-btn" style="width: 100%; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; display: inline-flex; align-items: center; justify-content: center; gap: 6px;"><i class="fas fa-lock" style="color: #ef4444; font-size: 0.75rem;"></i> Manage Server</button>`;
+                        btn = `<button class="config-btn" style="width: 100%; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700;"><i class="fas fa-lock" style="color: #ef4444; font-size: 0.75rem;"></i> Manage Server</button>`;
                     } else {
-                        btn = `<button class="config-btn" style="width: 100%;">Manage Server</button>`;
+                        btn = `<button class="config-btn" style="width: 100%; background: linear-gradient(135deg, rgba(88, 101, 242, 0.15), rgba(88, 101, 242, 0.28)); border: 1px solid rgba(88, 101, 242, 0.45); color: #ffffff; font-weight: 700; transition: all 0.2s ease;">Manage Server</button>`;
                     }
                 } else {
                     // 🔵 Blue Add to Server Button
-                    btn = `<button class="config-btn invite" style="width: 100%; background: linear-gradient(135deg, #2563eb, #1d4ed8) !important; color: #ffffff !important; font-weight: 700; border: none; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); display: inline-flex; align-items: center; justify-content: center; gap: 6px;" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')"><i class="fas fa-plus-circle"></i> Add to Server</button>`;
+                    btn = `<button class="config-btn invite" style="width: 100%; background: linear-gradient(135deg, #5865F2, #4338CA) !important; color: #ffffff !important; font-weight: 700; border: none; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4); display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease;" onclick="event.stopPropagation(); window.open('https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=1102464543799&integration_type=0&scope=identify+guilds+bot+applications.commands&guild_id=${g.id}&redirect_uri=${REDIRECT_URI}', '_blank')"><i class="fas fa-plus-circle"></i> Add to Server</button>`;
                 }
                 
                 let memberInfo = '';
                 if (g.hasNora) {
                     const onlineStr = g.onlineCount 
-                        ? `<span style="color: #2ea043; display: flex; align-items: center; gap: 4px; font-size: 0.75rem; justify-content: center;"><span style="width: 6px; height: 6px; background: #2ea043; border-radius: 50%;"></span> ${g.onlineCount} Online</span>` 
+                        ? `<span style="color: #22c55e; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600;"><span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span> ${g.onlineCount} Online</span>` 
                         : '';
-                    memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 4px;"><span>${g.memberCount} Members</span>${onlineStr}</div>`;
+                    memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 3px;"><span>${g.memberCount || 0} Members</span>${onlineStr}</div>`;
                 } else {
-                    memberInfo = `<p style="font-size: 0.75rem; color: #93c5fd; margin-top: 4px; text-align: center; margin-bottom: 0; font-weight: 600;">Not configured yet</p>`;
+                    memberInfo = `<p style="font-size: 0.75rem; color: #93c5fd; margin-top: 6px; text-align: center; margin-bottom: 0; font-weight: 600;">Not configured yet</p>`;
                 }
 
                 card.innerHTML = `
@@ -13015,12 +13047,12 @@
                         const iconSrc = (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http')) 
                             ? g.icon 
                             : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png');
-                        return `<img src="${iconSrc}" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';" style="width: 60px; height: 60px; border-radius: 14px; margin-bottom: 12px; flex-shrink: 0; object-fit: cover;">`;
+                        return `<img src="${iconSrc}" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';" style="width: 64px; height: 64px; border-radius: 16px; margin-bottom: 12px; flex-shrink: 0; object-fit: cover; box-shadow: 0 8px 20px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08);">`;
                     })()}
-                        <h3>${escapeHtml(g.name)}</h3>
+                        <h3 style="font-weight: 700; letter-spacing: -0.01em;">${escapeHtml(g.name)}</h3>
                         ${memberInfo}
                     </div>
-                    <div style="width: 100%; margin-top: auto; flex-shrink: 0;">
+                    <div style="width: 100%; margin-top: auto; flex-shrink: 0; padding-top: 8px;">
                         ${btn}
                     </div>
                 `;
@@ -13036,8 +13068,9 @@
             if (appendAddBtn) {
                 const addCard = document.createElement('div');
                 addCard.className = 'server-card horizontal add-new-server';
-                addCard.style.border = '2px dashed var(--border)';
-                addCard.style.background = 'transparent';
+                addCard.style.border = '2px dashed rgba(255, 255, 255, 0.15)';
+                addCard.style.background = 'rgba(255, 255, 255, 0.02)';
+                addCard.style.backdropFilter = 'blur(16px)';
                 addCard.style.display = 'flex';
                 addCard.style.flexDirection = 'column';
                 addCard.style.justifyContent = 'center';
@@ -13047,11 +13080,25 @@
                 addCard.style.height = '100%';
                 addCard.style.minHeight = '112px';
                 addCard.style.boxSizing = 'border-box';
+                addCard.style.borderRadius = '18px';
+                addCard.style.transition = 'all 0.25s ease';
+                addCard.onmouseover = () => {
+                    addCard.style.borderColor = 'rgba(88, 101, 242, 0.6)';
+                    addCard.style.background = 'rgba(88, 101, 242, 0.06)';
+                    addCard.style.transform = 'translateY(-3px)';
+                };
+                addCard.onmouseout = () => {
+                    addCard.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                    addCard.style.background = 'rgba(255, 255, 255, 0.02)';
+                    addCard.style.transform = 'translateY(0)';
+                };
                 addCard.onclick = () => inviteBot();
                 addCard.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--primary); opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
-                        <i class="fas fa-plus" style="font-size: 1.5rem;"></i>
-                        <span style="font-size: 0.9rem; font-weight: 700;">Add New Server</span>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--primary); opacity: 0.9; transition: opacity 0.2s;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(88, 101, 242, 0.15); border: 1px solid rgba(88, 101, 242, 0.3); display: flex; align-items: center; justify-content: center; color: #818cf8; margin-bottom: 2px;">
+                            <i class="fas fa-plus" style="font-size: 1rem;"></i>
+                        </div>
+                        <span style="font-size: 0.9rem; font-weight: 700; color: #fff;">Add New Server</span>
                     </div>
                 `;
                 container.appendChild(addCard);
