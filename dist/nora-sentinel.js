@@ -598,18 +598,52 @@
         }, 600);
     };
 
-    // Public API for testing or external events
+    // Public API for testing and external events
     window.triggerNoraOffline = showOfflineOverlay;
     window.triggerNoraOnline = showOnlineRecovery;
+
+    window.testSentinel = function(durationSeconds = 4) {
+        showOfflineOverlay();
+        setTimeout(() => {
+            showOnlineRecovery();
+        }, durationSeconds * 1000);
+    };
+
+    // Hotkey: Ctrl + Shift + O (or Cmd + Shift + O) to preview animation
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'O' || e.key === 'o')) {
+            e.preventDefault();
+            window.testSentinel(4);
+        }
+    });
+
+    // Network & API Interceptor for immediate detection
+    const originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+        try {
+            const response = await originalFetch.apply(this, args);
+            const urlStr = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+            if ((urlStr.includes('/api/') || urlStr.includes('api.vaztinix.dev')) && (response.status === 502 || response.status === 503 || response.status === 504)) {
+                showOfflineOverlay();
+            }
+            return response;
+        } catch (err) {
+            const urlStr = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+            if (urlStr.includes('/api/') || urlStr.includes('api.vaztinix.dev') || urlStr.startsWith('/')) {
+                showOfflineOverlay();
+            }
+            throw err;
+        }
+    };
 
     // Listen to native browser connection events
     window.addEventListener('offline', () => showOfflineOverlay());
     window.addEventListener('online', () => checkNoraHealth());
 
-    // Continuous Heartbeat Polling (every 12 seconds in background)
+    // Continuous Heartbeat Polling (every 8 seconds in background)
     setInterval(() => {
         if (!isCurrentlyOffline) {
             checkNoraHealth();
         }
-    }, 12000);
+    }, 8000);
 })();
