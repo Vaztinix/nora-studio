@@ -3572,8 +3572,20 @@ app.get('/install', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('install.html'));
 });
 
-app.get('/legal', ipRateLimiter, (req, res) => {
+app.get(['/legal', '/legal.html'], ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('legal.html'));
+});
+
+app.get(['/support', '/support.html'], ipRateLimiter, (req, res) => {
+    res.sendFile(getWebFilePath('support.html'));
+});
+
+app.get(['/verify', '/verify.html'], ipRateLimiter, (req, res) => {
+    res.sendFile(getWebFilePath('verify.html'));
+});
+
+app.get(['/status', '/status.html'], ipRateLimiter, (req, res) => {
+    res.sendFile(getWebFilePath('status.html'));
 });
 
 // Robots.txt & Sitemap.xml for Google Search Engine Indexing
@@ -3584,6 +3596,9 @@ Allow: /
 Allow: /team
 Allow: /docs
 Allow: /legal
+Allow: /support
+Allow: /verify
+Allow: /status
 Allow: /install
 Sitemap: https://vaztinix.dev/sitemap.xml`);
 });
@@ -3604,6 +3619,16 @@ app.get('/sitemap.xml', (req, res) => {
   </url>
   <url>
     <loc>https://vaztinix.dev/docs</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vaztinix.dev/support</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vaztinix.dev/verify</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
