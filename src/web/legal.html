@@ -956,28 +956,14 @@
                             <i class="fas fa-file-contract"></i>
                             <div class="dropdown-item-text">
                                 <span class="dropdown-title">Terms of Service</span>
-                                <span class="dropdown-desc">Rules, warranties & acceptable usage</span>
+                                <span class="dropdown-desc">Rules, usage guidelines & bot permissions</span>
                             </div>
                         </a>
                         <a href="/legal#privacy" class="dropdown-item" onclick="switchLegalTab('privacy')">
                             <i class="fas fa-user-shield"></i>
                             <div class="dropdown-item-text">
                                 <span class="dropdown-title">Privacy Policy</span>
-                                <span class="dropdown-desc">Data collection, GDPR & COPPA compliance</span>
-                            </div>
-                        </a>
-                        <a href="/legal#roblox" class="dropdown-item" onclick="switchLegalTab('roblox')">
-                            <i class="fas fa-lock"></i>
-                            <div class="dropdown-item-text">
-                                <span class="dropdown-title">Security & Encryption</span>
-                                <span class="dropdown-desc">AES-256 session token safeguards</span>
-                            </div>
-                        </a>
-                        <a href="/legal#deletion" class="dropdown-item" onclick="switchLegalTab('deletion')">
-                            <i class="fas fa-trash-alt"></i>
-                            <div class="dropdown-item-text">
-                                <span class="dropdown-title">Data Deletion Protocol</span>
-                                <span class="dropdown-desc">Right to erasure & automated purging</span>
+                                <span class="dropdown-desc">Data collection, zero-selling & erasure</span>
                             </div>
                         </a>
                     </div>
@@ -1042,262 +1028,182 @@
         <div class="tabs-container">
             <button class="tab-btn active" id="tab-btn-terms" onclick="switchLegalTab('terms')"><i class="fas fa-file-contract"></i> Terms of Service</button>
             <button class="tab-btn" id="tab-btn-privacy" onclick="switchLegalTab('privacy')"><i class="fas fa-user-shield"></i> Privacy Policy</button>
-            <button class="tab-btn" id="tab-btn-roblox" onclick="switchLegalTab('roblox')"><i class="fas fa-lock"></i> Roblox & Security Protocol</button>
-            <button class="tab-btn" id="tab-btn-deletion" onclick="switchLegalTab('deletion')"><i class="fas fa-trash-alt"></i> Right to Erasure & Deletion</button>
         </div>
 
         <div class="legal-card">
             
             <!-- ==========================================
-                 TAB 1: TERMS OF SERVICE (EXHAUSTIVE)
+                 TAB 1: TERMS OF SERVICE
                  ========================================== -->
             <div class="legal-tab-pane active" id="pane-terms">
-                <h2><i class="fas fa-file-contract" style="color: var(--blurple);"></i> Terms of Service Agreement</h2>
+                <h2><i class="fas fa-file-contract" style="color: var(--blurple);"></i> Nora Studio Terms of Service</h2>
                 <div class="legal-meta-bar">
-                    <span><i class="fas fa-clock"></i> Effective Date: September 26, 2026</span>
-                    <span><i class="fas fa-code-branch"></i> Version: 4.8.0</span>
-                    <span><i class="fas fa-globe"></i> Jurisdiction: International Standard</span>
+                    <span><i class="fas fa-calendar-alt"></i> Last Updated: September 2026</span>
+                    <span><i class="fas fa-check-circle" style="color: #10B981;"></i> Standard: Human-Readable & Transparent</span>
+                    <span><i class="fas fa-globe"></i> Scope: Discord Bot, Web Dashboard & APIs</span>
                 </div>
                 
-                <p>Welcome to <strong>Nora Studio</strong>. This Terms of Service Agreement ("Agreement", "Terms") constitutes a legally binding contract between you (whether individually or on behalf of an organization or Discord community, referred to as "User", "Administrator", "You") and <strong>Nora Studio</strong> ("Nora", "Service", "We", "Us", "Our"), governing your access to and use of the Nora Discord Bot application, our web dashboard located at <code>vaztinix.dev</code>, the Roblox verification portal, API endpoints, and associated software services.</p>
+                <p>Welcome to <strong>Nora Studio</strong>. I created Nora to provide a powerful, privacy-first Discord bot for community automation, Roblox verification, leveling progression, and moderation. These Terms of Service ("Terms") explain the rules and guidelines for using the Nora Discord bot, our web dashboard at <code>vaztinix.dev</code>, and our verification tools.</p>
 
-                <p><strong>BY INVITING THE NORA BOT TO A DISCORD GUILD, ACCESSING THE DASHBOARD, LOGGING IN VIA DISCORD OAUTH2, OR EXECUTING SLASH COMMANDS, YOU EXPRESSLY ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY ALL OF THESE TERMS. IF YOU DO NOT AGREE WITH ALL OF THESE TERMS, YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICE AND MUST REMOVE THE BOT IMMEDIATELY.</strong></p>
+                <p><strong>By inviting Nora to your Discord server, logging into the dashboard, or running commands, you agree to these terms. If you don't agree with any part of them, please don't use Nora or simply remove the bot from your server.</strong></p>
 
-                <h3>1. Permitted Use & Service Eligibility</h3>
-                <p>To access or utilize Nora, you represent and warrant that:</p>
+                <h3>1. Who Can Use Nora (Eligibility)</h3>
+                <p>To use Nora and its services:</p>
                 <ul>
-                    <li>You are at least 13 years of age, or the minimum age of digital consent required in your country of residence (e.g., 16 in certain EEA jurisdictions). Users under the age of 13 are strictly prohibited from using Nora in compliance with COPPA and Discord's Terms of Service.</li>
-                    <li>You possess the legal authority to bind the Discord server (guild) to which you add Nora, including possessing the <code>MANAGE_GUILD</code> or <code>ADMINISTRATOR</code> permission within that server.</li>
-                    <li>Your use of Nora complies with all applicable local, state, national, and international laws, treaties, and regulations.</li>
+                    <li>You must be at least <strong>13 years old</strong> (or the minimum legal age for digital services in your country), in direct compliance with Discord's Terms of Service and global online safety laws.</li>
+                    <li>To add or configure Nora in a Discord server, you must have the appropriate Discord permissions (such as <code>Manage Server</code> or <code>Administrator</code>).</li>
+                    <li>You agree to follow Discord's official <a href="https://discord.com/terms" target="_blank" rel="noopener" style="color: var(--blurple);">Terms of Service</a> and <a href="https://discord.com/guidelines" target="_blank" rel="noopener" style="color: var(--blurple);">Community Guidelines</a> at all times.</li>
                 </ul>
 
-                <h3>2. Acceptable Use Policy (AUP) & Abuse Prohibitions</h3>
-                <p>You agree not to engage in, facilitate, or promote any of the following prohibited activities:</p>
+                <h3>2. Acceptable Use Policy (What's Allowed & What Isn't)</h3>
+                <p>Nora is built to help positive, active communities grow and stay secure. To protect our servers and all users, the following behaviors are strictly prohibited:</p>
                 <ol>
-                    <li><strong>Infrastructure Disruption & Exploitation:</strong> You shall not attempt to execute Denial of Service (DoS/DDoS) attacks, flood API gateways, exploit race conditions, bypass rate-limiting heuristics, probe for buffer overflows, or reverse-engineer Nora’s backend node clusters.</li>
-                    <li><strong>Discord Policy Violations:</strong> Nora shall not be utilized in servers dedicated to illegal pornography, violent extremism, child sexual exploitation and abuse (CSAE/CSAM), targeted harassment, decentralized doxxing campaigns, malware distribution, or direct violations of <a href="https://discord.com/terms" target="_blank" rel="noopener" style="color: var(--blurple);">Discord's Terms of Service</a> and <a href="https://discord.com/guidelines" target="_blank" rel="noopener" style="color: var(--blurple);">Community Guidelines</a>.</li>
-                    <li><strong>Automated Scraping & Token Extraction:</strong> You shall not scrape user data, hoard member statistics, harvest snowflake IDs for third-party advertising, or attempt to extract decrypted database credentials.</li>
-                    <li><strong>Impersonation & Brand Infringement:</strong> You shall not misrepresent your affiliation with Nora Studio or claim official staff endorsement without written consent.</li>
+                    <li><strong>No Exploits or Bot Abuse:</strong> Do not attempt to spam, flood, crash, reverse-engineer, or execute denial-of-service (DDoS) attacks against Nora's API, database, or WebSocket gateways.</li>
+                    <li><strong>No Harmful or Illegal Communities:</strong> Nora may not be used in servers that promote child exploitation (CSAM), malware distribution, hate groups, violent extremism, mass harassment, or unauthorized personal doxxing.</li>
+                    <li><strong>No Data Scraping:</strong> You may not use automated scripts to harvest user IDs, server member lists, or data through Nora for commercial advertising or spam campaigns.</li>
+                    <li><strong>No Impersonation:</strong> Do not claim to be an official developer or staff member of Nora Studio unless officially verified.</li>
                 </ol>
 
                 <div class="notice-box danger">
                     <i class="fas fa-ban"></i>
                     <div>
-                        <strong>Strict Enforcement Policy:</strong> Any violation of our Acceptable Use Policy will result in immediate guild blacklisting, permanent revocation of dashboard access, nullification of active subscription entitlements without refund, and potential escalation to Discord Trust & Safety.
+                        <strong>Zero-Tolerance for Abuse:</strong> If a server or user maliciously abuses Nora, exploits bot bugs, or violates these rules, I reserve the right to blacklist the server and user from all Nora services immediately without warning.
                     </div>
                 </div>
 
-                <h3>3. Server Administrator Responsibilities</h3>
-                <p>Guild administrators configuring Nora acknowledge and agree to the following responsibilities:</p>
+                <h3>3. Server Management & Admin Responsibilities</h3>
+                <p>As a server owner or manager configuring Nora, you hold the keys to how features behave in your community:</p>
                 <ul>
-                    <li><strong>Role Hierarchy & Permissions:</strong> Administrators are solely responsible for ensuring Nora's bot role is positioned correctly in the guild hierarchy to manage roles, execute timeouts, and enforce moderation. Nora is not liable for unintended role escalations or permission conflicts resulting from misconfigured server role trees.</li>
-                    <li><strong>AutoMod False Positive Oversight:</strong> While Nora's sub-4ms Threat Shield is deterministic and rigorously tested, administrators must configure regex filters and sensitivity rules appropriate for their community context. Guild staff maintain the final responsibility for reviewing automated moderation actions.</li>
-                    <li><strong>Channel Routing Accuracy:</strong> Ensuring moderation log channels, transcript destinations, and sensitive audit webhooks are restricted to authorized server staff.</li>
+                    <li><strong>Role Hierarchy:</strong> Discord requires Nora's bot role to be placed <em>above</em> the roles it needs to assign or manage. You are responsible for properly arranging your server's role tree. Nora cannot modify roles that are above its own role.</li>
+                    <li><strong>AutoMod & Security Rules:</strong> While Nora's AutoMod and anti-raid filters are designed to be fast and accurate, server staff are responsible for choosing sensitivity thresholds that fit their server culture and reviewing flagged moderation cases.</li>
+                    <li><strong>Channel Permissions:</strong> Ensure your private mod-logs, ticket transcripts, and audit channels are locked to authorized moderators and admins only.</li>
                 </ul>
 
-                <h3>4. Monetization, Discord App Subscriptions & Refund Policy</h3>
-                <p>Nora offers premium feature tiers ("Nora Pro", "Guild VIP", "Enterprise") to unlock expanded logging, instant verification syncing, custom command capacity, and priority cluster execution.</p>
+                <h3>4. Roblox Verification & Group Rank Sync</h3>
+                <p>Nora includes an integrated Roblox verification system and bi-directional group rank synchronization. Here is how we keep it 100% safe:</p>
                 <ul>
-                    <li><strong>Payment Processor:</strong> All billing, credit card processing, currency conversions, and recurring subscriptions are processed exclusively through <strong>Discord App Monetization</strong>. Nora developers do not store, view, or process your credit card numbers or financial account details.</li>
-                    <li><strong>Subscription Management:</strong> Subscriptions can be upgraded, downgraded, or cancelled at any time directly through the Discord Desktop/Mobile Client via <code>User Settings &rarr; Subscriptions</code>.</li>
-                    <li><strong>Refunds & Disputes:</strong> Because payment processing is executed by Discord, all refund requests and billing dispute resolutions are subject to <a href="https://support.discord.com/" target="_blank" rel="noopener" style="color: var(--blurple);">Discord's Refund Policy</a>. Nora Studio cannot directly issue financial refunds for transactions processed via Discord.</li>
+                    <li><strong>No Passwords or Session Cookies Ever:</strong> Nora will <strong>never</strong> ask for, touch, or store your Roblox password or your <code>.ROBLOSECURITY</code> cookie. All linking happens via public code verification or official Roblox Open Cloud OAuth2.</li>
+                    <li><strong>Public API Queries:</strong> Nora only checks public data (such as your Roblox user ID, username, and group rank number) to assign matching Discord roles.</li>
+                    <li><strong>Account Ownership:</strong> You are responsible for linking your own legitimate Roblox account. You can unlink your account at any time using <code>/verify unlink</code> or via the web portal.</li>
                 </ul>
 
-                <h3>5. Service Availability, Gateway Disconnects & Warranty Disclaimer</h3>
-                <p>NORA STUDIO AND ALL ASSOCIATED SERVICES, APIS, DASHBOARD INTERFACES, AND SCRIPTS ARE PROVIDED ON AN <strong>"AS IS"</strong> AND <strong>"AS AVAILABLE"</strong> BASIS WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE. WE EXPRESSLY DISCLAIM ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.</p>
-                <p>While we target an operational uptime of 99.98%, Nora Studio does not guarantee that service will be uninterrupted, error-free, immune to Discord WebSocket gateway outages, or that all synchronization events will execute instantaneously during upstream network partitions.</p>
+                <h3>5. Premium Subscriptions & Billing</h3>
+                <p>Nora offers optional premium upgrades ("Nora Studio Plus") to unlock higher command limits, faster Roblox sync intervals, and expanded logging history.</p>
+                <ul>
+                    <li><strong>Official Discord Monetization:</strong> All payments and recurring subscriptions are handled securely directly by Discord via <strong>Discord App Subscriptions</strong>. I do not see, store, or process your credit card numbers or banking information.</li>
+                    <li><strong>Managing Subscriptions:</strong> You can manage, upgrade, or cancel your subscription at any time in your Discord app under <code>User Settings &rarr; Subscriptions</code>.</li>
+                    <li><strong>Refunds:</strong> Because all transactions are processed through Discord, all refund requests and billing questions are handled directly according to <a href="https://support.discord.com/" target="_blank" rel="noopener" style="color: var(--blurple);">Discord's Refund Policy</a>.</li>
+                </ul>
 
-                <h3>6. Limitation of Liability</h3>
-                <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL NORA STUDIO, ITS DEVELOPERS, AFFILIATES, OFFICERS, OR STAFF BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF DATA, REPUTATIONAL DAMAGE, SERVER RAID IMPACTS, LOSS OF GUILD ACCESS, OR FINANCIAL LOSSES ARISING FROM YOUR USE OF OR INABILITY TO USE THE SERVICE.</p>
+                <h3>6. Availability, Maintenance & Disclaimers</h3>
+                <p>I actively monitor and maintain Nora to provide maximum reliability, low latency, and 99.9%+ uptime. However, because Nora relies on third-party infrastructure (such as the Discord Gateway API and Cloudflare), services are provided on an <strong>"as-is"</strong> and <strong>"as-available"</strong> basis. I cannot guarantee that service will never experience brief maintenance windows or upstream Discord API hiccups.</p>
 
-                <h3>7. Modifications to Agreement</h3>
-                <p>We reserve the right to revise, amend, or update these Terms at any time. Major modifications will be broadcast via our official Discord announcements channel or updated on this Legal Center with a revised "Effective Date". Continued use of Nora following changes constitutes binding acceptance of the updated Terms.</p>
+                <h3>7. Changes to These Terms</h3>
+                <p>As Nora continues to grow and introduce new features, I may occasionally update these Terms. Any notable changes will be posted in our official Discord community server and reflected right here with an updated revision date. Continuing to use Nora means you accept the updated terms.</p>
             </div>
 
             <!-- ==========================================
-                 TAB 2: PRIVACY POLICY (GDPR, COPPA, CCPA)
+                 TAB 2: PRIVACY POLICY
                  ========================================== -->
             <div class="legal-tab-pane" id="pane-privacy">
-                <h2><i class="fas fa-user-shield" style="color: var(--emerald);"></i> Privacy Policy & Data Handling</h2>
+                <h2><i class="fas fa-user-shield" style="color: var(--emerald);"></i> Nora Studio Privacy Policy</h2>
                 <div class="legal-meta-bar">
-                    <span><i class="fas fa-lock"></i> Compliance: GDPR (EU) / CCPA (USA) / COPPA</span>
-                    <span><i class="fas fa-database"></i> Architecture: Zero-Telemetry Commercialization</span>
-                    <span><i class="fas fa-calendar-check"></i> Audit Date: September 2026</span>
+                    <span><i class="fas fa-lock"></i> Policy: Privacy-First & Zero Data Selling</span>
+                    <span><i class="fas fa-database"></i> Storage: Encrypted & Self-Service Purgeable</span>
+                    <span><i class="fas fa-calendar-check"></i> Last Reviewed: September 2026</span>
                 </div>
 
-                <p>At <strong>Nora Studio</strong>, data privacy and user sovereignty are not secondary features—they are fundamental engineering constraints. This Privacy Policy details the specific categories of metadata collected, the technical reasons for their storage, retention schedules, and your statutory rights regarding data inspection and permanent erasure.</p>
+                <p>At <strong>Nora Studio</strong>, your privacy is taken seriously. I built Nora to respect user data: we only collect what is strictly required to make the bot's features work, and we never commercialize, sell, or profile your activity.</p>
 
                 <div class="notice-box success">
                     <i class="fas fa-shield-check"></i>
                     <div>
-                        <strong>The Zero-Commercialization Guarantee:</strong> Nora Studio does NOT sell, rent, lease, or monetize user data under any circumstances. We do not build behavioral advertising profiles, inject tracking beacons, or transfer your community records to data brokers.
+                        <strong>Our Zero-Selling Promise:</strong> Nora Studio does NOT sell, rent, or trade your data, server member lists, or telemetry to third parties, advertisers, or data brokers. Ever.
                     </div>
                 </div>
 
-                <h3 class="emerald-accent">1. Data Categories Collected & Technical Justification</h3>
-                <p>In accordance with the principle of <strong>Data Minimization (GDPR Article 5(1)(c))</strong>, Nora collects only the minimal data strictly necessary to execute its configured Discord functionalities:</p>
+                <h3 class="emerald-accent">1. What Data We Collect and Why</h3>
+                <p>Here is a complete, honest breakdown of every piece of data Nora stores and why it's needed:</p>
 
                 <div class="legal-table-wrapper">
                     <table class="legal-table">
                         <thead>
                             <tr>
-                                <th>Data Category</th>
-                                <th>Specific Elements Collected</th>
-                                <th>Technical Purpose</th>
-                                <th>Retention Window</th>
+                                <th>Data Type</th>
+                                <th>What We Store</th>
+                                <th>Why It's Needed</th>
+                                <th>How Long It's Kept</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>Discord Structural Metadata</strong></td>
-                                <td>Guild IDs, Channel IDs, Role IDs, User Snowflake IDs</td>
-                                <td>Required for routing messages, assigning level roles, evaluating permissions, and persisting dashboard settings.</td>
-                                <td>Retained while Nora remains in the guild; wiped upon removal or deletion request.</td>
+                                <td><strong>Server Settings</strong></td>
+                                <td>Discord Server ID, Channel IDs, Role IDs, Feature Toggles</td>
+                                <td>To save your server's custom configurations (welcome channels, automod rules, logging channels).</td>
+                                <td>Until Nora is removed from the server or data is purged by the server owner.</td>
                             </tr>
                             <tr>
-                                <td><strong>Roblox Verification Mappings</strong></td>
-                                <td>Roblox User IDs, Username cache, Group IDs, Numeric rank tiers</td>
-                                <td>Enables bi-directional rank-to-role synchronization. <em>We never request, receive, or store Roblox passwords or session cookies.</em></td>
-                                <td>Retained until user unlinks via <code>/verify unlink</code> or executes data purge.</td>
+                                <td><strong>Roblox Verification</strong></td>
+                                <td>Discord User ID mapped to Roblox User ID & Username</td>
+                                <td>To automatically give members the correct Discord roles based on their Roblox group rank.</td>
+                                <td>Until the user runs <code>/verify unlink</code> or deletes their account data.</td>
                             </tr>
                             <tr>
-                                <td><strong>Leveling & Activity Metrics</strong></td>
-                                <td>XP numeric total, Level integer, message timestamp counters (for anti-spam rate limiting), voice duration buckets</td>
-                                <td>Calculates leveling progression curves and renders customizable rank cards.</td>
-                                <td>Retained per guild; purgeable on request via <code>/mycard</code>.</td>
+                                <td><strong>Leveling & XP</strong></td>
+                                <td>User ID, XP points, Level number, Rank card background choice</td>
+                                <td>To calculate server leveling progression, render rank cards, and assign level reward roles.</td>
+                                <td>Stored per server; can be wiped anytime via <code>/mycard</code>.</td>
                             </tr>
                             <tr>
-                                <td><strong>Moderation & Audit Records</strong></td>
-                                <td>Case IDs, Target User ID, Moderator ID, Reason text, timestamp, infraction strike count</td>
-                                <td>Maintains guild moderation history for administrator review and AutoMod strike escalations.</td>
-                                <td>Retained per guild; purgeable by guild owners.</td>
+                                <td><strong>Moderation Logs</strong></td>
+                                <td>Case ID, Target User ID, Moderator ID, Reason, Timestamp</td>
+                                <td>To provide server moderators with a record of past warnings, mutes, kicks, and bans.</td>
+                                <td>Stored per server for mod history; purgeable on request.</td>
                             </tr>
                             <tr>
-                                <td><strong>Ticketing Transcripts</strong></td>
-                                <td>Message text and author IDs within closed private ticket channels</td>
-                                <td>Archives closed customer support tickets for guild staff record-keeping.</td>
-                                <td>Stored in secure encrypted buckets for a maximum of 30 days before automatic pruning.</td>
+                                <td><strong>Ticket Transcripts</strong></td>
+                                <td>Chat messages inside closed support ticket channels</td>
+                                <td>Saved so server staff can review closed customer support cases.</td>
+                                <td>Encrypted and automatically deleted after 30 days.</td>
                             </tr>
                             <tr>
-                                <td><strong>Temporary Connection Security</strong></td>
-                                <td>Transient IP address hash (salted and hashed in memory)</td>
-                                <td>Protects web dashboard endpoints and API gateways against brute-force authorization attacks.</td>
-                                <td>Cleared automatically every 15 to 60 minutes from memory. Never stored in permanent DB records.</td>
+                                <td><strong>Rate Limiting (Security)</strong></td>
+                                <td>Temporary anonymized IP hash in memory</td>
+                                <td>To protect login endpoints and web forms against malicious bot attacks.</td>
+                                <td>Cleared automatically from memory every 15–60 minutes. Never saved to a database.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h3 class="emerald-accent">2. Legal Bases for Processing (GDPR Article 6)</h3>
-                <p>Nora processes telemetry under the following lawful grounds:</p>
+                <h3 class="emerald-accent">2. What We NEVER Collect or Store</h3>
+                <p>To avoid any ambiguity, Nora does <strong>NOT</strong> collect or have access to:</p>
                 <ul>
-                    <li><strong>Contractual Necessity (Art. 6(1)(b)):</strong> To execute the bot commands, role assignments, and dashboard settings requested by server administrators and users.</li>
-                    <li><strong>Legitimate Interests (Art. 6(1)(f)):</strong> To maintain infrastructure security, mitigate phishing raids, and enforce rate limits against automated exploits.</li>
-                    <li><strong>Explicit Consent (Art. 6(1)(a)):</strong> When users voluntarily initiate OAuth2 authorization to link their Roblox profile or log into the web dashboard.</li>
+                    <li>Your Discord password or payment credentials (all handled by Discord).</li>
+                    <li>Your Roblox password or <code>.ROBLOSECURITY</code> cookies.</li>
+                    <li>Your personal real-world name, home address, phone number, or government identity.</li>
+                    <li>Your private direct messages (DMs) or server chat messages (outside of configured moderation logging and closed support tickets).</li>
                 </ul>
 
-                <h3 class="emerald-accent">3. Security Infrastructure & Sub-Processors</h3>
-                <p>All stored data is protected using enterprise-grade safeguards:</p>
+                <h3 class="emerald-accent">3. Data Security & Storage</h3>
+                <p>All communication between your browser, Discord, and Nora's backend is encrypted with industry-standard <strong>TLS 1.3</strong>. Our databases are secured with encrypted volume storage, firewalls, and strict access controls to ensure your community data is protected from unauthorized access.</p>
+
+                <h3 class="emerald-accent">4. How to Delete Your Data (Self-Service)</h3>
+                <p>You have full control over your data. You don't need to file support tickets or wait for an email to delete your records:</p>
                 <ul>
-                    <li><strong>Encryption at Rest & In Transit:</strong> Communication between user browsers, Discord APIs, and Nora clusters is encrypted using <strong>TLS 1.3</strong>. Sensitive database records and session tokens are encrypted at rest using <strong>AES-256-GCM</strong>.</li>
-                    <li><strong>Sub-Processor Standards:</strong> Nora utilizes top-tier cloud hosting infrastructure (including dedicated bare-metal nodes, PostgreSQL databases with encrypted volume storage, and Cloudflare DDoS filtering). Sub-processors are bound by strict Data Processing Agreements (DPAs).</li>
+                    <li><strong>Individual User Wipe:</strong> Run <code>/mycard</code> in Discord, click the red <strong>"Erase Data"</strong> button, and confirm. Nora will instantly wipe your leveling XP, rank settings, and linked profiles.</li>
+                    <li><strong>Server Owner Wipe:</strong> Server owners can run <code>/settings data-delete</code> inside their server to immediately erase all server configs, leveling boards, and mod logs.</li>
+                    <li><strong>Roblox Unlink:</strong> Run <code>/verify unlink</code> in Discord or visit the <a href="/verify" style="color: var(--cyan);">Verification Portal</a> to disconnect your Roblox account instantly.</li>
                 </ul>
 
-                <h3 class="emerald-accent">4. Children's Privacy Protocol (COPPA & Age Verification)</h3>
-                <p>Nora Studio strictly adheres to the Children's Online Privacy Protection Act (COPPA). We do not knowingly collect or solicit personal information from children under the age of 13. Because all account identifiers are purely non-identifying 64-bit numerical snowflakes, Nora does not maintain real names, physical addresses, or phone numbers. If we learn that a user under 13 has interacted with Nora, their numerical mappings are promptly purged from our database.</p>
-            </div>
+                <h3 class="emerald-accent">5. Children's Privacy (COPPA Compliance)</h3>
+                <p>Nora is not directed at children under the age of 13. In accordance with COPPA and Discord's Terms of Service, users under 13 are prohibited from creating Discord accounts or using Nora. If we discover that data belongs to an underage user, that data is permanently purged immediately.</p>
 
-            <!-- ==========================================
-                 TAB 3: ROBLOX COMPLIANCE & SECURITY
-                 ========================================== -->
-            <div class="legal-tab-pane" id="pane-roblox">
-                <h2><i class="fas fa-lock" style="color: var(--cyan);"></i> Roblox Open Cloud & Security Architecture</h2>
-                <div class="legal-meta-bar">
-                    <span><i class="fas fa-shield-alt"></i> Protocol: Roblox Open Cloud OAuth2 Standard</span>
-                    <span><i class="fas fa-key"></i> Key Storage: Zero-Cookie Architecture</span>
-                    <span><i class="fas fa-microchip"></i> Verification: Instant Handshake</span>
-                </div>
-
-                <p>Nora Studio operates a dedicated, high-security verification and group rank synchronization subsystem designed to connect Roblox identities with Discord servers without ever compromising user credentials or account safety.</p>
-
-                <h3 class="cyan-accent">1. Roblox Terms of Use Compliance</h3>
-                <p>Our Roblox verification suite adheres fully to the <a href="https://en.help.roblox.com/hc/en-us/articles/115004647846-Roblox-Terms-of-Use" target="_blank" rel="noopener" style="color: var(--cyan);">Roblox Terms of Use</a> and Open Cloud Developer Guidelines:</p>
+                <h3 class="emerald-accent">6. Contact Us</h3>
+                <p>If you have any questions, privacy concerns, or data requests, feel free to reach out directly:</p>
                 <ul>
-                    <li><strong>No Password or Cookie Ingestion:</strong> Nora <strong>never</strong> asks for, accepts, or stores Roblox account passwords, <code>.ROBLOSECURITY</code> cookies, or private session tokens.</li>
-                    <li><strong>Official OAuth2 Protocol:</strong> Account verification is executed either via public bio/code verification or official Roblox Open Cloud OAuth2 authentication, where authorization is granted directly on roblox.com.</li>
-                    <li><strong>Public API Scopes:</strong> Nora only queries publicly accessible endpoints (e.g., group rank integers, user profile display names, and public inventory badges) using authorized API keys.</li>
-                </ul>
-
-                <div class="notice-box info">
-                    <i class="fas fa-key"></i>
-                    <div>
-                        <strong>Cryptographic Verification Handshake:</strong> All verification tokens generated for OAuth2 callbacks utilize single-use cryptographic nonces with short 5-minute expiry windows to prevent replay attacks.
-                    </div>
-                </div>
-
-                <h3 class="cyan-accent">2. Group Rank-to-Role Synchronization Boundaries</h3>
-                <p>When guild administrators configure automated group rank synchronization, Nora operates under strict safety constraints:</p>
-                <ul>
-                    <li><strong>Permission Isolation:</strong> Nora can only assign or remove roles that are strictly positioned <em>below</em> the bot's highest role in the Discord server hierarchy. Nora cannot elevate permissions beyond what the server owner has explicitly configured.</li>
-                    <li><strong>Audit Trail Persistence:</strong> All automatic rank promotions, demotions, and verification role grants are logged to the configured Discord mod-log channel with timestamps and Roblox User IDs.</li>
-                    <li><strong>Rate-Limited Group Sweeps:</strong> Periodic background group sweeps are throttled to prevent rate-limit flooding against Roblox API endpoints, ensuring maximum platform stability.</li>
-                </ul>
-
-                <h3 class="cyan-accent">3. Multi-Account Binding & Unlinking</h3>
-                <p>Users may link multiple secondary Roblox accounts to their Discord profile via our web portal. However:</p>
-                <ul>
-                    <li>Only one Roblox account may be designated as the <strong>Active Identity</strong> for guild role synchronization at any given time.</li>
-                    <li>Users retain full autonomy to disconnect or delete their Roblox bindings instantly by using the <code>/verify unlink</code> command in Discord or clicking the "Unlink Account" button on our web portal.</li>
-                </ul>
-            </div>
-
-            <!-- ==========================================
-                 TAB 4: RIGHT TO ERASURE & DATA DELETION
-                 ========================================== -->
-            <div class="legal-tab-pane" id="pane-deletion">
-                <h2><i class="fas fa-trash-alt" style="color: var(--rose);"></i> Right to Erasure & Data Deletion Protocol</h2>
-                <div class="legal-meta-bar">
-                    <span><i class="fas fa-user-check"></i> Standard: GDPR Article 17 / CCPA Section 1798.105</span>
-                    <span><i class="fas fa-bolt"></i> Execution: Instant Self-Service</span>
-                    <span><i class="fas fa-shield-virus"></i> Scope: Complete Database Purge</span>
-                </div>
-
-                <p>In accordance with global data protection statutes—including <strong>GDPR Article 17 (Right to be Forgotten)</strong> and <strong>CCPA/CPRA Consumer Privacy Regulations</strong>—Nora Studio guarantees that every user and server administrator maintains unconditional, self-service authority to inspect and permanently destroy their data footprint.</p>
-
-                <h3 class="rose-accent">1. Instant Self-Service Data Deletion Methods</h3>
-                <p>You do not need to wait for email correspondence to purge your records. You can execute immediate deletion through any of the following methods:</p>
-
-                <h4>A. Individual User Data Wipe (Discord Slash Command)</h4>
-                <p>Any Discord user can execute the following steps at any time:</p>
-                <ol>
-                    <li>Execute the <code>/mycard</code> command in any Discord channel where Nora is present.</li>
-                    <li>Click the red <strong>"Erase Data"</strong> button on the interactive card.</li>
-                    <li>Confirm the deletion prompt. Nora will immediately and permanently wipe your leveling statistics, voice duration logs, Roblox account associations, and user preference records from our database.</li>
-                </ol>
-
-                <h4>B. Server-Wide Guild Wipe (Administrator Command)</h4>
-                <p>Server owners wishing to purge all community records can:</p>
-                <ol>
-                    <li>Execute <code>/settings data-delete</code> inside the server.</li>
-                    <li>Confirm the owner authorization modal. All guild leveling leaderboards, custom command triggers, AutoMod case histories, reaction role mappings, and ticket archives will be irreversibly erased within milliseconds.</li>
-                </ol>
-
-                <h4>C. Roblox Profile Unlinking</h4>
-                <p>To disconnect Roblox verification data exclusively without wiping leveling records, run <code>/verify unlink</code> in Discord or click "Unlink" in the <a href="/verify" style="color: var(--cyan);">Verification Portal</a>.</p>
-
-                <div class="notice-box warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <div>
-                        <strong>Irreversibility of Deletion:</strong> Once a data purge is confirmed via <code>/mycard</code> or <code>/settings data-delete</code>, the action is permanent. Cryptographic database records are wiped immediately and cannot be recovered by Nora staff.
-                    </div>
-                </div>
-
-                <h3 class="rose-accent">2. Formal Data Protection Officer (DPO) Inquiries</h3>
-                <p>If you require a formal GDPR data export, have specialized compliance questions, or wish to submit a written erasure request, you may contact our dedicated Data Protection Officer:</p>
-                <ul>
-                    <li><strong>Direct Support Email:</strong> <code>privacy@vaztinix.dev</code> or <code>vaztinix@gmail.com</code></li>
-                    <li><strong>Official Discord Helpdesk:</strong> Open a private data ticket in our <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" style="color: var(--blurple);">Official Support Server</a>.</li>
-                    <li><strong>Processing SLA:</strong> Written manual data requests are fulfilled within <strong>48 hours</strong>, well ahead of the statutory 30-day GDPR requirement.</li>
+                    <li><strong>Official Discord Server:</strong> Join our <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" style="color: var(--blurple);">Nora Support Discord</a> and open a private support ticket.</li>
+                    <li><strong>Direct Developer Contact:</strong> <code>vaztinix@gmail.com</code> or <code>privacy@vaztinix.dev</code></li>
                 </ul>
             </div>
 
@@ -1313,7 +1219,7 @@
                         <img src="nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px; border-radius: 8px;">
                         <span>Nora Studio</span>
                     </a>
-                    <p>The next-generation Discord infrastructure bot powering automation, Roblox synchronization, moderation, and community engagement with total privacy.</p>
+                    <p>The privacy-first Discord bot for community automation, Roblox verification, moderation, and leveling engagement.</p>
                 </div>
                 <div class="footer-col">
                     <h5>Navigation</h5>
@@ -1329,8 +1235,8 @@
                     <h5>Resources & Tools</h5>
                     <ul>
                         <li><a href="/verify">Roblox Verification</a></li>
+                        <li><a href="/support">Support Center</a></li>
                         <li><a href="/docs#topgg">Top.gg Webhooks</a></li>
-                        <li><a href="/billing-faq">Billing FAQ</a></li>
                         <li><a href="/AI">Aura AI Architecture</a></li>
                     </ul>
                 </div>
@@ -1339,8 +1245,6 @@
                     <ul>
                         <li><a href="/legal#terms" onclick="switchLegalTab('terms')">Terms of Service</a></li>
                         <li><a href="/legal#privacy" onclick="switchLegalTab('privacy')">Privacy Policy</a></li>
-                        <li><a href="/legal#roblox" onclick="switchLegalTab('roblox')">Roblox Security</a></li>
-                        <li><a href="/legal#deletion" onclick="switchLegalTab('deletion')">Data Erasure</a></li>
                     </ul>
                 </div>
             </div>
@@ -1358,6 +1262,14 @@
     <script>
         // Tab Switcher Logic
         function switchLegalTab(tabId) {
+            // Map legacy or shortcut hashes
+            if (tabId === 'roblox' || tabId === 'deletion') {
+                tabId = 'privacy';
+            }
+            if (tabId !== 'terms' && tabId !== 'privacy') {
+                tabId = 'terms';
+            }
+
             // Update Tab Buttons
             const buttons = document.querySelectorAll('.tab-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
@@ -1381,8 +1293,10 @@
         // On Load Hash Handler
         window.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.replace('#', '');
-            if (['terms', 'privacy', 'roblox', 'deletion'].includes(hash)) {
-                switchLegalTab(hash);
+            if (hash === 'privacy' || hash === 'roblox' || hash === 'deletion') {
+                switchLegalTab('privacy');
+            } else {
+                switchLegalTab('terms');
             }
         });
 
