@@ -568,11 +568,20 @@
     let consecutiveFailures = 0;
     const MAX_FAILURES_BEFORE_OFFLINE = 2; // Requires 2 consecutive failures to prevent false alarms
 
+    function getResolvedApiBase() {
+        if (window.__NORA_API_BASE_URL__) return window.__NORA_API_BASE_URL__;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000') {
+            return '';
+        }
+        return 'https://api.vaztinix.dev';
+    }
+
     async function checkNoraHealth(isImmediate = false) {
         try {
+            const apiBase = getResolvedApiBase();
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second generous timeout for real network latency
-            const res = await originalFetch('/api/status/public', { cache: 'no-store', signal: controller.signal });
+            const res = await originalFetch(`${apiBase}/api/status/public`, { cache: 'no-store', signal: controller.signal });
             clearTimeout(timeoutId);
 
             if (res.ok) {
