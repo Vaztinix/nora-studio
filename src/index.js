@@ -1337,6 +1337,11 @@ app.get('/sw.js', (req, res) => {
     res.setHeader('Service-Worker-Allowed', '/');
     res.sendFile(path.join(__dirname, 'web/sw.js'));
 });
+app.get('/nora-sentinel.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.join(__dirname, 'web/nora-sentinel.js'));
+});
 app.get('/manifest.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.sendFile(path.join(__dirname, 'web/manifest.json'));

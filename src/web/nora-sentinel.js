@@ -4,8 +4,11 @@
  * and morphs into a glowing green checkmark before gracefully dismissing on reconnect.
  */
 (function() {
-    if (window.__NORA_SENTINEL_INITIALIZED__) return;
-    window.__NORA_SENTINEL_INITIALIZED__ = true;
+    // Remove duplicate style or overlay if reloaded
+    const existingStyle = document.getElementById('nora-sentinel-styles');
+    if (existingStyle) existingStyle.remove();
+    const existingOverlay = document.getElementById('nora-sentinel-overlay');
+    if (existingOverlay) existingOverlay.remove();
 
     // Inject Styles
     const style = document.createElement('style');
