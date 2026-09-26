@@ -565,6 +565,46 @@
         }, 1800);
     }
 
+    let consecutiveFailures = 0;
+    const MAX_FAILURES_BEFORE_OFFLINE = 2; // Requires 2 consecutive failures to prevent false alarms
+
+    async function checkNoraHealth(isImmediate = false) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second generous timeout for real network latency
+            const res = await originalFetch('/api/status/public', { cache: 'no-store', signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (data.systemStatus === 'offline' || data.systemStatus === 'outage') {
+                    consecutiveFailures++;
+                    if (consecutiveFailures >= (isImmediate ? 1 : MAX_FAILURES_BEFORE_OFFLINE)) {
+                        showOfflineOverlay();
+                    }
+                } else {
+                    consecutiveFailures = 0;
+                    if (isCurrentlyOffline) {
+                        showOnlineRecovery();
+                    }
+                }
+            } else if (res.status === 502 || res.status === 503 || res.status === 504) {
+                consecutiveFailures++;
+                if (consecutiveFailures >= (isImmediate ? 1 : MAX_FAILURES_BEFORE_OFFLINE)) {
+                    showOfflineOverlay();
+                }
+            }
+        } catch (e) {
+            // Ignore intentional aborts or browser unload
+            if (e && (e.name === 'AbortError' || e.message?.includes('aborted'))) return;
+            
+            consecutiveFailures++;
+            if (consecutiveFailures >= (isImmediate ? 1 : MAX_FAILURES_BEFORE_OFFLINE)) {
+                showOfflineOverlay();
+            }
+        }
+    }
+
     function startRetryCountdown() {
         clearInterval(retryTimerInterval);
         retrySecondsRemaining = 4;
@@ -577,7 +617,7 @@
 
             if (retrySecondsRemaining <= 0) {
                 clearInterval(retryTimerInterval);
-                await checkNoraHealth();
+                await checkNoraHealth(true);
                 if (isCurrentlyOffline) {
                     startRetryCountdown();
                 }
@@ -585,34 +625,10 @@
         }, 1000);
     }
 
-    async function checkNoraHealth() {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
-            const res = await fetch('/api/status/public', { cache: 'no-store', signal: controller.signal });
-            clearTimeout(timeoutId);
-
-            if (res.ok) {
-                const data = await res.json().catch(() => ({}));
-                if (data.systemStatus === 'offline' || data.systemStatus === 'outage') {
-                    showOfflineOverlay();
-                } else {
-                    if (isCurrentlyOffline) {
-                        showOnlineRecovery();
-                    }
-                }
-            } else {
-                showOfflineOverlay();
-            }
-        } catch (e) {
-            showOfflineOverlay();
-        }
-    }
-
     window.noraSentinelRetryManual = async function() {
         const retryIcon = document.getElementById('sentinel-retry-icon');
         if (retryIcon) retryIcon.classList.add('spinning');
-        await checkNoraHealth();
+        await checkNoraHealth(true);
         setTimeout(() => {
             if (retryIcon) retryIcon.classList.remove('spinning');
         }, 600);
@@ -638,33 +654,38 @@
         }
     });
 
-    // Network & API Interceptor for immediate detection
+    // Network & API Interceptor for immediate detection (only triggers on actual fatal backend errors)
     const originalFetch = window.fetch;
     window.fetch = async function(...args) {
         try {
             const response = await originalFetch.apply(this, args);
             const urlStr = (typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url)) || '';
-            if ((urlStr.includes('/api/') || urlStr.includes('api.vaztinix.dev')) && (response.status === 502 || response.status === 503 || response.status === 504)) {
-                showOfflineOverlay();
+            // Only trigger if a core backend API returns 502/503/504 Bad Gateway
+            if ((urlStr.includes('/api/status') || urlStr.includes('/api/guilds')) && (response.status === 502 || response.status === 503 || response.status === 504)) {
+                checkNoraHealth(true);
             }
             return response;
         } catch (err) {
+            // Ignore cancelled/aborted fetches, image loads, or optional third-party requests
+            if (err && (err.name === 'AbortError' || err.message?.includes('aborted'))) {
+                throw err;
+            }
             const urlStr = (typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url)) || '';
-            if (urlStr.includes('/api/') || urlStr.includes('api.vaztinix.dev') || urlStr.startsWith('/')) {
-                showOfflineOverlay();
+            if (urlStr.includes('/api/status') || urlStr.includes('/api/guilds')) {
+                checkNoraHealth(true);
             }
             throw err;
         }
     };
 
     // Listen to native browser connection events
-    window.addEventListener('offline', () => showOfflineOverlay());
-    window.addEventListener('online', () => checkNoraHealth());
+    window.addEventListener('offline', () => checkNoraHealth(true));
+    window.addEventListener('online', () => checkNoraHealth(true));
 
-    // Continuous Heartbeat Polling (every 8 seconds in background)
+    // Continuous Heartbeat Polling (every 15 seconds in background)
     setInterval(() => {
         if (!isCurrentlyOffline) {
-            checkNoraHealth();
+            checkNoraHealth(false);
         }
-    }, 8000);
+    }, 15000);
 })();
