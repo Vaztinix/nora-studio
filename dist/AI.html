@@ -3,285 +3,1025 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora - Intelligence Engines</title>
+    <title>Aura Neural Engines & AI Architecture — Nora Studio</title>
+    <meta name="description" content="Explore Nora Studio's hybrid AI architecture: custom local Aura V10 neural models paired with multimodal cloud inference.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <script src="/translate.js"></script>
-    <script>
-        (function() {
-            const savedColor = localStorage.getItem('nora_theme_color');
-            if (savedColor) {
-                document.documentElement.style.setProperty('--primary', savedColor);
-                const r = parseInt(savedColor.slice(1, 3), 16);
-                const g = parseInt(savedColor.slice(3, 5), 16);
-                const b = parseInt(savedColor.slice(5, 7), 16);
-                document.documentElement.style.setProperty('--accent', `rgba(${r}, ${g}, ${b}, 0.15)`);
-                document.documentElement.style.setProperty('--bg-glow', `rgba(${r}, ${g}, ${b}, 0.1)`);
-            }
-        })();
-    </script>
+    
+    <!-- Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
-            --bg: #0b0f1a;
-            --bg-soft: #12182b;
-            --bg-glow: rgba(174, 239, 255, 0.1);
-            --card: rgba(255, 255, 255, 0.06);
-            --card-hover: rgba(255, 255, 255, 0.12);
-            --border: rgba(255, 255, 255, 0.08);
-            --primary: #ffffff;
-            --accent: #7aa2ff;
-            --text: #ffffff;
-            --muted: rgba(255, 255, 255, 0.7);
-            --radius: 18px;
+            --bg-base: #080A10;
+            --bg-surface: #0E111D;
+            --bg-surface-elevated: #15192B;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(88, 101, 242, 0.4);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --blurple: #5865F2;
+            --blurple-hover: #4752C4;
+            --blurple-glow: rgba(88, 101, 242, 0.35);
+            --emerald: #10B981;
+            --amber: #F59E0B;
+            --rose: #F43F5E;
+            --cyan: #06B6D4;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+            --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
-            font-family: "Inter", system-ui, sans-serif;
-            background: radial-gradient(1200px 600px at 10% -10%, var(--bg-glow), transparent),
-                        radial-gradient(900px 500px at 90% 10%, var(--bg-glow), transparent),
-                        var(--bg);
-            color: var(--text);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        /* ===== UNIFIED TOP NAVIGATION & DROPDOWNS ===== */
         header {
             position: sticky;
             top: 0;
             z-index: 1000;
-            backdrop-filter: blur(10px);
-            background: rgba(10, 14, 30, 0.75);
-            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(8, 10, 16, 0.85);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: var(--transition-smooth);
         }
 
-        .nav {
-            max-width: 1200px;
-            margin: auto;
-            padding: 1rem 1.5rem;
+        .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            height: 72px;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
-        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; color: white; }
-        .brand img { width: 40px; height: 40px; border-radius: 10px; }
-
-        .nav-links { display: flex; gap: 22px; }
-        .nav-links a { font-weight: 600; color: white; text-decoration: none; transition: color 0.2s ease; opacity: 0.8; }
-        .nav-links a:hover { color: var(--primary); opacity: 1; }
-        .nav-links a.active { color: var(--primary); opacity: 1; }
-
-        .container { max-width: 1200px; margin: 4rem auto; padding: 0 1.5rem; text-align: center; }
-        
-        h1 { font-size: clamp(2.2rem, 4vw, 3.2rem); margin-bottom: 10px; color: white; font-weight: 800;}
-        p.subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 50px; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        
-        .card { 
-            background: var(--card); 
-            border: 1px solid var(--border); 
-            border-radius: var(--radius); 
-            padding: 40px 30px; 
-            transition: transform 0.3s ease, background 0.3s ease;
-            text-align: left;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.22rem;
+            color: #FFFFFF;
+            text-decoration: none;
+            letter-spacing: -0.02em;
         }
-        .card:hover { transform: translateY(-5px); background: var(--card-hover); }
-        
-        .badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; margin-bottom: 20px; letter-spacing: 1px; }
-        .badge.local { background: rgba(46, 160, 67, 0.2); color: #2ea043; border: 1px solid rgba(46, 160, 67, 0.4);}
-        .badge.cloud { background: rgba(88, 166, 255, 0.2); color: var(--primary); border: 1px solid rgba(88, 166, 255, 0.4);}
-        
-        .card h2 { margin-top: 0; font-size: 1.6rem; color: white; margin-bottom: 15px;}
-        .card p { color: var(--muted); margin-bottom: 20px; line-height: 1.5; font-size: 0.95rem; }
-        .card ul { padding-left: 20px; color: var(--text); font-size: 0.95rem; line-height: 1.7;}
-        .card ul li { margin-bottom: 10px; }
+        .brand img {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            box-shadow: 0 0 16px rgba(88, 101, 242, 0.35);
+        }
 
-        /* Mobile Navigation Toggle Button */
-        .mobile-nav-toggle {
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 24px;
-            height: 18px;
-            background: transparent;
-            border: none;
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            list-style: none;
+        }
+
+        .nav-item-link, .nav-dropdown-trigger {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 10px;
             cursor: pointer;
-            padding: 0;
+            user-select: none;
+        }
+        .nav-item-link:hover, .nav-dropdown-trigger:hover,
+        .nav-item-link.active, .nav-dropdown-trigger.active {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-dropdown-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .nav-arrow {
+            font-size: 0.72rem;
+            transition: transform 0.25s ease, color 0.25s ease;
+            opacity: 0.7;
+        }
+
+        .nav-dropdown-wrapper:hover .nav-arrow {
+            transform: rotate(180deg);
+            opacity: 1;
+            color: var(--blurple);
+        }
+
+        .nav-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            min-width: 300px;
+            background: rgba(14, 16, 26, 0.96);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(88, 101, 242, 0.15);
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-dropdown-wrapper:hover .nav-dropdown-menu,
+        .nav-dropdown-wrapper:focus-within .nav-dropdown-menu {
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #E2E8F0;
+            transition: all 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background: rgba(88, 101, 242, 0.12);
+            transform: translateX(3px);
+        }
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+            color: #818CF8;
+            flex-shrink: 0;
+        }
+        .dropdown-item-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .dropdown-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+        .dropdown-desc {
+            font-size: 0.76rem;
+            color: #94A3B8;
+            line-height: 1.3;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-nav-dashboard {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-dashboard:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-nav-invite {
+            background: var(--blurple);
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 18px var(--blurple-glow);
+        }
+        .btn-nav-invite:hover {
+            background: var(--blurple-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--blurple-glow);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        /* ===== MOBILE DRAWER ===== */
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100vh;
+            background: rgba(10, 12, 20, 0.98);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-left: 1px solid var(--border-subtle);
             z-index: 10000;
+            padding: 22px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-
-        .mobile-nav-toggle span {
-            width: 100%;
-            height: 2px;
-            background-color: var(--text, #fff);
-            border-radius: 2px;
-            transition: all 0.3s ease;
-        }
-
-        /* Mobile Navigation Overlay */
-        .mobile-nav-overlay {
+        .mobile-drawer.open { right: 0; }
+        .mobile-drawer-backdrop {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 11, 16, 0.98);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
-
-        .mobile-nav-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
+        .mobile-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-subtle);
         }
-
-        .mobile-nav-close {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            font-size: 2.5rem;
-            color: var(--text, #fff);
-            background: transparent;
-            border: none;
+        .mobile-drawer-close {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            padding: 5px;
+        }
+        .mobile-drawer-nav { display: flex; flex-direction: column; gap: 8px; }
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.92rem;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+        }
+        .mobile-nav-link:hover, .mobile-nav-link.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
-        .mobile-nav-links {
+        .mobile-accordion {
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .mobile-accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mobile-accordion-header div { display: flex; align-items: center; gap: 12px; }
+        .mobile-accordion-header .acc-arrow {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+        .mobile-accordion.open .mobile-accordion-header .acc-arrow {
+            transform: rotate(180deg);
+            color: var(--blurple);
+        }
+        .mobile-accordion-body {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px 12px 10px 36px;
+        }
+        .mobile-accordion.open .mobile-accordion-body { display: flex; }
+        .mobile-sublink {
+            padding: 7px 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-sublink:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mobile-drawer-actions {
+            margin-top: auto;
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 10px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .mobile-drawer-actions a {
+            width: 100%;
             text-align: center;
-        }
-
-        .mobile-nav-links a {
-            font-size: 1.5rem;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-size: 0.92rem;
             font-weight: 700;
-            color: var(--text, #fff);
+        }
+
+        /* ===== AI CONTENT ===== */
+        .ai-wrapper {
+            padding: 50px 0 80px 0;
+            flex-grow: 1;
+        }
+
+        .ai-hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 16px;
+            background: rgba(6, 182, 212, 0.12);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: var(--radius-full);
+            color: #67E8F9;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 16px;
+        }
+        .ai-hero h1 {
+            font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+        }
+        .ai-hero p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .ai-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 36px 30px;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            backdrop-filter: blur(16px);
+        }
+        .ai-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(88, 101, 242, 0.12);
+        }
+
+        .ai-card-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            width: fit-content;
+        }
+        .ai-card-tag.local {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--emerald);
+        }
+        .ai-card-tag.cloud {
+            background: rgba(88, 101, 242, 0.15);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            color: #818CF8;
+        }
+        .ai-card-tag.logic {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #FBBF24;
+        }
+
+        .ai-card h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.01em;
+        }
+
+        .ai-card p {
+            color: var(--text-muted);
+            font-size: 0.94rem;
+            line-height: 1.6;
+        }
+
+        .ai-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .ai-card li {
+            font-size: 0.9rem;
+            color: #CBD5E1;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.5;
+        }
+        .ai-card li i {
+            color: var(--emerald);
+            font-size: 0.85rem;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 50px 0 30px 0;
+            background: rgba(8, 10, 16, 0.95);
+            margin-top: auto;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin-top: 12px;
+            max-width: 320px;
+        }
+        .footer-col h4 {
+            color: #FFFFFF;
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .footer-col a {
+            color: var(--text-muted);
             text-decoration: none;
-            opacity: 0.8;
-            transition: opacity 0.2s ease, color 0.2s ease;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+        }
+        .footer-col a:hover {
+            color: #FFFFFF;
+            transform: translateX(3px);
+        }
+        .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            gap: 16px;
         }
 
-        .mobile-nav-links a:hover,
-        .mobile-nav-links a.active {
-            opacity: 1;
-            color: var(--primary, #5865f2);
-        }
-
-        @media(max-width:768px) {
+        @media (max-width: 768px) {
             .nav-links { display: none !important; }
-            .mobile-nav-toggle { display: flex !important; }
-            .container { margin: 2rem auto !important; padding: 0 1rem !important; }
-            .grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-            .card { padding: 24px 18px !important; }
-            h1 { font-size: 1.8rem !important; }
-            p.subtitle { font-size: 0.95rem !important; margin-bottom: 30px !important; }
+            .mobile-menu-btn { display: flex !important; }
+            .btn-nav-invite { display: none !important; }
+            .btn-nav-dashboard { padding: 7px 14px !important; font-size: 0.82rem !important; }
+            .ai-hero h1 { font-size: 1.85rem !important; }
+            .ai-grid { grid-template-columns: 1fr !important; }
+            .footer-grid { grid-template-columns: 1fr !important; }
+            .footer-bottom { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <div class="mobile-nav-overlay" id="mobile-nav-overlay">
-        <button class="mobile-nav-close" id="mobile-nav-close">&times;</button>
-        <nav class="mobile-nav-links">
-            <a href="/">Home</a>
-            <a href="/team">Team</a>
-            <a href="/docs">Docs</a>
-            <a href="/ai" class="active">Nora AI</a>
-            <a href="/legal">Legal</a>
-            <a href="/dashboard">Dashboard</a>
-        </nav>
-    </div>
+    <!-- Mobile Navigation Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMobileMenu()"></div>
 
-    <header>
-        <div class="nav">
+    <!-- Mobile Navigation Drawer -->
+    <aside class="mobile-drawer" id="mobile-drawer">
+        <div class="mobile-drawer-header">
             <div class="brand">
-                <img src="nora.png" alt="Nora" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-                <span>Nora</span>
+                <img src="nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+                <span>Nora Studio</span>
             </div>
-            <nav class="nav-links">
-                <a href="/">Home</a>
-                <a href="/team">Team</a>
-                <a href="/ai" class="active">Nora AI</a>
-                <a href="/legal">Legal</a>
-                <a href="/dashboard">Dashboard</a>
-            </nav>
-            <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle Navigation">
-                <span></span>
-                <span></span>
-                <span></span>
+            <button class="mobile-drawer-close" onclick="toggleMobileMenu()" aria-label="Close menu">
+                <i class="fas fa-times"></i>
             </button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <!-- Home Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-home" style="color: var(--blurple); width: 20px;"></i> Home</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/#hero" class="mobile-sublink"><i class="fas fa-sparkles"></i> Overview</a>
+                    <a href="/#features" class="mobile-sublink"><i class="fas fa-layer-group"></i> Features & Architecture</a>
+                    <a href="/#commands" class="mobile-sublink"><i class="fas fa-terminal"></i> Commands Explorer</a>
+                    <a href="/#pricing" class="mobile-sublink"><i class="fas fa-crown"></i> Pricing Tiers</a>
+                    <a href="/#faq" class="mobile-sublink"><i class="fas fa-question-circle"></i> FAQ</a>
+                </div>
+            </div>
+
+            <!-- Docs Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-book" style="color: var(--emerald); width: 20px;"></i> Documentation</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/docs" class="mobile-sublink"><i class="fas fa-book-open"></i> Docs Overview</a>
+                    <a href="/docs#quickstart" class="mobile-sublink"><i class="fas fa-rocket"></i> Quickstart Guide</a>
+                    <a href="/docs#topgg" class="mobile-sublink"><i class="fas fa-chart-line"></i> Top.gg Multi-Bot Tracker</a>
+                    <a href="/docs#roblox" class="mobile-sublink"><i class="fas fa-cubes"></i> Roblox Group Sync</a>
+                    <a href="/docs#leveling" class="mobile-sublink"><i class="fas fa-trophy"></i> Leveling & XP</a>
+                    <a href="/docs#safety" class="mobile-sublink"><i class="fas fa-shield-virus"></i> AutoMod Shield</a>
+                    <a href="/docs#commands" class="mobile-sublink"><i class="fas fa-terminal"></i> Full Command Catalog</a>
+                </div>
+            </div>
+
+            <!-- Legal Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-shield-alt" style="color: #60a5fa; width: 20px;"></i> Legal & Privacy</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/legal#terms" class="mobile-sublink"><i class="fas fa-file-contract"></i> Terms of Service</a>
+                    <a href="/legal#privacy" class="mobile-sublink"><i class="fas fa-user-shield"></i> Privacy Policy</a>
+                    <a href="/legal#roblox" class="mobile-sublink"><i class="fas fa-lock"></i> Roblox Compliance</a>
+                    <a href="/legal#deletion" class="mobile-sublink"><i class="fas fa-trash-alt"></i> Data Deletion</a>
+                </div>
+            </div>
+
+            <a href="/status" class="mobile-nav-link"><i class="fas fa-chart-line" style="color: #10B981;"></i> Live Systems Status</a>
+            <a href="/team" class="mobile-nav-link"><i class="fas fa-users" style="color: #a78bfa;"></i> Meet Team & Staff</a>
+            
+            <!-- Support Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-headset" style="color: var(--rose); width: 20px;"></i> Support</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/support" class="mobile-sublink"><i class="fas fa-life-ring"></i> Support Hub</a>
+                    <a href="/billing-faq" class="mobile-sublink"><i class="fas fa-credit-card"></i> Billing FAQ</a>
+                    <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" class="mobile-sublink"><i class="fab fa-discord"></i> Official Discord</a>
+                </div>
+            </div>
+        </nav>
+        <div class="mobile-drawer-actions">
+            <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Web Dashboard</a>
+            <a href="/install" class="btn-nav-invite"><i class="fab fa-discord"></i> Add to Discord</a>
+        </div>
+    </aside>
+
+    <!-- Sticky Header -->
+    <header id="main-header">
+        <div class="container nav-container">
+            <a href="/" class="brand" id="brand-logo">
+                <img src="nora.png" alt="Nora Studio Logo">
+                <span>Nora Studio</span>
+            </a>
+            
+            <nav class="nav-links">
+                <!-- Home Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/" class="nav-dropdown-trigger">
+                        <i class="fas fa-home"></i> Home <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#hero" class="dropdown-item">
+                            <i class="fas fa-sparkles"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Overview</span>
+                                <span class="dropdown-desc">Hero, live stats & telemetry</span>
+                            </div>
+                        </a>
+                        <a href="/#features" class="dropdown-item">
+                            <i class="fas fa-layer-group"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Features & Architecture</span>
+                                <span class="dropdown-desc">Group sync, Starboard v3.0 & AutoMod</span>
+                            </div>
+                        </a>
+                        <a href="/#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Commands Explorer</span>
+                                <span class="dropdown-desc">Searchable slash command catalog</span>
+                            </div>
+                        </a>
+                        <a href="/#pricing" class="dropdown-item">
+                            <i class="fas fa-crown"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Pricing Tiers</span>
+                                <span class="dropdown-desc">Server capacity & VIP expansion perks</span>
+                            </div>
+                        </a>
+                        <a href="/#faq" class="dropdown-item">
+                            <i class="fas fa-question-circle"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">FAQ</span>
+                                <span class="dropdown-desc">Frequently asked community questions</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Docs Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/docs" class="nav-dropdown-trigger">
+                        <i class="fas fa-book"></i> Docs <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/docs#quickstart" class="dropdown-item">
+                            <i class="fas fa-rocket"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Quickstart Setup</span>
+                                <span class="dropdown-desc">60-second onboarding & setup wizard</span>
+                            </div>
+                        </a>
+                        <a href="/docs#topgg" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Top.gg Tracker & Rewards</span>
+                                <span class="dropdown-desc">Multi-bot vote rewards & webhook pipeline</span>
+                            </div>
+                        </a>
+                        <a href="/docs#roblox" class="dropdown-item">
+                            <i class="fas fa-cubes"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Roblox Group Sync</span>
+                                <span class="dropdown-desc">Bi-directional rank & role mappings</span>
+                            </div>
+                        </a>
+                        <a href="/docs#leveling" class="dropdown-item">
+                            <i class="fas fa-trophy"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Leveling & Progression</span>
+                                <span class="dropdown-desc">Custom rank cards, XP & voice rewards</span>
+                            </div>
+                        </a>
+                        <a href="/docs#safety" class="dropdown-item">
+                            <i class="fas fa-shield-virus"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">AutoMod & Threat Shield</span>
+                                <span class="dropdown-desc">Sub-4ms regex spam & phishing defense</span>
+                            </div>
+                        </a>
+                        <a href="/docs#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Command Reference</span>
+                                <span class="dropdown-desc">Complete parameters & permissions table</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Legal Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/legal" class="nav-dropdown-trigger">
+                        <i class="fas fa-shield-alt"></i> Legal <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/legal#terms" class="dropdown-item">
+                            <i class="fas fa-file-contract"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Terms of Service</span>
+                                <span class="dropdown-desc">Rules, warranties & acceptable usage</span>
+                            </div>
+                        </a>
+                        <a href="/legal#privacy" class="dropdown-item">
+                            <i class="fas fa-user-shield"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Privacy Policy</span>
+                                <span class="dropdown-desc">Data collection, GDPR & COPPA compliance</span>
+                            </div>
+                        </a>
+                        <a href="/legal#roblox" class="dropdown-item">
+                            <i class="fas fa-lock"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Security & Encryption</span>
+                                <span class="dropdown-desc">AES-256 session token safeguards</span>
+                            </div>
+                        </a>
+                        <a href="/legal#deletion" class="dropdown-item">
+                            <i class="fas fa-trash-alt"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Data Deletion Protocol</span>
+                                <span class="dropdown-desc">Right to erasure & automated purging</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="/status" class="nav-item-link">
+                    <i class="fas fa-chart-line"></i> Status
+                </a>
+
+                <a href="/team" class="nav-item-link">
+                    <i class="fas fa-users"></i> Team
+                </a>
+
+                <!-- Support Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/support" class="nav-dropdown-trigger">
+                        <i class="fas fa-headset"></i> Support <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/support" class="dropdown-item">
+                            <i class="fas fa-life-ring"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Help Center</span>
+                                <span class="dropdown-desc">Community assistance & contact</span>
+                            </div>
+                        </a>
+                        <a href="/billing-faq" class="dropdown-item">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Billing & Upgrades</span>
+                                <span class="dropdown-desc">Subscription FAQs & payment help</span>
+                            </div>
+                        </a>
+                        <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" class="dropdown-item">
+                            <i class="fab fa-discord"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Discord Community</span>
+                                <span class="dropdown-desc">Join our official server</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
+                <a href="/install" class="btn-nav-invite"><i class="fab fa-discord"></i> Invite Bot</a>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle navigation drawer">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
         </div>
     </header>
 
-    <div class="container">
-        <h1 style="margin-bottom: 20px;">The Aura Neural Engine</h1>
-        <p class="subtitle" style="max-width: 800px; margin: 0 auto 50px;">Nora is not just another bot with an API key. We are building a custom-tuned intelligence framework called <strong>Aura</strong>. Our mission is to create an AI that understands the nuances of community management, moderation, and human interaction while maintaining absolute privacy.</p>
-        
-        <div class="grid">
-            <div class="card">
-                <span class="badge local">NORA'S PERSONAL CORE</span>
-                <h2>Aura V10 (Local)</h2>
-                <p>This is the model we are building personally. It is a custom-tuned 1.8B parameter engine that runs on our own hardware.</p>
-                <ul>
-                    <li><strong>Privacy:</strong> Runs 100% locally on bare metal.</li>
-                    <li><strong>Speed:</strong> Near-instant response times without API latency.</li>
-                    <li><strong>Nuance:</strong> Trained specifically on Discord-style interactions.</li>
-                    <li><strong>Security:</strong> Your data never leaves our secure local environment.</li>
-                </ul>
+    <main class="ai-wrapper">
+        <div class="container">
+            <div class="ai-hero">
+                <div class="ai-badge">
+                    <i class="fas fa-brain"></i> Neural Intelligence Engine
+                </div>
+                <h1>The Aura Neural Architecture</h1>
+                <p>Nora is not just another wrapper. We operate a hybrid intelligence architecture combining our dedicated on-premise <strong>Aura V10</strong> engine with multi-modal cloud inference.</p>
             </div>
 
-            <div class="card">
-                <span class="badge cloud">MULTIMODAL VISION</span>
-                <h2>Gemini 1.5 Flash</h2>
-                <p>Our high-speed cloud engine for tasks that require visual understanding or extreme context windows.</p>
-                <ul>
-                    <li>Deep image and visual context analysis.</li>
-                    <li>Massive context window for long conversations.</li>
-                    <li>Highly efficient for general knowledge queries.</li>
-                    <li>Used as a powerful fallback for complex tasks.</li>
-                </ul>
-            </div>
-            
-            <div class="card">
-                <span class="badge cloud">ANALYTICAL LOGIC</span>
-                <h2>GPT-4o Mini</h2>
-                <p>A specialized engine used when extreme reasoning or strict persona adherence is required.</p>
-                <ul>
-                    <li>Advanced contextual awareness and logic.</li>
-                    <li>Strict persona alignment for specialized modules.</li>
-                    <li>High-tier reasoning for complex moderation scenarios.</li>
-                </ul>
+            <div class="ai-grid">
+                <!-- Aura V10 -->
+                <div class="ai-card">
+                    <span class="ai-card-tag local"><i class="fas fa-server"></i> NORA CORE ENGINE</span>
+                    <h2>Aura V10 (Local)</h2>
+                    <p>Our fine-tuned 1.8B parameter engine operating directly on dedicated bare-metal hardware for ultra-low latency.</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> <strong>Absolute Privacy:</strong> Zero cloud telemetry or third-party logging.</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Sub-100ms Inference:</strong> Lightning response cycles on Discord chat.</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Domain Specialization:</strong> Trained on Discord moderation heuristics.</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Bare-Metal Safety:</strong> Offline fault-tolerant execution.</li>
+                    </ul>
+                </div>
+
+                <!-- Gemini 1.5 Flash -->
+                <div class="ai-card">
+                    <span class="ai-card-tag cloud"><i class="fas fa-eye"></i> MULTIMODAL VISION</span>
+                    <h2>Gemini 1.5 Flash</h2>
+                    <p>High-throughput cloud engine utilized for massive context windows, document synthesis, and visual media analysis.</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Deep screenshot & image OCR threat parsing.</li>
+                        <li><i class="fas fa-check-circle"></i> 1M+ token context window for prolonged guild history.</li>
+                        <li><i class="fas fa-check-circle"></i> High-speed general knowledge verification.</li>
+                        <li><i class="fas fa-check-circle"></i> Adaptive fallback for complex analytical queries.</li>
+                    </ul>
+                </div>
+
+                <!-- GPT-4o Mini -->
+                <div class="ai-card">
+                    <span class="ai-card-tag logic"><i class="fas fa-microchip"></i> LOGICAL REASONING</span>
+                    <h2>GPT-4o Mini</h2>
+                    <p>Analytical engine engaged for multi-turn conversational reasoning, roleplay adherence, and complex rule evaluation.</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> High-precision contextual classification and sentiment analysis.</li>
+                        <li><i class="fas fa-check-circle"></i> Strict persona alignment for custom bot personalities.</li>
+                        <li><i class="fas fa-check-circle"></i> Advanced rule parsing for automated support tickets.</li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('mobile-nav-toggle');
-            const closeBtn = document.getElementById('mobile-nav-close');
-            const overlay = document.getElementById('mobile-nav-overlay');
+    </main>
 
-            if (toggleBtn && overlay) {
-                toggleBtn.addEventListener('click', () => overlay.classList.add('open'));
+    <!-- Unified Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="brand">
+                        <img src="nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px;">
+                        <span>Nora Studio</span>
+                    </a>
+                    <p>The next-generation Discord infrastructure bot powering automation, Roblox synchronization, moderation, and community engagement.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/docs">Documentation</a></li>
+                        <li><a href="/dashboard">Web Dashboard</a></li>
+                        <li><a href="/status">Systems Status</a></li>
+                        <li><a href="/team">Team & Staff</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support & Help</h4>
+                    <ul>
+                        <li><a href="/support">Support Hub</a></li>
+                        <li><a href="/billing-faq">Billing FAQ</a></li>
+                        <li><a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener">Discord Server</a></li>
+                        <li><a href="https://github.com/Vaztinix/nora-studio/issues" target="_blank" rel="noopener">GitHub Issues</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal & Trust</h4>
+                    <ul>
+                        <li><a href="/legal#terms">Terms of Service</a></li>
+                        <li><a href="/legal#privacy">Privacy Policy</a></li>
+                        <li><a href="/legal#roblox">Roblox Compliance</a></li>
+                        <li><a href="/legal#deletion">Data Erasure</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>&copy; 2026 Nora Studio. All rights reserved. Built with precision for modern Discord communities.</div>
+                <div>Server Time: <span id="server-time">UTC Live</span></div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (drawer && backdrop) {
+                const isOpen = drawer.classList.contains('open');
+                if (isOpen) {
+                    drawer.classList.remove('open');
+                    backdrop.classList.remove('open');
+                    document.body.style.overflow = '';
+                } else {
+                    drawer.classList.add('open');
+                    backdrop.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
             }
-            if (closeBtn && overlay) {
-                closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+        }
+
+        function toggleMobileAccordion(headerElem) {
+            const accordion = headerElem.closest('.mobile-accordion');
+            if (accordion) {
+                accordion.classList.toggle('open');
             }
-            if (overlay) {
-                overlay.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => overlay.classList.remove('open'));
-                });
+        }
+
+        function updateClock() {
+            const el = document.getElementById('server-time');
+            if (el) {
+                el.innerText = new Date().toUTCString().replace('GMT', 'UTC');
             }
-        });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
     </script>
 </body>
 </html>

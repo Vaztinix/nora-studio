@@ -3,20 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora - Page Not Found</title>
+    <title>404 — Page Not Found | Nora Studio</title>
+    <meta name="description" content="The requested page does not exist on Nora Studio.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
-            --site-bg: #070706;
-            --primary: #FFFFFF;
-            --primary-hover: #EEEEEC;
-            --border: #191918;
-            --border-hover: #222221;
-            --muted: #9D9D9D;
-            --card-bg: #111110;
-            --text: #EEEEEC;
+            --bg-base: #080A10;
+            --bg-surface: #0E111D;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(88, 101, 242, 0.4);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --blurple: #5865F2;
+            --blurple-hover: #4752C4;
+            --blurple-glow: rgba(88, 101, 242, 0.35);
+            --radius-md: 14px;
+            --radius-lg: 24px;
+            --radius-full: 9999px;
+            --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -26,32 +37,34 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--site-bg);
-            color: var(--text);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
-            overflow-x: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             padding: 24px;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.2) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
             background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
         .error-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 50px 30px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 50px 36px;
             text-align: center;
-            max-width: 500px;
+            max-width: 540px;
             width: 100%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(88, 101, 242, 0.15);
             animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            backdrop-filter: blur(20px);
         }
 
         @keyframes floatUp {
@@ -60,74 +73,124 @@
         }
 
         .code {
-            font-size: 7rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(5rem, 12vw, 6.5rem);
             font-weight: 800;
             line-height: 1;
-            color: var(--primary);
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #818CF8 60%, var(--blurple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
             letter-spacing: -3px;
         }
 
         h1 {
             font-size: 1.8rem;
             margin-bottom: 12px;
-            color: white;
-            font-weight: 700;
+            color: #FFFFFF;
+            font-weight: 800;
+            letter-spacing: -0.02em;
         }
 
         p {
-            color: var(--muted);
+            color: var(--text-muted);
             line-height: 1.6;
-            margin-bottom: 30px;
-            font-size: 1rem;
+            margin-bottom: 28px;
+            font-size: 0.96rem;
         }
 
-        .btn {
-            padding: 12px 28px;
-            border-radius: 999px;
-            font-weight: 600;
+        .actions-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            padding: 13px 28px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
             border: none;
             cursor: pointer;
-            transition: .2s;
+            transition: var(--transition-smooth);
             text-decoration: none;
             font-size: 0.95rem;
-            display: inline-block;
-            background: var(--primary);
-            color: #0b0b0a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--blurple);
+            color: #FFFFFF;
+            box-shadow: 0 4px 18px var(--blurple-glow);
+        }
+        .btn-primary:hover {
+            background: var(--blurple-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--blurple-glow);
         }
 
-        .btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
+        .quick-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 14px;
+        }
+        .quick-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .quick-nav a:hover {
+            color: #FFFFFF;
         }
 
         .countdown {
-            margin-top: 25px;
-            font-size: 0.85rem;
-            color: var(--muted);
+            margin-top: 24px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
         }
         .countdown span {
-            color: white;
+            color: #FFFFFF;
             font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         @media (max-width: 600px) {
-            body { padding: 14px; }
-            .error-card { padding: 36px 20px; border-radius: 18px; }
-            .code { font-size: 5rem; }
+            body { padding: 16px; }
+            .error-card { padding: 36px 20px; border-radius: 20px; }
             h1 { font-size: 1.5rem; }
             p { font-size: 0.9rem; }
-            .btn { width: 100%; padding: 14px; }
         }
     </style>
 </head>
 <body>
     <div class="error-card">
         <div class="code">404</div>
-        <h1>Off the Grid</h1>
-        <p>It seems you've wandered into uncharted territory. The coordinates you requested do not exist in Nora's mainframe.</p>
-        <a href="/" class="btn">Return Home</a>
-        <div class="countdown">Redirecting in <span id="secs">10</span> seconds...</div>
+        <h1>Off the Telemetry Grid</h1>
+        <p>The coordinates you requested do not exist or have been relocated within Nora's mainframe network.</p>
+        
+        <div class="actions-group">
+            <a href="/" class="btn-primary"><i class="fas fa-house"></i> Return to Homepage</a>
+            <div class="quick-nav">
+                <a href="/docs"><i class="fas fa-book"></i> Docs</a>
+                <a href="/dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
+                <a href="/status"><i class="fas fa-chart-line"></i> Status</a>
+                <a href="/support"><i class="fas fa-headset"></i> Support</a>
+                <a href="/team"><i class="fas fa-users"></i> Team</a>
+            </div>
+        </div>
+
+        <div class="countdown">
+            Auto-routing home in <span id="secs">10</span> seconds...
+        </div>
     </div>
 
     <script>
@@ -135,7 +198,7 @@
         const countdownEl = document.getElementById('secs');
         const interval = setInterval(() => {
             seconds--;
-            countdownEl.textContent = seconds;
+            if (countdownEl) countdownEl.textContent = seconds;
             if (seconds <= 0) {
                 clearInterval(interval);
                 window.location.href = "/";

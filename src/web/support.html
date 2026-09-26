@@ -3,24 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora Studio | Support Center</title>
-    <meta name="description" content="Get support, join the official community, read documentation, or report issues for Nora Studio.">
+    <title>Support Center & Helpdesk — Nora Studio</title>
+    <meta name="description" content="Get official support for Nora Discord bot, browse troubleshooting guides, report bugs, and join our active developer community.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Modern Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
-            --site-bg: #070706;
-            --primary: #FFFFFF;
-            --primary-hover: #EEEEEC;
-            --border: #191918;
-            --border-hover: #222221;
-            --muted: #9D9D9D;
-            --card-bg: #111110;
-            --text: #EEEEEC;
-            --radius: 12px;
-            --discord-blurple: #5865F2;
-            --discord-blurple-hover: #4752C4;
+            --bg-base: #080A10;
+            --bg-surface: #0E111D;
+            --bg-surface-elevated: #15192B;
+            --bg-card: rgba(14, 17, 29, 0.7);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(88, 101, 242, 0.4);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --blurple: #5865F2;
+            --blurple-hover: #4752C4;
+            --blurple-glow: rgba(88, 101, 242, 0.35);
+            --emerald: #10B981;
+            --rose: #F43F5E;
+            --amber: #F59E0B;
+            --cyan: #06B6D4;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+            --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -30,281 +44,260 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--site-bg);
-            color: var(--text);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
-            overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
             background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1140px;
             margin: 0 auto;
             padding: 0 24px;
             width: 100%;
         }
 
-        /* Header / Navbar */
+        /* ===== UNIFIED TOP NAVIGATION & DROPDOWNS ===== */
         header {
             position: sticky;
             top: 0;
-            z-index: 100;
-            backdrop-filter: blur(12px);
-            background: rgba(7, 7, 6, 0.8);
-            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(8, 10, 16, 0.85);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: var(--transition-smooth);
         }
 
         .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 70px;
+            height: 72px;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1.15rem;
-            color: white;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.22rem;
+            color: #FFFFFF;
             text-decoration: none;
+            letter-spacing: -0.02em;
         }
-
         .brand img {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            box-shadow: 0 0 16px rgba(88, 101, 242, 0.35);
         }
 
         .nav-links {
             display: flex;
-            gap: 28px;
+            align-items: center;
+            gap: 16px;
+            list-style: none;
         }
 
-        .nav-links a {
-            font-weight: 500;
-            color: var(--text);
-            text-decoration: none;
-            transition: color 0.2s ease;
-            opacity: 0.8;
-            font-size: 0.95rem;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-            opacity: 1;
-        }
-
-        .btn-header {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 999px;
-            text-decoration: none;
+        .nav-item-link, .nav-dropdown-trigger {
+            font-size: 0.92rem;
             font-weight: 600;
-            font-size: 0.85rem;
-            transition: 0.2s;
-        }
-
-        .btn-header:hover {
-            background: var(--border-hover);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        /* Support Wrapper */
-        .support-wrapper {
-            margin: 6rem auto;
-            flex-grow: 1;
-            width: 100%;
-        }
-
-        .page-hero {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .page-hero h1 {
-            font-size: clamp(2.2rem, 5vw, 3.5rem);
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -1.5px;
-            color: white;
-            margin-bottom: 15px;
-        }
-
-        .page-hero p {
-            color: var(--muted);
-            font-size: 1.15rem;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 4rem;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 40px 30px;
-            transition: transform 0.2s, border-color 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--border-hover);
-        }
-
-        .card-icon {
-            font-size: 2.2rem;
-            color: var(--primary);
-        }
-
-        .card h3 {
-            color: white;
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .card p {
-            color: var(--muted);
-            line-height: 1.6;
-            font-size: 0.95rem;
-            flex-grow: 1;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
+            color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.95rem;
-            transition: 0.2s ease-in-out;
+            transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 10px;
             cursor: pointer;
-            border: none;
-            width: 100%;
+            user-select: none;
+        }
+        .nav-item-link:hover, .nav-dropdown-trigger:hover,
+        .nav-item-link.active, .nav-dropdown-trigger.active {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: #070706;
+        .nav-dropdown-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
-        .btn-primary:hover {
-            background: var(--primary-hover);
+        .nav-arrow {
+            font-size: 0.72rem;
+            transition: transform 0.25s ease, color 0.25s ease;
+            opacity: 0.7;
         }
 
-        .btn-discord {
-            background: var(--discord-blurple);
-            color: white;
+        .nav-dropdown-wrapper:hover .nav-arrow {
+            transform: rotate(180deg);
+            opacity: 1;
+            color: var(--blurple);
         }
 
-        .btn-discord:hover {
-            background: var(--discord-blurple-hover);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: var(--border-hover);
-        }
-
-        /* FAQ Section */
-        .faq-section {
-            margin-top: 5rem;
-        }
-
-        .faq-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .faq-grid {
+        .nav-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            min-width: 300px;
+            background: rgba(14, 16, 26, 0.96);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(88, 101, 242, 0.15);
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1050;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            max-width: 800px;
-            margin: 0 auto;
+            gap: 4px;
         }
 
-        .faq-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
+        .nav-dropdown-wrapper:hover .nav-dropdown-menu,
+        .nav-dropdown-wrapper:focus-within .nav-dropdown-menu {
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
         }
 
-        .faq-item h4 {
-            color: white;
-            font-size: 1.1rem;
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #E2E8F0;
+            transition: all 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background: rgba(88, 101, 242, 0.12);
+            transform: translateX(3px);
+        }
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+            color: #818CF8;
+            flex-shrink: 0;
+        }
+        .dropdown-item-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .dropdown-title {
+            font-size: 0.88rem;
             font-weight: 700;
-            margin-bottom: 10px;
+            color: #FFFFFF;
+        }
+        .dropdown-desc {
+            font-size: 0.76rem;
+            color: #94A3B8;
+            line-height: 1.3;
         }
 
-        .faq-item p {
-            color: var(--muted);
-            line-height: 1.6;
-            font-size: 0.95rem;
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        /* Mobile Responsive Upgrades */
+        .btn-nav-dashboard {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-dashboard:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-nav-invite {
+            background: var(--blurple);
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 18px var(--blurple-glow);
+        }
+        .btn-nav-invite:hover {
+            background: var(--blurple-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--blurple-glow);
+        }
+
         .mobile-menu-btn {
             display: none;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: #ffffff;
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             cursor: pointer;
+            transition: var(--transition-smooth);
         }
 
+        /* ===== MOBILE DRAWER ===== */
         .mobile-drawer {
             position: fixed;
             top: 0;
-            right: -300px;
-            width: 280px;
+            right: -320px;
+            width: 300px;
             height: 100vh;
-            background: rgba(10, 10, 12, 0.98);
-            backdrop-filter: blur(20px);
-            border-left: 1px solid var(--border);
+            background: rgba(10, 12, 20, 0.98);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-left: 1px solid var(--border-subtle);
             z-index: 10000;
-            padding: 24px 20px;
+            padding: 22px 18px;
             display: flex;
             flex-direction: column;
             gap: 16px;
             box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
             transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .mobile-drawer.open { right: 0; }
         .mobile-drawer-backdrop {
@@ -313,99 +306,677 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             z-index: 9999;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
         .mobile-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .mobile-drawer-close {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
         .mobile-drawer-nav { display: flex; flex-direction: column; gap: 8px; }
-        .mobile-drawer-nav a {
+        .mobile-nav-link {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 14px;
-            border-radius: 10px;
-            color: var(--muted);
+            padding: 11px 14px;
+            border-radius: 12px;
+            color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
             font-size: 0.92rem;
+            transition: all 0.2s ease;
             background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
         }
-        .mobile-drawer-nav a:hover, .mobile-drawer-nav a.active {
+        .mobile-nav-link:hover, .mobile-nav-link.active {
             color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-accordion {
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .mobile-accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mobile-accordion-header div { display: flex; align-items: center; gap: 12px; }
+        .mobile-accordion-header .acc-arrow {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+        .mobile-accordion.open .mobile-accordion-header .acc-arrow {
+            transform: rotate(180deg);
+            color: var(--blurple);
+        }
+        .mobile-accordion-body {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px 12px 10px 36px;
+        }
+        .mobile-accordion.open .mobile-accordion-body { display: flex; }
+        .mobile-sublink {
+            padding: 7px 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-sublink:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mobile-drawer-actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .mobile-drawer-actions a {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        /* ===== SUPPORT HERO ===== */
+        .support-wrapper {
+            padding: 50px 0 80px 0;
+            flex-grow: 1;
+        }
+
+        .support-hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .support-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 16px;
+            background: rgba(88, 101, 242, 0.12);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            border-radius: var(--radius-full);
+            color: #A5B4FC;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 16px;
+        }
+        .support-hero h1 {
+            font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+        }
+        .support-hero p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* ===== SUPPORT CHANNELS GRID ===== */
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .support-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 36px 30px;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            backdrop-filter: blur(16px);
+        }
+        .support-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(88, 101, 242, 0.1);
+        }
+
+        .card-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-md);
+            background: rgba(88, 101, 242, 0.12);
+            border: 1px solid rgba(88, 101, 242, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--blurple);
+            margin-bottom: 4px;
+        }
+        .card-icon-box.emerald {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.25);
+            color: var(--emerald);
+        }
+        .card-icon-box.rose {
+            background: rgba(244, 63, 94, 0.12);
+            border-color: rgba(244, 63, 94, 0.25);
+            color: var(--rose);
+        }
+
+        .support-card h3 {
+            color: #FFFFFF;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .support-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.94rem;
+            flex-grow: 1;
+        }
+
+        .btn-card {
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.92rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-card-discord {
+            background: var(--blurple);
+            color: #FFFFFF;
+            box-shadow: 0 4px 16px var(--blurple-glow);
+        }
+        .btn-card-discord:hover {
+            background: var(--blurple-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--blurple-glow);
+        }
+
+        .btn-card-docs {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+        }
+        .btn-card-docs:hover {
             background: rgba(255, 255, 255, 0.08);
+            border-color: var(--emerald);
+            transform: translateY(-2px);
+        }
+
+        .btn-card-github {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+        }
+        .btn-card-github:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--rose);
+            transform: translateY(-2px);
+        }
+
+        /* ===== FAQ SECTION ===== */
+        .faq-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 44px 36px;
+            backdrop-filter: blur(20px);
+        }
+
+        .faq-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+        .faq-header h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+        .faq-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .faq-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 20px 24px;
+            transition: var(--transition-smooth);
+        }
+        .faq-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .faq-item h4 {
+            color: #FFFFFF;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .faq-item h4 i {
+            color: var(--blurple);
+            font-size: 0.9rem;
+        }
+
+        .faq-item p {
+            color: var(--text-muted);
+            line-height: 1.65;
+            font-size: 0.92rem;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 50px 0 30px 0;
+            background: rgba(8, 10, 16, 0.95);
+            margin-top: auto;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin-top: 12px;
+            max-width: 320px;
+        }
+        .footer-col h4 {
+            color: #FFFFFF;
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .footer-col a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+        }
+        .footer-col a:hover {
+            color: #FFFFFF;
+            transform: translateX(3px);
+        }
+        .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            gap: 16px;
         }
 
         @media (max-width: 768px) {
             .nav-links { display: none !important; }
-            .btn-header { display: none !important; }
             .mobile-menu-btn { display: flex !important; }
-            .container { padding: 0 16px !important; }
-            .support-wrapper { margin: 2.5rem auto !important; }
-            .page-hero { margin-bottom: 2.5rem !important; }
-            .page-hero h1 { font-size: 2rem !important; }
-            .page-hero p { font-size: 0.95rem !important; }
-            .grid { grid-template-columns: 1fr !important; gap: 16px !important; margin-bottom: 2.5rem !important; }
-            .card { padding: 24px 20px !important; }
-            .faq-section { margin-top: 3rem !important; }
-            .faq-item { padding: 18px 16px !important; }
-        }
-
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 30px 0;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.85rem;
-            background: rgba(7, 7, 6, 0.9);
-            margin-top: auto;
+            .btn-nav-invite { display: none !important; }
+            .btn-nav-dashboard { padding: 7px 14px !important; font-size: 0.82rem !important; }
+            .support-hero h1 { font-size: 1.85rem !important; }
+            .support-grid { grid-template-columns: 1fr !important; }
+            .faq-section { padding: 26px 18px !important; }
+            .footer-grid { grid-template-columns: 1fr !important; }
+            .footer-bottom { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleSupportMenu()"></div>
+    <!-- Mobile Navigation Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Navigation Drawer -->
     <aside class="mobile-drawer" id="mobile-drawer">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+        <div class="mobile-drawer-header">
             <div class="brand">
-                <img src="nora.png" alt="Nora Logo" style="width: 28px; height: 28px;">
+                <img src="nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px; border-radius: 8px;">
                 <span>Nora Studio</span>
             </div>
-            <button onclick="toggleSupportMenu()" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+            <button class="mobile-drawer-close" onclick="toggleMobileMenu()" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         <nav class="mobile-drawer-nav">
-            <a href="/"><i class="fas fa-home"></i> Home</a>
-            <a href="/dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
-            <a href="/install"><i class="fab fa-discord"></i> Invite Bot</a>
-            <a href="/docs"><i class="fas fa-book"></i> Documentation</a>
-            <a href="/support" class="active"><i class="fas fa-headset"></i> Support Center</a>
-            <a href="/team"><i class="fas fa-users"></i> Team</a>
-            <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
+            <!-- Home Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-home" style="color: var(--blurple); width: 20px;"></i> Home</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/#hero" class="mobile-sublink"><i class="fas fa-sparkles"></i> Overview</a>
+                    <a href="/#features" class="mobile-sublink"><i class="fas fa-layer-group"></i> Features & Architecture</a>
+                    <a href="/#commands" class="mobile-sublink"><i class="fas fa-terminal"></i> Commands Explorer</a>
+                    <a href="/#pricing" class="mobile-sublink"><i class="fas fa-crown"></i> Pricing Tiers</a>
+                    <a href="/#faq" class="mobile-sublink"><i class="fas fa-question-circle"></i> FAQ</a>
+                </div>
+            </div>
+
+            <!-- Docs Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-book" style="color: var(--emerald); width: 20px;"></i> Documentation</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/docs" class="mobile-sublink"><i class="fas fa-book-open"></i> Docs Overview</a>
+                    <a href="/docs#quickstart" class="mobile-sublink"><i class="fas fa-rocket"></i> Quickstart Guide</a>
+                    <a href="/docs#topgg" class="mobile-sublink"><i class="fas fa-chart-line"></i> Top.gg Multi-Bot Tracker</a>
+                    <a href="/docs#roblox" class="mobile-sublink"><i class="fas fa-cubes"></i> Roblox Group Sync</a>
+                    <a href="/docs#leveling" class="mobile-sublink"><i class="fas fa-trophy"></i> Leveling & XP</a>
+                    <a href="/docs#safety" class="mobile-sublink"><i class="fas fa-shield-virus"></i> AutoMod Shield</a>
+                    <a href="/docs#commands" class="mobile-sublink"><i class="fas fa-terminal"></i> Full Command Catalog</a>
+                </div>
+            </div>
+
+            <!-- Legal Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-shield-alt" style="color: #60a5fa; width: 20px;"></i> Legal & Privacy</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/legal#terms" class="mobile-sublink"><i class="fas fa-file-contract"></i> Terms of Service</a>
+                    <a href="/legal#privacy" class="mobile-sublink"><i class="fas fa-user-shield"></i> Privacy Policy</a>
+                    <a href="/legal#roblox" class="mobile-sublink"><i class="fas fa-lock"></i> Roblox Compliance</a>
+                    <a href="/legal#deletion" class="mobile-sublink"><i class="fas fa-trash-alt"></i> Data Deletion</a>
+                </div>
+            </div>
+
+            <a href="/status" class="mobile-nav-link"><i class="fas fa-chart-line" style="color: #10B981;"></i> Live Systems Status</a>
+            <a href="/team" class="mobile-nav-link"><i class="fas fa-users" style="color: #a78bfa;"></i> Meet Team & Staff</a>
+            
+            <!-- Support Accordion -->
+            <div class="mobile-accordion open">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-headset" style="color: var(--rose); width: 20px;"></i> Support</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/support" class="mobile-sublink active"><i class="fas fa-life-ring"></i> Support Hub</a>
+                    <a href="/billing-faq" class="mobile-sublink"><i class="fas fa-credit-card"></i> Billing FAQ</a>
+                    <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" class="mobile-sublink"><i class="fab fa-discord"></i> Official Discord</a>
+                </div>
+            </div>
         </nav>
-        <div style="margin-top: auto;">
-            <a href="/dashboard" class="btn btn-primary" style="text-align: center; width: 100%; box-sizing: border-box; padding: 12px; border-radius: 999px;">Open Dashboard</a>
+        <div class="mobile-drawer-actions">
+            <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Web Dashboard</a>
+            <a href="/install" class="btn-nav-invite"><i class="fab fa-discord"></i> Add to Discord</a>
         </div>
     </aside>
 
-    <header>
-        <div class="nav-container">
-            <a href="/" class="brand">
-                <img src="nora.png" alt="Nora Logo">
+    <!-- Sticky Header -->
+    <header id="main-header">
+        <div class="container nav-container">
+            <a href="/" class="brand" id="brand-logo">
+                <img src="nora.png" alt="Nora Studio Logo">
                 <span>Nora Studio</span>
             </a>
+            
             <nav class="nav-links">
-                <a href="/">Home</a>
-                <a href="/install">Invite</a>
-                <a href="/docs">Docs</a>
-                <a href="/dashboard">Dashboard</a>
-                <a href="/team">Team</a>
-                <a href="/legal">Legal</a>
+                <!-- Home Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/" class="nav-dropdown-trigger">
+                        <i class="fas fa-home"></i> Home <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#hero" class="dropdown-item">
+                            <i class="fas fa-sparkles"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Overview</span>
+                                <span class="dropdown-desc">Hero, live stats & telemetry</span>
+                            </div>
+                        </a>
+                        <a href="/#features" class="dropdown-item">
+                            <i class="fas fa-layer-group"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Features & Architecture</span>
+                                <span class="dropdown-desc">Group sync, Starboard v3.0 & AutoMod</span>
+                            </div>
+                        </a>
+                        <a href="/#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Commands Explorer</span>
+                                <span class="dropdown-desc">Searchable slash command catalog</span>
+                            </div>
+                        </a>
+                        <a href="/#pricing" class="dropdown-item">
+                            <i class="fas fa-crown"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Pricing Tiers</span>
+                                <span class="dropdown-desc">Server capacity & VIP expansion perks</span>
+                            </div>
+                        </a>
+                        <a href="/#faq" class="dropdown-item">
+                            <i class="fas fa-question-circle"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">FAQ</span>
+                                <span class="dropdown-desc">Frequently asked community questions</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Docs Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/docs" class="nav-dropdown-trigger">
+                        <i class="fas fa-book"></i> Docs <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/docs#quickstart" class="dropdown-item">
+                            <i class="fas fa-rocket"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Quickstart Setup</span>
+                                <span class="dropdown-desc">60-second onboarding & setup wizard</span>
+                            </div>
+                        </a>
+                        <a href="/docs#topgg" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Top.gg Tracker & Rewards</span>
+                                <span class="dropdown-desc">Multi-bot vote rewards & webhook pipeline</span>
+                            </div>
+                        </a>
+                        <a href="/docs#roblox" class="dropdown-item">
+                            <i class="fas fa-cubes"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Roblox Group Sync</span>
+                                <span class="dropdown-desc">Bi-directional rank & role mappings</span>
+                            </div>
+                        </a>
+                        <a href="/docs#leveling" class="dropdown-item">
+                            <i class="fas fa-trophy"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Leveling & Progression</span>
+                                <span class="dropdown-desc">Custom rank cards, XP & voice rewards</span>
+                            </div>
+                        </a>
+                        <a href="/docs#safety" class="dropdown-item">
+                            <i class="fas fa-shield-virus"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">AutoMod & Threat Shield</span>
+                                <span class="dropdown-desc">Sub-4ms regex spam & phishing defense</span>
+                            </div>
+                        </a>
+                        <a href="/docs#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Command Reference</span>
+                                <span class="dropdown-desc">Complete parameters & permissions table</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Legal Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/legal" class="nav-dropdown-trigger">
+                        <i class="fas fa-shield-alt"></i> Legal <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/legal#terms" class="dropdown-item">
+                            <i class="fas fa-file-contract"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Terms of Service</span>
+                                <span class="dropdown-desc">Rules, warranties & acceptable usage</span>
+                            </div>
+                        </a>
+                        <a href="/legal#privacy" class="dropdown-item">
+                            <i class="fas fa-user-shield"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Privacy Policy</span>
+                                <span class="dropdown-desc">Data collection, GDPR & COPPA compliance</span>
+                            </div>
+                        </a>
+                        <a href="/legal#roblox" class="dropdown-item">
+                            <i class="fas fa-lock"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Security & Encryption</span>
+                                <span class="dropdown-desc">AES-256 session token safeguards</span>
+                            </div>
+                        </a>
+                        <a href="/legal#deletion" class="dropdown-item">
+                            <i class="fas fa-trash-alt"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Data Deletion Protocol</span>
+                                <span class="dropdown-desc">Right to erasure & automated purging</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="/status" class="nav-item-link">
+                    <i class="fas fa-chart-line"></i> Status
+                </a>
+
+                <a href="/team" class="nav-item-link">
+                    <i class="fas fa-users"></i> Team
+                </a>
+
+                <!-- Support Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/support" class="nav-dropdown-trigger active">
+                        <i class="fas fa-headset"></i> Support <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/support" class="dropdown-item">
+                            <i class="fas fa-life-ring"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Help Center</span>
+                                <span class="dropdown-desc">Community assistance & contact</span>
+                            </div>
+                        </a>
+                        <a href="/billing-faq" class="dropdown-item">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Billing & Upgrades</span>
+                                <span class="dropdown-desc">Subscription FAQs & payment help</span>
+                            </div>
+                        </a>
+                        <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" class="dropdown-item">
+                            <i class="fab fa-discord"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Discord Community</span>
+                                <span class="dropdown-desc">Join our official server</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </nav>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <a href="/dashboard" class="btn-header">Open Dashboard</a>
-                <button class="mobile-menu-btn" onclick="toggleSupportMenu()" aria-label="Toggle navigation menu">
+
+            <div class="nav-actions">
+                <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
+                <a href="/install" class="btn-nav-invite"><i class="fab fa-discord"></i> Invite Bot</a>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle navigation drawer">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
@@ -414,70 +985,129 @@
 
     <main class="support-wrapper">
         <div class="container">
-            <section class="page-hero">
-                <h1>Nora Support Center</h1>
-                <p>Welcome to our support operations center. Get help configuring features, resolving sync errors, or joining our developer community.</p>
+            <section class="support-hero">
+                <div class="support-badge">
+                    <i class="fas fa-headset"></i> 24/7 Support Operations
+                </div>
+                <h1>How can we help your server?</h1>
+                <p>Browse our multi-tiered support channels, get direct assistance from staff in Discord, or submit issue tickets directly to our engineering repo.</p>
             </section>
 
-            <div class="grid">
+            <div class="support-grid">
                 <!-- Discord Support Card -->
-                <div class="card">
-                    <div class="card-icon"><i class="fab fa-discord"></i></div>
-                    <h3>Join Official Discord</h3>
-                    <p>Connect directly with the development team and community moderators. Open private tickets on our server for direct guild debugging.</p>
-                    <a href="https://discord.gg/Uxb2tNAxtp" class="btn btn-discord" target="_blank">
-                        <i class="fab fa-discord"></i> Join Server
+                <div class="support-card">
+                    <div class="card-icon-box">
+                        <i class="fab fa-discord"></i>
+                    </div>
+                    <h3>Discord Community Support</h3>
+                    <p>Join thousands of guild administrators, access real-time status announcements, ask questions in <code>#support</code>, and open private staff tickets.</p>
+                    <a href="https://discord.gg/wKkG9zJj" class="btn-card btn-card-discord" target="_blank" rel="noopener">
+                        <i class="fab fa-discord"></i> Join Official Server
                     </a>
                 </div>
 
                 <!-- Documentation Card -->
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-book"></i></div>
-                    <h3>Read Documentation</h3>
-                    <p>Review standard configurations, custom commands template variables, warn subcommands setup, and active guild parameters.</p>
-                    <a href="/docs" class="btn btn-primary">
-                        <i class="fas fa-file-alt"></i> Browse Docs
+                <div class="support-card">
+                    <div class="card-icon-box emerald">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>Interactive Documentation</h3>
+                    <p>Read step-by-step guides for Top.gg vote tracking, bi-directional Roblox group roles, Starboard v3.0, XP formulas, and custom autoresponder triggers.</p>
+                    <a href="/docs" class="btn-card btn-card-docs">
+                        <i class="fas fa-file-lines"></i> Browse Documentation
                     </a>
                 </div>
 
                 <!-- GitHub Issues Card -->
-                <div class="card">
-                    <div class="card-icon"><i class="fab fa-github"></i></div>
-                    <h3>Report a Bug</h3>
-                    <p>Encountered an issue with level XP rewards, Roblox sync pools, or dashboard updates? Open an issue directly on GitHub.</p>
-                    <a href="https://github.com/Vaztinix/nora-studio/issues" class="btn btn-secondary" target="_blank">
-                        <i class="fab fa-github"></i> Open Issue
+                <div class="support-card">
+                    <div class="card-icon-box rose">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <h3>GitHub Issue Tracker</h3>
+                    <p>Encountered a bug or want to request a new module feature? Submit an issue directly to our core open repository with stack logs.</p>
+                    <a href="https://github.com/Vaztinix/nora-studio/issues" class="btn-card btn-card-github" target="_blank" rel="noopener">
+                        <i class="fab fa-github"></i> Open Bug Ticket
                     </a>
                 </div>
             </div>
 
             <!-- FAQ Section -->
             <section class="faq-section">
-                <h2 class="faq-title">Frequently Asked Questions</h2>
+                <div class="faq-header">
+                    <h2>Frequently Asked Questions</h2>
+                    <p>Quick answers to common questions regarding setup, permissions, and synchronization.</p>
+                </div>
                 <div class="faq-grid">
                     <div class="faq-item">
-                        <h4>How fast do Roblox verification updates sync?</h4>
-                        <p>For standard users, Roblox ranks and profile connections verify instantly via our custom validation codes. Rank synchronizations are executed on periodic checks. Premium guilds enjoy direct instant rank bindings.</p>
+                        <h4><i class="fas fa-circle-question"></i> How fast do Roblox verification updates sync?</h4>
+                        <p>Roblox profile connections verify instantly via our custom code verification protocol. Once connected, rank mappings synchronize automatically in real-time or when members execute <code>/verify update</code> or <code>/update</code> in your server.</p>
                     </div>
                     <div class="faq-item">
-                        <h4>Why isn't my custom autoresponder firing?</h4>
-                        <p>Check if the command card has "Ignore Server Staff & Bots" toggled on, or if you have configured allowed/ignored role filters that exclude your profile. Administrators can verify active rules in the dashboard settings panel.</p>
+                        <h4><i class="fas fa-circle-question"></i> Why isn't my custom autoresponder trigger firing?</h4>
+                        <p>Check if the command has "Ignore Bots & Staff" toggled on, or if you have configured allowed/ignored role filters that exclude your profile. Also ensure Nora has "Send Messages" and "Embed Links" permissions in the specific channel.</p>
                     </div>
                     <div class="faq-item">
-                        <h4>Can I delete all my stored community data?</h4>
-                        <p>Yes. In the interest of total data sovereignty and privacy, users can execute the `/mycard` command in Discord at any time and click the "Erase Data" button to instantly wipe their warnings, leveling stats, and verification mappings.</p>
+                        <h4><i class="fas fa-circle-question"></i> Can I delete all my stored community data?</h4>
+                        <p>Yes. Under our absolute privacy commitments, users can execute the <code>/mycard</code> command in Discord at any time and click the "Erase Data" button to instantly and permanently wipe their warnings, leveling stats, and verification mappings.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4><i class="fas fa-circle-question"></i> How does the Top.gg Multi-Bot Tracker work?</h4>
+                        <p>You can connect your own Top.gg bot webhook URL and authorization token in your server settings. Nora receives vote webhooks from Top.gg, calculates streaks and multipliers, and immediately grants custom roles and coins to your voters.</p>
                     </div>
                 </div>
             </section>
         </div>
     </main>
 
+    <!-- Unified Footer -->
     <footer>
         <div class="container">
-            &copy; 2026 Nora Studio. All rights reserved.
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="brand">
+                        <img src="nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px;">
+                        <span>Nora Studio</span>
+                    </a>
+                    <p>The next-generation Discord infrastructure bot powering automation, Roblox synchronization, moderation, and community engagement.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/docs">Documentation</a></li>
+                        <li><a href="/dashboard">Web Dashboard</a></li>
+                        <li><a href="/status">Systems Status</a></li>
+                        <li><a href="/team">Team & Staff</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support & Help</h4>
+                    <ul>
+                        <li><a href="/support">Support Hub</a></li>
+                        <li><a href="/billing-faq">Billing FAQ</a></li>
+                        <li><a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener">Discord Server</a></li>
+                        <li><a href="https://github.com/Vaztinix/nora-studio/issues" target="_blank" rel="noopener">GitHub Issues</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal & Trust</h4>
+                    <ul>
+                        <li><a href="/legal#terms">Terms of Service</a></li>
+                        <li><a href="/legal#privacy">Privacy Policy</a></li>
+                        <li><a href="/legal#roblox">Roblox Compliance</a></li>
+                        <li><a href="/legal#deletion">Data Erasure</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>&copy; 2026 Nora Studio. All rights reserved. Built with precision for modern Discord communities.</div>
+                <div>Server Time: <span id="server-time">UTC Live</span></div>
+            </div>
         </div>
+    </footer>
+
     <script>
-        function toggleSupportMenu() {
+        function toggleMobileMenu() {
             const drawer = document.getElementById('mobile-drawer');
             const backdrop = document.getElementById('mobile-drawer-backdrop');
             if (drawer && backdrop) {
@@ -493,6 +1123,23 @@
                 }
             }
         }
+
+        function toggleMobileAccordion(headerElem) {
+            const accordion = headerElem.closest('.mobile-accordion');
+            if (accordion) {
+                accordion.classList.toggle('open');
+            }
+        }
+
+        // Live footer clock
+        function updateClock() {
+            const el = document.getElementById('server-time');
+            if (el) {
+                el.innerText = new Date().toUTCString().replace('GMT', 'UTC');
+            }
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
     </script>
 </body>
 </html>

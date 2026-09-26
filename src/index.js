@@ -1274,20 +1274,7 @@ app.get('/favicon.ico', ipRateLimiter, (req, res) => {
 });
 
 app.get(['/me', '/me.html'], ipRateLimiter, (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
-    const distPath = path.join(__dirname, '../dist/me.html');
-    const webPath = path.join(__dirname, 'web/me.html');
-    const filePath = fs.existsSync(distPath) ? distPath : webPath;
-
-    if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.sendFile(filePath);
-    } else {
-        res.status(404).send('Profile page not found.');
-    }
+    res.redirect(301, '/team');
 });
 
 app.get(['/billing', '/billing-faq', '/billing-faq.html'], ipRateLimiter, (req, res) => {
@@ -3597,7 +3584,6 @@ Allow: /
 Allow: /team
 Allow: /docs
 Allow: /legal
-Allow: /me
 Allow: /install
 Sitemap: https://vaztinix.dev/sitemap.xml`);
 });

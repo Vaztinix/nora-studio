@@ -142,10 +142,11 @@
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 32px;
+            gap: 16px;
             list-style: none;
         }
-        .nav-links a {
+
+        .nav-item-link, .nav-dropdown-trigger {
             font-size: 0.92rem;
             font-weight: 600;
             color: var(--text-muted);
@@ -154,42 +155,106 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
         }
-        .nav-links a:hover {
+        .nav-item-link:hover, .nav-dropdown-trigger:hover,
+        .nav-item-link.active, .nav-dropdown-trigger.active {
             color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-dropdown-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .nav-arrow {
+            font-size: 0.72rem;
+            transition: transform 0.25s ease, color 0.25s ease;
+            opacity: 0.7;
+        }
+
+        .nav-dropdown-wrapper:hover .nav-arrow {
+            transform: rotate(180deg);
+            opacity: 1;
+            color: var(--blurple);
+        }
+
+        .nav-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            min-width: 300px;
+            background: rgba(14, 16, 26, 0.96);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(88, 101, 242, 0.15);
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-dropdown-wrapper:hover .nav-dropdown-menu,
+        .nav-dropdown-wrapper:focus-within .nav-dropdown-menu {
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #E2E8F0;
+            transition: all 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background: rgba(88, 101, 242, 0.12);
+            transform: translateX(3px);
+        }
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+            color: #818CF8;
+            flex-shrink: 0;
+        }
+        .dropdown-item-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .dropdown-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+        .dropdown-desc {
+            font-size: 0.76rem;
+            color: #94A3B8;
+            line-height: 1.3;
         }
 
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 14px;
-        }
-
-        .live-status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            color: #10B981;
-            padding: 6px 14px;
-            border-radius: var(--radius-full);
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-        }
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #10B981;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #10B981;
-            animation: pulseDot 2s infinite;
-        }
-        @keyframes pulseDot {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            gap: 12px;
         }
 
         .btn-nav-dashboard {
@@ -783,18 +848,19 @@
         .mobile-drawer {
             position: fixed;
             top: 0;
-            right: -320px;
-            width: 300px;
+            right: -340px;
+            width: 320px;
+            max-width: 88vw;
             height: 100vh;
             background: rgba(10, 12, 20, 0.98);
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px) saturate(180%);
             border-left: 1px solid var(--border-subtle);
             z-index: 10000;
-            padding: 24px 20px;
+            padding: 22px 18px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
             box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
             transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             overflow-y: auto;
@@ -809,7 +875,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             z-index: 9999;
@@ -825,7 +891,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 16px;
+            padding-bottom: 14px;
             border-bottom: 1px solid var(--border-subtle);
         }
         .mobile-drawer-close {
@@ -845,26 +911,84 @@
             flex-direction: column;
             gap: 8px;
         }
-        .mobile-drawer-nav a {
+        .mobile-nav-link {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 14px;
+            padding: 11px 14px;
             border-radius: 12px;
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             transition: all 0.2s ease;
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid transparent;
         }
-        .mobile-drawer-nav a:hover,
-        .mobile-drawer-nav a:active {
+        .mobile-nav-link:hover, .mobile-nav-link.active {
             color: #fff;
             background: rgba(255, 255, 255, 0.06);
             border-color: rgba(255, 255, 255, 0.1);
         }
+
+        .mobile-accordion {
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .mobile-accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mobile-accordion-header div {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .mobile-accordion-header .acc-arrow {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+        .mobile-accordion.open .mobile-accordion-header .acc-arrow {
+            transform: rotate(180deg);
+            color: var(--blurple);
+        }
+        .mobile-accordion-body {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px 12px 10px 36px;
+        }
+        .mobile-accordion.open .mobile-accordion-body {
+            display: flex;
+        }
+        .mobile-sublink {
+            padding: 7px 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-sublink:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
         .mobile-drawer-actions {
             margin-top: auto;
             display: flex;
@@ -1008,14 +1132,68 @@
             </button>
         </div>
         <nav class="mobile-drawer-nav">
-            <a href="#features" onclick="toggleMobileMenu()"><i class="fas fa-layer-group" style="color: var(--blurple);"></i> Features</a>
-            <a href="#commands" onclick="toggleMobileMenu()"><i class="fas fa-terminal" style="color: var(--cyan);"></i> Commands</a>
-            <a href="#pricing" onclick="toggleMobileMenu()"><i class="fas fa-tag" style="color: var(--amber);"></i> Pricing</a>
-            <a href="/docs"><i class="fas fa-book" style="color: var(--emerald);"></i> Documentation</a>
-            <a href="/status"><i class="fas fa-chart-line" style="color: #60a5fa;"></i> Systems Status</a>
-            <a href="/support"><i class="fas fa-headset" style="color: var(--rose);"></i> Support Center</a>
-            <a href="/team"><i class="fas fa-users" style="color: #a78bfa;"></i> Meet Team</a>
-            <a href="/legal"><i class="fas fa-shield-alt" style="color: var(--text-muted);"></i> Privacy & Terms</a>
+            <!-- Home Accordion -->
+            <div class="mobile-accordion open">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-home" style="color: var(--blurple); width: 20px;"></i> Home</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/#hero" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-sparkles"></i> Overview</a>
+                    <a href="/#features" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-layer-group"></i> Features & Architecture</a>
+                    <a href="/#commands" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-terminal"></i> Commands Explorer</a>
+                    <a href="/#pricing" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-crown"></i> Pricing Tiers</a>
+                    <a href="/#faq" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-question-circle"></i> FAQ</a>
+                </div>
+            </div>
+
+            <!-- Docs Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-book" style="color: var(--emerald); width: 20px;"></i> Documentation</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/docs" class="mobile-sublink"><i class="fas fa-book-open"></i> Docs Overview</a>
+                    <a href="/docs#quickstart" class="mobile-sublink"><i class="fas fa-rocket"></i> Quickstart Guide</a>
+                    <a href="/docs#topgg" class="mobile-sublink"><i class="fas fa-chart-line"></i> Top.gg Multi-Bot Tracker</a>
+                    <a href="/docs#roblox" class="mobile-sublink"><i class="fas fa-cubes"></i> Roblox Group Sync</a>
+                    <a href="/docs#leveling" class="mobile-sublink"><i class="fas fa-trophy"></i> Leveling & XP</a>
+                    <a href="/docs#safety" class="mobile-sublink"><i class="fas fa-shield-virus"></i> AutoMod Shield</a>
+                    <a href="/docs#commands" class="mobile-sublink"><i class="fas fa-terminal"></i> Full Command Catalog</a>
+                </div>
+            </div>
+
+            <!-- Legal Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-shield-alt" style="color: #60a5fa; width: 20px;"></i> Legal & Privacy</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/legal" class="mobile-sublink"><i class="fas fa-file-contract"></i> Legal Center</a>
+                    <a href="/legal#terms" class="mobile-sublink"><i class="fas fa-file-alt"></i> Terms of Service</a>
+                    <a href="/legal#privacy" class="mobile-sublink"><i class="fas fa-user-shield"></i> Privacy Policy</a>
+                    <a href="/legal#roblox" class="mobile-sublink"><i class="fas fa-lock"></i> Roblox Compliance</a>
+                    <a href="/legal#deletion" class="mobile-sublink"><i class="fas fa-trash-alt"></i> Data Deletion</a>
+                </div>
+            </div>
+
+            <a href="/status" class="mobile-nav-link"><i class="fas fa-chart-line" style="color: #10B981;"></i> Live Systems Status</a>
+            <a href="/team" class="mobile-nav-link"><i class="fas fa-users" style="color: #a78bfa;"></i> Meet Team & Staff</a>
+            
+            <!-- Support Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-headset" style="color: var(--rose); width: 20px;"></i> Support</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/support" class="mobile-sublink"><i class="fas fa-life-ring"></i> Support Hub</a>
+                    <a href="/billing-faq" class="mobile-sublink"><i class="fas fa-credit-card"></i> Billing FAQ</a>
+                    <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" class="mobile-sublink"><i class="fab fa-discord"></i> Official Discord</a>
+                </div>
+            </div>
         </nav>
         <div class="mobile-drawer-actions">
             <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Web Dashboard</a>
@@ -1032,10 +1210,175 @@
             </a>
             
             <nav class="nav-links">
-                <a href="#commands"><i class="fas fa-terminal"></i> Commands</a>
-                <a href="#pricing"><i class="fas fa-tag"></i> Pricing</a>
-                <a href="/docs"><i class="fas fa-book"></i> Docs</a>
-                <a href="/status"><i class="fas fa-chart-line"></i> Status</a>
+                <!-- Home Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/" class="nav-dropdown-trigger active">
+                        <i class="fas fa-home"></i> Home <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#hero" class="dropdown-item">
+                            <i class="fas fa-sparkles"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Overview</span>
+                                <span class="dropdown-desc">Hero, live stats & telemetry</span>
+                            </div>
+                        </a>
+                        <a href="/#features" class="dropdown-item">
+                            <i class="fas fa-layer-group"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Features & Architecture</span>
+                                <span class="dropdown-desc">Group sync, Starboard v3.0 & AutoMod</span>
+                            </div>
+                        </a>
+                        <a href="/#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Commands Explorer</span>
+                                <span class="dropdown-desc">Searchable slash command catalog</span>
+                            </div>
+                        </a>
+                        <a href="/#pricing" class="dropdown-item">
+                            <i class="fas fa-crown"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Pricing Tiers</span>
+                                <span class="dropdown-desc">Server capacity & VIP expansion perks</span>
+                            </div>
+                        </a>
+                        <a href="/#faq" class="dropdown-item">
+                            <i class="fas fa-question-circle"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">FAQ</span>
+                                <span class="dropdown-desc">Frequently asked community questions</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Docs Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/docs" class="nav-dropdown-trigger">
+                        <i class="fas fa-book"></i> Docs <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/docs#quickstart" class="dropdown-item">
+                            <i class="fas fa-rocket"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Quickstart Setup</span>
+                                <span class="dropdown-desc">60-second onboarding & setup wizard</span>
+                            </div>
+                        </a>
+                        <a href="/docs#topgg" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Top.gg Tracker & Rewards</span>
+                                <span class="dropdown-desc">Multi-bot vote rewards & webhook pipeline</span>
+                            </div>
+                        </a>
+                        <a href="/docs#roblox" class="dropdown-item">
+                            <i class="fas fa-cubes"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Roblox Group Sync</span>
+                                <span class="dropdown-desc">Bi-directional rank & role mappings</span>
+                            </div>
+                        </a>
+                        <a href="/docs#leveling" class="dropdown-item">
+                            <i class="fas fa-trophy"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Leveling & Progression</span>
+                                <span class="dropdown-desc">Custom rank cards, XP & voice rewards</span>
+                            </div>
+                        </a>
+                        <a href="/docs#safety" class="dropdown-item">
+                            <i class="fas fa-shield-virus"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">AutoMod & Threat Shield</span>
+                                <span class="dropdown-desc">Sub-4ms regex spam & phishing defense</span>
+                            </div>
+                        </a>
+                        <a href="/docs#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Command Reference</span>
+                                <span class="dropdown-desc">Complete parameters & permissions table</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Legal Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/legal" class="nav-dropdown-trigger">
+                        <i class="fas fa-shield-alt"></i> Legal <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/legal#terms" class="dropdown-item">
+                            <i class="fas fa-file-contract"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Terms of Service</span>
+                                <span class="dropdown-desc">Rules, warranties & acceptable usage</span>
+                            </div>
+                        </a>
+                        <a href="/legal#privacy" class="dropdown-item">
+                            <i class="fas fa-user-shield"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Privacy Policy</span>
+                                <span class="dropdown-desc">Data collection, GDPR & COPPA compliance</span>
+                            </div>
+                        </a>
+                        <a href="/legal#roblox" class="dropdown-item">
+                            <i class="fas fa-lock"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Security & Encryption</span>
+                                <span class="dropdown-desc">AES-256 session token safeguards</span>
+                            </div>
+                        </a>
+                        <a href="/legal#deletion" class="dropdown-item">
+                            <i class="fas fa-trash-alt"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Data Deletion Protocol</span>
+                                <span class="dropdown-desc">Right to erasure & automated purging</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="/status" class="nav-item-link">
+                    <i class="fas fa-chart-line"></i> Status
+                </a>
+
+                <a href="/team" class="nav-item-link">
+                    <i class="fas fa-users"></i> Team
+                </a>
+
+                <!-- Support Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/support" class="nav-dropdown-trigger">
+                        <i class="fas fa-headset"></i> Support <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/support" class="dropdown-item">
+                            <i class="fas fa-life-ring"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Help Center</span>
+                                <span class="dropdown-desc">Community assistance & contact</span>
+                            </div>
+                        </a>
+                        <a href="/billing-faq" class="dropdown-item">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Billing & Upgrades</span>
+                                <span class="dropdown-desc">Subscription FAQs & payment help</span>
+                            </div>
+                        </a>
+                        <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" class="dropdown-item">
+                            <i class="fab fa-discord"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Discord Community</span>
+                                <span class="dropdown-desc">Join our official server</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </nav>
 
             <div class="nav-actions">
@@ -1083,7 +1426,7 @@
                         <span class="stat-label">Total Members</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value">59</span>
+                        <span class="stat-value" id="stat-commands">59</span>
                         <span class="stat-label">Commands</span>
                     </div>
                     <div class="stat-item">
@@ -1417,46 +1760,92 @@
 
     <!-- Interactive Simulator & Telemetry Logic -->
     <script>
-        // Real-Time Telemetry Fetcher
-        (async function fetchLiveTelemetry() {
-            try {
-                const res = await fetch('/api/status/public', { cache: 'no-store', signal: AbortSignal.timeout(4000) });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.serverCount) {
-                        const countText = `${data.serverCount} Servers Online`;
-                        const headerBadge = document.getElementById('header-server-count');
-                        const statServers = document.getElementById('stat-servers');
-                        if (headerBadge) headerBadge.innerText = countText;
-                        if (statServers) statServers.innerText = `${data.serverCount}+`;
-                    }
-                    if (data.ping) {
-                        const pingEl = document.getElementById('stat-ping');
-                        if (pingEl) pingEl.innerText = `${data.ping}ms`;
-                    }
-                    const statusTextEl = document.getElementById('landing-status-text');
-                    const statusDotEl = document.getElementById('landing-status-dot');
-                    if (statusTextEl && data.statusText) {
-                        statusTextEl.innerText = data.statusText;
-                    }
-                    if (statusDotEl && data.systemStatus) {
-                        if (data.systemStatus === 'degraded') {
-                            statusDotEl.style.background = '#f59e0b';
-                            statusDotEl.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.6)';
-                        } else if (data.systemStatus === 'outage' || data.systemStatus === 'offline') {
-                            statusDotEl.style.background = '#ef4444';
-                            statusDotEl.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
-                        } else if (data.systemStatus === 'maintenance') {
-                            statusDotEl.style.background = '#8b5cf6';
-                            statusDotEl.style.boxShadow = '0 0 8px rgba(139, 92, 246, 0.6)';
-                        } else {
-                            statusDotEl.style.background = '#10b981';
-                            statusDotEl.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
-                        }
+        // Hourly Cached Telemetry (Static presentation with 1-hour hourly refresh)
+        (async function fetchHourlyTelemetry() {
+            const CACHE_KEY = 'nora_hourly_telemetry_cache';
+            const ONE_HOUR_MS = 60 * 60 * 1000;
+            const now = Date.now();
+
+            function applyTelemetryData(data) {
+                if (!data) return;
+                const statServers = document.getElementById('stat-servers');
+                const statMembers = document.getElementById('stat-members');
+                const statCommands = document.getElementById('stat-commands');
+                const statPing = document.getElementById('stat-ping');
+                const headerBadge = document.getElementById('header-server-count');
+                const statusTextEl = document.getElementById('landing-status-text');
+                const statusDotEl = document.getElementById('landing-status-dot');
+
+                if (data.serverCount) {
+                    const countFormatted = Number(data.serverCount).toLocaleString();
+                    if (statServers) statServers.innerText = `${countFormatted}+`;
+                    if (headerBadge) headerBadge.innerText = `${countFormatted} Servers Online`;
+                }
+                if (data.memberCount) {
+                    const membersFormatted = Number(data.memberCount).toLocaleString();
+                    if (statMembers) statMembers.innerText = `${membersFormatted}+`;
+                }
+                if (data.commandCount && statCommands) {
+                    statCommands.innerText = `${data.commandCount}`;
+                }
+                if (data.ping && statPing) {
+                    statPing.innerText = `${data.ping}ms`;
+                }
+                if (statusTextEl && data.statusText) {
+                    statusTextEl.innerText = data.statusText;
+                }
+                if (statusDotEl && data.systemStatus) {
+                    if (data.systemStatus === 'degraded') {
+                        statusDotEl.style.background = '#f59e0b';
+                        statusDotEl.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.6)';
+                    } else if (data.systemStatus === 'outage' || data.systemStatus === 'offline') {
+                        statusDotEl.style.background = '#ef4444';
+                        statusDotEl.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+                    } else if (data.systemStatus === 'maintenance') {
+                        statusDotEl.style.background = '#8b5cf6';
+                        statusDotEl.style.boxShadow = '0 0 8px rgba(139, 92, 246, 0.6)';
+                    } else {
+                        statusDotEl.style.background = '#10b981';
+                        statusDotEl.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
                     }
                 }
+            }
+
+            // 1. Check local storage cache first
+            try {
+                const cachedRaw = localStorage.getItem(CACHE_KEY);
+                if (cachedRaw) {
+                    const cachedObj = JSON.parse(cachedRaw);
+                    if (cachedObj && cachedObj.timestamp && (now - cachedObj.timestamp < ONE_HOUR_MS)) {
+                        // Sticks with cached data, zero continuous network polling
+                        applyTelemetryData(cachedObj.data);
+                        return;
+                    }
+                }
+            } catch (e) {}
+
+            // 2. Fetch fresh snapshot once per hour
+            try {
+                const res = await fetch('/api/status/public', { signal: AbortSignal.timeout(4000) });
+                if (res.ok) {
+                    const data = await res.json();
+                    applyTelemetryData(data);
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify({
+                            timestamp: now,
+                            data: {
+                                serverCount: data.serverCount || 65,
+                                memberCount: data.memberCount || 10700,
+                                commandCount: data.commandCount || 59,
+                                ping: data.ping || 18,
+                                statusText: data.statusText || 'Online',
+                                systemStatus: data.systemStatus || 'online'
+                            }
+                        }));
+                    } catch (e) {}
+                }
             } catch (e) {
-                // Fallback to static defaults
+                // Fallback gracefully to static defaults
             }
         })();
 
@@ -1531,6 +1920,13 @@
                     backdrop.classList.add('open');
                     document.body.style.overflow = 'hidden';
                 }
+            }
+        }
+
+        function toggleMobileAccordion(headerEl) {
+            const acc = headerEl.closest('.mobile-accordion');
+            if (acc) {
+                acc.classList.toggle('open');
             }
         }
 

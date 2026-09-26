@@ -3,26 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora Studio | Documentation & System Guide</title>
-    <meta name="description" content="Comprehensive documentation and architectural guide for Nora Studio: Discord bot features, Roblox sync, Starboard v3.0, Math Counting, and AutoMod.">
+    <title>Nora Studio | Documentation & System Architecture Guide</title>
+    <meta name="description" content="Comprehensive documentation and architectural guide for Nora Studio: Discord automation, Top.gg multi-bot tracking, Roblox group rank sync, Starboard v3.0, Leveling, and native AutoMod.">
     <link rel="icon" type="image/png" href="nora.png">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --bg: #0B0C12;
-            --card-bg: rgba(16, 17, 26, 0.75);
-            --card-hover: rgba(25, 27, 40, 0.85);
+            --bg-base: #08090E;
+            --bg-surface: rgba(15, 17, 26, 0.85);
+            --bg-surface-elevated: rgba(22, 25, 38, 0.92);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.18);
+            --border-glow: rgba(88, 101, 242, 0.4);
+            
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --text-dim: #6B7280;
+            
             --blurple: #5865F2;
-            --blurple-glow: rgba(88, 101, 242, 0.25);
-            --primary: #ffffff;
-            --text: #F2F3F5;
-            --muted: #949BA4;
-            --border: rgba(255, 255, 255, 0.08);
-            --code-bg: rgba(0, 0, 0, 0.4);
-            --success: #23A55A;
-            --warning: #FEE75C;
-            --danger: #ED4245;
+            --blurple-hover: #4752C4;
+            --blurple-glow: rgba(88, 101, 242, 0.35);
+            
+            --purple: #8B5CF6;
+            --cyan: #06B6D4;
+            --emerald: #10B981;
+            --amber: #F59E0B;
+            --rose: #F43F5E;
+            
+            --code-bg: rgba(0, 0, 0, 0.5);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 22px;
+            --radius-full: 9999px;
+            
+            --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -31,312 +49,266 @@
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
             background-image: 
                 radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
                 radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
             background-size: 100% 100%, 28px 28px;
             background-attachment: fixed;
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1240px;
             margin: 0 auto;
             padding: 0 24px;
             width: 100%;
         }
 
-        /* Top Header */
+        /* ===== UNIFIED TOP NAVIGATION & DROPDOWNS ===== */
         header {
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(16, 17, 26, 0.75);
-            border-bottom: 1px solid var(--border);
-            height: 72px;
+            background: rgba(8, 10, 16, 0.85);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: var(--transition-smooth);
         }
 
         .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
+            height: 72px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-weight: 800;
-            font-size: 1.15rem;
-            color: white;
+            font-size: 1.22rem;
+            color: #FFFFFF;
             text-decoration: none;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.02em;
         }
-
         .brand img {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            object-fit: contain;
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            box-shadow: 0 0 16px rgba(88, 101, 242, 0.35);
         }
 
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 16px;
+            list-style: none;
         }
 
-        .nav-links a {
+        .nav-item-link, .nav-dropdown-trigger {
+            font-size: 0.92rem;
             font-weight: 600;
-            color: var(--muted);
+            color: var(--text-muted);
             text-decoration: none;
-            transition: color 0.2s ease;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: #ffffff;
-        }
-
-        .btn-nav-dash {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 8px 18px;
-            border-radius: 999px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
-        }
-
-        .btn-nav-dash:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Docs Content */
-        .doc-wrapper {
-            padding: 50px 0 80px;
-            flex-grow: 1;
-        }
-
-        .doc-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 48px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .doc-header {
-            margin-bottom: 36px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 28px;
-        }
-
-        .doc-tag {
+            transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 12px;
-            background: rgba(88, 101, 242, 0.12);
-            border: 1px solid rgba(88, 101, 242, 0.3);
-            border-radius: 999px;
-            color: #8b96ff;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 16px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .nav-item-link:hover, .nav-dropdown-trigger:hover,
+        .nav-item-link.active, .nav-dropdown-trigger.active {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        h1 {
-            font-size: 2.3rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
+        .nav-dropdown-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
-        .subtitle {
-            color: var(--muted);
-            font-size: 1.05rem;
-            line-height: 1.6;
+        .nav-arrow {
+            font-size: 0.72rem;
+            transition: transform 0.25s ease, color 0.25s ease;
+            opacity: 0.7;
         }
 
-        section {
-            margin-bottom: 42px;
+        .nav-dropdown-wrapper:hover .nav-arrow {
+            transform: rotate(180deg);
+            opacity: 1;
+            color: var(--blurple);
         }
 
-        h2 {
-            font-size: 1.5rem;
-            color: white;
-            margin-bottom: 18px;
+        .nav-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            min-width: 300px;
+            background: rgba(14, 16, 26, 0.96);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(88, 101, 242, 0.15);
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-dropdown-wrapper:hover .nav-dropdown-menu,
+        .nav-dropdown-wrapper:focus-within .nav-dropdown-menu {
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dropdown-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-weight: 800;
-            letter-spacing: -0.3px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #E2E8F0;
+            transition: all 0.2s ease;
         }
-
-        h2 i {
-            color: var(--blurple);
-            font-size: 1.2rem;
+        .dropdown-item:hover {
+            background: rgba(88, 101, 242, 0.12);
+            transform: translateX(3px);
         }
-
-        h3 {
-            font-size: 1.15rem;
-            color: #ffffff;
-            margin: 22px 0 10px;
-            font-weight: 700;
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+            color: #818CF8;
+            flex-shrink: 0;
         }
-
-        p {
-            color: var(--muted);
-            line-height: 1.7;
-            font-size: 0.95rem;
-            margin-bottom: 16px;
-        }
-
-        ul {
-            color: var(--muted);
-            line-height: 1.7;
-            font-size: 0.95rem;
-            margin-bottom: 20px;
-            padding-left: 24px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
-
-        strong {
-            color: #F2F3F5;
-        }
-
-        code {
-            background: var(--code-bg);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 2px 7px;
-            border-radius: 6px;
-            color: #a5b4fc;
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 0.88rem;
-        }
-
-        /* Feature Highlight Callout Box */
-        .callout-box {
-            background: rgba(88, 101, 242, 0.08);
-            border: 1px solid rgba(88, 101, 242, 0.25);
-            border-radius: 14px;
-            padding: 20px;
-            margin: 20px 0;
+        .dropdown-item-text {
             display: flex;
-            gap: 16px;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 2px;
         }
-
-        .callout-icon {
-            font-size: 1.3rem;
-            color: var(--blurple);
-            margin-top: 2px;
-        }
-
-        .callout-text h4 {
-            color: #ffffff;
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .callout-text p {
-            margin: 0;
+        .dropdown-title {
             font-size: 0.88rem;
-            line-height: 1.5;
-        }
-
-        /* Command Tables */
-        .cmd-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0 28px;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        .cmd-table th {
-            background: rgba(255, 255, 255, 0.04);
-            padding: 12px 16px;
-            text-align: left;
-            color: #ffffff;
             font-weight: 700;
-            border-bottom: 1px solid var(--border);
+            color: #FFFFFF;
+        }
+        .dropdown-desc {
+            font-size: 0.76rem;
+            color: #94A3B8;
+            line-height: 1.3;
         }
 
-        .cmd-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: var(--muted);
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .cmd-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+        .btn-nav-dashboard {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-dashboard:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
         }
 
-        /* Mobile Responsive Upgrades */
+        .btn-nav-invite {
+            background: linear-gradient(135deg, var(--blurple) 0%, var(--purple) 100%);
+            color: #FFFFFF;
+            padding: 9px 22px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            box-shadow: 0 4px 20px var(--blurple-glow);
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-invite:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5);
+        }
+
+        /* ===== MOBILE DRAWER & ACCORDION ===== */
         .mobile-menu-btn {
             display: none;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
+            border: 1px solid var(--border-subtle);
             color: #ffffff;
-            width: 38px;
-            height: 38px;
+            width: 42px;
+            height: 42px;
             border-radius: 10px;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .mobile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
         }
 
         .mobile-drawer {
             position: fixed;
             top: 0;
-            right: -320px;
-            width: 280px;
+            right: -340px;
+            width: 320px;
+            max-width: 88vw;
             height: 100vh;
             background: rgba(10, 12, 20, 0.98);
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border-left: 1px solid var(--border);
+            border-left: 1px solid var(--border-subtle);
             z-index: 10000;
-            padding: 24px 20px;
+            padding: 22px 18px;
             display: flex;
             flex-direction: column;
             gap: 16px;
             box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
             transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .mobile-drawer.open { right: 0; }
         .mobile-drawer-backdrop {
@@ -345,491 +317,1288 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             z-index: 9999;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
         .mobile-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .mobile-drawer-close {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
         .mobile-drawer-nav { display: flex; flex-direction: column; gap: 8px; }
-        .mobile-drawer-nav a {
+        .mobile-nav-link {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 14px;
+            padding: 11px 14px;
             border-radius: 12px;
-            color: var(--muted);
+            color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
             font-size: 0.92rem;
+            transition: all 0.2s ease;
             background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
         }
-        .mobile-drawer-nav a:hover, .mobile-drawer-nav a.active {
+        .mobile-nav-link:hover, .mobile-nav-link.active {
             color: #fff;
-            background: rgba(88, 101, 242, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
+        .mobile-accordion {
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .mobile-accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mobile-accordion-header div { display: flex; align-items: center; gap: 12px; }
+        .mobile-accordion-header .acc-arrow {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+        .mobile-accordion.open .mobile-accordion-header .acc-arrow {
+            transform: rotate(180deg);
+            color: var(--blurple);
+        }
+        .mobile-accordion-body {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px 12px 10px 36px;
+        }
+        .mobile-accordion.open .mobile-accordion-body { display: flex; }
+        .mobile-sublink {
+            padding: 7px 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-sublink:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mobile-drawer-actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .mobile-drawer-actions a {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        /* ===== DOCS WORKSPACE LAYOUT ===== */
+        .docs-layout {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            gap: 36px;
+            padding: 40px 0 80px 0;
+            position: relative;
+        }
+
+        /* Sidebar Sticky Table of Contents */
+        .docs-sidebar {
+            position: sticky;
+            top: 96px;
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-right: 12px;
+        }
+        .docs-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .docs-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .docs-search-box {
+            position: relative;
+            width: 100%;
+        }
+        .docs-search-box input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: #FFFFFF;
+            font-size: 0.88rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+        .docs-search-box input:focus {
+            border-color: var(--blurple);
+            box-shadow: 0 0 16px var(--blurple-glow);
+        }
+        .docs-search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .toc-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .toc-heading {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            padding: 6px 12px;
+        }
+        .toc-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            border-left: 2px solid transparent;
+        }
+        .toc-link:hover, .toc-link.active {
+            color: #FFFFFF;
+            background: rgba(88, 101, 242, 0.1);
+            border-left-color: var(--blurple);
+        }
+        .toc-link i {
+            width: 16px;
+            font-size: 0.9rem;
+            color: #818CF8;
+        }
+
+        /* Main Documentation Content Area */
+        .docs-content {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+
+        .doc-hero-header {
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.14) 0%, rgba(139, 92, 246, 0.08) 100%);
+            border: 1px solid rgba(88, 101, 242, 0.28);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        .doc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 14px;
+            background: rgba(88, 101, 242, 0.2);
+            border: 1px solid rgba(88, 101, 242, 0.4);
+            border-radius: var(--radius-full);
+            color: #A5B4FC;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .doc-hero-header h1 {
+            font-size: clamp(2rem, 3.5vw, 2.7rem);
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        .doc-hero-header p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            line-height: 1.65;
+            max-width: 780px;
+        }
+
+        /* Section Cards */
+        .doc-section {
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            scroll-margin-top: 96px;
+            transition: var(--transition-smooth);
+        }
+        .doc-section:hover {
+            border-color: var(--border-hover);
+        }
+
+        .doc-section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .section-icon-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            background: rgba(88, 101, 242, 0.15);
+            color: #818CF8;
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            flex-shrink: 0;
+        }
+        .doc-section-header h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.02em;
+        }
+
+        .doc-body p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.96rem;
+            margin-bottom: 18px;
+        }
+        .doc-body strong {
+            color: #FFFFFF;
+        }
+        .doc-body ul, .doc-body ol {
+            padding-left: 22px;
+            margin-bottom: 22px;
+            color: var(--text-muted);
+            line-height: 1.75;
+            font-size: 0.95rem;
+        }
+        .doc-body li {
+            margin-bottom: 8px;
+        }
+
+        /* Visual Callout Boxes */
+        .callout {
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
+            margin: 20px 0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .callout-info {
+            background: rgba(88, 101, 242, 0.08);
+            border: 1px solid rgba(88, 101, 242, 0.28);
+            color: #C7D2FE;
+        }
+        .callout-info i { color: #818CF8; font-size: 1.15rem; margin-top: 2px; }
+        .callout-tip {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.28);
+            color: #A7F3D0;
+        }
+        .callout-tip i { color: #34D399; font-size: 1.15rem; margin-top: 2px; }
+        .callout-warning {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.28);
+            color: #FDE68A;
+        }
+        .callout-warning i { color: #FBBF24; font-size: 1.15rem; margin-top: 2px; }
+
+        /* Code Blocks & Copy Snippets */
+        .code-block-container {
+            background: #05060A;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            margin: 18px 0 24px 0;
+            overflow: hidden;
+        }
+        .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-copy-code {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-copy-code:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.12);
+        }
+        pre.code-content {
+            padding: 16px;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: #E2E8F0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        code {
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 2px 7px;
+            border-radius: 6px;
+            color: #A5B4FC;
+            font-size: 0.88em;
+        }
+
+        /* Interactive Tables */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            margin-bottom: 20px;
+            margin: 20px 0 28px 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+        }
+        .docs-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+            min-width: 600px;
+        }
+        .docs-table th {
+            background: rgba(255, 255, 255, 0.04);
+            color: #FFFFFF;
+            font-weight: 700;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .docs-table td {
+            padding: 13px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            vertical-align: middle;
+        }
+        .docs-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Starboard Tier Showcase Cards */
+        .starboard-tier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .tier-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .tier-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-hover);
+        }
+        .tier-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: #FFFFFF;
+        }
+        .tier-threshold {
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: var(--radius-full);
+            background: rgba(255, 255, 255, 0.08);
+            font-weight: 700;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-subtle);
+            background: rgba(5, 6, 9, 0.95);
+            padding: 60px 0 35px 0;
+            margin-top: auto;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-width: 320px;
+            margin-top: 12px;
+        }
+        .footer-col h5 {
+            color: #FFFFFF;
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .footer-col ul a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition-smooth);
+        }
+        .footer-col ul a:hover {
+            color: #FFFFFF;
+            padding-left: 4px;
+        }
+        .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        /* Mobile & Responsive Rules */
+        @media (max-width: 1024px) {
+            .docs-layout {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .docs-sidebar {
+                display: none;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
         }
 
         @media (max-width: 768px) {
             .nav-links { display: none !important; }
             .mobile-menu-btn { display: flex !important; }
-            .container { padding: 0 14px !important; }
-            .doc-wrapper { padding: 24px 0 50px !important; }
-            .doc-card { padding: 22px 16px !important; border-radius: 18px !important; }
-            .doc-header h1 { font-size: 1.65rem !important; }
-            .callout-card { padding: 16px 14px !important; flex-direction: column !important; gap: 8px !important; }
-            .cmd-table th, .cmd-table td { padding: 10px 12px !important; font-size: 0.82rem !important; }
-        }
-
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 30px 0;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.85rem;
-            background: rgba(11, 12, 18, 0.8);
+            .btn-nav-invite { display: none !important; }
+            .btn-nav-dashboard { padding: 7px 14px !important; font-size: 0.82rem !important; }
+            .doc-hero-header { padding: 24px 20px !important; }
+            .doc-hero-header h1 { font-size: 1.85rem !important; }
+            .doc-section { padding: 24px 18px !important; }
+            .doc-section-header h2 { font-size: 1.35rem !important; }
+            .footer-grid { grid-template-columns: 1fr !important; }
+            .footer-bottom { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleDocsMenu()"></div>
+    <!-- Mobile Navigation Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Navigation Drawer -->
     <aside class="mobile-drawer" id="mobile-drawer">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+        <div class="mobile-drawer-header">
             <div class="brand">
-                <img src="nora.png" alt="Nora Studio" style="width: 28px; height: 28px;">
-                <span>NORA STUDIO</span>
+                <img src="nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+                <span>Nora Studio</span>
             </div>
-            <button onclick="toggleDocsMenu()" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+            <button class="mobile-drawer-close" onclick="toggleMobileMenu()" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         <nav class="mobile-drawer-nav">
-            <a href="/"><i class="fas fa-home"></i> Home</a>
-            <a href="/dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
-            <a href="/install"><i class="fas fa-plus-circle"></i> Invite Bot</a>
-            <a href="/docs" class="active"><i class="fas fa-book"></i> Documentation</a>
-            <a href="/status"><i class="fas fa-signal"></i> Network Status</a>
-            <a href="/team"><i class="fas fa-users"></i> Team</a>
-            <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
+            <!-- Home Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-home" style="color: var(--blurple); width: 20px;"></i> Home</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/#hero" class="mobile-sublink"><i class="fas fa-sparkles"></i> Overview</a>
+                    <a href="/#features" class="mobile-sublink"><i class="fas fa-layer-group"></i> Features & Architecture</a>
+                    <a href="/#commands" class="mobile-sublink"><i class="fas fa-terminal"></i> Commands Explorer</a>
+                    <a href="/#pricing" class="mobile-sublink"><i class="fas fa-crown"></i> Pricing Tiers</a>
+                    <a href="/#faq" class="mobile-sublink"><i class="fas fa-question-circle"></i> FAQ</a>
+                </div>
+            </div>
+
+            <!-- Docs Accordion -->
+            <div class="mobile-accordion open">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-book" style="color: var(--emerald); width: 20px;"></i> Documentation</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="#quickstart" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-rocket"></i> Quickstart Guide</a>
+                    <a href="#topgg" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-chart-line"></i> Top.gg Multi-Bot Tracker</a>
+                    <a href="#roblox" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-cubes"></i> Roblox Group Sync</a>
+                    <a href="#leveling" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-trophy"></i> Leveling & XP</a>
+                    <a href="#tickets" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-ticket-alt"></i> Support Tickets</a>
+                    <a href="#safety" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-shield-virus"></i> AutoMod Shield</a>
+                    <a href="#games" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-star"></i> Starboard & Games</a>
+                    <a href="#commands" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-terminal"></i> Command Reference</a>
+                </div>
+            </div>
+
+            <!-- Legal Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-shield-alt" style="color: #60a5fa; width: 20px;"></i> Legal & Privacy</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/legal" class="mobile-sublink"><i class="fas fa-file-contract"></i> Legal Center</a>
+                    <a href="/legal#terms" class="mobile-sublink"><i class="fas fa-file-alt"></i> Terms of Service</a>
+                    <a href="/legal#privacy" class="mobile-sublink"><i class="fas fa-user-shield"></i> Privacy Policy</a>
+                    <a href="/legal#roblox" class="mobile-sublink"><i class="fas fa-lock"></i> Roblox Compliance</a>
+                    <a href="/legal#deletion" class="mobile-sublink"><i class="fas fa-trash-alt"></i> Data Deletion</a>
+                </div>
+            </div>
+
+            <a href="/status" class="mobile-nav-link"><i class="fas fa-chart-line" style="color: #10B981;"></i> Live Systems Status</a>
+            <a href="/team" class="mobile-nav-link"><i class="fas fa-users" style="color: #a78bfa;"></i> Meet Team & Staff</a>
+            
+            <!-- Support Accordion -->
+            <div class="mobile-accordion">
+                <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
+                    <div><i class="fas fa-headset" style="color: var(--rose); width: 20px;"></i> Support</div>
+                    <i class="fas fa-chevron-down acc-arrow"></i>
+                </div>
+                <div class="mobile-accordion-body">
+                    <a href="/support" class="mobile-sublink"><i class="fas fa-life-ring"></i> Support Hub</a>
+                    <a href="/billing-faq" class="mobile-sublink"><i class="fas fa-credit-card"></i> Billing FAQ</a>
+                    <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" class="mobile-sublink"><i class="fab fa-discord"></i> Official Discord</a>
+                </div>
+            </div>
         </nav>
-        <div style="margin-top: auto;">
-            <a href="/dashboard" class="btn-nav-dash" style="display: block; text-align: center; width: 100%; box-sizing: border-box; padding: 12px;">Open Dashboard</a>
+        <div class="mobile-drawer-actions">
+            <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Web Dashboard</a>
+            <a href="/install" class="btn-nav-invite"><i class="fab fa-discord"></i> Add to Discord</a>
         </div>
     </aside>
 
-    <header>
-        <div class="nav-container">
-            <a href="/" class="brand">
-                <img src="nora.png" alt="Nora Studio">
-                <span>NORA STUDIO</span>
+    <!-- Sticky Header -->
+    <header id="main-header">
+        <div class="container nav-container">
+            <a href="/" class="brand" id="brand-logo">
+                <img src="nora.png" alt="Nora Studio Logo">
+                <span>Nora Studio</span>
             </a>
+            
             <nav class="nav-links">
-                <a href="/"><i class="fas fa-home"></i> Home</a>
-                <a href="/install"><i class="fas fa-plus-circle"></i> Invite</a>
-                <a href="/docs" class="active"><i class="fas fa-book"></i> Docs</a>
-                <a href="/status"><i class="fas fa-signal"></i> Status</a>
-                <a href="/legal"><i class="fas fa-shield-alt"></i> Legal</a>
+                <!-- Home Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/" class="nav-dropdown-trigger">
+                        <i class="fas fa-home"></i> Home <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#hero" class="dropdown-item">
+                            <i class="fas fa-sparkles"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Overview</span>
+                                <span class="dropdown-desc">Hero, live stats & telemetry</span>
+                            </div>
+                        </a>
+                        <a href="/#features" class="dropdown-item">
+                            <i class="fas fa-layer-group"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Features & Architecture</span>
+                                <span class="dropdown-desc">Group sync, Starboard v3.0 & AutoMod</span>
+                            </div>
+                        </a>
+                        <a href="/#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Commands Explorer</span>
+                                <span class="dropdown-desc">Searchable slash command catalog</span>
+                            </div>
+                        </a>
+                        <a href="/#pricing" class="dropdown-item">
+                            <i class="fas fa-crown"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Pricing Tiers</span>
+                                <span class="dropdown-desc">Server capacity & VIP expansion perks</span>
+                            </div>
+                        </a>
+                        <a href="/#faq" class="dropdown-item">
+                            <i class="fas fa-question-circle"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">FAQ</span>
+                                <span class="dropdown-desc">Frequently asked community questions</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Docs Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/docs" class="nav-dropdown-trigger active">
+                        <i class="fas fa-book"></i> Docs <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/docs#quickstart" class="dropdown-item">
+                            <i class="fas fa-rocket"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Quickstart Setup</span>
+                                <span class="dropdown-desc">60-second onboarding & setup wizard</span>
+                            </div>
+                        </a>
+                        <a href="/docs#topgg" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Top.gg Tracker & Rewards</span>
+                                <span class="dropdown-desc">Multi-bot vote rewards & webhook pipeline</span>
+                            </div>
+                        </a>
+                        <a href="/docs#roblox" class="dropdown-item">
+                            <i class="fas fa-cubes"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Roblox Group Sync</span>
+                                <span class="dropdown-desc">Bi-directional rank & role mappings</span>
+                            </div>
+                        </a>
+                        <a href="/docs#leveling" class="dropdown-item">
+                            <i class="fas fa-trophy"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Leveling & Progression</span>
+                                <span class="dropdown-desc">Custom rank cards, XP & voice rewards</span>
+                            </div>
+                        </a>
+                        <a href="/docs#safety" class="dropdown-item">
+                            <i class="fas fa-shield-virus"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">AutoMod & Threat Shield</span>
+                                <span class="dropdown-desc">Sub-4ms regex spam & phishing defense</span>
+                            </div>
+                        </a>
+                        <a href="/docs#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Command Reference</span>
+                                <span class="dropdown-desc">Complete parameters & permissions table</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Legal Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/legal" class="nav-dropdown-trigger">
+                        <i class="fas fa-shield-alt"></i> Legal <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/legal#terms" class="dropdown-item">
+                            <i class="fas fa-file-contract"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Terms of Service</span>
+                                <span class="dropdown-desc">Rules, warranties & acceptable usage</span>
+                            </div>
+                        </a>
+                        <a href="/legal#privacy" class="dropdown-item">
+                            <i class="fas fa-user-shield"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Privacy Policy</span>
+                                <span class="dropdown-desc">Data collection, GDPR & COPPA compliance</span>
+                            </div>
+                        </a>
+                        <a href="/legal#roblox" class="dropdown-item">
+                            <i class="fas fa-lock"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Security & Encryption</span>
+                                <span class="dropdown-desc">AES-256 session token safeguards</span>
+                            </div>
+                        </a>
+                        <a href="/legal#deletion" class="dropdown-item">
+                            <i class="fas fa-trash-alt"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Data Deletion Protocol</span>
+                                <span class="dropdown-desc">Right to erasure & automated purging</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="/status" class="nav-item-link">
+                    <i class="fas fa-chart-line"></i> Status
+                </a>
+
+                <a href="/team" class="nav-item-link">
+                    <i class="fas fa-users"></i> Team
+                </a>
+
+                <!-- Support Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/support" class="nav-dropdown-trigger">
+                        <i class="fas fa-headset"></i> Support <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/support" class="dropdown-item">
+                            <i class="fas fa-life-ring"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Help Center</span>
+                                <span class="dropdown-desc">Community assistance & contact</span>
+                            </div>
+                        </a>
+                        <a href="/billing-faq" class="dropdown-item">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Billing & Upgrades</span>
+                                <span class="dropdown-desc">Subscription FAQs & payment help</span>
+                            </div>
+                        </a>
+                        <a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener" class="dropdown-item">
+                            <i class="fab fa-discord"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Discord Community</span>
+                                <span class="dropdown-desc">Join our official server</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </nav>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <a href="/dashboard" class="btn-nav-dash"><i class="fas fa-sliders-h"></i> Dashboard</a>
-                <button class="mobile-menu-btn" onclick="toggleDocsMenu()" aria-label="Toggle navigation menu">
+
+            <div class="nav-actions">
+                <a href="/dashboard" class="btn-nav-dashboard" id="btn-header-dash">Dashboard</a>
+                <a href="/install" class="btn-nav-invite" id="btn-header-invite"><i class="fab fa-discord"></i> Invite</a>
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="doc-wrapper">
-        <div class="container">
-            <div class="doc-card">
-                <div class="doc-header">
-                    <span class="doc-tag"><i class="fas fa-book-open"></i> Nora Architecture & Docs</span>
-                    <h1>System Documentation & Command Guide</h1>
-                    <p class="subtitle">Complete technical reference for Nora Studio's automation, Top.gg multi-bot tracking, Roblox rank synchronization, ticket management, leveling, games, and security systems.</p>
-                </div>
-
-                <!-- 1. Quickstart Guide -->
-                <section id="quickstart">
-                    <h2><i class="fas fa-rocket"></i> Quickstart Guide</h2>
-                    <p>Get Nora operating in your Discord server in less than 60 seconds:</p>
-                    <ul>
-                        <li><strong>Step 1 — Authorize Application:</strong> Visit <a href="/install" style="color: #a5b4fc;">/install</a> and select your target Discord server with standard administrator privileges.</li>
-                        <li><strong>Step 2 — Interactive Setup:</strong> Run <code>/setup dashboard</code> in any channel to view and configure community modules directly in Discord.</li>
-                        <li><strong>Step 3 — Web Dashboard:</strong> Access <a href="/dashboard" style="color: #a5b4fc;">vaztinix.dev/dashboard</a> to manage Top.gg votes, Roblox group rank bindings, tickets, custom embeds, and audit logs.</li>
-                    </ul>
-                </section>
-
-                <!-- 2. Top.gg Integration & Multi-Bot Tracker -->
-                <section id="topgg">
-                    <h2>
-                        <img src="https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg" alt="Top.gg" style="width: 24px; height: 24px; border-radius: 6px; vertical-align: middle; margin-right: 6px; object-fit: cover;">
-                        Top.gg Vote Rewards & Multi-Bot Tracker
-                    </h2>
-                    <p>Reward your community members for upvoting Nora and custom connected bots on Top.gg with instant role assignments, customizable Leveling XP, weekend multipliers, and loyalty vote streaks.</p>
-
-                    <div class="callout-box" style="background: rgba(255, 51, 102, 0.08); border-color: rgba(255, 51, 102, 0.3);">
-                        <div class="callout-icon"><i class="fas fa-bolt" style="color: #FF3366;"></i></div>
-                        <div class="callout-text">
-                            <h4 style="color: #FF3366;">Sub-Second Webhook & Resilient Channel Pipeline</h4>
-                            <p>Votes cast on Top.gg are dispatched directly to Nora's high-performance endpoint with sub-second latency. If announcement channels restrict standard bot messaging, Nora automatically utilizes secure channel webhooks to guarantee embed delivery.</p>
-                        </div>
-                    </div>
-
-                    <h3>Step-by-Step Setup Guide</h3>
-                    <div style="display: flex; flex-direction: column; gap: 14px; margin: 16px 0 24px;">
-                        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 1: Copy Webhook URL from Dashboard</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Open the <a href="/dashboard" style="color: #a5b4fc;">Nora Dashboard</a> and navigate to the <b>Top.gg Votes</b> tab. Under <b>1. Connect on Top.gg</b>, copy the unified Webhook URL: <code>https://api.vaztinix.dev/api/webhooks/topgg</code>.</p>
-                        </div>
-                        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 2: Connect Webhook on Top.gg Developer Portal</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Log in to <a href="https://top.gg" target="_blank" rel="noopener" style="color: #a5b4fc;">top.gg</a> &rarr; Open your Bot Dashboard &rarr; <b>Webhooks</b> &rarr; Paste your <b>Webhook URL</b> into Top.gg. Copy the generated <code>whs_...</code> secret from Top.gg and paste it into Nora Dashboard's <b>Webhook Authorization Secret</b> field, then click <b>Save Data</b>.</p>
-                        </div>
-                        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 3: Multi-Bot Tracking (Secondary Bots)</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">If your server hosts or uses multiple bots, scroll to <b>Multi-Bot Tracker</b> in the dashboard and click <b>+ Track Another Bot</b>. Enter the numeric Bot ID, display name, and avatar URL. Nora will listen for votes on all configured bots under a single webhook endpoint!</p>
-                        </div>
-                        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-                            <strong style="color: #FF3366; font-size: 0.95rem;">Step 4: Configure Rewards, Announcements & Reminders</strong>
-                            <p style="margin: 6px 0 0; font-size: 0.88rem;">Select your <b>Discord Voter Role</b>, base <b>Leveling XP</b> (e.g. <code>150 XP</code>), and <b>Vote Announcement Channel</b>. Enable <b>12-Hour Vote Reminders</b> so voters get private DM alerts the moment their vote cooldown expires to keep their streak alive.</p>
-                        </div>
-                    </div>
-
-                    <div class="callout-box" style="background: rgba(254, 231, 92, 0.08); border-color: rgba(254, 231, 92, 0.3);">
-                        <div class="callout-icon"><i class="fas fa-exclamation-triangle" style="color: #FEE75C;"></i></div>
-                        <div class="callout-text">
-                            <h4 style="color: #FEE75C;">Role Hierarchy Notice</h4>
-                            <p>Ensure the <b>@Nora</b> role is placed <b>HIGHER</b> than the Voter reward role in Discord Server Settings &rarr; Roles so Nora can grant the role without permission conflicts.</p>
-                        </div>
-                    </div>
-
-                    <h3>Reward Multipliers & Streak Mechanics</h3>
-                    <p>Nora dynamically computes voter rewards based on voting frequency and weekend events:</p>
-                    <table class="cmd-table">
-                        <thead>
-                            <tr>
-                                <th>Reward Factor</th>
-                                <th>Multiplier / Bonus</th>
-                                <th>Calculation Rules</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Base XP Reward</strong></td>
-                                <td><code>150 XP</code> (Configurable)</td>
-                                <td>Standard baseline XP awarded for every verified upvote.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>⭐ Weekend Multiplier</strong></td>
-                                <td><code>2x Multiplier</code></td>
-                                <td>Automatically active Friday 00:00 UTC through Sunday 23:59 UTC to match Top.gg double vote weekends.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>🔥 Vote Streak Loyalty</strong></td>
-                                <td><code>+25 XP per streak count</code></td>
-                                <td>Increases by 1 for each consecutive vote cast within a rolling 36-hour window.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Formula</strong></td>
-                                <td><code>(Base + Streak Bonus) &times; Multiplier</code></td>
-                                <td>Example: 150 Base + (3 streak &times; 25) = 225 XP &times; 2x Weekend = <strong>450 Total XP</strong>!</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h3>Announcement Message Placeholders & Variables</h3>
-                    <p>Customize your announcement templates with dynamic placeholder tags:</p>
-                    <table class="cmd-table">
-                        <thead>
-                            <tr>
-                                <th>Placeholder Tag</th>
-                                <th>Description</th>
-                                <th>Example Output</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>{user}</code> / <code>{userMention}</code></td>
-                                <td>Mentions the Discord voter.</td>
-                                <td><code>@Vaztinix</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{username}</code></td>
-                                <td>Voter's clean username (without ping).</td>
-                                <td><code>Vaztinix</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{userTag}</code></td>
-                                <td>Voter tag with discriminator.</td>
-                                <td><code>Vaztinix#0000</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{server}</code> / <code>{serverName}</code></td>
-                                <td>Name of the Discord server receiving the vote.</td>
-                                <td><code>Nora's Hub</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{channel}</code></td>
-                                <td>Mentions the vote announcement channel.</td>
-                                <td><code>#votes</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{bot}</code></td>
-                                <td>Name of the bot that received the upvote.</td>
-                                <td><code>Nora Assistant</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{streak}</code></td>
-                                <td>Current consecutive vote streak count.</td>
-                                <td><code>4</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{multiplier}</code></td>
-                                <td>Active multiplier badge text.</td>
-                                <td><code>⭐ 2x Weekend</code> or <code>⚡ 1x Standard</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{xp}</code></td>
-                                <td>Amount of Leveling XP awarded.</td>
-                                <td><code>300</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{rewards}</code></td>
-                                <td>Summary of granted roles and XP.</td>
-                                <td><code>Role Assigned • +300 XP</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>{role}</code></td>
-                                <td>Mentions the configured Voter Role.</td>
-                                <td><code>@Voter</code></td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h3>Announcement Presets</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 24px;">
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
-                            <strong style="color: #fff; font-size: 0.85rem;">Standard</strong>
-                            <p style="font-size: 0.78rem; margin: 4px 0 0; color: var(--muted);">Thank you {user} for upvoting {bot}! You gained {rewards}.</p>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
-                            <strong style="color: #fff; font-size: 0.85rem;">Streak Focus</strong>
-                            <p style="font-size: 0.78rem; margin: 4px 0 0; color: var(--muted);">🔥 {user} is on a {streak}x streak upvoting {bot}! Rewards: {rewards}.</p>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
-                            <strong style="color: #fff; font-size: 0.85rem;">Full Rewards</strong>
-                            <p style="font-size: 0.78rem; margin: 4px 0 0; color: var(--muted);">🎉 Upvote confirmed! {user} received {rewards} with {multiplier} in {server}.</p>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
-                            <strong style="color: #fff; font-size: 0.85rem;">Compact Ping</strong>
-                            <p style="font-size: 0.78rem; margin: 4px 0 0; color: var(--muted);">⚡ Upvote received from {user}! (+{xp} XP)</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 3. Leveling & XP Progression -->
-                <section id="leveling">
-                    <h2><i class="fas fa-layer-group"></i> Leveling & XP Progression Engine</h2>
-                    <p>Drive daily chat engagement with custom leveling rank cards, voice channel XP accrual, and milestone role rewards:</p>
-                    <ul>
-                        <li><strong>Chat & Voice XP:</strong> Earn 15–25 XP per message (with anti-spam rate limiting) and background voice XP every 5 minutes in unmuted voice channels.</li>
-                        <li><strong>Role Rewards with Stacking:</strong> Automatically grant cosmetic or privilege roles at specific level milestones (e.g. Level 5, 10, 25, 50, 100), with optional role stacking.</li>
-                        <li><strong>Custom Rank Cards:</strong> Personalize rank cards with custom accent colors, background themes, and progress bars via <code>/rank</code>.</li>
-                        <li><strong>Leaderboards:</strong> View global and server level leaderboards using <code>/leaderboard</code>.</li>
-                    </ul>
-                </section>
-
-                <!-- 4. Roblox Verification & Group Rank Sync -->
-                <section id="roblox">
-                    <h2><i class="fas fa-cubes-stacked"></i> Automated Roblox Group Rank Sync v2.6</h2>
-                    <p>Seamlessly bind your Roblox group hierarchy to Discord server roles:</p>
-                    <ul>
-                        <li><strong>Group Binding:</strong> Bind numeric Roblox Group IDs to Discord roles in the dashboard or via <code>/setup verify</code>.</li>
-                        <li><strong>Automated Role Mapping:</strong> Map group ranks (Guest, Member, Officer, Developer, Owner) to distinct Discord roles.</li>
-                        <li><strong>Bio & Direct OAuth Verification:</strong> Members verify in seconds via secure code verification or web link.</li>
-                        <li><strong>Unverified Role Protection:</strong> Automatically assign an Unverified role to newcomers and remove it upon verification.</li>
-                    </ul>
-                </section>
-
-                <!-- 5. Support Ticketing System -->
-                <section id="tickets">
-                    <h2><i class="fas fa-ticket-alt"></i> Support Ticketing & Mod-Mail Engine</h2>
-                    <p>Professional ticket management for inquiries, reports, appeals, and staff support:</p>
-                    <ul>
-                        <li><strong>Interactive Panel:</strong> Deploy persistent ticket panels with customizable buttons (Support, Reporting, Appeals, Custom).</li>
-                        <li><strong>Modal Intake Forms:</strong> Collect user issue details upfront using custom pop-up modal questionnaires.</li>
-                        <li><strong>Ticket Claiming & Transcripts:</strong> Staff can claim tickets, add collaborators, and automatically archive formatted HTML transcripts to an audit log channel.</li>
-                    </ul>
-                </section>
-
-                <!-- 6. Reaction Roles & Autoresponders -->
-                <section id="automation">
-                    <h2><i class="fas fa-magic"></i> Reaction Roles & Custom Autoresponders</h2>
-                    <p>Empower members with self-assignable roles and automate repetitive answers:</p>
-                    <ul>
-                        <li><strong>Reaction Roles v2.0:</strong> Create embed-based role menus with button or dropdown selection, supporting single-select (exclusive) or multi-select modes.</li>
-                        <li><strong>Autoresponders v2.1:</strong> Configure keyword or regex triggers with rich embed replies, role/channel whitelists, and ignore-staff protections. Up to 200 custom triggers for Premium servers.</li>
-                    </ul>
-                </section>
-
-                <!-- 7. Safety & Native AutoMod Defense -->
-                <section id="safety">
-                    <h2><i class="fas fa-shield-virus"></i> Native Discord AutoMod & Chat Defense v2.5</h2>
-                    <p>Protect your server with sub-4ms native gateway filtering and automated action escalation:</p>
-                    <ul>
-                        <li><strong>Phishing & Malicious Link Blocker:</strong> Instantly detects and purges fake Nitro links and scam domains.</li>
-                        <li><strong>Anti-Spam & Mass Mention Shield:</strong> Stops duplicate message flooding, mention spam, discord invite leaks, and zalgo text.</li>
-                        <li><strong>Warning Escalation Rules:</strong> Set automated punishment thresholds (e.g. 3 warns &rarr; 1-hour mute, 5 warns &rarr; tempban).</li>
-                        <li><strong>Quarantine System:</strong> Isolate suspicious raiding accounts into a sandboxed channel with restricted permissions.</li>
-                    </ul>
-                </section>
-
-                <!-- 8. Interactive Games & Starboard -->
-                <section id="games">
-                    <h2><i class="fas fa-gamepad"></i> Entertainment, Counting & Starboard v3.0</h2>
-                    <p>Keep your community lively and reward creativity:</p>
-                    <ul>
-                        <li><strong>Collaborative Math Counting:</strong> Sequential counting supporting math expressions (<code>50+50</code>, <code>10^2</code>) with strict anti-double-count checks and streak records.</li>
-                        <li><strong>One-Word Story:</strong> Collaborative storytelling channel where members build stories one word at a time.</li>
-                        <li><strong>Rock Paper Scissors & Guess Game:</strong> Wager XP in interactive mini-games against Nora or friends.</li>
-                        <li><strong>Tiered Starboard v3.0:</strong> Pins top community messages with progressive visual flares (Bronze &rarr; Golden &rarr; Radiant &rarr; Supernova &rarr; Cosmic Mythic).</li>
-                    </ul>
-                </section>
-
-                <!-- 9. Premium Tier Features -->
-                <section id="premium">
-                    <h2><i class="fas fa-crown" style="color: #ffd700;"></i> Nora Premium & Lifetime Perks</h2>
-                    <p>Expand server capacities with Nora's official Discord Store subscription:</p>
-                    <table class="cmd-table">
-                        <thead>
-                            <tr>
-                                <th>Feature</th>
-                                <th>Standard Community</th>
-                                <th>Premium Subscription</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Custom Autoresponders</strong></td>
-                                <td>Up to 5 triggers</td>
-                                <td><strong>Up to 200 triggers</strong> with regex support</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Reaction Role Menus</strong></td>
-                                <td>Up to 5 menus</td>
-                                <td><strong>Up to 25 menus</strong> with custom dropdowns</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Split Audit Logging</strong></td>
-                                <td>Single unified channel</td>
-                                <td><strong>6 Dedicated Channels</strong> (Mod, Member, Voice, Chat, Safety, Server)</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Roblox Group Sync</strong></td>
-                                <td>Periodic polling</td>
-                                <td><strong>Instant Real-Time Bindings</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>XP Boost Multiplier</strong></td>
-                                <td>1.0x Base Rate</td>
-                                <td><strong>Activatable 2x Community Boost</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
-
-                <!-- 10. Command Catalog -->
-                <section id="commands">
-                    <h2><i class="fas fa-terminal"></i> Essential Command Catalog</h2>
-                    <table class="cmd-table">
-                        <thead>
-                            <tr>
-                                <th>Command</th>
-                                <th>Category</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>/setup topgg</code></td>
-                                <td>Integrations</td>
-                                <td>Interactive Discord wizard to configure Top.gg vote rewards, voter roles, and webhooks.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/vote</code></td>
-                                <td>Community</td>
-                                <td>Display server Top.gg voting link, voter streak, and weekend multiplier status.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/setup dashboard</code></td>
-                                <td>Setup</td>
-                                <td>Open interactive server management and dashboard link.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/rank [@user]</code></td>
-                                <td>Leveling</td>
-                                <td>Inspect member Level, Total XP, progress bar, and leaderboard standing.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/leaderboard</code></td>
-                                <td>Leveling</td>
-                                <td>Display server top-ranked members in chat.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/verify check</code></td>
-                                <td>Utility</td>
-                                <td>Verify account binding and synchronize Roblox group roles.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/ticket</code></td>
-                                <td>Support</td>
-                                <td>Open private staff inquiry ticket with auto-transcript logging.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/counting stats</code></td>
-                                <td>Games</td>
-                                <td>View current count, record streak, and top contributors.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/starboard stats</code></td>
-                                <td>Games</td>
-                                <td>Inspect starboard threshold, star count, and top starred posts.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/afk [reason]</code></td>
-                                <td>Utility</td>
-                                <td>Set AFK status with mention notices and automated nickname prefix.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/purge [count]</code></td>
-                                <td>Moderation</td>
-                                <td>Bulk clean recent messages with audit log tracking.</td>
-                            </tr>
-                            <tr>
-                                <td><code>/warn [@user] [reason]</code></td>
-                                <td>Moderation</td>
-                                <td>Issue official rule violation warning with escalation rules.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
+    <!-- Main Docs Workspace -->
+    <main class="container docs-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="docs-sidebar">
+            <div class="docs-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="docs-search-input" placeholder="Search documentation..." oninput="filterDocsContent(this.value)">
             </div>
+
+            <div class="toc-group">
+                <span class="toc-heading">Getting Started</span>
+                <a href="#quickstart" class="toc-link"><i class="fas fa-rocket"></i> Quickstart Setup</a>
+                <a href="#topgg" class="toc-link"><i class="fas fa-chart-line"></i> Top.gg Multi-Bot Tracker</a>
+                <a href="#roblox" class="toc-link"><i class="fas fa-cubes"></i> Roblox Group Sync</a>
+            </div>
+
+            <div class="toc-group">
+                <span class="toc-heading">Community & Growth</span>
+                <a href="#leveling" class="toc-link"><i class="fas fa-trophy"></i> Leveling & XP Rewards</a>
+                <a href="#tickets" class="toc-link"><i class="fas fa-ticket-alt"></i> Support Tickets & Mail</a>
+                <a href="#automation" class="toc-link"><i class="fas fa-magic"></i> Reaction Roles & Auto</a>
+                <a href="#games" class="toc-link"><i class="fas fa-gamepad"></i> Games & Starboard v3.0</a>
+            </div>
+
+            <div class="toc-group">
+                <span class="toc-heading">Security & Engineering</span>
+                <a href="#safety" class="toc-link"><i class="fas fa-shield-virus"></i> AutoMod Threat Shield</a>
+                <a href="#premium" class="toc-link"><i class="fas fa-crown"></i> Premium Subscriptions</a>
+                <a href="#commands" class="toc-link"><i class="fas fa-terminal"></i> Command Reference</a>
+                <a href="#api-ref" class="toc-link"><i class="fas fa-code"></i> REST API & Webhooks</a>
+            </div>
+        </aside>
+
+        <!-- Main Documentation Content -->
+        <div class="docs-content" id="docs-content-root">
+            <!-- Documentation Hero Header -->
+            <div class="doc-hero-header">
+                <div class="doc-badge"><i class="fas fa-book-open"></i> Technical Reference v3.2</div>
+                <h1>System Documentation & Engineering Manual</h1>
+                <p>Comprehensive operational documentation for Nora Studio: Next-Gen Roblox group synchronization, multi-bot Top.gg vote pipelines, sub-4ms AutoMod gateway defense, Starboard v3.0, and leveling progression.</p>
+            </div>
+
+            <!-- 1. Quickstart Guide -->
+            <section class="doc-section" id="quickstart">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge"><i class="fas fa-rocket"></i></div>
+                    <h2>1. Quickstart Setup Guide</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Deploy Nora to your Discord community and configure your essential modules in less than 60 seconds:</p>
+                    
+                    <ol>
+                        <li><strong>Authorize Application:</strong> Navigate to <a href="/install" style="color: var(--blurple); font-weight: 700;">/install</a> and choose your Discord server. Ensure the bot role is positioned high in role hierarchy.</li>
+                        <li><strong>Interactive Setup in Discord:</strong> Run <code>/setup dashboard</code> in any moderator channel to open instant configuration links and role selectors.</li>
+                        <li><strong>Connect Web Dashboard:</strong> Visit <a href="/dashboard" style="color: var(--blurple); font-weight: 700;">vaztinix.dev/dashboard</a> to manage Top.gg webhook secrets, Roblox Group ID bindings, custom embeds, and audit logs.</li>
+                    </ol>
+
+                    <div class="callout callout-tip">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Role Hierarchy Rule:</strong> Always place the <code>@Nora</code> role higher than voter reward roles, verified group roles, and muted roles in Discord Server Settings &rarr; Roles.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Top.gg Tracker -->
+            <section class="doc-section" id="topgg">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #FF3366; background: rgba(255, 51, 102, 0.15); border-color: rgba(255, 51, 102, 0.3);"><i class="fas fa-chart-line"></i></div>
+                    <h2>2. Top.gg Vote Rewards & Multi-Bot Tracker</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Reward your community members for supporting Nora and any linked custom bots on Top.gg with automatic role awards, customizable Leveling XP, weekend multipliers, and loyalty vote streaks.</p>
+
+                    <div class="callout callout-info">
+                        <i class="fas fa-bolt"></i>
+                        <div>
+                            <strong>Sub-Second Webhook Pipeline:</strong> Upvotes are received in real-time via Nora's secure webhook endpoint. If normal bot channel permissions are restricted, Nora falls back to channel webhooks to guarantee delivery.
+                        </div>
+                    </div>
+
+                    <h3 style="color: #fff; margin: 20px 0 10px;">Webhook Endpoint Configuration</h3>
+                    <div class="code-block-container">
+                        <div class="code-block-header">
+                            <span>Unified Top.gg Webhook URL</span>
+                            <button class="btn-copy-code" onclick="copySnippet('https://api.vaztinix.dev/api/webhooks/topgg', this)"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-content">https://api.vaztinix.dev/api/webhooks/topgg</pre>
+                    </div>
+
+                    <h3 style="color: #fff; margin: 24px 0 12px;">Multiplier & Streak Formula</h3>
+                    <p>Nora calculates voter rewards using a dynamic multiplier matrix:</p>
+                    <div class="table-responsive">
+                        <table class="docs-table">
+                            <thead>
+                                <tr>
+                                    <th>Factor</th>
+                                    <th>Bonus Rate</th>
+                                    <th>Rules & Scheduling</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Base XP</strong></td>
+                                    <td><code>150 XP</code></td>
+                                    <td>Configurable baseline XP awarded on every verified upvote.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>⭐ Weekend 2x</strong></td>
+                                    <td><code>2.0x Multiplier</code></td>
+                                    <td>Automatically active Friday 00:00 UTC through Sunday 23:59 UTC.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>🔥 Streak Loyalty</strong></td>
+                                    <td><code>+25 XP / count</code></td>
+                                    <td>Increments on consecutive votes cast within a rolling 36-hour window.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Formula</strong></td>
+                                    <td colspan="2"><code>Total XP = (Base XP + [Streak &times; 25]) &times; WeekendMultiplier</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Roblox Sync -->
+            <section class="doc-section" id="roblox">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #06B6D4; background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.3);"><i class="fas fa-cubes"></i></div>
+                    <h2>3. Automated Roblox Group Rank Sync v2.6</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Link your Roblox group hierarchy directly to Discord server roles with bi-directional real-time verification:</p>
+                    
+                    <ul>
+                        <li><strong>Group Rank Mapping:</strong> Bind any numeric Roblox Group ID to Discord roles (Guests, Members, Officers, Developers, Owners).</li>
+                        <li><strong>4-Way Verification:</strong> Direct OAuth2, In-Game Code, Bio Keyword verification, and automated nickname sync.</li>
+                        <li><strong>Unverified Quarantine:</strong> Automatically assign an Unverified role to newcomers to prevent raid attempts until verified.</li>
+                    </ul>
+
+                    <div class="code-block-container">
+                        <div class="code-block-header">
+                            <span>Setup Command</span>
+                            <button class="btn-copy-code" onclick="copySnippet('/setup verify', this)"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-content">/setup verify group_id:12345678 verified_role:@Member unverified_role:@Unverified</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Leveling -->
+            <section class="doc-section" id="leveling">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #F59E0B; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3);"><i class="fas fa-trophy"></i></div>
+                    <h2>4. Leveling & XP Progression Engine</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Drive active community interaction with custom leveling rank cards, voice XP rewards, and milestone role unlocks:</p>
+                    
+                    <ul>
+                        <li><strong>Chat & Voice XP:</strong> Earn 15–25 XP per message with anti-spam cooldowns, plus voice XP every 5 minutes in unmuted channels.</li>
+                        <li><strong>Milestone Roles:</strong> Grant privilege or cosmetic roles at Level 5, 10, 25, 50, and 100 with optional role stacking.</li>
+                        <li><strong>Rank Cards:</strong> Users can inspect their progress with <code>/rank</code> or customize their card themes in <code>/rank edit</code>.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 5. Support Tickets -->
+            <section class="doc-section" id="tickets">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #EC4899; background: rgba(236, 72, 153, 0.15); border-color: rgba(236, 72, 153, 0.3);"><i class="fas fa-ticket-alt"></i></div>
+                    <h2>5. Support Ticketing & Mod-Mail Engine</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Enterprise support ticket workflow with interactive embeds, intake modal forms, and transcript archives:</p>
+                    
+                    <ul>
+                        <li><strong>Interactive Panel:</strong> Deploy persistent panels with custom buttons (Support, Reports, Appeals, VIP Inquiry).</li>
+                        <li><strong>Modal Intake Forms:</strong> Collect issue summaries, evidence links, and usernames upfront via pop-up modals.</li>
+                        <li><strong>HTML Transcript Archive:</strong> Automatically generate and post rich HTML transcripts to your staff log channel when closed.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 6. AutoMod & Threat Shield -->
+            <section class="doc-section" id="safety">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #10B981; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3);"><i class="fas fa-shield-virus"></i></div>
+                    <h2>6. AutoMod & Native Chat Defense Shield</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Shield your server with sub-4ms gateway regex filtering, phishing domain detection, and automated escalation:</p>
+                    
+                    <div class="table-responsive">
+                        <table class="docs-table">
+                            <thead>
+                                <tr>
+                                    <th>Defense Module</th>
+                                    <th>Detection Method</th>
+                                    <th>Default Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Anti-Phishing</strong></td>
+                                    <td>Real-time blacklist & Levenshtein domain matching</td>
+                                    <td>Instant delete + 24hr Quarantine Timeout</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Anti-Spam</strong></td>
+                                    <td>Rate-limit bucket (5 messages / 3 seconds)</td>
+                                    <td>Warn + Delete Flood</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Anti-Invite</strong></td>
+                                    <td>Discord invite regex pattern matching</td>
+                                    <td>Delete message + Warning log</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mass Mention</strong></td>
+                                    <td>Mention threshold detector (&gt; 4 mentions)</td>
+                                    <td>Mute 10 minutes + Staff Alert</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Starboard v3.0 & Entertainment -->
+            <section class="doc-section" id="games">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #FBBF24; background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.3);"><i class="fas fa-star"></i></div>
+                    <h2>7. Games & Tiered Starboard v3.0</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Pin outstanding community highlights with dynamic tiered visual flares and reward collaborative engagement:</p>
+                    
+                    <div class="starboard-tier-grid">
+                        <div class="tier-card" style="border-color: rgba(205, 127, 50, 0.4);">
+                            <div class="tier-card-header">
+                                <span>🥉 Bronze Star</span>
+                                <span class="tier-threshold">3+ Stars</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Standard highlight post pinned to the starboard channel.</p>
+                        </div>
+                        <div class="tier-card" style="border-color: rgba(192, 192, 192, 0.4);">
+                            <div class="tier-card-header">
+                                <span>🥈 Silver Radiant</span>
+                                <span class="tier-threshold">7+ Stars</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Silver radiant badge with author XP bonus.</p>
+                        </div>
+                        <div class="tier-card" style="border-color: rgba(255, 215, 0, 0.5);">
+                            <div class="tier-card-header">
+                                <span>🥇 Golden Cosmic</span>
+                                <span class="tier-threshold">15+ Stars</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Gilded golden embed with glowing visual flare & community broadcast.</p>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #fff; margin: 24px 0 10px;">Math Counting Game</h3>
+                    <p>Sequential collaborative counting channel with strict anti-double-count checks and full math expression evaluation (e.g. <code>10^2</code>, <code>50*2</code>, <code>sqrt(144)</code>).</p>
+                </div>
+            </section>
+
+            <!-- 8. Essential Command Catalog -->
+            <section class="doc-section" id="commands">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #A78BFA; background: rgba(167, 139, 250, 0.15); border-color: rgba(167, 139, 250, 0.3);"><i class="fas fa-terminal"></i></div>
+                    <h2>8. Essential Command Reference Catalog</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Click any command below to copy its syntax directly to your clipboard:</p>
+
+                    <div class="table-responsive">
+                        <table class="docs-table">
+                            <thead>
+                                <tr>
+                                    <th>Command</th>
+                                    <th>Category</th>
+                                    <th>Required Permission</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="command-table-body">
+                                <tr>
+                                    <td><code onclick="copySnippet('/setup dashboard', this)" style="cursor: pointer;">/setup dashboard</code></td>
+                                    <td>Setup</td>
+                                    <td>Administrator</td>
+                                    <td>Launches the interactive server control center & dashboard link.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/setup topgg', this)" style="cursor: pointer;">/setup topgg</code></td>
+                                    <td>Integrations</td>
+                                    <td>Manage Guild</td>
+                                    <td>Configures Top.gg voter role, reward XP, and webhook channel.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/vote', this)" style="cursor: pointer;">/vote</code></td>
+                                    <td>Community</td>
+                                    <td>Everyone</td>
+                                    <td>Displays voting links, current voter streak, and weekend multiplier status.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/rank', this)" style="cursor: pointer;">/rank [@user]</code></td>
+                                    <td>Leveling</td>
+                                    <td>Everyone</td>
+                                    <td>Inspects member level, total XP, current progress bar, and standing.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/leaderboard', this)" style="cursor: pointer;">/leaderboard</code></td>
+                                    <td>Leveling</td>
+                                    <td>Everyone</td>
+                                    <td>Displays server top 10 most active members by XP and Level.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/verify check', this)" style="cursor: pointer;">/verify check</code></td>
+                                    <td>Roblox</td>
+                                    <td>Everyone</td>
+                                    <td>Forces immediate synchronization of Roblox group roles and badges.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/ticket', this)" style="cursor: pointer;">/ticket</code></td>
+                                    <td>Support</td>
+                                    <td>Everyone</td>
+                                    <td>Opens a private staff inquiry channel with modal questionnaire.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/purge [count]', this)" style="cursor: pointer;">/purge [count]</code></td>
+                                    <td>Moderation</td>
+                                    <td>Manage Messages</td>
+                                    <td>Bulk purges recent messages with formatted audit log entries.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/warn [@user] [reason]', this)" style="cursor: pointer;">/warn [@user] [reason]</code></td>
+                                    <td>Moderation</td>
+                                    <td>Moderate Members</td>
+                                    <td>Issues an official rule violation warning with automatic punishment escalation.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/counting stats', this)" style="cursor: pointer;">/counting stats</code></td>
+                                    <td>Games</td>
+                                    <td>Everyone</td>
+                                    <td>Inspects current count, high-score streak, and top server contributors.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 9. REST API & Webhooks -->
+            <section class="doc-section" id="api-ref">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #60A5FA; background: rgba(96, 165, 250, 0.15); border-color: rgba(96, 165, 250, 0.3);"><i class="fas fa-code"></i></div>
+                    <h2>9. REST API & Webhook Specifications</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Integrate your external dashboards and custom Discord applications with Nora's official HTTP telemetry:</p>
+
+                    <div class="code-block-container">
+                        <div class="code-block-header">
+                            <span>GET /api/status/public</span>
+                            <button class="btn-copy-code" onclick="copySnippet('https://api.vaztinix.dev/api/status/public', this)"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-content">{
+  "status": "operational",
+  "version": "3.2.0",
+  "pingMs": 18,
+  "serverCount": 65,
+  "userCount": 42500,
+  "shards": [
+    { "id": 0, "status": "ready", "ping": 18 }
+  ]
+}</pre>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 
+    <!-- Footer -->
     <footer>
         <div class="container">
-            &copy; 2026 Nora Studio. Built for Discord Communities.
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="brand">
+                        <img src="nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+                        <span>Nora Studio</span>
+                    </a>
+                    <p>The ultimate privacy-first community operations suite for Discord servers. Robust automations, real-time sync, and security.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Navigation</h5>
+                    <ul>
+                        <li><a href="/dashboard">Dashboard</a></li>
+                        <li><a href="/install">Invite Bot</a></li>
+                        <li><a href="/status">Network Status</a></li>
+                        <li><a href="/team">Team & Credits</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Resources</h5>
+                    <ul>
+                        <li><a href="/docs">Documentation</a></li>
+                        <li><a href="/docs#roblox">Roblox Group Sync</a></li>
+                        <li><a href="/docs#topgg">Top.gg Tracker</a></li>
+                        <li><a href="/docs#games">Starboard Engine</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Support & Legal</h5>
+                    <ul>
+                        <li><a href="https://discord.gg/wKkG9zJj" target="_blank" rel="noopener">Discord Support</a></li>
+                        <li><a href="/legal#privacy">Privacy Policy</a></li>
+                        <li><a href="/legal#terms">Terms of Service</a></li>
+                        <li><a href="/billing-faq">Billing FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>&copy; 2026 Nora Studio. Built for empowering communities.</span>
+                <span style="display: inline-flex; align-items: center; gap: 8px; color: #10B981; font-weight: 700;">
+                    <span style="width: 8px; height: 8px; background: #10B981; border-radius: 50%; box-shadow: 0 0 10px #10B981;"></span>
+                    All Systems Operational
+                </span>
+            </div>
         </div>
+    </footer>
+
+    <!-- Interactive Docs Scripts -->
     <script>
-        function toggleDocsMenu() {
+        function toggleMobileMenu() {
             const drawer = document.getElementById('mobile-drawer');
             const backdrop = document.getElementById('mobile-drawer-backdrop');
             if (drawer && backdrop) {
@@ -845,6 +1614,58 @@
                 }
             }
         }
+
+        function toggleMobileAccordion(headerEl) {
+            const acc = headerEl.closest('.mobile-accordion');
+            if (acc) {
+                acc.classList.toggle('open');
+            }
+        }
+
+        function copySnippet(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check" style="color: #10B981;"></i> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                }, 2000);
+            }).catch(() => {
+                alert('Copied to clipboard: ' + text);
+            });
+        }
+
+        // Real-time documentation filter
+        function filterDocsContent(query) {
+            const q = query.toLowerCase().trim();
+            const sections = document.querySelectorAll('.doc-section');
+            sections.forEach(sec => {
+                if (!q) {
+                    sec.style.display = 'block';
+                    return;
+                }
+                const text = sec.textContent.toLowerCase();
+                sec.style.display = text.includes(q) ? 'block' : 'none';
+            });
+        }
+
+        // Active TOC link highlighter on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.doc-section');
+            const scrollPos = window.scrollY + 120;
+            let currentId = '';
+
+            sections.forEach(sec => {
+                if (sec.offsetTop <= scrollPos) {
+                    currentId = sec.getAttribute('id');
+                }
+            });
+
+            if (currentId) {
+                document.querySelectorAll('.toc-link').forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === `#${currentId}`);
+                });
+            }
+        });
     </script>
 </body>
 </html>
