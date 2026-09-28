@@ -197,7 +197,7 @@ module.exports = {
             } catch (e) {}
         }
 
-        // 6. User Permission Profile
+        // 6. User Permission Profile & Live Roles Context
         const BOT_DEVELOPER_ID = '1214048435632603137';
         const isDev = message.author.id === BOT_DEVELOPER_ID;
         const isOwner = message.author.id === message.guild.ownerId;
@@ -215,6 +215,27 @@ module.exports = {
                 perms?.has('ManageGuild') ? 'Manage Server' : null
             ].filter(Boolean).join(', ') || 'Standard Member (No Moderation/Admin Permissions)';
 
+        // Extract live role arrays for requester, bot, mentions, and server inventory
+        const userRolesList = message.member?.roles?.cache?.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'No custom roles';
+        const botRolesList = message.guild.members.me?.roles?.cache?.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'None';
+        
+        let mentionedRolesList = '';
+        if (message.mentions && message.mentions.members && message.mentions.members.size > 0) {
+            mentionedRolesList = message.mentions.members.map(m => `• ${m.displayName} (@${m.user.username}): [${m.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'None'}]`).join('\n');
+        }
+        if (replyTargetMsg && replyTargetMsg.member) {
+            const rMember = replyTargetMsg.member;
+            const rRoles = rMember.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'None';
+            mentionedRolesList += `\n• (Replied User) ${rMember.displayName} (@${rMember.user.username}): [${rRoles}]`;
+        }
+
+        const guildRolesList = message.guild.roles.cache
+            .filter(r => r.name !== '@everyone')
+            .sort((a, b) => b.position - a.position)
+            .map(r => `${r.name} (pos: ${r.position})`)
+            .slice(0, 35)
+            .join(', ') || 'None';
+
         const aiPayload = {
             promptText: plainContent,
             context: deepKnowledgeStr,
@@ -223,6 +244,10 @@ module.exports = {
             replyContext: directReplyStr,
             authorName: authorDisplayName,
             userPerms: userPermsSummary,
+            userRoles: userRolesList,
+            botRoles: botRolesList,
+            mentionedRoles: mentionedRolesList.trim(),
+            guildRoles: guildRolesList,
             imageAttachments: imageAttachments,
             isPremium: isPremium
         };

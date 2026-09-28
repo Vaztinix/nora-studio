@@ -113,6 +113,14 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
 - User (${authorName}) Discord Permissions: ${optionsOrContext.userPerms}
 - SECURITY DIRECTIVE: Nora strictly checks user permissions before executing or acknowledging actions. If a user asks to run commands, ban, kick, timeout, purge, or modify server settings without the required permissions listed above, you MUST decline and state that they lack the required permission.\n\n`;
     }
+    if (typeof optionsOrContext === 'object' && (optionsOrContext?.userRoles || optionsOrContext?.guildRoles)) {
+        contextSection += `### Live Discord Role & Member Context:
+- Current Chatter (${authorName}) Roles: ${optionsOrContext.userRoles || 'None'}
+- Nora's Bot Roles: ${optionsOrContext.botRoles || 'None'}
+${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrContext.mentionedRoles}\n` : ''}
+- Server Role Hierarchy (Top 35): ${optionsOrContext.guildRoles || 'None'}
+- ROLE VISIBILITY & BANTER DIRECTIVE: You have direct, 100% live visibility into all member roles and server role hierarchies. You can inspect, confirm, list, and banter about anyone's exact Discord roles with real-time accuracy.\n\n`;
+    }
     if (userMemory) {
         contextSection += `### User Profile & Memory:\n${userMemory}\n\n`;
     }
