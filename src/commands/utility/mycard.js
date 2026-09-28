@@ -354,4 +354,5 @@ module.exports = {
             await handleError(interaction, 'Profile Error', 'An error occurred while building your profile card. Please try again.');
         }
     },
+    buildMyCardPayload
 };

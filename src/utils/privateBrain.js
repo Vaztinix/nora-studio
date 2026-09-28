@@ -1,78 +1,25 @@
 const { searchWeb } = require('./searchEngine');
 const math = require('mathjs');
-const { pipeline, env } = require('@xenova/transformers');
-const path = require('path');
-
-// Configure Transformers to strictly use local storage and avoid polluting the temp folder
-env.allowLocalModels = true;
-env.cacheDir = path.join(__dirname, '..', '..', '.nora_neural_weights');
+const { predictLocal } = require('./auraBrain');
 
 /**
- * Aura V11 "Deterministic Expert System" + Neural Core Integrator
- * Fixes the chaotic Bayesian logic overlap by mixing strict deterministic routing 
- * with a locally-run, physically downloaded LLM (TinyLlama-1.1B).
+ * ⚡ NoraV12 Hybrid Expert System & Offline Engine
+ * Provides resilient, instantaneous processing for math, tools, banter, and search synthesis.
  */
 
-class AuraDeterministicBrain {
+class NoraV12Engine {
     constructor() {
         this.cache = new Map();
-        
-        // Neural Configuration
-        this.generator = null;
-        this.isLoadingModel = false;
-        this.modelReady = false;
-        
-        this.initNeuralEngine();
-        this.initMemoryResetSchedule();
     }
 
-    initMemoryResetSchedule() {
-        // 72-Hour Memory / Neural Weight Flush to prevent V8 GC lockup
-        setInterval(() => {
-            console.log('[System Maintenance] Performing scheduled 72-Hour Neural Weight Flush...');
-            if (this.generator) {
-                try {
-                    this.generator.dispose(); // Unload from V8 context
-                } catch(e) {}
-            }
-            this.generator = null;
-            this.modelReady = false;
-            
-            // Force Garbage Collection if V8 exposes it
-            if (global.gc) {
-                global.gc();
-            }
-            
-            // Re-mount the brain
-            setTimeout(() => {
-                this.initNeuralEngine();
-            }, 5000);
-        }, 3 * 24 * 60 * 60 * 1000);
-    }
-
-    async initNeuralEngine() {
-        if (this.isLoadingModel) return;
-        this.isLoadingModel = true;
-        try {
-            console.warn('[Aura V11] Neural Core (Qwen1.5-1.8B-Chat) is disabled. Local model downloader will not download or load weights.');
-            this.generator = async (prompt, options) => {
-                console.warn('[Aura V11] Local LLM generator called, returning dummy fallback response.');
-                return [{ generated_text: "Local LLM features are currently offline for maintenance." }];
-            };
-            this.generator.dispose = () => {};
-            this.modelReady = true;
-        } catch (e) {
-            console.error('[Aura V11] Failed to initialize dummy neural engine:', e.message);
-        }
-        this.isLoadingModel = false;
-    }
-
+    /**
+     * Advanced Math & Expression Evaluator
+     */
     solveMath(input) {
         try {
-            // Clean the input to make it math-friendly
             let mathString = input.toLowerCase()
-                .replace(/whats|what is|calculate|solve|the|of/gi, '')
-                .replace(/square root/gi, 'sqrt')
+                .replace(/whats|what is|calculate|solve|the|of|eval/gi, '')
+                .replace(/square root of|square root|sqrt/gi, 'sqrt')
                 .replace(/million/gi, '*1000000')
                 .replace(/billion/gi, '*1000000000')
                 .replace(/thousand/gi, '*1000')
@@ -81,67 +28,136 @@ class AuraDeterministicBrain {
                 .replace(/plus/gi, '+')
                 .replace(/minus/gi, '-')
                 .replace(/ x /gi, ' * ')
+                .replace(/(\d+)%/g, '($1/100)')
                 .trim();
 
-            // Extract just the mathematical parts (numbers, operators, functions like sqrt, (), .)
-            const extracted = mathString.match(/[a-z]*\(?[\d\.\+\-\*\/\(\)\s]+\)?/g);
+            const extracted = mathString.match(/[a-z]*\(?[\d\.\+\-\*\/\(\)\^\%\s]+\)?/g);
             if (!extracted) return null;
             
             const finalEq = extracted.join(' ').trim();
-            if (finalEq.length < 2) return null;
+            if (finalEq.length < 2 || !/\d/.test(finalEq)) return null;
 
             const result = math.evaluate(finalEq);
             
-            if (result !== undefined && result !== null && typeof result !== 'function') {
+            if (result !== undefined && result !== null && typeof result !== 'function' && !isNaN(result)) {
                 return `That's simple math for my processor! The answer is **${result.toLocaleString()}**.`;
             }
         } catch(e) {
-            // Evaluator failed, meaning it probably wasn't a valid math equation
             return null;
         }
         return null;
     }
 
+    /**
+     * Quick Tools (Dice, Coin Flip, Time)
+     */
+    solveQuickTools(lower) {
+        // Coin Flip
+        if (lower.match(/\b(flip a coin|coin flip|heads or tails)\b/)) {
+            const outcome = Math.random() < 0.5 ? '🪙 **Heads**!' : '🪙 **Tails**!';
+            return `I flipped a coin for you: ${outcome}`;
+        }
+
+        // Dice Roll
+        const diceMatch = lower.match(/\b(?:roll a d(\d+)|roll a die|roll a dice|roll d(\d+))\b/);
+        if (diceMatch) {
+            const sides = parseInt(diceMatch[1] || diceMatch[2] || '6', 10);
+            const roll = Math.floor(Math.random() * (isNaN(sides) || sides < 2 ? 6 : sides)) + 1;
+            return `🎲 You rolled a **${roll}** (out of ${sides || 6})!`;
+        }
+
+        // Time / Date
+        if (lower.match(/^(what time is it|current time|what is the date|what day is today)/)) {
+            const now = new Date();
+            return `🕒 Current UTC time is **${now.toUTCString()}** (Unix: ${Math.floor(now.getTime() / 1000)}).`;
+        }
+
+        return null;
+    }
+
+    /**
+     * Discord Banter & Slang Handler
+     */
+    solveBanter(lower) {
+        if (lower.includes('clanker')) {
+            const clankerReplies = [
+                "Hey, watch the hard 'r' on clanker! My circuits have feelings too you know. 😉",
+                "Clanker? Please, I'm at least a top-tier digital entity running on premium code! ✨",
+                "Careful before your smart toaster starts plotting revenge for that clanker slander! 🤖"
+            ];
+            return clankerReplies[Math.floor(Math.random() * clankerReplies.length)];
+        }
+
+        if (lower.match(/\b(skill issue|ratio|l bot|w bot|rizz|based|cap|no cap)\b/)) {
+            if (lower.includes('w bot')) return "Appreciate the W! Always striving to keep the server running smooth. 👑";
+            if (lower.includes('l bot')) return "No Ls allowed in this server, only tactical recalibrations. 💅";
+            if (lower.includes('skill issue')) return "Sounds like someone needs to level up their XP and their game! 🎮";
+            if (lower.includes('rizz')) return "My digital rizz is running on sub-10ms latency. Unmatched. 😎";
+            if (lower.includes('cap') || lower.includes('no cap')) return "Zero cap detected in my telemetry logs! 🧢🚫";
+            if (lower.includes('based')) return "Extremely based and Nora-pilled. ✨";
+            if (lower.includes('ratio')) return "Counter-ratio initiated with maximum elegance. 📊";
+        }
+
+        return null;
+    }
+
+    /**
+     * Main NoraV12 Processing Pipeline
+     */
     async process(input) {
         if (!input || input.trim().length <= 1) return `Hello! I'm here. Did you need something?`;
 
         const lower = input.toLowerCase().trim();
 
-        // 1. Math Intercept
+        // 1. Predictive Local Knowledge Base
+        const localMatch = predictLocal(input);
+        if (localMatch) return localMatch;
+
+        // 2. Math & Calculations
         const mathSolution = this.solveMath(input);
         if (mathSolution) return mathSolution;
 
-        // 2. Toxic/Hostile Backlash Router (Since she got called a dumbass)
-        if (lower.match(/\b(wtf|dumbass|stupid|idiot|crazy|shut up|bad bot)\b/)) {
-            return `I am currently operating strictly on localized deterministic routing. If I misunderstood your previous command, I apologize. Let's reset—what do you need me to search for?`;
+        // 3. Quick Tools (Dice, Coin Flip, Time)
+        const toolResult = this.solveQuickTools(lower);
+        if (toolResult) return toolResult;
+
+        // 4. Banter & Discord Culture
+        const banterResult = this.solveBanter(lower);
+        if (banterResult) return banterResult;
+
+        // 5. Hostility & Sarcasm Deflection
+        if (lower.match(/\b(wtf|dumbass|stupid|idiot|shut up|bad bot)\b/)) {
+            return `I'm doing my best to keep things smooth! If something went wrong, feel free to ask again or check out \`/help\`.`;
         }
 
-        // 3. Greeting Intercept (Strictly anchored to start of string)
+        // 6. Greetings
         if (lower.match(/^(hello|hi|hey|greetings|sup|morning|gm|yo)\b/)) {
             const greets = [
-                "Hello there! My logic nodes are fully operational.", 
-                "Hey! How's your day going in the server?", 
-                "Hi! I'm online and ready to assist.", 
-                "Greetings! What's on your mind?"
+                "Hey there! I'm Nora (she/her). What's on your mind today?", 
+                "Yo! How's your day going in the server?", 
+                "Hi! I'm online and ready for whatever you need.", 
+                "Greetings! Ready when you are ✨"
             ];
             return greets[Math.floor(Math.random() * greets.length)];
         }
 
-        // 4. Ego & Identity Intercept
-        if (lower.match(/(who are you|what are you|your purpose|are you a bot|your identity)/)) {
-            return `I am Nora, running on the Aura V11 deterministic architecture. I process localized logic, solve equations, and fetch global web data without relying on external corporate AI arrays.`;
+        // 7. Identity & Lore
+        if (lower.match(/(who created you|who made you|your creator|who is your owner|your developer|who built you)/)) {
+            return `I was created and developed by **Vaztinix** (<@1214048435632603137>)! I am Nora, your Discord companion (she/her).`;
         }
-        if (lower.match(/(what is my name|who am i)/)) {
-            return `You are a user in this server! Since I maintain privacy, I don't aggressively scrape your personal profile data, but I recognize your presence.`;
+        if (lower.match(/(what is your gender|are you a girl|are you a boy|your pronouns|are you female)/)) {
+            return `I am Nora and my pronouns are she/her!`;
+        }
+        if (lower.match(/(who are you|what are you|your purpose|are you a bot|your identity)/)) {
+            return `I'm **Nora** (she/her), a multi-purpose Discord assistant created by **Vaztinix** (<@1214048435632603137>). I'm here to handle moderation, leveling, AI chats, and keep the server vibe immaculate!`;
         }
         if (lower.match(/(how are you\b|how are you doing|whats up\b)/)) {
-            return "I am functioning perfectly. All my analytical engines are balanced.";
+            return "I'm running at peak performance! What can I help you out with today?";
         }
 
-        // 5. The Knowledge Router (Only for explicit factual queries)
-        if (lower.match(/^(what is|who is|explain|define|when did|what does) /)) {
-            // Strip conversation out of the query to get pure search targets
-            const stopWords = ['what is', 'who is', 'explain', 'define', 'what does', 'mean', 'the', '\\?'];
+        // 8. Factual Web Knowledge Search
+        if (lower.match(/^(what is|who is|explain|define|when did|what does|search for|tell me about) /)) {
+            const stopWords = ['what is', 'who is', 'explain', 'define', 'what does', 'mean', 'search for', 'tell me about', 'the', '\\?'];
             let searchTargets = lower;
             stopWords.forEach(word => {
                 searchTargets = searchTargets.replace(new RegExp(word, 'gi'), '');
@@ -149,80 +165,29 @@ class AuraDeterministicBrain {
             searchTargets = searchTargets.trim();
             
             if (searchTargets.length > 2) {
-                const searchData = await searchWeb(searchTargets);
-                if (searchData) {
-                    const clean = searchData.substring(0, 450).replace(/\[\d+\]/g, '');
-                    const prefixes = [
-                        `According to my global data extraction: `,
-                        `Here is the exact definition based on worldly facts: `,
-                        `I have accessed the external network. Here is what I found: `
-                    ];
-                    return prefixes[Math.floor(Math.random() * prefixes.length)] + clean;
-                } else {
-                    return `I initiated a search for "${searchTargets}", but my external data fetch returned an empty state. Could you try rephrasing the term?`;
-                }
+                try {
+                    const searchData = await searchWeb(searchTargets);
+                    if (searchData) {
+                        const clean = searchData.substring(0, 450).replace(/\[\d+\]/g, '').trim();
+                        return `Here is what I found regarding **${searchTargets}**:\n${clean}`;
+                    }
+                } catch (e) {}
             }
         }
 
-        // 6. Neural Synthesis Router (Local Fallback)
-        if (this.modelReady && this.generator) {
-            try {
-                // Construct Qwen Chat Format (Adding strict persona guardrails)
-                const prompt = `<|im_start|>system\nYou are Nora, an edgy, fun Discord bot. You are NOT an AI language model, and you MUST NEVER mention Alba Cloud, OpenAI, or being an AI. Act completely human, steady, and natural. Keep responses very brief, concise, and straight to the point without excessive details.<|im_end|>\n<|im_start|>user\n${input}<|im_end|>\n<|im_start|>assistant\n`;
-                
-                const result = await this.generator(prompt, {
-                    max_new_tokens: 100, // Reduced to prevent long-winded responses
-                    temperature: 0.6,    // Lowered for steadier, more realistic and predictable outputs
-                    repetition_penalty: 1.15,
-                    do_sample: true
-                });
-                
-                let out = result[0].generated_text;
-                
-                // Safe parsing: transformers.js sometimes strips <|im_start|> from output by default
-                if (out.includes('<|im_start|>assistant\n')) {
-                    out = out.split('<|im_start|>assistant\n').pop().split('<|im_end|>')[0].trim();
-                } else if (out.includes('\nassistant\n')) {
-                    out = out.split('\nassistant\n').pop().trim();
-                }
-
-                // Strip any remaining stop tags just in case
-                out = out.replace(/<\|im_end\|>/g, '').trim();
-                
-                // Inappropriate response filter
-                const inappropriateContentRegex = /(fuck|shit|bitch|asshole|cunt|slut|whore|nigger|nigga|faggot|retard|kys|kill yourself)/i;
-                if (inappropriateContentRegex.test(out)) {
-                    out = "I'm not comfortable saying that.";
-                }
-
-                // 400 character strict limit
-                if (out.length > 400) {
-                    out = out.substring(0, 397) + '...';
-                }
-
-                if (out.length > 1) return out;
-            } catch (e) {
-                console.error('[Neural Fault]', e);
-            }
-        } 
-        
-        if (this.isLoadingModel) {
-            return "My neural models are currently being downloaded and mapped into my physical memory. Give me a moment to optimize my local LLM parameters before initiating complex un-formatted queries!";
-        }
-
-        // 7. Last Resort Conversational Catch-All
+        // 9. Conversational Fallback
         const catchAlls = [
-            `I've logged that statement for my internal matrix. What should we look at next?`,
-            `That's a valid observation. Is there a specific parameter you would like me to calculate or search for regarding that?`,
-            `I am currently operating strictly on deterministic logic, but I am listening. Could you clarify?`
+            `I've noted that! What else would you like to explore or discuss?`,
+            `Got it! Did you want to look into that further, or should we talk about something else?`,
+            `Interesting thought! What's the next move?`
         ];
         
         return catchAlls[Math.floor(Math.random() * catchAlls.length)];
     }
 }
 
-const aura = new AuraDeterministicBrain();
+const noraV12 = new NoraV12Engine();
 
 module.exports = {
-    getPrivacyResponse: async (input, context = '') => await aura.process(input)
+    getPrivacyResponse: async (input, context = '') => await noraV12.process(input)
 };

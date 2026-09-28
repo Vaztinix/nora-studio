@@ -3875,3 +3875,111 @@ router.post('/moderate', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
+/**
+ * GET /api/guilds/:guildId/starboard
+ * Retrieve aggregated Starboard statistics, Top Starred Members leaderboard, Hall of Fame, and recent Starboard posts.
+ */
+router.get('/starboard', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const StarboardEntry = require('../../database/models/StarboardEntry');
+        const { 
+            getStarboardStats, 
+            getTopStarredMembers, 
+            getHallOfFame 
+        } = require('../../bot/engines/starboardEngine');
+
+        const [stats, topMembers, hallOfFame, recentEntries] = await Promise.all([
+            getStarboardStats(guildId),
+            getTopStarredMembers(guildId, 50),
+            getHallOfFame(guildId, 25),
+            StarboardEntry.findAll({
+                where: { guildId },
+                order: [['createdAt', 'DESC']],
+                limit: 30
+            })
+        ]);
+
+        const guild = req.client.guilds.cache.get(guildId);
+        const enrichedTopMembers = topMembers.map(m => {
+            const member = guild ? guild.members.cache.get(m.authorId) : null;
+            const user = member ? member.user : null;
+            return {
+                ...m,
+                displayName: member?.displayName || user?.globalName || user?.username || m.authorTag || 'Discord User',
+                avatar: user ? user.displayAvatarURL({ dynamic: true, size: 64 }) : `https://cdn.discordapp.com/embed/avatars/${(BigInt(m.authorId || 0) >> 22n) % 6n}.png`
+            };
+        });
+
+        const enrichedHof = hallOfFame.map(h => {
+            const hData = h.toJSON ? h.toJSON() : h;
+            const member = guild ? guild.members.cache.get(h.authorId) : null;
+            const user = member ? member.user : null;
+            return {
+                ...hData,
+                displayName: member?.displayName || user?.globalName || user?.username || h.authorTag || 'Discord User',
+                avatar: user ? user.displayAvatarURL({ dynamic: true, size: 64 }) : `https://cdn.discordapp.com/embed/avatars/${(BigInt(h.authorId || 0) >> 22n) % 6n}.png`
+            };
+        });
+
+        res.json({
+            stats,
+            topMembers: enrichedTopMembers,
+            hallOfFame: enrichedHof,
+            recentEntries
+        });
+    } catch (err) {
+        console.error('[API Starboard Error]:', err);
+        res.status(500).json({ error: 'Failed to fetch starboard data.' });
+    }
+});
+
+/**
+ * DELETE /api/guilds/:guildId/starboard/entry/:id
+ * Delete a message from the starboard database and starboard channel.
+ */
+router.delete('/starboard/entry/:id', async (req, res) => {
+    try {
+        const { guildId, id } = req.params;
+        const StarboardEntry = require('../../database/models/StarboardEntry');
+        const entry = await StarboardEntry.findOne({ where: { id, guildId } });
+        if (!entry) return res.status(404).json({ error: 'Starboard entry not found.' });
+
+        const settings = await GuildSettings.findOne({ where: { guildId } });
+        if (settings && settings.starboardChannelId && entry.starboardMessageId) {
+            const guild = req.client.guilds.cache.get(guildId);
+            if (guild) {
+                const starboardChan = guild.channels.cache.get(settings.starboardChannelId);
+                if (starboardChan) {
+                    const msg = await starboardChan.messages.fetch(entry.starboardMessageId).catch(() => null);
+                    if (msg) await msg.delete().catch(() => {});
+                }
+            }
+        }
+
+        await entry.destroy();
+        res.json({ success: true, message: 'Starboard post removed successfully.' });
+    } catch (err) {
+        console.error('[API Delete Starboard Entry Error]:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/starboard/reset-leaderboard
+ * Reset all starboard star counts and entries for the server.
+ */
+router.post('/starboard/reset-leaderboard', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const StarboardEntry = require('../../database/models/StarboardEntry');
+        const deletedCount = await StarboardEntry.destroy({ where: { guildId } });
+        res.json({ success: true, deletedCount, message: `Reset complete. Removed ${deletedCount} starboard entries.` });
+    } catch (err) {
+        console.error('[API Reset Starboard Leaderboard Error]:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+module.exports = router;
