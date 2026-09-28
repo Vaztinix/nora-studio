@@ -5,6 +5,7 @@ const {
     AudioPlayerStatus,
     VoiceConnectionStatus,
     EndBehaviorType,
+    StreamType,
     entersState
 } = require('@discordjs/voice');
 const {
@@ -22,6 +23,12 @@ const geminiKeyManager = require('./geminiKeyManager');
 const { getBuiltInResponse } = require('./builtInBrain');
 const fs = require('fs');
 const path = require('path');
+
+// Ensure FFMPEG_PATH is globally configured
+try {
+    const ffmpegPath = require('ffmpeg-static');
+    if (ffmpegPath) process.env.FFMPEG_PATH = ffmpegPath;
+} catch (_) {}
 
 // 🔒 Restricted Server: Milo's World Only
 const BETA_GUILD_ID = '1487342521133830174';
@@ -72,7 +79,6 @@ function createWavBuffer(pcmBuffer, sampleRate = 48000, channels = 2, bitDepth =
  */
 function chunkTextForTTS(text, maxLength = 180) {
     if (!text) return [];
-    // Strip markdown links, code blocks, bold/italics, and emojis for clear voice synthesis
     const clean = text
         .replace(/https?:\/\/[^\s]+/g, '')
         .replace(/[`*~_#|<>]/g, '')
@@ -189,12 +195,6 @@ class NoraVoiceAIManager {
         }
 
         try {
-            // Set FFMPEG_PATH if present
-            try {
-                const ffmpegPath = require('ffmpeg-static');
-                if (ffmpegPath) process.env.FFMPEG_PATH = ffmpegPath;
-            } catch (_) {}
-
             const connection = joinVoiceChannel({
                 channelId: voiceChannel.id,
                 guildId: guildId,
@@ -204,6 +204,17 @@ class NoraVoiceAIManager {
             });
 
             await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
+
+            // Attempt to force voice state undeafen if server deafened
+            try {
+                const me = voiceChannel.guild.members.me;
+                if (me?.voice?.serverDeaf) {
+                    await me.voice.setDeaf(false).catch(() => {});
+                }
+                if (me?.voice?.serverMute) {
+                    await me.voice.setMute(false).catch(() => {});
+                }
+            } catch (_) {}
 
             const player = createAudioPlayer();
             connection.subscribe(player);
@@ -254,7 +265,7 @@ class NoraVoiceAIManager {
             await this.sendInitialVisualizer(session);
 
             // Play short greeting
-            this.speak(session, `Hello ${initiatorMember.displayName}! Nora Voice AI is online and listening. You can speak to me naturally.`);
+            await this.speak(session, `Hello ${initiatorMember.displayName}! Nora Voice AI is online and listening. You can speak to me naturally.`);
 
             return { success: true, session };
         } catch (error) {
@@ -300,7 +311,7 @@ class NoraVoiceAIManager {
 
             decoder.on('end', async () => {
                 const pcmBuffer = Buffer.concat(pcmChunks);
-                // Minimum speech threshold: at least ~0.45s of audio (48000 samples * 2 channels * 2 bytes * 0.45)
+                // Minimum speech threshold: at least ~0.45s of audio
                 if (pcmBuffer.length < 48000 * 2 * 2 * 0.45) {
                     return;
                 }
@@ -441,12 +452,30 @@ class NoraVoiceAIManager {
         session.isSpeaking = true;
         try {
             const chunks = chunkTextForTTS(text, 180);
-            if (chunks.length === 0) return;
+            if (chunks.length === 0) {
+                session.isSpeaking = false;
+                this.updateVisualizer(session, 'idle');
+                return;
+            }
 
             // Fetch first/main audio chunk
             const audioBuffer = await fetchTTSAudioBuffer(chunks[0]);
-            const stream = Readable.from(audioBuffer);
-            const resource = createAudioResource(stream);
+            
+            // Transcode MP3 directly to 48kHz stereo 16-bit PCM for Discord.js Voice
+            const transcoder = new prism.FFmpeg({
+                args: [
+                    '-analyzeduration', '0',
+                    '-loglevel', '0',
+                    '-f', 'mp3',
+                    '-i', 'pipe:0',
+                    '-f', 's16le',
+                    '-ar', '48000',
+                    '-ac', '2'
+                ]
+            });
+
+            Readable.from(audioBuffer).pipe(transcoder);
+            const resource = createAudioResource(transcoder, { inputType: StreamType.Raw });
 
             session.player.play(resource);
         } catch (error) {
