@@ -1,4 +1,4 @@
-const { Events, AttachmentBuilder } = require('discord.js');
+const { Events, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const OpenAI = require('openai');
 const settingsCache = require('../utils/settingsCache');
 const { getPrivacyResponse } = require('../utils/privateBrain');
@@ -74,8 +74,17 @@ module.exports = {
         const ALLOWED_CHANNEL_ID = '1510712052342329534';
 
         if (message.guild.id !== ALLOWED_GUILD_ID) {
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId('request_nora_ai_beta_invite')
+                    .setLabel('Request Beta Server Invite (DM)')
+                    .setEmoji('✨')
+                    .setStyle(ButtonStyle.Primary)
+            );
+
             return message.reply({
-                content: 'AI features are currently limited and are not available here.',
+                content: `✨ **Nora AI is Currently in Beta Testing**\n\nNora AI features are currently in private beta and testing is actively happening in **Milo's World**.\n\nClick the button below and I will send you a direct message with an invite to join the beta testing server!`,
+                components: [row],
                 allowedMentions: { repliedUser: false }
             }).catch(() => {});
         }

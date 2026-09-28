@@ -612,6 +612,23 @@ module.exports = {
             }
         }
 
+        // 📬 Handle Nora AI Beta Invite Request Button (DM delivery)
+        if (interaction.isButton() && interaction.customId === 'request_nora_ai_beta_invite') {
+            try {
+                const dmMessage = `👋 Hey **${interaction.user.username}**!\n\nYou have requested the server link to join the **Nora AI Beta** hosted in the **Milo's World** server.\n\n🔗 **Join the Beta Server:** https://discord.gg/3g2BCaAYDD\n\nWe look forward to seeing you there! ✨`;
+                await interaction.user.send({ content: dmMessage });
+                return interaction.reply({
+                    content: `✅ **Invite Sent!** I've sent you a direct message with the server link to join the Nora AI Beta hosted in **Milo's World**.`,
+                    ephemeral: true
+                });
+            } catch (err) {
+                return interaction.reply({
+                    content: `⚠️ **Direct Messages Closed**: I couldn't send you the server link because your DMs are closed or blocked. Please enable direct messages from server members and try again!`,
+                    ephemeral: true
+                });
+            }
+        }
+
         // Handle AI Switch Buttons
         if (interaction.isButton() && (interaction.customId === 'switch_ai_builtin' || interaction.customId === 'use_ai_local')) {
             let settings;

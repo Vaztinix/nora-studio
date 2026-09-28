@@ -55,12 +55,11 @@ function parseDuration(input) {
 }
 
 /**
- * 🎯 Intelligently extracts the true target user from mentions, context, memory, or IDs
- * Automatically excludes Nora herself unless explicitly targeted for banter.
+ * 🎯 Intelligently extracts the true target user from mentions, self-keywords, or explicit Discord IDs.
+ * Strictly prevents random user guessing or fuzzy match hallucinations.
  */
 async function resolveTargetUser(message, raw) {
     const client = message.client;
-    const guild = message.guild;
     const lower = raw.toLowerCase();
 
     // 1. Mentions excluding the bot herself
@@ -74,7 +73,7 @@ async function resolveTargetUser(message, raw) {
         return message.author;
     }
 
-    // 3. User ID match (17-20 digits)
+    // 3. Explicit Discord User ID match (17-20 digits)
     const idMatch = raw.match(/\b(\d{17,20})\b/);
     if (idMatch && idMatch[1] !== client.user?.id) {
         const cached = client.users.cache.get(idMatch[1]);
@@ -83,40 +82,7 @@ async function resolveTargetUser(message, raw) {
         if (fetched) return fetched;
     }
 
-    // 4. Contextual memory: "the user we muted", "that user", "last user", "them", "him", "her", "that guy"
-    if (lower.match(/\b(the user we muted|the user|that user|last user|them|him|her|prev user|that guy)\b/i)) {
-        try {
-            const lastCase = await Case.findOne({
-                where: { guildId: guild.id },
-                order: [['createdAt', 'DESC']]
-            });
-            if (lastCase && lastCase.userId && lastCase.userId !== client.user?.id) {
-                const fetched = client.users.cache.get(lastCase.userId) || await client.users.fetch(lastCase.userId).catch(() => null);
-                if (fetched) return fetched;
-            }
-        } catch (e) {}
-    }
-
-    // 5. Username / Nickname search in current guild cache
-    const words = raw.replace(/[<@!#>]/g, ' ').split(/\s+/).filter(Boolean);
-    const ignoreList = ['can', 'you', 'please', 'mute', 'unmute', 'timeout', 'untimeout', 'kick', 'ban', 'unban', 'warn', 'for', 'min', 'minute', 'minutes', 'hour', 'hours', 'day', 'days', 'as', 'an', 'a', 'test', 'now', 'the', 'user', 'we', 'muted', 'nora', 'bot'];
-    
-    for (const w of words) {
-        const clean = w.toLowerCase().trim();
-        if (clean.length >= 2 && !ignoreList.includes(clean)) {
-            const foundMember = guild.members.cache.find(m => 
-                m.user.id !== client.user?.id && (
-                    m.user.username.toLowerCase() === clean ||
-                    m.displayName.toLowerCase() === clean ||
-                    m.user.username.toLowerCase().includes(clean) ||
-                    m.displayName.toLowerCase().includes(clean)
-                )
-            );
-            if (foundMember) return foundMember.user;
-        }
-    }
-
-    // 6. If the ONLY mention was Nora herself (e.g. "@Nora mute @Nora" or "mute yourself")
+    // 4. If the ONLY mention was Nora herself (e.g. "@Nora mute @Nora" or "mute yourself")
     if (lower.match(/\b(mute|timeout|kick|ban|warn)\s+(@?nora|yourself)\b/i)) {
         return client.user;
     }
@@ -172,7 +138,7 @@ async function detectIntent(message, plainContent) {
         };
     }
 
-    // 3. Utility: Avatar
+    // 5. Utility: Avatar
     if (lower.match(/\b(avatar|pfp|icon)\b/i) && !lower.match(/\b(change|set|update)\b/i)) {
         const nonBotMentions = message.mentions?.users?.filter(u => u.id !== client.user?.id);
         return {
@@ -182,7 +148,7 @@ async function detectIntent(message, plainContent) {
         };
     }
 
-    // 4. Utility: Ping
+    // 6. Utility: Ping
     if (lower.match(/^(ping|latency|bot ping)\b/i)) {
         return {
             type: 'UTILITY',
@@ -190,7 +156,7 @@ async function detectIntent(message, plainContent) {
         };
     }
 
-    // 5. Utility: Bot Info / Server Info
+    // 7. Utility: Bot Info / Server Info
     if (lower.match(/\b(bot\s*info|server\s*info|system\s*info|about\s*nora|nora\s*status)\b/i)) {
         return {
             type: 'UTILITY',
@@ -200,7 +166,7 @@ async function detectIntent(message, plainContent) {
 
     // --- Moderation Intent Detection ---
 
-    // A. Mute / Timeout (e.g., "can you mute me", "mute @user 10m spamming", "timeout @user for 1 hour")
+    // A. Mute / Timeout
     if (lower.match(/\b(mute|timeout|silence|shut\s*up)\b/i) && !lower.match(/\b(unmute|untimeout|remove\s+timeout|lift\s+timeout)\b/i)) {
         const target = await resolveTargetUser(message, raw);
         if (target) {
@@ -222,10 +188,16 @@ async function detectIntent(message, plainContent) {
                 duration: duration,
                 reason: reason
             };
+        } else {
+            return {
+                type: 'MODERATION',
+                action: 'TARGET_REQUIRED',
+                requestedAction: 'Timeout / Mute'
+            };
         }
     }
 
-    // A2. Conversational Timeout Follow-up (e.g. user replies "FOREVER 😏" or "10m" to Nora's prompt)
+    // A2. Conversational Timeout Follow-up
     if (lower.match(/\b(forever|perm|permanent|banish him|banish them|do it|lock him in|lock him)\b/i) ||
         (message.reference && lower.match(/\b(\d+\s*(s|sec|m|min|minutes?|h|hr|hours?|d|days?|w|weeks?)|forever|perm)\b/i))) {
         let refMsg = null;
@@ -264,9 +236,8 @@ async function detectIntent(message, plainContent) {
         }
     }
 
-    // B. Unmute / Untimeout (e.g. "now unmute the user we muted", "unmute @user", "lift timeout")
-    if (lower.match(/\b(unmute|untimeout|lift\s*timeout|remove\s*timeout)\b/i) ||
-        lower.match(/\b(now\s+)?unmute\s+(the\s+user|them|him|her|that\s+user)/i)) {
+    // B. Unmute / Untimeout
+    if (lower.match(/\b(unmute|untimeout|lift\s*timeout|remove\s*timeout)\b/i)) {
         const target = await resolveTargetUser(message, raw);
         if (target) {
             return {
@@ -274,6 +245,12 @@ async function detectIntent(message, plainContent) {
                 action: 'UNMUTE',
                 target: target,
                 reason: 'Requested via Nora AI'
+            };
+        } else {
+            return {
+                type: 'MODERATION',
+                action: 'TARGET_REQUIRED',
+                requestedAction: 'Untimeout'
             };
         }
     }
@@ -294,6 +271,12 @@ async function detectIntent(message, plainContent) {
                 action: 'KICK',
                 target: target,
                 reason: reason
+            };
+        } else {
+            return {
+                type: 'MODERATION',
+                action: 'TARGET_REQUIRED',
+                requestedAction: 'Kick'
             };
         }
     }
@@ -316,6 +299,12 @@ async function detectIntent(message, plainContent) {
                 targetId: target.id,
                 reason: reason
             };
+        } else {
+            return {
+                type: 'MODERATION',
+                action: 'TARGET_REQUIRED',
+                requestedAction: 'Ban'
+            };
         }
     }
 
@@ -330,6 +319,12 @@ async function detectIntent(message, plainContent) {
                 action: 'UNBAN',
                 targetId: finalId,
                 reason: 'Requested via Nora AI'
+            };
+        } else {
+            return {
+                type: 'MODERATION',
+                action: 'TARGET_REQUIRED',
+                requestedAction: 'Unban'
             };
         }
     }
@@ -350,6 +345,12 @@ async function detectIntent(message, plainContent) {
                 action: 'WARN',
                 target: target,
                 reason: reason
+            };
+        } else {
+            return {
+                type: 'MODERATION',
+                action: 'TARGET_REQUIRED',
+                requestedAction: 'Warn'
             };
         }
     }
@@ -636,12 +637,51 @@ async function checkModerationAuthority(message, client, intent) {
         'ROLE_REMOVE': PermissionFlagsBits.ManageRoles
     };
 
+    const permFriendlyNames = {
+        'MUTE': 'Moderate Members (Timeout)',
+        'UNMUTE': 'Moderate Members',
+        'KICK': 'Kick Members',
+        'BAN': 'Ban Members',
+        'UNBAN': 'Ban Members',
+        'WARN': 'Moderate Members',
+        'PURGE': 'Manage Messages',
+        'LOCK': 'Manage Channels',
+        'UNLOCK': 'Manage Channels',
+        'SLOWMODE': 'Manage Channels',
+        'ROLE_ADD': 'Manage Roles',
+        'ROLE_REMOVE': 'Manage Roles'
+    };
+
+    // Handle missing target intent
+    if (intent.action === 'TARGET_REQUIRED') {
+        let permKey = 'MUTE';
+        const reqLower = (intent.requestedAction || '').toLowerCase();
+        if (reqLower.includes('ban')) permKey = 'BAN';
+        else if (reqLower.includes('kick')) permKey = 'KICK';
+        else if (reqLower.includes('timeout') || reqLower.includes('mute') || reqLower.includes('warn')) permKey = 'MUTE';
+
+        const reqPerm = reqPermMap[permKey];
+        if (reqPerm && !isDeveloper && !isGuildOwner) {
+            if (!member.permissions.has(reqPerm) && !member.permissions.has(PermissionFlagsBits.Administrator)) {
+                return {
+                    allowed: false,
+                    reason: `❌ **Permission Denied**: You do not have permission to ${intent.requestedAction.toLowerCase()} members on this server. (Requires \`${permFriendlyNames[permKey] || 'Moderator'}\`)`
+                };
+            }
+        }
+
+        return {
+            allowed: false,
+            reason: `⚠️ **Target User Required**: To **${intent.requestedAction.toLowerCase()}** someone, you must explicitly mention the user (e.g., \`@user\`) or provide their Discord User ID. For server security, I will never choose a random member.`
+        };
+    }
+
     const requiredPerm = reqPermMap[intent.action];
     if (requiredPerm && !isDeveloper && !isGuildOwner) {
         if (!member.permissions.has(requiredPerm) && !member.permissions.has(PermissionFlagsBits.Administrator)) {
             return {
                 allowed: false,
-                reason: `❌ **Permission Denied**: You need the \`${Object.keys(PermissionFlagsBits).find(k => PermissionFlagsBits[k] === requiredPerm) || 'Moderator'}\` permission to execute this command.`
+                reason: `❌ **Permission Denied**: You do not have permission to execute this moderation action. (Requires \`${permFriendlyNames[intent.action] || 'Moderator'}\`)`
             };
         }
     }

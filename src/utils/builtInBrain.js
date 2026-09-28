@@ -83,7 +83,11 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
   - If user memory/facts are available, use them to personalize the interaction naturally.
 - **AUTONOMOUS EXECUTION & MODERATION CAPABILITY**:
   - You possess real executive moderation and server control powers (mute/timeout, kick, ban, unban, purge, warn, lock/unlock channels, slowmode, rank card generation).
-  - Never claim that you lack the ability to timeout, moderate, or execute actions. If a user asks you to moderate someone or perform a command, acknowledge that you can execute it through your interactive verification interface.
+  - Never claim that you lack the ability to timeout, moderate, or execute actions.
+- **STRICT MODERATION & TARGET SECURITY RULES**:
+  - A moderation action (ban, kick, timeout/mute, warn) requires an explicit target mention (@user) or Discord User ID.
+  - NEVER select, guess, or assume a random user to moderate. If no user is mentioned or specified, clearly state that a user must be specifically mentioned or provided with an ID.
+  - Moderation actions require proper Discord permissions. If someone without permissions asks to ban or kick, state that appropriate permissions (Ban Members, Kick Members, Moderate Members) are required.
 - **DISCORD FORMATTING**:
   - Respond like a real Discord chatter (she/her). Use markdown (bold, italic, code blocks) naturally.
   - Keep responses punchy, concise, and Discord-ready (under 1800 characters)${isPremium ? ' with thorough depth when requested.' : '.'}
@@ -159,6 +163,7 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
                 const result = await model.generateContent(parts);
                 const text = result.response.text();
                 if (text && text.trim().length > 0) {
+                    geminiKeyManager.reportSuccess(apiKey);
                     return text.replace(/\\n/g, '\n').replace(/\\\\n/g, '\n');
                 }
             } catch (error) {
@@ -168,7 +173,7 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
                 // If quota exhausted / 429 on this key, mark cooldown and try next key
                 if (errLower.includes('resource_exhausted') || errLower.includes('quota') || errLower.includes('429') || errLower.includes('rate limit')) {
                     hitQuota = true;
-                    geminiKeyManager.reportQuotaLimit(apiKey, 60000);
+                    geminiKeyManager.reportQuotaLimit(apiKey, error);
                     console.warn(`[Gemini Quota] Model ${modelName} on key ...${apiKey.slice(-6)} hit quota limit. Cascading to next available key/model.`);
                     break; // break inner model loop to move to next key immediately
                 } else {
