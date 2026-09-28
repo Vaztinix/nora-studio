@@ -36,6 +36,7 @@
     "libsodium-wrappers": "^0.8.4",
     "lodash": "^4.18.1",
     "mathjs": "^15.2.0",
+    "msedge-tts": "^2.0.8",
     "natural": "^8.1.1",
     "openai": "^6.33.0",
     "opusscript": "^0.0.8",

@@ -17,6 +17,7 @@ const {
 } = require('discord.js');
 const prism = require('prism-media');
 const axios = require('axios');
+const { MsEdgeTTS, OUTPUT_FORMAT } = require('msedge-tts');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const geminiKeyManager = require('./geminiKeyManager');
 const { getBuiltInResponse } = require('./builtInBrain');
@@ -77,7 +78,7 @@ function createWavBuffer(pcmBuffer, sampleRate = 48000, channels = 2, bitDepth =
  * @param {number} maxLength 
  * @returns {string[]}
  */
-function chunkTextForTTS(text, maxLength = 180) {
+function chunkTextForTTS(text, maxLength = 250) {
     if (!text) return [];
     const clean = text
         .replace(/https?:\/\/[^\s]+/g, '')
@@ -106,20 +107,43 @@ function chunkTextForTTS(text, maxLength = 180) {
 }
 
 /**
- * Fetches MP3 audio buffer from Google Neural/Translate TTS endpoint
+ * Fetches Studio-Grade Microsoft Neural MP3 audio buffer with fallback
  * @param {string} text 
  * @returns {Promise<Buffer>}
  */
 async function fetchTTSAudioBuffer(text) {
-    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
-    const response = await axios.get(url, {
-        responseType: 'arraybuffer',
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
-        timeout: 10000
-    });
-    return Buffer.from(response.data);
+    try {
+        const tts = new MsEdgeTTS();
+        // en-US-JennyNeural is natural, warm, fluent, and crystal clear
+        await tts.setMetadata('en-US-JennyNeural', OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+        const { audioStream } = tts.toStream(text);
+
+        return await new Promise((resolve, reject) => {
+            const chunks = [];
+            const timeout = setTimeout(() => reject(new Error('Neural TTS timeout')), 10000);
+
+            audioStream.on('data', chunk => chunks.push(chunk));
+            audioStream.on('end', () => {
+                clearTimeout(timeout);
+                resolve(Buffer.concat(chunks));
+            });
+            audioStream.on('error', err => {
+                clearTimeout(timeout);
+                reject(err);
+            });
+        });
+    } catch (neuralErr) {
+        console.warn('[NoraVoiceAI] Neural TTS fallback to secondary stream:', neuralErr.message);
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
+        const response = await axios.get(url, {
+            responseType: 'arraybuffer',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            timeout: 10000
+        });
+        return Buffer.from(response.data);
+    }
 }
 
 class NoraVoiceAIManager {
