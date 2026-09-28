@@ -136,7 +136,7 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
         }
     }
 
-    const availableKeys = geminiKeyManager.getAvailableKeys();
+    const availableKeys = geminiKeyManager.getRotatedAvailableKeys();
     if (availableKeys.length === 0) {
         return geminiKeyManager.getQuotaNotice();
     }

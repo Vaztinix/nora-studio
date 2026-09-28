@@ -139,6 +139,21 @@ class GeminiKeyManager {
     }
 
     /**
+     * Get available keys rotated in round-robin order to balance API usage across multiple projects
+     * @returns {string[]}
+     */
+    getRotatedAvailableKeys() {
+        const available = this.getAvailableKeys();
+        if (available.length <= 1) return available;
+
+        this.currentIndex = (this.currentIndex + 1) % available.length;
+        return [
+            ...available.slice(this.currentIndex),
+            ...available.slice(0, this.currentIndex)
+        ];
+    }
+
+    /**
      * Get next round-robin key
      * @returns {string|null}
      */
