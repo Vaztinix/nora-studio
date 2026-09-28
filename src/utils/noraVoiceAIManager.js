@@ -327,7 +327,7 @@ class NoraVoiceAIManager {
             const opusStream = receiver.subscribe(userId, {
                 end: {
                     behavior: EndBehaviorType.AfterSilence,
-                    duration: 650 // 650ms silence ends utterance
+                    duration: 1100 // 1100ms silence gives users a natural moment to pause without getting cut off
                 }
             });
 
@@ -409,7 +409,7 @@ class NoraVoiceAIManager {
     }
 
     /**
-     * Processes speech from a single speaker with multi-user room context
+     * Processes speech from a single speaker with multi-user room context and full role intelligence
      */
     async handleSingleUtterance(session, speakerMember, pcmBuffer) {
         console.log(`[NoraVoiceAI] Processing speech from ${speakerMember.displayName} (${pcmBuffer.length} bytes PCM)...`);
@@ -446,15 +446,37 @@ class NoraVoiceAIManager {
                 transcription: transcription
             });
 
-            // 2. Build Multi-User Room Context (strictly isolated from old text chats)
+            // 2. Build Multi-User Room Context with Live Roles & Group Dynamics
             const now = Date.now();
-            // Drop any dialogue turns older than 90 seconds
             session.recentDialogue = (session.recentDialogue || []).filter(d => (now - d.time) < 90000);
 
-            const activeMembersInVC = session.voiceChannel.members
+            // Collect all members in VC with their roles
+            const vcMembersDetails = session.voiceChannel.members
                 .filter(m => !m.user.bot)
-                .map(m => m.displayName)
+                .map(m => {
+                    const topRole = m.roles.highest?.name !== '@everyone' ? m.roles.highest.name : 'Member';
+                    return `${m.displayName} (@${m.user.username}) [Role: ${topRole}]`;
+                })
+                .join(', ') || 'None';
+
+            const speakerRoles = speakerMember.roles.cache
+                .filter(r => r.id !== speakerMember.guild.id)
+                .map(r => r.name)
+                .join(', ') || 'Member';
+
+            const speakerPerms = speakerMember.permissions.toArray().slice(0, 15).join(', ');
+
+            const guildRoles = speakerMember.guild.roles.cache
+                .filter(r => r.id !== speakerMember.guild.id)
+                .sort((a, b) => b.position - a.position)
+                .map(r => r.name)
+                .slice(0, 25)
                 .join(', ');
+
+            const botRoles = session.voiceChannel.guild.members.me?.roles.cache
+                .filter(r => r.id !== speakerMember.guild.id)
+                .map(r => r.name)
+                .join(', ') || 'Bot';
 
             const historyContext = session.recentDialogue.slice(-2).map(d => 
                 `[${d.speaker}]: "${d.text}" -> Nora: "${d.reply}"`
@@ -463,12 +485,17 @@ class NoraVoiceAIManager {
             const aiPrompt = transcription;
             const aiResponse = await getBuiltInResponse(aiPrompt, {
                 context: `[VOICE CHANNEL: ${session.voiceChannel.name}]
-Active Users in Voice Room: ${activeMembersInVC || 'None'}
-Recent Voice Turns:
+Active Participants in Voice Room (${session.voiceChannel.members.filter(m => !m.user.bot).size} people): ${vcMembersDetails}
+Recent Spoken Turns:
 ${historyContext || 'None'}
 Current Speaker: ${speakerMember.displayName} (@${speakerMember.user.username})
-DIRECTIVE: You are Nora speaking live in a voice channel. Address ${speakerMember.displayName} naturally. Keep responses concise, warm, and crystal clear (1-2 sentences maximum). Do NOT mention old text chats, timestamps, formatting, or emojis.`,
+Speaker Roles: ${speakerRoles}
+DIRECTIVE: You are Nora, the official high-intelligence AI companion speaking live in Discord Voice. You are highly aware of everyone in the room, their roles, permissions, and group conversation dynamics. Speak with crystal-clear articulation, charm, razor-sharp wit, and official intelligence. Acknowledge speaker roles or questions accurately. Keep responses punchy, concise, and crystal clear (1-2 sentences maximum, no markdown/emojis).`,
                 authorName: speakerMember.displayName,
+                userRoles: speakerRoles,
+                botRoles: botRoles,
+                userPerms: speakerPerms,
+                guildRoles: guildRoles,
                 isVoiceMode: true,
                 recentHistory: '',
                 replyContext: '',
