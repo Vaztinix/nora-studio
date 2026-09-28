@@ -107,6 +107,11 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
 \n`;
 
     let contextSection = quotaContextSection;
+    if (typeof optionsOrContext === 'object' && optionsOrContext?.userPerms) {
+        contextSection += `### Requester Authorization & Permissions:
+- User (${authorName}) Discord Permissions: ${optionsOrContext.userPerms}
+- SECURITY DIRECTIVE: Nora strictly checks user permissions before executing or acknowledging actions. If a user asks to run commands, ban, kick, timeout, purge, or modify server settings without the required permissions listed above, you MUST decline and state that they lack the required permission.\n\n`;
+    }
     if (userMemory) {
         contextSection += `### User Profile & Memory:\n${userMemory}\n\n`;
     }

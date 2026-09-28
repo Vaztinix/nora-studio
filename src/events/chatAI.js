@@ -197,6 +197,24 @@ module.exports = {
             } catch (e) {}
         }
 
+        // 6. User Permission Profile
+        const BOT_DEVELOPER_ID = '1214048435632603137';
+        const isDev = message.author.id === BOT_DEVELOPER_ID;
+        const isOwner = message.author.id === message.guild.ownerId;
+        const perms = message.member?.permissions;
+        const isAdmin = isDev || isOwner || perms?.has('Administrator');
+        const userPermsSummary = isAdmin 
+            ? 'Administrator (Full Server & Mod Access)' 
+            : [
+                perms?.has('ModerateMembers') ? 'Timeout/Warn' : null,
+                perms?.has('KickMembers') ? 'Kick' : null,
+                perms?.has('BanMembers') ? 'Ban' : null,
+                perms?.has('ManageMessages') ? 'Purge' : null,
+                perms?.has('ManageChannels') ? 'Manage Channels' : null,
+                perms?.has('ManageRoles') ? 'Manage Roles' : null,
+                perms?.has('ManageGuild') ? 'Manage Server' : null
+            ].filter(Boolean).join(', ') || 'Standard Member (No Moderation/Admin Permissions)';
+
         const aiPayload = {
             promptText: plainContent,
             context: deepKnowledgeStr,
@@ -204,6 +222,7 @@ module.exports = {
             userMemory: userMemoryStr,
             replyContext: directReplyStr,
             authorName: authorDisplayName,
+            userPerms: userPermsSummary,
             imageAttachments: imageAttachments,
             isPremium: isPremium
         };

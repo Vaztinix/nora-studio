@@ -425,6 +425,34 @@ async function detectIntent(message, plainContent) {
         };
     }
 
+    // J. Direct Command Request (e.g. "Nora run /setup", "run /warn @user", "Nora execute /settings")
+    const cmdMatch = raw.match(/\b(?:run|execute|use|trigger)\s+(?:command\s+)?\/([a-z0-9_-]+)(.*)/i) ||
+                     raw.match(/^\/([a-z0-9_-]+)(.*)/i);
+    if (cmdMatch) {
+        const cmdName = cmdMatch[1].toLowerCase();
+        const cmdArgs = (cmdMatch[2] || '').trim();
+        return {
+            type: 'COMMAND_INVOCATION',
+            commandName: cmdName,
+            rawArgs: cmdArgs
+        };
+    }
+
+    // K. Role Management Request (e.g. "give @role to @user", "add role @role to @user", "remove role @role from @user")
+    if (lower.match(/\b(give|add|assign|remove|take\s+away)\s+(role\s+)?/i) && (message.mentions?.roles?.size > 0 || raw.match(/<@&\d+>/))) {
+        const isRemove = lower.includes('remove') || lower.includes('take away');
+        const role = message.mentions?.roles?.first();
+        const target = await resolveTargetUser(message, raw);
+        if (role && target) {
+            return {
+                type: 'MODERATION',
+                action: isRemove ? 'ROLE_REMOVE' : 'ROLE_ADD',
+                target: target,
+                role: role
+            };
+        }
+    }
+
     return null;
 }
 
@@ -809,6 +837,14 @@ async function handleInteractiveModeration(message, client, intent) {
     } else if (intent.action === 'SLOWMODE') {
         actionTitle = '⏱️ Confirm Slowmode Adjustment';
         actionDesc = `Are you sure you want to set channel slowmode to **${intent.seconds}s**?`;
+    } else if (intent.action === 'ROLE_ADD') {
+        actionTitle = '🏷️ Confirm Role Assignment';
+        actionDesc = `Are you sure you want to assign the <@&${intent.role.id}> role to **${target.username || target.tag}**?`;
+        actionColor = 0x5865F2;
+    } else if (intent.action === 'ROLE_REMOVE') {
+        actionTitle = '🏷️ Confirm Role Removal';
+        actionDesc = `Are you sure you want to remove the <@&${intent.role.id}> role from **${target.username || target.tag}**?`;
+        actionColor = 0xEF4444;
     }
 
     const confirmEmbed = new EmbedBuilder()
@@ -1092,6 +1128,18 @@ async function performModerationAction(guild, moderator, intent) {
     } else if (intent.action === 'SLOWMODE') {
         await intent.channel.setRateLimitPerUser(intent.seconds, `Slowmode updated by ${moderator.tag}`);
         description = `⏱️ Slowmode in <#${intent.channel.id}> set to **${intent.seconds}s**.`;
+    } else if (intent.action === 'ROLE_ADD') {
+        const targetMember = await guild.members.fetch(intent.target.id).catch(() => null);
+        if (targetMember) {
+            await targetMember.roles.add(intent.role.id, `Role added via Nora AI by ${moderator.tag}`);
+            description = `Added <@&${intent.role.id}> role to <@${intent.target.id}>.`;
+        }
+    } else if (intent.action === 'ROLE_REMOVE') {
+        const targetMember = await guild.members.fetch(intent.target.id).catch(() => null);
+        if (targetMember) {
+            await targetMember.roles.remove(intent.role.id, `Role removed via Nora AI by ${moderator.tag}`);
+            description = `Removed <@&${intent.role.id}> role from <@${intent.target.id}>.`;
+        }
     }
 
     // Send ModLog to configured channel
@@ -1130,6 +1178,41 @@ async function processNoraAction(message, client, plainContent) {
 
     if (intent.type === 'MODERATION') {
         await handleInteractiveModeration(message, client, intent);
+        return true;
+    }
+
+    if (intent.type === 'COMMAND_INVOCATION') {
+        const command = client.commands.get(intent.commandName);
+        if (!command) {
+            await message.reply({
+                content: `❓ **Unknown Command**: \`/${intent.commandName}\` is not a registered Nora command. Use \`/help\` to browse all available commands.`,
+                allowedMentions: { repliedUser: false }
+            });
+            return true;
+        }
+
+        // Direct Permission Verification
+        if (command.data?.default_member_permissions) {
+            const { PermissionsBitField } = require('discord.js');
+            const requiredPerms = new PermissionsBitField(BigInt(command.data.default_member_permissions));
+            const isDev = message.author.id === BOT_DEVELOPER_ID;
+            const isOwner = message.author.id === message.guild.ownerId;
+            if (!isDev && !isOwner && !message.member.permissions.has(requiredPerms)) {
+                const missingPerms = requiredPerms.toArray().join(', ');
+                await message.reply({
+                    content: `❌ **Permission Denied**: You do not have permission to execute or request **/${intent.commandName}** on **${message.guild.name}**.\n\n🔒 **Required Permissions:** \`${missingPerms}\``,
+                    allowedMentions: { repliedUser: false }
+                });
+                return true;
+            }
+        }
+
+        const prefixCommandHandler = require('./prefixCommandHandler');
+        const simulatedMessage = {
+            ...message,
+            content: `n!${intent.commandName} ${intent.rawArgs}`.trim()
+        };
+        await prefixCommandHandler.handlePrefixCommand(simulatedMessage, client);
         return true;
     }
 
