@@ -124,10 +124,11 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
     if (userMemory) {
         contextSection += `### User Profile & Memory:\n${userMemory}\n\n`;
     }
-    if (recentHistory) {
+    const isVoiceMode = Boolean(optionsOrContext?.isVoiceMode || (typeof context === 'string' && context.includes('[VOICE CHANNEL:')));
+    if (recentHistory && !isVoiceMode) {
         contextSection += `### Recent Channel Conversation (Chronological):\n${recentHistory}\n\n`;
     }
-    if (replyContext) {
+    if (replyContext && !isVoiceMode) {
         contextSection += `### Direct Message Context:\n${replyContext}\n\n`;
     }
     if (context) {

@@ -74,8 +74,9 @@ function chunkTextForTTS(text, maxLength = 250) {
     if (!text) return [];
     const clean = text
         .replace(/https?:\/\/[^\s]+/g, '')
-        .replace(/[`*~_#|<>]/g, '')
+        .replace(/[`*~_#|<>@]/g, '')
         .replace(/<a?:\w+:\d+>/g, '')
+        .replace(/\b\d{1,2}:\d{2}(:\d{2})?\b/g, '') // remove timestamps like 00:00:00
         .replace(/\s+/g, ' ')
         .trim();
 
@@ -425,6 +426,8 @@ ${historyContext || 'No previous turns yet.'}
 Current Speaker: ${speakerMember.displayName} (@${speakerMember.user.username})
 INSTRUCTION: You are Nora, talking live through voice to the room. Address ${speakerMember.displayName} naturally. Keep responses concise, warm, witty, and expressive (1-2 sentences max so it is punchy and fluent when spoken out loud). No markdown formatting or emoji text in spoken replies.`,
                 authorName: speakerMember.displayName,
+                isVoiceMode: true,
+                recentHistory: '',
                 isPremium: true
             });
 
