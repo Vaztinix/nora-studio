@@ -42,11 +42,6 @@ const IDLE_VISUALIZER_URL = 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExN
 
 /**
  * Constructs a 44-byte WAV audio buffer header around raw PCM chunks
- * @param {Buffer} pcmBuffer 
- * @param {number} sampleRate 
- * @param {number} channels 
- * @param {number} bitDepth 
- * @returns {Buffer}
  */
 function createWavBuffer(pcmBuffer, sampleRate = 48000, channels = 2, bitDepth = 16) {
     const header = Buffer.alloc(44);
@@ -74,9 +69,6 @@ function createWavBuffer(pcmBuffer, sampleRate = 48000, channels = 2, bitDepth =
 
 /**
  * Splits text into clean conversational chunks for smooth TTS playback
- * @param {string} text 
- * @param {number} maxLength 
- * @returns {string[]}
  */
 function chunkTextForTTS(text, maxLength = 250) {
     if (!text) return [];
@@ -108,13 +100,10 @@ function chunkTextForTTS(text, maxLength = 250) {
 
 /**
  * Fetches Studio-Grade Microsoft Neural MP3 audio buffer with fallback
- * @param {string} text 
- * @returns {Promise<Buffer>}
  */
 async function fetchTTSAudioBuffer(text) {
     try {
         const tts = new MsEdgeTTS();
-        // en-US-JennyNeural is natural, warm, fluent, and crystal clear
         await tts.setMetadata('en-US-JennyNeural', OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
         const { audioStream } = tts.toStream(text);
 
@@ -133,7 +122,7 @@ async function fetchTTSAudioBuffer(text) {
             });
         });
     } catch (neuralErr) {
-        console.warn('[NoraVoiceAI] Neural TTS fallback to secondary stream:', neuralErr.message);
+        console.warn('[NoraVoiceAI] Neural TTS fallback:', neuralErr.message);
         const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
         const response = await axios.get(url, {
             responseType: 'arraybuffer',
@@ -151,24 +140,16 @@ class NoraVoiceAIManager {
         this.sessions = new Map(); // guildId -> VoiceSession
     }
 
-    /**
-     * Checks if the voice request is permitted in the given guild
-     * @param {string} guildId 
-     * @returns {boolean}
-     */
     isGuildAllowed(guildId) {
         return guildId === BETA_GUILD_ID;
     }
 
-    /**
-     * Generates standard beta restriction embed & action row
-     */
     getBetaRestrictionPayload() {
         const embed = new EmbedBuilder()
             .setTitle('✨ Nora Voice AI (STT & TTS) — Exclusive Beta')
             .setDescription(
                 '🎙️ **Speech-to-Text & Real-Time Voice Synthesis** is currently in active beta testing exclusively in the **Milo\'s World** headquarters!\n\n' +
-                'Join the official server to test live conversational voice AI, custom animations, and hands-free voice commands.'
+                'Join the official server to test live conversational voice AI, multi-user voice chat, and hands-free voice commands.'
             )
             .setColor(0x5865F2)
             .setImage(ANIMATED_VISUALIZER_URL)
@@ -190,12 +171,11 @@ class NoraVoiceAIManager {
     }
 
     /**
-     * Joins a voice channel and initializes real-time STT & TTS pipeline
+     * Joins a voice channel and initializes multi-user real-time STT & TTS pipeline
      */
     async joinVoice(voiceChannel, textChannel, initiatorMember) {
         const guildId = voiceChannel.guild.id;
 
-        // 1. Strict Guild Beta Check
         if (!this.isGuildAllowed(guildId)) {
             return {
                 success: false,
@@ -204,7 +184,6 @@ class NoraVoiceAIManager {
             };
         }
 
-        // 2. Permission Check
         const permissions = voiceChannel.permissionsFor(voiceChannel.guild.members.me);
         if (!permissions.has(PermissionFlagsBits.Connect) || !permissions.has(PermissionFlagsBits.Speak)) {
             return {
@@ -213,7 +192,6 @@ class NoraVoiceAIManager {
             };
         }
 
-        // 3. Clean up existing session if active
         if (this.sessions.has(guildId)) {
             this.leaveVoice(guildId, false);
         }
@@ -229,18 +207,12 @@ class NoraVoiceAIManager {
 
             await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
 
-            // Attempt to force voice state undeafen if server deafened
             try {
                 const me = voiceChannel.guild.members.me;
-                if (me?.voice?.serverDeaf) {
-                    await me.voice.setDeaf(false).catch(() => {});
-                }
-                if (me?.voice?.serverMute) {
-                    await me.voice.setMute(false).catch(() => {});
-                }
+                if (me?.voice?.serverDeaf) await me.voice.setDeaf(false).catch(() => {});
+                if (me?.voice?.serverMute) await me.voice.setMute(false).catch(() => {});
             } catch (_) {}
 
-            // Create Audio Player with NoSubscriberBehavior.Play to prevent autopausing
             const player = createAudioPlayer({
                 behaviors: {
                     noSubscriber: NoSubscriberBehavior.Play,
@@ -248,8 +220,7 @@ class NoraVoiceAIManager {
                 }
             });
 
-            const subscription = connection.subscribe(player);
-            console.log(`[NoraVoiceAI] Subscribed player to voice connection in ${voiceChannel.name}. Subscription active:`, !!subscription);
+            connection.subscribe(player);
 
             const session = {
                 guildId,
@@ -258,19 +229,19 @@ class NoraVoiceAIManager {
                 initiatorMember,
                 connection,
                 player,
-                subscription,
-                isProcessing: false,
+                isProcessingQueue: false,
                 isSpeaking: false,
+                speechQueue: [],         // Queue of incoming speaker audio to process
+                playbackQueue: [],       // Queue of audio responses to speak
                 activeSpeakers: new Set(),
-                currentAudioFile: null,
+                currentAudioFiles: [],
                 lastActivity: Date.now(),
                 visualizerMessage: null,
-                conversationHistory: []
+                recentDialogue: []       // Array of { speaker, text, reply, time }
             };
 
             this.sessions.set(guildId, session);
 
-            // Handle disconnection
             connection.on(VoiceConnectionStatus.Disconnected, async () => {
                 try {
                     await Promise.race([
@@ -285,28 +256,19 @@ class NoraVoiceAIManager {
             player.on('error', (err) => {
                 console.error('[NoraVoiceAI] Audio Player Error:', err.message);
                 session.isSpeaking = false;
-                this.cleanupCurrentAudioFile(session);
-                this.updateVisualizer(session, 'idle');
+                this.playNextInPlaybackQueue(session);
             });
 
             player.on(AudioPlayerStatus.Idle, () => {
                 session.isSpeaking = false;
-                this.cleanupCurrentAudioFile(session);
-                this.updateVisualizer(session, 'idle');
+                this.playNextInPlaybackQueue(session);
             });
 
-            player.on(AudioPlayerStatus.Playing, () => {
-                console.log(`[NoraVoiceAI] Player status is now PLAYING in voice channel ${voiceChannel.name}.`);
-            });
-
-            // Bind speech receiver
             this.attachReceiver(session);
-
-            // Send initial visualizer message in text channel
             await this.sendInitialVisualizer(session);
 
-            // Play short greeting
-            await this.speak(session, `Hello ${initiatorMember.displayName}! Nora Voice AI is online and listening. You can speak to me naturally.`);
+            // Greet the room
+            await this.speak(session, `Hello everyone in ${voiceChannel.name}! Nora Voice AI is ready. Anyone can speak anytime!`);
 
             return { success: true, session };
         } catch (error) {
@@ -318,29 +280,19 @@ class NoraVoiceAIManager {
         }
     }
 
-    cleanupCurrentAudioFile(session) {
-        if (session && session.currentAudioFile) {
-            try {
-                if (fs.existsSync(session.currentAudioFile)) {
-                    fs.unlinkSync(session.currentAudioFile);
-                }
-            } catch (_) {}
-            session.currentAudioFile = null;
-        }
-    }
-
     /**
-     * Attaches audio receiver to capture speech packets from speakers
+     * Attaches audio receiver to capture speech packets from all active participants
      */
     attachReceiver(session) {
         const { connection } = session;
         const receiver = connection.receiver;
 
         receiver.speaking.on('start', (userId) => {
-            // Ignore bot's own voice or if Nora is currently speaking
-            if (userId === session.voiceChannel.client.user.id || session.isSpeaking || session.isProcessing) {
-                return;
-            }
+            // Ignore bot's own voice
+            if (userId === session.voiceChannel.client.user.id) return;
+
+            // If Nora is currently speaking, wait so she doesn't hear herself
+            if (session.isSpeaking) return;
 
             if (session.activeSpeakers.has(userId)) return;
 
@@ -352,7 +304,7 @@ class NoraVoiceAIManager {
             const opusStream = receiver.subscribe(userId, {
                 end: {
                     behavior: EndBehaviorType.AfterSilence,
-                    duration: 800 // 800ms silence marks end of utterance
+                    duration: 750 // 750ms silence ends utterance
                 }
             });
 
@@ -365,101 +317,137 @@ class NoraVoiceAIManager {
                 pcmChunks.push(chunk);
             });
 
-            decoder.on('end', async () => {
+            decoder.on('end', () => {
                 session.activeSpeakers.delete(userId);
                 const pcmBuffer = Buffer.concat(pcmChunks);
 
-                // Minimum speech threshold: at least ~0.35s of audio
+                // Minimum speech threshold: at least ~0.35s
                 if (pcmBuffer.length < 48000 * 2 * 2 * 0.35) {
                     return;
                 }
 
-                if (session.isSpeaking || session.isProcessing) return;
+                // Push to multi-user speech queue
+                session.speechQueue.push({
+                    member,
+                    pcmBuffer,
+                    timestamp: Date.now()
+                });
 
-                await this.processUserSpeech(session, member, pcmBuffer);
+                this.processSpeechQueue(session);
             });
 
             decoder.on('error', (err) => {
                 session.activeSpeakers.delete(userId);
-                console.error('[NoraVoiceAI] Decoder error:', err.message);
             });
         });
     }
 
     /**
-     * Transcribes audio using Gemini Speech-to-Text and generates AI spoken reply
+     * Multi-user speech queue worker: processes utterances in order without dropping speakers
      */
-    async processUserSpeech(session, speakerMember, pcmBuffer) {
-        session.isProcessing = true;
-        session.lastActivity = Date.now();
+    async processSpeechQueue(session) {
+        if (session.isProcessingQueue || session.speechQueue.length === 0) return;
 
-        console.log(`[NoraVoiceAI] Captured speech from ${speakerMember.displayName} (${pcmBuffer.length} bytes PCM). Transcribing...`);
+        session.isProcessingQueue = true;
+
+        while (session.speechQueue.length > 0) {
+            const item = session.speechQueue.shift();
+            session.lastActivity = Date.now();
+
+            await this.handleSingleUtterance(session, item.member, item.pcmBuffer);
+        }
+
+        session.isProcessingQueue = false;
+        if (!session.isSpeaking && session.playbackQueue.length === 0) {
+            await this.updateVisualizer(session, 'idle');
+        }
+    }
+
+    /**
+     * Processes speech from a single speaker with multi-user room context
+     */
+    async handleSingleUtterance(session, speakerMember, pcmBuffer) {
+        console.log(`[NoraVoiceAI] Processing speech from ${speakerMember.displayName} (${pcmBuffer.length} bytes PCM)...`);
 
         await this.updateVisualizer(session, 'thinking', {
             speaker: speakerMember,
-            statusText: `⚡ Hearing voice from **${speakerMember.displayName}**... Transcribing with Gemini AI...`
+            statusText: `⚡ Hearing voice from **${speakerMember.displayName}**...`
         });
 
         try {
             const wavBuffer = createWavBuffer(pcmBuffer, 48000, 2, 16);
             const base64Audio = wavBuffer.toString('base64');
 
-            // 1. Transcribe audio with Gemini (Auto-rotating across key pool)
+            // 1. Transcribe audio with Gemini
             const transcription = await this.transcribeAudio(base64Audio);
             console.log(`[NoraVoiceAI] Transcription for ${speakerMember.displayName}: "${transcription}"`);
 
             if (!transcription || transcription.trim() === 'EMPTY_AUDIO' || transcription.trim().length < 2) {
-                console.log(`[NoraVoiceAI] Empty speech or non-speech audio detected for ${speakerMember.displayName}.`);
-                session.isProcessing = false;
-                await this.updateVisualizer(session, 'idle');
                 return;
             }
 
             // Check if user spoke a trigger to leave
             if (/^(leave\s*voice|leave\s*nora\s*ai|disconnect|goodbye\s*nora|bye\s*nora)$/i.test(transcription.trim())) {
-                await this.speak(session, `Goodbye ${speakerMember.displayName}! Leaving the voice channel.`);
+                await this.speak(session, `Goodbye ${speakerMember.displayName}! Disconnecting now.`);
                 setTimeout(() => this.leaveVoice(session.guildId), 3500);
                 return;
             }
 
             await this.updateVisualizer(session, 'answering', {
                 speaker: speakerMember,
-                transcription: transcription,
-                statusText: `🧠 Thinking of spoken response for **${speakerMember.displayName}**...`
+                transcription: transcription
             });
 
-            // 2. Generate Spoken Response with Nora Brain
-            const aiResponse = await getBuiltInResponse(transcription, {
-                context: `[VOICE CHAT MODE] You are Nora, talking live through voice in channel '${session.voiceChannel.name}' with user '${speakerMember.displayName}'. Keep your response concise, conversational, natural, and expressive (1-2 sentences maximum so it sounds quick and wonderful when read out loud). Do not include formatting markdown (bold, lists, backticks) or emoji text.`,
+            // 2. Build Multi-User Room Context
+            const activeMembersInVC = session.voiceChannel.members
+                .filter(m => !m.user.bot)
+                .map(m => m.displayName)
+                .join(', ');
+
+            const historyContext = session.recentDialogue.slice(-4).map(d => 
+                `[${d.speaker}]: "${d.text}" -> Nora: "${d.reply}"`
+            ).join('\n');
+
+            const aiPrompt = transcription;
+            const aiResponse = await getBuiltInResponse(aiPrompt, {
+                context: `[VOICE CHANNEL: ${session.voiceChannel.name}]
+Active Users in Voice Room: ${activeMembersInVC || 'None'}
+Recent Voice Chat History:
+${historyContext || 'No previous turns yet.'}
+Current Speaker: ${speakerMember.displayName} (@${speakerMember.user.username})
+INSTRUCTION: You are Nora, talking live through voice to the room. Address ${speakerMember.displayName} naturally. Keep responses concise, warm, witty, and expressive (1-2 sentences max so it is punchy and fluent when spoken out loud). No markdown formatting or emoji text in spoken replies.`,
                 authorName: speakerMember.displayName,
                 isPremium: true
             });
 
-            const replyText = typeof aiResponse === 'string' ? aiResponse : (aiResponse.reply || aiResponse.text || 'I hear you loud and clear!');
-            console.log(`[NoraVoiceAI] Generated spoken response: "${replyText}"`);
+            const replyText = typeof aiResponse === 'string' ? aiResponse : (aiResponse.reply || aiResponse.text || 'I hear you!');
+            console.log(`[NoraVoiceAI] Generated spoken response for ${speakerMember.displayName}: "${replyText}"`);
 
-            // 3. Play Spoken Audio
+            // Save to recent room dialogue memory
+            session.recentDialogue.push({
+                speaker: speakerMember.displayName,
+                text: transcription,
+                reply: replyText,
+                time: Date.now()
+            });
+            if (session.recentDialogue.length > 8) session.recentDialogue.shift();
+
+            // 3. Queue Spoken Audio
             await this.updateVisualizer(session, 'speaking', {
                 speaker: speakerMember,
                 transcription: transcription,
                 reply: replyText
             });
 
-            await this.speak(session, replyText);
+            await this.speak(session, replyText, speakerMember);
 
         } catch (error) {
-            console.error('[NoraVoiceAI Speech Processing Error]:', error);
-            session.isProcessing = false;
-            await this.updateVisualizer(session, 'idle');
-        } finally {
-            session.isProcessing = false;
+            console.error('[NoraVoiceAI Utterance Error]:', error);
         }
     }
 
     /**
      * Transcribes base64 audio buffer using Gemini API with auto-key cascade
-     * @param {string} base64Audio 
-     * @returns {Promise<string>}
      */
     async transcribeAudio(base64Audio) {
         const availableKeys = geminiKeyManager.getRotatedAvailableKeys();
@@ -468,7 +456,6 @@ class NoraVoiceAIManager {
             return '';
         }
 
-        // Prioritize ultra-fast high-availability flash models for transcription
         const modelsToTry = ['gemini-flash-lite-latest', 'gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest'];
 
         for (const key of availableKeys) {
@@ -502,7 +489,7 @@ class NoraVoiceAIManager {
                 } catch (err) {
                     if (err.message && (err.message.includes('429') || err.message.includes('Quota') || err.message.includes('RESOURCE_EXHAUSTED'))) {
                         geminiKeyManager.handleQuotaError(key, err);
-                        break; // cascade to next key
+                        break;
                     }
                 }
             }
@@ -511,23 +498,36 @@ class NoraVoiceAIManager {
     }
 
     /**
-     * Synthesizes and plays spoken text in the voice channel
+     * Queues and synthesizes spoken text in the voice channel
      */
-    async speak(session, text) {
+    async speak(session, text, targetMember = null) {
         if (!session || !session.player) return;
 
+        session.playbackQueue.push({ text, targetMember });
+        if (!session.isSpeaking) {
+            this.playNextInPlaybackQueue(session);
+        }
+    }
+
+    async playNextInPlaybackQueue(session) {
+        if (!session || session.playbackQueue.length === 0) {
+            session.isSpeaking = false;
+            this.cleanupAudioFiles(session);
+            if (!session.isProcessingQueue) {
+                this.updateVisualizer(session, 'idle');
+            }
+            return;
+        }
+
         session.isSpeaking = true;
-        this.cleanupCurrentAudioFile(session);
+        const item = session.playbackQueue.shift();
 
         try {
-            const chunks = chunkTextForTTS(text, 180);
+            const chunks = chunkTextForTTS(item.text, 250);
             if (chunks.length === 0) {
-                session.isSpeaking = false;
-                this.updateVisualizer(session, 'idle');
-                return;
+                return this.playNextInPlaybackQueue(session);
             }
 
-            // Fetch and concatenate all TTS chunks
             const audioBuffers = [];
             for (const c of chunks) {
                 const b = await fetchTTSAudioBuffer(c);
@@ -535,47 +535,58 @@ class NoraVoiceAIManager {
             }
 
             if (audioBuffers.length === 0) {
-                session.isSpeaking = false;
-                this.updateVisualizer(session, 'idle');
-                return;
+                return this.playNextInPlaybackQueue(session);
             }
 
             const totalBuffer = Buffer.concat(audioBuffers);
-
-            // Write to a temporary file for 100% reliable direct Discord.js Voice playback
             const tmpFile = path.join(os.tmpdir(), `nora_voice_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.mp3`);
             fs.writeFileSync(tmpFile, totalBuffer);
-            session.currentAudioFile = tmpFile;
+            session.currentAudioFiles.push(tmpFile);
 
             const resource = createAudioResource(tmpFile);
             session.player.play(resource);
-            console.log(`[NoraVoiceAI] Dispatched audio resource (${totalBuffer.length} bytes) to player for: "${text.substring(0, 45)}..."`);
 
         } catch (error) {
-            console.error('[NoraVoiceAI Speak Error]:', error);
+            console.error('[NoraVoiceAI Playback Error]:', error);
             session.isSpeaking = false;
-            this.cleanupCurrentAudioFile(session);
-            this.updateVisualizer(session, 'idle');
+            this.playNextInPlaybackQueue(session);
+        }
+    }
+
+    cleanupAudioFiles(session) {
+        if (session && session.currentAudioFiles && session.currentAudioFiles.length > 0) {
+            while (session.currentAudioFiles.length > 0) {
+                const f = session.currentAudioFiles.shift();
+                try {
+                    if (fs.existsSync(f)) fs.unlinkSync(f);
+                } catch (_) {}
+            }
         }
     }
 
     /**
-     * Sends the persistent interactive visualizer card in the text channel
+     * Sends the persistent multi-user interactive visualizer card in the text channel
      */
     async sendInitialVisualizer(session) {
         if (!session.textChannel) return;
 
+        const membersList = session.voiceChannel.members
+            .filter(m => !m.user.bot)
+            .map(m => `• <@${m.id}>`)
+            .join(' ') || '*No other members*';
+
         const embed = new EmbedBuilder()
-            .setTitle('🎙️ Nora Voice AI — Live Audio Session')
+            .setTitle('🎙️ Nora Voice AI — Multi-User Voice Hub')
             .setDescription(
                 `🟢 **Voice Channel:** \`${session.voiceChannel.name}\`\n` +
-                `✨ **Status:** Connected & Listening\n` +
-                `🗣️ **Active Engine:** Gemini AI Multi-Key Speech Pipeline\n\n` +
-                `*Speak naturally in the voice channel, or type \`LeaveNoraAI\` / click below to end the session.*`
+                `👥 **Participants in VC:** ${membersList}\n` +
+                `✨ **Status:** Connected & Listening to all speakers\n` +
+                `🗣️ **Voice Engine:** Microsoft Studio Neural TTS (` + '`en-US-JennyNeural`' + `)\n\n` +
+                `*Anyone in the voice channel can speak naturally to chat with Nora!*`
             )
             .setColor(0x00F0FF)
             .setImage(ANIMATED_VISUALIZER_URL)
-            .setFooter({ text: 'Milo\'s World Voice AI • Real-Time Speech-to-Text & Neural Audio' })
+            .setFooter({ text: 'Milo\'s World Multi-User Voice AI • Real-Time Speech Hub' })
             .setTimestamp();
 
         const row = new ActionRowBuilder().addComponents(
@@ -600,23 +611,33 @@ class NoraVoiceAIManager {
     }
 
     /**
-     * Updates visualizer card with live animation, transcription, and speech
+     * Updates visualizer card with live animation, multi-user transcriptions, and dialogue history
      */
     async updateVisualizer(session, state = 'idle', data = {}) {
         if (!session.visualizerMessage) return;
 
         try {
+            const membersCount = session.voiceChannel.members.filter(m => !m.user.bot).size;
             const embed = new EmbedBuilder()
-                .setTitle('🎙️ Nora Voice AI — Live Audio Session')
+                .setTitle('🎙️ Nora Voice AI — Multi-User Voice Hub')
                 .setColor(state === 'speaking' ? 0x00FF88 : (state === 'thinking' ? 0xFFBB00 : (state === 'answering' ? 0x9B59B6 : 0x00F0FF)))
-                .setFooter({ text: 'Milo\'s World Voice AI • Real-Time Speech-to-Text & Neural Audio' })
+                .setFooter({ text: `Milo's World Voice AI • ${membersCount} Participant(s) in VC` })
                 .setTimestamp();
+
+            // Format recent dialogue history
+            let dialogueSection = '';
+            if (session.recentDialogue && session.recentDialogue.length > 0) {
+                dialogueSection = '\n\n📜 **Recent Conversation:**\n' + session.recentDialogue.slice(-3).map(d => 
+                    `🗣️ **${d.speaker}**: *"${d.text}"*\n✨ **Nora**: "${d.reply}"`
+                ).join('\n\n');
+            }
 
             if (state === 'thinking') {
                 embed.setDescription(
                     `⚡ **Status:** Hearing voice...\n` +
                     `👤 **Speaker:** ${data.speaker ? `<@${data.speaker.id}>` : 'Unknown'}\n` +
-                    `🔄 **Processing:** Transcribing voice with Gemini...`
+                    `🔄 **Processing:** Transcribing voice with Gemini...` +
+                    dialogueSection
                 );
                 embed.setImage(ANIMATED_VISUALIZER_URL);
             } else if (state === 'answering') {
@@ -624,7 +645,8 @@ class NoraVoiceAIManager {
                     `⚡ **Status:** Formulating Response\n` +
                     `👤 **Speaker:** ${data.speaker ? `<@${data.speaker.id}>` : 'Unknown'}\n` +
                     `📝 **Heard:** *"${data.transcription}"*\n` +
-                    `🧠 **Brain:** Formulating spoken response...`
+                    `🧠 **Brain:** Synthesizing studio neural speech...` +
+                    dialogueSection
                 );
                 embed.setImage(ANIMATED_VISUALIZER_URL);
             } else if (state === 'speaking') {
@@ -632,14 +654,16 @@ class NoraVoiceAIManager {
                     `🔊 **Status:** Nora is speaking live in VC!\n` +
                     `👤 **Speaker:** ${data.speaker ? `<@${data.speaker.id}>` : 'User'}\n` +
                     `📝 **Heard:** *"${data.transcription || '...'}"*\n` +
-                    `🎙️ **Nora Replied:** "${data.reply || '...'}"`
+                    `🎙️ **Nora Replied:** "${data.reply || '...'}"` +
+                    dialogueSection
                 );
                 embed.setImage(SPEAKING_VISUALIZER_URL);
             } else {
                 embed.setDescription(
                     `🟢 **Voice Channel:** \`${session.voiceChannel.name}\`\n` +
-                    `✨ **Status:** Ready & Listening for speech...\n` +
-                    `*Speak into your microphone anytime to ask Nora questions or chat!*`
+                    `✨ **Status:** Ready & Listening for anyone in VC...\n` +
+                    `*Speak into your microphone anytime to ask Nora questions or chat!*` +
+                    dialogueSection
                 );
                 embed.setImage(IDLE_VISUALIZER_URL);
             }
@@ -671,7 +695,7 @@ class NoraVoiceAIManager {
         if (!session) return false;
 
         try {
-            this.cleanupCurrentAudioFile(session);
+            this.cleanupAudioFiles(session);
             if (session.player) {
                 session.player.stop(true);
             }
@@ -693,9 +717,6 @@ class NoraVoiceAIManager {
         return true;
     }
 
-    /**
-     * Gets active session for guild
-     */
     getSession(guildId) {
         return this.sessions.get(guildId);
     }
