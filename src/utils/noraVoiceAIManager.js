@@ -68,6 +68,23 @@ function createWavBuffer(pcmBuffer, sampleRate = 48000, channels = 2, bitDepth =
 }
 
 /**
+ * Calculates the Root Mean Square (RMS) volume level to distinguish real speech from mic background noise
+ */
+function calculatePcmRms(pcmBuffer) {
+    if (!pcmBuffer || pcmBuffer.length < 2) return 0;
+    let sum = 0;
+    const samples = Math.floor(pcmBuffer.length / 2);
+    const step = samples > 20000 ? 4 : 2;
+    let count = 0;
+    for (let i = 0; i < pcmBuffer.length - 1; i += step) {
+        const val = pcmBuffer.readInt16LE(i);
+        sum += val * val;
+        count++;
+    }
+    return count > 0 ? Math.sqrt(sum / count) : 0;
+}
+
+/**
  * Splits text into clean conversational chunks for smooth TTS playback and stable voice synthesis
  */
 function chunkTextForTTS(text, maxLength = 220) {
@@ -210,11 +227,13 @@ class NoraVoiceAIManager {
 
         try {
             const connection = joinVoiceChannel({
+        try {
+            const connection = joinVoiceChannel({
                 channelId: voiceChannel.id,
                 guildId: guildId,
                 adapterCreator: voiceChannel.guild.voiceAdapterCreator,
                 selfDeaf: false,
-                selfMute: true // Auto-muted by default while waiting
+                selfMute: false
             });
 
             await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
@@ -268,17 +287,11 @@ class NoraVoiceAIManager {
             player.on('error', (err) => {
                 console.error('[NoraVoiceAI] Audio Player Error:', err.message);
                 session.isSpeaking = false;
-                try {
-                    session.connection.rejoin({ selfMute: true, selfDeaf: false });
-                } catch (_) {}
                 this.playNextInPlaybackQueue(session);
             });
 
             player.on(AudioPlayerStatus.Idle, () => {
                 session.isSpeaking = false;
-                try {
-                    session.connection.rejoin({ selfMute: true, selfDeaf: false });
-                } catch (_) {}
                 this.playNextInPlaybackQueue(session);
             });
 
@@ -306,32 +319,17 @@ class NoraVoiceAIManager {
         const receiver = connection.receiver;
 
         receiver.speaking.on('start', (userId) => {
-            // Ignore bot's own voice
             if (userId === session.voiceChannel.client.user.id) return;
-
             const member = session.voiceChannel.guild.members.cache.get(userId);
             if (!member || member.user.bot) return;
 
-            // 🛑 Voice Interruption / Barge-in: If a user speaks while Nora is talking, stop Nora immediately!
-            if (session.isSpeaking || session.playbackQueue.length > 0) {
-                console.log(`[NoraVoiceAI] User ${member.displayName} interrupted Nora. Stopping speech playback immediately.`);
-                try {
-                    session.player.stop(true);
-                    session.connection.rejoin({ selfMute: true, selfDeaf: false });
-                } catch (_) {}
-                session.playbackQueue = [];
-                session.isSpeaking = false;
-                this.cleanupAudioFiles(session);
-            }
-
             if (session.activeSpeakers.has(userId)) return;
-
             session.activeSpeakers.add(userId);
 
             const opusStream = receiver.subscribe(userId, {
                 end: {
                     behavior: EndBehaviorType.AfterSilence,
-                    duration: 750 // 750ms silence ends utterance
+                    duration: 650 // 650ms silence ends utterance
                 }
             });
 
@@ -348,9 +346,31 @@ class NoraVoiceAIManager {
                 session.activeSpeakers.delete(userId);
                 const pcmBuffer = Buffer.concat(pcmChunks);
 
-                // Minimum speech threshold: at least ~0.35s
-                if (pcmBuffer.length < 48000 * 2 * 2 * 0.35) {
+                // Minimum speech duration: at least ~0.50s of audio (96,000 bytes)
+                if (pcmBuffer.length < 48000 * 2 * 2 * 0.50) {
                     return;
+                }
+
+                // Volume & energy check: discard background noise / keyboard clicks / mic breathing
+                const rms = calculatePcmRms(pcmBuffer);
+                if (rms < 350) {
+                    return;
+                }
+
+                // 🛑 Voice Interruption: Real human speech interrupts Nora immediately
+                if (session.isSpeaking || session.playbackQueue.length > 0) {
+                    console.log(`[NoraVoiceAI] User ${member.displayName} spoke. Interrupting Nora's playback.`);
+                    try {
+                        session.player.stop(true);
+                    } catch (_) {}
+                    session.playbackQueue = [];
+                    session.isSpeaking = false;
+                    this.cleanupAudioFiles(session);
+                }
+
+                // Discard stale backlogged queue to stay completely in real-time
+                if (session.speechQueue.length > 2) {
+                    session.speechQueue = session.speechQueue.slice(-1);
                 }
 
                 // Push to multi-user speech queue
@@ -363,7 +383,7 @@ class NoraVoiceAIManager {
                 this.processSpeechQueue(session);
             });
 
-            decoder.on('error', (err) => {
+            decoder.on('error', () => {
                 session.activeSpeakers.delete(userId);
             });
         });
@@ -410,6 +430,9 @@ class NoraVoiceAIManager {
             console.log(`[NoraVoiceAI] Transcription for ${speakerMember.displayName}: "${transcription}"`);
 
             if (!transcription || transcription.trim() === 'EMPTY_AUDIO' || transcription.trim().length < 2) {
+                if (!session.isSpeaking && session.playbackQueue.length === 0) {
+                    await this.updateVisualizer(session, 'idle');
+                }
                 return;
             }
 
@@ -478,11 +501,14 @@ DIRECTIVE: You are Nora speaking live in a voice channel. Address ${speakerMembe
 
         } catch (error) {
             console.error('[NoraVoiceAI Utterance Error]:', error);
+            if (!session.isSpeaking && session.playbackQueue.length === 0) {
+                await this.updateVisualizer(session, 'idle');
+            }
         }
     }
 
     /**
-     * Transcribes base64 audio buffer using Gemini API with auto-key cascade
+     * Transcribes base64 audio buffer using Gemini API with auto-key cascade and timeout protection
      */
     async transcribeAudio(base64Audio) {
         const availableKeys = geminiKeyManager.getRotatedAvailableKeys();
@@ -502,11 +528,11 @@ DIRECTIVE: You are Nora speaking live in a voice channel. Address ${speakerMembe
                         model: modelName,
                         generationConfig: {
                             temperature: 0.1,
-                            maxOutputTokens: 250
+                            maxOutputTokens: 200
                         }
                     });
 
-                    const result = await model.generateContent([
+                    const transcriptionPromise = model.generateContent([
                         {
                             inlineData: {
                                 mimeType: 'audio/wav',
@@ -516,6 +542,11 @@ DIRECTIVE: You are Nora speaking live in a voice channel. Address ${speakerMembe
                         'Transcribe the exact words spoken by the human voice in this audio. If there is no clear speech, only background noise or silence, output EMPTY_AUDIO. Output ONLY the transcription.'
                     ]);
 
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Transcription timeout')), 4000)
+                    );
+
+                    const result = await Promise.race([transcriptionPromise, timeoutPromise]);
                     const raw = result.response.text().trim();
                     if (raw && raw.length > 0) {
                         geminiKeyManager.reportSuccess(key);
@@ -548,9 +579,6 @@ DIRECTIVE: You are Nora speaking live in a voice channel. Address ${speakerMembe
         if (!session || session.playbackQueue.length === 0) {
             session.isSpeaking = false;
             this.cleanupAudioFiles(session);
-            try {
-                session.connection.rejoin({ selfMute: true, selfDeaf: false });
-            } catch (_) {}
             if (!session.isProcessingQueue) {
                 this.updateVisualizer(session, 'idle');
             }
@@ -558,10 +586,6 @@ DIRECTIVE: You are Nora speaking live in a voice channel. Address ${speakerMembe
         }
 
         session.isSpeaking = true;
-        try {
-            session.connection.rejoin({ selfMute: false, selfDeaf: false });
-        } catch (_) {}
-
         const item = session.playbackQueue.shift();
 
         try {
@@ -591,9 +615,6 @@ DIRECTIVE: You are Nora speaking live in a voice channel. Address ${speakerMembe
         } catch (error) {
             console.error('[NoraVoiceAI Playback Error]:', error);
             session.isSpeaking = false;
-            try {
-                session.connection.rejoin({ selfMute: true, selfDeaf: false });
-            } catch (_) {}
             this.playNextInPlaybackQueue(session);
         }
     }
