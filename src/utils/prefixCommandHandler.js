@@ -40,7 +40,10 @@ const COMMAND_ALIASES = {
     'ticket': 'ticket',
     'tickets': 'ticket',
     'star': 'starboard',
-    'tr': 'translate'
+    'tr': 'translate',
+    'voice': 'voice-ai',
+    'vc': 'voice-ai',
+    'voiceai': 'voice-ai'
 };
 
 /**

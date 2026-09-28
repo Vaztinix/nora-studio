@@ -202,6 +202,47 @@ module.exports = {
             return;
         }
 
+        // 🎙️ Nora Voice AI Text Summon & Dismiss Triggers (JoinNoraAI & LeaveNoraAI)
+        const trimmedContent = message.content.trim();
+        if (/^(JoinNoraAI|join\s*nora\s*ai|n!joinai|!joinnoraai)\b/i.test(trimmedContent)) {
+            const noraVoiceAIManager = require('../utils/noraVoiceAIManager');
+            if (!noraVoiceAIManager.isGuildAllowed(message.guild.id)) {
+                const betaPayload = noraVoiceAIManager.getBetaRestrictionPayload();
+                return message.reply(betaPayload);
+            }
+
+            const voiceChannel = message.member?.voice?.channel;
+            if (!voiceChannel) {
+                return message.reply({
+                    content: '❌ **You must be in a Voice Channel** in Milo\'s World before summoning Nora Voice AI!',
+                    allowedMentions: { repliedUser: false }
+                });
+            }
+
+            const result = await noraVoiceAIManager.joinVoice(voiceChannel, message.channel, message.member);
+            if (!result.success) {
+                if (result.isRestricted) {
+                    return message.reply(result.payload);
+                }
+                return message.reply({ content: result.message || '❌ Failed to connect to voice channel.' });
+            }
+            return message.react('🎙️').catch(() => {});
+        }
+
+        if (/^(LeaveNoraAI|leave\s*nora\s*ai|n!leaveai|!leavenoraai)\b/i.test(trimmedContent)) {
+            const noraVoiceAIManager = require('../utils/noraVoiceAIManager');
+            const session = noraVoiceAIManager.getSession(message.guild.id);
+            if (!session) {
+                return message.reply({
+                    content: 'ℹ️ Nora Voice AI is not currently active in any voice channel in this server.',
+                    allowedMentions: { repliedUser: false }
+                });
+            }
+
+            noraVoiceAIManager.leaveVoice(message.guild.id, true);
+            return message.react('👋').catch(() => {});
+        }
+
         // 🛡️ Proactive Nora AutoMod & Threat Engine
         try {
             const settingsCache = require('../utils/settingsCache');

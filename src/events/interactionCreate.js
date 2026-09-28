@@ -629,6 +629,23 @@ module.exports = {
             }
         }
 
+        // 🎙️ Nora Voice AI Buttons (Disconnect & Quota)
+        if (interaction.isButton() && interaction.customId === 'voice_ai_leave') {
+            const noraVoiceAIManager = require('../utils/noraVoiceAIManager');
+            const session = noraVoiceAIManager.getSession(interaction.guildId);
+            if (!session) {
+                return interaction.reply({ content: 'ℹ️ Nora Voice AI is not currently connected to voice.', ephemeral: true });
+            }
+            noraVoiceAIManager.leaveVoice(interaction.guildId, true);
+            return interaction.reply({ content: '🛑 Nora Voice AI disconnected.', ephemeral: true });
+        }
+
+        if (interaction.isButton() && interaction.customId === 'voice_ai_quota') {
+            const geminiKeyManager = require('../utils/geminiKeyManager');
+            const quotaEmbed = geminiKeyManager.getQuotaStatusEmbed();
+            return interaction.reply({ embeds: [quotaEmbed], ephemeral: true });
+        }
+
         // Handle AI Switch Buttons
         if (interaction.isButton() && (interaction.customId === 'switch_ai_builtin' || interaction.customId === 'use_ai_local')) {
             let settings;
