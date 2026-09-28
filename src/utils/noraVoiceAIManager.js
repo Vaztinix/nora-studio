@@ -58,8 +58,8 @@ function createWavBuffer(pcmBuffer, sampleRate = 48000, channels = 2, bitDepth =
     header.writeUInt32LE(fileLength, 4);
     header.write('WAVE', 8);
     header.write('fmt ', 12);
-    header.writeUInt32LE(16, 16); // Subchunk size (16 for PCM)
-    header.writeUInt16LE(1, 20);  // PCM format
+    header.writeUInt32LE(16, 16);
+    header.writeUInt16LE(1, 20); // PCM
     header.writeUInt16LE(channels, 22);
     header.writeUInt32LE(sampleRate, 24);
     header.writeUInt32LE(byteRate, 28);
@@ -228,6 +228,7 @@ class NoraVoiceAIManager {
                 player,
                 isProcessing: false,
                 isSpeaking: false,
+                activeSpeakers: new Set(),
                 lastActivity: Date.now(),
                 visualizerMessage: null,
                 conversationHistory: []
@@ -290,13 +291,17 @@ class NoraVoiceAIManager {
                 return;
             }
 
+            if (session.activeSpeakers.has(userId)) return;
+
             const member = session.voiceChannel.guild.members.cache.get(userId);
             if (!member || member.user.bot) return;
+
+            session.activeSpeakers.add(userId);
 
             const opusStream = receiver.subscribe(userId, {
                 end: {
                     behavior: EndBehaviorType.AfterSilence,
-                    duration: 900 // 900ms silence marks end of utterance
+                    duration: 800 // 800ms silence marks end of utterance
                 }
             });
 
@@ -310,9 +315,11 @@ class NoraVoiceAIManager {
             });
 
             decoder.on('end', async () => {
+                session.activeSpeakers.delete(userId);
                 const pcmBuffer = Buffer.concat(pcmChunks);
-                // Minimum speech threshold: at least ~0.45s of audio
-                if (pcmBuffer.length < 48000 * 2 * 2 * 0.45) {
+
+                // Minimum speech threshold: at least ~0.35s of audio
+                if (pcmBuffer.length < 48000 * 2 * 2 * 0.35) {
                     return;
                 }
 
@@ -322,6 +329,7 @@ class NoraVoiceAIManager {
             });
 
             decoder.on('error', (err) => {
+                session.activeSpeakers.delete(userId);
                 console.error('[NoraVoiceAI] Decoder error:', err.message);
             });
         });
@@ -334,6 +342,8 @@ class NoraVoiceAIManager {
         session.isProcessing = true;
         session.lastActivity = Date.now();
 
+        console.log(`[NoraVoiceAI] Captured speech from ${speakerMember.displayName} (${pcmBuffer.length} bytes PCM). Transcribing...`);
+
         await this.updateVisualizer(session, 'thinking', {
             speaker: speakerMember,
             statusText: `⚡ Hearing voice from **${speakerMember.displayName}**... Transcribing with Gemini AI...`
@@ -345,8 +355,10 @@ class NoraVoiceAIManager {
 
             // 1. Transcribe audio with Gemini (Auto-rotating across key pool)
             const transcription = await this.transcribeAudio(base64Audio);
+            console.log(`[NoraVoiceAI] Transcription for ${speakerMember.displayName}: "${transcription}"`);
 
             if (!transcription || transcription.trim() === 'EMPTY_AUDIO' || transcription.trim().length < 2) {
+                console.log(`[NoraVoiceAI] Empty speech or non-speech audio detected for ${speakerMember.displayName}.`);
                 session.isProcessing = false;
                 await this.updateVisualizer(session, 'idle');
                 return;
@@ -367,12 +379,13 @@ class NoraVoiceAIManager {
 
             // 2. Generate Spoken Response with Nora Brain
             const aiResponse = await getBuiltInResponse(transcription, {
-                context: `[VOICE CHAT MODE] You are Nora, talking live through voice in channel '${session.voiceChannel.name}' with user '${speakerMember.displayName}'. Keep your response concise, conversational, natural, and expressive (1-3 sentences maximum so it sounds fantastic when read out loud). Do not include formatting markdown (bold, lists, backticks) or emoji text.`,
+                context: `[VOICE CHAT MODE] You are Nora, talking live through voice in channel '${session.voiceChannel.name}' with user '${speakerMember.displayName}'. Keep your response concise, conversational, natural, and expressive (1-2 sentences maximum so it sounds quick and wonderful when read out loud). Do not include formatting markdown (bold, lists, backticks) or emoji text.`,
                 authorName: speakerMember.displayName,
                 isPremium: true
             });
 
-            const replyText = typeof aiResponse === 'string' ? aiResponse : (aiResponse.reply || aiResponse.text || 'I hear you!');
+            const replyText = typeof aiResponse === 'string' ? aiResponse : (aiResponse.reply || aiResponse.text || 'I hear you loud and clear!');
+            console.log(`[NoraVoiceAI] Generated spoken response: "${replyText}"`);
 
             // 3. Play Spoken Audio
             await this.updateVisualizer(session, 'speaking', {
@@ -404,7 +417,8 @@ class NoraVoiceAIManager {
             return '';
         }
 
-        const modelsToTry = ['gemini-3.5-transcribe', 'gemini-flash-latest', 'gemini-3.8-flash'];
+        // Use gemini-flash-latest and gemini-3.8-flash as primary transcription models
+        const modelsToTry = ['gemini-flash-latest', 'gemini-3.8-flash'];
 
         for (const key of availableKeys) {
             const genAI = new GoogleGenerativeAI(key);
@@ -426,12 +440,14 @@ class NoraVoiceAIManager {
                                 data: base64Audio
                             }
                         },
-                        'Transcribe the exact words spoken in this audio. If there is no clear speech, background noise only, or music, output EMPTY_AUDIO. Output ONLY the transcription.'
+                        'Transcribe the exact words spoken by the human voice in this audio. If there is no clear speech, only background noise or silence, output EMPTY_AUDIO. Output ONLY the transcription.'
                     ]);
 
                     const raw = result.response.text().trim();
-                    geminiKeyManager.reportSuccess(key);
-                    return raw.replace(/^["']|["']$/g, '').trim();
+                    if (raw && raw.length > 0) {
+                        geminiKeyManager.reportSuccess(key);
+                        return raw.replace(/^["']|["']$/g, '').trim();
+                    }
                 } catch (err) {
                     if (err.message && (err.message.includes('429') || err.message.includes('Quota') || err.message.includes('RESOURCE_EXHAUSTED'))) {
                         geminiKeyManager.handleQuotaError(key, err);
@@ -534,7 +550,7 @@ class NoraVoiceAIManager {
         try {
             const embed = new EmbedBuilder()
                 .setTitle('🎙️ Nora Voice AI — Live Audio Session')
-                .setColor(state === 'speaking' ? 0x00FF88 : (state === 'thinking' ? 0xFFBB00 : 0x00F0FF))
+                .setColor(state === 'speaking' ? 0x00FF88 : (state === 'thinking' ? 0xFFBB00 : (state === 'answering' ? 0x9B59B6 : 0x00F0FF)))
                 .setFooter({ text: 'Milo\'s World Voice AI • Real-Time Speech-to-Text & Neural Audio' })
                 .setTimestamp();
 
@@ -542,7 +558,7 @@ class NoraVoiceAIManager {
                 embed.setDescription(
                     `⚡ **Status:** Hearing voice...\n` +
                     `👤 **Speaker:** ${data.speaker ? `<@${data.speaker.id}>` : 'Unknown'}\n` +
-                    `🔄 **Processing:** Transcribing voice & formulating response...`
+                    `🔄 **Processing:** Transcribing voice with Gemini...`
                 );
                 embed.setImage(ANIMATED_VISUALIZER_URL);
             } else if (state === 'answering') {
@@ -550,7 +566,7 @@ class NoraVoiceAIManager {
                     `⚡ **Status:** Formulating Response\n` +
                     `👤 **Speaker:** ${data.speaker ? `<@${data.speaker.id}>` : 'Unknown'}\n` +
                     `📝 **Heard:** *"${data.transcription}"*\n` +
-                    `🧠 **Brain:** Synthesizing speech...`
+                    `🧠 **Brain:** Formulating spoken response...`
                 );
                 embed.setImage(ANIMATED_VISUALIZER_URL);
             } else if (state === 'speaking') {
