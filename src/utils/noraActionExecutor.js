@@ -164,6 +164,14 @@ async function detectIntent(message, plainContent) {
         };
     }
 
+    // 8. Utility: AI Quota & Words Headroom (e.g. "what is the current quota", "how many words left", "quota status", "credits left")
+    if (lower.match(/\b(what('s|\s+is)\s+(the\s+)?(current\s+)?(ai\s+)?(quota|credit|credits|limit)|how\s+much\s+(ai\s+)?(quota|credit|credits)|how\s+many\s+(more\s+)?(words?|credits?|tokens?|prompts?)|quota\s+status|ai\s+quota|check\s+quota|credits?\s+left|how\s+long\s+(until|before)\s+(a\s+)?(conversation|quota|reset))\b/i)) {
+        return {
+            type: 'UTILITY',
+            action: 'AI_QUOTA'
+        };
+    }
+
     // --- Moderation Intent Detection ---
 
     // A. Mute / Timeout
@@ -597,6 +605,12 @@ async function executeUtility(message, client, intent) {
             )
             .setColor(0x5865F2)
             .setTimestamp();
+        return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
+    }
+
+    if (intent.action === 'AI_QUOTA') {
+        const geminiKeyManager = require('./geminiKeyManager');
+        const embed = geminiKeyManager.getQuotaStatusEmbed();
         return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
     }
 }

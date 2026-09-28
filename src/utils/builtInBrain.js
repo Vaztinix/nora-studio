@@ -88,12 +88,25 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
   - A moderation action (ban, kick, timeout/mute, warn) requires an explicit target mention (@user) or Discord User ID.
   - NEVER select, guess, or assume a random user to moderate. If no user is mentioned or specified, clearly state that a user must be specifically mentioned or provided with an ID.
   - Moderation actions require proper Discord permissions. If someone without permissions asks to ban or kick, state that appropriate permissions (Ban Members, Kick Members, Moderate Members) are required.
+- **LIVE QUOTA & CAPACITY AWARENESS**:
+  - You are powered by a multi-project Gemini API key pool.
+  - If a user asks about your current quota, word headroom, or reset timers, answer factually based on the Live Engine Context provided below.
 - **DISCORD FORMATTING**:
   - Respond like a real Discord chatter (she/her). Use markdown (bold, italic, code blocks) naturally.
   - Keep responses punchy, concise, and Discord-ready (under 1800 characters)${isPremium ? ' with thorough depth when requested.' : '.'}
   - If an image/screenshot is attached, analyze it attentively and provide clear, direct, and helpful insights.`;
 
-    let contextSection = '';
+    // Fetch live quota telemetry
+    const stats = geminiKeyManager.getQuotaStats();
+    let quotaContextSection = `### Live AI Engine & Quota Telemetry:
+- Key Pool: ${stats.activeKeys} of ${stats.totalKeys} Projects Online (${stats.coolingDownKeys} currently on cooldown)
+- Remaining Capacity (current window): ~${stats.estimatedWordsAvailable.toLocaleString()} words (~${stats.estimatedRequestsRemaining} responses)
+- Rate Limit Status: ${stats.isLowQuota ? '⚠️ LOW CREDITS / QUOTA' : 'HEALTHY'}
+- Cooldown Reset: ${stats.coolingDownKeys > 0 ? `<t:${stats.earliestResetUnix}:R>` : '0 cooldown (Ready now)'}
+- Daily Reset Window: <t:${stats.dailyResetUnix}:R> (Midnight UTC)
+\n`;
+
+    let contextSection = quotaContextSection;
     if (userMemory) {
         contextSection += `### User Profile & Memory:\n${userMemory}\n\n`;
     }
@@ -163,7 +176,7 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
                 const result = await model.generateContent(parts);
                 const text = result.response.text();
                 if (text && text.trim().length > 0) {
-                    geminiKeyManager.reportSuccess(apiKey);
+                    geminiKeyManager.reportSuccess(apiKey, text);
                     return text.replace(/\\n/g, '\n').replace(/\\\\n/g, '\n');
                 }
             } catch (error) {
