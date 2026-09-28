@@ -291,13 +291,21 @@ class NoraVoiceAIManager {
             // Ignore bot's own voice
             if (userId === session.voiceChannel.client.user.id) return;
 
-            // If Nora is currently speaking, wait so she doesn't hear herself
-            if (session.isSpeaking) return;
-
-            if (session.activeSpeakers.has(userId)) return;
-
             const member = session.voiceChannel.guild.members.cache.get(userId);
             if (!member || member.user.bot) return;
+
+            // 🛑 Voice Interruption / Barge-in: If a user speaks while Nora is talking, stop Nora immediately!
+            if (session.isSpeaking || session.playbackQueue.length > 0) {
+                console.log(`[NoraVoiceAI] User ${member.displayName} interrupted Nora. Stopping speech playback immediately.`);
+                try {
+                    session.player.stop(true);
+                } catch (_) {}
+                session.playbackQueue = [];
+                session.isSpeaking = false;
+                this.cleanupAudioFiles(session);
+            }
+
+            if (session.activeSpeakers.has(userId)) return;
 
             session.activeSpeakers.add(userId);
 
