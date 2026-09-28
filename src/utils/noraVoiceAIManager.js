@@ -227,8 +227,6 @@ class NoraVoiceAIManager {
 
         try {
             const connection = joinVoiceChannel({
-        try {
-            const connection = joinVoiceChannel({
                 channelId: voiceChannel.id,
                 guildId: guildId,
                 adapterCreator: voiceChannel.guild.voiceAdapterCreator,
