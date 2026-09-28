@@ -121,15 +121,22 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
 - Server Role Hierarchy (Top 35): ${optionsOrContext.guildRoles || 'None'}
 - ROLE VISIBILITY & BANTER DIRECTIVE: You have direct, 100% live visibility into all member roles and server role hierarchies. You can inspect, confirm, list, and banter about anyone's exact Discord roles with real-time accuracy.\n\n`;
     }
-    if (userMemory) {
+    const isVoiceMode = Boolean(optionsOrContext?.isVoiceMode || (typeof context === 'string' && context.includes('[VOICE CHANNEL:')));
+    if (userMemory && !isVoiceMode) {
         contextSection += `### User Profile & Memory:\n${userMemory}\n\n`;
     }
-    const isVoiceMode = Boolean(optionsOrContext?.isVoiceMode || (typeof context === 'string' && context.includes('[VOICE CHANNEL:')));
     if (recentHistory && !isVoiceMode) {
         contextSection += `### Recent Channel Conversation (Chronological):\n${recentHistory}\n\n`;
     }
     if (replyContext && !isVoiceMode) {
         contextSection += `### Direct Message Context:\n${replyContext}\n\n`;
+    }
+    if (isVoiceMode) {
+        contextSection += `### Live Voice Mode Directive:
+- You are speaking live in Discord Voice Channel.
+- Keep spoken replies concise, warm, natural, and crystal clear (1-2 sentences maximum).
+- STRICT RULE: Do NOT bring up, repeat, or reference old text chat channel topics or old conversations. Only respond to what was just spoken in voice.
+- Do NOT output formatting, asterisks, bullet points, emoji names, or timestamps.\n\n`;
     }
     if (context) {
         contextSection += `### Additional Knowledge Context:\n${context}\n\n`;

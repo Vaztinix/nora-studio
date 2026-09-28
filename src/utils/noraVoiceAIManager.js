@@ -68,19 +68,29 @@ function createWavBuffer(pcmBuffer, sampleRate = 48000, channels = 2, bitDepth =
 }
 
 /**
- * Splits text into clean conversational chunks for smooth TTS playback
+ * Splits text into clean conversational chunks for smooth TTS playback and stable voice synthesis
  */
-function chunkTextForTTS(text, maxLength = 250) {
+function chunkTextForTTS(text, maxLength = 220) {
     if (!text) return [];
     const clean = text
         .replace(/https?:\/\/[^\s]+/g, '')
-        .replace(/[`*~_#|<>@]/g, '')
-        .replace(/<a?:\w+:\d+>/g, '')
-        .replace(/\b\d{1,2}:\d{2}(:\d{2})?\b/g, '') // remove timestamps like 00:00:00
+        .replace(/[\u{1F600}-\u{1F6FF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '') // strip all emojis
+        .replace(/<a?:\w+:\d+>/g, '') // custom emojis
+        .replace(/<@!?\d+>/g, '') // user mentions
+        .replace(/<#\d+>/g, '') // channel mentions
+        .replace(/<@&\d+>/g, '') // role mentions
+        .replace(/[`*~_#|<>]/g, '') // markdown symbols
+        .replace(/\b\d{1,2}:\d{2}(:\d{2})?(\s*(am|pm))?\b/gi, '') // timestamps
+        .replace(/\[VOICE CHANNEL:[^\]]*\]/gi, '') // strip system leakage tags
+        .replace(/\bVC\b/g, 'voice chat')
+        .replace(/\bDM\b/g, 'direct message')
+        .replace(/\bAI\b/g, 'A I')
+        .replace(/&/g, 'and')
+        .replace(/%/g, 'percent')
         .replace(/\s+/g, ' ')
         .trim();
 
-    if (clean.length <= maxLength) return [clean];
+    if (clean.length <= maxLength) return clean ? [clean] : [];
 
     const sentences = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [clean];
     const chunks = [];
@@ -88,6 +98,7 @@ function chunkTextForTTS(text, maxLength = 250) {
 
     for (const s of sentences) {
         const trimmed = s.trim();
+        if (!trimmed) continue;
         if ((current + ' ' + trimmed).trim().length <= maxLength) {
             current = (current + ' ' + trimmed).trim();
         } else {
@@ -110,7 +121,7 @@ async function fetchTTSAudioBuffer(text) {
 
         return await new Promise((resolve, reject) => {
             const chunks = [];
-            const timeout = setTimeout(() => reject(new Error('Neural TTS timeout')), 10000);
+            const timeout = setTimeout(() => reject(new Error('Neural TTS timeout')), 8000);
 
             audioStream.on('data', chunk => chunks.push(chunk));
             audioStream.on('end', () => {
@@ -124,13 +135,13 @@ async function fetchTTSAudioBuffer(text) {
         });
     } catch (neuralErr) {
         console.warn('[NoraVoiceAI] Neural TTS fallback:', neuralErr.message);
-        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text.slice(0, 200))}&tl=en&client=tw-ob`;
         const response = await axios.get(url, {
             responseType: 'arraybuffer',
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             },
-            timeout: 10000
+            timeout: 8000
         });
         return Buffer.from(response.data);
     }
@@ -203,7 +214,7 @@ class NoraVoiceAIManager {
                 guildId: guildId,
                 adapterCreator: voiceChannel.guild.voiceAdapterCreator,
                 selfDeaf: false,
-                selfMute: false
+                selfMute: true // Auto-muted by default while waiting
             });
 
             await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
@@ -257,11 +268,17 @@ class NoraVoiceAIManager {
             player.on('error', (err) => {
                 console.error('[NoraVoiceAI] Audio Player Error:', err.message);
                 session.isSpeaking = false;
+                try {
+                    session.connection.rejoin({ selfMute: true, selfDeaf: false });
+                } catch (_) {}
                 this.playNextInPlaybackQueue(session);
             });
 
             player.on(AudioPlayerStatus.Idle, () => {
                 session.isSpeaking = false;
+                try {
+                    session.connection.rejoin({ selfMute: true, selfDeaf: false });
+                } catch (_) {}
                 this.playNextInPlaybackQueue(session);
             });
 
@@ -300,6 +317,7 @@ class NoraVoiceAIManager {
                 console.log(`[NoraVoiceAI] User ${member.displayName} interrupted Nora. Stopping speech playback immediately.`);
                 try {
                     session.player.stop(true);
+                    session.connection.rejoin({ selfMute: true, selfDeaf: false });
                 } catch (_) {}
                 session.playbackQueue = [];
                 session.isSpeaking = false;
@@ -407,13 +425,17 @@ class NoraVoiceAIManager {
                 transcription: transcription
             });
 
-            // 2. Build Multi-User Room Context
+            // 2. Build Multi-User Room Context (strictly isolated from old text chats)
+            const now = Date.now();
+            // Drop any dialogue turns older than 90 seconds
+            session.recentDialogue = (session.recentDialogue || []).filter(d => (now - d.time) < 90000);
+
             const activeMembersInVC = session.voiceChannel.members
                 .filter(m => !m.user.bot)
                 .map(m => m.displayName)
                 .join(', ');
 
-            const historyContext = session.recentDialogue.slice(-4).map(d => 
+            const historyContext = session.recentDialogue.slice(-2).map(d => 
                 `[${d.speaker}]: "${d.text}" -> Nora: "${d.reply}"`
             ).join('\n');
 
@@ -421,13 +443,15 @@ class NoraVoiceAIManager {
             const aiResponse = await getBuiltInResponse(aiPrompt, {
                 context: `[VOICE CHANNEL: ${session.voiceChannel.name}]
 Active Users in Voice Room: ${activeMembersInVC || 'None'}
-Recent Voice Chat History:
-${historyContext || 'No previous turns yet.'}
+Recent Voice Turns:
+${historyContext || 'None'}
 Current Speaker: ${speakerMember.displayName} (@${speakerMember.user.username})
-INSTRUCTION: You are Nora, talking live through voice to the room. Address ${speakerMember.displayName} naturally. Keep responses concise, warm, witty, and expressive (1-2 sentences max so it is punchy and fluent when spoken out loud). No markdown formatting or emoji text in spoken replies.`,
+DIRECTIVE: You are Nora speaking live in a voice channel. Address ${speakerMember.displayName} naturally. Keep responses concise, warm, and crystal clear (1-2 sentences maximum). Do NOT mention old text chats, timestamps, formatting, or emojis.`,
                 authorName: speakerMember.displayName,
                 isVoiceMode: true,
                 recentHistory: '',
+                replyContext: '',
+                userMemory: '',
                 isPremium: true
             });
 
@@ -441,7 +465,7 @@ INSTRUCTION: You are Nora, talking live through voice to the room. Address ${spe
                 reply: replyText,
                 time: Date.now()
             });
-            if (session.recentDialogue.length > 8) session.recentDialogue.shift();
+            if (session.recentDialogue.length > 4) session.recentDialogue.shift();
 
             // 3. Queue Spoken Audio
             await this.updateVisualizer(session, 'speaking', {
@@ -524,6 +548,9 @@ INSTRUCTION: You are Nora, talking live through voice to the room. Address ${spe
         if (!session || session.playbackQueue.length === 0) {
             session.isSpeaking = false;
             this.cleanupAudioFiles(session);
+            try {
+                session.connection.rejoin({ selfMute: true, selfDeaf: false });
+            } catch (_) {}
             if (!session.isProcessingQueue) {
                 this.updateVisualizer(session, 'idle');
             }
@@ -531,10 +558,14 @@ INSTRUCTION: You are Nora, talking live through voice to the room. Address ${spe
         }
 
         session.isSpeaking = true;
+        try {
+            session.connection.rejoin({ selfMute: false, selfDeaf: false });
+        } catch (_) {}
+
         const item = session.playbackQueue.shift();
 
         try {
-            const chunks = chunkTextForTTS(item.text, 250);
+            const chunks = chunkTextForTTS(item.text, 220);
             if (chunks.length === 0) {
                 return this.playNextInPlaybackQueue(session);
             }
@@ -560,6 +591,9 @@ INSTRUCTION: You are Nora, talking live through voice to the room. Address ${spe
         } catch (error) {
             console.error('[NoraVoiceAI Playback Error]:', error);
             session.isSpeaking = false;
+            try {
+                session.connection.rejoin({ selfMute: true, selfDeaf: false });
+            } catch (_) {}
             this.playNextInPlaybackQueue(session);
         }
     }
