@@ -5,7 +5,7 @@ const {
     AudioPlayerStatus,
     VoiceConnectionStatus,
     EndBehaviorType,
-    StreamType,
+    NoSubscriberBehavior,
     entersState
 } = require('@discordjs/voice');
 const {
@@ -17,12 +17,12 @@ const {
 } = require('discord.js');
 const prism = require('prism-media');
 const axios = require('axios');
-const { Readable } = require('stream');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const geminiKeyManager = require('./geminiKeyManager');
 const { getBuiltInResponse } = require('./builtInBrain');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 // Ensure FFMPEG_PATH is globally configured
 try {
@@ -216,8 +216,16 @@ class NoraVoiceAIManager {
                 }
             } catch (_) {}
 
-            const player = createAudioPlayer();
-            connection.subscribe(player);
+            // Create Audio Player with NoSubscriberBehavior.Play to prevent autopausing
+            const player = createAudioPlayer({
+                behaviors: {
+                    noSubscriber: NoSubscriberBehavior.Play,
+                    maxMissedFrames: 50
+                }
+            });
+
+            const subscription = connection.subscribe(player);
+            console.log(`[NoraVoiceAI] Subscribed player to voice connection in ${voiceChannel.name}. Subscription active:`, !!subscription);
 
             const session = {
                 guildId,
@@ -226,9 +234,11 @@ class NoraVoiceAIManager {
                 initiatorMember,
                 connection,
                 player,
+                subscription,
                 isProcessing: false,
                 isSpeaking: false,
                 activeSpeakers: new Set(),
+                currentAudioFile: null,
                 lastActivity: Date.now(),
                 visualizerMessage: null,
                 conversationHistory: []
@@ -251,12 +261,18 @@ class NoraVoiceAIManager {
             player.on('error', (err) => {
                 console.error('[NoraVoiceAI] Audio Player Error:', err.message);
                 session.isSpeaking = false;
+                this.cleanupCurrentAudioFile(session);
                 this.updateVisualizer(session, 'idle');
             });
 
             player.on(AudioPlayerStatus.Idle, () => {
                 session.isSpeaking = false;
+                this.cleanupCurrentAudioFile(session);
                 this.updateVisualizer(session, 'idle');
+            });
+
+            player.on(AudioPlayerStatus.Playing, () => {
+                console.log(`[NoraVoiceAI] Player status is now PLAYING in voice channel ${voiceChannel.name}.`);
             });
 
             // Bind speech receiver
@@ -275,6 +291,17 @@ class NoraVoiceAIManager {
                 success: false,
                 message: `❌ Failed to join voice channel: ${error.message}`
             };
+        }
+    }
+
+    cleanupCurrentAudioFile(session) {
+        if (session && session.currentAudioFile) {
+            try {
+                if (fs.existsSync(session.currentAudioFile)) {
+                    fs.unlinkSync(session.currentAudioFile);
+                }
+            } catch (_) {}
+            session.currentAudioFile = null;
         }
     }
 
@@ -466,6 +493,8 @@ class NoraVoiceAIManager {
         if (!session || !session.player) return;
 
         session.isSpeaking = true;
+        this.cleanupCurrentAudioFile(session);
+
         try {
             const chunks = chunkTextForTTS(text, 180);
             if (chunks.length === 0) {
@@ -474,29 +503,34 @@ class NoraVoiceAIManager {
                 return;
             }
 
-            // Fetch first/main audio chunk
-            const audioBuffer = await fetchTTSAudioBuffer(chunks[0]);
-            
-            // Transcode MP3 directly to 48kHz stereo 16-bit PCM for Discord.js Voice
-            const transcoder = new prism.FFmpeg({
-                args: [
-                    '-analyzeduration', '0',
-                    '-loglevel', '0',
-                    '-f', 'mp3',
-                    '-i', 'pipe:0',
-                    '-f', 's16le',
-                    '-ar', '48000',
-                    '-ac', '2'
-                ]
-            });
+            // Fetch and concatenate all TTS chunks
+            const audioBuffers = [];
+            for (const c of chunks) {
+                const b = await fetchTTSAudioBuffer(c);
+                if (b && b.length > 0) audioBuffers.push(b);
+            }
 
-            Readable.from(audioBuffer).pipe(transcoder);
-            const resource = createAudioResource(transcoder, { inputType: StreamType.Raw });
+            if (audioBuffers.length === 0) {
+                session.isSpeaking = false;
+                this.updateVisualizer(session, 'idle');
+                return;
+            }
 
+            const totalBuffer = Buffer.concat(audioBuffers);
+
+            // Write to a temporary file for 100% reliable direct Discord.js Voice playback
+            const tmpFile = path.join(os.tmpdir(), `nora_voice_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.mp3`);
+            fs.writeFileSync(tmpFile, totalBuffer);
+            session.currentAudioFile = tmpFile;
+
+            const resource = createAudioResource(tmpFile);
             session.player.play(resource);
+            console.log(`[NoraVoiceAI] Dispatched audio resource (${totalBuffer.length} bytes) to player for: "${text.substring(0, 45)}..."`);
+
         } catch (error) {
             console.error('[NoraVoiceAI Speak Error]:', error);
             session.isSpeaking = false;
+            this.cleanupCurrentAudioFile(session);
             this.updateVisualizer(session, 'idle');
         }
     }
@@ -613,6 +647,7 @@ class NoraVoiceAIManager {
         if (!session) return false;
 
         try {
+            this.cleanupCurrentAudioFile(session);
             if (session.player) {
                 session.player.stop(true);
             }
