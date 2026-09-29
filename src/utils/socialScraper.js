@@ -369,9 +369,7 @@ async function pollFeeds(client) {
     try {
         const feeds = await ContentFeed.findAll();
         for (const feed of feeds) {
-            if (feed.platform === 'YOUTUBE') {
-                await checkYoutube(feed, client);
-            } else if (feed.platform === 'TWITCH') {
+            if (feed.platform === 'TWITCH') {
                 await checkTwitch(feed, client);
             }
         }

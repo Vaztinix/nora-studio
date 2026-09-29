@@ -662,28 +662,6 @@ runPreSyncMigrations().then(() => {
     require('./utils/tempRoleManager').startTempRoleManager(client);
     require('./utils/socialScraper').init(client);
 
-    // Auto-renew WebSub subscriptions on startup and then every 24 hours
-    try {
-        const ContentFeed = require('./database/models/ContentFeed');
-        const { manageWebSubSubscriptions } = require('./services/youtube_engine');
-        const renewAllSubscriptions = async () => {
-            const feeds = await ContentFeed.findAll({ where: { platform: 'YOUTUBE' } });
-            const uniqueChannelIds = [...new Set(feeds.map(f => f.channelId).filter(id => id && id.startsWith('UC')))];
-            const publicUrl = process.env.API_BASE_URL || 'https://api.vaztinix.dev';
-            const callbackUrl = `${publicUrl.replace(/\/$/, '')}/api/websub/youtube/webhook`;
-            if (uniqueChannelIds.length > 0) {
-                console.log(`[System] Auto-renewing ${uniqueChannelIds.length} WebSub subscriptions...`);
-                await manageWebSubSubscriptions(callbackUrl, uniqueChannelIds);
-            }
-        };
-        // Run on startup
-        setTimeout(renewAllSubscriptions, 15000);
-        // Repeat daily
-        setInterval(renewAllSubscriptions, 24 * 60 * 60 * 1000);
-    } catch (renewError) {
-        console.error('Failed scheduling WebSub renewals:', renewError.message);
-    }
-
     // Final check for token stability
     const cleanToken = (process.env.TOKEN || '').trim().replace(/^["']|["']$/g, '');
     console.log(`[Token Debug] Attempting client.login with token length: ${cleanToken.length}, starts with: ${cleanToken.slice(0, 10)}...`);
@@ -1564,20 +1542,6 @@ app.get('/ping', (req, res) => res.send('pong'));
 app.head('/health', (req, res) => res.sendStatus(200));
 app.head('/api/health', (req, res) => res.sendStatus(200));
 app.head('/', (req, res) => res.sendStatus(200));
-
-// YouTube WebSub Webhook Router
-try {
-    const { createWebSubRouter, startPollingFallback } = require('./services/youtube_engine');
-    const ContentFeed = require('./database/models/ContentFeed');
-    const webSubRouter = createWebSubRouter(client, async (channelId) => {
-        return await ContentFeed.findAll({ where: { channelId, platform: 'YOUTUBE' } });
-    });
-    app.use('/api/websub', webSubRouter);
-    console.log('[System] WebSub Webhook Router mounted at /api/websub/youtube/webhook');
-    startPollingFallback(client, ContentFeed);
-} catch (e) {
-    console.error('Failed to initialize YouTube WebSub Router:', e.message);
-}
 
 // Rate Limiter for Client Log Submissions to prevent spam
 const clientLogRequests = new Map();
