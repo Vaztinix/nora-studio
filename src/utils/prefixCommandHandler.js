@@ -43,7 +43,10 @@ const COMMAND_ALIASES = {
     'tr': 'translate',
     'voice': 'voice-ai',
     'vc': 'voice-ai',
-    'voiceai': 'voice-ai'
+    'voiceai': 'voice-ai',
+    'aslowmode': 'adaptiveslowmode',
+    'adaptiveslow': 'adaptiveslowmode',
+    'autoslowmode': 'adaptiveslowmode'
 };
 
 /**

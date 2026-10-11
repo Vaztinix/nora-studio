@@ -396,7 +396,18 @@ async function detectIntent(message, plainContent) {
         };
     }
 
-    // I. Slowmode
+    // I. Slowmode & Adaptive Slowmode
+    if (lower.match(/\b(adaptive\s*slowmode|auto\s*slowmode|dynamic\s*slowmode)\b/i)) {
+        const isDisable = lower.includes('off') || lower.includes('disable') || lower.includes('stop');
+        return {
+            type: 'MODERATION',
+            action: 'ADAPTIVE_SLOWMODE',
+            enable: !isDisable,
+            channel: message.channel,
+            reason: `Adaptive slowmode ${!isDisable ? 'enabled' : 'disabled'} via Nora AI`
+        };
+    }
+
     if (lower.match(/\b(slowmode|slow\s*mode)\b/i)) {
         if (lower.includes('off') || lower.includes('disable') || lower.includes('0')) {
             return {
@@ -675,6 +686,7 @@ async function checkModerationAuthority(message, client, intent) {
         'LOCK': PermissionFlagsBits.ManageChannels,
         'UNLOCK': PermissionFlagsBits.ManageChannels,
         'SLOWMODE': PermissionFlagsBits.ManageChannels,
+        'ADAPTIVE_SLOWMODE': PermissionFlagsBits.ManageChannels,
         'ROLE_ADD': PermissionFlagsBits.ManageRoles,
         'ROLE_REMOVE': PermissionFlagsBits.ManageRoles
     };
@@ -690,6 +702,7 @@ async function checkModerationAuthority(message, client, intent) {
         'LOCK': 'Manage Channels',
         'UNLOCK': 'Manage Channels',
         'SLOWMODE': 'Manage Channels',
+        'ADAPTIVE_SLOWMODE': 'Manage Channels',
         'ROLE_ADD': 'Manage Roles',
         'ROLE_REMOVE': 'Manage Roles'
     };
@@ -837,6 +850,12 @@ async function handleInteractiveModeration(message, client, intent) {
     } else if (intent.action === 'SLOWMODE') {
         actionTitle = '⏱️ Confirm Slowmode Adjustment';
         actionDesc = `Are you sure you want to set channel slowmode to **${intent.seconds}s**?`;
+    } else if (intent.action === 'ADAPTIVE_SLOWMODE') {
+        actionTitle = '⚡ Confirm Adaptive Slowmode Change';
+        actionDesc = intent.enable 
+            ? 'Are you sure you want to **enable** Adaptive Slowmode across the server?' 
+            : 'Are you sure you want to **disable** Adaptive Slowmode?';
+        actionColor = intent.enable ? 0x10B981 : 0xEF4444;
     } else if (intent.action === 'ROLE_ADD') {
         actionTitle = '🏷️ Confirm Role Assignment';
         actionDesc = `Are you sure you want to assign the <@&${intent.role.id}> role to **${target.username || target.tag}**?`;
@@ -1128,6 +1147,15 @@ async function performModerationAction(guild, moderator, intent) {
     } else if (intent.action === 'SLOWMODE') {
         await intent.channel.setRateLimitPerUser(intent.seconds, `Slowmode updated by ${moderator.tag}`);
         description = `⏱️ Slowmode in <#${intent.channel.id}> set to **${intent.seconds}s**.`;
+    } else if (intent.action === 'ADAPTIVE_SLOWMODE') {
+        const adaptiveSlowmodeManager = require('./adaptiveSlowmodeManager');
+        await settingsCache.update(guild.id, { adaptiveSlowmodeEnabled: intent.enable });
+        if (!intent.enable) {
+            await adaptiveSlowmodeManager.manualReset(intent.channel);
+        }
+        description = intent.enable 
+            ? '⚡ **Adaptive Slowmode** has been enabled for this server.' 
+            : '⚡ **Adaptive Slowmode** has been disabled.';
     } else if (intent.action === 'ROLE_ADD') {
         const targetMember = await guild.members.fetch(intent.target.id).catch(() => null);
         if (targetMember) {

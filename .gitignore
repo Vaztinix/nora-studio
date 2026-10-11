@@ -10,6 +10,7 @@ countingData.json
 oneWordStoryData.json
 scratch/
 .nora_neural_weights/
+.gemini/
 
 # Logs and backups
 *.pid

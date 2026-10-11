@@ -27,6 +27,14 @@ module.exports = {
             console.error('[ActivityTracker Record Error]:', e.message);
         }
 
+        // ⏱️ Adaptive Slowmode Dynamic Velocity Shield
+        try {
+            const adaptiveSlowmodeManager = require('../utils/adaptiveSlowmodeManager');
+            adaptiveSlowmodeManager.recordMessage(message);
+        } catch (e) {
+            console.error('[AdaptiveSlowmode Record Error]:', e.message);
+        }
+
         // ⚡ Universal Prefix Command Engine (n!<command>, n?<command>, @Nora <command>)
         const prefixCommandHandler = require('../utils/prefixCommandHandler');
         const wasHandledByPrefix = await prefixCommandHandler.handlePrefixCommand(message, client);

@@ -359,6 +359,59 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.TEXT, // JSON object string mapping warning count to action e.g. {"3":"timeout_1h","5":"kick","7":"ban"}
         defaultValue: '{"3":"timeout_1h","5":"kick","7":"ban"}'
     },
+    // ---- Adaptive Slowmode System ----
+    adaptiveSlowmodeEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    adaptiveSlowmodeChannels: {
+        type: DataTypes.TEXT, // JSON array of channel IDs (empty = all text channels)
+        defaultValue: '[]'
+    },
+    adaptiveSlowmodeIgnoredRoles: {
+        type: DataTypes.TEXT, // JSON array of role IDs
+        defaultValue: '[]'
+    },
+    adaptiveSlowmodeInactiveSec: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    adaptiveSlowmodeSmallSec: {
+        type: DataTypes.INTEGER,
+        defaultValue: 3
+    },
+    adaptiveSlowmodeLargeSec: {
+        type: DataTypes.INTEGER,
+        defaultValue: 6 // 5-10 seconds during large activity
+    },
+    adaptiveSlowmodeSurgeSec: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10 // surge raid speed
+    },
+    adaptiveSlowmodeSmallThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 3 // messages per 10s to trigger small tier
+    },
+    adaptiveSlowmodeLargeThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 7 // messages per 10s to trigger large tier
+    },
+    adaptiveSlowmodeSurgeThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 13 // messages per 10s to trigger surge tier
+    },
+    adaptiveSlowmodeDecaySec: {
+        type: DataTypes.INTEGER,
+        defaultValue: 20 // seconds of inactivity before returning down to 0
+    },
+    adaptiveSlowmodeNotify: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    adaptiveSlowmodeModLog: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     managedBotId: {
         type: DataTypes.STRING,
         allowNull: true

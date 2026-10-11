@@ -16,6 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="/nora-sentinel.js?v=2.2" defer></script>
     
     <style>
@@ -65,7 +66,7 @@
 
         body {
             font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #0B0C12;
+            background-color: #03050a;
             color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
@@ -81,10 +82,13 @@
 
         /* ===== CONTAINER ===== */
         .container {
-            max-width: 1240px;
-            margin: 0 auto;
-            padding: 0 24px;
-            width: 100%;
+            max-width: 1240px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding-left: 24px !important;
+            padding-right: 24px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
             position: relative;
             z-index: 1;
         }
@@ -278,22 +282,25 @@
         }
 
         .btn-nav-invite {
-            background: linear-gradient(135deg, var(--blurple) 0%, var(--purple) 100%);
+            background: linear-gradient(180deg, #5865F2 0%, #4752C4 100%);
             color: #FFFFFF;
             padding: 9px 22px;
             border-radius: var(--radius-full);
             text-decoration: none;
             font-weight: 700;
             font-size: 0.88rem;
-            box-shadow: 0 4px 20px var(--blurple-glow);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 4px 14px rgba(88, 101, 242, 0.25);
             transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
         .btn-nav-invite:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5);
+            background: linear-gradient(180deg, #6470f5 0%, #4e59cf 100%);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 6px 20px rgba(88, 101, 242, 0.4);
         }
 
         /* ===== HERO SECTION ===== */
@@ -372,22 +379,26 @@
         }
 
         .btn-cta-primary {
-            background: linear-gradient(135deg, var(--blurple) 0%, #4F46E5 100%);
-            color: #FFFFFF;
-            padding: 14px 34px;
-            border-radius: var(--radius-full);
-            font-weight: 700;
-            font-size: 1.05rem;
-            text-decoration: none;
-            box-shadow: 0 10px 30px var(--blurple-glow);
-            transition: var(--transition-smooth);
+            background: linear-gradient(180deg, #5865F2 0%, #4752C4 100%) !important;
+            color: #FFFFFF !important;
+            padding: 12px 30px !important;
+            border-radius: 9999px !important;
+            font-weight: 600 !important;
+            font-size: 0.96rem !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 16px rgba(88, 101, 242, 0.3) !important;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
             display: inline-flex;
             align-items: center;
             gap: 10px;
+            text-decoration: none;
         }
         .btn-cta-primary:hover {
+            background: linear-gradient(180deg, #6470f5 0%, #4e59cf 100%) !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
             transform: translateY(-2px);
-            box-shadow: 0 14px 40px rgba(88, 101, 242, 0.55);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(88, 101, 242, 0.45) !important;
+            color: #FFFFFF !important;
         }
 
         .btn-cta-secondary {
@@ -501,6 +512,9 @@
         }
         .bento-card.col-span-2 {
             grid-column: span 2;
+        }
+        .bento-card.col-span-3 {
+            grid-column: span 3;
         }
 
         .bento-icon {
@@ -645,7 +659,9 @@
             position: absolute;
             top: -14px;
             right: 28px;
-            background: linear-gradient(135deg, var(--purple) 0%, var(--blurple) 100%);
+            background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
             color: #FFFFFF;
             font-size: 0.72rem;
             font-weight: 800;
@@ -1393,45 +1409,47 @@
 
     <main>
         <!-- Hero Section -->
-        <section class="container hero-section">
-            <div class="hero-content">
-                <div class="hero-announcement-pill" id="hero-announcement">
-                    <i class="fab fa-discord"></i> Built for Discord Communities • 65+ Servers
-                </div>
-                
-                <h1 class="hero-heading">
-                    The Complete Discord Bot for <span class="hero-highlight">Your Server</span>
-                </h1>
-                
-                <p class="hero-description">
-                    Everything your Discord community needs in one fast, reliable bot. From automated <strong>Roblox Group Rank Sync</strong> and <strong>Top.gg Vote Multipliers</strong> to dynamic <strong>Starboard v3.0</strong>, <strong>Math Counting</strong>, and native <strong>AutoMod</strong> defense.
-                </p>
+        <section class="hero-section" id="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-announcement-pill" id="hero-announcement">
+                        <i class="fab fa-discord"></i> Built for Discord Communities • 65+ Servers
+                    </div>
+                    
+                    <h1 class="hero-heading">
+                        The Complete Discord Bot for <span class="hero-highlight">Your Server</span>
+                    </h1>
+                    
+                    <p class="hero-description">
+                        Privacy-first community operations suite powered by the <strong>Aura Neural Engine's</strong> intelligent Tri-AI routing between <strong>Gemini 1.5 Flash</strong>, <strong>GPT-4o Mini</strong>, and local <strong>Qwen 1.8B</strong>. Equipped with <strong>sub-4ms AutoMod</strong> threat defense, instant <strong>Roblox Group Rank Sync</strong>, and the unified <code>/configure</code> control hub.
+                    </p>
 
-                <div class="hero-cta-group">
-                    <a href="/install" class="btn-cta-primary" id="btn-hero-invite">
-                        <i class="fab fa-discord"></i> Add to Discord
-                    </a>
-                    <a href="/dashboard" class="btn-cta-secondary" id="btn-hero-dashboard">
-                        <i class="fas fa-sliders-h"></i> Web Dashboard
-                    </a>
-                </div>
+                    <div class="hero-cta-group">
+                        <a href="/install" class="btn-cta-primary" id="btn-hero-invite">
+                            <i class="fab fa-discord"></i> Add to Discord
+                        </a>
+                        <a href="/dashboard" class="btn-cta-secondary" id="btn-hero-dashboard">
+                            <i class="fas fa-sliders-h"></i> Web Dashboard
+                        </a>
+                    </div>
 
-                <div class="hero-stats-bar">
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-servers">65+</span>
-                        <span class="stat-label">Active Servers</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-members">10,700+</span>
-                        <span class="stat-label">Total Members</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-commands">59</span>
-                        <span class="stat-label">Commands</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-ping">18ms</span>
-                        <span class="stat-label">Gateway Ping</span>
+                    <div class="hero-stats-bar">
+                        <div class="stat-item">
+                            <span class="stat-value" id="stat-servers">65+</span>
+                            <span class="stat-label">Active Servers</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="stat-members">10,700+</span>
+                            <span class="stat-label">Total Members</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="stat-commands">59</span>
+                            <span class="stat-label">Commands</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="stat-ping">18ms</span>
+                            <span class="stat-label">Gateway Ping</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1447,24 +1465,88 @@
                 </div>
 
                 <div class="bento-grid">
-                    <!-- Feature 1: Roblox Sync -->
+                    <!-- Feature 1: Aura Neural Tri-AI Engine -->
                     <div class="glass-panel bento-card col-span-2">
                         <div>
-                            <div class="bento-icon blurple"><i class="fas fa-cubes-stacked"></i></div>
+                            <div class="bento-icon blurple"><i class="fas fa-brain"></i></div>
                             <div class="bento-body">
-                                <h3>Automated Roblox Group Rank Sync</h3>
-                                <p>Bind multiple Discord roles directly to Roblox group ranks. Nora synchronizes member permissions, promotions, and role assignments automatically without manual checking.</p>
+                                <h3>Aura Neural Tri-AI Engine</h3>
+                                <p>Intelligent routing dynamically directing between <strong>Gemini 1.5 Flash</strong>, <strong>GPT-4o Mini</strong>, and local <strong>Qwen 1.8B</strong>. Tailor community responses with custom server persona prompts, backed by isolated 30-day cross-channel conversation memory.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
-                            <span class="bento-chip">Zero Delay</span>
-                            <span class="bento-chip">Multi-Group Bindings</span>
-                            <span class="bento-chip">Anti-Impersonation</span>
-                            <span class="bento-chip">Instant Role Assignment</span>
+                            <span class="bento-chip">Gemini 1.5 Flash</span>
+                            <span class="bento-chip">GPT-4o Mini</span>
+                            <span class="bento-chip">Local Qwen 1.8B</span>
+                            <span class="bento-chip">30-Day Memory</span>
                         </div>
                     </div>
 
-                    <!-- Feature 2: Starboard v3.0 -->
+                    <!-- Feature 2: Sub-4ms AutoMod Threat Defense -->
+                    <div class="glass-panel bento-card">
+                        <div>
+                            <div class="bento-icon rose"><i class="fas fa-shield-halved"></i></div>
+                            <div class="bento-body">
+                                <h3>Sub-4ms AutoMod Threat Defense</h3>
+                                <p>Near-zero latency heuristic threat defense with real-time neural phishing link scanning, adaptive raid velocity dampening, and zero-leak server-scoped SQLite architecture.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">&lt; 3.84ms Mitigation</span>
+                            <span class="bento-chip">Phishing Quarantine</span>
+                            <span class="bento-chip">Zero-Leak SQLite</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3: Roblox Group Rank Sync -->
+                    <div class="glass-panel bento-card">
+                        <div>
+                            <div class="bento-icon blurple"><i class="fas fa-cubes-stacked"></i></div>
+                            <div class="bento-body">
+                                <h3>Instant Roblox Group Rank Sync</h3>
+                                <p>Instant Bi-Directional Roblox Group Rank Sync. Connect multiple Roblox groups via Open Cloud API keys, automate rank-to-role binding, and verify community members seamlessly.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">Open Cloud API</span>
+                            <span class="bento-chip">Sub-100ms Sync</span>
+                            <span class="bento-chip">Multi-Group Bindings</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 4: Unified /configure Control Hub -->
+                    <div class="glass-panel bento-card">
+                        <div>
+                            <div class="bento-icon cyan"><i class="fas fa-sliders-h"></i></div>
+                            <div class="bento-body">
+                                <h3>Unified /configure Control Hub</h3>
+                                <p>Replaces dozens of cluttered slash commands with a single, elegant <code>/configure</code> control hub featuring nested modal popups, live diagnostic previews, and instant toggle switches.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">Modal Dialogs</span>
+                            <span class="bento-chip">Clean Interface</span>
+                            <span class="bento-chip">Zero Command Clutter</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 5: Module Hub & IDTK Studio -->
+                    <div class="glass-panel bento-card">
+                        <div>
+                            <div class="bento-icon purple"><i class="fas fa-laptop-code"></i></div>
+                            <div class="bento-body">
+                                <h3>Server Module Hub & IDTK Studio</h3>
+                                <p>Build and sandbox custom JS modules safely in IDTK Studio (Internal Developer Toolkit). Submissions undergo automated AST validation by the <strong>Gemini AI Safety Scanner</strong>.</p>
+                            </div>
+                        </div>
+                        <div class="bento-badge-row">
+                            <span class="bento-chip">IDTK JavaScript</span>
+                            <span class="bento-chip">Gemini AST Scanner</span>
+                            <span class="bento-chip">Module Hub</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature 6: Starboard v3.0 & Hall of Fame -->
                     <div class="glass-panel bento-card">
                         <div>
                             <div class="bento-icon amber"><i class="fas fa-star"></i></div>
@@ -1480,87 +1562,21 @@
                         </div>
                     </div>
 
-                    <!-- Feature 3: Math Counting -->
-                    <div class="glass-panel bento-card">
-                        <div>
-                            <div class="bento-icon emerald"><i class="fas fa-calculator"></i></div>
-                            <div class="bento-body">
-                                <h3>Math & Counting Channel Game</h3>
-                                <p>Turn your counting channel into an active community game. Safely evaluates math expressions like <code>10*2+5</code> or <code>2^4</code> with milestone alerts and server leaderboards.</p>
-                            </div>
-                        </div>
-                        <div class="bento-badge-row">
-                            <span class="bento-chip">Math Parser</span>
-                            <span class="bento-chip">Milestone Celebrations</span>
-                            <span class="bento-chip">Anti-Double Count</span>
-                        </div>
-                    </div>
-
-                    <!-- Feature 4: 4-Way Verification -->
-                    <div class="glass-panel bento-card">
-                        <div>
-                            <div class="bento-icon cyan"><i class="fas fa-user-shield"></i></div>
-                            <div class="bento-body">
-                                <h3>4-Way Verification Gatekeeper</h3>
-                                <p>Protect against automated raids with 4 selectable verification engines: 1-Click Button, Image CAPTCHA, Reaction confirmation, and Roblox account binding.</p>
-                            </div>
-                        </div>
-                        <div class="bento-badge-row">
-                            <span class="bento-chip">1-Click Button</span>
-                            <span class="bento-chip">Image CAPTCHA</span>
-                            <span class="bento-chip">Auto-Role Sync</span>
-                        </div>
-                    </div>
-
-                    <!-- Feature 5: Native AutoMod -->
-                    <div class="glass-panel bento-card">
-                        <div>
-                            <div class="bento-icon rose"><i class="fas fa-shield-halved"></i></div>
-                            <div class="bento-body">
-                                <h3>Native Discord AutoMod & Safety</h3>
-                                <p>Leverages Discord's native low-level AutoMod pipeline to instantly block spam links, mass pings, and profanity in under 5ms with zero bot lag.</p>
-                            </div>
-                        </div>
-                        <div class="bento-badge-row">
-                            <span class="bento-chip">Zero Latency</span>
-                            <span class="bento-chip">Native AutoMod</span>
-                            <span class="bento-chip">Anti-Scam</span>
-                        </div>
-                    </div>
-
-                    <!-- Feature 6: Top.gg Official Integration Studio -->
-                    <div class="glass-panel bento-card">
-                        <div>
-                            <div class="bento-icon" style="background: none; padding: 0; width: 34px; height: 34px; border-radius: 8px; overflow: hidden;">
-                                <img src="https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg" alt="Top.gg" style="width: 100%; height: 100%; object-fit: cover;">
-                            </div>
-                            <div class="bento-body">
-                                <h3>Top.gg Official Integration Studio</h3>
-                                <p>Ingest live vote webhooks, track multi-bot votes, reward server loyalty with weekend 2x multipliers, streak bonuses, and automated Discord role assignments.</p>
-                            </div>
-                        </div>
-                        <div class="bento-badge-row">
-                            <span class="bento-chip">Multi-Bot Tracker</span>
-                            <span class="bento-chip">Weekend 2x</span>
-                            <span class="bento-chip">Vote Streaks</span>
-                            <span class="bento-chip">Role Rewards</span>
-                        </div>
-                    </div>
-
-                    <!-- Feature 7: Support Tickets & Leveling -->
+                    <!-- Feature 7: Support Tickets & 4-Way Verification -->
                     <div class="glass-panel bento-card col-span-2">
                         <div>
-                            <div class="bento-icon purple"><i class="fas fa-ticket-simple"></i></div>
+                            <div class="bento-icon emerald"><i class="fas fa-user-shield"></i></div>
                             <div class="bento-body">
-                                <h3>Support Tickets & Custom Rank Cards</h3>
-                                <p>Deploy 1-click private ticket panels with questionnaire modals and searchable HTML transcripts. Combine with Nora's leveling engine for custom GIF rank cards and voice XP multipliers.</p>
+                                <h3>Support Tickets & 4-Way Verification Gatekeeper</h3>
+                                <p>Deploy 1-click private ticket panels with questionnaire modals and searchable HTML transcripts. Combined with 4 selectable verification engines: 1-Click Button, Image CAPTCHA, Reaction confirmation, and Roblox account binding.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
                             <span class="bento-chip">HTML Transcripts</span>
                             <span class="bento-chip">Staff Claims</span>
-                            <span class="bento-chip">Custom GIF Cards</span>
-                            <span class="bento-chip">Voice XP Multipliers</span>
+                            <span class="bento-chip">1-Click Button</span>
+                            <span class="bento-chip">Image CAPTCHA</span>
+                            <span class="bento-chip">Auto-Role Sync</span>
                         </div>
                     </div>
                 </div>
@@ -1636,7 +1652,7 @@
                                 <li><i class="fas fa-check"></i> <strong>Dedicated Priority VIP Gateway Route</strong></li>
                             </ul>
                         </div>
-                        <a href="/dashboard" class="btn-cta-primary" style="width: 100%; justify-content: center;">
+                        <a href="/dashboard" class="btn-cta-primary" style="width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
                             <i class="fas fa-bolt"></i> Upgrade to Plus
                         </a>
                     </div>
@@ -1697,13 +1713,15 @@
         </section>
 
         <!-- CTA Banner -->
-        <section class="container cta-banner-section">
-            <div class="cta-box">
-                <h2>Ready to Transform Your Discord Server?</h2>
-                <p>Add Nora Studio in less than 60 seconds. Zero setup required to start protecting and entertaining your community.</p>
-                <div class="hero-cta-group" style="justify-content: center;">
-                    <a href="/install" class="btn-cta-primary"><i class="fab fa-discord"></i> Invite Nora Now</a>
-                    <a href="/dashboard" class="btn-cta-secondary">Open Control Center</a>
+        <section class="cta-banner-section">
+            <div class="container">
+                <div class="glass-panel cta-box text-center">
+                    <h2>Ready to Transform Your Discord Server?</h2>
+                    <p>Add Nora Studio in less than 60 seconds. Zero setup required to start protecting and entertaining your community.</p>
+                    <div class="hero-cta-group" style="justify-content: center;">
+                        <a href="/install" class="btn-cta-primary"><i class="fab fa-discord"></i> Invite Nora Now</a>
+                        <a href="/dashboard" class="btn-cta-secondary">Open Control Center</a>
+                    </div>
                 </div>
             </div>
         </section>

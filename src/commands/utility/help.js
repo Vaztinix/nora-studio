@@ -298,7 +298,8 @@ module.exports = {
                         { name: '`n!purge <amount>`', value: 'Bulk delete up to 250 recent messages with keyword/user filters.' },
                         { name: '`n!bulkrole <add|remove|view|cancel>`', value: 'Bulk assign or remove roles from filtered members with live progress & audit logs.' },
                         { name: '`n!lock` / `n!unlock`', value: 'Lock or unlock the current channel for regular members.' },
-                        { name: '`n!slowmode <seconds>`', value: 'Set message cooldown interval on the current channel.' }
+                        { name: '`n!slowmode <seconds>`', value: 'Set static message cooldown interval on the current channel.' },
+                        { name: '`n!adaptiveslowmode <status|enable|disable|config>`', value: 'Automatically regulate channel slowmode (0s quiet, 3s small, 5-10s large velocity).' }
                     );
             } else if (category === 'profile') {
                 embed.setTitle('Profiles, Leveling & AFK Commands')

@@ -184,7 +184,7 @@ async function generateRankCard({
                     try {
                         const safePages = Math.min(totalPages, 12);
                         animatedBgBuffer = await sharp(rawBuffer, { animated: true, page: 0, pages: safePages })
-                            .resize(860, 240, { fit: 'cover' })
+                            .resize(860, 240, { fit: 'cover', position: 'center' })
                             .toBuffer();
                     } catch(gifErr) {
                         console.warn('[Rank Generator] Animated background resize failed, falling back to static:', gifErr.message);
@@ -195,7 +195,7 @@ async function generateRankCard({
                 if (!isAnimatedGif || !animatedBgBuffer) {
                     isAnimatedGif = false;
                     const pngBuffer = await sharp(rawBuffer)
-                        .resize(860, 240, { fit: 'cover' })
+                        .resize(860, 240, { fit: 'cover', position: 'center' })
                         .png()
                         .toBuffer();
                     customBgBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
@@ -343,13 +343,41 @@ async function generateRankCard({
 
     if (isAnimatedGif && animatedBgBuffer) {
         try {
+            const animMeta = await sharp(animatedBgBuffer, { animated: true }).metadata().catch(() => null);
+            const totalPages = animMeta?.pages || 1;
             const maskSvg = `<svg width="860" height="240">${cardMaskShapeSvg}</svg>`;
             const maskBuffer = await sharp(Buffer.from(maskSvg)).png().toBuffer();
 
+            // Stack exact per-frame overlays vertically to eliminate the libvips tile offset split bug
+            const overlayCopies = [];
+            const maskCopies = [];
+            for (let i = 0; i < totalPages; i++) {
+                overlayCopies.push({ input: composited, top: i * 240, left: 0 });
+                maskCopies.push({ input: maskBuffer, top: i * 240, left: 0 });
+            }
+
+            const tallOverlay = await sharp({
+                create: {
+                    width: 860,
+                    height: 240 * totalPages,
+                    channels: 4,
+                    background: { r: 0, g: 0, b: 0, alpha: 0 }
+                }
+            }).composite(overlayCopies).png().toBuffer();
+
+            const tallMask = await sharp({
+                create: {
+                    width: 860,
+                    height: 240 * totalPages,
+                    channels: 4,
+                    background: { r: 0, g: 0, b: 0, alpha: 0 }
+                }
+            }).composite(maskCopies).png().toBuffer();
+
             return await sharp(animatedBgBuffer, { animated: true })
                 .composite([
-                    { input: maskBuffer, blend: 'dest-in', tile: true },
-                    { input: composited, blend: 'over', tile: true }
+                    { input: tallMask, blend: 'dest-in' },
+                    { input: tallOverlay, blend: 'over' }
                 ])
                 .gif({ loop: 0, effort: 1, colours: 128, dither: 0.8 })
                 .toBuffer();

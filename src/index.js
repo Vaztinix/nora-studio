@@ -1255,6 +1255,36 @@ app.get(['/me', '/me.html'], ipRateLimiter, (req, res) => {
     res.redirect(301, '/team');
 });
 
+app.get(['/team', '/team.html'], ipRateLimiter, (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    const p = fs.existsSync(path.join(__dirname, 'web/team.html')) ? path.join(__dirname, 'web/team.html') : path.join(__dirname, '../dist/team.html');
+    res.sendFile(p);
+});
+
+app.get(['/docs', '/docs.html'], ipRateLimiter, (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    const p = fs.existsSync(path.join(__dirname, 'web/docs.html')) ? path.join(__dirname, 'web/docs.html') : path.join(__dirname, '../dist/docs.html');
+    res.sendFile(p);
+});
+
+app.get(['/legal', '/legal.html'], ipRateLimiter, (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    const p = fs.existsSync(path.join(__dirname, 'web/legal.html')) ? path.join(__dirname, 'web/legal.html') : path.join(__dirname, '../dist/legal.html');
+    res.sendFile(p);
+});
+
+app.get(['/hub', '/hub.html'], ipRateLimiter, (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    const p = fs.existsSync(path.join(__dirname, 'web/hub.html')) ? path.join(__dirname, 'web/hub.html') : path.join(__dirname, '../dist/hub.html');
+    res.sendFile(p);
+});
+
+app.get(['/idtk', '/idtk.html'], ipRateLimiter, (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    const p = fs.existsSync(path.join(__dirname, 'web/idtk.html')) ? path.join(__dirname, 'web/idtk.html') : path.join(__dirname, '../dist/idtk.html');
+    res.sendFile(p);
+});
+
 app.get(['/billing', '/billing-faq', '/billing-faq.html'], ipRateLimiter, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -1353,6 +1383,10 @@ app.use('/api/status', statusRouter);
 const { initReminderScheduler } = require('./utils/reminderScheduler');
 initReminderScheduler(client);
 
+// Initialize Adaptive Slowmode Decay Scheduler Loop
+const adaptiveSlowmodeManager = require('./utils/adaptiveSlowmodeManager');
+adaptiveSlowmodeManager.initDecayInterval(client);
+
 // Mount Top.gg Official Webhook & Integration Router
 const topggRouter = require('./api/routes/topgg')(client);
 app.use(topggRouter);
@@ -1433,6 +1467,13 @@ app.use('/api/system', studioRouter);
 // Developer / Owner-Only admin router
 const adminRouter = require('./api/routes/admin');
 app.use('/api/admin', adminRouter);
+
+// Community Modules & IDTK Studio Router
+const modulesRouter = require('./api/routes/modules');
+app.use('/api/modules', (req, res, next) => {
+    req.client = client;
+    next();
+}, modulesRouter);
 
 // User Notifications Router
 
@@ -3555,6 +3596,14 @@ app.get(['/verify', '/verify.html'], ipRateLimiter, (req, res) => {
 
 app.get(['/status', '/status.html'], ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('status.html'));
+});
+
+app.get(['/idtk', '/idtk.html'], ipRateLimiter, (req, res) => {
+    res.sendFile(getWebFilePath('idtk.html'));
+});
+
+app.get(['/hub', '/hub.html'], ipRateLimiter, (req, res) => {
+    res.sendFile(getWebFilePath('hub.html'));
 });
 
 // Robots.txt & Sitemap.xml for Google Search Engine Indexing
