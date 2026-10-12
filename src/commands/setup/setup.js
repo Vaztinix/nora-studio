@@ -60,6 +60,9 @@ module.exports = {
             sub.setName('roblox')
                 .setDescription('Configure Roblox verification and panel.'))
         .addSubcommand(sub =>
+            sub.setName('security')
+                .setDescription('Configure Verification Threat Gatekeeper, security screening, and threat scan.'))
+        .addSubcommand(sub =>
             sub.setName('starboard')
                 .setDescription('Configure Starboard reaction threshold and channel.'))
         .addSubcommand(sub =>
@@ -222,6 +225,7 @@ module.exports = {
                         { label: 'Server Logs & Routing', value: 'view_logging', description: 'Multi-channel audit logs for members, messages, and voice' },
                         { label: 'Community Games & AFK', value: 'view_games', description: 'AFK module, Counting, One Word Story, and Starboard' },
                         { label: 'Member Verification', value: 'view_verify', description: 'Human CAPTCHA gate, 1-click button, reaction, and Roblox sync' },
+                        { label: '🛡️ Verification Threat Gatekeeper', value: 'view_verify_security', description: 'Automated background risk screening, online threat intel, ban evasion matching' },
                         { label: 'Support Ticket System', value: 'view_tickets', description: 'Private staff ticket categories, panels, and transcripts' },
                         { label: 'Nora AI & Auto-Response', value: 'view_ai', description: 'Configure AI engine and unprompted auto-respond channel' },
                         { label: 'Adaptive Slowmode & Velocity', value: 'view_adaptiveslowmode', description: 'AI-assisted chat defense with 0s lowest floor' },

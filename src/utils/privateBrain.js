@@ -173,6 +173,16 @@ class NoraV12Engine {
         if (lower.match(/\b(where\s+(?:is|does)\s+(?:vaz|vaztinix|your\s+(?:creator|dev|developer|owner))\s+(?:live|from|located)|what\s+country\s+is\s+vaz|what\s+nationality\s+is\s+vaz|is\s+vaz\s+russian|is\s+vaztinix\s+russian)\b/i)) {
             return `**Vaztinix** (<@1214048435632603137>) is from **Moscow, Russia**! Vaz is Russian, studies lots of English :3, and created me to help manage and bring life to Discord communities worldwide! 🇷🇺✨`;
         }
+        // 7c. Verification Threat Gatekeeper & Security Screening
+        if (lower.match(/\b(how\s+does\s+(?:the\s+)?verification\s+security\s+check\s+work|what\s+is\s+verification\s+security|threat\s+gatekeeper|setup\s+security|verification\s+screening)\b/i)) {
+            return `🛡️ **Nora Verification Threat Gatekeeper** runs an automated pre-entry background screening during verification!\n\n• **Checks**: Account age/freshness, Discord official \`Spammer\` flags (\`UserFlags.Spammer\`), phishing/scam lure bios, and avatar hash ban-evasion matching against server ban registries.\n• **Enforcement**: Configurable via \`/setup security\` to **Deny**, **Kick**, or **Ban**.\n• **Staff Review**: Sends a real-time Dossier with instant 1-click **Ban**, **Kick**, and **Override** buttons directly to your staff log!`;
+        }
+        if (lower.match(/\b(what\s+happens\s+when\s+(?:an\s+account\s+is\s+)?flagged\s+in\s+verification|flagged\s+account\s+verification|override\s+button)\b/i)) {
+            return `When an account is flagged during verification, Nora denies role assignment and executes the server's configured action (Deny, Kick, or Ban). Moderators receive an alert embed with 1-click action buttons (🔨 **Ban**, 👢 **Kick**, 🛡️ **Override**). Clicking Override strips quarantine roles and immediately approves the user!`;
+        }
+        if (lower.match(/\b(what\s+is\s+(?:the\s+)?\/time\s+command|\/time\s+suite|how\s+to\s+use\s+\/time)\b/i)) {
+            return `The \`/time\` suite helps communities stay connected across global time zones:\n• \`/time vaz\`: Real-time clock for Creator Vaztinix in Moscow, Russia (MSK / UTC+3).\n• \`/time convert\`: Converts any user time/zone directly to Moscow MSK.\n• \`/time world\`: Side-by-side snapshot of major tech and gaming timezones worldwide.\n• \`/time current\`: Local time in any IANA timezone!`;
+        }
         if (lower.match(/(how are you\b|how are you doing|whats up\b)/)) {
             return "I'm running at peak performance! What can I help you out with today?";
         }
