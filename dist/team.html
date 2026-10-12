@@ -705,6 +705,286 @@
             border-color: var(--border-hover);
         }
 
+        /* ===== TEAM CARD STUDIO / SELF-MANAGEMENT ===== */
+        .staff-action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .staff-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            font-size: 0.86rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            color: #E2E8F0;
+        }
+        .staff-pill-btn:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateY(-1px);
+        }
+        .staff-pill-btn.primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            border-color: rgba(124, 58, 237, 0.4);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+            color: #ffffff;
+        }
+        .staff-pill-btn.primary:hover {
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .team-manage-box {
+            background: rgba(15, 17, 28, 0.95);
+            border: 1px solid rgba(124, 58, 237, 0.35);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 48px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(124, 58, 237, 0.15);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-manage-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .team-manage-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .team-manage-title h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+        .team-manage-badge {
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 28px;
+        }
+        @media (max-width: 900px) {
+            .editor-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .editor-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        @media (max-width: 600px) {
+            .form-row-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #CBD5E1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .form-hint {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .form-input, .form-textarea {
+            background: rgba(7, 9, 15, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #FFFFFF;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition-smooth);
+            width: 100%;
+        }
+        .form-input:focus, .form-textarea:focus {
+            border-color: rgba(124, 58, 237, 0.6);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+            background: rgba(10, 12, 20, 0.95);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 85px;
+            line-height: 1.5;
+        }
+
+        /* Toggle switches */
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .toggle-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #E2E8F0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toggle-sub {
+            font-size: 0.74rem;
+            color: var(--text-dim);
+        }
+
+        .switch-wrap {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .switch-wrap input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: .25s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 34px;
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .25s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 50%;
+        }
+        .switch-wrap input:checked + .switch-slider {
+            background-color: #8B5CF6;
+        }
+        .switch-wrap input:checked + .switch-slider:before {
+            transform: translateX(20px);
+        }
+
+        .editor-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-save-team-card {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #ffffff;
+            font-weight: 700;
+            padding: 10px 24px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn-save-team-card:hover {
+            box-shadow: 0 6px 22px rgba(16, 185, 129, 0.45);
+            transform: translateY(-1px);
+        }
+        .btn-save-team-card:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .card-preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .card-preview-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
         /* Footer */
         footer {
             border-top: 1px solid var(--border-subtle);
@@ -1052,9 +1332,149 @@
             <div class="team-badge"><i class="fas fa-users"></i> Official Staff Directory</div>
             <h1>Meet the Nora Studio Team</h1>
             <p>Nora is crafted, maintained, and secured by an active team of developers, server owners, administrators, and contributors committed to high-performance Discord automation.</p>
+            <div class="staff-action-bar">
+                <button id="btn-toggle-editor" class="staff-pill-btn primary" style="display: none;" onclick="toggleCardEditor()">
+                    <i class="fas fa-id-card"></i> Manage Your Team Card
+                </button>
+                <a id="btn-staff-login" href="#" onclick="loginWithDiscord(event)" class="staff-pill-btn" style="display: none;">
+                    <i class="fab fa-discord"></i> Staff Card Login
+                </a>
+            </div>
         </div>
 
-        <div class="team-grid">
+        <!-- Team Card Studio / Self Management Box -->
+        <div id="team-manage-container" class="team-manage-box" style="display: none;">
+            <div class="team-manage-header">
+                <div class="team-manage-title">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(124, 58, 237, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #a78bfa;">
+                        <i class="fas fa-user-gear"></i>
+                    </div>
+                    <div>
+                        <h3>Team Card Studio</h3>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);">Manage your personal card in the official directory</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="editor-status-badge" class="team-manage-badge">Verified Staff</span>
+                    <button type="button" onclick="toggleCardEditor()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px 8px;" title="Close editor">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor-grid">
+                <!-- Form controls -->
+                <form id="team-card-form" class="editor-form" onsubmit="saveTeamCard(event)">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-display-name">
+                                <span>Display Name</span>
+                                <span class="form-hint">Shown on your card</span>
+                            </label>
+                            <input type="text" id="edit-display-name" class="form-input" placeholder="e.g. Vaz, Demi" maxlength="60" oninput="updateLivePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="edit-avatar-url">
+                                <span>Custom Card Image URL</span>
+                                <span class="form-hint">Avatar / Image URL</span>
+                            </label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="url" id="edit-avatar-url" class="form-input" placeholder="https://... or leave blank for Discord pfp" oninput="updateLivePreview()">
+                                <button type="button" class="staff-pill-btn" onclick="useDiscordAvatar()" title="Use live Discord avatar" style="padding: 0 12px; flex-shrink: 0;">
+                                    <i class="fab fa-discord"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edit-bio">
+                            <span>Description / Bio</span>
+                            <span class="form-hint" id="bio-hint">Leave completely blank for no description</span>
+                        </label>
+                        <textarea id="edit-bio" class="form-textarea" placeholder="Tell the community about yourself, your role, or what you work on..." maxlength="400" oninput="updateLivePreview()"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>Social & Community Links</span>
+                            <span class="form-hint">Leave blank to exclude any link</span>
+                        </label>
+                        <div class="form-row-2">
+                            <input type="url" id="link-github" class="form-input" placeholder="GitHub URL (https://github.com/...)" oninput="updateLivePreview()">
+                            <input type="url" id="link-discord" class="form-input" placeholder="Discord Profile URL" oninput="updateLivePreview()">
+                        </div>
+                        <div class="form-row-2" style="margin-top: 8px;">
+                            <input type="url" id="link-youtube" class="form-input" placeholder="YouTube URL" oninput="updateLivePreview()">
+                            <input type="url" id="link-twitch" class="form-input" placeholder="Twitch URL" oninput="updateLivePreview()">
+                        </div>
+                        <div class="form-row-2" style="margin-top: 8px;">
+                            <input type="url" id="link-roblox" class="form-input" placeholder="Roblox Profile URL" oninput="updateLivePreview()">
+                            <input type="url" id="link-other" class="form-input" placeholder="Strawpage / Portfolio / Website URL" oninput="updateLivePreview()">
+                        </div>
+                    </div>
+
+                    <!-- Privacy & Visibility Toggles -->
+                    <div class="toggle-group">
+                        <label class="toggle-item">
+                            <div class="toggle-info">
+                                <span class="toggle-title"><i class="fas fa-shield-alt" style="color: #a78bfa;"></i> Hide Role Badge</span>
+                                <span class="toggle-sub">Hides your role pill (e.g. Administrator, Co-Owner) from your card</span>
+                            </div>
+                            <div class="switch-wrap">
+                                <input type="checkbox" id="toggle-hide-role" onchange="updateLivePreview()">
+                                <span class="switch-slider"></span>
+                            </div>
+                        </label>
+
+                        <label class="toggle-item">
+                            <div class="toggle-info">
+                                <span class="toggle-title"><i class="fas fa-calendar-alt" style="color: #38bdf8;"></i> Hide Join Date</span>
+                                <span class="toggle-sub">Hides when you joined or established your account</span>
+                            </div>
+                            <div class="switch-wrap">
+                                <input type="checkbox" id="toggle-hide-join" onchange="updateLivePreview()">
+                                <span class="switch-slider"></span>
+                            </div>
+                        </label>
+
+                        <label class="toggle-item">
+                            <div class="toggle-info">
+                                <span class="toggle-title" style="color: #f87171;"><i class="fas fa-eye-slash"></i> Completely Hide Card</span>
+                                <span class="toggle-sub">Completely hides your card from public view in the directory</span>
+                            </div>
+                            <div class="switch-wrap">
+                                <input type="checkbox" id="toggle-hide-card" onchange="updateLivePreview()">
+                                <span class="switch-slider"></span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="editor-actions">
+                        <button type="submit" id="btn-save-card" class="btn-save-team-card">
+                            <i class="fas fa-save"></i> Save Card Changes
+                        </button>
+                        <button type="button" class="staff-pill-btn" onclick="resetFormToDefaults()">
+                            <i class="fas fa-undo"></i> Reset to Defaults
+                        </button>
+                        <span id="save-status-msg" style="font-size: 0.85rem; font-weight: 700; margin-left: auto;"></span>
+                    </div>
+                </form>
+
+                <!-- Live Preview Column -->
+                <div class="card-preview-container">
+                    <div class="card-preview-header">
+                        <span><i class="fas fa-eye" style="color: #a78bfa;"></i> Live Card Preview</span>
+                        <span id="preview-hidden-tag" style="display: none; color: #f87171; font-size: 0.75rem; font-weight: 800;">[HIDDEN FROM PUBLIC]</span>
+                    </div>
+                    <div id="preview-card-wrap">
+                        <!-- Injected live card preview -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-grid" id="team-cards-grid">
             <!-- Vaz -->
             <article class="team-card" data-user="1214048435632603137" id="vaztinix">
                 <div class="card-top">
@@ -1330,6 +1750,38 @@
     </footer>
 
     <script>
+        let currentStaffUser = null;
+        let currentStaffCard = null;
+
+        function getStoredDiscordToken() {
+            if (window.location.hash.includes('access_token=')) {
+                try {
+                    const params = new URLSearchParams(window.location.hash.substring(1));
+                    const hashToken = params.get('access_token');
+                    if (hashToken) {
+                        localStorage.setItem('discord_token', hashToken);
+                        sessionStorage.setItem('discord_token', hashToken);
+                        localStorage.setItem('discord_token_val', hashToken);
+                        localStorage.setItem('discord_token_time', Date.now().toString());
+                        history.replaceState(null, '', window.location.pathname);
+                        return hashToken;
+                    }
+                } catch (e) {}
+            }
+            return sessionStorage.getItem('discord_token') ||
+                   localStorage.getItem('discord_token_val') ||
+                   localStorage.getItem('nora_discord_token') ||
+                   localStorage.getItem('discord_token') ||
+                   localStorage.getItem('token');
+        }
+
+        function loginWithDiscord(event) {
+            if (event) event.preventDefault();
+            const clientId = '1375943730951098549';
+            const redirectUri = encodeURIComponent(window.location.origin + '/team');
+            window.location.href = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify`;
+        }
+
         function toggleMobileMenu() {
             const drawer = document.getElementById('mobile-drawer');
             const backdrop = document.getElementById('mobile-drawer-backdrop');
@@ -1351,6 +1803,17 @@
             const acc = headerEl.closest('.mobile-accordion');
             if (acc) {
                 acc.classList.toggle('open');
+            }
+        }
+
+        function toggleCardEditor() {
+            const container = document.getElementById('team-manage-container');
+            if (container) {
+                const isHidden = container.style.display === 'none';
+                container.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
         }
 
@@ -1392,85 +1855,344 @@
             return badges.map(b => `<span class="discord-badge" title="${b.name}">${b.emoji}</span>`).join('');
         }
 
-        // Fetch Live Discord status via Lanyard API
-        document.querySelectorAll('.team-card').forEach(card => {
-            const userId = card.getAttribute('data-user');
-            const img = card.querySelector('.avatar-img');
-            const nameHeading = card.querySelector('.member-name');
-            const handleHeading = card.querySelector('.member-handle');
-            const badgeContainer = card.querySelector('.discord-badges');
-            const joinDateContainer = card.querySelector('.member-join-date');
-            const statusDot = card.querySelector('.status-dot');
+        function renderSocialButtonsHtml(links) {
+            if (!links || typeof links !== 'object') return '';
+            let html = '';
+            if (links.github) html += `<a href="${links.github}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-github"></i> GitHub</a>`;
+            if (links.discord) html += `<a href="${links.discord}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-discord"></i> Discord</a>`;
+            if (links.youtube) html += `<a href="${links.youtube}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-youtube"></i> YouTube</a>`;
+            if (links.twitch) html += `<a href="${links.twitch}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-twitch"></i> Twitch</a>`;
+            if (links.roblox) html += `<a href="${links.roblox}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-cube"></i> Roblox</a>`;
+            if (links.gunslol) html += `<a href="${links.gunslol}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> guns.lol</a>`;
+            if (links.strawpage) html += `<a href="${links.strawpage}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> Strawpage</a>`;
+            if (links.pronouns) html += `<a href="${links.pronouns}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> pronouns.cc</a>`;
+            if (links.hackerone) html += `<a href="${links.hackerone}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-shield-alt"></i> HackerOne</a>`;
+            if (links.other && links.other !== links.strawpage) html += `<a href="${links.other}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-globe"></i> Link</a>`;
+            if (links.invite) html += `<a href="${links.invite}" class="social-btn"><i class="fab fa-discord"></i> Add to Discord</a>`;
+            if (links.docs) html += `<a href="${links.docs}" class="social-btn"><i class="fas fa-book"></i> Docs</a>`;
+            return html ? `<div class="social-links">${html}</div>` : '';
+        }
 
-            if (!userId) return;
+        // Live preview update
+        function updateLivePreview() {
+            const wrap = document.getElementById('preview-card-wrap');
+            if (!wrap || !currentStaffCard) return;
 
-            if (joinDateContainer && userId !== '1375943730951098549') {
-                joinDateContainer.textContent = getDiscordJoinDate(userId);
+            const name = document.getElementById('edit-display-name')?.value.trim() || currentStaffCard.displayName || 'Staff Member';
+            const avatarUrl = document.getElementById('edit-avatar-url')?.value.trim() || currentStaffUser?.avatar || currentStaffCard.image || 'nora.png';
+            const bio = document.getElementById('edit-bio')?.value.trim();
+            const hideRole = document.getElementById('toggle-hide-role')?.checked;
+            const hideJoin = document.getElementById('toggle-hide-join')?.checked;
+            const hideCard = document.getElementById('toggle-hide-card')?.checked;
+
+            const hiddenTag = document.getElementById('preview-hidden-tag');
+            if (hiddenTag) hiddenTag.style.display = hideCard ? 'inline-block' : 'none';
+
+            const links = {
+                github: document.getElementById('link-github')?.value.trim(),
+                discord: document.getElementById('link-discord')?.value.trim(),
+                youtube: document.getElementById('link-youtube')?.value.trim(),
+                twitch: document.getElementById('link-twitch')?.value.trim(),
+                roblox: document.getElementById('link-roblox')?.value.trim(),
+                other: document.getElementById('link-other')?.value.trim()
+            };
+
+            const roleClass = currentStaffCard.roleClass || 'member';
+            const roleName = currentStaffCard.role || 'Staff Member';
+
+            wrap.innerHTML = `
+                <article class="team-card" style="box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2) !important;">
+                    <div class="card-top">
+                        <div class="avatar-wrap">
+                            <img class="avatar-img" src="${avatarUrl}" alt="${name}" onerror="this.onerror=null; this.src='nora.png';">
+                            <span class="status-dot online"></span>
+                        </div>
+                        <div class="card-header-info">
+                            ${!hideRole ? `<span class="role-pill ${roleClass}">${roleName}</span>` : ''}
+                            <h2 class="member-name">${name}</h2>
+                            <span class="member-handle">@${currentStaffUser?.username || 'member'}</span>
+                        </div>
+                    </div>
+                    <div class="discord-badges"></div>
+                    ${bio ? `<p class="member-bio">${bio}</p>` : ''}
+                    ${!hideJoin ? `<span class="member-join-date">${getDiscordJoinDate(currentStaffCard.id)}</span>` : ''}
+                    ${renderSocialButtonsHtml(links)}
+                </article>
+            `;
+        }
+
+        function useDiscordAvatar() {
+            if (currentStaffUser && currentStaffUser.avatar) {
+                const input = document.getElementById('edit-avatar-url');
+                if (input) {
+                    input.value = currentStaffUser.avatar;
+                    updateLivePreview();
+                }
+            }
+        }
+
+        function resetFormToDefaults() {
+            if (!currentStaffCard) return;
+            document.getElementById('edit-display-name').value = '';
+            document.getElementById('edit-avatar-url').value = '';
+            document.getElementById('edit-bio').value = '';
+            document.getElementById('link-github').value = '';
+            document.getElementById('link-discord').value = '';
+            document.getElementById('link-youtube').value = '';
+            document.getElementById('link-twitch').value = '';
+            document.getElementById('link-roblox').value = '';
+            document.getElementById('link-other').value = '';
+            document.getElementById('toggle-hide-role').checked = false;
+            document.getElementById('toggle-hide-join').checked = false;
+            document.getElementById('toggle-hide-card').checked = false;
+            updateLivePreview();
+        }
+
+        async function saveTeamCard(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btn-save-card');
+            const msg = document.getElementById('save-status-msg');
+            const token = getStoredDiscordToken();
+            if (!token) {
+                alert('Please log in with Discord first to update your card.');
+                return;
             }
 
-            if (userId === '1375943730951098549') return;
+            const links = {};
+            const gh = document.getElementById('link-github')?.value.trim();
+            const dc = document.getElementById('link-discord')?.value.trim();
+            const yt = document.getElementById('link-youtube')?.value.trim();
+            const tw = document.getElementById('link-twitch')?.value.trim();
+            const rb = document.getElementById('link-roblox')?.value.trim();
+            const ot = document.getElementById('link-other')?.value.trim();
+            if (gh) links.github = gh;
+            if (dc) links.discord = dc;
+            if (yt) links.youtube = yt;
+            if (tw) links.twitch = tw;
+            if (rb) links.roblox = rb;
+            if (ot) links.other = ot;
 
-            fetch(`https://api.lanyard.rest/v1/users/${userId}`)
-                .then(response => response.json())
-                .then(res => {
-                    if (res.success && res.data) {
-                        const user = res.data.discord_user;
-                        const isAnimated = user.avatar && user.avatar.startsWith('a_');
-                        const liveUrl = user.avatar
-                            ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`
-                            : img.src;
+            const payload = {
+                displayName: document.getElementById('edit-display-name')?.value.trim() || null,
+                description: document.getElementById('edit-bio')?.value.trim(),
+                image: document.getElementById('edit-avatar-url')?.value.trim() || null,
+                links: links,
+                hideRole: document.getElementById('toggle-hide-role')?.checked || false,
+                hideJoinDate: document.getElementById('toggle-hide-join')?.checked || false,
+                hideCard: document.getElementById('toggle-hide-card')?.checked || false
+            };
 
-                        const temp = new Image();
-                        temp.src = liveUrl;
-                        temp.onload = () => { img.src = liveUrl; };
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            msg.textContent = '';
 
-                        if (user.global_name) {
-                            nameHeading.textContent = user.global_name;
-                            handleHeading.textContent = `@${user.username}`;
-                        } else {
-                            nameHeading.textContent = user.username;
-                            handleHeading.textContent = `@${user.username}`;
-                        }
+            try {
+                const res = await fetch('/api/team/my-card', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    msg.style.color = '#34d399';
+                    msg.textContent = '✅ Card changes saved successfully!';
+                    setTimeout(() => { if (msg) msg.textContent = ''; }, 4500);
+                    // Reload team directory to reflect updates immediately
+                    loadTeamCards();
+                } else {
+                    msg.style.color = '#f87171';
+                    msg.textContent = '❌ ' + (data.error || 'Failed to save changes');
+                }
+            } catch (err) {
+                msg.style.color = '#f87171';
+                msg.textContent = '❌ Network error while saving card';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Card Changes';
+            }
+        }
 
-                        if (badgeContainer && user.public_flags !== undefined) {
-                            badgeContainer.innerHTML = getBadges(user.public_flags);
-                        }
+        // Check authentication & load staff self-management studio
+        async function checkStaffAuth() {
+            const token = getStoredDiscordToken();
+            const loginBtn = document.getElementById('btn-staff-login');
+            const editorBtn = document.getElementById('btn-toggle-editor');
 
-                        if (statusDot && res.data.discord_status) {
-                            statusDot.className = `status-dot ${res.data.discord_status}`;
-                        }
+            if (!token) {
+                if (loginBtn) loginBtn.style.display = 'inline-flex';
+                return;
+            }
 
-                        const bioPara = card.querySelector('.member-bio');
-                        if (res.data.activities && res.data.activities.length > 0) {
-                            const customStatus = res.data.activities.find(a => a.type === 4);
-                            if (customStatus && customStatus.state) {
-                                bioPara.textContent = (customStatus.emoji ? customStatus.emoji.name + ' ' : '') + customStatus.state;
+            try {
+                const res = await fetch('/api/team/my-card', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    if (loginBtn) loginBtn.style.display = 'inline-flex';
+                    return;
+                }
+                const data = await res.json();
+                if (data.authenticated && data.isTeamMember) {
+                    currentStaffUser = data.user;
+                    currentStaffCard = data.card;
+
+                    if (loginBtn) loginBtn.style.display = 'none';
+                    if (editorBtn) {
+                        editorBtn.style.display = 'inline-flex';
+                        editorBtn.innerHTML = `<i class="fas fa-id-card"></i> Manage Card (@${data.user.username})`;
+                    }
+
+                    // Populate Editor Form
+                    const card = data.card;
+                    if (document.getElementById('edit-display-name')) document.getElementById('edit-display-name').value = card.displayName || '';
+                    if (document.getElementById('edit-avatar-url')) document.getElementById('edit-avatar-url').value = card.image || '';
+                    if (document.getElementById('edit-bio')) document.getElementById('edit-bio').value = card.description || '';
+
+                    if (card.links) {
+                        if (document.getElementById('link-github')) document.getElementById('link-github').value = card.links.github || '';
+                        if (document.getElementById('link-discord')) document.getElementById('link-discord').value = card.links.discord || '';
+                        if (document.getElementById('link-youtube')) document.getElementById('link-youtube').value = card.links.youtube || '';
+                        if (document.getElementById('link-twitch')) document.getElementById('link-twitch').value = card.links.twitch || '';
+                        if (document.getElementById('link-roblox')) document.getElementById('link-roblox').value = card.links.roblox || '';
+                        if (document.getElementById('link-other')) document.getElementById('link-other').value = card.links.other || card.links.strawpage || card.links.pronouns || card.links.hackerone || '';
+                    }
+
+                    if (document.getElementById('toggle-hide-role')) document.getElementById('toggle-hide-role').checked = !!card.hideRole;
+                    if (document.getElementById('toggle-hide-join')) document.getElementById('toggle-hide-join').checked = !!card.hideJoinDate;
+                    if (document.getElementById('toggle-hide-card')) document.getElementById('toggle-hide-card').checked = !!card.hideCard;
+
+                    updateLivePreview();
+                } else {
+                    if (loginBtn) loginBtn.style.display = 'none';
+                }
+            } catch (e) {
+                if (loginBtn) loginBtn.style.display = 'inline-flex';
+            }
+        }
+
+        // Load & Render All Team Cards from API
+        async function loadTeamCards() {
+            const grid = document.getElementById('team-cards-grid');
+            if (!grid) return;
+
+            try {
+                const res = await fetch('/api/team/cards');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && Array.isArray(data.cards) && data.cards.length > 0) {
+                        grid.innerHTML = '';
+                        data.cards.forEach(m => {
+                            const card = document.createElement('article');
+                            card.className = 'team-card';
+                            card.setAttribute('data-user', m.id);
+                            if (m.username) card.id = m.username.replace(/[^a-zA-Z0-9_]/g, '');
+
+                            const avatarSrc = m.image || 'nora.png';
+                            const roleClass = m.roleClass || 'member';
+                            const roleHtml = (!m.hideRole && m.role) ? `<span class="role-pill ${roleClass}">${m.role}</span>` : '';
+                            const joinHtml = (!m.hideJoinDate && m.joined) ? `<span class="member-join-date">${m.joined}</span>` : '';
+                            const bioHtml = m.bio ? `<p class="member-bio">${m.bio}</p>` : '';
+                            const linksHtml = renderSocialButtonsHtml(m.links);
+
+                            card.innerHTML = `
+                                <div class="card-top">
+                                    <div class="avatar-wrap">
+                                        <img class="avatar-img" src="${avatarSrc}" alt="${m.displayName}" onerror="this.onerror=null; this.src='nora.png';">
+                                        <span class="status-dot ${m.isApp ? 'online' : ''}"></span>
+                                    </div>
+                                    <div class="card-header-info">
+                                        ${roleHtml}
+                                        <h2 class="member-name">${m.displayName}</h2>
+                                        <span class="member-handle">@${m.username}</span>
+                                    </div>
+                                </div>
+                                <div class="discord-badges"></div>
+                                ${bioHtml}
+                                ${joinHtml}
+                                ${linksHtml}
+                            `;
+                            grid.appendChild(card);
+                        });
+                    }
+                }
+            } catch (e) {
+                // If API fails, keep initial server-rendered markup
+            }
+
+            attachLanyardAndTilt();
+        }
+
+        // Attach Lanyard presence and 3D card tilt
+        function attachLanyardAndTilt() {
+            document.querySelectorAll('.team-card').forEach(card => {
+                const userId = card.getAttribute('data-user');
+                const img = card.querySelector('.avatar-img');
+                const badgeContainer = card.querySelector('.discord-badges');
+                const joinDateContainer = card.querySelector('.member-join-date');
+                const statusDot = card.querySelector('.status-dot');
+
+                if (!userId) return;
+
+                if (joinDateContainer && !joinDateContainer.textContent.includes('Online') && userId !== '1375943730951098549') {
+                    if (!joinDateContainer.textContent) {
+                        joinDateContainer.textContent = getDiscordJoinDate(userId);
+                    }
+                }
+
+                if (userId === '1375943730951098549') return;
+
+                fetch(`https://api.lanyard.rest/v1/users/${userId}`)
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.success && res.data) {
+                            const user = res.data.discord_user;
+                            const isAnimated = user.avatar && user.avatar.startsWith('a_');
+                            const liveUrl = user.avatar
+                                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`
+                                : null;
+
+                            // Only fallback to live Lanyard avatar if the image is default or broken
+                            if (liveUrl && (img.src.includes('nora.png') || !img.src || img.src.includes('default'))) {
+                                img.src = liveUrl;
+                            }
+
+                            if (badgeContainer && user.public_flags !== undefined) {
+                                badgeContainer.innerHTML = getBadges(user.public_flags);
+                            }
+
+                            if (statusDot && res.data.discord_status) {
+                                statusDot.className = `status-dot ${res.data.discord_status}`;
                             }
                         }
-                    }
-                })
-                .catch(() => {
-                    // Fallback to static values gracefully
-                });
-        });
-
-        // 3D Tilt Card Interaction
-        document.querySelectorAll('.team-card').forEach(card => {
-            card.addEventListener('mousemove', e => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const xc = rect.width / 2;
-                const yc = rect.height / 2;
-                const dx = (x - xc) / xc;
-                const dy = (y - yc) / yc;
-                card.style.transform = `perspective(1000px) rotateX(${-dy * 6}deg) rotateY(${dx * 6}deg) translateY(-4px)`;
+                    })
+                    .catch(() => {});
             });
 
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+            // 3D Tilt Card Interaction
+            document.querySelectorAll('.team-card').forEach(card => {
+                card.onmousemove = e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const xc = rect.width / 2;
+                    const yc = rect.height / 2;
+                    const dx = (x - xc) / xc;
+                    const dy = (y - yc) / yc;
+                    card.style.transform = `perspective(1000px) rotateX(${-dy * 6}deg) rotateY(${dx * 6}deg) translateY(-4px)`;
+                };
+
+                card.onmouseleave = () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+                };
             });
-        });
+        }
+
+        // Initialize on load
+        loadTeamCards();
+        checkStaffAuth();
     </script>
 </body>
 </html>

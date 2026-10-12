@@ -27,7 +27,8 @@ async function autoMigrateDatabase() {
             // Check if table exists
             const [tables] = await sequelize.query(`SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}';`);
             if (!tables || tables.length === 0) {
-                // Table doesn't exist yet, sync will create it
+                // Table doesn't exist yet, sync creates it
+                await model.sync();
                 continue;
             }
 

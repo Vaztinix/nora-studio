@@ -187,6 +187,14 @@ module.exports = {
             startReactionCatchUpScheduler(client);
         } catch (_) {}
 
+        // 🗳️ Top.gg 12-Hour Vote Reminder Scheduler: checks every 60 seconds and DMs eligible voters
+        try {
+            const voteReminderManager = require('../utils/voteReminderManager');
+            voteReminderManager.startScheduler(client);
+        } catch (err) {
+            console.error('[Vote Reminder Scheduler Startup Error]:', err.message);
+        }
+
         console.log(`[System Check] Keeping an eye on things! Heartbeat active.`);
     },
 };

@@ -5223,9 +5223,21 @@
                     <i class="fas fa-magic"></i>
                     <span>Reaction Roles</span>
                 </button>
+                <button class="mobile-nav-item" data-tab="tab-ai" onclick="showTab('tab-ai'); closeMobileNav();">
+                    <i class="fas fa-brain" style="color: #c084fc;"></i>
+                    <span>Nora AI Studio</span>
+                </button>
+                <button class="mobile-nav-item" data-tab="tab-moderation" onclick="showTab('tab-moderation'); closeMobileNav();">
+                    <i class="fas fa-gavel" style="color: #f59e0b;"></i>
+                    <span>Moderation Actions</span>
+                </button>
+                <button id="mobile-nav-roku" class="mobile-nav-item" data-tab="tab-roku" onclick="showTab('tab-roku'); closeMobileNav();" style="display: none;">
+                    <i class="fas fa-tv" style="color: #60a5fa;"></i>
+                    <span>Roku Smart TV <span class="badge" style="background: rgba(96,165,250,0.2); color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">HQ</span></span>
+                </button>
                 <button class="mobile-nav-item" data-tab="tab-autoresponder" onclick="showTab('tab-autoresponder'); closeMobileNav();">
-                    <i class="fas fa-reply"></i>
-                    <span>Autoresponder</span>
+                    <i class="fas fa-brain"></i>
+                    <span>AI & Autoresponder</span>
                 </button>
                 <button class="mobile-nav-item" data-tab="tab-webhooks" onclick="showTab('tab-webhooks'); closeMobileNav();">
                     <i class="fas fa-paper-plane"></i>
@@ -6272,7 +6284,19 @@
                         </div>
                         <button class="h-tab" data-tab="tab-tickets" onclick="showTab('tab-tickets')"><span><i class="fas fa-ticket-alt"></i> Support Ticketing</span></button>
                         <button class="h-tab" data-tab="tab-webhooks" onclick="showTab('tab-webhooks')"><span><i class="fas fa-paper-plane"></i> Webhook & Embeds</span></button>
-                        <button class="h-tab" data-tab="tab-autoresponder" onclick="showTab('tab-autoresponder')"><span><i class="fas fa-reply"></i> Autoresponder</span></button>
+                        <button class="h-tab" data-tab="tab-ai" onclick="showTab('tab-ai')">
+                            <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                <span><i class="fas fa-brain" style="color: #c084fc;"></i> Nora AI Studio</span>
+                                <span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">PRO</span>
+                            </span>
+                        </button>
+                        <button class="h-tab" data-tab="tab-autoresponder" onclick="showTab('tab-autoresponder')"><span><i class="fas fa-reply-all"></i> Autoresponder Rules</span></button>
+                        <button id="sidebar-tab-roku" class="h-tab" data-tab="tab-roku" onclick="showTab('tab-roku')" style="display: none;">
+                            <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                <span><i class="fas fa-tv" style="color: #60a5fa;"></i> Roku Smart TV</span>
+                                <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">HQ ONLY</span>
+                            </span>
+                        </button>
                         <button class="h-tab" data-tab="tab-reactionroles" onclick="showTab('tab-reactionroles')"><span><i class="fas fa-magic"></i> Reaction Roles</span></button>
                         <button class="h-tab" data-tab="tab-topgg" onclick="showTab('tab-topgg')"><span style="display: inline-flex; align-items: center; gap: 8px;"><img src="https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg" alt="Top.gg" style="width: 16px; height: 16px; border-radius: 4px; object-fit: cover; flex-shrink: 0;"> Top.gg Votes</span></button>
                         
@@ -6453,12 +6477,13 @@
 
                                 <!-- Custom Interactive Slider -->
                                 <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
-                                    <input type="range" id="slider-adaptive-duration" min="1" max="60" value="6" step="1" class="w-full accent-cyan-400 cursor-pointer h-1.5 bg-white/10 rounded-lg" style="width: 100%; accent-color: #22d3ee; height: 6px; cursor: pointer;" oninput="syncVelocitySlider('duration', this.value)">
+                                    <input type="range" id="slider-adaptive-duration" min="0" max="60" value="6" step="1" class="w-full accent-cyan-400 cursor-pointer h-1.5 bg-white/10 rounded-lg" style="width: 100%; accent-color: #22d3ee; height: 6px; cursor: pointer;" oninput="syncVelocitySlider('duration', this.value)">
                                 </div>
 
                                 <!-- Preset Pills -->
                                 <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                                     <span style="font-size: 0.68rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Scale:</span>
+                                    <button type="button" onclick="setThresholdPreset('duration', 0)" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px; background: rgba(255,255,255,0.04); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">Off (0s)</button>
                                     <button type="button" onclick="setThresholdPreset('duration', 3)" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px; background: rgba(255,255,255,0.04); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">Mild (3s)</button>
                                     <button type="button" onclick="setThresholdPreset('duration', 6)" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px; background: rgba(6,182,212,0.15); color: #22d3ee; border: 1px solid rgba(6,182,212,0.3); cursor: pointer;">Standard (6s)</button>
                                     <button type="button" onclick="setThresholdPreset('duration', 15)" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px; background: rgba(255,255,255,0.04); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">Heavy (15s)</button>
@@ -6563,6 +6588,10 @@
                                 <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #cbd5e1; cursor: pointer;">
                                     <input type="checkbox" id="setting-adaptiveSlowmodeModLog" style="accent-color: #22d3ee; cursor: pointer;" onchange="window.updateUnsavedChangesPopup?.()">
                                     <span>Mod Log Alerts</span>
+                                </label>
+                                <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #cbd5e1; cursor: pointer;">
+                                    <input type="checkbox" id="setting-adaptiveSlowmodeAiEnabled" style="accent-color: #a855f7; cursor: pointer;" onchange="window.updateUnsavedChangesPopup?.()">
+                                    <span style="color: #c084fc; font-weight: 600;"><i class="fas fa-brain"></i> AI Velocity Boost</span>
                                 </label>
                                 <button type="button" onclick="simulateVelocityRaidBurst()" style="padding: 7px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 8px; background: rgba(6,182,212,0.12); color: #22d3ee; border: 1px solid rgba(6,182,212,0.3); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(6,182,212,0.2)'" onmouseout="this.style.background='rgba(6,182,212,0.12)'">
                                     <i class="fas fa-play" style="font-size: 0.65rem;"></i> Test Heuristic Burst
@@ -7308,7 +7337,186 @@
 
                 
 
-                <div id="tab-logging" class="tab-content">
+                
+                <div id="tab-moderation" class="tab-content" style="display: none;">
+                    <!-- Hero Banner -->
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(239, 68, 68, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fbbf24; box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);">
+                                    <i class="fas fa-gavel"></i>
+                                </div>
+                                <div>
+                                    <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Moderation Actions & Cases</h1>
+                                    <p style="color: var(--muted); margin: 4px 0 0; font-size: 0.88rem;">Autonomous Nora enforcement, escalation matrices, punishment logging, and instant action dispatch</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; font-size: 0.78rem; font-weight: 700; padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-shield-alt"></i> Active Enforcement
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Escalation & Settings Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+                        <!-- Automated Escalation Matrix -->
+                        <div class="panel" style="margin: 0; border: 1px solid var(--border); border-radius: 16px; padding: 22px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                <i class="fas fa-level-up-alt" style="color: #fbbf24; font-size: 1.1rem;"></i>
+                                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Automated Escalation Matrix</h3>
+                            </div>
+                            <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 16px;">
+                                Define automated thresholds for repeat offenders. When warnings reach the threshold, Nora automatically escalates the punishment.
+                            </p>
+
+                            <div style="display: flex; flex-direction: column; gap: 14px;">
+                                <div class="input-group">
+                                    <label style="font-size: 0.83rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Warning Trigger Threshold</label>
+                                    <input type="number" id="setting-warningThreshold" min="1" max="20" placeholder="3" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                                    <span style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block;">Number of active warnings before automated action is triggered</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label style="font-size: 0.83rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Escalation Penalty Action</label>
+                                    <select id="setting-warningAction" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                                        <option value="TIMEOUT">Timeout Member (Default Duration)</option>
+                                        <option value="KICK">Kick Member from Server</option>
+                                        <option value="BAN">Permanently Ban Member</option>
+                                    </select>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div class="input-group">
+                                        <label style="font-size: 0.83rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Default Timeout (Mins)</label>
+                                        <input type="number" id="setting-muteDurationMinutes" min="1" max="10080" placeholder="10" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                                    </div>
+                                    <div class="input-group">
+                                        <label style="font-size: 0.83rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Max Warnings Floor</label>
+                                        <input type="number" id="setting-maxWarningsBeforeAction" min="1" max="50" placeholder="5" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mod Logs & Routing -->
+                        <div class="panel" style="margin: 0; border: 1px solid var(--border); border-radius: 16px; padding: 22px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                <i class="fas fa-clipboard-list" style="color: #60a5fa; font-size: 1.1rem;"></i>
+                                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Logging & User Notices</h3>
+                            </div>
+                            <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 16px;">
+                                Route disciplinary audit records and control direct notification messages sent to moderated members.
+                            </p>
+
+                            <div style="display: flex; flex-direction: column; gap: 14px;">
+                                <div class="input-group">
+                                    <label style="font-size: 0.83rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Master Mod-Log Channel</label>
+                                    <select id="setting-modLogChannelId" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                                        <option value="">None / Disabled</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block;">Channel where cases, bans, timeouts, and autonomous actions post</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label style="font-size: 0.83rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Quarantine / Jail Role</label>
+                                    <select id="setting-quarantineRoleId" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                                        <option value="">None / Disabled</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block;">Role assigned when a member is quarantined for investigation</span>
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
+                                    <div>
+                                        <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">DM Punished Members</div>
+                                        <div style="font-size: 0.75rem; color: var(--muted);">Direct message the user with sanction reason and server appeal link</div>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="setting-sendModDms"><span class="slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Dispatcher & Quick Action Console -->
+                    <div class="panel" style="margin-bottom: 24px; border: 1px solid rgba(245, 158, 11, 0.25); background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(35, 25, 20, 0.95)); border-radius: 16px; padding: 24px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-bolt" style="color: #fbbf24; font-size: 1.15rem;"></i>
+                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;">Live Moderation Dispatcher</h3>
+                            </div>
+                            <span style="font-size: 0.78rem; color: var(--muted);">Executes directly through Nora with audit trail logging</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 2fr auto; gap: 12px; align-items: flex-end;">
+                            <div class="input-group">
+                                <label style="font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block;">Target User ID</label>
+                                <input type="text" id="mod-dispatch-userid" placeholder="e.g. 1214048435632603137" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                            </div>
+                            <div class="input-group">
+                                <label style="font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block;">Action</label>
+                                <select id="mod-dispatch-action" onchange="toggleModDispatchDuration()" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                                    <option value="TIMEOUT">Timeout</option>
+                                    <option value="WARN">Warn</option>
+                                    <option value="KICK">Kick</option>
+                                    <option value="BAN">Ban</option>
+                                </select>
+                            </div>
+                            <div class="input-group" id="mod-dispatch-duration-group">
+                                <label style="font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block;">Duration (Mins)</label>
+                                <input type="number" id="mod-dispatch-duration" value="10" min="1" max="10080" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                            </div>
+                            <div class="input-group">
+                                <label style="font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block;">Reason</label>
+                                <input type="text" id="mod-dispatch-reason" placeholder="Rule violation / disruptive conduct" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                            </div>
+                            <div>
+                                <button type="button" onclick="executeDashboardModAction()" class="save-btn" style="background: linear-gradient(135deg, #f59e0b, #ef4444); border: none; padding: 11px 22px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);">
+                                    <i class="fas fa-gavel"></i> Execute
+                                </button>
+                            </div>
+                        </div>
+                        <div id="mod-dispatch-status" style="margin-top: 12px; font-size: 0.82rem; display: none;"></div>
+                    </div>
+
+                    <!-- Recent Moderation Cases Table -->
+                    <div class="panel" style="border: 1px solid var(--border); border-radius: 16px; padding: 22px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-history" style="color: var(--muted); font-size: 1.1rem;"></i>
+                                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Recent Cases & Enforcement Log</h3>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="text" id="mod-cases-search" oninput="filterModCasesTable()" placeholder="Search cases by user or reason..." style="padding: 7px 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 0.82rem; width: 220px;">
+                                <button type="button" onclick="loadDashboardModLogs()" style="padding: 7px 14px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-sync-alt" id="mod-cases-refresh-icon"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--muted);">
+                                        <th style="padding: 10px 14px;">Case</th>
+                                        <th style="padding: 10px 14px;">Action</th>
+                                        <th style="padding: 10px 14px;">Target User</th>
+                                        <th style="padding: 10px 14px;">Reason</th>
+                                        <th style="padding: 10px 14px;">Moderator</th>
+                                        <th style="padding: 10px 14px;">Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mod-cases-tbody">
+                                    <tr>
+                                        <td colspan="6" style="padding: 24px; text-align: center; color: var(--muted);">Loading moderation history...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+<div id="tab-logging" class="tab-content">
                     <!-- Hero Banner -->
                     <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
@@ -8655,7 +8863,195 @@
                     </div>
                 </div>
 
-                                <div id="tab-autoresponder" class="tab-content" style="display: none;">
+                                
+                <div id="tab-ai" class="tab-content" style="display: none;">
+                    <!-- Hero Banner -->
+                    <div style="background: linear-gradient(135deg, rgba(88, 28, 135, 0.25), rgba(49, 46, 129, 0.25)); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Nora AI Intelligence Studio</h1>
+                                        <span style="background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 12px; letter-spacing: 0.5px;">V20.0 MULTIMODAL</span>
+                                    </div>
+                                    <p style="color: var(--muted); margin: 4px 0 0; font-size: 0.88rem;">Autonomous conversation hub, Gemini 2.5/3.5 neural reasoning, proactive surroundings & interactive playground</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; font-size: 0.78rem; font-weight: 700; padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-microchip"></i> Tiered Multi-Key Cascade
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Core Settings Grid -->
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 24px;">
+                        <!-- Engine & Autonomous Engagement -->
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 22px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-sliders-h" style="color: #c084fc; font-size: 1.1rem;"></i>
+                                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Reasoning Engine & Model</h3>
+                                </div>
+                                <span style="font-size: 0.75rem; color: #a855f7; font-weight: 700;">Quota Longevity Optimized</span>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="input-group">
+                                    <label style="font-size: 0.83rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Primary Model Architecture</label>
+                                    <select id="setting-aiPreference" style="width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 0.9rem;">
+                                        <option value="default">✨ Gemini 2.5/3.5 Flash (Recommended: Ultra-fast, Balanced Reasoning)</option>
+                                        <option value="flash">⚡ Gemini Flash Lite (Low latency, High-throughput responses)</option>
+                                        <option value="pro">🧠 Gemini Pro Multi-Step (Deep Logic & Code Synthesis)</option>
+                                        <option value="aura">🛡️ Nora Aura Local Brain (Zero-cloud Offline Fallback)</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block;">Cascades through 6 redundant Gemini model tiers to eliminate quota exhaustion</span>
+                                </div>
+
+                                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 18px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                        <div>
+                                            <div style="font-size: 0.9rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-hashtag" style="color: #a855f7;"></i> Dedicated Autonomous AI Channel
+                                            </div>
+                                            <div style="font-size: 0.78rem; color: var(--muted); margin-top: 2px;">Nora engages naturally with all chat without requiring mentions</div>
+                                        </div>
+                                        <label class="switch"><input type="checkbox" id="setting-aiAutoRespondEnabled"><span class="slider"></span></label>
+                                    </div>
+                                    <div style="margin-top: 10px;">
+                                        <select id="setting-aiAutoRespondChannelId" style="width: 100%; padding: 11px 14px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                                            <option value="">None / Disabled</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Capabilities & Guardrails -->
+                        <div class="panel" style="margin: 0; border: 1px solid var(--border); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                    <i class="fas fa-magic" style="color: #818cf8; font-size: 1.1rem;"></i>
+                                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Nora AI Capabilities</h3>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                        <span style="font-size: 0.82rem; color: #fff;"><i class="fas fa-search" style="color: #38bdf8; margin-right: 8px;"></i> Live Google Web Search</span>
+                                        <span style="color: var(--success); font-size: 0.75rem; font-weight: 700;">ACTIVE</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                        <span style="font-size: 0.82rem; color: #fff;"><i class="fas fa-eye" style="color: #a855f7; margin-right: 8px;"></i> 1024px Vision Buffer Optimization</span>
+                                        <span style="color: var(--success); font-size: 0.75rem; font-weight: 700;">ACTIVE</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                        <span style="font-size: 0.82rem; color: #fff;"><i class="fas fa-tv" style="color: #60a5fa; margin-right: 8px;"></i> Roku Smart TV Control</span>
+                                        <span style="color: #60a5fa; font-size: 0.75rem; font-weight: 700;">HQ RESTRICTED</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                        <span style="font-size: 0.82rem; color: #fff;"><i class="fas fa-tachometer-alt" style="color: #22d3ee; margin-right: 8px;"></i> Adaptive Velocity Slowmode</span>
+                                        <span style="color: var(--success); font-size: 0.75rem; font-weight: 700;">INTEGRATED</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 14px; padding: 10px 14px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 10px; font-size: 0.78rem; color: #c084fc;">
+                                <i class="fas fa-info-circle"></i> Changes to AI settings are synced instantly to the live Discord bot process.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Nora AI Live Sandbox -->
+                    <div class="panel" style="border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 22px; background: rgba(15, 15, 25, 0.95);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-comments" style="color: #a855f7; font-size: 1.15rem;"></i>
+                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;">Live Nora AI Sandbox</h3>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span id="ai-sandbox-latency" style="font-size: 0.78rem; color: var(--muted); font-family: monospace;">Latency: --ms</span>
+                                <button type="button" onclick="clearAiSandbox()" style="padding: 6px 12px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.78rem; cursor: pointer;">
+                                    <i class="fas fa-trash-alt"></i> Clear Chat
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chat Feed Window -->
+                        <div id="ai-sandbox-messages" style="height: 280px; overflow-y: auto; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px;">
+                            <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0;">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
+                                    <div style="font-size: 0.75rem; color: #c084fc; font-weight: 700; margin-bottom: 4px;">Nora Assistant</div>
+                                    <div style="font-size: 0.85rem; color: #fff; line-height: 1.45;">
+                                        Hi! I'm Nora. Ask me a question, test prompt responses, or test automated actions right here in the dashboard sandbox!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Prompt Suggestion Chips -->
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                            <button type="button" onclick="useSandboxPrompt('Introduce yourself and summarize your capabilities.')" style="padding: 5px 12px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; color: #c084fc; font-size: 0.76rem; cursor: pointer;">
+                                ✨ Introduce yourself
+                            </button>
+                            <button type="button" onclick="useSandboxPrompt('Explain how your automated slowmode and safety filters protect the server.')" style="padding: 5px 12px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; color: #c084fc; font-size: 0.76rem; cursor: pointer;">
+                                🛡️ Explain safety features
+                            </button>
+                            <button type="button" onclick="useSandboxPrompt('Draft a welcoming server announcement for new community members.')" style="padding: 5px 12px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; color: #c084fc; font-size: 0.76rem; cursor: pointer;">
+                                📢 Draft announcement
+                            </button>
+                        </div>
+
+                        <!-- Chat Input Box -->
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="ai-sandbox-input" onkeydown="if(event.key==='Enter') sendAiSandboxMessage();" placeholder="Type a prompt to test Nora AI..." style="flex: 1; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 0.88rem;">
+                            <button type="button" id="ai-sandbox-send-btn" onclick="sendAiSandboxMessage()" style="padding: 12px 24px; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+<div id="tab-autoresponder" class="tab-content" style="display: none;">
+                    <!-- Nora AI Autonomous Channel & Conversation Hub -->
+                    <div class="panel" style="margin-bottom: 24px; border: 1px solid rgba(168, 85, 247, 0.25); background: linear-gradient(135deg, rgba(20, 20, 35, 0.95), rgba(30, 20, 45, 0.95)); border-radius: 16px; padding: 24px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #fff;">Nora AI Management</h3>
+                                    <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.82rem;">Autonomous conversation hub, omniscient surroundings & automatic channel engagement</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 0.82rem; font-weight: 600; color: #c084fc;">Auto-Respond All Messages</span>
+                                <label class="switch"><input type="checkbox" id="setting-aiAutoRespondEnabled"><span class="slider"></span></label>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; margin-top: 15px;">
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <label style="font-size: 0.88rem; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-hashtag" style="color: #a855f7;"></i> Dedicated AI Autonomous Channel
+                                </label>
+                                <p style="font-size: 0.78rem; color: var(--muted); margin: 0;">
+                                    When enabled, Nora actively reads and responds to <strong>all messages</strong> in this channel without needing to be pinged or replied to. A channel must be selected for autonomous replies to trigger.
+                                </p>
+                                <div style="margin-top: 6px;">
+                                    <select id="setting-aiAutoRespondChannelId" style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #fff; font-size: 0.9rem;">
+                                        <option value="">None / Disabled</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="panel">
                         <h3>Autoresponder System</h3>
                         <p>Configure custom rules to automatically reply to messages matching triggers.</p>
@@ -11059,7 +11455,245 @@
                     </div>
                 </div>
 
-                <div id="tab-members" class="tab-content">
+                
+                <div id="tab-roku" class="tab-content" style="display: none;">
+                    <!-- Unauthorized Guard Screen (Shown for servers not in whitelist) -->
+                    <div id="roku-restricted-screen" style="display: none;">
+                        <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 20px; padding: 40px; text-align: center; max-width: 650px; margin: 40px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #ef4444; margin: 0 auto 20px;">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <h2 style="color: #fff; font-size: 1.4rem; font-weight: 800; margin-bottom: 12px;">Roku Smart TV Integration Restricted</h2>
+                            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 24px;">
+                                Roku Smart TV hardware control and remote actions are strictly restricted to authorized headquarters servers (<code>1487342521133830174</code>, <code>1515800329889779954</code>).
+                            </p>
+                            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; font-size: 0.8rem; color: #a1a1aa; text-align: left;">
+                                <div style="font-weight: 700; color: #fff; margin-bottom: 6px;"><i class="fas fa-shield-alt" style="color: #ef4444;"></i> Access Policy:</div>
+                                • Hardware control requires physical network proximity or verified headquarters server membership.<br>
+                                • Switch to an authorized server in the top dropdown to access the TV console.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authorized Console (Shown for 1487342521133830174 and 1515800329889779954) -->
+                    <div id="roku-active-console">
+                        <!-- Hero Banner -->
+                        <div style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.25), rgba(15, 23, 42, 0.85)); border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                                <div style="display: flex; align-items: center; gap: 16px;">
+                                    <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);">
+                                        <i class="fas fa-tv"></i>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Roku Smart TV Command Center</h1>
+                                            <span style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 12px; letter-spacing: 0.5px;">HQ EXCLUSIVE</span>
+                                        </div>
+                                        <p style="color: var(--muted); margin: 4px 0 0; font-size: 0.88rem;">Live hardware telemetry, full virtual remote pad, instant streaming app launch, and guest pass controls</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <button type="button" onclick="loadRokuStatus(true)" style="padding: 8px 16px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-size: 0.82rem; font-weight: 700; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-sync-alt" id="roku-refresh-icon"></i> Refresh TV State
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Device Telemetry Bar -->
+                        <div class="panel" style="margin-bottom: 22px; border: 1px solid var(--border); border-radius: 16px; padding: 18px 24px; background: rgba(0,0,0,0.3);">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Hardware Status</div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div id="roku-status-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981;"></div>
+                                        <span id="roku-status-text" style="font-weight: 700; color: #fff; font-size: 0.95rem;">Checking...</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Friendly Device Name</div>
+                                    <div id="roku-device-name" style="font-weight: 700; color: #60a5fa; font-size: 0.95rem;">Living Room Roku TV</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Active Streaming App</div>
+                                    <div id="roku-active-app" style="font-weight: 700; color: #a855f7; font-size: 0.95rem;">Detecting...</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Software Version</div>
+                                    <div id="roku-software-ver" style="font-weight: 600; color: #fff; font-size: 0.95rem;">--</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Authorization State</div>
+                                    <div id="roku-auth-badge" style="font-weight: 700; color: #10b981; font-size: 0.88rem;">Authorized</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Grid: Virtual Remote (Left) + App Launcher & Tools (Right) -->
+                        <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: flex-start; margin-bottom: 24px;">
+                            <!-- Virtual Remote Pad (Metallic Glassmorphism Controller) -->
+                            <div class="panel" style="margin: 0; border: 1px solid rgba(255,255,255,0.12); border-radius: 28px; padding: 26px; background: linear-gradient(180deg, rgba(25, 25, 38, 0.95), rgba(15, 15, 25, 0.95)); box-shadow: 0 15px 35px rgba(0,0,0,0.4); text-align: center;">
+                                <div style="font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 800; margin-bottom: 20px;">ROKU SMART REMOTE</div>
+
+                                <!-- Top Controls: Power & Guide -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 0 10px;">
+                                    <button type="button" onclick="sendRokuAction('POWER_TOGGLE')" style="width: 52px; height: 52px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.4); color: #ef4444; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(239,68,68,0.25); transition: all 0.15s;" title="Power Toggle">
+                                        <i class="fas fa-power-off"></i>
+                                    </button>
+                                    <button type="button" onclick="sendRokuAction('TV_GUIDE')" style="width: 52px; height: 52px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); border: 2px solid rgba(59, 130, 246, 0.4); color: #60a5fa; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(59,130,246,0.25); transition: all 0.15s;" title="TV Guide">
+                                        <i class="fas fa-list-alt"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Directional Pad (D-Pad) -->
+                                <div style="position: relative; width: 220px; height: 220px; margin: 0 auto 24px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 10px rgba(0,0,0,0.6);">
+                                    <!-- UP -->
+                                    <button type="button" onclick="sendRokuAction('UP')" style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 50px; height: 50px; background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; border-radius: 50%;" title="Up">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                    <!-- DOWN -->
+                                    <button type="button" onclick="sendRokuAction('DOWN')" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: 50px; height: 50px; background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; border-radius: 50%;" title="Down">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <!-- LEFT -->
+                                    <button type="button" onclick="sendRokuAction('LEFT')" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; border-radius: 50%;" title="Left">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <!-- RIGHT -->
+                                    <button type="button" onclick="sendRokuAction('RIGHT')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; border-radius: 50%;" title="Right">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                    <!-- OK / SELECT (Center) -->
+                                    <button type="button" onclick="sendRokuAction('SELECT')" style="width: 76px; height: 76px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #3b82f6); border: 2px solid rgba(255,255,255,0.3); color: #fff; font-size: 0.95rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); display: flex; align-items: center; justify-content: center;" title="OK / Select">
+                                        OK
+                                    </button>
+                                </div>
+
+                                <!-- Navigation: Back / Home / Star -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+                                    <button type="button" onclick="sendRokuAction('BACK')" style="padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.95rem; cursor: pointer;" title="Back">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
+                                    <button type="button" onclick="sendRokuAction('HOME')" style="padding: 12px; border-radius: 12px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; font-size: 1.05rem; cursor: pointer;" title="Home Screen">
+                                        <i class="fas fa-home"></i>
+                                    </button>
+                                    <button type="button" onclick="sendRokuAction('INFO')" style="padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.95rem; cursor: pointer;" title="Options / Star">
+                                        <i class="fas fa-asterisk"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Playback: Rewind / Play-Pause / Forward -->
+                                <div style="display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 12px; margin-bottom: 22px;">
+                                    <button type="button" onclick="sendRokuAction('REWIND')" style="padding: 11px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem; cursor: pointer;" title="Rewind">
+                                        <i class="fas fa-backward"></i>
+                                    </button>
+                                    <button type="button" onclick="sendRokuAction('PLAY')" style="padding: 11px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-size: 1.1rem; cursor: pointer;" title="Play / Pause">
+                                        <i class="fas fa-play"></i> <i class="fas fa-pause" style="font-size: 0.75rem; margin-left: 2px;"></i>
+                                    </button>
+                                    <button type="button" onclick="sendRokuAction('FORWARD')" style="padding: 11px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem; cursor: pointer;" title="Fast Forward">
+                                        <i class="fas fa-forward"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Audio & Volume Controls -->
+                                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 14px; margin-bottom: 18px;">
+                                    <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 10px;">Audio Volume</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                                        <button type="button" onclick="sendRokuAction('VOLUME_UP', { amount: 3 })" style="padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer;" title="Volume Up +3">
+                                            <i class="fas fa-volume-up"></i> +3
+                                        </button>
+                                        <button type="button" onclick="sendRokuAction('VOLUME_DOWN', { amount: 3 })" style="padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer;" title="Volume Down -3">
+                                            <i class="fas fa-volume-down"></i> -3
+                                        </button>
+                                        <button type="button" onclick="sendRokuAction('MUTE')" style="padding: 10px; border-radius: 10px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; font-size: 0.85rem; font-weight: 700; cursor: pointer;" title="Mute Toggle">
+                                            <i class="fas fa-volume-mute"></i> Mute
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- System Danger: Restart -->
+                                <button type="button" onclick="confirmRokuRestart()" style="width: 100%; padding: 10px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <i class="fas fa-redo-alt"></i> Restart Roku TV
+                                </button>
+                            </div>
+
+                            <!-- Right Column: Quick App Launcher & Tools -->
+                            <div style="display: flex; flex-direction: column; gap: 20px;">
+                                <!-- One-Click App Launcher Grid -->
+                                <div class="panel" style="margin: 0; border: 1px solid var(--border); border-radius: 18px; padding: 22px;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                        <i class="fas fa-th-large" style="color: #60a5fa; font-size: 1.1rem;"></i>
+                                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">1-Click App Launcher</h3>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;">
+                                        <button type="button" onclick="launchRokuApp('YouTube')" style="padding: 14px 10px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fff; cursor: pointer; text-align: center; transition: all 0.2s;">
+                                            <i class="fab fa-youtube" style="color: #ef4444; font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                                            <span style="font-size: 0.82rem; font-weight: 700;">YouTube</span>
+                                        </button>
+                                        <button type="button" onclick="launchRokuApp('Netflix')" style="padding: 14px 10px; border-radius: 12px; background: rgba(229, 9, 20, 0.12); border: 1px solid rgba(229, 9, 20, 0.3); color: #fff; cursor: pointer; text-align: center; transition: all 0.2s;">
+                                            <i class="fas fa-film" style="color: #e50914; font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                                            <span style="font-size: 0.82rem; font-weight: 700;">Netflix</span>
+                                        </button>
+                                        <button type="button" onclick="launchRokuApp('Disney Plus')" style="padding: 14px 10px; border-radius: 12px; background: rgba(17, 60, 207, 0.15); border: 1px solid rgba(17, 60, 207, 0.4); color: #fff; cursor: pointer; text-align: center; transition: all 0.2s;">
+                                            <i class="fas fa-play-circle" style="color: #60a5fa; font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                                            <span style="font-size: 0.82rem; font-weight: 700;">Disney+</span>
+                                        </button>
+                                        <button type="button" onclick="launchRokuApp('Prime Video')" style="padding: 14px 10px; border-radius: 12px; background: rgba(0, 168, 225, 0.12); border: 1px solid rgba(0, 168, 225, 0.3); color: #fff; cursor: pointer; text-align: center; transition: all 0.2s;">
+                                            <i class="fas fa-video" style="color: #00a8e1; font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                                            <span style="font-size: 0.82rem; font-weight: 700;">Prime Video</span>
+                                        </button>
+                                        <button type="button" onclick="launchRokuApp('Spotify')" style="padding: 14px 10px; border-radius: 12px; background: rgba(29, 185, 84, 0.12); border: 1px solid rgba(29, 185, 84, 0.3); color: #fff; cursor: pointer; text-align: center; transition: all 0.2s;">
+                                            <i class="fab fa-spotify" style="color: #1db954; font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                                            <span style="font-size: 0.82rem; font-weight: 700;">Spotify</span>
+                                        </button>
+                                        <button type="button" onclick="launchRokuApp('Twitch')" style="padding: 14px 10px; border-radius: 12px; background: rgba(145, 70, 255, 0.12); border: 1px solid rgba(145, 70, 255, 0.3); color: #fff; cursor: pointer; text-align: center; transition: all 0.2s;">
+                                            <i class="fab fa-twitch" style="color: #a855f7; font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                                            <span style="font-size: 0.82rem; font-weight: 700;">Twitch</span>
+                                        </button>
+                                        <button type="button" onclick="launchRokuApp('Apple TV')" style="padding: 14px 10px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; text-align: center; transition: all 0.2s;">
+                                            <i class="fab fa-apple" style="color: #fff; font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                                            <span style="font-size: 0.82rem; font-weight: 700;">Apple TV</span>
+                                        </button>
+                                        <button type="button" onclick="launchRokuApp('Hulu')" style="padding: 14px 10px; border-radius: 12px; background: rgba(28, 231, 131, 0.12); border: 1px solid rgba(28, 231, 131, 0.3); color: #fff; cursor: pointer; text-align: center; transition: all 0.2s;">
+                                            <i class="fas fa-tv" style="color: #1ce783; font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                                            <span style="font-size: 0.82rem; font-weight: 700;">Hulu</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Text & Search Dispatcher -->
+                                <div class="panel" style="margin: 0; border: 1px solid var(--border); border-radius: 18px; padding: 22px;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                        <i class="fas fa-keyboard" style="color: #a855f7; font-size: 1.1rem;"></i>
+                                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Send Text & Search to TV</h3>
+                                    </div>
+                                    <p style="font-size: 0.8rem; color: var(--muted); margin: 0 0 14px;">Types keystrokes directly into active on-screen keyboards (YouTube Search, Netflix Search, etc.)</p>
+                                    <div style="display: flex; gap: 10px;">
+                                        <input type="text" id="roku-text-input" placeholder="Type search query or title..." onkeydown="if(event.key==='Enter') sendRokuText();" style="flex: 1; padding: 11px 16px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 0.88rem;">
+                                        <button type="button" onclick="sendRokuText()" style="padding: 11px 20px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-paper-plane"></i> Type
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Real-time Hardware Activity Feed -->
+                                <div class="panel" style="margin: 0; border: 1px solid var(--border); border-radius: 18px; padding: 18px; background: rgba(10, 10, 18, 0.9);">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                        <div style="font-size: 0.8rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-terminal" style="color: #10b981;"></i> Hardware Telemetry Feed
+                                        </div>
+                                        <button type="button" onclick="clearRokuLog()" style="background: none; border: none; color: var(--muted); font-size: 0.75rem; cursor: pointer;">Clear</button>
+                                    </div>
+                                    <div id="roku-event-feed" style="max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.78rem; color: #a1a1aa; display: flex; flex-direction: column; gap: 4px;">
+                                        <div>[Console Ready] Connected to Roku command bridge.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<div id="tab-members" class="tab-content">
                     <div style="display: grid; grid-template-columns: 1.2fr 2fr; gap: 25px;">
                         <!-- Analytics Column -->
                         <div style="display: flex; flex-direction: column; gap: 25px;">
@@ -12053,7 +12687,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled'];
 
 
 
@@ -16870,9 +17504,9 @@
                 if (label) label.textContent = `${val} msgs / sec`;
             } else if (type === 'duration') {
                 const slider = document.getElementById('slider-adaptive-duration');
-                if (slider) slider.value = Math.min(60, Math.max(1, val));
+                if (slider) slider.value = Math.min(60, Math.max(0, val));
                 const label = document.getElementById('display-action-duration');
-                if (label) label.textContent = `${val} seconds`;
+                if (label) label.textContent = val === 0 ? '0s (Off)' : `${val} seconds`;
             } else if (type === 'decay') {
                 const slider = document.getElementById('slider-adaptive-decay');
                 if (slider) slider.value = Math.min(120, Math.max(5, val));
@@ -16900,7 +17534,8 @@
                 const input = document.getElementById('setting-adaptiveSlowmodeLargeSec');
                 if (input) input.value = val;
                 const label = document.getElementById('display-action-duration');
-                if (label) label.textContent = `${val} seconds`;
+                const numVal = parseInt(val, 10);
+                if (label) label.textContent = numVal === 0 ? '0s (Off)' : `${val} seconds`;
             } else if (type === 'decay') {
                 const input = document.getElementById('setting-adaptiveSlowmodeDecaySec');
                 if (input) input.value = val;
@@ -17302,7 +17937,10 @@
                         'tab-leveling': 'Leveling System',
                         'tab-safety': 'Security & Anti-Raid',
                         'tab-automod': 'AutoMod',
-                        'tab-autoresponder': 'Autoresponder',
+                        'tab-ai': 'Nora AI Studio',
+                        'tab-roku': 'Roku Smart TV Controls',
+                        'tab-moderation': 'Moderation Actions & Cases',
+                        'tab-autoresponder': 'Autoresponder Rules',
                         'tab-feeds': 'Content Feeds',
                         'tab-webhooks': 'Webhooks',
                         'tab-topgg': 'Top.gg Integration',
@@ -17346,6 +17984,12 @@
                         fetchAnalytics();
                     } else if (tabId === 'tab-overview') {
                         fetchAnalytics();
+                    } else if (tabId === 'tab-ai') {
+                        if (typeof initAiStudioSandbox === 'function') initAiStudioSandbox();
+                    } else if (tabId === 'tab-roku') {
+                        if (typeof loadRokuStatus === 'function') loadRokuStatus();
+                    } else if (tabId === 'tab-moderation') {
+                        if (typeof loadDashboardModLogs === 'function') loadDashboardModLogs();
                     } else if (tabId === 'tab-autoresponder') {
                         fetchAutoresponders();
                         populateAutoresponderFormDropdowns();
@@ -18199,7 +18843,9 @@
                 return;
             }
             logToTerminal(`Opening configuration for server: ${g.name} (${g.id})`, 'SERVER_SELECT');
-            currentServerId = g.id; 
+            currentServerId = g.id;
+            window.currentGuildId = g.id;
+            if (typeof updateWhitelistedTabs === 'function') updateWhitelistedTabs(g.id); 
             window.currentGuild = g;
             currentServerName = g.name;
             currentServerIsPremium = g.isPremium;
@@ -19313,6 +19959,7 @@
                     'setting-robloxVerifyChannelId',
                     'setting-inviteTrackerChannelId',
                     'setting-oneWordStoryChannelId',
+                    'setting-aiAutoRespondChannelId',
                     'rr-channelId',
                     'new-feed-channel',
                     'send-app-channel-select'
@@ -27496,5 +28143,416 @@ try {
         });
     })();
     </script>
+<script>
+
+        // ==========================================
+        // 🔒 WHITELISTED SERVER TAB SYNC (ROKU & HQ)
+        // ==========================================
+        const WHITELISTED_ROKU_SERVERS = ['1487342521133830174', '1515800329889779954'];
+
+        function updateWhitelistedTabs(guildId) {
+            const isWhitelisted = WHITELISTED_ROKU_SERVERS.includes(String(guildId));
+            const sidebarBtn = document.getElementById('sidebar-tab-roku');
+            const mobileBtn = document.getElementById('mobile-nav-roku');
+            if (sidebarBtn) sidebarBtn.style.display = isWhitelisted ? 'block' : 'none';
+            if (mobileBtn) mobileBtn.style.display = isWhitelisted ? 'flex' : 'none';
+
+            const restrictedScreen = document.getElementById('roku-restricted-screen');
+            const activeConsole = document.getElementById('roku-active-console');
+            if (restrictedScreen && activeConsole) {
+                if (isWhitelisted) {
+                    restrictedScreen.style.display = 'none';
+                    activeConsole.style.display = 'block';
+                } else {
+                    restrictedScreen.style.display = 'block';
+                    activeConsole.style.display = 'none';
+                }
+            }
+        }
+
+        // ==========================================
+        // 📺 ROKU SMART TV DASHBOARD CONTROLLER
+        // ==========================================
+        function logRokuEvent(msg, isSuccess = true) {
+            const feed = document.getElementById('roku-event-feed');
+            if (!feed) return;
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = isSuccess ? '#10b981' : '#ef4444';
+            div.textContent = `[${time}] ${msg}`;
+            feed.appendChild(div);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function clearRokuLog() {
+            const feed = document.getElementById('roku-event-feed');
+            if (feed) feed.innerHTML = '<div>[Console Ready] Cleared.</div>';
+        }
+
+        async function loadRokuStatus(showNotif = false) {
+            const guildId = window.currentServerId || window.currentGuildId;
+            updateWhitelistedTabs(guildId);
+            if (!WHITELISTED_ROKU_SERVERS.includes(String(guildId))) return;
+
+            const icon = document.getElementById('roku-refresh-icon');
+            if (icon) icon.classList.add('fa-spin');
+
+            try {
+                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+                const token = sessionStorage.getItem('discord_token');
+                const res = await fetch(`${apiBase}/api/roku/status?guildId=${guildId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                const dot = document.getElementById('roku-status-dot');
+                const txt = document.getElementById('roku-status-text');
+                const nameEl = document.getElementById('roku-device-name');
+                const appEl = document.getElementById('roku-active-app');
+                const verEl = document.getElementById('roku-software-ver');
+                const authEl = document.getElementById('roku-auth-badge');
+
+                if (data.isOnline) {
+                    if (dot) { dot.style.background = '#10b981'; dot.style.boxShadow = '0 0 10px #10b981'; }
+                    if (txt) { txt.textContent = data.powerMode === 'PowerOn' ? 'Powered On' : 'Online / Standby'; txt.style.color = '#10b981'; }
+                } else {
+                    if (dot) { dot.style.background = '#ef4444'; dot.style.boxShadow = '0 0 10px #ef4444'; }
+                    if (txt) { txt.textContent = 'Offline / Unreachable'; txt.style.color = '#ef4444'; }
+                }
+
+                if (nameEl && data.deviceInfo) nameEl.textContent = data.deviceInfo.friendlyName || data.deviceInfo.modelName || 'Living Room Roku';
+                if (appEl) appEl.textContent = data.activeApp ? data.activeApp.name : (data.isOnline ? 'Home Screen' : '--');
+                if (verEl && data.deviceInfo) verEl.textContent = data.deviceInfo.softwareVersion || '12.5.0';
+                if (authEl) {
+                    if (data.isOwner) {
+                        authEl.textContent = 'Master Owner';
+                        authEl.style.color = '#a855f7';
+                    } else if (data.isAuthorized) {
+                        authEl.textContent = `Guest (${data.remainingTries} tries remaining)`;
+                        authEl.style.color = '#10b981';
+                    } else {
+                        authEl.textContent = 'Unauthorized';
+                        authEl.style.color = '#ef4444';
+                    }
+                }
+
+                logRokuEvent(`State synced: ${data.isOnline ? 'Online (' + (data.activeApp ? data.activeApp.name : 'Home') + ')' : 'Offline'}`);
+                if (showNotif && typeof showToast === 'function') showToast('Roku TV status refreshed', 'success');
+            } catch (err) {
+                logRokuEvent('Failed to sync status: ' + err.message, false);
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        }
+
+        async function sendRokuAction(action, extra = {}) {
+            const guildId = window.currentServerId || window.currentGuildId;
+            if (!WHITELISTED_ROKU_SERVERS.includes(String(guildId))) {
+                if (typeof showToast === 'function') showToast('Roku integration is restricted to HQ servers.', 'error');
+                return;
+            }
+
+            try {
+                logRokuEvent(`Dispatching ${action}...`);
+                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+                const token = sessionStorage.getItem('discord_token');
+                const res = await fetch(`${apiBase}/api/roku/control`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ guildId, action, ...extra })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logRokuEvent(`✓ ${data.message || action + ' executed successfully'}`, true);
+                    if (typeof showToast === 'function') showToast(data.message || `Sent: ${action}`, 'success');
+                } else {
+                    logRokuEvent(`✗ ${data.message || 'Action rejected'}`, false);
+                    if (typeof showToast === 'function') showToast(data.message || 'Action rejected', 'error');
+                }
+            } catch (err) {
+                logRokuEvent(`✗ Error: ${err.message}`, false);
+                if (typeof showToast === 'function') showToast('Command failed: ' + err.message, 'error');
+            }
+        }
+
+        async function launchRokuApp(appName) {
+            await sendRokuAction('LAUNCH_APP', { app: appName });
+        }
+
+        async function sendRokuText() {
+            const input = document.getElementById('roku-text-input');
+            if (!input || !input.value.trim()) return;
+            const text = input.value.trim();
+            await sendRokuAction('LITERAL', { text });
+            input.value = '';
+        }
+
+        function confirmRokuRestart() {
+            if (confirm('Are you sure you want to trigger a system restart of the Roku Smart TV? This will reboot the TV.')) {
+                sendRokuAction('RESTART');
+            }
+        }
+
+        // ==========================================
+        // 🧠 NORA AI STUDIO LIVE SANDBOX
+        // ==========================================
+        function initAiStudioSandbox() {
+            const input = document.getElementById('ai-sandbox-input');
+            if (input) input.focus();
+        }
+
+        function useSandboxPrompt(promptText) {
+            const input = document.getElementById('ai-sandbox-input');
+            if (input) {
+                input.value = promptText;
+                sendAiSandboxMessage();
+            }
+        }
+
+        function clearAiSandbox() {
+            const box = document.getElementById('ai-sandbox-messages');
+            if (box) {
+                box.innerHTML = `
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0;">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
+                            <div style="font-size: 0.75rem; color: #c084fc; font-weight: 700; margin-bottom: 4px;">Nora Assistant</div>
+                            <div style="font-size: 0.85rem; color: #fff; line-height: 1.45;">Sandbox conversation cleared. Ask me anything!</div>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        async function sendAiSandboxMessage() {
+            const input = document.getElementById('ai-sandbox-input');
+            if (!input || !input.value.trim()) return;
+            const prompt = input.value.trim();
+            input.value = '';
+
+            const box = document.getElementById('ai-sandbox-messages');
+            const sendBtn = document.getElementById('ai-sandbox-send-btn');
+            const latencyEl = document.getElementById('ai-sandbox-latency');
+
+            // Add User Bubble
+            const userMsg = document.createElement('div');
+            userMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start; justify-content: flex-end;';
+            userMsg.innerHTML = `
+                <div style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
+                    <div style="font-size: 0.75rem; color: #e9d5ff; font-weight: 700; margin-bottom: 4px; text-align: right;">You</div>
+                    <div style="font-size: 0.85rem; color: #fff; line-height: 1.45;">${escapeHtml(prompt)}</div>
+                </div>`;
+            box.appendChild(userMsg);
+
+            // Add Typing Indicator Bubble
+            const typingMsg = document.createElement('div');
+            typingMsg.id = 'ai-typing-indicator';
+            typingMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start;';
+            typingMsg.innerHTML = `
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
+                    <div style="font-size: 0.75rem; color: #c084fc; font-weight: 700; margin-bottom: 4px;">Nora Assistant</div>
+                    <div style="font-size: 0.85rem; color: #a1a1aa; font-style: italic;">Thinking and generating neural response...</div>
+                </div>`;
+            box.appendChild(typingMsg);
+            box.scrollTop = box.scrollHeight;
+
+            if (sendBtn) sendBtn.disabled = true;
+
+            const guildId = window.currentServerId || window.currentGuildId;
+            const model = document.getElementById('setting-aiPreference')?.value || 'default';
+            const t0 = Date.now();
+
+            try {
+                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+                const token = sessionStorage.getItem('discord_token');
+                const res = await fetch(`${apiBase}/api/guilds/${guildId}/ai-test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ prompt, model })
+                });
+                const data = await res.json();
+                const latency = Date.now() - t0;
+                if (latencyEl) latencyEl.textContent = `Latency: ${latency}ms`;
+
+                // Remove typing indicator
+                const typing = document.getElementById('ai-typing-indicator');
+                if (typing) typing.remove();
+
+                // Add Nora response bubble
+                const noraMsg = document.createElement('div');
+                noraMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start;';
+                noraMsg.innerHTML = `
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0;">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px;">
+                            <span style="font-size: 0.75rem; color: #c084fc; font-weight: 700;">Nora Assistant</span>
+                            <span style="font-size: 0.68rem; color: var(--muted); font-family: monospace;">${latency}ms • ${escapeHtml(data.model || 'Gemini Flash')}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #fff; line-height: 1.45; white-space: pre-wrap;">${escapeHtml(data.response || data.error || 'No response returned.')}</div>
+                    </div>`;
+                box.appendChild(noraMsg);
+                box.scrollTop = box.scrollHeight;
+            } catch (err) {
+                const typing = document.getElementById('ai-typing-indicator');
+                if (typing) typing.remove();
+
+                const errMsg = document.createElement('div');
+                errMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start;';
+                errMsg.innerHTML = `
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #ef4444; flex-shrink: 0;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
+                        <div style="font-size: 0.75rem; color: #ef4444; font-weight: 700; margin-bottom: 4px;">Request Error</div>
+                        <div style="font-size: 0.85rem; color: #fff;">${escapeHtml(err.message)}</div>
+                    </div>`;
+                box.appendChild(errMsg);
+                box.scrollTop = box.scrollHeight;
+            } finally {
+                if (sendBtn) sendBtn.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // ⚖️ MODERATION ACTIONS DASHBOARD HANDLER
+        // ==========================================
+        let currentGuildModCases = [];
+
+        function toggleModDispatchDuration() {
+            const action = document.getElementById('mod-dispatch-action')?.value;
+            const durGroup = document.getElementById('mod-dispatch-duration-group');
+            if (durGroup) durGroup.style.display = action === 'TIMEOUT' ? 'block' : 'none';
+        }
+
+        async function loadDashboardModLogs() {
+            const guildId = window.currentServerId || window.currentGuildId;
+            if (!guildId) return;
+
+            const icon = document.getElementById('mod-cases-refresh-icon');
+            if (icon) icon.classList.add('fa-spin');
+            const tbody = document.getElementById('mod-cases-tbody');
+
+            try {
+                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+                const token = sessionStorage.getItem('discord_token');
+                const res = await fetch(`${apiBase}/api/guilds/${guildId}/modlogs`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const cases = await res.json();
+                currentGuildModCases = Array.isArray(cases) ? cases : [];
+                renderModCasesTable(currentGuildModCases);
+            } catch (err) {
+                if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #ef4444;">Failed to load cases: ${escapeHtml(err.message)}</td></tr>`;
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        }
+
+        function renderModCasesTable(cases) {
+            const tbody = document.getElementById('mod-cases-tbody');
+            if (!tbody) return;
+            if (!cases || cases.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: var(--muted);">No moderation cases recorded yet for this server.</td></tr>';
+                return;
+            }
+
+            const actionColors = {
+                'WARN': '#fbbf24',
+                'TIMEOUT': '#60a5fa',
+                'KICK': '#f97316',
+                'BAN': '#ef4444'
+            };
+
+            tbody.innerHTML = cases.map(c => {
+                const color = actionColors[c.type?.toUpperCase()] || '#a855f7';
+                const dateStr = c.createdAt ? new Date(c.createdAt).toLocaleString() : '--';
+                return `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 12px 14px; font-weight: 700; color: #fff;">#${c.id}</td>
+                        <td style="padding: 12px 14px;">
+                            <span style="background: ${color}22; border: 1px solid ${color}55; color: ${color}; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px;">
+                                ${escapeHtml(c.type || 'ACTION')}
+                            </span>
+                        </td>
+                        <td style="padding: 12px 14px; font-family: monospace; color: #fff;">${escapeHtml(c.userId)}</td>
+                        <td style="padding: 12px 14px; color: var(--muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(c.reason || 'None provided')}</td>
+                        <td style="padding: 12px 14px; font-family: monospace; color: #a1a1aa;">${escapeHtml(c.moderatorId || 'Admin')}</td>
+                        <td style="padding: 12px 14px; color: var(--muted); font-size: 0.8rem;">${dateStr}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function filterModCasesTable() {
+            const q = document.getElementById('mod-cases-search')?.value?.toLowerCase() || '';
+            if (!q) {
+                renderModCasesTable(currentGuildModCases);
+                return;
+            }
+            const filtered = currentGuildModCases.filter(c => 
+                String(c.id).includes(q) ||
+                (c.userId && c.userId.toLowerCase().includes(q)) ||
+                (c.reason && c.reason.toLowerCase().includes(q)) ||
+                (c.type && c.type.toLowerCase().includes(q))
+            );
+            renderModCasesTable(filtered);
+        }
+
+        async function executeDashboardModAction() {
+            const userId = document.getElementById('mod-dispatch-userid')?.value?.trim();
+            const action = document.getElementById('mod-dispatch-action')?.value;
+            const durationMinutes = document.getElementById('mod-dispatch-duration')?.value;
+            const reason = document.getElementById('mod-dispatch-reason')?.value?.trim();
+            const statusEl = document.getElementById('mod-dispatch-status');
+
+            if (!userId) {
+                if (typeof showToast === 'function') showToast('Target User ID is required', 'error');
+                return;
+            }
+
+            const guildId = window.currentServerId || window.currentGuildId;
+            try {
+                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+                const token = sessionStorage.getItem('discord_token');
+                const res = await fetch(`${apiBase}/api/guilds/${guildId}/moderate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ userId, action, reason, durationMinutes })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (statusEl) {
+                        statusEl.style.display = 'block';
+                        statusEl.style.color = '#10b981';
+                        statusEl.textContent = `✓ Case ${data.caseId} recorded (${data.discordActionResult})`;
+                    }
+                    if (typeof showToast === 'function') showToast(`Action ${action} executed: ${data.caseId}`, 'success');
+                    document.getElementById('mod-dispatch-userid').value = '';
+                    document.getElementById('mod-dispatch-reason').value = '';
+                    loadDashboardModLogs();
+                } else {
+                    if (statusEl) {
+                        statusEl.style.display = 'block';
+                        statusEl.style.color = '#ef4444';
+                        statusEl.textContent = `✗ ${data.error || 'Failed to execute moderation action'}`;
+                    }
+                    if (typeof showToast === 'function') showToast(data.error || 'Action failed', 'error');
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#ef4444';
+                    statusEl.textContent = `✗ Error: ${err.message}`;
+                }
+                if (typeof showToast === 'function') showToast('Execution failed: ' + err.message, 'error');
+            }
+        }
+
+</script>
 </body>
 </html>

@@ -74,6 +74,19 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
         return { success: false, message: 'Could not resolve guild member profile.' };
     }
 
+    // 🛡️ Automated Security Background Check (Raid servers, Ban evasion alts, Misconduct history)
+    if (!options?.overrideSecurity) {
+        const { performSecurityBackgroundCheck } = require('../../utils/userSecurityCheck');
+        const secCheck = await performSecurityBackgroundCheck(member, settings, context, method);
+        if (secCheck.isFlagged) {
+            return {
+                success: false,
+                isFlagged: true,
+                message: '⚠️ **Verification Denied**: Your account has been flagged by the automated security background check. The server owners and moderation staff have been notified.'
+            };
+        }
+    }
+
     const isSilent = context?.silent === true || options?.silent === true;
     const guild = member.guild;
     const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;

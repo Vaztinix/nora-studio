@@ -36,3 +36,21 @@ migrate_raid.js
 scanDb.js
 scratch_sync.js
 syncDb.js
+scratch*.txt
+scripts/check_*.js
+scripts/find_*.js
+scripts/inspect_*.js
+scripts/get_*.js
+scripts/list_*.js
+scripts/publish_*.js
+scripts/resend_*.js
+scripts/send_*.js
+
+# Roku Private Hardware & Local Configs
+src/database/rokuConfig.json
+rokuConfig.json
+*rokuConfig*.json
+src/utils/rokuController.js
+src/commands/utility/roku.js
+src/api/routes/roku.js
+

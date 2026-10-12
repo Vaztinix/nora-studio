@@ -55,6 +55,14 @@ const UnderageSuspension = sequelize.define('UnderageSuspension', {
     reason: {
         type: DataTypes.TEXT,
         defaultValue: 'Determined underage for Discord (Recommended minimum age: 13)'
+    },
+    policyNotified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    policyNotifiedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 });
 

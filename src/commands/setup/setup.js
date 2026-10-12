@@ -67,7 +67,19 @@ module.exports = {
                 .setDescription('Configure One Word Story collaborative game.'))
         .addSubcommand(sub =>
             sub.setName('counting')
-                .setDescription('Configure sequential Counting game.')),
+                .setDescription('Configure sequential Counting game.'))
+        .addSubcommand(sub =>
+            sub.setName('ai')
+                .setDescription('Configure Nora AI behavior, engine models, and auto-response channel.'))
+        .addSubcommand(sub =>
+            sub.setName('moderation')
+                .setDescription('Configure moderation actions, autonomous Nora enforcement, and mod logs.'))
+        .addSubcommand(sub =>
+            sub.setName('roku')
+                .setDescription('Configure Roku Smart TV controls and authorization (Authorized servers only).'))
+        .addSubcommand(sub =>
+            sub.setName('adaptiveslowmode')
+                .setDescription('Configure AI-powered Adaptive Slowmode chat velocity defense.')),
 
     async execute(interaction) {
         if (!interaction.deferred && !interaction.replied) {
@@ -90,7 +102,11 @@ module.exports = {
             roblox: 'view_verify',
             starboard: 'view_starboard',
             onewordstory: 'view_onewordstory',
-            counting: 'view_counting'
+            counting: 'view_counting',
+            ai: 'view_ai',
+            moderation: 'view_moderation',
+            roku: 'view_roku',
+            adaptiveslowmode: 'view_adaptiveslowmode'
         };
 
         const targetView = routeMap[subcommand] || 'main';
@@ -199,14 +215,24 @@ module.exports = {
                     .addOptions([
                         { label: 'Safety & Anti-Raid', value: 'view_safety', description: 'Anti-raid, account age gate, photo check, lockdowns' },
                         { label: 'Discord AutoMod Rules', value: 'view_automod', description: 'Zero-latency native filters for profanity, spam, and scam links' },
+                        { label: 'Moderation Actions & Enforcement', value: 'view_moderation', description: 'Autonomous Nora moderation actions, mod logs, and penalties' },
                         { label: 'Welcomer & Auto-Roles', value: 'view_welcomer', description: 'Custom welcome cards, join messages, and starter roles' },
                         { label: 'Leveling & Experience', value: 'view_leveling', description: 'Chat & Voice XP, level-up notifications, and multipliers' },
                         { label: 'Server Logs & Routing', value: 'view_logging', description: 'Multi-channel audit logs for members, messages, and voice' },
                         { label: 'Community Games & AFK', value: 'view_games', description: 'AFK module, Counting, One Word Story, and Starboard' },
                         { label: 'Member Verification', value: 'view_verify', description: 'Human CAPTCHA gate, 1-click button, reaction, and Roblox sync' },
                         { label: 'Support Ticket System', value: 'view_tickets', description: 'Private staff ticket categories, panels, and transcripts' },
-                        { label: 'Self Roles & AI Engine', value: 'view_utility', description: 'Interactive button role panels and AI personality' }
+                        { label: 'Nora AI & Auto-Response', value: 'view_ai', description: 'Configure AI engine and unprompted auto-respond channel' },
+                        { label: 'Adaptive Slowmode & Velocity', value: 'view_adaptiveslowmode', description: 'AI-assisted chat defense with 0s lowest floor' },
+                        { label: 'Self Roles & Feeds', value: 'view_utility', description: 'Interactive button role panels and YouTube feeds' }
                     ]);
+
+                const WHITELISTED_ROKU_GUILDS = ['1487342521133830174', '1515800329889779954'];
+                if (WHITELISTED_ROKU_GUILDS.includes(interaction.guild.id)) {
+                    menu.addOptions([
+                        { label: '📺 Roku Smart TV Controls', value: 'view_roku', description: 'Hardware control, TV state, guest passes, and quick actions' }
+                    ]);
+                }
 
                 if (APP_OWNER_IDS.includes(interaction.user.id)) {
                     menu.addOptions([
@@ -689,6 +715,237 @@ module.exports = {
             }
 
             // ==========================================
+            // 🧠 NORA AI & AUTO-RESPONSE
+            // ==========================================
+            if (viewName === 'view_ai') {
+                const autoChannelText = settings.aiAutoRespondChannelId ? `<#${settings.aiAutoRespondChannelId}>` : '*None (Mentions/Replies Only)*';
+                const autoRespondActive = settings.aiAutoRespondEnabled !== false && settings.aiAutoRespondChannelId;
+
+                embed.setTitle('🧠 Nora AI Management & Channel Intelligence')
+                    .setDescription(
+                        'Configure Nora\'s AI engine and set a dedicated channel where Nora automatically responds to **all messages without needing to be pinged**!\n\n' +
+                        '• **Selected Auto-Respond Channel:** When configured, Nora chats naturally in this channel with zero pings required.\n' +
+                        '• **Omniscience & Surrounds:** Nora perceives server rosters, profile pictures, banners, and remembers recent conversation history naturally.\n' +
+                        '• **Staff Privacy Firewall:** Messages from staff-only channels are strictly isolated and never shared in public.'
+                    )
+                    .addFields(
+                        { name: 'AI Engine', value: `🧠 \`${settings.aiPreference || 'gemini'}\``, inline: true },
+                        { name: 'Auto-Respond Channel', value: autoChannelText, inline: true },
+                        { name: 'Auto-Respond Status', value: autoRespondActive ? '🟢 **Active (No Ping Required)**' : '⚪ **Inactive / Mentions Only**', inline: true }
+                    );
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId('action_ai_autochannel')
+                        .setPlaceholder('Select Auto-Respond Channel (No ping required)...')
+                        .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('action_ai_autotoggle')
+                        .setLabel(settings.aiAutoRespondEnabled !== false ? 'Disable Auto-Response' : 'Enable Auto-Response')
+                        .setStyle(settings.aiAutoRespondEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('action_ai_autoclear')
+                        .setLabel('Clear Auto-Respond Channel')
+                        .setStyle(ButtonStyle.Secondary)
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder().setCustomId('action_ai_pref').setPlaceholder('Change Nora AI Engine Preference...').addOptions([
+                        { label: 'Google Gemini 2.5 Flash (Default, Ultra-Fast)', value: 'gemini', default: settings.aiPreference === 'gemini' },
+                        { label: 'OpenAI GPT-4o Mini', value: 'openai', default: settings.aiPreference === 'openai' },
+                        { label: 'Anthropic Claude 3.5 Haiku', value: 'claude', default: settings.aiPreference === 'claude' }
+                    ])
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+            }
+
+            // ==========================================
+            // 🛡️ MODERATION ACTIONS & ENFORCEMENT
+            // ==========================================
+            if (viewName === 'view_moderation') {
+                const modLogText = settings.modLogChannelId ? `<#${settings.modLogChannelId}>` : '*None (Console Only)*';
+                const sendModDms = settings.sendModDms !== false;
+
+                embed.setTitle('🛡️ Moderation Actions & Autonomous Enforcement')
+                    .setDescription(
+                        'Configure Nora\'s moderation action pipelines, audit logging channels, and member disciplinary enforcement.\n\n' +
+                        '• **Autonomous Nora AI Moderation:** Authorized staff can chat directly with Nora to take punitive action (e.g. `@Nora timeout @user 10m for spam`, `@Nora warn @user`, `@Nora purge 20`).\n' +
+                        '• **Direct Message Notices:** When enabled, disciplined members receive an official DM stating reason, moderator, and appeal instructions.\n' +
+                        '• **Anti-Raid Enforcement Action:** When mass-joins or raids are detected, Nora executes the chosen action automatically.'
+                    )
+                    .addFields(
+                        { name: 'Mod Log Channel', value: modLogText, inline: true },
+                        { name: 'Direct Message Notices', value: sendModDms ? '🟢 **Enabled (DMs Sent)**' : '⚪ **Disabled**', inline: true },
+                        { name: 'Anti-Raid Enforcement', value: `\`${settings.antiRaidAction || 'notify'}\``, inline: true },
+                        { name: 'Autonomous Actions', value: '⚡ **Mute, Warn, Kick, Ban, Purge, Lock**', inline: false }
+                    );
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId('action_modlog_channel')
+                        .setPlaceholder('Set Mod Log Channel...')
+                        .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('action_moddms_toggle')
+                        .setLabel(sendModDms ? 'Disable Mod DMs' : 'Enable Mod DMs')
+                        .setStyle(sendModDms ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('view_safety')
+                        .setLabel('Anti-Raid & Quarantine')
+                        .setStyle(ButtonStyle.Primary)
+                        .setEmoji('🛡️'),
+                    new ButtonBuilder()
+                        .setCustomId('view_automod')
+                        .setLabel('Discord AutoMod Rules')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('⚡')
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, backRow] };
+            }
+
+            // ==========================================
+            // 📺 ROKU SMART TV HARDWARE CONTROLS
+            // ==========================================
+            if (viewName === 'view_roku') {
+                const WHITELISTED_ROKU_GUILDS = ['1487342521133830174', '1515800329889779954'];
+                if (!WHITELISTED_ROKU_GUILDS.includes(interaction.guild.id)) {
+                    embed.setTitle('🔒 Roku Smart TV Integration — Restricted')
+                        .setDescription(
+                            '⚠️ **Unauthorized Server**: Roku Smart TV hardware integration is strictly restricted to authorized headquarters servers:\n' +
+                            '• **Milo\'s World** (`1487342521133830174`)\n' +
+                            '• **Headquarters 2** (`1515800329889779954`)\n\n' +
+                            'This hardware feature is not accessible in this server.'
+                        )
+                        .setColor(0xEF4444);
+
+                    return { embeds: [embed], components: [backRow] };
+                }
+
+                let rokuController = null;
+                try { rokuController = require('../../utils/rokuController'); } catch (e) {}
+                if (!rokuController) {
+                    embed.setTitle('📺 Roku Smart TV Module Offline')
+                        .setDescription('Roku hardware integration module is currently disabled or offline.')
+                        .setColor(0xEF4444);
+                    return { embeds: [embed], components: [backRow] };
+                }
+                const isAuth = rokuController.isAuthorized(interaction.user.id);
+                const tries = rokuController.getRemainingTries(interaction.user.id);
+
+                embed.setTitle('📺 Roku Smart TV Command Center')
+                    .setDescription(
+                        `Welcome to the dedicated Roku Smart TV hardware console for **${interaction.guild.name}**!\n\n` +
+                        '• **Hardware Protocol:** External Control Protocol (ECP over HTTP)\n' +
+                        '• **Strict Developer Gate:** Primary control is reserved for <@1214048435632603137>.\n' +
+                        '• **Guest Delegation:** Temporary guest passes can be granted with command quotas and permission scopes.\n' +
+                        '• **Conversational Control:** You can also ask Nora naturally in chat (e.g. `"open YouTube on Roku"`, `"turn on the TV"`, `"restart Roku TV"`).'
+                    )
+                    .addFields(
+                        { name: 'Server Status', value: '🟢 **Authorized HQ Server**', inline: true },
+                        { name: 'Your Access', value: isAuth ? (interaction.user.id === '1214048435632603137' ? '👑 **Head Developer (Full)**' : `🎟️ **Guest Pass (${tries} tries)**`) : '🔒 **Unauthorized**', inline: true },
+                        { name: 'Hardware Control', value: '⚡ **Active (Local Network ECP)**', inline: true }
+                    )
+                    .setColor(0x06B6D4);
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_roku_power').setLabel('Power Toggle').setStyle(ButtonStyle.Primary).setEmoji('⚡'),
+                    new ButtonBuilder().setCustomId('action_roku_home').setLabel('Home Screen').setStyle(ButtonStyle.Secondary).setEmoji('🏠'),
+                    new ButtonBuilder().setCustomId('action_roku_play').setLabel('Play / Pause').setStyle(ButtonStyle.Secondary).setEmoji('⏯️'),
+                    new ButtonBuilder().setCustomId('action_roku_help').setLabel('TV Guide').setStyle(ButtonStyle.Success).setEmoji('📋')
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_roku_volup').setLabel('Vol +3').setStyle(ButtonStyle.Secondary).setEmoji('🔊'),
+                    new ButtonBuilder().setCustomId('action_roku_voldown').setLabel('Vol -3').setStyle(ButtonStyle.Secondary).setEmoji('🔉'),
+                    new ButtonBuilder().setCustomId('action_roku_mute').setLabel('Mute').setStyle(ButtonStyle.Secondary).setEmoji('🔇'),
+                    new ButtonBuilder().setCustomId('action_roku_restart').setLabel('Restart TV').setStyle(ButtonStyle.Danger).setEmoji('🔄')
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, backRow] };
+            }
+
+            // ==========================================
+            // ⏱️ ADAPTIVE SLOWMODE & CHAT VELOCITY
+            // ==========================================
+            if (viewName === 'view_adaptiveslowmode') {
+                const isEnabled = settings.adaptiveSlowmodeEnabled === true;
+                const isAiEnabled = settings.adaptiveSlowmodeAiEnabled !== false;
+                const floorSec = Math.max(0, settings.adaptiveSlowmodeInactiveSec ?? 0);
+
+                let channelListText = 'Server-Wide (All Channels)';
+                if (settings.adaptiveSlowmodeChannels) {
+                    try {
+                        const parsed = JSON.parse(settings.adaptiveSlowmodeChannels);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            channelListText = parsed.map(id => `<#${id}>`).join(' ');
+                        }
+                    } catch (_) {}
+                }
+
+                embed.setTitle('⏱️ Adaptive Slowmode & AI Velocity Defense')
+                    .setDescription(
+                        'Dynamically regulate channel slowmode based on real-time message velocity and AI pattern detection.\n\n' +
+                        '• **AI Intelligence:** Analyzes message floods, copy-paste repetition, and sudden chatter surges even when staff are active.\n' +
+                        '• **0-Second Floor (0 = Off):** Slowmode decays smoothly down to 0s when chat cools down.\n' +
+                        '• **Active Rate Limits:** The bot actively modifies channel rate limits in real-time.'
+                    )
+                    .addFields(
+                        { name: 'Status', value: isEnabled ? '🟢 **Enabled**' : '🔴 **Disabled**', inline: true },
+                        { name: 'AI Defense', value: isAiEnabled ? '🧠 **AI Enhanced**' : '⚪ **Standard Heuristic**', inline: true },
+                        { name: 'Lowest Rate Limit', value: `\`${floorSec}s\` (${floorSec === 0 ? '0 = Off' : 'Active floor'})`, inline: true },
+                        { name: 'Tiers (Small / Large / Surge)', value: `\`${settings.adaptiveSlowmodeSmallSec ?? 3}s\` / \`${settings.adaptiveSlowmodeLargeSec ?? 6}s\` / \`${settings.adaptiveSlowmodeSurgeSec ?? 10}s\``, inline: true },
+                        { name: 'Thresholds', value: `\`${settings.adaptiveSlowmodeSmallThreshold ?? 3}\` / \`${settings.adaptiveSlowmodeLargeThreshold ?? 7}\` / \`${settings.adaptiveSlowmodeSurgeThreshold ?? 13}\` msgs/10s`, inline: true },
+                        { name: 'Decay Timer', value: `\`${settings.adaptiveSlowmodeDecaySec ?? 20}s\` quiet chat`, inline: true },
+                        { name: 'Monitored Channels', value: channelListText, inline: false }
+                    );
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('action_adaptiveslowmode_toggle')
+                        .setLabel(isEnabled ? 'Disable Adaptive Slowmode' : 'Enable Adaptive Slowmode')
+                        .setStyle(isEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('action_adaptiveslowmode_ai_toggle')
+                        .setLabel(isAiEnabled ? 'AI Velocity: Active' : 'AI Velocity: Off')
+                        .setStyle(isAiEnabled ? ButtonStyle.Primary : ButtonStyle.Secondary),
+                    new ButtonBuilder()
+                        .setCustomId('action_adaptiveslowmode_notify_toggle')
+                        .setLabel(settings.adaptiveSlowmodeNotify ? 'Chat Notices: ON' : 'Chat Notices: OFF')
+                        .setStyle(ButtonStyle.Secondary)
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('action_adaptiveslowmode_sensitivity')
+                        .setPlaceholder('Choose Sensitivity Preset...')
+                        .addOptions([
+                            { label: 'Strict (Triggers quickly at 2 msgs/10s)', value: 'strict' },
+                            { label: 'Balanced (Recommended: 3 msgs/10s)', value: 'balanced', default: true },
+                            { label: 'Casual (Tolerant: 5 msgs/10s)', value: 'casual' }
+                        ])
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId('action_adaptiveslowmode_channels')
+                        .setPlaceholder('Set Monitored Channels (Leave empty for server-wide)...')
+                        .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+                        .setMinValues(0)
+                        .setMaxValues(10)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+            }
+
+            // ==========================================
             // 👑 DEV & PREMIUM OVERRIDES (Bot Owner)
             // ==========================================
             if (viewName === 'view_dev' && APP_OWNER_IDS.includes(interaction.user.id)) {
@@ -1022,8 +1279,104 @@ module.exports = {
                     }
                 }
 
-                // Self Roles & AI
+                // Self Roles & AI Management
                 if (i.customId === 'action_ai_pref') { settings.aiPreference = i.values[0]; update = true; }
+                if (i.customId === 'action_ai_autochannel') {
+                    settings.aiAutoRespondChannelId = i.values[0];
+                    settings.aiAutoRespondEnabled = true;
+                    update = true;
+                }
+                if (i.customId === 'action_ai_autotoggle') {
+                    settings.aiAutoRespondEnabled = settings.aiAutoRespondEnabled !== false ? false : true;
+                    update = true;
+                }
+                if (i.customId === 'action_ai_autoclear') {
+                    settings.aiAutoRespondChannelId = null;
+                    settings.aiAutoRespondEnabled = false;
+                    update = true;
+                }
+
+                // Moderation Actions & Enforcement
+                if (i.customId === 'action_modlog_channel') {
+                    settings.modLogChannelId = i.values.length > 0 ? i.values[0] : null;
+                    update = true;
+                }
+                if (i.customId === 'action_moddms_toggle') {
+                    settings.sendModDms = settings.sendModDms === false ? true : false;
+                    update = true;
+                }
+
+                // Roku Smart TV Controls (Whitelisted headquarters servers only)
+                if (i.customId.startsWith('action_roku_')) {
+                    const WHITELISTED_ROKU_GUILDS = ['1487342521133830174', '1515800329889779954'];
+                    if (!WHITELISTED_ROKU_GUILDS.includes(i.guildId)) {
+                        return i.reply({ content: '🔒 Roku Smart TV integration is only available in authorized headquarters servers (`1487342521133830174`, `1515800329889779954`).', ephemeral: true });
+                    }
+                    let rokuController = null;
+                    try { rokuController = require('../../utils/rokuController'); } catch (e) {}
+                    if (!rokuController) {
+                        return i.reply({ content: '❌ Roku hardware integration module is currently disabled or offline.', ephemeral: true });
+                    }
+                    if (i.customId === 'action_roku_help') {
+                        const guide = rokuController.getTvHelpGuide();
+                        return i.reply({ content: rokuController.sanitizeMessage(guide), ephemeral: true });
+                    }
+                    if (!rokuController.isAuthorized(i.user.id)) {
+                        return i.reply({ content: '🔒 Access Denied: You must be granted guest access to control the Roku TV.', ephemeral: true });
+                    }
+
+                    const rokuActionMap = {
+                        'action_roku_power': 'POWER_TOGGLE',
+                        'action_roku_home': 'HOME',
+                        'action_roku_play': 'PLAY',
+                        'action_roku_volup': 'VOLUME_UP',
+                        'action_roku_voldown': 'VOLUME_DOWN',
+                        'action_roku_mute': 'MUTE',
+                        'action_roku_restart': 'RESTART'
+                    };
+                    const act = rokuActionMap[i.customId];
+                    if (act) {
+                        await i.deferReply({ ephemeral: true });
+                        const res = await rokuController._executeRokuAction(i.user, act, {});
+                        const sanitized = rokuController.sanitizeMessage(res?.message || 'Command sent to TV.');
+                        return i.editReply({ content: sanitized });
+                    }
+                }
+
+                // Adaptive Slowmode & AI Velocity Defense
+                if (i.customId === 'action_adaptiveslowmode_toggle') {
+                    settings.adaptiveSlowmodeEnabled = !settings.adaptiveSlowmodeEnabled;
+                    update = true;
+                }
+                if (i.customId === 'action_adaptiveslowmode_ai_toggle') {
+                    settings.adaptiveSlowmodeAiEnabled = settings.adaptiveSlowmodeAiEnabled === false ? true : false;
+                    update = true;
+                }
+                if (i.customId === 'action_adaptiveslowmode_notify_toggle') {
+                    settings.adaptiveSlowmodeNotify = !settings.adaptiveSlowmodeNotify;
+                    update = true;
+                }
+                if (i.customId === 'action_adaptiveslowmode_sensitivity') {
+                    const preset = i.values[0];
+                    if (preset === 'strict') {
+                        settings.adaptiveSlowmodeSmallThreshold = 2;
+                        settings.adaptiveSlowmodeLargeThreshold = 5;
+                        settings.adaptiveSlowmodeSurgeThreshold = 9;
+                    } else if (preset === 'casual') {
+                        settings.adaptiveSlowmodeSmallThreshold = 5;
+                        settings.adaptiveSlowmodeLargeThreshold = 10;
+                        settings.adaptiveSlowmodeSurgeThreshold = 18;
+                    } else {
+                        settings.adaptiveSlowmodeSmallThreshold = 3;
+                        settings.adaptiveSlowmodeLargeThreshold = 7;
+                        settings.adaptiveSlowmodeSurgeThreshold = 13;
+                    }
+                    update = true;
+                }
+                if (i.customId === 'action_adaptiveslowmode_channels') {
+                    settings.adaptiveSlowmodeChannels = JSON.stringify(i.values || []);
+                    update = true;
+                }
                 if (i.customId === 'action_selfroles_build') {
                     const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
                     const modal = new ModalBuilder().setCustomId('modal_selfroles_build').setTitle('Self Roles Builder');

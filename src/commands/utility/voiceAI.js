@@ -12,7 +12,7 @@ const geminiKeyManager = require('../../utils/geminiKeyManager');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('voice-ai')
-        .setDescription('Summon Nora Voice AI (Speech-to-Text & Real-Time Spoken Audio) in Milo\'s World')
+        .setDescription('Summon Nora Voice AI (Speech-to-Text & Real-Time Spoken Audio) into your voice channel')
         .addSubcommand(sub =>
             sub.setName('join')
                 .setDescription('Summon Nora Voice AI into your current voice channel')
@@ -31,21 +31,12 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
         const guildId = interaction.guild.id;
 
-        // 1. Beta Guild Restriction Check
-        if (!noraVoiceAIManager.isGuildAllowed(guildId)) {
-            const betaPayload = noraVoiceAIManager.getBetaRestrictionPayload();
-            return interaction.reply({
-                ...betaPayload,
-                ephemeral: true
-            });
-        }
-
-        // 2. Execute Subcommands
+        // 1. Execute Subcommands
         if (subcommand === 'join') {
             const voiceChannel = interaction.member?.voice?.channel;
             if (!voiceChannel) {
                 return interaction.reply({
-                    content: '❌ **You must be in a Voice Channel** in Milo\'s World before summoning Nora Voice AI!',
+                    content: '❌ **You must be in a Voice Channel** before summoning Nora Voice AI!',
                     ephemeral: true
                 });
             }
@@ -54,10 +45,7 @@ module.exports = {
 
             const result = await noraVoiceAIManager.joinVoice(voiceChannel, interaction.channel, interaction.member);
             if (!result.success) {
-                if (result.isRestricted) {
-                    return interaction.editReply(result.payload);
-                }
-                return interaction.editReply({ content: result.message });
+                return interaction.editReply({ content: result.message || '❌ Failed to connect to voice channel.' });
             }
 
             const successEmbed = new EmbedBuilder()
@@ -70,7 +58,7 @@ module.exports = {
                     `*Unmute your microphone and speak naturally to talk with Nora!*`
                 )
                 .setColor(0x00F0FF)
-                .setFooter({ text: 'Milo\'s World Voice AI • Real-Time Voice Assistant' });
+                .setFooter({ text: 'Nora Voice AI • Real-Time Voice Assistant' });
 
             return interaction.editReply({ embeds: [successEmbed] });
         }

@@ -19,7 +19,8 @@ const BLOCKED_FILES_OR_DIRS = [
     '.git',
     'node_modules',
     'database.sqlite',
-    'config.json'
+    'config.json',
+    'rokuConfig.json'
 ];
 
 function scanFile(filePath) {

@@ -14,6 +14,8 @@ const UserLevel = require('../database/models/UserLevel');
 const UserPrefs = require('../database/models/UserPrefs');
 const { generateRankCard } = require('./rankCardGenerator');
 const { getTotalXPForLevel } = require('./noraLeveling');
+let rokuController = null;
+try { rokuController = require('./rokuController'); } catch (e) {}
 
 const BOT_DEVELOPER_ID = '1214048435632603137';
 
@@ -68,8 +70,8 @@ async function resolveTargetUser(message, raw) {
         return nonBotMentions.first();
     }
 
-    // 2. Self-targeting keywords ('me', 'myself')
-    if (lower.match(/\b(me|myself)\b/i)) {
+    // 2. Explicit self-targeting keywords ('me', 'myself') strictly for self-timeout
+    if (lower.match(/\b(?:mute|timeout|silence)\s+(?:me|myself)\b/i)) {
         return message.author;
     }
 
@@ -164,7 +166,23 @@ async function detectIntent(message, plainContent) {
         };
     }
 
-    // 8. Utility: AI Quota & Words Headroom (e.g. "what is the current quota", "how many words left", "quota status", "credits left")
+    // 8. Safety & Support: Crisis / Mental Health & Helpline Support (Strict compassionate safety gate)
+    if (lower.match(/\b(i\s+hate\s+my\s+life|i\s+want\s+to\s+die|i\s+wanna\s+die|kill\s+myself|killing\s+myself|end\s+my\s+life|end\s+it\s+all|commit\s+suicide|feel\s+suicidal|don't\s+want\s+to\s+live|dont\s+want\s+to\s+live|dont\s+wanna\s+live|hate\s+being\s+alive|nobody\s+cares\s+if\s+i\s+die)\b/i)) {
+        return {
+            type: 'UTILITY',
+            action: 'CRISIS_SUPPORT'
+        };
+    }
+
+    // 9. Utility: AI Model & Command Module Architecture Information
+    if (lower.match(/\b(what\s+(?:ai\s+)?model|what\s+ai\s+are\s+you|is\s+this\s+the\s+ai\s+or\s+command\s+module|command\s+module\s+or\s+ai|what\s+model\s+does\s+(?:the\s+)?(?:command\s+actions?|action\s+commands?|ai|bot|nora)\s+run\s+on|what\s+llm\s+are\s+you)\b/i)) {
+        return {
+            type: 'UTILITY',
+            action: 'AI_MODEL_INFO'
+        };
+    }
+
+    // 9. Utility: AI Quota & Words Headroom (e.g. "what is the current quota", "how many words left", "quota status", "credits left")
     if (lower.match(/\b(what('s|\s+is)\s+(the\s+)?(current\s+)?(ai\s+)?(quota|credit|credits|limit)|how\s+much\s+(ai\s+)?(quota|credit|credits)|how\s+many\s+(more\s+)?(words?|credits?|tokens?|prompts?)|quota\s+status|ai\s+quota|check\s+quota|credits?\s+left|how\s+long\s+(until|before)\s+(a\s+)?(conversation|quota|reset))\b/i)) {
         return {
             type: 'UTILITY',
@@ -172,42 +190,88 @@ async function detectIntent(message, plainContent) {
         };
     }
 
+    // 9b. Utility: Host Machine & Device Hardware Specs (Strict Privacy Protected)
+    if (lower.match(/\b(?:what\s+are\s+(?:the\s+|your\s+)?(?:device|pc|computer|system|hardware|host)\s+specs?|(?:show|tell|check|display|give)\s+(?:me\s+)?(?:the\s+)?(?:device|pc|computer|system|hardware|host)\s+specs?|(?:device|pc|computer|system|hardware|host)\s+specs?)\b/i) ||
+        lower.match(/\b(?:specs\s+of\s+(?:the\s+)?(?:pc|computer|system|machine|host))\b/i)) {
+        return {
+            type: 'UTILITY',
+            action: 'DEVICE_SPECS'
+        };
+    }
+
+    // 10. Hardware: Roku Smart TV Control (Strict Developer Control: 1214048435632603137)
+    const rokuIntent = rokuController ? rokuController.parseRokuIntent(raw, message) : null;
+    if (rokuIntent) {
+        return {
+            type: 'ROKU',
+            action: 'ROKU_COMMAND',
+            intent: rokuIntent,
+            rawText: raw
+        };
+    }
+
     // --- Moderation Intent Detection ---
+    // Strictly verify if author has moderation authority on this server before evaluating moderation intents.
+    // If not staff/moderator, regular chat is completely bypassed from punitive moderation checks.
+    const member = message.member;
+    const authorId = message.author?.id;
+    const guild = message.guild;
 
-    // A. Mute / Timeout
-    if (lower.match(/\b(mute|timeout|silence|shut\s*up)\b/i) && !lower.match(/\b(unmute|untimeout|remove\s+timeout|lift\s+timeout)\b/i)) {
-        const target = await resolveTargetUser(message, raw);
-        if (target) {
-            const duration = parseDuration(raw);
-            let reason = raw
-                .replace(new RegExp(`(can you )?(please )?(now )?(mute|timeout|silence|shut up)`, 'gi'), '')
-                .replace(new RegExp(`<@!?${target.id}>|\\b${target.id}\\b|me\\b|myself\\b`, 'gi'), '')
-                .replace(/for \d+\s*(s|sec|seconds?|m|min|minutes?|h|hr|hours?|d|days?|w|weeks?)/gi, '')
-                .replace(/\d+\s*(s|sec|seconds?|m|min|minutes?|h|hr|hours?|d|days?|w|weeks?)/gi, '')
-                .replace(/as an? test/gi, 'Testing purposes')
-                .replace(/reason:?/gi, '')
-                .trim();
-            if (!reason) reason = target.id === message.author.id ? 'Self-requested timeout' : 'Requested via Nora AI';
+    if (!guild || !member) return null;
 
-            return {
-                type: 'MODERATION',
-                action: 'MUTE',
-                target: target,
-                duration: duration,
-                reason: reason
-            };
-        } else {
-            return {
-                type: 'MODERATION',
-                action: 'TARGET_REQUIRED',
-                requestedAction: 'Timeout / Mute'
-            };
+    const isDeveloper = authorId === BOT_DEVELOPER_ID;
+    const isGuildOwner = authorId === guild.ownerId;
+    const isAdmin = member.permissions.has(PermissionFlagsBits.Administrator);
+
+    // Explicit permission gates for each moderation scope
+    const canModerate = isDeveloper || isGuildOwner || isAdmin || member.permissions.has(PermissionFlagsBits.ModerateMembers);
+    const canKick = isDeveloper || isGuildOwner || isAdmin || member.permissions.has(PermissionFlagsBits.KickMembers);
+    const canBan = isDeveloper || isGuildOwner || isAdmin || member.permissions.has(PermissionFlagsBits.BanMembers);
+    const canManageMessages = isDeveloper || isGuildOwner || isAdmin || member.permissions.has(PermissionFlagsBits.ManageMessages);
+    const canManageChannels = isDeveloper || isGuildOwner || isAdmin || member.permissions.has(PermissionFlagsBits.ManageChannels);
+
+    // If author lacks any moderation permissions on this server, skip moderation intent detection entirely.
+    if (!canModerate && !canKick && !canBan && !canManageMessages && !canManageChannels) {
+        return null;
+    }
+
+    // A. Mute / Timeout (Requires ModerateMembers)
+    if (canModerate && lower.match(/\b(mute|timeout|silence)\b/i) && !lower.match(/\b(unmute|untimeout|remove\s+timeout|lift\s+timeout)\b/i)) {
+        // Exclude audio / tv / music / hardware talk (e.g. "mute the tv", "mute music", "mute my mic")
+        if (!lower.match(/\b(tv|roku|television|volume|sound|music|song|track|audio|mic|microphone|headset|spotify)\b/i)) {
+            const target = await resolveTargetUser(message, raw);
+            if (target) {
+                const duration = parseDuration(raw);
+                let reason = raw
+                    .replace(new RegExp(`(can you )?(please )?(now )?(mute|timeout|silence)`, 'gi'), '')
+                    .replace(new RegExp(`<@!?${target.id}>|\\b${target.id}\\b|me\\b|myself\\b`, 'gi'), '')
+                    .replace(/for \d+\s*(s|sec|seconds?|m|min|minutes?|h|hr|hours?|d|days?|w|weeks?)/gi, '')
+                    .replace(/\d+\s*(s|sec|seconds?|m|min|minutes?|h|hr|hours?|d|days?|w|weeks?)/gi, '')
+                    .replace(/as an? test/gi, 'Testing purposes')
+                    .replace(/reason:?/gi, '')
+                    .trim();
+                if (!reason) reason = target.id === message.author.id ? 'Self-requested timeout' : 'Requested via Nora AI';
+
+                return {
+                    type: 'MODERATION',
+                    action: 'MUTE',
+                    target: target,
+                    duration: duration,
+                    reason: reason
+                };
+            } else if (raw.toLowerCase().startsWith('!timeout') || raw.toLowerCase().startsWith('!mute') || lower.match(/^(?:hey\s+)?nora[,:]?\s+(?:can\s+you\s+|please\s+)?(?:timeout|mute)\b/i)) {
+                return {
+                    type: 'MODERATION',
+                    action: 'TARGET_REQUIRED',
+                    requestedAction: 'Timeout / Mute'
+                };
+            }
         }
     }
 
-    // A2. Conversational Timeout Follow-up
-    if (lower.match(/\b(forever|perm|permanent|banish him|banish them|do it|lock him in|lock him)\b/i) ||
-        (message.reference && lower.match(/\b(\d+\s*(s|sec|m|min|minutes?|h|hr|hours?|d|days?|w|weeks?)|forever|perm)\b/i))) {
+    // A2. Conversational Timeout Follow-up (Requires ModerateMembers)
+    if (canModerate && (lower.match(/\b(forever|perm|permanent|banish him|banish them|do it|lock him in|lock him)\b/i) ||
+        (message.reference && lower.match(/\b(\d+\s*(s|sec|m|min|minutes?|h|hr|hours?|d|days?|w|weeks?)|forever|perm)\b/i)))) {
         let refMsg = null;
         if (message.reference?.messageId) {
             refMsg = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
@@ -244,31 +308,34 @@ async function detectIntent(message, plainContent) {
         }
     }
 
-    // B. Unmute / Untimeout
-    if (lower.match(/\b(unmute|untimeout|lift\s*timeout|remove\s*timeout)\b/i)) {
-        const target = await resolveTargetUser(message, raw);
-        if (target) {
-            return {
-                type: 'MODERATION',
-                action: 'UNMUTE',
-                target: target,
-                reason: 'Requested via Nora AI'
-            };
-        } else {
-            return {
-                type: 'MODERATION',
-                action: 'TARGET_REQUIRED',
-                requestedAction: 'Untimeout'
-            };
+    // B. Unmute / Untimeout (Requires ModerateMembers)
+    if (canModerate && lower.match(/\b(unmute|untimeout|lift\s*timeout|remove\s*timeout)\b/i)) {
+        if (!lower.match(/\b(tv|roku|television|volume|sound|music|song|track|audio|mic|microphone|headset)\b/i)) {
+            const target = await resolveTargetUser(message, raw);
+            if (target) {
+                return {
+                    type: 'MODERATION',
+                    action: 'UNMUTE',
+                    target: target,
+                    reason: 'Requested via Nora AI'
+                };
+            } else if (raw.toLowerCase().startsWith('!unmute') || raw.toLowerCase().startsWith('!untimeout') || lower.match(/^(?:hey\s+)?nora[,:]?\s+(?:can\s+you\s+|please\s+)?(?:unmute|untimeout)\b/i)) {
+                return {
+                    type: 'MODERATION',
+                    action: 'TARGET_REQUIRED',
+                    requestedAction: 'Untimeout'
+                };
+            }
         }
     }
 
-    // C. Kick
-    if (lower.match(/\b(kick|boot|remove\s+from\s+server)\b/i)) {
+    // C. Kick (Requires KickMembers)
+    if (canKick && lower.match(/\b(kick|boot\s+from\s+server|remove\s+from\s+server)\b/i) &&
+        !lower.match(/\b(kick\s*back|kick\s*off|kick\s*the\s*bucket|kick\s*start|boot\s*up|booting)\b/i)) {
         const target = await resolveTargetUser(message, raw);
         if (target) {
             let reason = raw
-                .replace(new RegExp(`(can you )?(please )?(kick|boot|remove from server)`, 'gi'), '')
+                .replace(new RegExp(`(can you )?(please )?(kick|boot from server|remove from server)`, 'gi'), '')
                 .replace(new RegExp(`<@!?${target.id}>|\\b${target.id}\\b`, 'gi'), '')
                 .replace(/reason:?/gi, '')
                 .trim();
@@ -280,7 +347,7 @@ async function detectIntent(message, plainContent) {
                 target: target,
                 reason: reason
             };
-        } else {
+        } else if (raw.toLowerCase().startsWith('!kick') || lower.match(/^(?:hey\s+)?nora[,:]?\s+(?:can\s+you\s+|please\s+)?kick\b/i)) {
             return {
                 type: 'MODERATION',
                 action: 'TARGET_REQUIRED',
@@ -289,12 +356,12 @@ async function detectIntent(message, plainContent) {
         }
     }
 
-    // D. Ban
-    if (lower.match(/\b(ban|permaban|hammer)\b/i) && !lower.match(/\b(unban|pardon)\b/i)) {
+    // D. Ban (Requires BanMembers)
+    if (canBan && lower.match(/\b(ban|permaban)\b/i) && !lower.match(/\b(unban|pardon)\b/i)) {
         const target = await resolveTargetUser(message, raw);
         if (target) {
             let reason = raw
-                .replace(new RegExp(`(can you )?(please )?(ban|permaban|hammer)`, 'gi'), '')
+                .replace(new RegExp(`(can you )?(please )?(ban|permaban)`, 'gi'), '')
                 .replace(new RegExp(`<@!?${target.id}>|\\b${target.id}\\b`, 'gi'), '')
                 .replace(/reason:?/gi, '')
                 .trim();
@@ -307,7 +374,7 @@ async function detectIntent(message, plainContent) {
                 targetId: target.id,
                 reason: reason
             };
-        } else {
+        } else if (raw.toLowerCase().startsWith('!ban') || lower.match(/^(?:hey\s+)?nora[,:]?\s+(?:can\s+you\s+|please\s+)?(?:ban|permaban)\b/i)) {
             return {
                 type: 'MODERATION',
                 action: 'TARGET_REQUIRED',
@@ -316,8 +383,8 @@ async function detectIntent(message, plainContent) {
         }
     }
 
-    // E. Unban
-    if (lower.match(/\b(unban|pardon|lift\s*ban)\b/i)) {
+    // E. Unban (Requires BanMembers)
+    if (canBan && lower.match(/\b(unban|pardon|lift\s*ban)\b/i)) {
         const target = await resolveTargetUser(message, raw);
         const idMatch = raw.match(/\b(\d{17,20})\b/);
         const finalId = target ? target.id : (idMatch ? idMatch[1] : null);
@@ -328,7 +395,7 @@ async function detectIntent(message, plainContent) {
                 targetId: finalId,
                 reason: 'Requested via Nora AI'
             };
-        } else {
+        } else if (raw.toLowerCase().startsWith('!unban') || lower.match(/^(?:hey\s+)?nora[,:]?\s+(?:can\s+you\s+|please\s+)?unban\b/i)) {
             return {
                 type: 'MODERATION',
                 action: 'TARGET_REQUIRED',
@@ -337,8 +404,8 @@ async function detectIntent(message, plainContent) {
         }
     }
 
-    // F. Warn
-    if (lower.match(/\b(warn|strike|issue\s*warning)\b/i)) {
+    // F. Warn (Requires ModerateMembers)
+    if (canModerate && lower.match(/\b(warn|strike|issue\s*warning)\b/i)) {
         const target = await resolveTargetUser(message, raw);
         if (target) {
             let reason = raw
@@ -354,7 +421,7 @@ async function detectIntent(message, plainContent) {
                 target: target,
                 reason: reason
             };
-        } else {
+        } else if (raw.toLowerCase().startsWith('!warn') || lower.match(/^(?:hey\s+)?nora[,:]?\s+(?:can\s+you\s+|please\s+)?warn\b/i)) {
             return {
                 type: 'MODERATION',
                 action: 'TARGET_REQUIRED',
@@ -363,77 +430,85 @@ async function detectIntent(message, plainContent) {
         }
     }
 
-    // G. Purge / Clear
-    if (lower.match(/\b(purge|clear|clean|delete\s+messages)\b/i)) {
-        const numMatch = raw.match(/\b(\d+)\b/);
-        let count = numMatch ? parseInt(numMatch[1], 10) : 10;
-        if (count > 100) count = 100;
-        if (count < 1) count = 1;
+    // G. Purge / Clear (Requires ManageMessages)
+    if (canManageMessages) {
+        const purgeMatch = lower.match(/\b(?:purge|clear|delete)\s+(\d{1,3})\s*(?:messages?)?\b/i) ||
+                           raw.match(/^!(?:purge|clear)\s*(\d{1,3})?/i) ||
+                           lower.match(/^(?:hey\s+)?nora[,:]?\s+(?:can\s+you\s+|please\s+)?(?:purge|clear|delete\s+messages)\s*(\d{1,3})?/i);
+        if (purgeMatch) {
+            let count = parseInt(purgeMatch[1] || '10', 10);
+            if (isNaN(count) || count < 1) count = 10;
+            if (count > 100) count = 100;
 
-        return {
-            type: 'MODERATION',
-            action: 'PURGE',
-            amount: count,
-            reason: `Purged ${count} messages via Nora AI`
-        };
+            return {
+                type: 'MODERATION',
+                action: 'PURGE',
+                amount: count,
+                reason: `Purged ${count} messages via Nora AI`
+            };
+        }
     }
 
-    // H. Lock / Unlock
-    if (lower.match(/\b(lock\s*channel|lockdown|close\s*channel)\b/i)) {
-        return {
-            type: 'MODERATION',
-            action: 'LOCK',
-            channel: message.channel,
-            reason: 'Channel lockdown via Nora AI'
-        };
-    }
-    if (lower.match(/\b(unlock\s*channel|lift\s*lockdown|open\s*channel)\b/i)) {
-        return {
-            type: 'MODERATION',
-            action: 'UNLOCK',
-            channel: message.channel,
-            reason: 'Channel unlocked via Nora AI'
-        };
-    }
-
-    // I. Slowmode & Adaptive Slowmode
-    if (lower.match(/\b(adaptive\s*slowmode|auto\s*slowmode|dynamic\s*slowmode)\b/i)) {
-        const isDisable = lower.includes('off') || lower.includes('disable') || lower.includes('stop');
-        return {
-            type: 'MODERATION',
-            action: 'ADAPTIVE_SLOWMODE',
-            enable: !isDisable,
-            channel: message.channel,
-            reason: `Adaptive slowmode ${!isDisable ? 'enabled' : 'disabled'} via Nora AI`
-        };
+    // H. Lock / Unlock (Requires ManageChannels)
+    if (canManageChannels) {
+        if (lower.match(/\b(lock\s*channel|lockdown|close\s*channel)\b/i)) {
+            return {
+                type: 'MODERATION',
+                action: 'LOCK',
+                channel: message.channel,
+                reason: 'Channel lockdown via Nora AI'
+            };
+        }
+        if (lower.match(/\b(unlock\s*channel|lift\s*lockdown|open\s*channel)\b/i)) {
+            return {
+                type: 'MODERATION',
+                action: 'UNLOCK',
+                channel: message.channel,
+                reason: 'Channel unlocked via Nora AI'
+            };
+        }
     }
 
-    if (lower.match(/\b(slowmode|slow\s*mode)\b/i)) {
-        if (lower.includes('off') || lower.includes('disable') || lower.includes('0')) {
+    // I. Slowmode & Adaptive Slowmode (Requires ManageChannels)
+    if (canManageChannels) {
+        if (lower.match(/\b(adaptive\s*slowmode|auto\s*slowmode|dynamic\s*slowmode)\b/i)) {
+            const isDisable = lower.includes('off') || lower.includes('disable') || lower.includes('stop');
+            return {
+                type: 'MODERATION',
+                action: 'ADAPTIVE_SLOWMODE',
+                enable: !isDisable,
+                channel: message.channel,
+                reason: `Adaptive slowmode ${!isDisable ? 'enabled' : 'disabled'} via Nora AI`
+            };
+        }
+
+        if (lower.match(/\b(slowmode|slow\s*mode)\b/i)) {
+            if (lower.includes('off') || lower.includes('disable') || lower.includes('0')) {
+                return {
+                    type: 'MODERATION',
+                    action: 'SLOWMODE',
+                    seconds: 0,
+                    channel: message.channel,
+                    reason: 'Slowmode disabled via Nora AI'
+                };
+            }
+            const numMatch = raw.match(/\b(\d+)\s*(s|sec|seconds?|m|min|minutes?)?\b/i);
+            let sec = 10;
+            if (numMatch) {
+                const val = parseInt(numMatch[1], 10);
+                const unit = (numMatch[2] || '').toLowerCase();
+                sec = unit.startsWith('m') ? val * 60 : val;
+            }
+            if (sec > 21600) sec = 21600;
+
             return {
                 type: 'MODERATION',
                 action: 'SLOWMODE',
-                seconds: 0,
+                seconds: sec,
                 channel: message.channel,
-                reason: 'Slowmode disabled via Nora AI'
+                reason: `Slowmode set to ${sec}s via Nora AI`
             };
         }
-        const numMatch = raw.match(/\b(\d+)\s*(s|sec|seconds?|m|min|minutes?)?\b/i);
-        let sec = 10;
-        if (numMatch) {
-            const val = parseInt(numMatch[1], 10);
-            const unit = (numMatch[2] || '').toLowerCase();
-            sec = unit.startsWith('m') ? val * 60 : val;
-        }
-        if (sec > 21600) sec = 21600;
-
-        return {
-            type: 'MODERATION',
-            action: 'SLOWMODE',
-            seconds: sec,
-            channel: message.channel,
-            reason: `Slowmode set to ${sec}s via Nora AI`
-        };
     }
 
     // J. Direct Command Request (e.g. "Nora run /setup", "run /warn @user", "Nora execute /settings")
@@ -636,15 +711,77 @@ async function executeUtility(message, client, intent) {
     if (intent.action === 'INFO') {
         const embed = new EmbedBuilder()
             .setTitle('✨ Nora Systems Core V20.0')
-            .setDescription(`Created and developed by **Vaztinix** (<@${BOT_DEVELOPER_ID}>).\nRunning on Google Gemini Multimodal Engine with Autonomous Execution & Moderation Power.`)
+            .setDescription(`Created and developed by **Vaztinix** (<@${BOT_DEVELOPER_ID}>).\nPowered by **AuraAI V10** with Autonomous Execution & Moderation Power.`)
             .addFields(
                 { name: 'Servers', value: `${client.guilds.cache.size}`, inline: true },
                 { name: 'Ping', value: `${client.ws.ping}ms`, inline: true },
-                { name: 'Architecture', value: 'Gemini 3.8/3.7 Multi-Key Pool', inline: true }
+                { name: 'AI Architecture', value: 'AuraAI V10 (Proprietary)', inline: true }
             )
             .setColor(0x5865F2)
             .setTimestamp();
         return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
+    }
+
+    if (intent.action === 'AI_MODEL_INFO') {
+        return message.reply({
+            content: `**AuraAI V10** is my custom command module and autonomous execution engine engineered by **Vaztinix**! It handles all my command actions, server controls, and hardware integrations.\n\nThe AI brain I connect to for reasoning and conversational intelligence is **Gemini** (operating across a multi-project cluster). ✨`,
+            allowedMentions: { repliedUser: false }
+        });
+    }
+
+    if (intent.action === 'DEVICE_SPECS') {
+        const { getSanitizedSpecs } = require('./deviceSpecs');
+        const s = getSanitizedSpecs();
+
+        const embed = new EmbedBuilder()
+            .setTitle('💻 Host PC Hardware Specifications')
+            .setColor(0x5865F2)
+            .setDescription('Live hardware specifications for the dedicated host system running Nora. All personal identifiers, directories, and network details are strictly redacted for privacy.')
+            .addFields(
+                { name: '🖥️ Processor (CPU)', value: `**${s.cpu.model}**\n${s.cpu.cores} Threads @ ${s.cpu.speed}`, inline: true },
+                { name: '🧠 Memory (RAM)', value: `**${s.memory.total} Total**\n${s.memory.used} in use (${s.memory.percentUsed})\n${s.memory.free} free`, inline: true },
+                { name: '🪟 Operating System', value: `**${s.os.name}**\nKernel: \`${s.os.kernel}\` (\`${s.os.arch}\`)`, inline: true },
+                { name: '⏱️ System Uptime', value: `Host: \`${s.uptime.host}\`\nProcess: \`${s.uptime.bot}\``, inline: true },
+                { name: '⚡ Runtime Engine', value: `Node.js \`${s.runtime.node}\`\nV8 \`${s.runtime.v8}\``, inline: true },
+                { name: '📊 Process Memory', value: `Heap: \`${s.runtime.heapUsed}\`\nRSS: \`${s.runtime.rss}\``, inline: true }
+            )
+            .setFooter({ text: 'Nora Mainframe Architecture • Privacy Protected' })
+            .setTimestamp();
+
+        return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
+    }
+
+    if (intent.action === 'CRISIS_SUPPORT') {
+        const supportEmbed = new EmbedBuilder()
+            .setTitle('🤍 You Are Not Alone — Please Reach Out')
+            .setDescription(`Hey, I hear you, and I genuinely care about you. It sounds like you're carrying a heavy burden right now, but please know that you matter, your life is valuable, and you don't have to go through this alone.\n\nThere are people who want to listen and help you through this difficult moment without judgment. Please connect with one of these free, confidential, 24/7 resources right now:`)
+            .addFields(
+                {
+                    name: '📞 988 Suicide & Crisis Lifeline (US & Canada)',
+                    value: 'Call or text **988** | Free, confidential, available 24/7.'
+                },
+                {
+                    name: '💬 Crisis Text Line',
+                    value: 'Text **HOME** to **741741** to connect with a crisis counselor 24/7.'
+                },
+                {
+                    name: '🌈 The Trevor Project (LGBTQ+ Youth)',
+                    value: 'Call **1-866-488-7386** or text **START** to **678-678**.'
+                },
+                {
+                    name: '🌍 International Helplines',
+                    value: 'Find confidential support in your country at [findahelpline.com](https://findahelpline.com) or [befrienders.org](https://www.befrienders.org).'
+                }
+            )
+            .setColor(0x38BDF8)
+            .setFooter({ text: 'Please reach out to a trusted friend, family member, or professional. You are worth it.' })
+            .setTimestamp();
+
+        return message.reply({
+            content: `I'm here with you <@${message.author.id}>. Please take a deep breath and let someone support you right now. 🤍`,
+            embeds: [supportEmbed],
+            allowedMentions: { repliedUser: false }
+        });
     }
 
     if (intent.action === 'AI_QUOTA') {
@@ -1198,6 +1335,26 @@ async function performModerationAction(guild, moderator, intent) {
 async function processNoraAction(message, client, plainContent) {
     const intent = await detectIntent(message, plainContent);
     if (!intent) return false;
+
+    if (intent.type === 'ROKU') {
+        const WHITELISTED_GUILD_IDS = ['1487342521133830174', '1515800329889779954'];
+        if (message.guild && !WHITELISTED_GUILD_IDS.includes(message.guild.id)) {
+            await message.reply({
+                content: '🔒 **Server Restricted**: Roku Smart TV integration is only available to be run in authorized headquarters servers (`1487342521133830174`, `1515800329889779954`).',
+                allowedMentions: { repliedUser: false }
+            });
+            return true;
+        }
+
+        if (!rokuController) return false;
+        const result = await rokuController.executeRokuCommand(message.author, intent.intent || intent.rawText);
+        const safeMessage = rokuController.sanitizeMessage(result?.message || 'Done.');
+        await message.reply({
+            content: safeMessage,
+            allowedMentions: { repliedUser: false }
+        });
+        return true;
+    }
 
     if (intent.type === 'UTILITY') {
         await executeUtility(message, client, intent);

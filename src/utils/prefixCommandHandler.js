@@ -46,7 +46,8 @@ const COMMAND_ALIASES = {
     'voiceai': 'voice-ai',
     'aslowmode': 'adaptiveslowmode',
     'adaptiveslow': 'adaptiveslowmode',
-    'autoslowmode': 'adaptiveslowmode'
+    'autoslowmode': 'adaptiveslowmode',
+    'tv': 'roku'
 };
 
 /**

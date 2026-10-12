@@ -11,14 +11,42 @@ module.exports = {
     async execute(message, client) {
         if (!message.author || message.author.bot) return;
 
-        // 🛡️ Route Direct Messages cleanly
+        // 🛡️ Route Direct Messages cleanly (Support Relay & Two-Way DM Responses)
         if (!message.guild) {
+            try {
+                const dmRelayManager = require('../utils/dmRelayManager');
+                const handled = await dmRelayManager.handleDirectMessage(message, client);
+                if (handled) return;
+            } catch (dmErr) {
+                console.error('[DM Relay Error]:', dmErr);
+            }
+
             if (/\bgolden\b/i.test(message.content)) {
                 const { checkAndAwardGoldenEgg } = require('../utils/easterEggSystem');
                 await checkAndAwardGoldenEgg(message);
             }
             return;
         }
+
+        // 🧠 Ambient Channel History Recording for Nora AI (Staff Privacy Protected)
+        try {
+            const conversationHub = require('../utils/conversationHub');
+            const authorDisplayName = message.member?.displayName || message.author.username;
+            const everyonePerms = message.channel.permissionsFor(message.guild.roles.everyone);
+            const isStaffOnly = everyonePerms ? !everyonePerms.has(PermissionFlagsBits.ViewChannel) : false;
+            let contentToRecord = message.content || '';
+            if (message.stickers && message.stickers.size > 0) {
+                const stickerDescs = message.stickers.map(s => `[Sticker: "${s.name}"${s.description ? ` - ${s.description}` : ''}]`).join(' ');
+                contentToRecord = contentToRecord ? `${contentToRecord} ${stickerDescs}` : stickerDescs;
+            }
+            if (contentToRecord) {
+                conversationHub.addMessage(message.channel.id, authorDisplayName, contentToRecord, false, {
+                    isStaffOnly,
+                    authorId: message.author.id,
+                    channelName: message.channel.name
+                });
+            }
+        } catch (e) {}
 
         // 📊 High-Performance Activity Tracking across all servers
         try {
@@ -214,24 +242,16 @@ module.exports = {
         const trimmedContent = message.content.trim();
         if (/^(JoinNoraAI|join\s*nora\s*ai|n!joinai|!joinnoraai)\b/i.test(trimmedContent)) {
             const noraVoiceAIManager = require('../utils/noraVoiceAIManager');
-            if (!noraVoiceAIManager.isGuildAllowed(message.guild.id)) {
-                const betaPayload = noraVoiceAIManager.getBetaRestrictionPayload();
-                return message.reply(betaPayload);
-            }
-
             const voiceChannel = message.member?.voice?.channel;
             if (!voiceChannel) {
                 return message.reply({
-                    content: '❌ **You must be in a Voice Channel** in Milo\'s World before summoning Nora Voice AI!',
+                    content: '❌ **You must be in a Voice Channel** before summoning Nora Voice AI!',
                     allowedMentions: { repliedUser: false }
                 });
             }
 
             const result = await noraVoiceAIManager.joinVoice(voiceChannel, message.channel, message.member);
             if (!result.success) {
-                if (result.isRestricted) {
-                    return message.reply(result.payload);
-                }
                 return message.reply({ content: result.message || '❌ Failed to connect to voice channel.' });
             }
             return message.react('🎙️').catch(() => {});

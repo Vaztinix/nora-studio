@@ -3877,6 +3877,39 @@ router.post('/moderate', async (req, res) => {
 });
 
 /**
+ * POST /api/guilds/:guildId/ai-test
+ * Live interactive testing sandbox for Nora AI responses.
+ */
+router.post('/ai-test', async (req, res) => {
+    try {
+        const { prompt, model } = req.body;
+        if (!prompt || typeof prompt !== 'string') {
+            return res.status(400).json({ error: 'Prompt is required.' });
+        }
+        const { getBuiltInResponse } = require('../../utils/builtInBrain');
+        const user = req.user || {};
+        const authorName = user.username || 'Server Admin';
+        const t0 = Date.now();
+        const responseText = await getBuiltInResponse(prompt.trim(), {
+            authorName,
+            isPremium: true
+        });
+        const latencyMs = Date.now() - t0;
+        return res.json({
+            success: true,
+            prompt: prompt.trim(),
+            response: responseText,
+            latencyMs,
+            model: model || 'Gemini 3.5 Flash / Fast Aura'
+        });
+    } catch (err) {
+        console.error('[API AI-Test Error]:', err);
+        return res.status(500).json({ error: err.message || 'Failed to generate AI response.' });
+    }
+});
+
+
+/**
  * GET /api/guilds/:guildId/starboard
  * Retrieve aggregated Starboard statistics, Top Starred Members leaderboard, Hall of Fame, and recent Starboard posts.
  */
