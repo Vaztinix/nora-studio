@@ -412,6 +412,20 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    adaptiveSlowmodeAiEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    // ---- Nora AI Auto-Response Channel System ----
+    aiAutoRespondChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    aiAutoRespondEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     managedBotId: {
         type: DataTypes.STRING,
         allowNull: true

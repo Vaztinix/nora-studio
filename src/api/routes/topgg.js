@@ -396,19 +396,34 @@ module.exports = (client) => {
                 }
 
 
-                // 4. Send Direct Message to Voter (if voter permits DMs)
+                // 4. Send Direct Message to Voter & Schedule 12-Hour Return Vote Reminder
+                const targetBotName = client.user?.username || 'Nora';
                 try {
                     const voterUser = client.users?.cache?.get(voterId) || await client.users?.fetch(voterId).catch(() => null);
                     if (voterUser) {
                         const dmEmbed = new EmbedBuilder()
                             .setTitle('💖 Thank you for voting on Top.gg!')
                             .setColor('#FF3366')
-                            .setDescription(`Your vote for **${guild ? guild.name : 'our bot'}** was received!\n\n**Rewards Earned:** ${rewardStatus.join(' • ')}\n**Current Streak:** 🔥 ${currentStreak} vote(s) in a row!`)
+                            .setDescription(`Your vote for **${guild ? guild.name : targetBotName}** was received!\n\n**Rewards Earned:** ${rewardStatus.join(' • ')}\n**Current Streak:** 🔥 ${currentStreak} vote(s) in a row!\n\n🔔 I will automatically send you a DM in 12 hours saying **"You can vote for \\"${targetBotName}\\" again!"** so you never miss your streak!`)
                             .setFooter({ text: 'You can vote again in 12 hours.' })
                             .setTimestamp();
                         await voterUser.send({ embeds: [dmEmbed] }).catch(() => { });
                     }
                 } catch (dmErr) { }
+
+                // Schedule automated 12-hour DM notification
+                try {
+                    const voteReminderManager = require('../../utils/voteReminderManager');
+                    await voteReminderManager.recordVote(
+                        voterId,
+                        targetBotId || client.user?.id,
+                        targetBotName,
+                        guildId,
+                        isTest ? 0.005 : 12
+                    );
+                } catch (remErr) {
+                    console.error('[Top.gg Route] Failed to schedule vote reminder:', remErr.message);
+                }
 
                 // 5. Append to Persistent Inbound Log
                 const voterUser = client.users?.cache?.get(voterId);

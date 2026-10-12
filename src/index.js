@@ -1475,6 +1475,10 @@ app.use('/api/modules', (req, res, next) => {
     next();
 }, modulesRouter);
 
+// 📺 Roku Smart TV Controls Router (Whitelisted Headquarters Servers Only)
+const rokuRouter = require('./api/routes/roku')(client);
+app.use('/api/roku', rokuRouter);
+
 // User Notifications Router
 
 app.get('/api/notifications', async (req, res) => {
@@ -1984,23 +1988,353 @@ app.get('/api/user/me', async (req, res) => {
 
 // Update profile preferences
 
-// GET /api/user/team-cards — Fetches all custom team cards saved by team members/owners
-app.get('/api/user/team-cards', async (req, res) => {
+// ==========================================
+// OFFICIAL TEAM CARD DIRECTORY & SELF-MANAGEMENT
+// ==========================================
+const TEAM_MEMBERS_DIRECTORY = [
+    {
+        id: "1214048435632603137",
+        username: "vaztinix",
+        defaultName: "Vaz",
+        defaultRole: "Founder & Lead Dev",
+        roleClass: "lead",
+        defaultBio: "💕 | I care for everyone, but those closest to me will never understand the trust they have.",
+        defaultJoined: "Mar 2024",
+        defaultImage: "ReVaztinix.jpeg",
+        defaultLinks: {
+            github: "https://github.com/Vaztinix",
+            youtube: "https://www.youtube.com/@Vaztinix",
+            twitch: "https://www.twitch.tv/vaztinix",
+            gunslol: "https://guns.lol/vaztinix",
+            roblox: "https://www.roblox.com/users/4751178852/profile",
+            discord: "https://discord.com/users/1214048435632603137"
+        }
+    },
+    {
+        id: "1366229304257544213",
+        username: "strawberry_angel0000",
+        defaultName: "ε｡strwberry !!⨯🪱🍓",
+        defaultRole: "Co-Owner",
+        roleClass: "owner",
+        defaultBio: "D1 Hater • Co-Owner & Executive Team Member",
+        defaultJoined: "Apr 2025",
+        defaultImage: "waffles.png",
+        defaultLinks: {
+            strawpage: "https://strawberryangel0000.straw.page/",
+            other: "https://1angel1.straw.page/",
+            discord: "https://discord.com/users/1366229304257544213"
+        }
+    },
+    {
+        id: "1377095101116973187",
+        username: "strawberry._0000",
+        defaultName: "angel📼🪱",
+        defaultRole: "Co-Owner (Alt)",
+        roleClass: "owner",
+        defaultBio: "Secondary account of strawberry_angel0000.",
+        defaultJoined: "May 2025",
+        defaultImage: "https://cdn.discordapp.com/avatars/1377095101116973187/9262e8d71d3c92248e7871ae21b4694f.webp?size=512",
+        defaultLinks: {
+            discord: "https://discord.com/users/1377095101116973187"
+        }
+    },
+    {
+        id: "914530504718561351",
+        username: "charlieisme",
+        defaultName: "TheCasualEnderman",
+        defaultRole: "Administrator",
+        roleClass: "admin",
+        defaultBio: "Friendly administrator keeping the community secure and reviewing new features.",
+        defaultJoined: "Nov 2021",
+        defaultImage: "nora.png",
+        defaultLinks: {
+            discord: "https://discord.com/users/914530504718561351"
+        }
+    },
+    {
+        id: "1375943730951098549",
+        username: "nora",
+        defaultName: "Nora",
+        defaultRole: "Privacy-First App",
+        roleClass: "app",
+        defaultBio: "The core application driving automation, Roblox rank synchronization, and community protection.",
+        defaultJoined: "Online 24/7 across clusters",
+        defaultImage: "nora.png",
+        isApp: true,
+        defaultLinks: {
+            invite: "/install",
+            docs: "/docs"
+        }
+    },
+    {
+        id: "941084096673755188",
+        username: "solorads",
+        defaultName: "solorads",
+        defaultRole: "Tester & Contributor",
+        roleClass: "contributor",
+        defaultBio: "Provides feature ideas, beta tests release candidates, and supports server integrations.",
+        defaultJoined: "Feb 2022",
+        defaultImage: "solorads_pfp.png",
+        defaultLinks: {
+            roblox: "https://www.roblox.com/users/2987228682/profile",
+            discord: "https://discord.com/users/941084096673755188"
+        }
+    },
+    {
+        id: "1301949827701149697",
+        username: "discounted_chaos",
+        defaultName: "discounted_chaos",
+        defaultRole: "Administrator",
+        roleClass: "admin",
+        defaultBio: "\"The dumbass\" • Community administrator.",
+        defaultJoined: "Nov 2024",
+        defaultImage: "beecet.png",
+        defaultLinks: {
+            discord: "https://discord.com/users/1301949827701149697"
+        }
+    },
+    {
+        id: "1364634555977564230",
+        username: "poppys.ang3l",
+        defaultName: "✦Arya/Vixen┆She/Fae/It✦",
+        defaultRole: "Administrator",
+        roleClass: "admin",
+        defaultBio: "A very silly person • Staff Member",
+        defaultJoined: "Apr 2025",
+        defaultImage: "aryarec.jpg",
+        defaultLinks: {
+            strawpage: "https://poppys-ang3l.straw.page/",
+            pronouns: "https://prns.cc/eprnd",
+            discord: "https://discord.com/users/1364634555977564230"
+        }
+    },
+    {
+        id: "1387499169870254230",
+        username: "boris10106",
+        defaultName: "boris10106",
+        defaultRole: "Community Friend",
+        roleClass: "friend",
+        defaultBio: "The cameras are on my big toe now.",
+        defaultJoined: "Jun 2025",
+        defaultImage: "boris.png",
+        defaultLinks: {
+            discord: "https://discord.com/users/1387499169870254230"
+        }
+    },
+    {
+        id: "1127254357059047546",
+        username: "yunex0",
+        defaultName: "yunex0",
+        defaultRole: "Security Bug Hunter",
+        roleClass: "security",
+        defaultBio: "Security Researcher & Bug Hunter.",
+        defaultJoined: "Jul 2023",
+        defaultImage: "https://cdn.discordapp.com/avatars/1127254357059047546/bd55efa05d2a138febea64b9fee3dca8.webp?size=512",
+        defaultLinks: {
+            hackerone: "https://hackerone.com/yunex0?type=user",
+            discord: "https://discord.com/users/1127254357059047546"
+        }
+    }
+];
+
+// Helper: Check if user ID qualifies as a recognized team member
+function isRecognizedTeamMember(userId, prefs) {
+    if (!userId) return false;
+    const isDefault = TEAM_MEMBERS_DIRECTORY.some(m => m.id === String(userId));
+    if (isDefault) return true;
+    if (prefs && (prefs.isTeamMember || prefs.hasTeamCard)) return true;
+    const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
+    return APP_OWNER_IDS.includes(String(userId));
+}
+
+// GET /api/team/cards — Returns full merged list of public team cards
+app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
     try {
         const UserPrefs = require('./database/models/UserPrefs');
-        const Op = require('sequelize').Op;
-        const teamPrefs = await UserPrefs.findAll({
-            where: {
-                [Op.or]: [
-                    { isOwner: true },
-                    { isTeamMember: true },
-                    { hasTeamCard: true }
-                ]
+        const allPrefs = await UserPrefs.findAll().catch(() => []);
+        const prefsMap = new Map();
+        for (const p of allPrefs) {
+            prefsMap.set(String(p.userId), p);
+        }
+
+        const cards = [];
+        for (const def of TEAM_MEMBERS_DIRECTORY) {
+            const p = prefsMap.get(String(def.id));
+            // Check if member explicitly chose to hide their card completely
+            if (p && p.teamCardHideCard) {
+                continue;
+            }
+
+            let links = def.defaultLinks;
+            if (p && p.teamCardLinks) {
+                try {
+                    const parsed = typeof p.teamCardLinks === 'string' ? JSON.parse(p.teamCardLinks) : p.teamCardLinks;
+                    if (parsed && typeof parsed === 'object') {
+                        links = parsed;
+                    }
+                } catch (e) {}
+            }
+
+            // Determine bio: If staff set empty string, respect empty description
+            let bio = def.defaultBio;
+            if (p && p.teamCardDescription !== null && p.teamCardDescription !== undefined) {
+                bio = p.teamCardDescription;
+            }
+
+            cards.push({
+                id: def.id,
+                username: def.username,
+                displayName: (p && p.teamCardDisplayName) ? p.teamCardDisplayName : def.defaultName,
+                role: (p && p.teamCardHideRole) ? null : ((p && p.teamCardRole) ? p.teamCardRole : def.defaultRole),
+                roleClass: def.roleClass,
+                bio: bio,
+                joined: (p && p.teamCardHideJoinDate) ? null : def.defaultJoined,
+                image: (p && p.teamCardImage) ? p.teamCardImage : def.defaultImage,
+                banner: (p && p.teamCardBanner) ? p.teamCardBanner : null,
+                links: links,
+                hideRole: !!(p && p.teamCardHideRole),
+                hideJoinDate: !!(p && p.teamCardHideJoinDate),
+                hideCard: !!(p && p.teamCardHideCard),
+                isApp: !!def.isApp
+            });
+        }
+
+        res.json({ success: true, cards, teamCards: cards });
+    } catch (e) {
+        console.error('Error in /api/team/cards:', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// GET /api/team/my-card — Staff member self-inspects their own card
+app.get('/api/team/my-card', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ authenticated: false, error: 'Unauthorized: Discord login required' });
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        if (!user || !user.id) return res.status(401).json({ authenticated: false, error: 'Invalid Discord token' });
+
+        const UserPrefs = require('./database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+
+        const isTeam = isRecognizedTeamMember(user.id, prefs);
+        if (!isTeam) {
+            return res.json({ authenticated: true, isTeamMember: false });
+        }
+
+        const def = TEAM_MEMBERS_DIRECTORY.find(m => m.id === String(user.id)) || {
+            id: user.id,
+            username: user.username,
+            defaultName: user.global_name || user.username,
+            defaultRole: "Team Member",
+            roleClass: "member",
+            defaultBio: "",
+            defaultJoined: "Joined: Recently",
+            defaultImage: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256` : 'nora.png',
+            defaultLinks: { discord: `https://discord.com/users/${user.id}` }
+        };
+
+        let links = def.defaultLinks;
+        if (prefs.teamCardLinks) {
+            try {
+                links = typeof prefs.teamCardLinks === 'string' ? JSON.parse(prefs.teamCardLinks) : prefs.teamCardLinks;
+            } catch (e) {}
+        }
+
+        res.json({
+            authenticated: true,
+            isTeamMember: true,
+            user: {
+                id: user.id,
+                username: user.username,
+                global_name: user.global_name,
+                avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256` : null
+            },
+            card: {
+                id: user.id,
+                displayName: prefs.teamCardDisplayName || def.defaultName || user.global_name || user.username,
+                role: prefs.teamCardRole || def.defaultRole,
+                roleClass: def.roleClass,
+                description: prefs.teamCardDescription !== null && prefs.teamCardDescription !== undefined ? prefs.teamCardDescription : def.defaultBio,
+                image: prefs.teamCardImage || def.defaultImage || "",
+                banner: prefs.teamCardBanner || "",
+                links: links || {},
+                hideRole: !!prefs.teamCardHideRole,
+                hideJoinDate: !!prefs.teamCardHideJoinDate,
+                hideCard: !!prefs.teamCardHideCard
             }
         });
-        res.json({ success: true, teamCards: teamPrefs });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        console.error('Error in /api/team/my-card:', e);
+        handleRouteError(res, e, '/api/team/my-card');
+    }
+});
+
+// POST /api/team/my-card — Staff member saves changes to their own card only
+app.post('/api/team/my-card', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, error: 'Unauthorized: Discord login required' });
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        if (!user || !user.id) return res.status(401).json({ success: false, error: 'Invalid Discord token' });
+
+        const UserPrefs = require('./database/models/UserPrefs');
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+
+        const isTeam = isRecognizedTeamMember(user.id, prefs);
+        if (!isTeam) {
+            return res.status(403).json({ success: false, error: 'You do not have permission to manage a team card.' });
+        }
+
+        const {
+            displayName,
+            description,
+            image,
+            banner,
+            links,
+            hideRole,
+            hideJoinDate,
+            hideCard
+        } = req.body;
+
+        if (displayName !== undefined) prefs.teamCardDisplayName = displayName ? String(displayName).trim().slice(0, 60) : null;
+        if (description !== undefined) prefs.teamCardDescription = description !== null ? String(description).slice(0, 400) : null;
+        if (image !== undefined) prefs.teamCardImage = image ? String(image).trim() : null;
+        if (banner !== undefined) prefs.teamCardBanner = banner ? String(banner).trim() : null;
+        if (links !== undefined) {
+            prefs.teamCardLinks = typeof links === 'object' ? JSON.stringify(links) : String(links);
+        }
+        if (hideRole !== undefined) prefs.teamCardHideRole = !!hideRole;
+        if (hideJoinDate !== undefined) prefs.teamCardHideJoinDate = !!hideJoinDate;
+        if (hideCard !== undefined) prefs.teamCardHideCard = !!hideCard;
+
+        prefs.hasTeamCard = true;
+        prefs.isTeamMember = true;
+        await prefs.save();
+
+        res.json({
+            success: true,
+            message: 'Your team card has been updated successfully!',
+            card: {
+                displayName: prefs.teamCardDisplayName,
+                description: prefs.teamCardDescription,
+                image: prefs.teamCardImage,
+                banner: prefs.teamCardBanner,
+                links: typeof prefs.teamCardLinks === 'string' ? JSON.parse(prefs.teamCardLinks || '{}') : prefs.teamCardLinks,
+                hideRole: prefs.teamCardHideRole,
+                hideJoinDate: prefs.teamCardHideJoinDate,
+                hideCard: prefs.teamCardHideCard
+            }
+        });
+    } catch (e) {
+        console.error('Error saving team card in /api/team/my-card:', e);
+        handleRouteError(res, e, '/api/team/my-card');
     }
 });
 
@@ -2824,6 +3158,13 @@ async function syncUserRolesAcrossGuilds(userId, robloxId, specificGuildId = nul
             if (member) {
                 const settings = await settingsCache.get(guild.id);
                 if (settings && (settings.robloxVerifyEnabled || settings.verifyRoleId)) {
+                    // 🛡️ Security Background Check
+                    const { performSecurityBackgroundCheck } = require('./utils/userSecurityCheck');
+                    const sec = await performSecurityBackgroundCheck(member, settings, {}, 'Roblox Link Verification');
+                    if (sec.isFlagged) {
+                        continue; // Block verification roles for flagged members
+                    }
+
                     // Grant base verification role
                     if (settings.robloxVerifyRoleId) {
                         const role = guild.roles.cache.get(settings.robloxVerifyRoleId);

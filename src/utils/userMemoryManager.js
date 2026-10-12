@@ -105,11 +105,40 @@ async function updateUserMemory(userId, content) {
         }
 
         // 3. Self-identification & preferences ("my name is...", "i love...", "i hate...", "my favorite...")
-        const nameMatch = content.match(/\b(?:my name is|call me|i'm called|im called)\s+([A-Za-z0-9_]{2,20})\b/i);
-        if (nameMatch && nameMatch[1] && !['nora', 'a', 'the', 'who', 'what', 'not', 'bot'].includes(nameMatch[1].toLowerCase().trim())) {
-            const nameFact = `Name is ${nameMatch[1].trim()}`;
-            if (!insights.some(i => i.startsWith('Name is'))) {
-                insights.push(nameFact);
+        // Guard against negation / questions: "don't call me...", "stop calling me...", "why do you call me...", "did you make it call us..."
+        const isNegatedCall = /\b(?:don'?t|do not|never|stop|quit|can you not|why(?:'d|\s+did)?\s+you|why\s+do\s+you|did\s+you)\s+(?:call\s+me|calling\s+me|call\s+us|calling\s+us)\b/i.test(content);
+        
+        // If user says "don't call me X" or "stop calling me X", remove that name from insights and record preference
+        const stopCallingMatch = content.match(/\b(?:don'?t|do not|stop|never)\s+call\s+me\s+([A-Za-z0-9_]{2,20})\b/i);
+        if (stopCallingMatch && stopCallingMatch[1]) {
+            const forbiddenName = stopCallingMatch[1].toLowerCase().trim();
+            insights = insights.filter(i => !i.toLowerCase().includes(`name is ${forbiddenName}`));
+            const prefNote = `Prefers NOT to be called "${forbiddenName}"`;
+            if (!insights.includes(prefNote)) {
+                insights.push(prefNote);
+            }
+        }
+
+        const BLOCKED_NAMES = new Set([
+            'nora', 'a', 'the', 'who', 'what', 'not', 'bot', 'someone', 'anyone', 'everyone', 'nobody',
+            'babe', 'baby', 'honey', 'sweetheart', 'darling', 'sweetie', 'cutie', 'sexy',
+            'bro', 'dude', 'bruh', 'man', 'girl', 'boy', 'guy', 'homie', 'fam',
+            'crazy', 'insane', 'dumb', 'stupid', 'ugly', 'idiot', 'weird', 'clown',
+            'back', 'later', 'maybe', 'again', 'now', 'soon', 'up', 'out', 'here', 'there',
+            'liar', 'cheater', 'loser', 'nerd', 'simp'
+        ]);
+
+        if (!isNegatedCall) {
+            const nameMatch = content.match(/(?:^|[^a-z0-9_])(?:my name is|call me|i'm called|im called)\s+([A-Za-z0-9_]{2,20})\b/i);
+            if (nameMatch && nameMatch[1]) {
+                const candidateName = nameMatch[1].trim();
+                const lowerCandidate = candidateName.toLowerCase();
+                if (!BLOCKED_NAMES.has(lowerCandidate)) {
+                    const nameFact = `Name is ${candidateName}`;
+                    // Replace existing "Name is ..." if any
+                    insights = insights.filter(i => !i.startsWith('Name is '));
+                    insights.push(nameFact);
+                }
             }
         }
 
@@ -124,7 +153,10 @@ async function updateUserMemory(userId, content) {
         const sentimentMatch = content.match(/\b(?:i really love|i love|i really hate|i hate)\s+([^.,!?\n]{2,40})/i);
         if (sentimentMatch && sentimentMatch[0] && !content.toLowerCase().includes('you')) {
             const sentimentFact = sentimentMatch[0].trim();
-            if (!insights.includes(sentimentFact) && sentimentFact.length < 50) {
+            const lowerSentiment = sentimentFact.toLowerCase();
+            // Never capture self-harm, depression, or distress phrases as casual memories
+            const isDistress = /\b(my\s+life|myself|living|die|suicide|kms|kill|hopeless|depressed)\b/i.test(lowerSentiment);
+            if (!isDistress && !insights.includes(sentimentFact) && sentimentFact.length < 50) {
                 insights.push(sentimentFact);
             }
         }

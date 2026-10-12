@@ -170,7 +170,7 @@ class NoraVoiceAIManager {
     }
 
     isGuildAllowed(guildId) {
-        return guildId === BETA_GUILD_ID;
+        return true; // Nora Voice AI is officially open to all servers!
     }
 
     getBetaRestrictionPayload() {
@@ -204,14 +204,6 @@ class NoraVoiceAIManager {
      */
     async joinVoice(voiceChannel, textChannel, initiatorMember) {
         const guildId = voiceChannel.guild.id;
-
-        if (!this.isGuildAllowed(guildId)) {
-            return {
-                success: false,
-                isRestricted: true,
-                payload: this.getBetaRestrictionPayload()
-            };
-        }
 
         const permissions = voiceChannel.permissionsFor(voiceChannel.guild.members.me);
         if (!permissions.has(PermissionFlagsBits.Connect) || !permissions.has(PermissionFlagsBits.Speak)) {

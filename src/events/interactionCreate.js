@@ -646,6 +646,87 @@ module.exports = {
             return interaction.reply({ embeds: [quotaEmbed], ephemeral: true });
         }
 
+        // 🛡️ Handle Security Background Check Staff Action Buttons (Ban, Kick, Override)
+        if (interaction.isButton() && interaction.customId.startsWith('security_')) {
+            const parts = interaction.customId.split('_');
+            const action = parts[1];
+            const targetUserId = parts[2];
+
+            const member = interaction.member;
+            const guild = interaction.guild;
+            if (!member || !guild) return;
+
+            // Permission Verification (Must have moderation or admin perms)
+            const canMod = member.permissions.has(PermissionFlagsBits.Administrator) ||
+                           member.permissions.has(PermissionFlagsBits.BanMembers) ||
+                           member.permissions.has(PermissionFlagsBits.KickMembers) ||
+                           member.id === guild.ownerId ||
+                           member.id === '1214048435632603137';
+
+            if (!canMod) {
+                return interaction.reply({
+                    content: '❌ **Access Denied**: You lack moderation authority to action this security alert.',
+                    ephemeral: true
+                });
+            }
+
+            if (action === 'ban') {
+                try {
+                    await guild.bans.create(targetUserId, {
+                        reason: `[Security Background Check] Banned by staff member ${interaction.user.tag}`
+                    });
+                    return interaction.reply({
+                        content: `🔨 <@${targetUserId}> has been **Banned** from the server by <@${interaction.user.id}>.`,
+                        allowedMentions: { repliedUser: false }
+                    });
+                } catch (e) {
+                    return interaction.reply({ content: `❌ Could not ban user: ${e.message}`, ephemeral: true });
+                }
+            }
+
+            if (action === 'kick') {
+                try {
+                    const targetMember = await guild.members.fetch(targetUserId).catch(() => null);
+                    if (targetMember) {
+                        await targetMember.kick(`[Security Background Check] Kicked by staff member ${interaction.user.tag}`);
+                        return interaction.reply({
+                            content: `👢 <@${targetUserId}> has been **Kicked** from the server by <@${interaction.user.id}>.`,
+                            allowedMentions: { repliedUser: false }
+                        });
+                    } else {
+                        return interaction.reply({ content: `User is no longer in the server.`, ephemeral: true });
+                    }
+                } catch (e) {
+                    return interaction.reply({ content: `❌ Could not kick user: ${e.message}`, ephemeral: true });
+                }
+            }
+
+            if (action === 'override') {
+                try {
+                    const targetMember = await guild.members.fetch(targetUserId).catch(() => null);
+                    if (targetMember) {
+                        const verifyEngine = require('../bot/engines/verify');
+                        const settings = await settingsCache.get(guild.id);
+                        const result = await verifyEngine.grantVerificationRoles(
+                            targetMember,
+                            settings,
+                            { interaction },
+                            `Staff Override by ${interaction.user.tag}`,
+                            { overrideSecurity: true }
+                        );
+                        return interaction.reply({
+                            content: `✅ **Manual Override Applied**: <@${targetUserId}> has been verified by staff member <@${interaction.user.id}>.`,
+                            allowedMentions: { repliedUser: false }
+                        });
+                    } else {
+                        return interaction.reply({ content: `User is no longer in the server.`, ephemeral: true });
+                    }
+                } catch (e) {
+                    return interaction.reply({ content: `❌ Override verification failed: ${e.message}`, ephemeral: true });
+                }
+            }
+        }
+
         // Handle AI Switch Buttons
         if (interaction.isButton() && (interaction.customId === 'switch_ai_builtin' || interaction.customId === 'use_ai_local')) {
             let settings;

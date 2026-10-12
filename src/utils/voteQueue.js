@@ -106,6 +106,16 @@ class VoteQueue {
                 console.error(`[VoteQueue] Failed to process vote connection for guild ${conn.guildId}:`, err);
             }
         }
+
+        // Schedule automated 12-hour eligibility reminder
+        try {
+            const voteReminderManager = require('./voteReminderManager');
+            const discordClient = require('../index').client;
+            const botName = discordClient?.user?.username || 'Nora';
+            await voteReminderManager.recordVote(userId, targetId, botName, serverId, isTest ? 0.005 : 12);
+        } catch (remErr) {
+            console.error('[VoteQueue] Error recording vote reminder:', remErr.message);
+        }
     }
 }
 

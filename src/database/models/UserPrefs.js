@@ -149,8 +149,31 @@ const UserPrefs = sequelize.define('UserPrefs', {
         allowNull: true,
         defaultValue: null
     },
-    // ---- Team Card Customization ----
+    // ---- Team Card Customization & Self-Management ----
+    isTeamMember: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    hasTeamCard: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    teamCardImage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    teamCardBanner: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
     teamCardDisplayName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    teamCardRole: {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: null
@@ -168,6 +191,18 @@ const UserPrefs = sequelize.define('UserPrefs', {
     teamCardLinks: {
         type: DataTypes.TEXT,
         defaultValue: '{}'
+    },
+    teamCardHideRole: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    teamCardHideJoinDate: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    teamCardHideCard: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
     customCardShape: {
         type: DataTypes.STRING,

@@ -89,6 +89,18 @@ module.exports = {
                         .setDescription('Send temporary in-chat notification when slowmode escalates')
                         .setRequired(false)
                 )
+                .addIntegerOption(opt => 
+                    opt.setName('inactive_floor')
+                        .setDescription('Lowest slowmode floor in seconds (0 = off, default: 0s)')
+                        .setMinValue(0)
+                        .setMaxValue(10)
+                        .setRequired(false)
+                )
+                .addBooleanOption(opt => 
+                    opt.setName('ai_velocity')
+                        .setDescription('Enable AI flood and pattern intelligence')
+                        .setRequired(false)
+                )
         )
         .addSubcommand(sub => 
             sub.setName('channels')
@@ -279,6 +291,8 @@ module.exports = {
             const decayTime = interaction.options.getInteger('decay_time');
             const sensitivity = interaction.options.getString('sensitivity');
             const chatNotice = interaction.options.getBoolean('chat_notice');
+            const inactiveFloor = interaction.options.getInteger('inactive_floor');
+            const aiVelocity = interaction.options.getBoolean('ai_velocity');
 
             const updates = {};
             if (smallSec !== null) updates.adaptiveSlowmodeSmallSec = smallSec;
@@ -286,6 +300,8 @@ module.exports = {
             if (surgeSec !== null) updates.adaptiveSlowmodeSurgeSec = surgeSec;
             if (decayTime !== null) updates.adaptiveSlowmodeDecaySec = decayTime;
             if (chatNotice !== null) updates.adaptiveSlowmodeNotify = chatNotice;
+            if (inactiveFloor !== null) updates.adaptiveSlowmodeInactiveSec = Math.max(0, inactiveFloor);
+            if (aiVelocity !== null) updates.adaptiveSlowmodeAiEnabled = aiVelocity;
 
             if (sensitivity === 'casual') {
                 updates.adaptiveSlowmodeSmallThreshold = 5;
@@ -305,7 +321,7 @@ module.exports = {
                 return handleError(
                     interaction,
                     'No Changes Specified',
-                    'Please specify at least one option to configure (e.g. `small_activity`, `large_activity`, `decay_time`, or `sensitivity`).'
+                    'Please specify at least one option to configure (e.g. `small_activity`, `large_activity`, `decay_time`, `sensitivity`, or `inactive_floor`).'
                 );
             }
 
@@ -316,6 +332,8 @@ module.exports = {
                 interaction,
                 'Configuration Updated ⚙️',
                 `Adaptive Slowmode parameters updated:\n\n` +
+                `• **AI Velocity Intelligence:** \`${fresh.adaptiveSlowmodeAiEnabled !== false ? 'Active' : 'Disabled'}\`\n` +
+                `• **Lowest Floor (0 = Off):** \`${fresh.adaptiveSlowmodeInactiveSec ?? 0}s\`\n` +
                 `• **Small Activity:** \`${fresh.adaptiveSlowmodeSmallSec}s\` (Threshold: ${fresh.adaptiveSlowmodeSmallThreshold} msgs/10s)\n` +
                 `• **Large Activity:** \`${fresh.adaptiveSlowmodeLargeSec}s\` (Threshold: ${fresh.adaptiveSlowmodeLargeThreshold} msgs/10s)\n` +
                 `• **Surge Activity:** \`${fresh.adaptiveSlowmodeSurgeSec}s\` (Threshold: ${fresh.adaptiveSlowmodeSurgeThreshold} msgs/10s)\n` +

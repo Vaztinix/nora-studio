@@ -1,0 +1,50 @@
+{
+  "ip": "10.0.0.245",
+  "updatedAt": "2026-10-11T20:21:13.563Z",
+  "guestAccess": {
+    "1500985896386822256": {
+      "tries": 20,
+      "allowedActions": [
+        "POWER_ON",
+        "POWER_OFF",
+        "POWER_TOGGLE"
+      ]
+    },
+    "1367049859114205234": {
+      "tries": 100,
+      "allowedActions": [
+        "POWER_ON",
+        "POWER_OFF",
+        "POWER_TOGGLE"
+      ]
+    },
+    "1519088051647680625": {
+      "tries": 10,
+      "allowedActions": [
+        "POWER_ON",
+        "POWER_OFF",
+        "POWER_TOGGLE"
+      ]
+    },
+    "930089787052916797": {
+      "tries": 10,
+      "allowedActions": [
+        "POWER_ON",
+        "POWER_OFF",
+        "POWER_TOGGLE"
+      ]
+    },
+    "1538797390985953290": {
+      "tries": 1,
+      "allowedActions": [
+        "POWER_ON",
+        "POWER_OFF",
+        "POWER_TOGGLE",
+        "VOLUME_UP",
+        "VOLUME_DOWN",
+        "MUTE",
+        "UNMUTE"
+      ]
+    }
+  }
+}

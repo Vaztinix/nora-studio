@@ -105,24 +105,31 @@ async function processUnderageMember(member, client) {
     // 1. Send Direct Message to the user before kicking
     let dmDelivered = false;
     let dmErrorReason = null;
+    const THREE_YEARS_MS = 3 * 365.25 * 24 * 60 * 60 * 1000;
+    const rejoinDate = new Date(Date.now() + THREE_YEARS_MS);
+    const rejoinUnix = Math.floor(rejoinDate.getTime() / 1000);
 
     try {
         console.log(`[Underage Sweep] [DM ATTEMPT] Dispatching advisory DM to ${user.tag} (${user.id})...`);
         const dmEmbed = new EmbedBuilder()
-            .setTitle('⚠️ Notice: Underage Account Policy Enforcement')
+            .setTitle('⚠️ Notice: Underage Account Policy Enforcement & Suspension')
             .setDescription(
                 `Hello <@${user.id}>,\n\n` +
-                `You have been removed from **${guild.name}** because you have been determined to be underage for Discord.\n\n` +
-                `You are strongly recommended to delete Discord and refrain from using the platform until you are at least **13 years of age** in accordance with Discord Terms of Service.`
+                `You have been removed and suspended from **${guild.name}** because you have been determined to be underage for Discord.\n\n` +
+                `The default suspension duration is **3 years** before you become eligible to rejoin. In accordance with Discord Terms of Service, you are strongly recommended to delete Discord and refrain from using the platform until you meet the required age.\n\n` +
+                `⚖️ **How to Appeal Your Suspension:**\n` +
+                `If you believe your suspension is a mistake or you have proof of age, you can **reply directly to this bot in DMs**! Your message, username, and user ID will be sent directly to server administrator **Vaztinix** (<@1214048435632603137>) alongside your explanation.`
             )
             .setColor(0xff4757)
             .addFields(
-                { name: 'Server', value: guild.name, inline: true },
-                { name: 'Enforcement Action', value: 'Server Kick', inline: true },
-                { name: 'Reason', value: 'Determined underage for Discord (Recommended minimum age: 13)', inline: false }
+                { name: '🏰 Server', value: guild.name, inline: true },
+                { name: '🛑 Action', value: 'Kick & 3-Year Suspension', inline: true },
+                { name: '⏳ Rejoin Eligibility', value: `<t:${rejoinUnix}:F>\n(<t:${rejoinUnix}:R>)`, inline: true },
+                { name: '📋 Reason', value: 'Determined underage for Discord (Recommended minimum age: 13)', inline: false },
+                { name: '📩 Direct Appeal', value: 'Send a DM reply to Nora with your explanation. It will be forwarded immediately to Vaztinix (`1214048435632603137`).', inline: false }
             )
             .setThumbnail(guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL())
-            .setFooter({ text: 'Discord Safety & Underage Policy Enforcement' })
+            .setFooter({ text: 'Discord Safety & Underage Policy Enforcement • Appeals via DM' })
             .setTimestamp();
 
         // Ensure DM channel is open and send
@@ -148,7 +155,7 @@ async function processUnderageMember(member, client) {
             kickErrorReason = 'Bot lacks permission or user role is higher than bot hierarchy';
             console.error(`[Underage Sweep] [KICK FAILED] Cannot kick ${user.tag} (${user.id}): ${kickErrorReason}`);
         } else {
-            await member.kick('Determined to be underage for Discord policy enforcement (Recommended to delete Discord until 13)');
+            await member.kick('Determined to be underage for Discord policy enforcement (3-year suspension default)');
             kickSuccess = true;
             console.log(`[Underage Sweep] [KICK SUCCESS] Successfully kicked ${user.tag} (${user.id}) from "${guild.name}".`);
 
@@ -165,7 +172,10 @@ async function processUnderageMember(member, client) {
                         userId: user.id,
                         userTag: user.tag,
                         kickedAt: new Date(),
+                        rejoinEligibleAt: rejoinDate,
                         status: 'suspended',
+                        policyNotified: true,
+                        policyNotifiedAt: new Date(),
                         reason: 'Determined underage for Discord (Recommended minimum age: 13)'
                     }
                 });
@@ -174,7 +184,10 @@ async function processUnderageMember(member, client) {
                     await record.update({
                         userTag: user.tag,
                         kickedAt: new Date(),
-                        status: 'suspended'
+                        rejoinEligibleAt: record.rejoinEligibleAt || rejoinDate,
+                        status: 'suspended',
+                        policyNotified: true,
+                        policyNotifiedAt: record.policyNotifiedAt || new Date()
                     });
                 }
             } catch (dbErr) {
@@ -533,6 +546,15 @@ async function syncPastUnderageKicks(client) {
             if (state.status === 'lifted') liftsCount++;
             else suspensionsCount++;
 
+            let finalStatus = state.status;
+            let guildObj = client.guilds.cache.get(TARGET_GUILD_ID);
+            if (guildObj) {
+                const currentMember = guildObj.members.cache.get(userId);
+                if (currentMember && !currentMember.roles.cache.has(UNDERAGE_ROLE_ID)) {
+                    finalStatus = 'lifted';
+                }
+            }
+
             const [rec, created] = await UnderageSuspension.findOrCreate({
                 where: {
                     guildId: TARGET_GUILD_ID,
@@ -543,8 +565,8 @@ async function syncPastUnderageKicks(client) {
                     userId: userId,
                     userTag: state.userTag || `User_${userId}`,
                     kickedAt: state.kickedAt || state.firstSuspendedAt || new Date(),
-                    status: state.status,
-                    liftedAt: state.liftedAt,
+                    status: finalStatus,
+                    liftedAt: finalStatus === 'lifted' ? (state.liftedAt || new Date()) : null,
                     liftedBy: state.liftedBy,
                     staffNote: state.staffNote,
                     reason: state.reason || 'Determined underage for Discord (Recommended minimum age: 13)',
@@ -558,9 +580,9 @@ async function syncPastUnderageKicks(client) {
             } else {
                 await rec.update({
                     userTag: state.userTag || rec.userTag,
-                    status: state.status,
+                    status: finalStatus,
                     kickedAt: state.kickedAt || rec.kickedAt,
-                    liftedAt: state.liftedAt || rec.liftedAt,
+                    liftedAt: finalStatus === 'lifted' ? (state.liftedAt || rec.liftedAt || new Date()) : null,
                     liftedBy: state.liftedBy || rec.liftedBy,
                     staffNote: state.staffNote || rec.staffNote,
                     reason: state.reason || rec.reason,
@@ -587,13 +609,102 @@ async function syncPastUnderageKicks(client) {
 }
 
 /**
+ * Notify all existing suspended members about the 3-year suspension timeline and direct DM appeals.
+ * Safely ignores closed DMs.
+ * @param {import('discord.js').Client} client
+ */
+async function notifyExistingSuspendedUsers(client) {
+    if (!client || !client.isReady()) return;
+    const UnderageSuspension = require('../database/models/UnderageSuspension');
+    const { Op } = require('sequelize');
+    const THREE_YEARS_MS = 3 * 365.25 * 24 * 60 * 60 * 1000;
+
+    try {
+        // Only select suspended users who have NOT received the policy update notice yet
+        const suspendedUsers = await UnderageSuspension.findAll({
+            where: {
+                status: 'suspended',
+                [Op.or]: [
+                    { policyNotified: false },
+                    { policyNotified: null }
+                ]
+            }
+        });
+
+        if (suspendedUsers.length === 0) {
+            console.log('[Underage Appeals] All active suspension records have already been notified. Skipping broadcast.');
+            return;
+        }
+
+        console.log(`[Underage Appeals] Scanning ${suspendedUsers.length} unnotified suspension record(s) for 3-year wait and DM appeal notification...`);
+
+        for (const record of suspendedUsers) {
+            let needsDbUpdate = false;
+            let rejoinDate = record.rejoinEligibleAt;
+
+            if (!rejoinDate) {
+                const baseTime = record.kickedAt ? new Date(record.kickedAt).getTime() : Date.now();
+                rejoinDate = new Date(baseTime + THREE_YEARS_MS);
+                record.rejoinEligibleAt = rejoinDate;
+                needsDbUpdate = true;
+            }
+
+            // Mark as notified in DB immediately so this user is NEVER messaged again on restarts
+            record.policyNotified = true;
+            record.policyNotifiedAt = new Date();
+            needsDbUpdate = true;
+
+            if (needsDbUpdate) {
+                await record.save().catch(() => {});
+            }
+
+            // Attempt DM notification (safe if closed/blocked)
+            try {
+                const discordUser = await client.users.fetch(record.userId).catch(() => null);
+                if (discordUser) {
+                    const rejoinUnix = Math.floor(new Date(rejoinDate).getTime() / 1000);
+                    const updateEmbed = new EmbedBuilder()
+                        .setTitle('⚠️ Policy Update: Underage Suspension & Direct DM Appeals')
+                        .setDescription(
+                            `Hello <@${record.userId}>,\n\n` +
+                            `This is an updated policy notice regarding your underage suspension from **Milo's World**.\n\n` +
+                            `The standard required wait time for underage suspensions is set to **3 years** (Rejoin eligible: <t:${rejoinUnix}:F>).\n\n` +
+                            `⚖️ **Direct DM Appeal Option:**\n` +
+                            `If you believe your suspension was made in error or you have legitimate proof of age, you can now **reply directly to this DM** with your explanation! Your message, username, and user ID will be sent directly to server administrator **Vaztinix** (<@1214048435632603137>) for review.`
+                        )
+                        .setColor(0xff4757)
+                        .addFields(
+                            { name: '🛑 Suspension Status', value: 'Active (3 Years Default)', inline: true },
+                            { name: '⏳ Rejoin Date', value: `<t:${rejoinUnix}:R>`, inline: true },
+                            { name: '📩 How to Appeal', value: 'Send a DM reply to Nora explaining why your suspension was a mistake.', inline: false }
+                        )
+                        .setFooter({ text: 'Nora Underage Safety • Direct DM Appeal Routing' })
+                        .setTimestamp();
+
+                    await discordUser.send({ embeds: [updateEmbed] });
+                    console.log(`[Underage Appeals] Successfully delivered policy update DM to user ${record.userTag} (${record.userId}).`);
+                }
+            } catch (dmErr) {
+                // Expected if user closed DMs or left mutual servers
+                console.log(`[Underage Appeals] DM uncontactable for ${record.userId} (${dmErr.message || 'DMs closed'}). Safe fallback.`);
+            }
+
+            // Brief delay to prevent hitting Discord API rate limits
+            await new Promise(r => setTimeout(r, 600));
+        }
+    } catch (err) {
+        console.error('[Underage Appeals] Error in notifyExistingSuspendedUsers:', err.message);
+    }
+}
+
+/**
  * Initialize the hourly underage sweep scheduler.
  * @param {import('discord.js').Client} client
  */
 function startUnderageSweepScheduler(client) {
     console.log(`[Underage Sweep] Initializing Underage Sweep Scheduler (Interval: 1 hour / ${SWEEP_INTERVAL_MS}ms, Target Role: ${UNDERAGE_ROLE_ID}, Log Channel: ${LOG_CHANNEL_ID})...`);
 
-    // Initial audit log sync and sweep after 5 seconds
+    // Initial audit log sync and sweep after 5 seconds (Notice broadcasts removed)
     setTimeout(() => {
         syncPastUnderageKicks(client).catch(() => {});
         runUnderageSweep(client).catch(err => {
@@ -617,5 +728,6 @@ module.exports = {
     processUnderageMember,
     runUnderageSweep,
     syncPastUnderageKicks,
+    notifyExistingSuspendedUsers,
     startUnderageSweepScheduler
 };

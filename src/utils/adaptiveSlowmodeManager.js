@@ -65,17 +65,7 @@ class AdaptiveSlowmodeManager {
             return; // Channel is not in the monitored list
         }
 
-        // Check ignored roles
-        let ignoredRoles = [];
-        if (settings.adaptiveSlowmodeIgnoredRoles) {
-            try {
-                ignoredRoles = JSON.parse(settings.adaptiveSlowmodeIgnoredRoles);
-            } catch (_) {}
-        }
-        if (message.member && Array.isArray(ignoredRoles) && ignoredRoles.some(rId => message.member.roles.cache.has(rId))) {
-            return; // Message from bypassed role
-        }
-
+        // Add message to sliding window (All messages count toward channel velocity even if staff are active)
         const now = Date.now();
         let buffer = this.channelBuffers.get(channelId);
         if (!buffer) {
@@ -85,36 +75,65 @@ class AdaptiveSlowmodeManager {
                 currentSlowmode: message.channel.rateLimitPerUser || 0,
                 lastApiUpdate: 0,
                 lastDecayTime: now,
-                currentTier: 'INACTIVE'
+                currentTier: 'INACTIVE',
+                aiScore: 0
             };
             this.channelBuffers.set(channelId, buffer);
         }
 
-        // Add message and prune messages older than 12 seconds
-        buffer.messages.push({ timestamp: now, authorId: message.author.id, length: message.content.length });
+        // Add message content metadata and prune messages older than 10 seconds
+        buffer.messages.push({
+            timestamp: now,
+            authorId: message.author.id,
+            length: message.content?.length || 0,
+            content: (message.content || '').slice(0, 100).toLowerCase()
+        });
         buffer.messages = buffer.messages.filter(m => now - m.timestamp <= 10000);
 
         // Calculate velocity and metrics in the 10-second sliding window
         const msgCount = buffer.messages.length;
         const uniqueAuthors = new Set(buffer.messages.map(m => m.authorId)).size;
 
-        // Custom thresholds and tiers
-        const inactiveSec = settings.adaptiveSlowmodeInactiveSec ?? 0;
-        const smallSec = settings.adaptiveSlowmodeSmallSec ?? 3;
-        const largeSec = settings.adaptiveSlowmodeLargeSec ?? 6;
-        const surgeSec = settings.adaptiveSlowmodeSurgeSec ?? 10;
+        // Custom thresholds and tiers (lowest allowed is 0 = Off)
+        const inactiveSec = Math.max(0, settings.adaptiveSlowmodeInactiveSec ?? 0);
+        const smallSec = Math.max(0, settings.adaptiveSlowmodeSmallSec ?? 3);
+        const largeSec = Math.max(0, settings.adaptiveSlowmodeLargeSec ?? 6);
+        const surgeSec = Math.max(0, settings.adaptiveSlowmodeSurgeSec ?? 10);
 
         const smallThresh = settings.adaptiveSlowmodeSmallThreshold ?? 3;
         const largeThresh = settings.adaptiveSlowmodeLargeThreshold ?? 7;
         const surgeThresh = settings.adaptiveSlowmodeSurgeThreshold ?? 13;
 
+        // 🧠 AI Velocity & Threat Analysis: Assess flood patterns, repetition, and swarm speed
+        let aiBoostTier = null;
+        let aiReason = '';
+        if (settings.adaptiveSlowmodeAiEnabled !== false && msgCount >= 3) {
+            // Repetition check: count duplicate messages in window
+            const contentCounts = {};
+            for (const m of buffer.messages) {
+                if (m.content) contentCounts[m.content] = (contentCounts[m.content] || 0) + 1;
+            }
+            const maxRepeated = Math.max(...Object.values(contentCounts), 0);
+            const isCopyPasteFlood = maxRepeated >= 3;
+            const isSwarmFlood = msgCount >= 6 && uniqueAuthors >= 4;
+            const isSingleUserSpam = msgCount >= 5 && uniqueAuthors === 1;
+
+            if (isCopyPasteFlood || (msgCount >= surgeThresh - 3 && isSwarmFlood)) {
+                aiBoostTier = 'SURGE';
+                aiReason = isCopyPasteFlood ? 'AI Detected Repetitive Flood Attack' : 'AI Detected High-Velocity Swarm Burst';
+            } else if (isSingleUserSpam || msgCount >= largeThresh - 2) {
+                aiBoostTier = 'LARGE';
+                aiReason = isSingleUserSpam ? 'AI Detected Rapid Single-User Flood' : 'AI Detected Velocity Spike';
+            }
+        }
+
         let targetSec = inactiveSec;
         let targetTier = 'INACTIVE';
 
-        if (msgCount >= surgeThresh || (msgCount >= surgeThresh - 2 && uniqueAuthors >= 4)) {
+        if (aiBoostTier === 'SURGE' || msgCount >= surgeThresh || (msgCount >= surgeThresh - 2 && uniqueAuthors >= 4)) {
             targetSec = surgeSec;
             targetTier = 'SURGE';
-        } else if (msgCount >= largeThresh || (msgCount >= largeThresh - 2 && uniqueAuthors >= 3)) {
+        } else if (aiBoostTier === 'LARGE' || msgCount >= largeThresh || (msgCount >= largeThresh - 2 && uniqueAuthors >= 3)) {
             targetSec = largeSec;
             targetTier = 'LARGE';
         } else if (msgCount >= smallThresh) {
@@ -128,11 +147,10 @@ class AdaptiveSlowmodeManager {
         // ESCALATION: If target is higher than current slowmode, escalate immediately with rate limit guard
         if (targetSec > currentRateLimit) {
             const timeSinceLastUpdate = now - buffer.lastApiUpdate;
-            // Cooldown between upward API updates (minimum 8s unless jumping to surge)
             const minCooldown = (targetTier === 'SURGE') ? 4000 : 8000;
 
             if (timeSinceLastUpdate >= minCooldown) {
-                await this.applySlowmode(message.channel, targetSec, targetTier, msgCount, uniqueAuthors, settings);
+                await this.applySlowmode(message.channel, targetSec, targetTier, msgCount, uniqueAuthors, settings, false, aiReason);
                 buffer.currentSlowmode = targetSec;
                 buffer.currentTier = targetTier;
                 buffer.lastApiUpdate = now;
@@ -215,13 +233,15 @@ class AdaptiveSlowmodeManager {
     /**
      * Apply slowmode adjustment to Discord channel and log/notify if configured
      */
-    async applySlowmode(channel, seconds, tier, msgCount, uniqueAuthors, settings, isDecay = false) {
+    async applySlowmode(channel, seconds, tier, msgCount, uniqueAuthors, settings, isDecay = false, aiReason = '') {
         try {
+            const finalSeconds = Math.max(0, seconds);
+            const reasonPrefix = aiReason ? `[${aiReason}] ` : '';
             const reason = isDecay 
-                ? `Adaptive Slowmode: Chat cooled down -> ${seconds}s (${tier})`
-                : `Adaptive Slowmode: Activity surge (${msgCount} msgs/10s by ${uniqueAuthors} users) -> ${seconds}s (${tier})`;
+                ? `Adaptive Slowmode: Chat cooled down -> ${finalSeconds}s (${tier})`
+                : `${reasonPrefix}Adaptive Slowmode: Velocity surge (${msgCount} msgs/10s by ${uniqueAuthors} users) -> ${finalSeconds}s (${tier})`;
 
-            await channel.setRateLimitPerUser(seconds, reason);
+            await channel.setRateLimitPerUser(finalSeconds, reason);
 
             // Optional in-channel subtle notification
             if (settings?.adaptiveSlowmodeNotify && !isDecay && seconds > 0) {
