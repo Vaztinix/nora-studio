@@ -199,6 +199,16 @@ async function detectIntent(message, plainContent) {
         };
     }
 
+    // 9c. Utility: Vaztinix's Local Time in Moscow (MSK) & Russian Creator Profile
+    if (lower.match(/\b(?:what(?:'s|\s+is)\s+(?:the\s+)?time\s+(?:for\s+(?:vaz|vaztinix|your\s+creator|your\s+dev(?:eloper)?)|in\s+moscow|in\s+russia))\b/i) ||
+        lower.match(/\b(?:what\s+time\s+is\s+it\s+(?:for\s+(?:vaz|vaztinix|your\s+creator|your\s+dev(?:eloper)?)|in\s+moscow|in\s+russia))\b/i) ||
+        lower.match(/\b(?:vaz(?:tinix)?(?:'s)?\s+time|time\s+for\s+vaz|is\s+vaz\s+(?:awake|asleep))\b/i)) {
+        return {
+            type: 'UTILITY',
+            action: 'VAZTINIX_TIME'
+        };
+    }
+
     // 10. Hardware: Roku Smart TV Control (Strict Developer Control: 1214048435632603137)
     const rokuIntent = rokuController ? rokuController.parseRokuIntent(raw, message) : null;
     if (rokuIntent) {
@@ -787,6 +797,61 @@ async function executeUtility(message, client, intent) {
     if (intent.action === 'AI_QUOTA') {
         const geminiKeyManager = require('./geminiKeyManager');
         const embed = geminiKeyManager.getQuotaStatusEmbed();
+        return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
+    }
+
+    if (intent.action === 'VAZTINIX_TIME') {
+        const now = new Date();
+        const mskDateStr = now.toLocaleDateString('en-US', {
+            timeZone: 'Europe/Moscow',
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        const msk12Str = now.toLocaleTimeString('en-US', {
+            timeZone: 'Europe/Moscow',
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+        const msk24Str = now.toLocaleTimeString('en-GB', {
+            timeZone: 'Europe/Moscow',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        const hour = parseInt(now.toLocaleTimeString('en-GB', { timeZone: 'Europe/Moscow', hour: '2-digit', hour12: false }), 10);
+        let status = '☀️ Active / Coding';
+        if (hour >= 1 && hour < 8) {
+            status = '🌙 Likely asleep / Resting';
+        } else if (hour >= 8 && hour < 12) {
+            status = '🌅 Morning / Waking up';
+        } else if (hour >= 12 && hour < 19) {
+            status = '💻 Daytime / Studying English & Coding';
+        } else {
+            status = '✨ Evening / Relaxing or Working';
+        }
+
+        const embed = new EmbedBuilder()
+            .setTitle('🇷🇺 Vaztinix\'s Time in Moscow (MSK)')
+            .setColor(0x5865F2)
+            .setDescription(
+                `Here is the live local time for my creator, **Vaztinix** (<@${BOT_DEVELOPER_ID}>), in Moscow, Russia! 🇷🇺\n` +
+                `*Vaztinix is a Russian developer who studies lots of English :3*\n\n` +
+                `🕒 **Moscow Time (12-hour):** \`${msk12Str}\`\n` +
+                `⏱️ **24-Hour Format:** \`${msk24Str}\`\n` +
+                `📅 **Date:** \`${mskDateStr}\`\n` +
+                `🌐 **Timezone:** \`MSK (Moscow Standard Time, UTC+3, No DST)\`\n` +
+                `💤 **Status:** \`${status}\`\n\n` +
+                `💡 *Tip: You can also use \`/time vaz\` or \`/time convert <time> <zone>\` to convert your local time directly to Moscow time!*`
+            )
+            .setFooter({ text: 'Moscow Standard Time • UTC+3' })
+            .setTimestamp();
+
         return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
     }
 }

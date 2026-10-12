@@ -151,6 +151,28 @@ class NoraV12Engine {
         if (lower.match(/(who are you|what are you|your purpose|are you a bot|your identity)/)) {
             return `I'm **Nora** (she/her), a multi-purpose Discord assistant created by **Vaztinix** (<@1214048435632603137>). I'm here to handle moderation, leveling, AI chats, and keep the server vibe immaculate!`;
         }
+        // 7b. Creator Timezone, Location & Language
+        if (lower.match(/\b(what\s+time\s+is\s+it\s+(?:for|with)\s+(?:vaz|vaztinix|your\s+(?:creator|dev|developer|owner))|what('s|\s+is)\s+the\s+time\s+(?:for|with)\s+(?:vaz|vaztinix|your\s+(?:creator|dev|developer|owner))|what\s+time\s+(?:is\s+it\s+)?in\s+moscow|vaztinix('s)?\s+(?:time|timezone|clock)|vaz('s)?\s+(?:time|timezone|clock)|is\s+vaz\s+(?:asleep|awake|sleeping)|is\s+vaztinix\s+(?:asleep|awake|sleeping))\b/i)) {
+            const mskFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Europe/Moscow',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+            const mskDateFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Europe/Moscow',
+                weekday: 'long',
+                month: 'short',
+                day: 'numeric'
+            });
+            const now = new Date();
+            const timeStr = mskFormatter.format(now);
+            const dateStr = mskDateFormatter.format(now);
+            return `For **Vaztinix** in **Moscow, Russia (MSK / UTC+3)**, it is currently **${timeStr}** (${dateStr})! 🇷🇺\n\nVaz is a Russian developer who studies lots of English :3`;
+        }
+        if (lower.match(/\b(where\s+(?:is|does)\s+(?:vaz|vaztinix|your\s+(?:creator|dev|developer|owner))\s+(?:live|from|located)|what\s+country\s+is\s+vaz|what\s+nationality\s+is\s+vaz|is\s+vaz\s+russian|is\s+vaztinix\s+russian)\b/i)) {
+            return `**Vaztinix** (<@1214048435632603137>) is from **Moscow, Russia**! Vaz is Russian, studies lots of English :3, and created me to help manage and bring life to Discord communities worldwide! 🇷🇺✨`;
+        }
         if (lower.match(/(how are you\b|how are you doing|whats up\b)/)) {
             return "I'm running at peak performance! What can I help you out with today?";
         }
