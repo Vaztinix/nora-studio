@@ -354,6 +354,8 @@ const getDiscordUser = async (token) => {
         throw lastError || new Error('Failed to fetch Discord user');
     })();
 
+    // Prevent uncaught rejection warnings if token is invalid/expired (e.g. 401)
+    fetchPromise.catch(() => {});
     activeUserRequests.set(resolvedToken, fetchPromise);
     return fetchPromise;
 };

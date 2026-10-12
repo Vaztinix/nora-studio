@@ -62,7 +62,9 @@ class ConversationHub {
             return true;
         });
 
-        return safeMessages.map(t => `[${t.speaker}]: ${t.text}`).join('\n');
+        // Limit to recent 12 turns so working memory stays fresh and prevents crosstalk confusion
+        const recentMessages = safeMessages.slice(-12);
+        return recentMessages.map(t => `[${t.speaker}]: ${t.text}`).join('\n');
     }
 
     /**

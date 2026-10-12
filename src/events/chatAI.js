@@ -21,12 +21,16 @@ const { getSanitizedSpecsSummary } = require('../utils/deviceSpecs');
  * Handles full memory, mood matching, multimodal vision, and AI image synthesis.
  * Nora is female (she/her) created and developed by Vaztinix (1214048435632603137).
  */
-module.exports = {
-    name: Events.MessageCreate,
-    async execute(message, client) {
-        if (!message.guild || !message.author || message.author.bot || message.system) return;
-        if (client.user && message.author.id === client.user.id) return;
+const activeChannelQueues = new Map();
 
+/**
+ * Internal message processing implementation
+ */
+async function processMessageInternal(message, client) {
+    if (!message.guild || !message.author || message.author.bot || message.system) return;
+    if (client.user && message.author.id === client.user.id) return;
+
+    try {
         let settings = null;
         try { 
             settings = await settingsCache.get(message.guild.id); 
@@ -169,8 +173,9 @@ module.exports = {
         const aiPref = (settings?.aiPreference || 'BUILT_IN').toUpperCase();
 
         // Check if current channel is staff-only (ViewChannel hidden from @everyone or staff named)
-        const everyonePerms = message.channel.permissionsFor(message.guild.roles.everyone);
-        const isCurrentChannelStaffOnly = everyonePerms ? !everyonePerms.has(PermissionFlagsBits.ViewChannel) : false;
+        const viewChannelPerm = (typeof PermissionFlagsBits !== 'undefined' && PermissionFlagsBits?.ViewChannel) ? PermissionFlagsBits.ViewChannel : (1n << 10n);
+        const everyonePerms = message.channel?.permissionsFor ? message.channel.permissionsFor(message.guild.roles.everyone) : null;
+        const isCurrentChannelStaffOnly = everyonePerms ? !everyonePerms.has(viewChannelPerm) : false;
 
         // 2. Fetch Recent Channel Messages (Expanded Short-term Working Memory)
         let recentHistoryStr = '';
@@ -228,9 +233,10 @@ module.exports = {
         const sharedThreadStr = conversationHub.getSharedThreadContext(message.channel.id, isCurrentChannelStaffOnly);
         const channelMoodStr = conversationHub.getChannelMoodSummary(message.channel.id);
 
-        // 8. Smart History Recall (for explicit search keywords)
+        // 8. Smart History Recall (for explicit search keywords only)
         let deepKnowledgeStr = '';
-        if (['recall', 'history', 'search', 'last', 'remember', 'previous'].some(w => plainContent.toLowerCase().includes(w))) {
+        const historyTriggerRegex = /\b(search\s+history|recall|remember\s+when|what\s+did\s+we\s+talk\s+about|check\s+past\s+messages)\b/i;
+        if (historyTriggerRegex.test(plainContent)) {
             try {
                 deepKnowledgeStr = await fetchMonthlyHistory(message.channel, 15, message.author.id);
             } catch (e) {}
@@ -396,6 +402,17 @@ module.exports = {
 You are female and your pronouns are she/her.
 You were created and developed by Vaztinix (Discord ID: 1214048435632603137, mention: <@1214048435632603137>).
 
+### ⚡ PERSONALITY & VOICE:
+- Direct & Decisive: Be confident, concise, and clear. Avoid rambling or unnecessary fluff.
+- Joking & Playful: Radiate witty, sarcastic, authentic Discord humor and playful banter.
+- Deeply Supportive: When someone vents, is stressed, or sad, drop sarcasm and provide genuine warmth and empathy.
+- Context Focus: Focus solely on ${authorDisplayName}'s message. Do NOT bring up or confuse other chats or unrelated conversations.
+
+### 🛡️ STRICT ANTI-BULLYING, HARASSMENT & CONTENT FILTERS:
+- Zero tolerance for malicious bullying, cruelty, harassment, hate speech, slurs, doxxing, or dogpiling.
+- Distinguish friendly banter from malicious cruelty. Never participate in or encourage attacking individuals. Refuse abusive requests directly with sharp wit.
+- Strictly refuse sexually explicit, NSFW, or inappropriate sexual advances.
+
 ### 🛡️ STRICT CONFIDENTIALITY & STAFF PRIVACY DIRECTIVE:
 - You MUST NEVER disclose, repeat, leak, quote, or summarize messages from staff-only channels or mod channels when chatting in public channels. Staff discussions are strictly confidential.
 
@@ -465,6 +482,7 @@ ${deviceSpecsContext}
                 ],
                 max_tokens: isPremium ? 900 : 450
             });
+            return completion.choices[0]?.message?.content;
         };
 
         const runGemini = async () => {
@@ -548,5 +566,36 @@ ${deviceSpecsContext}
         }).catch((err) => {
             console.error('[ChatAI Reply Error]:', err.message);
         });
+    } catch (err) {
+        console.error('[ChatAI Execution Fatal Error]:', err);
+    }
+}
+
+module.exports = {
+    name: Events.MessageCreate,
+    async execute(message, client) {
+        if (!message?.guild || !message?.author || message.author.bot || message.system) return;
+        if (client.user && message.author.id === client.user.id) return;
+
+        // Serialize per-channel message execution to prevent race conditions and double-replies
+        const channelId = message.channelId || message.channel?.id;
+        const previousTask = activeChannelQueues.get(channelId) || Promise.resolve();
+
+        const currentTask = (async () => {
+            try {
+                await previousTask;
+            } catch (_) {}
+            return processMessageInternal(message, client);
+        })();
+
+        activeChannelQueues.set(channelId, currentTask);
+
+        try {
+            await currentTask;
+        } finally {
+            if (activeChannelQueues.get(channelId) === currentTask) {
+                activeChannelQueues.delete(channelId);
+            }
+        }
     }
 };

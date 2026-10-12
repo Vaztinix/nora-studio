@@ -169,6 +169,19 @@
             width: 100% !important;
             display: block !important;
         }
+        body.in-config .app-layout {
+            padding: 30px 40px 100px 40px !important;
+            max-width: 1850px !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+            display: block !important;
+            box-sizing: border-box !important;
+        }
+        body.in-config #view-config {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
 
         /* Show breadcrumbs only in config view */
         body:not(.in-config) #cfg-breadcrumbs {
@@ -2845,7 +2858,7 @@
             .config-main {
                 flex: 1 !important;
                 min-width: 0 !important;
-                width: calc(100% - 288px) !important;
+                width: auto !important;
                 max-width: 100% !important;
                 box-sizing: border-box !important;
             }
@@ -3793,12 +3806,30 @@
             window.computeFormDiffs = function() {
                 const diffs = [];
                 const oldState = window.previousSettings || {};
+                if (!window.previousSettings || Object.keys(window.previousSettings).length === 0) {
+                    return diffs;
+                }
                 const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode'];
 
                 KEYS_ARRAY.forEach(k => {
                     const el = document.getElementById('setting-' + k);
                     if (!el) return;
-                    let val = el.type === 'checkbox' ? el.checked : el.value;
+
+                    let oldVal = oldState[k];
+
+                    if (el.type === 'checkbox') {
+                        const newBool = Boolean(el.checked);
+                        const oldBool = Boolean(oldVal === true || oldVal === 1 || oldVal === '1' || oldVal === 'true');
+                        if (newBool !== oldBool) {
+                            const label = formatSettingKeyLabel(k, el);
+                            const oldStr = oldBool ? 'Enabled' : 'Disabled';
+                            const newStr = newBool ? 'Enabled' : 'Disabled';
+                            diffs.push({ fieldId: 'setting-' + k, key: k, label, oldStr, newStr });
+                        }
+                        return;
+                    }
+
+                    let val = el.value;
                     if (el.type === 'number') {
                         if (val !== "") {
                             val = parseInt(val, 10);
@@ -3807,7 +3838,16 @@
                         } else {
                             val = null;
                         }
+                        const numOld = (oldVal !== null && oldVal !== undefined && oldVal !== "") ? parseInt(oldVal, 10) : null;
+                        if (numOld !== val) {
+                            const label = formatSettingKeyLabel(k, el);
+                            const oldStr = formatSettingValDisplay(k, oldVal);
+                            const newStr = formatSettingValDisplay(k, val);
+                            diffs.push({ fieldId: 'setting-' + k, key: k, label, oldStr, newStr });
+                        }
+                        return;
                     }
+
                     if (k === 'customBlockedContexts' || k === 'countingBlacklistedUsers' || k === 'starboardIgnoredChannels' || k === 'levelingIgnoredChannels' || k === 'levelingIgnoredRoles') {
                         if (typeof val === 'string' && !val.trim().startsWith('[')) {
                             const arr = val.split(',').map(s => s.trim()).filter(Boolean);
@@ -3815,11 +3855,10 @@
                         }
                     }
 
-                    let oldVal = oldState[k];
                     if (oldVal === null || oldVal === undefined) oldVal = "";
                     if (val === null || val === undefined) val = "";
 
-                    if (String(oldVal) !== String(val)) {
+                    if (String(oldVal).trim() !== String(val).trim()) {
                         const label = formatSettingKeyLabel(k, el);
                         const oldStr = formatSettingValDisplay(k, oldVal);
                         const newStr = formatSettingValDisplay(k, val);
@@ -3997,8 +4036,8 @@
             .config-main {
                 flex: 1 !important;
                 min-width: 0 !important;
-                width: calc(100% - 288px) !important;
-                max-width: calc(100% - 288px) !important;
+                width: auto !important;
+                max-width: 100% !important;
                 box-sizing: border-box !important;
                 margin-top: 0 !important;
                 padding-top: 0 !important;
@@ -15681,9 +15720,16 @@
                     }
                     let oldVal = oldState[k];
                     let newVal = payload[k];
+                    if (typeof newVal === 'boolean') {
+                        const oldBool = Boolean(oldVal === true || oldVal === 1 || oldVal === '1' || oldVal === 'true');
+                        if (newVal !== oldBool) {
+                            diffLines.push(`${k}: "${oldBool ? 'Enabled' : 'Disabled'}" -> "${newVal ? 'Enabled' : 'Disabled'}"`);
+                        }
+                        return;
+                    }
                     if (oldVal === null || oldVal === undefined) oldVal = "";
                     if (newVal === null || newVal === undefined) newVal = "";
-                    if (String(oldVal) !== String(newVal)) {
+                    if (String(oldVal).trim() !== String(newVal).trim()) {
                         diffLines.push(`${k}: "${oldState[k] !== undefined && oldState[k] !== null ? oldState[k] : 'None'}" -> "${payload[k] !== undefined && payload[k] !== null ? payload[k] : 'None'}"`);
                     }
                 });
@@ -23909,6 +23955,9 @@
                 undoStack = [getFormState()];
                 redoStack = [];
                 updateUndoRedoButtons();
+                if (typeof window.markFormClean === 'function') {
+                    window.markFormClean();
+                }
             }
         }
 
