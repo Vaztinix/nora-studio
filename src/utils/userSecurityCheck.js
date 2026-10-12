@@ -115,6 +115,51 @@ async function performSecurityBackgroundCheck(member, settings, context = {}, me
         return { isFlagged: false };
     }
 
+    // 🛡️ Master Configuration Gate: Check if automated security screening is enabled
+    if (settings?.verificationSecurityCheck === false) {
+        return { isFlagged: false };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🌐 0. Live Online Threat Intelligence & Discord API Trust & Safety Flags
+    // ─────────────────────────────────────────────────────────────────────────
+    if (settings?.verifyCheckOnlineThreats !== false) {
+        try {
+            // Live force-fetch from Discord API to inspect public trust & safety flags
+            const freshUser = await client.users.fetch(user.id, { force: true }).catch(() => user);
+            
+            // Check Discord Official Spammer Flag (UserFlags.Spammer = 1 << 20 / 1048576)
+            const hasSpammerFlag = freshUser.flags?.has('Spammer') || 
+                                   (typeof freshUser.flags?.bitfield === 'bigint' && (freshUser.flags.bitfield & (1n << 20n)) !== 0n) ||
+                                   (typeof freshUser.flags?.bitfield === 'number' && (freshUser.flags.bitfield & 1048576) !== 0);
+
+            if (hasSpammerFlag) {
+                reasons.push('Discord Official Spammer Flag (Trust & Safety)');
+                evidence.push('🚩 **Discord Official Spammer Flag**: This account is flagged directly by Discord Trust & Safety as an active spammer or compromised bot token.');
+            }
+
+            // Real-Time Online Phishing / Scam Domain & Lure Screening
+            const testTarget = `${user.username} ${user.displayName || ''} ${user.globalName || ''}`.toLowerCase();
+            const PHISHING_LURE_REGEX = /\b(free-?nitro|nitro-?drop|gift-?nitro|discord-?gift|claim-?nitro|steamcommuni[tl]y|dlscord|discrod|tradeoffer-quick|crypto-?drop|airdrop-?claim)\b/i;
+            if (PHISHING_LURE_REGEX.test(testTarget)) {
+                reasons.push('Known Phishing / Scam Profile Pattern');
+                evidence.push('🚩 **Phishing / Scam Profile Pattern**: User profile name or handle contains high-risk scam/phishing lure keywords.');
+            }
+
+            // Fresh Disposable Raider Heuristic (< 24h old + no avatar + pattern name)
+            const accountAgeMs = Date.now() - user.createdTimestamp;
+            if (accountAgeMs < 86400000 && !user.avatar) {
+                const raidNamePattern = /^[a-z]{2,3}[0-9]{4,7}$/i;
+                if (raidNamePattern.test(user.username)) {
+                    reasons.push('High-Risk Disposable Raider Account');
+                    evidence.push('🚩 **Disposable Raid Pattern**: Brand new account created less than 24 hours ago with no profile picture and randomized alphanumeric naming.');
+                }
+            }
+        } catch (onlineErr) {
+            console.warn('[SecurityCheck] Error performing online threat check:', onlineErr.message);
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // 🔍 1. Check for Membership in Known/Reported Raid & Misconduct Servers
     // ─────────────────────────────────────────────────────────────────────────
@@ -142,50 +187,47 @@ async function performSecurityBackgroundCheck(member, settings, context = {}, me
     // ─────────────────────────────────────────────────────────────────────────
     // 🔍 2. 100% Proof Ban Evasion & Alt Account Detection (In Current Guild)
     // ─────────────────────────────────────────────────────────────────────────
-    try {
-        if (guild.members.me?.permissions.has(PermissionFlagsBits.BanMembers)) {
-            const bans = await guild.bans.fetch().catch(() => null);
-            if (bans && bans.size > 0) {
-                const userTagLower = user.tag.toLowerCase();
-                const usernameLower = user.username.toLowerCase();
-                const userCreated = user.createdTimestamp;
+    if (settings?.verifyCheckBanEvasion !== false) {
+        try {
+            if (guild.members.me?.permissions.has(PermissionFlagsBits.BanMembers)) {
+                const bans = await guild.bans.fetch().catch(() => null);
+                if (bans && bans.size > 0) {
+                    const userTagLower = user.tag.toLowerCase();
+                    const usernameLower = user.username.toLowerCase();
 
-                for (const [, ban] of bans) {
-                    const bannedUser = ban.user;
-                    if (!bannedUser) continue;
+                    for (const [, ban] of bans) {
+                        const bannedUser = ban.user;
+                        if (!bannedUser) continue;
 
-                    const bannedTagLower = (bannedUser.tag || '').toLowerCase();
-                    const bannedUsernameLower = (bannedUser.username || '').toLowerCase();
+                        const bannedTagLower = (bannedUser.tag || '').toLowerCase();
+                        const bannedUsernameLower = (bannedUser.username || '').toLowerCase();
 
-                    // 100% Proof Match A: Identical username or handle
-                    const isExactUsernameMatch = (usernameLower === bannedUsernameLower && usernameLower.length > 2);
+                        // 100% Proof Match A: Identical username or handle
+                        const isExactUsernameMatch = (usernameLower === bannedUsernameLower && usernameLower.length > 2);
 
-                    // 100% Proof Match B: Identical custom avatar hash + similar handle
-                    const isAvatarHashMatch = Boolean(
-                        user.avatar && 
-                        bannedUser.avatar && 
-                        user.avatar === bannedUser.avatar &&
-                        (usernameLower.includes(bannedUsernameLower) || bannedUsernameLower.includes(usernameLower))
-                    );
-
-                    // 100% Proof Match C: Fresh alt created right after ban
-                    const banReasonLower = (ban.reason || '').toLowerCase();
-                    const isRaidOrSevereBan = /\b(raid|nuke|spam|scam|alt|evasion|dox|harass|malicious)\b/i.test(banReasonLower);
-                    
-                    if (isExactUsernameMatch || isAvatarHashMatch) {
-                        reasons.push('Ban Evasion Alt Account Match');
-                        evidence.push(
-                            `🚩 **100% Proof Ban Evasion Match**: User identity matches banned account **${bannedUser.tag}** (ID: \`${bannedUser.id}\`).\n` +
-                            `• **Original Ban Reason:** "${ban.reason || 'No reason provided'}"\n` +
-                            `• **Matching Indicators:** ${isAvatarHashMatch ? 'Exact Avatar Hash + Handle' : 'Identical Username/Handle'}`
+                        // 100% Proof Match B: Identical custom avatar hash + similar handle
+                        const isAvatarHashMatch = Boolean(
+                            user.avatar && 
+                            bannedUser.avatar && 
+                            user.avatar === bannedUser.avatar &&
+                            (usernameLower.includes(bannedUsernameLower) || bannedUsernameLower.includes(usernameLower))
                         );
-                        break;
+                        
+                        if (isExactUsernameMatch || isAvatarHashMatch) {
+                            reasons.push('Ban Evasion Alt Account Match');
+                            evidence.push(
+                                `🚩 **100% Proof Ban Evasion Match**: User identity matches banned account **${bannedUser.tag}** (ID: \`${bannedUser.id}\`).\n` +
+                                `• **Original Ban Reason:** "${ban.reason || 'No reason provided'}"\n` +
+                                `• **Matching Indicators:** ${isAvatarHashMatch ? 'Exact Avatar Hash + Handle' : 'Identical Username/Handle'}`
+                            );
+                            break;
+                        }
                     }
                 }
             }
+        } catch (banErr) {
+            console.warn('[SecurityCheck] Error checking guild bans:', banErr.message);
         }
-    } catch (banErr) {
-        console.warn('[SecurityCheck] Error checking guild bans:', banErr.message);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -216,17 +258,29 @@ async function performSecurityBackgroundCheck(member, settings, context = {}, me
     // 🚨 ACTION: Handle Flagged Member
     // ─────────────────────────────────────────────────────────────────────────
     if (evidence.length > 0) {
-        console.log(`[SecurityCheck] 🚨 FLAGGED MEMBER: ${user.tag} (${user.id}) in guild ${guild.name} (${guild.id}) - Reasons: ${reasons.join(', ')}`);
+        const enforcementAction = settings?.verifyActionOnFlagged || 'deny'; // 'deny', 'kick', 'ban'
+        console.log(`[SecurityCheck] 🚨 FLAGGED MEMBER: ${user.tag} (${user.id}) in guild ${guild.name} (${guild.id}) - Action: ${enforcementAction.toUpperCase()} - Reasons: ${reasons.join(', ')}`);
+
+        // Execute automated punitive action if configured by server admin
+        let actionStatusNote = '• **Verification Roles Denied (Quarantined)**';
+        if (enforcementAction === 'kick' && member.kickable) {
+            await member.kick('Nora Security: Flagged by automated verification check').catch(() => {});
+            actionStatusNote = '• **Account Kicked from Server**';
+        } else if (enforcementAction === 'ban' && guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
+            await member.ban({ reason: 'Nora Security: Flagged by automated verification check (Ban Evasion / Threat match)' }).catch(() => {});
+            actionStatusNote = '• **Account Permanently Banned from Server**';
+        }
 
         // 1. Send Direct Message to Flagged Member
         try {
+            const actionText = enforcementAction === 'ban' ? 'Banned' : (enforcementAction === 'kick' ? 'Kicked' : 'Verification Denied');
             const userDmEmbed = new EmbedBuilder()
                 .setTitle('🛡️ Server Verification Flagged')
                 .setColor(0xEF4444) // High-Alert Red
                 .setDescription(
                     `Your verification attempt in **${guild.name}** has been flagged by the automated security background check.\n\n` +
-                    `⚠️ **Status:** Verification Denied\n` +
-                    `**Notice:** Your account matched security parameters associated with reported raid servers or ban evasion indicators.\n\n` +
+                    `⚠️ **Status:** ${actionText}\n` +
+                    `**Notice:** Your account matched security parameters associated with reported raid servers, active Discord spam flags, or ban evasion indicators.\n\n` +
                     `The server owners and administration team have been automatically notified with a detailed security report. If you believe this is a mistake, please contact the server staff directly.`
                 )
                 .setFooter({ text: 'Nora Security Shield • Automated Background Check' })
@@ -272,7 +326,7 @@ async function performSecurityBackgroundCheck(member, settings, context = {}, me
                         },
                         { 
                             name: '🛡️ Action Taken', 
-                            value: '• **Verification Roles Denied**\n• **Direct Message Alert Dispatched to User**\n• **Staff Report Logged to ' + staffChannel.name + '**', 
+                            value: `${actionStatusNote}\n• **Direct Message Alert Dispatched to User**\n• **Staff Report Logged to #${staffChannel.name}**`, 
                             inline: false 
                         }
                     )

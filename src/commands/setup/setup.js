@@ -100,6 +100,7 @@ module.exports = {
             ticket: 'view_tickets',
             verify: 'view_verify',
             roblox: 'view_verify',
+            security: 'view_verify_security',
             starboard: 'view_starboard',
             onewordstory: 'view_onewordstory',
             counting: 'view_counting',
@@ -604,9 +605,9 @@ module.exports = {
                         { name: 'Quarantine Role', value: settings.unverifiedRoleId ? `<@&${settings.unverifiedRoleId}>` : '*None*', inline: true },
                         { name: 'Strip Quarantine on Verify', value: settings.removeUnverifiedRoleOnVerify !== false ? '**Yes**' : '**No**', inline: true },
                         { name: 'Audit Log Channel', value: settings.verificationLogChannelId ? `<#${settings.verificationLogChannelId}>` : '*Default Log Channel*', inline: true },
-                        { name: 'Tier Limit', value: isPremium ? '**Nora Plus (Up to 5 roles)**' : '**Free Tier (Up to 3 roles)**', inline: true },
-                        { name: 'Custom Embed Title', value: `\`${settings.verifyEmbedTitle || 'Server Verification Required'}\``, inline: true },
-                        { name: 'Button Label & Accent', value: `\`${settings.verifyBtnLabel || 'Verify Account'}\` (${settings.verifyEmbedColor || '#5865F2'})`, inline: true }
+                        { name: '🛡️ Threat Screening', value: settings.verificationSecurityCheck !== false ? '**Active (Scanning)**' : '**Disabled**', inline: true },
+                        { name: '🌐 Online Threat Intel', value: settings.verifyCheckOnlineThreats !== false ? '**Active (Discord Flags)**' : '**Disabled**', inline: true },
+                        { name: '🚨 Flagged Policy', value: `**${(settings.verifyActionOnFlagged || 'deny').toUpperCase()}**`, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -643,13 +644,74 @@ module.exports = {
 
                 const rowE = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_verify_spawn_active').setLabel(`Deploy ${(currentType).toUpperCase()} Panel`).setStyle(ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_verify_customize_modal').setLabel('Customize Embed').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('view_verify_security').setLabel('Security Controls').setStyle(settings.verificationSecurityCheck !== false ? ButtonStyle.Success : ButtonStyle.Secondary).setEmoji('🛡️'),
                     new ButtonBuilder().setCustomId('action_remove_unverified_toggle').setLabel(settings.removeUnverifiedRoleOnVerify !== false ? 'Strip Role: ON' : 'Strip Role: OFF').setStyle(settings.removeUnverifiedRoleOnVerify !== false ? ButtonStyle.Primary : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('go_back').setLabel('Main Menu').setStyle(ButtonStyle.Secondary),
                     new ButtonBuilder().setLabel('Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
                 );
 
                 return { embeds: [embed], components: [rowA, rowB, rowC, rowD, rowE] };
+            }
+
+            // ==========================================
+            // VERIFICATION SECURITY & SAFEGUARDS VIEW
+            // ==========================================
+            if (viewName === 'view_verify_security') {
+                const actionLabels = {
+                    deny: 'Deny & Alert Staff (Quarantined)',
+                    kick: 'Automatically Kick User',
+                    ban: 'Automatically Ban User'
+                };
+                const currentAction = settings.verifyActionOnFlagged || 'deny';
+
+                embed.setTitle('🛡️ Verification Security & Threat Gatekeeper')
+                    .setDescription(
+                        'Nora automatically screens every account attempting verification for raid syndicates, Discord spam flags, and ban evasion.\n\n' +
+                        'Configure your automated background security rules below:'
+                    )
+                    .addFields(
+                        { name: '🛡️ Automated Screening (Master)', value: settings.verificationSecurityCheck !== false ? '**ENABLED (Active)**' : '**DISABLED**', inline: true },
+                        { name: '🌐 Online Threat & Spammer Intel', value: settings.verifyCheckOnlineThreats !== false ? '**ENABLED (Live API Checks)**' : '**DISABLED**', inline: true },
+                        { name: '🔍 Ban Evasion & Alt Matching', value: settings.verifyCheckBanEvasion !== false ? '**ENABLED (Handle & Avatar Hash)**' : '**DISABLED**', inline: true },
+                        { name: '🚨 Action When Flagged', value: `**${actionLabels[currentAction] || currentAction.toUpperCase()}**`, inline: false }
+                    );
+
+                const rowA = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('action_verify_security_toggle')
+                        .setLabel(settings.verificationSecurityCheck !== false ? 'Screening: ENABLED' : 'Screening: DISABLED')
+                        .setEmoji('🛡️')
+                        .setStyle(settings.verificationSecurityCheck !== false ? ButtonStyle.Success : ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId('action_verify_online_toggle')
+                        .setLabel(settings.verifyCheckOnlineThreats !== false ? 'Online Intel: ENABLED' : 'Online Intel: DISABLED')
+                        .setEmoji('🌐')
+                        .setStyle(settings.verifyCheckOnlineThreats !== false ? ButtonStyle.Primary : ButtonStyle.Secondary),
+                    new ButtonBuilder()
+                        .setCustomId('action_verify_banevasion_toggle')
+                        .setLabel(settings.verifyCheckBanEvasion !== false ? 'Ban Evasion: ENABLED' : 'Ban Evasion: DISABLED')
+                        .setEmoji('🔍')
+                        .setStyle(settings.verifyCheckBanEvasion !== false ? ButtonStyle.Primary : ButtonStyle.Secondary)
+                );
+
+                const rowB = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('action_verify_action_select')
+                        .setPlaceholder('Select Enforcement Action for Flagged Members...')
+                        .addOptions([
+                            { label: 'Deny & Alert Staff (Recommended)', value: 'deny', description: 'Blocks access, quarantines user, dispatches incident alert to staff', default: currentAction === 'deny' },
+                            { label: 'Automatically Kick User', value: 'kick', description: 'Kicks flagged user from the server immediately', default: currentAction === 'kick' },
+                            { label: 'Automatically Ban User', value: 'ban', description: 'Permanently bans flagged user from the server', default: currentAction === 'ban' }
+                        ])
+                );
+
+                const rowC = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('view_verify_back').setLabel('Back to Verification').setStyle(ButtonStyle.Primary).setEmoji('⬅️'),
+                    new ButtonBuilder().setCustomId('go_back').setLabel('Main Menu').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setLabel('Dashboard').setStyle(ButtonStyle.Link).setURL(`https://vaztinix.dev/dashboard?guild=${interaction.guild.id}`)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC] };
             }
 
             // ==========================================
@@ -1125,6 +1187,24 @@ module.exports = {
                     update = true;
                 }
                 if (i.customId === 'action_roblox_toggle') { settings.robloxVerifyEnabled = !settings.robloxVerifyEnabled; update = true; }
+                if (i.customId === 'view_verify_security') { state.currentView = 'view_verify_security'; update = true; }
+                if (i.customId === 'view_verify_back') { state.currentView = 'view_verify'; update = true; }
+                if (i.customId === 'action_verify_security_toggle') {
+                    settings.verificationSecurityCheck = settings.verificationSecurityCheck === false ? true : false;
+                    update = true;
+                }
+                if (i.customId === 'action_verify_online_toggle') {
+                    settings.verifyCheckOnlineThreats = settings.verifyCheckOnlineThreats === false ? true : false;
+                    update = true;
+                }
+                if (i.customId === 'action_verify_banevasion_toggle') {
+                    settings.verifyCheckBanEvasion = settings.verifyCheckBanEvasion === false ? true : false;
+                    update = true;
+                }
+                if (i.customId === 'action_verify_action_select') {
+                    settings.verifyActionOnFlagged = i.values[0];
+                    update = true;
+                }
 
                 if (i.customId === 'action_verify_spawn_active' || i.customId.startsWith('action_verify_spawn')) {
                     if (!settings.verifyRoleId) return i.reply({ content: '⚠️ You must configure at least one **Verified Role** in the dropdown first!', ephemeral: true });

@@ -428,6 +428,68 @@ module.exports = {
             return;
         }
 
+        // Handle Security Alert Quick-Actions (Staff Buttons on Flagged Incident Embeds)
+        if (interaction.isButton() && (
+            interaction.customId.startsWith('security_ban_') || 
+            interaction.customId.startsWith('security_kick_') || 
+            interaction.customId.startsWith('security_override_')
+        )) {
+            const isBan = interaction.customId.startsWith('security_ban_');
+            const isKick = interaction.customId.startsWith('security_kick_');
+            const isOverride = interaction.customId.startsWith('security_override_');
+            const targetUserId = interaction.customId.replace(/security_(?:ban|kick|override)_/, '');
+
+            const reqPerm = isBan ? PermissionFlagsBits.BanMembers : (isKick ? PermissionFlagsBits.KickMembers : PermissionFlagsBits.ManageRoles);
+            if (!interaction.member.permissions.has(reqPerm) && interaction.user.id !== '1214048435632603137' && interaction.user.id !== interaction.guild.ownerId) {
+                return interaction.reply({
+                    content: '❌ **Permission Denied**: You lack permissions to take this moderation action.',
+                    ephemeral: true
+                });
+            }
+
+            const targetMember = await interaction.guild.members.fetch(targetUserId).catch(() => null);
+
+            if (isBan) {
+                if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
+                    return interaction.reply({ content: '❌ I lack the **Ban Members** permission.', ephemeral: true });
+                }
+                const banErr = await interaction.guild.members.ban(targetUserId, { reason: `Nora Security Alert: Banned by staff (${interaction.user.tag})` }).catch(e => e);
+                if (banErr instanceof Error) {
+                    return interaction.reply({ content: `❌ Failed to ban: ${banErr.message}`, ephemeral: true });
+                }
+                return interaction.reply({ content: `🔨 <@${targetUserId}> has been **permanently banned** by ${interaction.user}.` });
+            }
+
+            if (isKick) {
+                if (!targetMember) {
+                    return interaction.reply({ content: '⚠️ Member is no longer in this server.', ephemeral: true });
+                }
+                if (!targetMember.kickable) {
+                    return interaction.reply({ content: '❌ Cannot kick this member due to role hierarchy.', ephemeral: true });
+                }
+                const kickErr = await targetMember.kick(`Nora Security Alert: Kicked by staff (${interaction.user.tag})`).catch(e => e);
+                if (kickErr instanceof Error) {
+                    return interaction.reply({ content: `❌ Failed to kick: ${kickErr.message}`, ephemeral: true });
+                }
+                return interaction.reply({ content: `👢 <@${targetUserId}> has been **kicked** by ${interaction.user}.` });
+            }
+
+            if (isOverride) {
+                if (!targetMember) {
+                    return interaction.reply({ content: '⚠️ Member is no longer in this server.', ephemeral: true });
+                }
+                const settings = await settingsCache.get(interaction.guildId);
+                const verifyEngine = require('../bot/engines/verify');
+                const result = await verifyEngine.grantVerificationRoles(targetMember, settings, { interaction }, 'Staff Manual Override', { overrideSecurity: true });
+                if (result.success) {
+                    return interaction.reply({ content: `✅ **Manual Override Successful**: <@${targetUserId}> has been verified and granted access by ${interaction.user}.` });
+                } else {
+                    return interaction.reply({ content: `⚠️ Could not complete override: ${result.message}`, ephemeral: true });
+                }
+            }
+            return;
+        }
+
         // Handle "Enter CAPTCHA Code" button click
         if (interaction.isButton() && interaction.customId.startsWith('verify_enter_code_')) {
             const verifyEngine = require('../bot/engines/verify');

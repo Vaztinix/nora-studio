@@ -525,6 +525,22 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    verificationSecurityCheck: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    verifyCheckOnlineThreats: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    verifyCheckBanEvasion: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    verifyActionOnFlagged: {
+        type: DataTypes.STRING,
+        defaultValue: 'deny' // 'deny', 'kick', 'ban'
+    },
     // ---- Dynamic Logging Framework Extensions ----
     logChannelCreates: {
         type: DataTypes.BOOLEAN,
