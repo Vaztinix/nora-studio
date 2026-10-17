@@ -1,14 +1,11 @@
-const axios = require('axios');
 const { ActivityType } = require('discord.js');
 
 /**
  * Nora Dynamic Status & Presence Controller
- * Includes motivational quotes, shard metrics, site advertisements, feature tips, and live stream alerts.
+ * Includes motivational quotes, shard metrics, site advertisements, and feature tips.
  */
 
 let statusIndex = 0;
-let lastTwitchCheck = 0;
-let cachedIsLive = false;
 
 const MOTIVATIONAL_QUOTES = [
     '✨ "Small steps every day lead to big results."',
@@ -55,40 +52,10 @@ function formatUptime(seconds) {
     return `${m}m`;
 }
 
-async function checkTwitchLive() {
-    const now = Date.now();
-    // Cache check for 60 seconds
-    if (now - lastTwitchCheck < 60000) {
-        return cachedIsLive;
-    }
-    lastTwitchCheck = now;
-    const twitchUser = 'vaztinix';
-    try {
-        const response = await axios.get(`https://decapi.me/twitch/uptime/${twitchUser}`, { timeout: 3000 }).catch(() => ({ data: 'offline' }));
-        cachedIsLive = Boolean(response.data && !response.data.toLowerCase().includes('offline'));
-    } catch {
-        cachedIsLive = false;
-    }
-    return cachedIsLive;
-}
-
 async function updateBotStatus(client) {
     if (!client.user) return;
 
     try {
-        const isLive = await checkTwitchLive();
-
-        if (isLive) {
-            client.user.setPresence({
-                activities: [{
-                    name: 'vaztinix is LIVE!',
-                    type: ActivityType.Streaming,
-                    url: 'https://www.twitch.tv/vaztinix'
-                }],
-                status: 'online'
-            });
-            return;
-        }
 
         const serverCount = client.guilds.cache.size;
         const uniqueMembers = new Set();

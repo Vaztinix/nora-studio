@@ -416,7 +416,11 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-    // ---- Nora AI Auto-Response Channel System ----
+    // ---- Nora AI Intelligence & Studio Settings ----
+    noraAiEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
     aiAutoRespondChannelId: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -425,6 +429,46 @@ const GuildSettings = sequelize.define('GuildSettings', {
     aiAutoRespondEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    aiExcludedChannels: {
+        type: DataTypes.TEXT,
+        defaultValue: ''
+    },
+    aiAllowedChannels: {
+        type: DataTypes.TEXT,
+        defaultValue: ''
+    },
+    aiDedicatedChannels: {
+        type: DataTypes.TEXT,
+        defaultValue: ''
+    },
+    aiSystemPrompt: {
+        type: DataTypes.TEXT,
+        defaultValue: ''
+    },
+    aiPromptTemplate: {
+        type: DataTypes.STRING,
+        defaultValue: 'classic'
+    },
+    aiMemoryEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    aiRoleViewingEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    aiNameViewingEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    aiImageGenerationEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    aiModel: {
+        type: DataTypes.STRING,
+        defaultValue: 'gemini-2.5-flash'
     },
     managedBotId: {
         type: DataTypes.STRING,

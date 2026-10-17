@@ -224,10 +224,17 @@ module.exports = {
             allData[message.guild.id] = guildData;
             queueSave();
 
+            let roastText = "";
+            try {
+                const AIFeatureEnhancer = require('../utils/aiFeatureEnhancer');
+                const roast = await AIFeatureEnhancer.getCountingRoast(message.author.username, message.content.slice(0, 30), expectedNext, previousStreak);
+                if (roast) roastText = `\n💬 *"${roast}"*\n`;
+            } catch (_) {}
+
             await safeReplyOrSend(message, { 
                 content: `❌ You broke the count, <@${message.author.id}>! The next number was **${expectedNext}**.\n` +
                     `• **Lost Streak:** \`${previousStreak}\`\n` +
-                    `• **Server Record:** \`${highScore}\`\n\n` +
+                    `• **Server Record:** \`${highScore}\`${roastText}\n` +
                     `The count has been reset to **0**. Start again at **1**!` 
             });
             return;
@@ -246,10 +253,17 @@ module.exports = {
             allData[message.guild.id] = guildData;
             queueSave();
 
+            let roastText = "";
+            try {
+                const AIFeatureEnhancer = require('../utils/aiFeatureEnhancer');
+                const roast = await AIFeatureEnhancer.getCountingRoast(message.author.username, "counted twice in a row", expectedNext, previousStreak);
+                if (roast) roastText = `\n💬 *"${roast}"*\n`;
+            } catch (_) {}
+
             await safeReplyOrSend(message, { 
                 content: `❌ You cannot count twice in a row, <@${message.author.id}>!\n` +
                     `• **Lost Streak:** \`${previousStreak}\`\n` +
-                    `• **Server Record:** \`${highScore}\`\n\n` +
+                    `• **Server Record:** \`${highScore}\`${roastText}\n` +
                     `The count has been reset to **0**. Start again at **1**!` 
             });
             return;
@@ -304,16 +318,23 @@ module.exports = {
         // Milestone Announcement for major accomplishments
         if (expectedNext > 0 && (expectedNext === 50 || expectedNext % 100 === 0 || expectedNext === 500 || expectedNext === 1000)) {
             const { EmbedBuilder } = require('discord.js');
+            let cheer = null;
+            try {
+                const AIFeatureEnhancer = require('../utils/aiFeatureEnhancer');
+                cheer = await AIFeatureEnhancer.getCountingCheer(message.author.username, expectedNext);
+            } catch (_) {}
+
             const milestoneEmbed = new EmbedBuilder()
                 .setTitle(`🎉 Milestone Reached: ${expectedNext}!`)
                 .setDescription(
                     `Incredible teamwork! **${message.guild.name}** has reached **${expectedNext}**!\n\n` +
                     `• **Counted by:** <@${message.author.id}>\n` +
                     `• **Next Number:** **${expectedNext + 1}**\n` +
-                    `• **All-Time Server Record:** \`${guildData.highScore}\``
+                    `• **All-Time Server Record:** \`${guildData.highScore}\`` +
+                    (cheer ? `\n\n✨ **Nora's Cheer:** *"${cheer}"*` : '')
                 )
                 .setColor(0xFEE75C)
-                .setFooter({ text: 'Nora Counting Milestone' })
+                .setFooter({ text: 'Nora AI Counting Milestone' })
                 .setTimestamp();
 
             await message.channel.send({ embeds: [milestoneEmbed] }).catch(() => {});

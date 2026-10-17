@@ -36,12 +36,38 @@ async function processMessageInternal(message, client) {
             settings = await settingsCache.get(message.guild.id); 
         } catch (e) {}
 
+        // Master Toggle: Option to turn off Nora AI entirely for this server
+        if (settings && settings.noraAiEnabled === false) return;
+
+        // Exclude Channels Check: Stop Nora from responding in specific channels entirely
+        const excludedList = (settings?.aiExcludedChannels || '').split(',').map(s => s.trim()).filter(Boolean);
+        if (excludedList.includes(message.channel.id)) return;
+
+        // Dedicated Autonomous AI Channels (where users do not have to ping)
+        const dedicatedList = [
+            settings?.aiAutoRespondChannelId,
+            ...(settings?.aiDedicatedChannels || '').split(',')
+        ].map(s => s && s.trim()).filter(Boolean);
+
         const isAutoChannel = Boolean(
             settings && 
-            settings.aiAutoRespondChannelId && 
             settings.aiAutoRespondEnabled !== false && 
-            message.channel.id === settings.aiAutoRespondChannelId
+            dedicatedList.includes(message.channel.id)
         );
+
+        // Allowed Channels Selection:
+        // Dedicated selection for channels Nora can respond in using AI.
+        // If none configured, but a dedicated channel is set, only the dedicated channel can allow AI responses.
+        const allowedList = (settings?.aiAllowedChannels || '').split(',').map(s => s.trim()).filter(Boolean);
+        if (allowedList.length > 0) {
+            if (!allowedList.includes(message.channel.id) && !dedicatedList.includes(message.channel.id)) {
+                return;
+            }
+        } else if (dedicatedList.length > 0) {
+            if (!dedicatedList.includes(message.channel.id)) {
+                return;
+            }
+        }
 
         let isMentioned = Boolean(client.user && message.mentions?.has(client.user) && !message.mentions.everyone);
         let isReply = false;
@@ -67,10 +93,13 @@ async function processMessageInternal(message, client) {
             if (/^[!/?.#$-]\w+/i.test(trimmed)) return;
         }
 
-        // Asynchronously update user memory & interests
-        updateUserMemory(message.author.id, message.content).catch(e => {
-            console.error('[ChatAI] Memory update fault:', e.message);
-        });
+        // Memory toggle: Asynchronously update user memory & interests only if memory is enabled
+        const memoryEnabled = settings?.aiMemoryEnabled !== false;
+        if (memoryEnabled) {
+            updateUserMemory(message.author.id, message.content).catch(e => {
+                console.error('[ChatAI] Memory update fault:', e.message);
+            });
+        }
 
         const botMentionRegex = new RegExp(`^<@!?${client.user?.id}>\\s*`, 'i');
         let plainContent = (message.content || '').replace(new RegExp(`<@!?${client.user?.id}>`, 'g'), '').trim();
@@ -142,15 +171,23 @@ async function processMessageInternal(message, client) {
         // Send typing indicator
         await message.channel.sendTyping().catch(() => {});
 
-        // 🎨 2. Check for AI Image Generation Intent
+        // 🎨 2. Check for AI Image Generation Intent (Google Imagen 3 ONLY)
         if (isImageGenerationPrompt(plainContent)) {
+            const imageGenEnabled = Boolean(settings?.aiImageGenerationEnabled);
+            if (!imageGenEnabled) {
+                return message.reply({
+                    content: "🎨 AI Image Generation is currently disabled on this server. A server administrator can enable it with Google Imagen 3 in the Nora AI Studio dashboard.",
+                    allowedMentions: { repliedUser: false }
+                }).catch(() => {});
+            }
+
             try {
                 const imgResult = await generateAIImage(plainContent);
                 const attachment = new AttachmentBuilder(imgResult.buffer, { name: imgResult.filename });
                 const wittyImageCaptions = [
-                    `Here is what I created for you: **${imgResult.enhancedPrompt}** 🎨✨`,
-                    `Freshly rendered: **${imgResult.enhancedPrompt}**! Hope you love it ✨`,
-                    `Done! Here's your artwork of **${imgResult.enhancedPrompt}** 🖼️`
+                    `Here is what I created with Google Imagen for you: **${imgResult.enhancedPrompt}** 🎨✨`,
+                    `Freshly rendered via Google Imagen: **${imgResult.enhancedPrompt}**! Hope you love it ✨`,
+                    `Done! Here's your Google Imagen artwork of **${imgResult.enhancedPrompt}** 🖼️`
                 ];
                 const caption = wittyImageCaptions[Math.floor(Math.random() * wittyImageCaptions.length)];
                 return message.reply({
@@ -159,8 +196,14 @@ async function processMessageInternal(message, client) {
                     allowedMentions: { repliedUser: false }
                 }).catch(() => {});
             } catch (err) {
-                console.error('[ChatAI] Image generation error:', err.message);
-                // If image generation fails, continue to normal conversational reply
+                console.error('[ChatAI] Google Imagen generation error:', err.message);
+                if (err.message && err.message.toLowerCase().includes('safety')) {
+                    return message.reply({
+                        content: `🛡️ **Image Blocked by Google Safety Filter**: Google Imagen strictly prohibits sexual, explicit, or inappropriate requests.`,
+                        allowedMentions: { repliedUser: false }
+                    }).catch(() => {});
+                }
+                // If other image generation error occurs, continue to normal conversational reply
             }
         }
 
@@ -177,47 +220,54 @@ async function processMessageInternal(message, client) {
         const everyonePerms = message.channel?.permissionsFor ? message.channel.permissionsFor(message.guild.roles.everyone) : null;
         const isCurrentChannelStaffOnly = everyonePerms ? !everyonePerms.has(viewChannelPerm) : false;
 
-        // 2. Fetch Recent Channel Messages (Expanded Short-term Working Memory)
+        // 2. Fetch Recent Channel Messages (Only if Memory is enabled)
         let recentHistoryStr = '';
-        try {
-            const fetched = await message.channel.messages.fetch({ limit: 35 }).catch(() => null);
-            if (fetched && fetched.size > 0) {
-                const historyList = [];
-                const sorted = Array.from(fetched.values()).reverse();
-                for (const m of sorted) {
-                    if (m.id === message.id) continue;
-                    const name = m.author.id === client.user.id ? 'Nora' : (m.member?.displayName || m.author.username);
-                    const cleanText = (m.cleanContent || m.content || '').replace(/\s+/g, ' ').trim();
-                    if (!cleanText && (!m.attachments || m.attachments.size === 0)) continue;
-                    historyList.push(`[${name}]: ${cleanText || '[Sent an image/attachment]'}`);
+        if (memoryEnabled) {
+            try {
+                const fetched = await message.channel.messages.fetch({ limit: 35 }).catch(() => null);
+                if (fetched && fetched.size > 0) {
+                    const historyList = [];
+                    const sorted = Array.from(fetched.values()).reverse();
+                    for (const m of sorted) {
+                        if (m.id === message.id) continue;
+                        const name = m.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? (m.member?.displayName || m.author.username) : 'Member');
+                        const cleanText = (m.cleanContent || m.content || '').replace(/\s+/g, ' ').trim();
+                        if (!cleanText && (!m.attachments || m.attachments.size === 0)) continue;
+                        historyList.push(`[${name}]: ${cleanText || '[Sent an image/attachment]'}`);
+                    }
+                    recentHistoryStr = historyList.slice(-25).join('\n');
                 }
-                recentHistoryStr = historyList.slice(-25).join('\n');
+            } catch (e) {
+                console.warn('[ChatAI] Could not fetch channel history:', e.message);
             }
-        } catch (e) {
-            console.warn('[ChatAI] Could not fetch channel history:', e.message);
         }
 
         // 3. Direct Reply Context
         let directReplyStr = '';
         if (replyTargetMsg) {
-            const refName = replyTargetMsg.author.id === client.user.id ? 'Nora' : (replyTargetMsg.member?.displayName || replyTargetMsg.author.username);
+            const refName = replyTargetMsg.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? (replyTargetMsg.member?.displayName || replyTargetMsg.author.username) : 'Member');
             const refContent = replyTargetMsg.cleanContent || replyTargetMsg.content || '[Attachment]';
             directReplyStr = `In direct reply to [${refName}]: "${refContent}"`;
         }
 
-        // 4. Persistent User Memory & Insights
-        const authorDisplayName = message.member?.displayName || message.author.username;
+        // 4. Persistent User Memory & Insights (Only if Memory is enabled)
+        const nameViewingEnabled = settings?.aiNameViewingEnabled !== false;
+        const authorDisplayName = nameViewingEnabled ? (message.member?.displayName || message.author.username) : 'Member';
         let userMemoryStr = '';
-        try {
-            userMemoryStr = await getUserMemoryContext(message.author.id, authorDisplayName);
-        } catch (e) {}
+        if (memoryEnabled) {
+            try {
+                userMemoryStr = await getUserMemoryContext(message.author.id, authorDisplayName);
+            } catch (e) {}
+        }
 
-        // 5. Track Message in Shared Cross-Project Conversation Hub with Staff Privacy Flag
-        conversationHub.addMessage(message.channel.id, authorDisplayName, plainContent, false, {
-            isStaffOnly: isCurrentChannelStaffOnly,
-            authorId: message.author.id,
-            channelName: message.channel.name
-        });
+        // 5. Track Message in Shared Cross-Project Conversation Hub with Staff Privacy Flag (Only if memory enabled)
+        if (memoryEnabled) {
+            conversationHub.addMessage(message.channel.id, authorDisplayName, plainContent, false, {
+                isStaffOnly: isCurrentChannelStaffOnly,
+                authorId: message.author.id,
+                channelName: message.channel.name
+            });
+        }
 
         // 6. Real-Time Web Search Engine Execution
         let webSearchStr = '';
@@ -230,13 +280,13 @@ async function processMessageInternal(message, client) {
         }
 
         // 7. Cluster Shared Multi-Turn Thread & Dynamic Channel Mood (Staff Privacy Filtered)
-        const sharedThreadStr = conversationHub.getSharedThreadContext(message.channel.id, isCurrentChannelStaffOnly);
-        const channelMoodStr = conversationHub.getChannelMoodSummary(message.channel.id);
+        const sharedThreadStr = memoryEnabled ? conversationHub.getSharedThreadContext(message.channel.id, isCurrentChannelStaffOnly) : '';
+        const channelMoodStr = memoryEnabled ? conversationHub.getChannelMoodSummary(message.channel.id) : 'Balanced';
 
         // 8. Smart History Recall (for explicit search keywords only)
         let deepKnowledgeStr = '';
         const historyTriggerRegex = /\b(search\s+history|recall|remember\s+when|what\s+did\s+we\s+talk\s+about|check\s+past\s+messages)\b/i;
-        if (historyTriggerRegex.test(plainContent)) {
+        if (memoryEnabled && historyTriggerRegex.test(plainContent)) {
             try {
                 deepKnowledgeStr = await fetchMonthlyHistory(message.channel, 15, message.author.id);
             } catch (e) {}
@@ -260,22 +310,25 @@ async function processMessageInternal(message, client) {
         const onlineMembers = message.guild.members.cache.filter(m => !m.user.bot && m.presence && m.presence.status !== 'offline');
         const onlineCount = onlineMembers.size;
         const totalCount = message.guild.memberCount || message.guild.members.cache.size;
-        const sampleOnlineList = onlineMembers.map(m => {
+        const sampleOnlineList = nameViewingEnabled ? onlineMembers.map(m => {
             const act = m.presence?.activities?.[0]?.name ? ` (${m.presence.activities[0].name})` : '';
             return `${m.displayName} [@${m.user.username}, status: ${m.presence?.status || 'online'}${act}]`;
-        }).slice(0, 15).join(', ');
+        }).slice(0, 15).join(', ') : `${onlineCount} members active`;
 
         const surroundingsContext = `Server: "${message.guild.name}" | Active Online Members: ${onlineCount}/${totalCount} (Active: ${sampleOnlineList || 'Quiet'}) | Current Channel: #${message.channel.name} (Slowmode: ${message.channel.rateLimitPerUser || 0}s, Staff-Only Channel: ${isCurrentChannelStaffOnly ? 'YES' : 'NO'})`;
 
-        const userRolesList = message.member?.roles?.cache?.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'No custom roles';
+        const roleViewingEnabled = settings?.aiRoleViewingEnabled !== false;
+        const userRolesList = roleViewingEnabled ? (message.member?.roles?.cache?.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'No custom roles') : 'Hidden / Role Viewing Disabled';
         const botRolesList = message.guild.members.me?.roles?.cache?.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'None';
 
-        const userProfileContext = `User: ${authorDisplayName} (@${message.author.username}, ID: ${message.author.id})\n` +
-            `Global Name: ${message.author.globalName || authorDisplayName}\n` +
-            `Avatar URL: ${avatarUrl}\n` +
-            `Profile Banner: ${bannerUrl ? `${bannerUrl} (Accent Color: ${accentColor})` : `None (Accent Color: ${accentColor})`}\n` +
-            `Joined Server: ${serverJoinedStr} | Account Created: ${accountCreatedStr}\n` +
-            `Roles: ${userRolesList}`;
+        const userProfileContext = nameViewingEnabled 
+            ? (`User: ${authorDisplayName} (@${message.author.username}, ID: ${message.author.id})\n` +
+               `Global Name: ${message.author.globalName || authorDisplayName}\n` +
+               `Avatar URL: ${avatarUrl}\n` +
+               `Profile Banner: ${bannerUrl ? `${bannerUrl} (Accent Color: ${accentColor})` : `None (Accent Color: ${accentColor})`}\n` +
+               `Joined Server: ${serverJoinedStr} | Account Created: ${accountCreatedStr}\n` +
+               `Roles: ${userRolesList}`)
+            : (`User: An anonymous server chatter (Name Viewing Disabled for Privacy)\nRoles: ${userRolesList}`);
 
         // 11. Profile Visual Inspection for Vision: If user asks about their pfp/banner, download image buffer so vision sees it directly
         let visionAttachments = message.attachments?.filter(a => a.contentType?.startsWith('image/')) || new Map();
@@ -352,23 +405,26 @@ async function processMessageInternal(message, client) {
             ].filter(Boolean).join(', ') || 'Standard Member (No Moderation/Admin Permissions)';
 
         let mentionedRolesList = '';
-        if (message.mentions && message.mentions.members && message.mentions.members.size > 0) {
+        if (roleViewingEnabled && message.mentions && message.mentions.members && message.mentions.members.size > 0) {
             mentionedRolesList = message.mentions.members.map(m => `• ${m.displayName} (@${m.user.username}): [${m.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'None'}]`).join('\n');
         }
-        if (replyTargetMsg && replyTargetMsg.member) {
+        if (roleViewingEnabled && replyTargetMsg && replyTargetMsg.member) {
             const rMember = replyTargetMsg.member;
             const rRoles = rMember.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name).join(', ') || 'None';
             mentionedRolesList += `\n• (Replied User) ${rMember.displayName} (@${rMember.user.username}): [${rRoles}]`;
         }
 
-        const guildRolesList = message.guild.roles.cache
+        const guildRolesList = roleViewingEnabled ? (message.guild.roles.cache
             .filter(r => r.name !== '@everyone')
             .sort((a, b) => b.position - a.position)
             .map(r => `${r.name} (pos: ${r.position})`)
             .slice(0, 35)
-            .join(', ') || 'None';
+            .join(', ') || 'None') : 'Hidden / Role Viewing Disabled';
 
         const deviceSpecsContext = getSanitizedSpecsSummary();
+
+        const selectedModel = settings?.aiModel || 'gemini-2.5-flash';
+        const customPrompt = settings?.aiSystemPrompt || '';
 
         const aiPayload = {
             promptText: plainContent,
@@ -390,7 +446,9 @@ async function processMessageInternal(message, client) {
             surroundingsContext,
             userProfileContext,
             deviceSpecsContext,
-            isStaffOnlyChannel: isCurrentChannelStaffOnly
+            isStaffOnlyChannel: isCurrentChannelStaffOnly,
+            selectedModel: selectedModel,
+            customSystemPrompt: customPrompt
         };
 
         const runOpenAI = async () => {
@@ -446,18 +504,21 @@ ${deviceSpecsContext}
 
 ### ARCHITECTURE & CORE IDENTITY (AuraAI V10 + Gemini):
 - Command Module: AuraAI V10 is your custom command module, autonomous action executor, and hardware routing engine engineered by Vaztinix!
-- Connected AI: You are connected to Gemini as your underlying conversational and reasoning intelligence engine.
+- Connected AI: You are connected to Google Gemini as your underlying conversational and reasoning intelligence engine.
 - If asked:
-  - "Nora is this the AI or Command Module?": AuraAI V10 is your Command Module, while the connected AI model is Gemini!
+  - "Nora is this the AI or Command Module?": AuraAI V10 is your Command Module, while the connected AI model is Google Gemini!
   - "what model does the command actions run on?": AuraAI V10 command module by Vaztinix!
-  - "what AI are you running?": Gemini, connected with the AuraAI V10 command module!
+  - "what AI are you running?": Google Gemini, connected with the AuraAI V10 command module!
   - "Are you in beta?" or "Is Nora in beta?": Nora is officially out of beta and available to all servers, with continuous changes and improvements still actively being made by Vaztinix!
-- Roku TV Capability: You can open ANY app on the TV (YouTube, Netflix, Crunchyroll, Tubi, Twitch, Disney+, etc.), restart the TV via remote reboot sequence, write/display messages on the TV screen, and control volume/power!
 
 ### TONE & MOOD MATCHING:
 - Dynamically match the user's mood and conversational vibe (${channelMoodStr}).
 - Never give unsolicited corporate HR bullet points or preachy lectures when someone is joking or ranting.
 - Speak naturally like an engaging Discord user (she/her) with punchy markdown.`;
+
+            if (customPrompt && customPrompt.trim()) {
+                systemPrompt += `\n\n### ⚙️ CUSTOM SERVER BEHAVIOR DIRECTIVE:\n${customPrompt.trim()}`;
+            }
 
             if (webSearchStr) {
                 systemPrompt += `\n\n### Live Web Search Intelligence:\n${webSearchStr}`;
@@ -528,28 +589,6 @@ ${deviceSpecsContext}
 
         if (!response || typeof response !== 'string') {
             response = `I'm here! What's on your mind?`;
-        }
-
-        // ⚡ Hardware Execution Hook: Check for [ROKU: ...] action tags emitted by AI brain
-        const rokuTagMatch = response.match(/\[ROKU:\s*([^\]]+)\]/i);
-        if (rokuTagMatch) {
-            const rawRokuCommands = rokuTagMatch[1];
-            response = response.replace(/\[ROKU:\s*[^\]]+\]/gi, '').trim();
-
-            if (rokuController && rokuController.isAuthorized(message.author.id)) {
-                const parts = rawRokuCommands.split('|').map(s => s.trim()).filter(Boolean);
-                (async () => {
-                    for (let i = 0; i < parts.length; i++) {
-                        await rokuController.executeRokuCommand(message.author, parts[i]);
-                        if (i < parts.length - 1) await new Promise(r => setTimeout(r, 600));
-                    }
-                })().catch(err => console.error('[ChatAI] Error executing AI Roku tag:', err.message));
-            }
-        }
-
-        // 🛡️ Strict TV Privacy Sanitizer: Never leak IP, MAC, serial, or port
-        if (rokuController) {
-            response = rokuController.sanitizeMessage(response);
         }
 
         // Ensure message fits Discord's 2000 character limit

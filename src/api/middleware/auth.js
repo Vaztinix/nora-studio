@@ -273,6 +273,13 @@ const activeUserRequests = new Map();
 const USER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for high stability & speed
 
 const getDiscordUser = async (token) => {
+    if (token && typeof token === 'object') {
+        const authHeader = token.headers?.authorization;
+        token = (authHeader && authHeader.startsWith('Bearer ')) ? authHeader.split(' ')[1] : null;
+    }
+    if (!token || typeof token !== 'string' || token === 'null' || token === 'undefined') {
+        return null;
+    }
     if (token === 'nora_mock_token') {
         return {
             id: '1214048435632603137',

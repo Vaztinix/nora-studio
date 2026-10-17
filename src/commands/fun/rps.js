@@ -188,8 +188,18 @@ module.exports = {
                     .addFields(
                         { name: I18n.t(lang, 'rps_your_move'), value: `${emojis[userChoice]} ${translateChoice(userChoice).toUpperCase()}`, inline: true },
                         { name: I18n.t(lang, 'rps_bot_move'), value: `${emojis[botChoice]} ${translateChoice(botChoice).toUpperCase()}`, inline: true }
-                    )
-                    .setFooter({ text: `Played by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+                    );
+
+                try {
+                    const outcome = userChoice === botChoice ? 'tied' : (winRelations[userChoice] === botChoice ? 'lost' : 'won');
+                    const AIFeatureEnhancer = require('../../utils/aiFeatureEnhancer');
+                    const aiBanter = await AIFeatureEnhancer.getGameBanter('Rock Paper Scissors', outcome, interaction.user.username);
+                    if (aiBanter) {
+                        resultEmbed.addFields({ name: '✨ Nora AI Banter', value: `*"${aiBanter}"*`, inline: false });
+                    }
+                } catch (_) {}
+
+                resultEmbed.setFooter({ text: `Played by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
                     .setTimestamp();
 
                 await interaction.editReply({ embeds: [resultEmbed], components: [] });

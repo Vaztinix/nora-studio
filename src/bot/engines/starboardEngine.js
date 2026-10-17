@@ -80,6 +80,25 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji) {
         });
     }
 
+    // Optional AI Highlight Commentary if Nora AI is enabled
+    if (settings?.noraAiEnabled !== false && message.content && message.content.trim().length > 5) {
+        try {
+            const AIFeatureEnhancer = require('../../utils/aiFeatureEnhancer');
+            const aiTake = await AIFeatureEnhancer.getStarboardCommentary(
+                message.author.username || message.author.tag,
+                message.content,
+                count
+            );
+            if (aiTake) {
+                embed.addFields({
+                    name: '✨ Nora AI Spotlight',
+                    value: `*"${aiTake}"*`,
+                    inline: false
+                });
+            }
+        } catch (_) {}
+    }
+
     // Message template string
     let starText = settings?.starboardMessageTemplate || '{emoji} **{count}** | {channel}';
     starText = starText

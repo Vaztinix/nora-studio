@@ -295,15 +295,28 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
     let lastError = null;
     let hitQuota = false;
 
+    let effectiveSystemInstruction = systemInstruction;
+    if (typeof optionsOrContext === 'object' && optionsOrContext?.customSystemPrompt && optionsOrContext.customSystemPrompt.trim()) {
+        effectiveSystemInstruction += `\n\n### ⚙️ CUSTOM SERVER BEHAVIOR DIRECTIVE:\n${optionsOrContext.customSystemPrompt.trim()}`;
+    }
+
+    let modelsToTry = [...TIERED_MODELS];
+    if (typeof optionsOrContext === 'object' && optionsOrContext?.selectedModel) {
+        const customModel = optionsOrContext.selectedModel.trim();
+        if (customModel) {
+            modelsToTry = [customModel, ...TIERED_MODELS.filter(m => m !== customModel)];
+        }
+    }
+
     // Iterate through available API keys and model tiers for maximum reliability and quota survival
     for (const apiKey of availableKeys) {
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        for (const modelName of TIERED_MODELS) {
+        for (const modelName of modelsToTry) {
             try {
                 const model = genAI.getGenerativeModel({
                     model: modelName,
-                    systemInstruction: systemInstruction,
+                    systemInstruction: effectiveSystemInstruction,
                     generationConfig: {
                         maxOutputTokens: isPremium ? 1200 : 600,
                         temperature: 0.75,

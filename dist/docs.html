@@ -932,6 +932,8 @@
                     <a href="#leveling" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-trophy"></i> Leveling & XP</a>
                     <a href="#tickets" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-ticket-alt"></i> Support Tickets</a>
                     <a href="#safety" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-shield-virus"></i> AutoMod Shield</a>
+                    <a href="#verification" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-user-shield"></i> Verification Gatekeeper</a>
+                    <a href="#timezone" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-clock"></i> Timezone & Creator Suite</a>
                     <a href="#games" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-star"></i> Starboard & Games</a>
                     <a href="#commands" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-terminal"></i> Command Reference</a>
                 </div>
@@ -1068,6 +1070,20 @@
                                 <span class="dropdown-desc">Sub-4ms regex spam & phishing defense</span>
                             </div>
                         </a>
+                        <a href="/docs#verification" class="dropdown-item">
+                            <i class="fas fa-user-shield"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Verification Gatekeeper</span>
+                                <span class="dropdown-desc">Pre-entry security screening & threat intel</span>
+                            </div>
+                        </a>
+                        <a href="/docs#timezone" class="dropdown-item">
+                            <i class="fas fa-clock"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Timezone & Creator Suite</span>
+                                <span class="dropdown-desc">Moscow MSK live clock & /time convert</span>
+                            </div>
+                        </a>
                         <a href="/docs#commands" class="dropdown-item">
                             <i class="fas fa-terminal"></i>
                             <div class="dropdown-item-text">
@@ -1186,11 +1202,13 @@
                 <a href="#tickets" class="toc-link"><i class="fas fa-ticket-alt"></i> Support Tickets & Mail</a>
                 <a href="#automation" class="toc-link"><i class="fas fa-magic"></i> Reaction Roles & Auto</a>
                 <a href="#games" class="toc-link"><i class="fas fa-gamepad"></i> Games & Starboard v3.0</a>
+                <a href="#timezone" class="toc-link"><i class="fas fa-clock"></i> Timezone & Creator Suite</a>
             </div>
 
             <div class="toc-group">
                 <span class="toc-heading">Security & Engineering</span>
                 <a href="#safety" class="toc-link"><i class="fas fa-shield-virus"></i> AutoMod Threat Shield</a>
+                <a href="#verification" class="toc-link"><i class="fas fa-user-shield"></i> Verification Gatekeeper</a>
                 <a href="#premium" class="toc-link"><i class="fas fa-crown"></i> Premium Subscriptions</a>
                 <a href="#commands" class="toc-link"><i class="fas fa-terminal"></i> Command Reference</a>
                 <a href="#api-ref" class="toc-link"><i class="fas fa-code"></i> REST API & Webhooks</a>
@@ -1434,11 +1452,119 @@
                 </div>
             </section>
 
-            <!-- 8. Essential Command Catalog -->
+            <!-- 8. Verification Threat Gatekeeper & Pre-Entry Shield -->
+            <section class="doc-section" id="verification">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #6366F1; background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3);"><i class="fas fa-user-shield"></i></div>
+                    <h2>8. Verification Gatekeeper & Threat Shield</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Protect your server from alt raids, spam syndicates, and ban evaders before they gain access. Nora's Verification Gatekeeper analyzes incoming members during verification with multi-vector security checks:</p>
+                    
+                    <div class="table-responsive">
+                        <table class="docs-table">
+                            <thead>
+                                <tr>
+                                    <th>Security Vector</th>
+                                    <th>Screening Mechanism</th>
+                                    <th>Risk Impact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Discord Official Spammer Flag</strong></td>
+                                    <td>Queries Discord API <code>UserFlags.Spammer</code> bitwise mask</td>
+                                    <td>Immediate high risk (+50 pts) & auto-quarantine</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Scam & Phishing Lure Intel</strong></td>
+                                    <td>Regex scans username and bio for Nitro lures, Steam scams, and malicious domains</td>
+                                    <td>Severe risk (+40 pts) & keyword match logging</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ban Evasion Registry Scan</strong></td>
+                                    <td>Cross-references server ban lists for handle collisions and identical avatar hash matches</td>
+                                    <td>High risk (+45 pts) with original banned user ID match</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Account Freshness & Age</strong></td>
+                                    <td>Evaluates Discord account creation timestamp against configurable day threshold</td>
+                                    <td>Flagged if under minimum age (e.g., &lt; 3–7 days old)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 style="color: #fff; margin: 24px 0 10px;">Automated Enforcement & Staff Review Dossier</h3>
+                    <p>When an account is flagged with a Risk Score &ge; 40, Nora halts verification role assignment and executes the configured guild action:</p>
+                    <ul>
+                        <li><strong>Deny (Default):</strong> Keeps user restricted with Unverified Quarantine role and blocks access.</li>
+                        <li><strong>Kick:</strong> Automatically kicks high-risk accounts with a DM notification explaining security reasons.</li>
+                        <li><strong>Ban:</strong> Automatically issues a server ban for confirmed evasions or malicious threats.</li>
+                    </ul>
+
+                    <div class="callout callout-tip" style="margin-top: 20px;">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <strong>Staff Review Buttons:</strong> Nora posts a real-time Dossier embed to your configured Mod Log channel with three 1-click interactive buttons:
+                            <br>&bull; 🔨 <strong>Ban User:</strong> Instantly bans the account with audit trail.
+                            <br>&bull; 👢 <strong>Kick User:</strong> Removes the account from the guild.
+                            <br>&bull; 🛡️ <strong>Override & Approve:</strong> Bypasses security flags, strips quarantine roles, and grants verified access immediately.
+                        </div>
+                    </div>
+
+                    <h3 style="color: #fff; margin: 24px 0 10px;">Configuration</h3>
+                    <p>Control the Gatekeeper directly in Discord via <code>/setup security</code> or via the Web Dashboard at <a href="/dashboard" style="color: var(--blurple); font-weight: 700;">vaztinix.dev/dashboard</a> under <strong>Verification &rarr; Security & Threat Gatekeeper</strong>.</p>
+                </div>
+            </section>
+
+            <!-- 9. Global Timezone & Creator Operations Suite -->
+            <section class="doc-section" id="timezone">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #38BDF8; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3);"><i class="fas fa-clock"></i></div>
+                    <h2>9. Global Timezone & Creator Operations Suite</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Coordinate seamlessly across international gaming guilds and developer teams. Nora includes a first-class global timezone engine and direct connection to Creator Vaztinix in Moscow, Russia (MSK / UTC+3):</p>
+                    
+                    <div class="starboard-tier-grid">
+                        <div class="tier-card" style="border-color: rgba(56, 189, 248, 0.4);">
+                            <div class="tier-card-header">
+                                <span>🇷🇺 /time vaz</span>
+                                <span class="tier-threshold" style="background: rgba(56, 189, 248, 0.2); color: #38BDF8;">Creator Clock</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Displays the live Moscow clock (MSK / UTC+3) for developer Vaztinix, current date, and schedule status.</p>
+                        </div>
+                        <div class="tier-card" style="border-color: rgba(168, 85, 247, 0.4);">
+                            <div class="tier-card-header">
+                                <span>🔄 /time convert</span>
+                                <span class="tier-threshold" style="background: rgba(168, 85, 247, 0.2); color: #C084FC;">Bi-Directional</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Converts any time from your local timezone (e.g. EST, PST, UTC, GMT, JST) directly to Moscow MSK.</p>
+                        </div>
+                        <div class="tier-card" style="border-color: rgba(16, 185, 129, 0.4);">
+                            <div class="tier-card-header">
+                                <span>🌐 /time world</span>
+                                <span class="tier-threshold" style="background: rgba(16, 185, 129, 0.2); color: #34D399;">Global Matrix</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Side-by-side snapshot of 9 major global tech & gaming time hubs with UTC offsets and current clocks.</p>
+                        </div>
+                    </div>
+
+                    <div class="callout callout-tip" style="margin-top: 16px;">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <strong>About Developer Vaztinix:</strong> Vaztinix is a Russian creator based in Moscow, Russia who studies lots of English :3. The <code>/time vaz</code> and AI timezone commands make it effortless for community members and staff worldwide to know if it's day or night for Vaz.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 10. Essential Command Catalog -->
             <section class="doc-section" id="commands">
                 <div class="doc-section-header">
                     <div class="section-icon-badge" style="color: #A78BFA; background: rgba(167, 139, 250, 0.15); border-color: rgba(167, 139, 250, 0.3);"><i class="fas fa-terminal"></i></div>
-                    <h2>8. Essential Command Reference Catalog</h2>
+                    <h2>10. Essential Command Reference Catalog</h2>
                 </div>
                 <div class="doc-body">
                     <p>Click any command below to copy its syntax directly to your clipboard:</p>
@@ -1454,6 +1580,30 @@
                                 </tr>
                             </thead>
                             <tbody id="command-table-body">
+                                <tr>
+                                    <td><code onclick="copySnippet('/setup security', this)" style="cursor: pointer;">/setup security</code></td>
+                                    <td>Setup</td>
+                                    <td>Manage Guild</td>
+                                    <td>Configures Verification Threat Gatekeeper, security checks, and online scan.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/time vaz', this)" style="cursor: pointer;">/time vaz</code></td>
+                                    <td>Utility</td>
+                                    <td>Everyone</td>
+                                    <td>Displays live Moscow clock (MSK / UTC+3) for Creator Vaztinix and bio :3.</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/time convert [time] [from_tz]', this)" style="cursor: pointer;">/time convert</code></td>
+                                    <td>Utility</td>
+                                    <td>Everyone</td>
+                                    <td>Converts any time/timezone to Moscow Standard Time (MSK / UTC+3).</td>
+                                </tr>
+                                <tr>
+                                    <td><code onclick="copySnippet('/time world', this)" style="cursor: pointer;">/time world</code></td>
+                                    <td>Utility</td>
+                                    <td>Everyone</td>
+                                    <td>Displays global time matrix across UTC, MSK, EST, CST, PST, GMT, CET, JST, AEST.</td>
+                                </tr>
                                 <tr>
                                     <td><code onclick="copySnippet('/setup dashboard', this)" style="cursor: pointer;">/setup dashboard</code></td>
                                     <td>Setup</td>
@@ -1524,7 +1674,7 @@
             <section class="doc-section" id="api-ref">
                 <div class="doc-section-header">
                     <div class="section-icon-badge" style="color: #60A5FA; background: rgba(96, 165, 250, 0.15); border-color: rgba(96, 165, 250, 0.3);"><i class="fas fa-code"></i></div>
-                    <h2>9. REST API & Webhook Specifications</h2>
+                    <h2>11. REST API & Webhook Specifications</h2>
                 </div>
                 <div class="doc-body">
                     <p>Integrate your external dashboards and custom Discord applications with Nora's official HTTP telemetry:</p>

@@ -1,9 +1,10 @@
 const axios = require('axios');
-const { AttachmentBuilder } = require('discord.js');
+const geminiKeyManager = require('./geminiKeyManager');
 
 /**
- * 🎨 Nora AI Image Generator
- * Generates high-quality AI images using Pollinations / Flux with prompt enhancement.
+ * 🎨 Nora AI Image Generator - Powered Exclusively by Google Imagen 3
+ * All non-Google third-party image generation services have been removed.
+ * Strictly enforces Google's enterprise safety filters to prevent sexual, explicit, or inappropriate content.
  */
 
 /**
@@ -58,48 +59,80 @@ function extractImageSubject(text) {
 }
 
 /**
- * Generate an image from a text prompt
+ * Generate an image using Google's official Imagen 3 model via Google Gemini API
+ * Strictly enforces Google safety filtering: blocks NSFW, sexual content, and harmful requests.
  * @param {string} prompt 
  * @returns {Promise<{ buffer: Buffer, filename: string, enhancedPrompt: string }>}
  */
 async function generateAIImage(prompt) {
     const rawSubject = extractImageSubject(prompt);
-    const safePrompt = encodeURIComponent(rawSubject.substring(0, 300));
-    const seed = Math.floor(Math.random() * 1000000);
+    if (!rawSubject || rawSubject.length < 2) {
+        throw new Error('Please specify what you would like Google Imagen to create.');
+    }
 
-    // Primary endpoint: Pollinations Flux Model
-    const endpoints = [
-        `https://image.pollinations.ai/prompt/${safePrompt}?model=flux&width=1024&height=1024&nologo=true&seed=${seed}`,
-        `https://image.pollinations.ai/prompt/${safePrompt}?model=turbo&width=1024&height=1024&nologo=true&seed=${seed}`,
-        `https://image.pollinations.ai/prompt/${safePrompt}?width=1024&height=1024&nologo=true&seed=${seed}`
-    ];
+    const availableKeys = geminiKeyManager.getRotatedAvailableKeys();
+    if (!availableKeys || availableKeys.length === 0) {
+        throw new Error('No Google Gemini API keys are currently available for image generation.');
+    }
 
     let lastError = null;
-    for (const url of endpoints) {
+
+    for (const apiKey of availableKeys) {
         try {
-            const response = await axios.get(url, {
-                responseType: 'arraybuffer',
-                timeout: 25000,
+            // Google Imagen 3 generate endpoint
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+            
+            const payload = {
+                instances: [
+                    { prompt: rawSubject }
+                ],
+                parameters: {
+                    sampleCount: 1,
+                    aspectRatio: "1:1",
+                    personGeneration: "ALLOW_ADULT",
+                    safetyFilterLevel: "block_low_and_above"
+                }
+            };
+
+            const response = await axios.post(endpoint, payload, {
+                timeout: 35000,
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) NoraBot/1.0'
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'NoraBot-GoogleImagen/2.0'
                 }
             });
 
-            if (response.status === 200 && response.data && response.data.length > 1000) {
-                const filename = `nora_art_${Date.now()}.png`;
-                return {
-                    buffer: Buffer.from(response.data),
-                    filename,
-                    enhancedPrompt: rawSubject
-                };
+            if (response.data && response.data.predictions && response.data.predictions[0]) {
+                const prediction = response.data.predictions[0];
+                const base64Data = prediction.bytesBase64Encoded;
+                if (base64Data) {
+                    const buffer = Buffer.from(base64Data, 'base64');
+                    const filename = `nora_imagen_${Date.now()}.png`;
+                    return {
+                        buffer,
+                        filename,
+                        enhancedPrompt: rawSubject
+                    };
+                }
+            }
+
+            // If safety filter triggered or empty output
+            if (response.data && response.data.error) {
+                throw new Error(response.data.error.message || 'Google Safety Filter blocked this request');
             }
         } catch (err) {
             lastError = err;
-            console.warn(`[AI Image Generator] Endpoint failed (${err.message}), trying next fallback...`);
+            const msg = (err?.response?.data?.error?.message || err?.message || '').toLowerCase();
+            
+            if (msg.includes('safety') || msg.includes('blocked') || msg.includes('filtered') || msg.includes('prohibited')) {
+                throw new Error('Google Safety Filters blocked this image request. Inappropriate or sexual content is strictly forbidden.');
+            }
+
+            console.warn(`[Google Imagen 3] Request failed with key ...${apiKey.slice(-6)}:`, err?.message || err);
         }
     }
 
-    throw lastError || new Error('Failed to generate image from all image services');
+    throw lastError || new Error('Google Imagen 3 was unable to generate the requested image.');
 }
 
 module.exports = {
