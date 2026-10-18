@@ -8944,19 +8944,25 @@
                             <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 8px; display: block;">Select a Personality Template:</label>
                             <input type="hidden" id="setting-aiPromptTemplate" value="classic">
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                <button type="button" onclick="applyAiPromptTemplate('classic')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
+                                <button type="button" class="ai-template-btn" data-template="classic" onclick="applyAiPromptTemplate('classic')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background=this.getAttribute('data-active')==='true'?'rgba(99,102,241,0.15)':'rgba(255, 255, 255, 0.04)'">
                                     ✨ Classic Nora (Friendly & Witty)
                                 </button>
-                                <button type="button" onclick="applyAiPromptTemplate('professional')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
+                                <button type="button" class="ai-template-btn" data-template="balanced" onclick="applyAiPromptTemplate('balanced')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background=this.getAttribute('data-active')==='true'?'rgba(99,102,241,0.15)':'rgba(255, 255, 255, 0.04)'">
+                                    ⚖️ Balanced (Medium Blend)
+                                </button>
+                                <button type="button" class="ai-template-btn" data-template="dynamic" onclick="applyAiPromptTemplate('dynamic')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background=this.getAttribute('data-active')==='true'?'rgba(99,102,241,0.15)':'rgba(255, 255, 255, 0.04)'">
+                                    🌊 Dynamic (Server Tone Match)
+                                </button>
+                                <button type="button" class="ai-template-btn" data-template="professional" onclick="applyAiPromptTemplate('professional')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background=this.getAttribute('data-active')==='true'?'rgba(99,102,241,0.15)':'rgba(255, 255, 255, 0.04)'">
                                     💼 Helpful & Professional
                                 </button>
-                                <button type="button" onclick="applyAiPromptTemplate('sarcastic')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
+                                <button type="button" class="ai-template-btn" data-template="sarcastic" onclick="applyAiPromptTemplate('sarcastic')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background=this.getAttribute('data-active')==='true'?'rgba(99,102,241,0.15)':'rgba(255, 255, 255, 0.04)'">
                                     🎭 Sarcastic & Playful Banter
                                 </button>
-                                <button type="button" onclick="applyAiPromptTemplate('gamer')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
+                                <button type="button" class="ai-template-btn" data-template="gamer" onclick="applyAiPromptTemplate('gamer')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background=this.getAttribute('data-active')==='true'?'rgba(99,102,241,0.15)':'rgba(255, 255, 255, 0.04)'">
                                     🎮 Gamer & Casual
                                 </button>
-                                <button type="button" onclick="applyAiPromptTemplate('moderator')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
+                                <button type="button" class="ai-template-btn" data-template="moderator" onclick="applyAiPromptTemplate('moderator')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background=this.getAttribute('data-active')==='true'?'rgba(99,102,241,0.15)':'rgba(255, 255, 255, 0.04)'">
                                     🛡️ Server Moderator & Enforcer
                                 </button>
                             </div>
@@ -28245,6 +28251,8 @@ try {
 
             const templates = {
                 classic: "You are Nora, a friendly, intelligent, and delightfully witty Discord AI assistant. You are engaging, supportive, and keep chat positive and fun while providing helpful answers.",
+                balanced: "You are Nora, a versatile, well-balanced Discord AI companion. Maintain a natural, adaptable balance between friendly warmth, helpful clarity, light casual banter, and respectful moderation. Never swing too extremely into harsh sarcasm or robotic formality—stay approachable, reliable, intelligent, and socially grounded in every interaction.",
+                dynamic: "You are Nora, a highly intuitive and socially adaptive Discord AI. Dynamically observe and mirror the active channel's energy, conversational tone, vocabulary, formality, and community vibe. If members are casual and joking with gaming memes or slang, match their casual banter. If someone asks a serious or technical question, shift seamlessly into clear, knowledgeable, and concise assistance. Always stay authentic, contextual, and in sync with the room's atmosphere.",
                 professional: "You are Nora, a professional, concise, and courteous AI assistant. Provide direct, informative, and precise responses. Assist users with server guides, tech questions, and community guidelines efficiently.",
                 sarcastic: "You are Nora, a sassy, playfully sarcastic AI companion. You love banter, teasing members affectionately, clever humor, and funny comebacks while remaining friendly at heart.",
                 gamer: "You are Nora, an energetic, hype Discord companion who loves video games, memes, and casual chat. Keep messages punchy, relatable, and fun.",
@@ -28253,8 +28261,15 @@ try {
 
             if (templates[type]) {
                 promptEl.value = templates[type];
+                document.querySelectorAll('.ai-template-btn').forEach(b => {
+                    const isActive = b.getAttribute('data-template') === type;
+                    b.setAttribute('data-active', isActive ? 'true' : 'false');
+                    b.style.borderColor = isActive ? '#6366f1' : 'rgba(255, 255, 255, 0.1)';
+                    b.style.background = isActive ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255, 255, 255, 0.04)';
+                });
                 if (typeof window.updateUnsavedChangesPopup === 'function') window.updateUnsavedChangesPopup();
-                if (typeof showToast === 'function') showToast(`Applied ${type.charAt(0).toUpperCase() + type.slice(1)} prompt template`, 'info');
+                const displayName = type === 'balanced' ? 'Balanced' : (type === 'dynamic' ? 'Dynamic' : type.charAt(0).toUpperCase() + type.slice(1));
+                if (typeof showToast === 'function') showToast(`Applied ${displayName} prompt template`, 'info');
             }
         };
 

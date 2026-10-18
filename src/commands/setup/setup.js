@@ -1026,6 +1026,8 @@ module.exports = {
                 const row3 = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder().setCustomId('action_ai_template').setPlaceholder('Select Personality Template...').addOptions([
                         { label: '✨ Classic Nora (Friendly & Witty)', value: 'classic', description: 'Supportive, friendly, warm Discord companion', default: currentTemplate === 'classic' },
+                        { label: '⚖️ Balanced (Medium Blend)', value: 'balanced', description: 'Harmonious blend of friendly, helpful, witty, and calm', default: currentTemplate === 'balanced' },
+                        { label: '🌊 Dynamic (Server Tone Match)', value: 'dynamic', description: 'Dynamically mirrors server tone, slang, mood, and context', default: currentTemplate === 'dynamic' },
                         { label: '💼 Helpful & Professional', value: 'professional', description: 'Concise, clear, guide and documentation assistant', default: currentTemplate === 'professional' },
                         { label: '🎭 Sarcastic & Playful Banter', value: 'sarcastic', description: 'Teasing, playful humor, witty comebacks', default: currentTemplate === 'sarcastic' },
                         { label: '🎮 Gamer & Casual', value: 'gamer', description: 'Gaming slang, hype energy, casual vibe', default: currentTemplate === 'gamer' },
@@ -1590,6 +1592,8 @@ module.exports = {
                     settings.aiPromptTemplate = templateVal;
                     const templates = {
                         classic: "You are Nora, a friendly, intelligent, and delightfully witty Discord AI assistant. You are engaging, supportive, and keep chat positive and fun while providing helpful answers.",
+                        balanced: "You are Nora, a versatile, well-balanced Discord AI companion. Maintain a natural, adaptable balance between friendly warmth, helpful clarity, light casual banter, and respectful moderation. Never swing too extremely into harsh sarcasm or robotic formality—stay approachable, reliable, intelligent, and socially grounded in every interaction.",
+                        dynamic: "You are Nora, a highly intuitive and socially adaptive Discord AI. Dynamically observe and mirror the active channel's energy, conversational tone, vocabulary, formality, and community vibe. If members are casual and joking with gaming memes or slang, match their casual banter. If someone asks a serious or technical question, shift seamlessly into clear, knowledgeable, and concise assistance. Always stay authentic, contextual, and in sync with the room's atmosphere.",
                         professional: "You are Nora, a professional, concise, and courteous AI assistant. Provide direct, informative, and precise responses. Assist users with server guides, tech questions, and community guidelines efficiently.",
                         sarcastic: "You are Nora, a sassy, playfully sarcastic AI companion. You love banter, teasing members affectionately, clever humor, and funny comebacks while remaining friendly at heart.",
                         gamer: "You are Nora, an energetic, hype Discord companion who loves video games, memes, and casual chat. Keep messages punchy, relatable, and fun.",
