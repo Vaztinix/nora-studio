@@ -14039,7 +14039,16 @@
         window.performLogout = performLogout;
 
 
-        async function saveUserProfile() {
+        let _userProfileSaveDebounce = null;
+        function debouncedSaveUserProfile(delay = 300) {
+            clearTimeout(_userProfileSaveDebounce);
+            _userProfileSaveDebounce = setTimeout(() => {
+                if (typeof saveUserProfile === 'function') saveUserProfile(true);
+            }, delay);
+        }
+        window.debouncedSaveUserProfile = debouncedSaveUserProfile;
+
+        async function saveUserProfile(silent = false) {
             const bioBox = document.getElementById('user-pref-bio');
             const roBox = document.getElementById('user-pref-robloxPublic');
             const pubBox = document.getElementById('user-pref-profilePublic');
@@ -14080,7 +14089,7 @@
             dSettings.socialLinks = { github: linkGithub, twitter: linkTwitter, youtube: linkYoutube, web: linkWeb };
 
             const t = sessionStorage.getItem('discord_token');
-            if (typeof toggleLoading === 'function') toggleLoading(true);
+            if (!silent && typeof toggleLoading === 'function') toggleLoading(true);
             try {
                 await safeFetch('/api/user/profile', {
                     method: 'POST',
@@ -14113,12 +14122,12 @@
                     window.currentUser.prefs.dashboardSettings = JSON.stringify(dSettings);
                 }
 
-                showToast('Profile & Rank Card preferences saved globally!', 'success');
+                showToast(silent ? 'Preference saved instantly!' : 'Profile & Rank Card preferences saved globally!', 'success');
             } catch (e) {
                 console.error('[Save Profile Error]:', e);
                 showToast('Failed to save profile: ' + e.message, 'error');
             } finally {
-                if (typeof toggleLoading === 'function') toggleLoading(false);
+                if (!silent && typeof toggleLoading === 'function') toggleLoading(false);
             }
         }
 
@@ -14190,7 +14199,7 @@
         }
         window.fetchUserProfile = fetchUserProfile;
 
-        window.toggleUserRankCardThemeModeUI = function() {
+        window.toggleUserRankCardThemeModeUI = function(shouldAutoSave = true) {
             const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
             const colorSec = document.getElementById('user-rankcard-color-picker-section');
             const imageSec = document.getElementById('user-rankcard-image-upload-section');
@@ -14221,6 +14230,9 @@
             if (imageSec) imageSec.style.display = (mode === 'image') ? 'flex' : 'none';
 
             if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+            if (shouldAutoSave && typeof debouncedSaveUserProfile === 'function') {
+                debouncedSaveUserProfile(250);
+            }
         };
 
         window.setRankColor = function(hex) {
@@ -14230,15 +14242,17 @@
             if (colorInput) colorInput.value = hex;
             if (hexInput) hexInput.value = hex;
             if (badge) badge.style.background = hex;
-            const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value;
-            if (mode !== 'custom' && mode !== 'image') {
+            const currentMode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value;
+            if (currentMode !== 'custom' && currentMode !== 'image') {
                 const customRadio = document.querySelector('input[name="userRankCardThemeMode"][value="custom"]');
                 if (customRadio) {
                     customRadio.checked = true;
-                    if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
+                    if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI(false);
                 }
             }
             if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+            if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();
+            if (typeof debouncedSaveUserProfile === 'function') debouncedSaveUserProfile(250);
         };
 
         window.handleHexDirectInput = function(val) {
@@ -14249,7 +14263,17 @@
                 const badge = document.getElementById('hex-color-preview-badge');
                 if (colorInput) colorInput.value = val;
                 if (badge) badge.style.background = val;
+                const currentMode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value;
+                if (currentMode !== 'custom' && currentMode !== 'image') {
+                    const customRadio = document.querySelector('input[name="userRankCardThemeMode"][value="custom"]');
+                    if (customRadio) {
+                        customRadio.checked = true;
+                        if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI(false);
+                    }
+                }
                 if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+                if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();
+                if (typeof debouncedSaveUserProfile === 'function') debouncedSaveUserProfile(350);
             }
         };
 
@@ -14258,7 +14282,17 @@
             const badge = document.getElementById('hex-color-preview-badge');
             if (hexInput) hexInput.value = val;
             if (badge) badge.style.background = val;
+            const currentMode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value;
+            if (currentMode !== 'custom' && currentMode !== 'image') {
+                const customRadio = document.querySelector('input[name="userRankCardThemeMode"][value="custom"]');
+                if (customRadio) {
+                    customRadio.checked = true;
+                    if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI(false);
+                }
+            }
             if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+            if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();
+            if (typeof debouncedSaveUserProfile === 'function') debouncedSaveUserProfile(350);
         };
 
         window.handleRankCardFileUpload = function(event) {
@@ -14429,17 +14463,28 @@
             const previewTag = document.getElementById('rank-card-preview-tag');
             const bannerEl = document.getElementById('profile-banner');
 
+            let activeAccent = '#7c3aed';
+            if (mode === 'custom' || mode === 'image') {
+                activeAccent = customColor || '#7c3aed';
+            }
+
             if (previewTag) {
-                if (overwritePresets) {
-                    previewTag.textContent = 'Personal Overwrite';
-                    previewTag.style.color = '#c084fc';
-                    previewTag.style.borderColor = 'rgba(192, 132, 252, 0.4)';
-                    previewTag.style.background = 'rgba(192, 132, 252, 0.15)';
-                } else {
-                    previewTag.textContent = 'Server Preset';
+                if (mode === 'preset') {
+                    previewTag.textContent = overwritePresets ? 'Server Preset (Overwrite Enabled)' : 'Server Preset';
                     previewTag.style.color = '#38bdf8';
                     previewTag.style.borderColor = 'rgba(56, 189, 248, 0.3)';
                     previewTag.style.background = 'rgba(56, 189, 248, 0.1)';
+                } else if (mode === 'custom') {
+                    previewTag.textContent = overwritePresets ? 'Custom Accent (Global Overwrite)' : 'Custom Accent';
+                    previewTag.style.color = activeAccent;
+                    previewTag.style.borderColor = activeAccent + '66';
+                    previewTag.style.background = activeAccent + '22';
+                } else if (mode === 'image') {
+                    const isGifMedia = customBgUrl && (customBgUrl.includes('.gif') || customBgUrl.startsWith('data:image/gif'));
+                    previewTag.textContent = isGifMedia ? 'Animated GIF' : 'Custom Image';
+                    previewTag.style.color = '#c084fc';
+                    previewTag.style.borderColor = 'rgba(192, 132, 252, 0.4)';
+                    previewTag.style.background = 'rgba(192, 132, 252, 0.15)';
                 }
             }
 
@@ -14449,8 +14494,6 @@
                     avatarEl.src = resolveDiscordUserAvatarUrl(window.currentUser);
                 }
             }
-
-            const activeAccent = (mode === 'custom' || (mode === 'image' && customColor)) ? customColor : '#7c3aed';
 
             if (avatarEl) avatarEl.style.borderColor = activeAccent;
             if (levelBadgeEl) levelBadgeEl.style.color = activeAccent;
@@ -14463,9 +14506,9 @@
                     bannerEl.style.backgroundPosition = 'center';
                 } else if (mode === 'custom') {
                     bannerEl.style.backgroundImage = 'none';
-                    bannerEl.style.backgroundColor = customColor;
+                    bannerEl.style.backgroundColor = activeAccent;
                 } else {
-                    bannerEl.style.backgroundImage = `linear-gradient(135deg, ${customColor} 0%, #38bdf8 100%)`;
+                    bannerEl.style.backgroundImage = `linear-gradient(135deg, ${activeAccent} 0%, #38bdf8 100%)`;
                 }
             }
 
@@ -14476,18 +14519,15 @@
                 bgLayer.style.backgroundSize = 'cover';
                 bgLayer.style.backgroundPosition = 'center';
                 bgLayer.style.backgroundColor = 'transparent';
-                if (progressBar) progressBar.style.background = activeAccent;
+                if (progressBar) progressBar.style.background = `linear-gradient(90deg, ${activeAccent}, #38bdf8)`;
             } else if (mode === 'custom') {
                 bgLayer.style.backgroundImage = 'none';
-                bgLayer.style.backgroundColor = customColor;
-                if (progressBar) progressBar.style.background = customColor;
+                bgLayer.style.backgroundColor = '#0b0c10';
+                if (progressBar) progressBar.style.background = `linear-gradient(90deg, ${activeAccent}, #38bdf8)`;
             } else {
                 bgLayer.style.backgroundImage = 'none';
-                bgLayer.style.backgroundColor = '#1e1b4b';
-                if (progressBar) progressBar.style.background = 'linear-gradient(90deg, #7c3aed, #4f46e5)';
-                if (avatarEl) avatarEl.style.borderColor = 'var(--primary)';
-                if (levelBadgeEl) levelBadgeEl.style.color = '#a78bfa';
-                if (rankValEl) rankValEl.style.color = 'var(--primary)';
+                bgLayer.style.backgroundColor = '#0b0c10';
+                if (progressBar) progressBar.style.background = 'linear-gradient(90deg, #7c3aed, #38bdf8)';
             }
         };
 
@@ -27686,10 +27726,13 @@ try {
             <div id="crop-gif-notice" style="display: none; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 10px; padding: 10px 14px; font-size: 0.78rem; color: #e9d5ff; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-film" style="color: #c084fc;"></i>
-                    <span>Animated GIF detected: Nora will automatically resize & loop all frames seamlessly on your Discord rank card!</span>
+                    <span>Animated GIF detected: Apply this cropped frame as a crisp card, or keep the original GIF looping!</span>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button type="button" class="btn-outline" onclick="applyCropSelection(true)" style="padding: 5px 10px; font-size: 0.74rem; background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.4); color: #fff; border-radius: 6px; cursor: pointer;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="btn-outline" onclick="applyCropSelection(true, true)" style="padding: 5px 10px; font-size: 0.74rem; background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.4); color: #fff; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-film"></i> Apply Looping GIF
+                    </button>
+                    <button type="button" class="btn-outline" onclick="applyCropSelection(true, false)" style="padding: 5px 10px; font-size: 0.74rem; background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.4); color: #fff; border-radius: 6px; cursor: pointer;">
                         <i class="fas fa-camera"></i> Crop Frame as Static PNG
                     </button>
                 </div>
@@ -27700,7 +27743,7 @@ try {
                 <button type="button" onclick="closeRankCardCropModal()" style="padding: 10px 18px; font-size: 0.84rem; font-weight: 600; border-radius: 10px; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.12); cursor: pointer;">
                     Cancel
                 </button>
-                <button type="button" id="crop-apply-btn" onclick="applyCropSelection(false)" style="padding: 10px 22px; font-size: 0.84rem; font-weight: 700; border-radius: 10px; background: #ffffff; color: #000000; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 8px;">
+                <button type="button" id="crop-apply-btn" onclick="applyCropSelection(false, false)" style="padding: 10px 22px; font-size: 0.84rem; font-weight: 700; border-radius: 10px; background: #ffffff; color: #000000; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fas fa-check"></i> Apply & Fit
                 </button>
             </div>
@@ -27778,12 +27821,21 @@ try {
             if (gifNotice) gifNotice.style.display = isGif ? 'flex' : 'none';
 
             if (img) {
+                img.crossOrigin = 'anonymous';
                 img.onload = function() {
                     calculateBaseDimensions();
                     resetCropState();
                 };
                 img.onerror = function() {
-                    if (typeof showToast === 'function') showToast('Failed to load image preview into crop modal.', 'error');
+                    if (srcToUse.startsWith('http://') || srcToUse.startsWith('https://')) {
+                        const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                        img.onerror = function() {
+                            if (typeof showToast === 'function') showToast('Failed to load image preview into crop modal.', 'error');
+                        };
+                        img.src = `${apiBase}/api/proxy-image?url=${encodeURIComponent(srcToUse)}`;
+                    } else {
+                        if (typeof showToast === 'function') showToast('Failed to load image preview into crop modal.', 'error');
+                    }
                 };
                 img.src = srcToUse;
             }
@@ -27958,6 +28010,8 @@ try {
             const stageW = stage.clientWidth || 860;
             const domToCanvasScale = 860 / stageW;
 
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.clearRect(0, 0, 860, 240);
 
             const imgRenderW = img.offsetWidth;
@@ -27981,10 +28035,12 @@ try {
             }
         }
 
-        window.applyCropSelection = function(forceStatic = false) {
+        window.applyCropSelection = function(isGifNoticeAction = false, keepLoopingGif = false) {
             let finalMediaValue = currentSrc;
 
-            if (!isGif || forceStatic) {
+            if (keepLoopingGif && isGif) {
+                finalMediaValue = currentSrc;
+            } else {
                 const croppedData = generateCroppedCanvasPng();
                 if (croppedData) {
                     finalMediaValue = croppedData;
@@ -27998,21 +28054,39 @@ try {
                 const imageRadio = document.querySelector('input[name="userRankCardThemeMode"][value="image"]');
                 if (imageRadio) {
                     imageRadio.checked = true;
-                    if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
                 }
 
+                const overwriteBox = document.getElementById('user-pref-overwriteServerPresets');
+                if (overwriteBox && !overwriteBox.checked) {
+                    overwriteBox.checked = true;
+                }
+
+                if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI(false);
                 if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
                 if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();
+
+                // INSTANT SAVE FOR USER PREFERENCES!
+                if (typeof saveUserProfile === 'function') {
+                    saveUserProfile(false);
+                }
+
                 if (typeof showToast === 'function') {
-                    showToast(isGif && !forceStatic ? 'Animated GIF framing applied! Live preview updated.' : 'Rank card background cropped to 860x240!', 'success');
+                    showToast(keepLoopingGif ? 'Animated looping GIF applied & saved instantly!' : 'Cropped rank card media applied & saved instantly!', 'success');
                 }
             } else {
                 const serverInput = document.getElementById('setting-levelingCardBackgroundImage');
                 if (serverInput) serverInput.value = finalMediaValue;
 
                 if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
+                if (typeof markFormDirty === 'function') markFormDirty('setting-levelingCardBackgroundImage');
+
+                // INSTANT SAVE FOR SERVER SETTINGS!
+                if (typeof saveSettings === 'function') {
+                    saveSettings(true);
+                }
+
                 if (typeof showToast === 'function') {
-                    showToast(isGif && !forceStatic ? 'Server animated GIF framing applied!' : 'Server rank card background cropped to 860x240!', 'success');
+                    showToast(keepLoopingGif ? 'Server looping GIF applied & saved instantly!' : 'Server rank card cropped media applied & saved instantly!', 'success');
                 }
             }
 

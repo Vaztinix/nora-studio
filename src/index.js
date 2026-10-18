@@ -2383,6 +2383,31 @@ app.get('/api/klipy/search', async (req, res) => {
         res.json({ success: false, results: [], nextOffset: 0 });
     }
 });
+// Image Proxy to safely load external images (Discord CDN, Giphy, Tenor, Klipy, etc.) for canvas cropping without CORS taint
+app.get('/api/proxy-image', async (req, res) => {
+    const rawUrl = req.query.url;
+    if (!rawUrl || typeof rawUrl !== 'string') return res.status(400).send('Missing url parameter');
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const fetchRes = await fetch(rawUrl, {
+            signal: controller.signal,
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+        });
+        clearTimeout(timeoutId);
+        if (!fetchRes.ok) return res.status(502).send('Failed to fetch image');
+        const contentType = fetchRes.headers.get('content-type') || 'image/png';
+        const arrayBuf = await fetchRes.arrayBuffer();
+        const buffer = Buffer.from(arrayBuf);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(buffer);
+    } catch (e) {
+        res.status(500).send('Error proxying image');
+    }
+});
+
 
 app.post('/api/user/profile', async (req, res) => {
     const authHeader = req.headers.authorization;

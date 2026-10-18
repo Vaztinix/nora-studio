@@ -119,19 +119,26 @@ module.exports = {
             const userShowAvatar = targetPrefs ? targetPrefs.showAvatarInRankCard !== false : true;
             const finalShowPfp = showPfp && userShowAvatar;
 
-            const shouldOverwrite = targetPrefs ? (targetPrefs.overwriteServerPresets || targetPrefs.rankCardThemeMode !== 'preset') : false;
-            const themeMode = targetPrefs?.rankCardThemeMode || (targetPrefs?.rankCardBackgroundImage ? 'image' : (targetPrefs?.rankCardCustomColor ? 'custom' : 'preset'));
-            let cardAccent = settings?.levelingCardAccentColor || '#6366f1';
-            if (shouldOverwrite && targetPrefs?.rankCardCustomColor) {
-                cardAccent = targetPrefs.rankCardCustomColor;
-            } else if ((themeMode === 'custom' || themeMode === 'image') && targetPrefs?.rankCardCustomColor) {
-                cardAccent = targetPrefs.rankCardCustomColor;
-            }
+            const themeMode = targetPrefs?.rankCardThemeMode || 'preset';
+            const shouldOverwrite = targetPrefs ? (targetPrefs.overwriteServerPresets || themeMode !== 'preset') : false;
 
-            let cardBgColor = settings?.levelingCardBgColor || '#090a10';
+            let cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
+            let cardBgColor = settings?.levelingCardBgColor || '#111217';
+            let cardBorder = settings?.levelingCardBorderColor || '#23252e';
             let cardUserBg = null;
-            if (shouldOverwrite || themeMode === 'image' || targetPrefs?.rankCardBackgroundImage) {
-                cardUserBg = targetPrefs?.rankCardBackgroundImage || targetPrefs?.customRankCardBg || null;
+
+            if (themeMode === 'image' || (shouldOverwrite && targetPrefs?.rankCardBackgroundImage)) {
+                cardUserBg = targetPrefs?.rankCardBackgroundImage || null;
+                if (targetPrefs?.rankCardCustomColor) cardAccent = targetPrefs.rankCardCustomColor;
+            } else if (themeMode === 'custom' || (shouldOverwrite && targetPrefs?.rankCardCustomColor)) {
+                cardUserBg = null;
+                if (targetPrefs?.rankCardCustomColor) cardAccent = targetPrefs.rankCardCustomColor;
+            } else {
+                // 'preset' mode: strictly adhere to server presets
+                cardUserBg = null;
+                cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
+                cardBgColor = settings?.levelingCardBgColor || '#111217';
+                cardBorder = settings?.levelingCardBorderColor || '#23252e';
             }
 
             const { generateRankCard } = require('../../utils/rankCardGenerator');
@@ -146,9 +153,10 @@ module.exports = {
                     showPfp: finalShowPfp,
                     bgColor: cardBgColor,
                     accentColor: cardAccent,
-                    borderColor: settings?.levelingCardBorderColor || '#232538',
+                    borderColor: cardBorder,
                     isPremium: true, // Always allow animated GIFs when present
-                    userCustomBg: cardUserBg
+                    userCustomBg: cardUserBg,
+                    serverCustomBg: settings?.levelingCardBackgroundImage || null
                 }),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 25000))
             ]);
