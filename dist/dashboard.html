@@ -596,7 +596,7 @@
         .config-title p { color: var(--muted); font-size: 0.9rem; }
         
         .save-btn {
-            background: linear-gradient(180deg, #5865F2 0%, #4752C4 100%) !important;
+            background: #5865F2 !important;
             color: #ffffff !important;
             padding: 12px 28px;
             border-radius: 999px;
@@ -605,13 +605,13 @@
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 16px rgba(88, 101, 242, 0.25) !important;
+            box-shadow: 0 4px 16px rgba(88, 101, 242, 0.35) !important;
         }
         .save-btn:hover {
-            background: linear-gradient(180deg, #6470f5 0%, #4e59cf 100%) !important;
+            background: #4752C4 !important;
             border-color: rgba(255, 255, 255, 0.25) !important;
             transform: translateY(-2px);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(88, 101, 242, 0.4) !important;
+            box-shadow: 0 8px 24px rgba(88, 101, 242, 0.5) !important;
             color: #ffffff !important;
         }
         
@@ -627,16 +627,17 @@
             box-shadow: none !important;
         }
         #save-settings-btn:not(:disabled):not(.disabled) {
-            background: linear-gradient(90deg, #2563eb, #22d3ee) !important;
+            background: #5865F2 !important;
             color: #ffffff !important;
             font-weight: 700 !important;
             cursor: pointer !important;
             opacity: 1 !important;
             pointer-events: auto !important;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 20px rgba(37, 99, 235, 0.2) !important;
+            box-shadow: 0 4px 20px rgba(88, 101, 242, 0.45) !important;
         }
         #save-settings-btn:not(:disabled):not(.disabled):hover {
-            box-shadow: 0 0 35px rgba(34, 211, 238, 0.4) !important;
+            background: #4752C4 !important;
+            box-shadow: 0 6px 25px rgba(88, 101, 242, 0.6) !important;
         }
 
         .modal-content,
@@ -3503,8 +3504,8 @@
 
             /* Mobile Save Button States */
             .mobile-save-bar .save-btn {
-                background: #ffffff !important;
-                color: #000000 !important;
+                background: #5865F2 !important;
+                color: #ffffff !important;
                 padding: 10px 22px !important;
                 border-radius: 999px !important;
                 font-size: 0.9rem !important;
@@ -3514,7 +3515,7 @@
                 display: inline-flex !important;
                 align-items: center !important;
                 gap: 6px !important;
-                box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3) !important;
+                box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4) !important;
                 transition: all 0.2s ease !important;
             }
             .mobile-save-bar .save-btn:disabled,
@@ -6650,22 +6651,22 @@
                             </div>
                         </div>
 
-                        <!-- Adaptive Velocity Slowmode Hub Quick Link & Sync Banner -->
-                        <div class="panel" style="background: rgba(6, 182, 212, 0.04); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 16px; padding: 18px 22px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                        <!-- Adaptive Slowmode Hub Quick Link & Sync Banner -->
+                        <div class="panel" style="background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 16px; padding: 18px 22px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
                             <div style="display: flex; align-items: center; gap: 14px;">
-                                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(6, 182, 212, 0.15); color: #22d3ee; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                                    <i class="fas fa-bolt-lightning"></i>
+                                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(99, 102, 241, 0.18); color: #a5b4fc; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    <i class="fas fa-gauge-high"></i>
                                 </div>
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <h4 style="margin: 0; color: #fff; font-size: 0.98rem; font-weight: 700;">Adaptive Velocity Defense Matrix</h4>
-                                        <span style="padding: 1px 7px; font-size: 0.68rem; font-family: monospace; border-radius: 999px; background: rgba(6,182,212,0.12); color: #22d3ee; border: 1px solid rgba(6,182,212,0.3);">SUB-4MS</span>
+                                        <h4 style="margin: 0; color: #fff; font-size: 0.98rem; font-weight: 700;">Adaptive Slowmode System</h4>
+                                        <span style="padding: 1px 7px; font-size: 0.68rem; font-weight: 700; border-radius: 999px; background: rgba(99, 102, 241, 0.15); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.3);">AUTO-PACING</span>
                                     </div>
-                                    <p style="margin: 2px 0 0 0; color: var(--muted); font-size: 0.8rem;">Heuristic message velocity scaling dynamically regulates channel slowmode against raid swarms.</p>
+                                    <p style="margin: 2px 0 0 0; color: var(--muted); font-size: 0.8rem;">Automatically slows down chat during spam bursts and restores normal speed when quiet.</p>
                                 </div>
                             </div>
-                            <button type="button" onclick="showTab('tab-adaptive-slowmode');" style="padding: 9px 18px; border-radius: 10px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); color: #22d3ee; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='rgba(6,182,212,0.25)'" onmouseout="this.style.background='rgba(6, 182, 212, 0.15)'">
-                                <i class="fas fa-sliders"></i> Configure Velocity Matrix
+                            <button type="button" onclick="showTab('tab-adaptive-slowmode');" style="padding: 9px 18px; border-radius: 10px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.25)'" onmouseout="this.style.background='rgba(99, 102, 241, 0.15)'">
+                                <i class="fas fa-gauge-high"></i> Configure Adaptive Slowmode
                             </button>
                         </div>
 
@@ -7032,78 +7033,85 @@
                 <!-- 🛡️ ADAPTIVE VELOCITY SLOWMODE DEFENSE CENTER             -->
                 <!-- ======================================================== -->
                 <!-- ======================================================== -->
-                <!-- 🛡️ ADAPTIVE VELOCITY SLOWMODE DEFENSE CENTER             -->
+                <!-- 🛡️ ADAPTIVE SLOWMODE CENTER                                 -->
                 <!-- ======================================================== -->
                 <div id="tab-adaptive-slowmode" class="tab-content" style="display: none;">
-                    <!-- Hero Banner -->
-                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 24px 28px; margin-bottom: 22px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-                            <div style="display: flex; align-items: center; gap: 16px;">
-                                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff;">
-                                    <i class="fas fa-bolt"></i>
-                                </div>
-                                <div>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Adaptive Velocity Defense</h1>
-                                        <span style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--muted); font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;">SUB-4MS ENGINE</span>
-                                    </div>
-                                    <p style="color: var(--muted); margin: 4px 0 0; font-size: 0.85rem;">Heuristic anti-raid mitigation. Automatically scales channel slowmode based on message velocity to prevent token raids before they impact members.</p>
-                                </div>
+                    <!-- Hero Banner (Starboard-Themed Glassmorphism) -->
+                    <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.16) 0%, rgba(59, 130, 246, 0.08) 50%, rgba(168, 85, 247, 0.12) 100%); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 20px; padding: 28px 36px; margin-bottom: 24px; backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 25px rgba(99, 102, 241, 0.1); flex-wrap: wrap; gap: 20px;">
+                        <div style="max-width: 780px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+                                <span style="background: rgba(99, 102, 241, 0.22); color: #a5b4fc; font-size: 0.72rem; padding: 4px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(99, 102, 241, 0.4); letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-gauge-high" style="color: #a5b4fc;"></i> Adaptive Slowmode
+                                </span>
+                                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; font-size: 0.72rem; padding: 4px 12px; border-radius: 999px; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.35);">
+                                    <i class="fas fa-shield-alt" style="color: #10b981;"></i> Automatic Chat Pacing
+                                </span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 14px; background: rgba(0, 0, 0, 0.25); padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
-                                <div>
-                                    <div id="adaptive-slowmode-status-text" style="font-size: 0.85rem; font-weight: 700; color: var(--muted);">DISABLED</div>
-                                    <div style="font-size: 0.72rem; color: var(--muted);">Velocity Shield</div>
-                                </div>
-                                <label style="position: relative; display: inline-block; width: 50px; height: 26px; cursor: pointer;">
-                                    <input type="checkbox" id="setting-adaptiveSlowmodeEnabled" style="opacity: 0; width: 0; height: 0;" onchange="handleAdaptiveSlowmodeToggle(this.checked)">
-                                    <span id="adaptive-toggle-track" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 30px; transition: 0.3s;"></span>
-                                    <span id="adaptive-toggle-thumb" style="position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s;"></span>
-                                </label>
+                            <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin-bottom: 6px; letter-spacing: -0.02em;">Adaptive Slowmode</h1>
+                            <p style="color: rgba(255,255,255,0.75); font-size: 0.88rem; line-height: 1.5; margin: 0;">
+                                Automatically slows down chat during rapid message bursts or spam raids, then gracefully restores normal chat speed when conversation calms down.
+                            </p>
+                        </div>
+
+                        <!-- On/Off Switch with Standard Site Toggle Background -->
+                        <div style="display: flex; align-items: center; gap: 14px; background: rgba(0, 0, 0, 0.35); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Adaptive Slowmode</div>
+                                <div id="adaptive-slowmode-status-text" style="font-size: 0.92rem; font-weight: 800; color: var(--muted);">DISABLED</div>
                             </div>
+                            <label class="switch">
+                                <input type="checkbox" id="setting-adaptiveSlowmodeEnabled" onchange="handleAdaptiveSlowmodeToggle(this.checked)">
+                                <span class="slider"></span>
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Preset Profiles -->
-                    <div style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 16px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-                        <div>
-                            <div style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-sliders" style="color: var(--muted);"></i> Sensitivity Presets
+                    <!-- Sensitivity Presets Panel (Starboard-Themed) -->
+                    <div class="panel" style="margin: 0 0 22px 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(99, 102, 241, 0.18); border: 1px solid rgba(99, 102, 241, 0.35); color: #a5b4fc; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                <i class="fas fa-sliders"></i>
                             </div>
-                            <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">One-click profiles optimized for server activity levels</div>
+                            <div>
+                                <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0;">Sensitivity Presets</h3>
+                                <p style="font-size: 0.78rem; color: var(--muted); margin: 2px 0 0 0;">One-click recommended configurations for your community size</p>
+                            </div>
                         </div>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button type="button" onclick="setThresholdPreset('trigger', 2); setThresholdPreset('duration', 15); syncVelocitySlider('decay', 30);" style="padding: 6px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
-                                Strict (2 msg/s)
+                            <button type="button" class="btn-outline" onclick="setThresholdPreset('trigger', 10); setThresholdPreset('duration', 3); syncVelocitySlider('decay', 15);" style="padding: 7px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
+                                🟢 Casual (10 msg/s)
                             </button>
-                            <button type="button" onclick="setThresholdPreset('trigger', 5); setThresholdPreset('duration', 6); syncVelocitySlider('decay', 20);" style="padding: 6px 12px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
-                                Balanced (5 msg/s - Recommended)
+                            <button type="button" class="btn-outline" onclick="setThresholdPreset('trigger', 5); setThresholdPreset('duration', 6); syncVelocitySlider('decay', 20);" style="padding: 7px 14px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.15); color: #c7d2fe;">
+                                🔵 Balanced (5 msg/s - Recommended)
                             </button>
-                            <button type="button" onclick="setThresholdPreset('trigger', 10); setThresholdPreset('duration', 3); syncVelocitySlider('decay', 15);" style="padding: 6px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
-                                Casual (10 msg/s)
+                            <button type="button" class="btn-outline" onclick="setThresholdPreset('trigger', 2); setThresholdPreset('duration', 15); syncVelocitySlider('decay', 30);" style="padding: 7px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
+                                🟠 Strict (2 msg/s)
                             </button>
-                            <button type="button" onclick="setThresholdPreset('trigger', 1); setThresholdPreset('duration', 30); syncVelocitySlider('decay', 60);" style="padding: 6px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
-                                Maximum Lockdown
+                            <button type="button" class="btn-outline" onclick="setThresholdPreset('trigger', 1); setThresholdPreset('duration', 30); syncVelocitySlider('decay', 60);" style="padding: 7px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
+                                🔴 Maximum (1 msg/s)
                             </button>
                         </div>
                     </div>
 
-                    <!-- 4 Main Parameter Cards Grid -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; margin-bottom: 22px;">
-                        <!-- Parameter 1: Spam Velocity Trigger -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
+                    <!-- 4 Main Parameter Cards Grid (Starboard Theme) -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 18px; margin-bottom: 22px;">
+                        <!-- Parameter 1: Spam Trigger Speed -->
+                        <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 22px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                <div>
-                                    <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Spam Velocity Trigger</h4>
-                                    <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Threshold inside sliding evaluation window that trips automated defense.</p>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;"><i class="fas fa-fire"></i></div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #fff;">Spam Trigger Speed</h4>
+                                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">How many messages per second trigger slowmode</p>
+                                    </div>
                                 </div>
-                                <span id="display-trigger-velocity" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">5 msgs / sec</span>
+                                <span id="display-trigger-velocity" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; font-size: 0.76rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">5 msgs / sec</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
-                                <input type="number" id="setting-adaptiveSlowmodeSmallThreshold" min="1" max="25" value="5" oninput="syncVelocityInput('trigger', this.value)" style="width: 70px; padding: 7px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-weight: 700; text-align: center;">
+                                <input type="number" id="setting-adaptiveSlowmodeSmallThreshold" min="1" max="25" value="5" oninput="syncVelocityInput('trigger', this.value)" style="width: 70px; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: 700; text-align: center;">
                                 <input type="range" id="slider-adaptive-trigger" min="1" max="25" value="5" oninput="syncVelocitySlider('trigger', this.value)" style="flex: 1;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--muted);">
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.7rem; color: var(--muted);">
                                 <span>Strict (1-2)</span>
                                 <span>Balanced (5)</span>
                                 <span>Relaxed (10+)</span>
@@ -7111,19 +7119,22 @@
                         </div>
 
                         <!-- Parameter 2: Enacted Slowmode Duration -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
+                        <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 22px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                <div>
-                                    <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Enacted Slowmode Duration</h4>
-                                    <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Channel rate-limit enforced automatically on active chat participants upon trigger.</p>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.18); border: 1px solid rgba(59, 130, 246, 0.35); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;"><i class="fas fa-hourglass-half"></i></div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #fff;">Applied Slowmode</h4>
+                                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Seconds members must wait between messages</p>
+                                    </div>
                                 </div>
-                                <span id="display-action-duration" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">6 seconds</span>
+                                <span id="display-action-duration" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; font-size: 0.76rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">6 seconds</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
-                                <input type="number" id="setting-adaptiveSlowmodeLargeSec" min="0" max="60" value="6" oninput="syncVelocityInput('duration', this.value)" style="width: 70px; padding: 7px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-weight: 700; text-align: center;">
+                                <input type="number" id="setting-adaptiveSlowmodeLargeSec" min="0" max="60" value="6" oninput="syncVelocityInput('duration', this.value)" style="width: 70px; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: 700; text-align: center;">
                                 <input type="range" id="slider-adaptive-duration" min="0" max="60" value="6" oninput="syncVelocitySlider('duration', this.value)" style="flex: 1;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--muted);">
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.7rem; color: var(--muted);">
                                 <span>Off (0s)</span>
                                 <span>Mild (3s)</span>
                                 <span>Standard (6s)</span>
@@ -7132,19 +7143,22 @@
                         </div>
 
                         <!-- Parameter 3: Decay Recovery Time -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
+                        <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 22px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                <div>
-                                    <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Decay Recovery Time</h4>
-                                    <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Inactivity duration required before channel slowmode gracefully steps back down.</p>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;"><i class="fas fa-rotate-left"></i></div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #fff;">Cooldown Reset Time</h4>
+                                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Quiet time before slowmode automatically turns off</p>
+                                    </div>
                                 </div>
-                                <span id="display-decay-time" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">20 seconds</span>
+                                <span id="display-decay-time" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; font-size: 0.76rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">20 seconds</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
-                                <input type="number" id="setting-adaptiveSlowmodeDecaySec" min="5" max="120" value="20" oninput="syncVelocityInput('decay', this.value)" style="width: 70px; padding: 7px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-weight: 700; text-align: center;">
+                                <input type="number" id="setting-adaptiveSlowmodeDecaySec" min="5" max="120" value="20" oninput="syncVelocityInput('decay', this.value)" style="width: 70px; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: 700; text-align: center;">
                                 <input type="range" id="slider-adaptive-decay" min="5" max="120" value="20" oninput="syncVelocitySlider('decay', this.value)" style="flex: 1;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--muted);">
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.7rem; color: var(--muted);">
                                 <span>Fast (5s)</span>
                                 <span>Balanced (20s)</span>
                                 <span>Slow (60s+)</span>
@@ -7152,19 +7166,22 @@
                         </div>
 
                         <!-- Parameter 4: Surge Raid Ceiling -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
+                        <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 22px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                <div>
-                                    <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Surge Raid Ceiling</h4>
-                                    <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Maximum slowmode clamped instantly when token swarm exceeds 13 msgs / 4 unique authors.</p>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.18); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;"><i class="fas fa-shield-virus"></i></div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #fff;">Emergency Raid Cap</h4>
+                                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Maximum slowmode clamped during extreme mass floods</p>
+                                    </div>
                                 </div>
-                                <span id="display-surge-duration" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">10 seconds</span>
+                                <span id="display-surge-duration" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; font-size: 0.76rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">10 seconds</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
-                                <input type="number" id="setting-adaptiveSlowmodeSurgeSec" min="5" max="120" value="10" oninput="syncVelocityInput('surge', this.value)" style="width: 70px; padding: 7px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-weight: 700; text-align: center;">
+                                <input type="number" id="setting-adaptiveSlowmodeSurgeSec" min="5" max="120" value="10" oninput="syncVelocityInput('surge', this.value)" style="width: 70px; padding: 8px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: 700; text-align: center;">
                                 <input type="range" id="slider-adaptive-surge" min="5" max="120" value="10" oninput="syncVelocitySlider('surge', this.value)" style="flex: 1;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--muted);">
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.7rem; color: var(--muted);">
                                 <span>Low (5s)</span>
                                 <span>Standard (10s)</span>
                                 <span>Heavy (30s+)</span>
@@ -7172,66 +7189,66 @@
                         </div>
                     </div>
 
-                    <!-- Channel & Role Scopes -->
+                    <!-- Channel & Role Scopes (Starboard Theme) -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px;">
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 18px; background: rgba(255,255,255,0.015);">
-                            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">
-                                <i class="fas fa-hashtag" style="color: var(--muted); margin-right: 6px;"></i> Monitored Channels (Leave blank for ALL channels)
+                        <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 22px;">
+                            <label style="font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-hashtag" style="color: #60a5fa;"></i> Monitored Channels (Leave blank for ALL channels)
                             </label>
-                            <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 10px;">Select specific channels to apply adaptive velocity scaling. If empty, all text channels are guarded.</p>
+                            <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 12px;">Choose specific channels where slowmode should scale. If empty, all channels are protected.</p>
                             <div id="multiselect-container-setting-adaptiveSlowmodeChannels">
                                 <input type="hidden" id="setting-adaptiveSlowmodeChannels" value="">
                             </div>
                         </div>
 
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 18px; background: rgba(255,255,255,0.015);">
-                            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">
-                                <i class="fas fa-user-shield" style="color: var(--muted); margin-right: 6px;"></i> Exempt / Whitelisted Roles
+                        <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 22px;">
+                            <label style="font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-user-shield" style="color: #34d399;"></i> Exempt / Whitelisted Roles
                             </label>
-                            <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 10px;">Members with these roles will bypass velocity tracking and rate-limit calculations.</p>
+                            <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 12px;">Members with these roles bypass slowmode and message speed calculations.</p>
                             <div id="multiselect-container-setting-adaptiveSlowmodeIgnoredRoles">
                                 <input type="hidden" id="setting-adaptiveSlowmodeIgnoredRoles" value="">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Options & Realtime Live Simulator Status Bar -->
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-                        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div id="velocity-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div>
+                    <!-- Notifications & Live Status Bar -->
+                    <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                        <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div id="velocity-status-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);"></div>
                                 <div>
-                                    <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Live Velocity</div>
-                                    <div id="sim-velocity-value" style="font-size: 0.85rem; font-weight: 700; color: #fff;">0.0 msg/s <span style="font-size: 0.7rem; color: var(--muted); font-weight: 400;">(NOMINAL)</span></div>
+                                    <div style="font-size: 0.68rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Live Chat Speed</div>
+                                    <div id="sim-velocity-value" style="font-size: 0.92rem; font-weight: 800; color: #fff;">0.0 msg/s <span style="font-size: 0.72rem; color: var(--muted); font-weight: 400;">(Normal)</span></div>
                                 </div>
                             </div>
                             <div>
-                                <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Heuristic Latency</div>
-                                <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">< 3.8ms</div>
+                                <div style="font-size: 0.68rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Response Speed</div>
+                                <div style="font-size: 0.92rem; font-weight: 800; color: #a5b4fc;">< 4ms</div>
                             </div>
                             <div>
-                                <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Defense State</div>
-                                <div id="sim-active-tier" style="font-size: 0.85rem; font-weight: 700; color: #fff;">Tier 0 (Nominal)</div>
+                                <div style="font-size: 0.68rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Slowmode Status</div>
+                                <div id="sim-active-tier" style="font-size: 0.92rem; font-weight: 800; color: #fff;">Inactive (0s)</div>
                             </div>
                         </div>
 
-                        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
-                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #fff; cursor: pointer;">
-                                <input type="checkbox" id="setting-adaptiveSlowmodeNotify">
+                        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #fff; font-weight: 600; cursor: pointer;">
+                                <label class="switch" style="transform: scale(0.85); margin: 0;">
+                                    <input type="checkbox" id="setting-adaptiveSlowmodeNotify">
+                                    <span class="slider"></span>
+                                </label>
                                 In-Chat Notice
                             </label>
-                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #fff; cursor: pointer;">
-                                <input type="checkbox" id="setting-adaptiveSlowmodeModLog">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #fff; font-weight: 600; cursor: pointer;">
+                                <label class="switch" style="transform: scale(0.85); margin: 0;">
+                                    <input type="checkbox" id="setting-adaptiveSlowmodeModLog">
+                                    <span class="slider"></span>
+                                </label>
                                 Mod Log Alerts
                             </label>
-                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #fff; cursor: pointer;">
-                                <input type="checkbox" id="setting-adaptiveSlowmodeAiEnabled" checked>
-                                AI Velocity Boost
-                            </label>
-
-                            <button type="button" onclick="simulateVelocityRaidBurst()" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; color: #fff; font-weight: 600; font-size: 0.8rem; cursor: pointer;">
-                                <i class="fas fa-play" style="margin-right: 4px;"></i> Test Heuristic Burst
-                            </button>
+                        </div>
+                    </div>
                         </div>
                     </div>
                 </div>
@@ -17238,25 +17255,14 @@
         // ADAPTIVE VELOCITY DEFENSE (SUB-4MS ANTI-RAID MATRIX CONTROLLER)
         // ==============================================================
         window.handleAdaptiveSlowmodeToggle = function(enabled) {
-            const track = document.getElementById('adaptive-toggle-track');
-            const thumb = document.getElementById('adaptive-toggle-thumb');
             const statusText = document.getElementById('adaptive-slowmode-status-text');
-
-            if (track && thumb && statusText) {
+            if (statusText) {
                 if (enabled) {
-                    track.style.background = 'linear-gradient(to right, #2563eb, #22d3ee)';
-                    track.style.borderColor = 'rgba(34, 211, 238, 0.4)';
-                    track.style.boxShadow = '0 0 15px rgba(34, 211, 238, 0.3)';
-                    thumb.style.left = '26px';
-                    statusText.textContent = 'ACTIVE';
-                    statusText.style.color = '#22d3ee';
+                    statusText.textContent = 'ENABLED';
+                    statusText.style.color = '#10b981';
                 } else {
-                    track.style.background = 'rgba(255, 255, 255, 0.05)';
-                    track.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                    track.style.boxShadow = 'none';
-                    thumb.style.left = '2px';
                     statusText.textContent = 'DISABLED';
-                    statusText.style.color = '#94a3b8';
+                    statusText.style.color = 'var(--muted)';
                 }
             }
 
