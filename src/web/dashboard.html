@@ -6405,9 +6405,7 @@
                         <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="fas fa-user-shield"></i> 21 roles</span>
                         <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="fas fa-robot"></i> 8 bots</span>
                         <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="far fa-smile"></i> 23 emojis</span>
-                        <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i         </div>
-                        </div>
-
+                        <span style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;"><i class="fas fa-sticky-note"></i> 1 stickers</span>
                     </div>
 
                     <!-- Analytics Section -->
@@ -7151,78 +7149,79 @@
                 <!-- ======================================================== -->
                 <!-- 🛡️ ADAPTIVE VELOCITY SLOWMODE DEFENSE CENTER             -->
                 <!-- ======================================================== -->
+                <!-- ======================================================== -->
+                <!-- 🛡️ ADAPTIVE VELOCITY SLOWMODE DEFENSE CENTER             -->
+                <!-- ======================================================== -->
                 <div id="tab-adaptive-slowmode" class="tab-content" style="display: none;">
                     <!-- Hero Banner -->
-                    <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(6, 182, 212, 0.15);">
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 24px 28px; margin-bottom: 22px;">
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
                             <div style="display: flex; align-items: center; gap: 16px;">
-                                <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #06b6d4, #3b82f6); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff;">
                                     <i class="fas fa-bolt"></i>
                                 </div>
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Adaptive Velocity Defense</h1>
-                                        <span style="background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.4); color: #22d3ee; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 12px; letter-spacing: 0.5px;">SUB-4MS ENGINE</span>
+                                        <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Adaptive Velocity Defense</h1>
+                                        <span style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--muted); font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;">SUB-4MS ENGINE</span>
                                     </div>
-                                    <p style="color: var(--muted); margin: 4px 0 0; font-size: 0.88rem;">Heuristic anti-raid mitigation. Automatically dynamically scales channel slowmode based on message velocity to prevent token raids before they impact members.</p>
+                                    <p style="color: var(--muted); margin: 4px 0 0; font-size: 0.85rem;">Heuristic anti-raid mitigation. Automatically scales channel slowmode based on message velocity to prevent token raids before they impact members.</p>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 14px;">
-                                <span id="adaptive-slowmode-status-text" style="font-size: 0.82rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">DISABLED</span>
-                                <label style="position: relative; display: inline-block; width: 56px; height: 30px; cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 14px; background: rgba(0, 0, 0, 0.25); padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
+                                <div>
+                                    <div id="adaptive-slowmode-status-text" style="font-size: 0.85rem; font-weight: 700; color: var(--muted);">DISABLED</div>
+                                    <div style="font-size: 0.72rem; color: var(--muted);">Velocity Shield</div>
+                                </div>
+                                <label style="position: relative; display: inline-block; width: 50px; height: 26px; cursor: pointer;">
                                     <input type="checkbox" id="setting-adaptiveSlowmodeEnabled" style="opacity: 0; width: 0; height: 0;" onchange="handleAdaptiveSlowmodeToggle(this.checked)">
-                                    <span id="adaptive-toggle-track" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; transition: 0.3s;"></span>
-                                    <span id="adaptive-toggle-thumb" style="position: absolute; height: 24px; width: 24px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.4);"></span>
+                                    <span id="adaptive-toggle-track" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 30px; transition: 0.3s;"></span>
+                                    <span id="adaptive-toggle-thumb" style="position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s;"></span>
                                 </label>
                             </div>
                         </div>
                     </div>
 
                     <!-- Preset Profiles -->
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px 22px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                    <div style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 16px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
                         <div>
-                            <div style="font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-sliders" style="color: #22d3ee;"></i> Quick Sensitivity Presets
+                            <div style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-sliders" style="color: var(--muted);"></i> Sensitivity Presets
                             </div>
-                            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 2px;">One-click profiles optimized for server activity levels</div>
+                            <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">One-click profiles optimized for server activity levels</div>
                         </div>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button type="button" onclick="setThresholdPreset('trigger', 2); setThresholdPreset('duration', 15); syncVelocitySlider('decay', 30);" style="padding: 7px 14px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #f87171; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
-                                🛡️ Strict (2 msg/s)
+                            <button type="button" onclick="setThresholdPreset('trigger', 2); setThresholdPreset('duration', 15); syncVelocitySlider('decay', 30);" style="padding: 6px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
+                                Strict (2 msg/s)
                             </button>
-                            <button type="button" onclick="setThresholdPreset('trigger', 5); setThresholdPreset('duration', 6); syncVelocitySlider('decay', 20);" style="padding: 7px 14px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.35); border-radius: 8px; color: #22d3ee; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
-                                ⚖️ Balanced (5 msg/s - Recommended)
+                            <button type="button" onclick="setThresholdPreset('trigger', 5); setThresholdPreset('duration', 6); syncVelocitySlider('decay', 20);" style="padding: 6px 12px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+                                Balanced (5 msg/s - Recommended)
                             </button>
-                            <button type="button" onclick="setThresholdPreset('trigger', 10); setThresholdPreset('duration', 3); syncVelocitySlider('decay', 15);" style="padding: 7px 14px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #60a5fa; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
-                                ☕ Casual (10 msg/s)
+                            <button type="button" onclick="setThresholdPreset('trigger', 10); setThresholdPreset('duration', 3); syncVelocitySlider('decay', 15);" style="padding: 6px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
+                                Casual (10 msg/s)
                             </button>
-                            <button type="button" onclick="setThresholdPreset('trigger', 1); setThresholdPreset('duration', 30); syncVelocitySlider('decay', 60);" style="padding: 7px 14px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; color: #c084fc; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
-                                🔒 Maximum Lockdown
+                            <button type="button" onclick="setThresholdPreset('trigger', 1); setThresholdPreset('duration', 30); syncVelocitySlider('decay', 60);" style="padding: 6px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
+                                Maximum Lockdown
                             </button>
                         </div>
                     </div>
 
                     <!-- 4 Main Parameter Cards Grid -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 22px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; margin-bottom: 22px;">
                         <!-- Parameter 1: Spam Velocity Trigger -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 16px; padding: 22px; background: rgba(15, 23, 42, 0.6);">
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(6, 182, 212, 0.15); display: flex; align-items: center; justify-content: center; color: #22d3ee;">
-                                        <i class="fas fa-gauge-high"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin: 0; font-size: 0.98rem; font-weight: 700; color: #fff;">Spam Velocity Trigger</h4>
-                                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.78rem;">Threshold inside sliding evaluation window that trips automated defense.</p>
-                                    </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Spam Velocity Trigger</h4>
+                                    <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Threshold inside sliding evaluation window that trips automated defense.</p>
                                 </div>
-                                <span id="display-trigger-velocity" style="background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); color: #22d3ee; font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">5 msgs / sec</span>
+                                <span id="display-trigger-velocity" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">5 msgs / sec</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 14px; margin-top: 16px;">
-                                <input type="number" id="setting-adaptiveSlowmodeSmallThreshold" min="1" max="25" value="5" oninput="syncVelocityInput('trigger', this.value)" style="width: 80px; padding: 8px 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: 700; text-align: center;">
-                                <input type="range" id="slider-adaptive-trigger" min="1" max="25" value="5" oninput="syncVelocitySlider('trigger', this.value)" style="flex: 1; accent-color: #22d3ee;">
+                            <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
+                                <input type="number" id="setting-adaptiveSlowmodeSmallThreshold" min="1" max="25" value="5" oninput="syncVelocityInput('trigger', this.value)" style="width: 70px; padding: 7px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-weight: 700; text-align: center;">
+                                <input type="range" id="slider-adaptive-trigger" min="1" max="25" value="5" oninput="syncVelocitySlider('trigger', this.value)" style="flex: 1;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.72rem; color: var(--muted);">
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--muted);">
                                 <span>Strict (1-2)</span>
                                 <span>Balanced (5)</span>
                                 <span>Relaxed (10+)</span>
@@ -7230,51 +7229,40 @@
                         </div>
 
                         <!-- Parameter 2: Enacted Slowmode Duration -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 16px; padding: 22px; background: rgba(15, 23, 42, 0.6);">
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #60a5fa;">
-                                        <i class="fas fa-hourglass-half"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin: 0; font-size: 0.98rem; font-weight: 700; color: #fff;">Enacted Slowmode Duration</h4>
-                                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.78rem;">Channel rate-limit enforced automatically on active chat participants upon trigger.</p>
-                                    </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Enacted Slowmode Duration</h4>
+                                    <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Channel rate-limit enforced automatically on active chat participants upon trigger.</p>
                                 </div>
-                                <span id="display-action-duration" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">6 seconds</span>
+                                <span id="display-action-duration" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">6 seconds</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 14px; margin-top: 16px;">
-                                <input type="number" id="setting-adaptiveSlowmodeLargeSec" min="0" max="60" value="6" oninput="syncVelocityInput('duration', this.value)" style="width: 80px; padding: 8px 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: 700; text-align: center;">
-                                <input type="range" id="slider-adaptive-duration" min="0" max="60" value="6" oninput="syncVelocitySlider('duration', this.value)" style="flex: 1; accent-color: #3b82f6;">
+                            <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
+                                <input type="number" id="setting-adaptiveSlowmodeLargeSec" min="0" max="60" value="6" oninput="syncVelocityInput('duration', this.value)" style="width: 70px; padding: 7px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-weight: 700; text-align: center;">
+                                <input type="range" id="slider-adaptive-duration" min="0" max="60" value="6" oninput="syncVelocitySlider('duration', this.value)" style="flex: 1;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.72rem; color: var(--muted);">
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--muted);">
                                 <span>Off (0s)</span>
                                 <span>Mild (3s)</span>
                                 <span>Standard (6s)</span>
-                                <span>Heavy (15s)</span>
-                                <span>Severe (30s+)</span>
+                                <span>Heavy (15s+)</span>
                             </div>
                         </div>
 
                         <!-- Parameter 3: Decay Recovery Time -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 22px; background: rgba(15, 23, 42, 0.6);">
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; color: #34d399;">
-                                        <i class="fas fa-arrow-trend-down"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin: 0; font-size: 0.98rem; font-weight: 700; color: #fff;">Decay Recovery Time</h4>
-                                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.78rem;">Inactivity duration required before channel slowmode gracefully steps back down.</p>
-                                    </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Decay Recovery Time</h4>
+                                    <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Inactivity duration required before channel slowmode gracefully steps back down.</p>
                                 </div>
-                                <span id="display-decay-time" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">20 seconds</span>
+                                <span id="display-decay-time" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">20 seconds</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 14px; margin-top: 16px;">
-                                <input type="number" id="setting-adaptiveSlowmodeDecaySec" min="5" max="120" value="20" oninput="syncVelocityInput('decay', this.value)" style="width: 80px; padding: 8px 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: 700; text-align: center;">
-                                <input type="range" id="slider-adaptive-decay" min="5" max="120" value="20" oninput="syncVelocitySlider('decay', this.value)" style="flex: 1; accent-color: #10b981;">
+                            <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
+                                <input type="number" id="setting-adaptiveSlowmodeDecaySec" min="5" max="120" value="20" oninput="syncVelocityInput('decay', this.value)" style="width: 70px; padding: 7px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-weight: 700; text-align: center;">
+                                <input type="range" id="slider-adaptive-decay" min="5" max="120" value="20" oninput="syncVelocitySlider('decay', this.value)" style="flex: 1;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.72rem; color: var(--muted);">
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--muted);">
                                 <span>Fast (5s)</span>
                                 <span>Balanced (20s)</span>
                                 <span>Slow (60s+)</span>
@@ -7282,48 +7270,43 @@
                         </div>
 
                         <!-- Parameter 4: Surge Raid Ceiling -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 22px; background: rgba(15, 23, 42, 0.6);">
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #c084fc;">
-                                        <i class="fas fa-shield-virus"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin: 0; font-size: 0.98rem; font-weight: 700; color: #fff;">Surge Raid Ceiling (Multi-Token)</h4>
-                                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.78rem;">Maximum slowmode clamped instantly when token swarm exceeds 13 msgs / 4 unique authors.</p>
-                                    </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Surge Raid Ceiling</h4>
+                                    <p style="margin: 2px 0 0; color: var(--muted); font-size: 0.76rem;">Maximum slowmode clamped instantly when token swarm exceeds 13 msgs / 4 unique authors.</p>
                                 </div>
-                                <span id="display-surge-duration" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">10 seconds</span>
+                                <span id="display-surge-duration" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">10 seconds</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 14px; margin-top: 16px;">
-                                <input type="number" id="setting-adaptiveSlowmodeSurgeSec" min="5" max="120" value="10" oninput="syncVelocityInput('surge', this.value)" style="width: 80px; padding: 8px 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: 700; text-align: center;">
-                                <input type="range" id="slider-adaptive-surge" min="5" max="120" value="10" oninput="syncVelocitySlider('surge', this.value)" style="flex: 1; accent-color: #a855f7;">
+                            <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px;">
+                                <input type="number" id="setting-adaptiveSlowmodeSurgeSec" min="5" max="120" value="10" oninput="syncVelocityInput('surge', this.value)" style="width: 70px; padding: 7px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-weight: 700; text-align: center;">
+                                <input type="range" id="slider-adaptive-surge" min="5" max="120" value="10" oninput="syncVelocitySlider('surge', this.value)" style="flex: 1;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.72rem; color: var(--muted);">
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--muted);">
                                 <span>Low (5s)</span>
                                 <span>Standard (10s)</span>
-                                <span>Heavy Lockdown (30s+)</span>
+                                <span>Heavy (30s+)</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Channel & Role Scopes -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px;">
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px;">
-                            <label style="font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">
-                                <i class="fas fa-hashtag" style="color: #22d3ee; margin-right: 6px;"></i> Monitored Channels (Leave blank for ALL channels)
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px;">
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 18px; background: rgba(255,255,255,0.015);">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">
+                                <i class="fas fa-hashtag" style="color: var(--muted); margin-right: 6px;"></i> Monitored Channels (Leave blank for ALL channels)
                             </label>
-                            <p style="font-size: 0.78rem; color: var(--muted); margin: 0 0 10px;">Select specific channels to apply adaptive velocity scaling. If empty, all text channels are guarded.</p>
+                            <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 10px;">Select specific channels to apply adaptive velocity scaling. If empty, all text channels are guarded.</p>
                             <div id="multiselect-container-setting-adaptiveSlowmodeChannels">
                                 <input type="hidden" id="setting-adaptiveSlowmodeChannels" value="">
                             </div>
                         </div>
 
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px;">
-                            <label style="font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">
-                                <i class="fas fa-user-shield" style="color: #a855f7; margin-right: 6px;"></i> Exempt / Whitelisted Roles
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 18px; background: rgba(255,255,255,0.015);">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">
+                                <i class="fas fa-user-shield" style="color: var(--muted); margin-right: 6px;"></i> Exempt / Whitelisted Roles
                             </label>
-                            <p style="font-size: 0.78rem; color: var(--muted); margin: 0 0 10px;">Members with these roles will bypass velocity tracking and rate-limit calculations.</p>
+                            <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 10px;">Members with these roles will bypass velocity tracking and rate-limit calculations.</p>
                             <div id="multiselect-container-setting-adaptiveSlowmodeIgnoredRoles">
                                 <input type="hidden" id="setting-adaptiveSlowmodeIgnoredRoles" value="">
                             </div>
@@ -7331,47 +7314,47 @@
                     </div>
 
                     <!-- Options & Realtime Live Simulator Status Bar -->
-                    <div style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-                        <div style="display: flex; align-items: center; gap: 22px; flex-wrap: wrap;">
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <div id="velocity-status-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></div>
+                                <div id="velocity-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div>
                                 <div>
-                                    <div style="font-size: 0.68rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Live Velocity</div>
-                                    <div id="sim-velocity-value" style="font-size: 0.88rem; font-weight: 700; color: #fff;">0.0 msg/s <span style="font-size: 0.72rem; color: #34d399; font-weight: 400;">(NOMINAL)</span></div>
+                                    <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Live Velocity</div>
+                                    <div id="sim-velocity-value" style="font-size: 0.85rem; font-weight: 700; color: #fff;">0.0 msg/s <span style="font-size: 0.7rem; color: var(--muted); font-weight: 400;">(NOMINAL)</span></div>
                                 </div>
                             </div>
                             <div>
-                                <div style="font-size: 0.68rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Heuristic Latency</div>
-                                <div style="font-size: 0.88rem; font-weight: 700; color: #22d3ee;"><i class="fas fa-bolt" style="font-size: 0.75rem;"></i> < 3.8ms</div>
+                                <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Heuristic Latency</div>
+                                <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">< 3.8ms</div>
                             </div>
                             <div>
-                                <div style="font-size: 0.68rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Defense State</div>
-                                <div id="sim-active-tier" style="font-size: 0.88rem; font-weight: 700; color: #fff;">Tier 0 (Nominal)</div>
+                                <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-family: monospace;">Defense State</div>
+                                <div id="sim-active-tier" style="font-size: 0.85rem; font-weight: 700; color: #fff;">Tier 0 (Nominal)</div>
                             </div>
                         </div>
 
-                        <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap;">
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #e2e8f0; cursor: pointer;">
-                                <input type="checkbox" id="setting-adaptiveSlowmodeNotify" style="accent-color: #22d3ee;">
+                        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #fff; cursor: pointer;">
+                                <input type="checkbox" id="setting-adaptiveSlowmodeNotify">
                                 In-Chat Notice
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #e2e8f0; cursor: pointer;">
-                                <input type="checkbox" id="setting-adaptiveSlowmodeModLog" style="accent-color: #22d3ee;">
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #fff; cursor: pointer;">
+                                <input type="checkbox" id="setting-adaptiveSlowmodeModLog">
                                 Mod Log Alerts
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #c084fc; cursor: pointer;">
-                                <input type="checkbox" id="setting-adaptiveSlowmodeAiEnabled" checked style="accent-color: #a855f7;">
-                                <i class="fas fa-brain"></i> AI Velocity Boost
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #fff; cursor: pointer;">
+                                <input type="checkbox" id="setting-adaptiveSlowmodeAiEnabled" checked>
+                                AI Velocity Boost
                             </label>
 
-                            <button type="button" onclick="simulateVelocityRaidBurst()" style="padding: 9px 18px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2)); border: 1px solid rgba(6, 182, 212, 0.4); border-radius: 10px; color: #22d3ee; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='rgba(6, 182, 212, 0.3)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2))'">
-                                <i class="fas fa-play"></i> Test Heuristic Burst
+                            <button type="button" onclick="simulateVelocityRaidBurst()" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; color: #fff; font-weight: 600; font-size: 0.8rem; cursor: pointer;">
+                                <i class="fas fa-play" style="margin-right: 4px;"></i> Test Heuristic Burst
                             </button>
                         </div>
                     </div>
                 </div>
 
-<div id="tab-moderation" class="tab-content" style="display: none;">
+                <div id="tab-moderation" class="tab-content" style="display: none;">
                     <!-- Hero Banner -->
                     <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
@@ -8899,23 +8882,23 @@
                                 
                 <div id="tab-ai" class="tab-content" style="display: none;">
                     <!-- Hero Banner with Master Toggle -->
-                    <div style="background: linear-gradient(135deg, rgba(88, 28, 135, 0.3), rgba(49, 46, 129, 0.3)); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);">
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 24px 28px; margin-bottom: 22px;">
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
                             <div style="display: flex; align-items: center; gap: 16px;">
-                                <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff;">
                                     <i class="fas fa-brain"></i>
                                 </div>
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Nora AI Intelligence Studio</h1>
-                                        <span style="background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 12px; letter-spacing: 0.5px;">GOOGLE GEMINI & IMAGEN 3</span>
+                                        <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Nora AI Intelligence Studio</h1>
+                                        <span style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--muted); font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;">GOOGLE GEMINI & IMAGEN 3</span>
                                     </div>
-                                    <p style="color: var(--muted); margin: 4px 0 0; font-size: 0.88rem;">Full control over Nora's personality, Google Gemini neural reasoning, privacy permissions, channel restrictions & safe Google image generation.</p>
+                                    <p style="color: var(--muted); margin: 4px 0 0; font-size: 0.85rem;">Personality configuration, Google Gemini neural reasoning, privacy permissions, channel restrictions & safe Google image generation.</p>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 14px; background: rgba(0,0,0,0.35); padding: 10px 18px; border-radius: 14px; border: 1px solid rgba(168, 85, 247, 0.3);">
+                            <div style="display: flex; align-items: center; gap: 14px; background: rgba(0, 0, 0, 0.25); padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
                                 <div>
-                                    <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">Enable Nora AI</div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">Enable Nora AI</div>
                                     <div style="font-size: 0.72rem; color: var(--muted);">Master switch for entire server</div>
                                 </div>
                                 <label class="switch"><input type="checkbox" id="setting-noraAiEnabled" checked><span class="slider"></span></label>
@@ -8924,33 +8907,33 @@
                     </div>
 
                     <!-- Persona & System Prompt Customizer -->
-                    <div class="panel" style="margin-bottom: 22px; border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 24px; background: rgba(15, 15, 28, 0.8);">
+                    <div class="panel" style="margin-bottom: 22px; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; background: rgba(255, 255, 255, 0.015);">
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <i class="fas fa-masks-theater" style="color: #c084fc; font-size: 1.2rem;"></i>
-                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;">AI Persona & Custom Instructions</h3>
+                                <i class="fas fa-masks-theater" style="color: var(--muted); font-size: 1.1rem;"></i>
+                                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">AI Persona & Custom Instructions</h3>
                             </div>
-                            <span style="font-size: 0.76rem; color: #c084fc; font-weight: 600;">Customizes Nora's behavior & tone</span>
+                            <span style="font-size: 0.75rem; color: var(--muted);">Customizes Nora's behavior & tone</span>
                         </div>
 
-                        <!-- Quick Personality Templates -->
+                        <!-- Quick Personality Templates (Clean cohesive dark buttons) -->
                         <div style="margin-bottom: 16px;">
-                            <label style="font-size: 0.8rem; font-weight: 600; color: #a1a1aa; margin-bottom: 8px; display: block;">Select a Personality Template:</label>
+                            <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 8px; display: block;">Select a Personality Template:</label>
                             <input type="hidden" id="setting-aiPromptTemplate" value="classic">
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                <button type="button" onclick="applyAiPromptTemplate('classic')" style="padding: 8px 14px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 10px; color: #e9d5ff; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" onclick="applyAiPromptTemplate('classic')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
                                     ✨ Classic Nora (Friendly & Witty)
                                 </button>
-                                <button type="button" onclick="applyAiPromptTemplate('professional')" style="padding: 8px 14px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; color: #93c5fd; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" onclick="applyAiPromptTemplate('professional')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
                                     💼 Helpful & Professional
                                 </button>
-                                <button type="button" onclick="applyAiPromptTemplate('sarcastic')" style="padding: 8px 14px; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 10px; color: #fda4af; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" onclick="applyAiPromptTemplate('sarcastic')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
                                     🎭 Sarcastic & Playful Banter
                                 </button>
-                                <button type="button" onclick="applyAiPromptTemplate('gamer')" style="padding: 8px 14px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; color: #6ee7b7; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" onclick="applyAiPromptTemplate('gamer')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
                                     🎮 Gamer & Casual
                                 </button>
-                                <button type="button" onclick="applyAiPromptTemplate('moderator')" style="padding: 8px 14px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; color: #fde68a; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" onclick="applyAiPromptTemplate('moderator')" style="padding: 7px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'">
                                     🛡️ Server Moderator & Enforcer
                                 </button>
                             </div>
@@ -8958,11 +8941,11 @@
 
                         <!-- Custom System Prompt Textarea -->
                         <div>
-                            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Custom System Prompt / Behavior Rules:</label>
-                            <textarea id="setting-aiSystemPrompt" rows="4" placeholder="Customize how Nora speaks, traits she should exhibit, rules she must enforce, or custom lore for your server..." style="width: 100%; padding: 14px 16px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 0.88rem; line-height: 1.5; resize: vertical; box-sizing: border-box;"></textarea>
-                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.74rem; color: var(--muted);">
+                            <label style="font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Custom System Prompt / Behavior Rules:</label>
+                            <textarea id="setting-aiSystemPrompt" rows="4" placeholder="Customize how Nora speaks, traits she should exhibit, rules she must enforce, or custom lore for your server..." style="width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #fff; font-size: 0.85rem; line-height: 1.5; resize: vertical; box-sizing: border-box;"></textarea>
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.72rem; color: var(--muted);">
                                 <span>This prompt is seamlessly injected into every AI conversation turn on your server.</span>
-                                <button type="button" onclick="document.getElementById('setting-aiSystemPrompt').value=''; if(typeof updateUnsavedChangesPopup==='function') updateUnsavedChangesPopup();" style="background: none; border: none; color: #a1a1aa; cursor: pointer; text-decoration: underline;">Clear Prompt</button>
+                                <button type="button" onclick="document.getElementById('setting-aiSystemPrompt').value=''; if(typeof updateUnsavedChangesPopup==='function') updateUnsavedChangesPopup();" style="background: none; border: none; color: var(--muted); cursor: pointer; text-decoration: underline;">Clear Prompt</button>
                             </div>
                         </div>
                     </div>
@@ -8970,127 +8953,127 @@
                     <!-- Model & Privacy Capabilities Grid -->
                     <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; margin-bottom: 22px;">
                         <!-- Google Gemini Model Selection (Google ONLY) -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 22px; background: rgba(15, 15, 28, 0.8);">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-                                <i class="fas fa-microchip" style="color: #c084fc; font-size: 1.15rem;"></i>
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; background: rgba(255, 255, 255, 0.015);">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                <i class="fas fa-microchip" style="color: var(--muted); font-size: 1.1rem;"></i>
                                 <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Reasoning Model (Google Gemini ONLY)</h3>
                             </div>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin: 0 0 14px;">Strictly powered by official Google Gemini models with key cascade fallback to ensure 100% uptime.</p>
+                            <p style="font-size: 0.78rem; color: var(--muted); margin: 0 0 14px;">Strictly powered by official Google Gemini models with key cascade fallback to ensure 100% uptime.</p>
                             
                             <div class="input-group" style="margin-bottom: 16px;">
-                                <label style="font-size: 0.82rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Active Gemini Model</label>
-                                <select id="setting-aiModel" style="width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #fff; font-size: 0.88rem;">
-                                    <option value="gemini-2.5-flash">✨ Google Gemini 2.5 Flash (Ultra-fast, Next-gen Reasoning - Recommended)</option>
-                                    <option value="gemini-2.0-flash">⚡ Google Gemini 2.0 Flash (Fast & Reliable Standard)</option>
-                                    <option value="gemini-1.5-flash">🚀 Google Gemini 1.5 Flash (Lightweight & Efficient)</option>
-                                    <option value="gemini-1.5-pro">🧠 Google Gemini 1.5 Pro (Deep Code & Multi-step Logic)</option>
-                                    <option value="gemini-flash-lite-latest">🍃 Google Gemini Flash Lite (Ultra-Low Latency Throughput)</option>
+                                <label style="font-size: 0.8rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Active Gemini Model</label>
+                                <select id="setting-aiModel" style="width: 100%; padding: 11px 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #fff; font-size: 0.85rem;">
+                                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (Ultra-fast, Next-gen Reasoning - Recommended)</option>
+                                    <option value="gemini-2.0-flash">Gemini 2.0 Flash (Fast & Reliable Standard)</option>
+                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (Lightweight & Efficient)</option>
+                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep Code & Multi-step Logic)</option>
+                                    <option value="gemini-flash-lite-latest">Gemini Flash Lite (Ultra-Low Latency Throughput)</option>
                                 </select>
                             </div>
 
                             <!-- Dedicated Autonomous Channel (No Ping Required) -->
-                            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px;">
+                            <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                                     <div>
-                                        <div style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                            <i class="fas fa-hashtag" style="color: #a855f7;"></i> Dedicated Autonomous Channel
+                                        <div style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-hashtag" style="color: var(--muted);"></i> Dedicated Autonomous Channel
                                         </div>
-                                        <div style="font-size: 0.76rem; color: var(--muted); margin-top: 2px;">Users do NOT need to ping or mention Nora in this channel</div>
+                                        <div style="font-size: 0.74rem; color: var(--muted); margin-top: 2px;">Users do NOT need to ping or mention Nora in this channel</div>
                                     </div>
                                     <label class="switch"><input type="checkbox" id="setting-aiAutoRespondEnabled"><span class="slider"></span></label>
                                 </div>
-                                <select id="setting-aiAutoRespondChannelId" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+                                <select id="setting-aiAutoRespondChannelId" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #fff; font-size: 0.85rem;">
                                     <option value="">None / Disabled</option>
                                 </select>
                             </div>
                         </div>
 
                         <!-- Privacy, Memory & Capability Toggles -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 22px; background: rgba(15, 15, 28, 0.8); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; background: rgba(255, 255, 255, 0.015); display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-                                    <i class="fas fa-user-shield" style="color: #818cf8; font-size: 1.15rem;"></i>
+                                    <i class="fas fa-shield-alt" style="color: var(--muted); font-size: 1.1rem;"></i>
                                     <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Privacy, Memory & Google Tools</h3>
                                 </div>
 
-                                <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
                                     <!-- Memory Toggle -->
-                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
                                         <div>
-                                            <div style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                                <i class="fas fa-memory" style="color: #a855f7;"></i> Conversational Memory
+                                            <div style="font-size: 0.83rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-memory" style="color: var(--muted);"></i> Conversational Memory
                                             </div>
-                                            <div style="font-size: 0.74rem; color: var(--muted);">Retain previous conversation context across user messages</div>
+                                            <div style="font-size: 0.72rem; color: var(--muted);">Retain previous conversation context across user messages</div>
                                         </div>
                                         <label class="switch"><input type="checkbox" id="setting-aiMemoryEnabled" checked><span class="slider"></span></label>
                                     </div>
 
                                     <!-- Role Viewing Toggle -->
-                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
                                         <div>
-                                            <div style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                                <i class="fas fa-id-badge" style="color: #38bdf8;"></i> Role Viewing Permission
+                                            <div style="font-size: 0.83rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-id-badge" style="color: var(--muted);"></i> Role Viewing Permission
                                             </div>
-                                            <div style="font-size: 0.74rem; color: var(--muted);">Allows Nora to see user server roles to adapt responses</div>
+                                            <div style="font-size: 0.72rem; color: var(--muted);">Allows Nora to see user server roles to adapt responses</div>
                                         </div>
                                         <label class="switch"><input type="checkbox" id="setting-aiRoleViewingEnabled" checked><span class="slider"></span></label>
                                     </div>
 
                                     <!-- Name Viewing Toggle -->
-                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
                                         <div>
-                                            <div style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                                <i class="fas fa-user-tag" style="color: #34d399;"></i> Name & Nickname Viewing
+                                            <div style="font-size: 0.83rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-user-tag" style="color: var(--muted);"></i> Name & Nickname Viewing
                                             </div>
-                                            <div style="font-size: 0.74rem; color: var(--muted);">Allows Nora to know member display names & nicknames</div>
+                                            <div style="font-size: 0.72rem; color: var(--muted);">Allows Nora to know member display names & nicknames</div>
                                         </div>
                                         <label class="switch"><input type="checkbox" id="setting-aiNameViewingEnabled" checked><span class="slider"></span></label>
                                     </div>
 
                                     <!-- Google Imagen 3 Image Gen Toggle -->
-                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
                                         <div>
-                                            <div style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                                <i class="fas fa-image" style="color: #ec4899;"></i> Google Imagen 3 Image Generation
+                                            <div style="font-size: 0.83rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-image" style="color: var(--muted);"></i> Google Imagen 3 Image Generation
                                             </div>
-                                            <div style="font-size: 0.74rem; color: var(--muted);">Family-safe Google image generation with strict filters</div>
+                                            <div style="font-size: 0.72rem; color: var(--muted);">Family-safe Google image generation with strict filters</div>
                                         </div>
                                         <label class="switch"><input type="checkbox" id="setting-aiImageGenerationEnabled" checked><span class="slider"></span></label>
                                     </div>
                                 </div>
                             </div>
 
-                            <div style="margin-top: 12px; padding: 10px 14px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 10px; font-size: 0.76rem; color: #c084fc;">
-                                <i class="fas fa-lock"></i> All non-Google third-party image generation services have been removed. Strict Google Cloud safety filters apply.
+                            <div style="margin-top: 12px; padding: 9px 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; font-size: 0.74rem; color: var(--muted);">
+                                <i class="fas fa-lock" style="margin-right: 4px;"></i> All third-party non-Google image services removed. Strict Google Cloud safety filters enforced.
                             </div>
                         </div>
                     </div>
 
-                    <!-- Channel Restrictions Matrix -->
+                    <!-- Channel Restrictions Matrix (Clean unified theme) -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px;">
                         <!-- Allowed Channels -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 16px; padding: 20px; background: rgba(15, 15, 28, 0.8);">
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                                <label style="font-size: 0.9rem; font-weight: 700; color: #86efac; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-circle-check"></i> Allowed AI Channels
+                                <label style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-circle-check" style="color: var(--muted);"></i> Allowed AI Channels
                                 </label>
-                                <span style="font-size: 0.72rem; color: #86efac; font-weight: 600;">Optional Whitelist</span>
+                                <span style="font-size: 0.7rem; color: var(--muted); font-weight: 600;">Optional Whitelist</span>
                             </div>
-                            <p style="font-size: 0.78rem; color: var(--muted); margin: 0 0 10px;">Only allow Nora AI to respond in these channels. If none are selected, Nora can respond in all channels (or only the dedicated channel if one is set).</p>
+                            <p style="font-size: 0.76rem; color: var(--muted); margin: 0 0 10px;">Only allow Nora AI to respond in these channels. If none are selected, Nora can respond in all channels (or only the dedicated channel if one is set).</p>
                             <div id="multiselect-container-setting-aiAllowedChannels">
                                 <input type="hidden" id="setting-aiAllowedChannels" value="">
                             </div>
                         </div>
 
                         <!-- Excluded Channels -->
-                        <div class="panel" style="margin: 0; border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 16px; padding: 20px; background: rgba(15, 15, 28, 0.8);">
+                        <div class="panel" style="margin: 0; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 20px; background: rgba(255, 255, 255, 0.015);">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                                <label style="font-size: 0.9rem; font-weight: 700; color: #fca5a5; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-circle-xmark"></i> Excluded AI Channels
+                                <label style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-circle-xmark" style="color: var(--muted);"></i> Excluded AI Channels
                                 </label>
-                                <span style="font-size: 0.72rem; color: #fca5a5; font-weight: 600;">Hard Blacklist</span>
+                                <span style="font-size: 0.7rem; color: var(--muted); font-weight: 600;">Hard Blacklist</span>
                             </div>
-                            <p style="font-size: 0.78rem; color: var(--muted); margin: 0 0 10px;">Stop Nora AI from responding in these channels entirely, even when directly pinged or replied to.</p>
+                            <p style="font-size: 0.76rem; color: var(--muted); margin: 0 0 10px;">Stop Nora AI from responding in these channels entirely, even when directly pinged or replied to.</p>
                             <div id="multiselect-container-setting-aiExcludedChannels">
                                 <input type="hidden" id="setting-aiExcludedChannels" value="">
                             </div>
@@ -9098,30 +9081,30 @@
                     </div>
 
                     <!-- Interactive Nora AI Live Sandbox -->
-                    <div class="panel" style="border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 22px; background: rgba(15, 15, 25, 0.95);">
+                    <div class="panel" style="border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; background: rgba(0, 0, 0, 0.25);">
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <i class="fas fa-comments" style="color: #a855f7; font-size: 1.15rem;"></i>
-                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;">Live Nora AI Sandbox</h3>
+                                <i class="fas fa-comments" style="color: var(--muted); font-size: 1.1rem;"></i>
+                                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Live Nora AI Sandbox</h3>
                             </div>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <span id="ai-sandbox-latency" style="font-size: 0.78rem; color: var(--muted); font-family: monospace;">Latency: --ms</span>
-                                <button type="button" onclick="clearAiSandbox()" style="padding: 6px 12px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.78rem; cursor: pointer;">
+                                <span id="ai-sandbox-latency" style="font-size: 0.75rem; color: var(--muted); font-family: monospace;">Latency: --ms</span>
+                                <button type="button" onclick="clearAiSandbox()" style="padding: 6px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #fff; font-size: 0.75rem; cursor: pointer;">
                                     <i class="fas fa-trash-alt"></i> Clear Chat
                                 </button>
                             </div>
                         </div>
 
                         <!-- Chat Feed Window -->
-                        <div id="ai-sandbox-messages" style="height: 280px; overflow-y: auto; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px;">
-                            <div style="display: flex; gap: 12px; align-items: flex-start;">
-                                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0;">
+                        <div id="ai-sandbox-messages" style="height: 260px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #fff; flex-shrink: 0;">
                                     <i class="fas fa-robot"></i>
                                 </div>
-                                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
-                                    <div style="font-size: 0.75rem; color: #c084fc; font-weight: 700; margin-bottom: 4px;">Nora Assistant</div>
-                                    <div style="font-size: 0.85rem; color: #fff; line-height: 1.45;">
-                                        Hi! I'm Nora. Ask me a question, test prompt responses, or test automated actions right here in the dashboard sandbox!
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px; max-width: 80%;">
+                                    <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; margin-bottom: 3px;">Nora Assistant</div>
+                                    <div style="font-size: 0.83rem; color: #fff; line-height: 1.4;">
+                                        Hi! I'm Nora. Ask me a question, test prompt responses, or test automated actions right here in the dashboard sandbox.
                                     </div>
                                 </div>
                             </div>
@@ -9129,21 +9112,21 @@
 
                         <!-- Quick Prompt Suggestion Chips -->
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-                            <button type="button" onclick="useSandboxPrompt('Introduce yourself and summarize your capabilities.')" style="padding: 5px 12px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; color: #c084fc; font-size: 0.76rem; cursor: pointer;">
-                                ✨ Introduce yourself
+                            <button type="button" onclick="useSandboxPrompt('Introduce yourself and summarize your capabilities.')" style="padding: 5px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: var(--muted); font-size: 0.74rem; cursor: pointer;">
+                                Introduce yourself
                             </button>
-                            <button type="button" onclick="useSandboxPrompt('Explain how your automated slowmode and safety filters protect the server.')" style="padding: 5px 12px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; color: #c084fc; font-size: 0.76rem; cursor: pointer;">
-                                🛡️ Explain safety features
+                            <button type="button" onclick="useSandboxPrompt('Explain how your automated slowmode and safety filters protect the server.')" style="padding: 5px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: var(--muted); font-size: 0.74rem; cursor: pointer;">
+                                Explain safety features
                             </button>
-                            <button type="button" onclick="useSandboxPrompt('Draft a welcoming server announcement for new community members.')" style="padding: 5px 12px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; color: #c084fc; font-size: 0.76rem; cursor: pointer;">
-                                📢 Draft announcement
+                            <button type="button" onclick="useSandboxPrompt('Draft a welcoming server announcement for new community members.')" style="padding: 5px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: var(--muted); font-size: 0.74rem; cursor: pointer;">
+                                Draft announcement
                             </button>
                         </div>
 
                         <!-- Chat Input Box -->
                         <div style="display: flex; gap: 10px;">
-                            <input type="text" id="ai-sandbox-input" onkeydown="if(event.key==='Enter') sendAiSandboxMessage();" placeholder="Type a prompt to test Nora AI..." style="flex: 1; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 0.88rem;">
-                            <button type="button" id="ai-sandbox-send-btn" onclick="sendAiSandboxMessage()" style="padding: 12px 24px; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);">
+                            <input type="text" id="ai-sandbox-input" onkeydown="if(event.key==='Enter') sendAiSandboxMessage();" placeholder="Type a prompt to test Nora AI..." style="flex: 1; padding: 11px 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+                            <button type="button" id="ai-sandbox-send-btn" onclick="sendAiSandboxMessage()" style="padding: 11px 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-paper-plane"></i> Send
                             </button>
                         </div>
@@ -9151,39 +9134,7 @@
                 </div>
 
 <div id="tab-autoresponder" class="tab-content" style="display: none;">
-                    <!-- Nora AI Autonomous Channel & Conversation Hub -->
-                    <div class="panel" style="margin-bottom: 24px; border: 1px solid rgba(168, 85, 247, 0.25); background: linear-gradient(135deg, rgba(20, 20, 35, 0.95), rgba(30, 20, 45, 0.95)); border-radius: 16px; padding: 24px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);">
-                                    <i class="fas fa-brain"></i>
-                                </div>
-                                <div>
-                                    <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #fff;">Nora AI Management</h3>
-                                    <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.82rem;">Autonomous conversation hub, omniscient surroundings & automatic channel engagement</p>
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 0.82rem; font-weight: 600; color: #c084fc;">Auto-Respond All Messages</span>
-                                <label class="switch"><input type="checkbox" id="setting-aiAutoRespondEnabled"><span class="slider"></span></label>
-                            </div>
-                        </div>
-
-                        <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; margin-top: 15px;">
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <label style="font-size: 0.88rem; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-hashtag" style="color: #a855f7;"></i> Dedicated AI Autonomous Channel
-                                </label>
-                                <p style="font-size: 0.78rem; color: var(--muted); margin: 0;">
-                                    When enabled, Nora actively reads and responds to <strong>all messages</strong> in this channel without needing to be pinged or replied to. A channel must be selected for autonomous replies to trigger.
-                                </p>
-                                <div style="margin-top: 6px;">
-                                    <select id="setting-aiAutoRespondChannelId" style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #fff; font-size: 0.9rem;">
-                                        <option value="">None / Disabled</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                    
                     </div>
 
                     <div class="panel">
@@ -28106,134 +28057,12 @@ try {
         // ==========================================
         // 🔒 WHITELISTED SERVER TAB SYNC (ROKU & HQ)
         // ==========================================
-        const WHITELISTED_ROKU_SERVERS = ['1487342521133830174', '1515800329889779954'];
-
         function updateWhitelistedTabs(guildId) {}
-            }
-        }
 
         // ==========================================
         // 📺 ROKU SMART TV DASHBOARD CONTROLLER
         // ==========================================
-        function logRokuEvent(msg, isSuccess = true) {
-            const feed = document.getElementById('roku-event-feed');
-            if (!feed) return;
-            const time = new Date().toLocaleTimeString();
-            const div = document.createElement('div');
-            div.style.color = isSuccess ? '#10b981' : '#ef4444';
-            div.textContent = `[${time}] ${msg}`;
-            feed.appendChild(div);
-            feed.scrollTop = feed.scrollHeight;
-        }
-
-        function clearRokuLog() {
-            const feed = document.getElementById('roku-event-feed');
-            if (feed) feed.innerHTML = '<div>[Console Ready] Cleared.</div>';
-        }
-
-        async function loadRokuStatus(showNotif = false) {
-            const guildId = window.currentServerId || window.currentGuildId;
-            updateWhitelistedTabs(guildId);
-            if (!WHITELISTED_ROKU_SERVERS.includes(String(guildId))) return;
-
-            const icon = document.getElementById('roku-refresh-icon');
-            if (icon) icon.classList.add('fa-spin');
-
-            try {
-                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
-                const token = sessionStorage.getItem('discord_token');
-                const res = await fetch(`${apiBase}/api/roku/status?guildId=${guildId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-
-                const dot = document.getElementById('roku-status-dot');
-                const txt = document.getElementById('roku-status-text');
-                const nameEl = document.getElementById('roku-device-name');
-                const appEl = document.getElementById('roku-active-app');
-                const verEl = document.getElementById('roku-software-ver');
-                const authEl = document.getElementById('roku-auth-badge');
-
-                if (data.isOnline) {
-                    if (dot) { dot.style.background = '#10b981'; dot.style.boxShadow = '0 0 10px #10b981'; }
-                    if (txt) { txt.textContent = data.powerMode === 'PowerOn' ? 'Powered On' : 'Online / Standby'; txt.style.color = '#10b981'; }
-                } else {
-                    if (dot) { dot.style.background = '#ef4444'; dot.style.boxShadow = '0 0 10px #ef4444'; }
-                    if (txt) { txt.textContent = 'Offline / Unreachable'; txt.style.color = '#ef4444'; }
-                }
-
-                if (nameEl && data.deviceInfo) nameEl.textContent = data.deviceInfo.friendlyName || data.deviceInfo.modelName || 'Living Room Roku';
-                if (appEl) appEl.textContent = data.activeApp ? data.activeApp.name : (data.isOnline ? 'Home Screen' : '--');
-                if (verEl && data.deviceInfo) verEl.textContent = data.deviceInfo.softwareVersion || '12.5.0';
-                if (authEl) {
-                    if (data.isOwner) {
-                        authEl.textContent = 'Master Owner';
-                        authEl.style.color = '#a855f7';
-                    } else if (data.isAuthorized) {
-                        authEl.textContent = `Guest (${data.remainingTries} tries remaining)`;
-                        authEl.style.color = '#10b981';
-                    } else {
-                        authEl.textContent = 'Unauthorized';
-                        authEl.style.color = '#ef4444';
-                    }
-                }
-
-                logRokuEvent(`State synced: ${data.isOnline ? 'Online (' + (data.activeApp ? data.activeApp.name : 'Home') + ')' : 'Offline'}`);
-                if (showNotif && typeof showToast === 'function') showToast('Roku TV status refreshed', 'success');
-            } catch (err) {
-                logRokuEvent('Failed to sync status: ' + err.message, false);
-            } finally {
-                if (icon) icon.classList.remove('fa-spin');
-            }
-        }
-
-        async function sendRokuAction(action, extra = {}) {
-            const guildId = window.currentServerId || window.currentGuildId;
-            if (!WHITELISTED_ROKU_SERVERS.includes(String(guildId))) {
-                if (typeof showToast === 'function') showToast('Roku integration is restricted to HQ servers.', 'error');
-                return;
-            }
-
-            try {
-                logRokuEvent(`Dispatching ${action}...`);
-                const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
-                const token = sessionStorage.getItem('discord_token');
-                const res = await fetch(`${apiBase}/api/roku/control`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ guildId, action, ...extra })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    logRokuEvent(`✓ ${data.message || action + ' executed successfully'}`, true);
-                    if (typeof showToast === 'function') showToast(data.message || `Sent: ${action}`, 'success');
-                } else {
-                    logRokuEvent(`✗ ${data.message || 'Action rejected'}`, false);
-                    if (typeof showToast === 'function') showToast(data.message || 'Action rejected', 'error');
-                }
-            } catch (err) {
-                logRokuEvent(`✗ Error: ${err.message}`, false);
-                if (typeof showToast === 'function') showToast('Command failed: ' + err.message, 'error');
-            }
-        }
-
-        async function launchRokuApp(appName) {
-            await sendRokuAction('LAUNCH_APP', { app: appName });
-        }
-
-        async function sendRokuText() {
-            const input = document.getElementById('roku-text-input');
-            if (!input || !input.value.trim()) return;
-            const text = input.value.trim();
-            await sendRokuAction('LITERAL', { text });
-            input.value = '';
-        }
-
-        function confirmRokuRestart() {
-            if (confirm('Are you sure you want to trigger a system restart of the Roku Smart TV? This will reboot the TV.')) {
-                sendRokuAction('RESTART');
-            }
-        }
+        
 
         // ==========================================
         // 🧠 NORA AI STUDIO LIVE SANDBOX
