@@ -64,17 +64,25 @@ module.exports = {
             return await handleError(interaction, 'Error', 'Failed to resolve guild member details.');
         }
 
+        const { parseRoleIds } = require('../../utils/roleUtils');
+
         // ─────────────────────────────────────────────────────────────────────
         // SUBCOMMAND: START (Member initiates verification)
         // ─────────────────────────────────────────────────────────────────────
         if (subcommand === 'start') {
-            if (!settings || (!settings.verifyRoleId && !settings.robloxVerifyRoleId)) {
-                return await handleError(interaction, 'Not Configured', 'Verification has not been configured by the server administrators yet. Please ask an admin to set it up in Nora Studio or `/setup`.');
-            }
-
             const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;
             const maxRoles = isPremium ? 5 : 3;
-            const targetRoleIds = (settings?.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean).slice(0, maxRoles);
+            const targetRoleIds = parseRoleIds(settings?.verifyRoleId).slice(0, maxRoles);
+            if (settings?.robloxVerifyRoleId) {
+                const robloxIds = parseRoleIds(settings.robloxVerifyRoleId);
+                for (const rid of robloxIds) {
+                    if (!targetRoleIds.includes(rid)) targetRoleIds.push(rid);
+                }
+            }
+
+            if (!targetRoleIds.length) {
+                return await handleError(interaction, 'Not Configured', 'Verification has not been configured by the server administrators yet. Please ask an admin to set it up in Nora Studio or `/setup`.');
+            }
 
             // Check if user already has all verified roles
             const hasAllRoles = targetRoleIds.length > 0 && targetRoleIds.every(rId => member.roles.cache.has(rId));
@@ -113,7 +121,13 @@ module.exports = {
         if (subcommand === 'status') {
             const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;
             const maxRoles = isPremium ? 5 : 3;
-            const targetRoleIds = (settings?.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean).slice(0, maxRoles);
+            const targetRoleIds = parseRoleIds(settings?.verifyRoleId).slice(0, maxRoles);
+            if (settings?.robloxVerifyRoleId) {
+                const robloxIds = parseRoleIds(settings.robloxVerifyRoleId);
+                for (const rid of robloxIds) {
+                    if (!targetRoleIds.includes(rid)) targetRoleIds.push(rid);
+                }
+            }
             const verifiedRoles = targetRoleIds.filter(rId => member.roles.cache.has(rId));
             const isVerified = targetRoleIds.length > 0 && verifiedRoles.length === targetRoleIds.length;
 
@@ -141,7 +155,10 @@ module.exports = {
                 return await handleError(interaction, 'Permission Denied', 'You require the **Manage Server** permission to deploy verification panels.');
             }
 
-            if (!settings || (!settings.verifyRoleId && !settings.robloxVerifyRoleId)) {
+            const configuredRoles = parseRoleIds(settings?.verifyRoleId);
+            if (settings?.robloxVerifyRoleId) configuredRoles.push(...parseRoleIds(settings.robloxVerifyRoleId));
+
+            if (!settings || configuredRoles.length === 0) {
                 return await handleError(interaction, 'Configuration Required', 'Please configure your Verified Role in Nora Studio or `/setup` before spawning the panel.');
             }
 
@@ -279,12 +296,7 @@ module.exports = {
                         verifiedAny = true;
                         successList.push(username);
 
-                        if (settings.robloxVerifyRoleId) {
-                            const role = interaction.guild.roles.cache.get(settings.robloxVerifyRoleId);
-                            if (role) {
-                                await member.roles.add(role, 'Roblox Verification Complete').catch(e => console.error('Failed to grant role:', e));
-                            }
-                        }
+                        await verifyEngine.grantVerificationRoles(member, settings, { interaction }, 'Roblox Verification');
 
                         let groupBindings = [];
                         try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) {}

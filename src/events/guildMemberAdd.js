@@ -259,9 +259,11 @@ module.exports = {
                 const maxAutoRoles = isPremium ? 5 : 3;
                 const botHighest = member.guild.members.me.roles.highest.position;
 
+                const { parseRoleIds } = require('../utils/roleUtils');
+
                 // 2.5.1 Assign Standard Auto-Roles
                 if (settings.welcomeRoleId) {
-                    const roleIds = settings.welcomeRoleId.split(',').map(r => r.trim()).filter(Boolean).slice(0, maxAutoRoles);
+                    const roleIds = parseRoleIds(settings.welcomeRoleId).slice(0, maxAutoRoles);
                     const rolesToAdd = [];
 
                     for (const rId of roleIds) {
@@ -282,7 +284,7 @@ module.exports = {
 
                 // 2.5.2 Assign Unverified Quarantine Role(s) if Verification Gatekeeper is Active
                 if (settings.unverifiedRoleId) {
-                    const unvRoleIds = settings.unverifiedRoleId.split(',').map(r => r.trim()).filter(Boolean);
+                    const unvRoleIds = parseRoleIds(settings.unverifiedRoleId);
                     const unvRolesToAdd = [];
 
                     for (const uId of unvRoleIds) {

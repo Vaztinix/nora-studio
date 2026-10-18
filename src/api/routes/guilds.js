@@ -1140,7 +1140,9 @@ router.post('/action', async (req, res) => {
             const verifyEngine = require('../../bot/engines/verify');
             const settings = await settingsCache.get(guildId);
 
-            if (!settings || (!settings.verifyRoleId && !settings.robloxVerifyRoleId)) {
+            const { parseRoleIds } = require('../../utils/roleUtils');
+            const hasRoles = settings && (parseRoleIds(settings.verifyRoleId).length > 0 || parseRoleIds(settings.robloxVerifyRoleId).length > 0);
+            if (!hasRoles) {
                 return res.status(400).json({ error: 'Please configure at least one Verified Role in settings before spawning the panel.' });
             }
 

@@ -33,6 +33,27 @@ module.exports = {
             })();
         }
 
+        // 💤 Clear AFK Status on any Nora command/interaction in this guild (excluding /afk itself)
+        if (interaction.guild && interaction.user) {
+            const isAfkCmd = typeof interaction.isChatInputCommand === 'function' && interaction.isChatInputCommand() && interaction.commandName === 'afk';
+            if (!isAfkCmd) {
+                const afkManager = require('../utils/afkManager');
+                const userAfk = afkManager.getAfk(interaction.guild.id, interaction.user.id);
+                if (userAfk) {
+                    const elapsed = Date.now() - userAfk.timestamp;
+                    if (elapsed > 5000) {
+                        (async () => {
+                            try {
+                                await afkManager.clearUserAfk(interaction.guild, interaction.member || interaction.user.id, {
+                                    reason: 'User executed a command or interaction on Nora'
+                                });
+                            } catch (e) {}
+                        })();
+                    }
+                }
+            }
+        }
+
         // ---- Application Builder Interaction Handlers ----
         // 1. Handle Application Start button or Select menu selection
         if ((interaction.isButton() && interaction.customId.startsWith('app_start_')) || 

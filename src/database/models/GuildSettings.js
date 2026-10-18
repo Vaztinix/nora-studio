@@ -88,6 +88,11 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    countingTopCounterRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
     roleRewards: {
         type: DataTypes.TEXT, // JSON-formatted string: { "level": "roleId" }
         allowNull: true,
@@ -1120,6 +1125,11 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true,
         defaultValue: '[]'
     },
+    starboardRoleRewards: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: '[]'
+    },
 
 
     // ---- Server Custom Shape Presets & Backgrounds ----
@@ -1168,6 +1178,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.INTEGER,
         defaultValue: 1
     },
+    oneWordStoryAlwaysAutoStart: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
 
     // ---- AFK System Settings ----
     afkEnabled: {
@@ -1181,6 +1195,11 @@ const GuildSettings = sequelize.define('GuildSettings', {
     afkCleanMessage: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+    },
+    afkRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
     },
 
     // ---- Top.gg Integration Suite ----

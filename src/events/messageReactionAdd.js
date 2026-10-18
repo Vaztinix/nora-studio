@@ -36,10 +36,12 @@ module.exports = {
 
         // ---- React Verification Integration ----
         try {
-            const GuildSettings = require('../database/models/GuildSettings');
-            const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+            const settingsCache = require('../utils/settingsCache');
+            const { parseRoleIds } = require('../utils/roleUtils');
+            const settings = await settingsCache.get(guild.id);
 
-            if (settings && settings.verifyRoleId && (settings.verificationType === 'reaction' || settings.verifyMessageId)) {
+            const hasRolesConfigured = settings && (parseRoleIds(settings.verifyRoleId).length > 0 || parseRoleIds(settings.robloxVerifyRoleId).length > 0);
+            if (settings && hasRolesConfigured && (settings.verificationType === 'reaction' || settings.verifyMessageId)) {
                 const targetMsgId = settings.verifyMessageId;
                 const isTargetMessage = targetMsgId ? reaction.message.id === targetMsgId : (settings.verifyChannelId && reaction.message.channel.id === settings.verifyChannelId);
 

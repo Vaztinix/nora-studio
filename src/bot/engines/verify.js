@@ -91,10 +91,19 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
     const guild = member.guild;
     const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;
     const maxVerifiedRoles = isPremium ? 5 : 3;
-    const targetRoleIds = (settings?.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean).slice(0, maxVerifiedRoles);
+    const { parseRoleIds } = require('../../utils/roleUtils');
+    const targetRoleIds = parseRoleIds(settings?.verifyRoleId).slice(0, maxVerifiedRoles);
+
+    // Also support robloxVerifyRoleId if configured
+    if (settings?.robloxVerifyRoleId) {
+        const robloxIds = parseRoleIds(settings.robloxVerifyRoleId);
+        for (const rid of robloxIds) {
+            if (!targetRoleIds.includes(rid)) targetRoleIds.push(rid);
+        }
+    }
 
     if (!targetRoleIds.length) {
-        return { success: false, message: '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask an admin to configure it in `/setup` or Nora Studio.' };
+        return { success: false, message: '⚠️ **Verification Not Configured**: An administrator has not assigned a valid verified role yet. Please ask an admin to configure it in `/setup` or Nora Studio.' };
     }
 
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
@@ -103,20 +112,24 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
 
     const botHighest = guild.members.me.roles.highest.position;
     let rolesAdded = 0;
+    let validRolesCount = 0;
     let alreadyHasAll = true;
+    const hierarchyBlockedRoles = [];
 
     for (const rId of targetRoleIds) {
         const roleObj = guild.roles.cache.get(rId) || await guild.roles.fetch(rId).catch(() => null);
         if (!roleObj) continue;
+        validRolesCount++;
 
         if (roleObj.position >= botHighest) {
-            return { success: false, message: `⚠️ I cannot assign <@&${roleObj.id}> because it is higher than or equal to my highest role.` };
+            hierarchyBlockedRoles.push(roleObj);
+            continue;
         }
 
         if (!member.roles.cache.has(rId)) {
             alreadyHasAll = false;
             try {
-                await member.roles.add(rId);
+                await member.roles.add(roleObj, `Nora Verification: Member completed ${method} verification.`);
                 rolesAdded++;
             } catch (err) {
                 if (!isSilent) {
@@ -126,13 +139,32 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
         }
     }
 
+    if (validRolesCount === 0) {
+        return {
+            success: false,
+            message: '⚠️ **Configuration Error**: The verified role(s) configured for this server no longer exist or could not be found. Please ask an administrator to re-configure the verified role in Nora Studio or `/setup`.'
+        };
+    }
+
+    if (hierarchyBlockedRoles.length > 0 && rolesAdded === 0 && !alreadyHasAll) {
+        const roleMentions = hierarchyBlockedRoles.map(r => `<@&${r.id}>`).join(', ');
+        return {
+            success: false,
+            message: `⚠️ **Role Hierarchy Error**: Nora cannot assign ${roleMentions} because that role is positioned higher than (or equal to) Nora's highest role in Server Settings > Roles. Please ask a server admin to drag Nora's role above ${roleMentions}.`
+        };
+    }
+
+    if (rolesAdded === 0 && !alreadyHasAll) {
+        return {
+            success: false,
+            message: '⚠️ **Role Assignment Failed**: Nora was unable to assign your verified role. Please verify that Nora has the **Manage Roles** permission and that Nora\'s role is dragged above the verified role in Server Settings > Roles.'
+        };
+    }
+
     // Automatically remove unverified role(s) upon successful verification
     const shouldRemoveUnverified = settings?.removeUnverifiedRoleOnVerify !== false;
     if (shouldRemoveUnverified) {
-        const unverifiedRoleIds = [];
-        if (settings?.unverifiedRoleId) {
-            unverifiedRoleIds.push(...settings.unverifiedRoleId.split(',').map(r => r.trim()).filter(Boolean));
-        }
+        const unverifiedRoleIds = parseRoleIds(settings?.unverifiedRoleId);
 
         // If no explicit role ID configured, automatically check if member has a role named "Unverified"
         if (unverifiedRoleIds.length === 0) {
@@ -147,7 +179,7 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
                 const unvRoleObj = guild.roles.cache.get(uId) || await guild.roles.fetch(uId).catch(() => null);
                 if (unvRoleObj && unvRoleObj.position < botHighest) {
                     try {
-                        await member.roles.remove(uId, `Nora Verification: Member completed ${method} verification, unverified role removed.`);
+                        await member.roles.remove(unvRoleObj, `Nora Verification: Member completed ${method} verification, unverified role removed.`);
                     } catch (remErr) {
                         if (!isSilent) {
                             console.error(`Failed to remove unverified role ${uId}:`, remErr.message);
@@ -243,8 +275,12 @@ async function handleVerifyButtonClick(interaction, settings) {
             return await handleInstantButtonClick(interaction, settings);
         }
 
-        if (!settings || !settings.verifyRoleId) {
-            const msg = '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask a server admin to configure the Verified Role in `/setup`.';
+        const { parseRoleIds } = require('../../utils/roleUtils');
+        const configuredRoles = parseRoleIds(settings?.verifyRoleId);
+        if (settings?.robloxVerifyRoleId) configuredRoles.push(...parseRoleIds(settings.robloxVerifyRoleId));
+
+        if (!settings || configuredRoles.length === 0) {
+            const msg = '⚠️ **Verification Not Configured**: An administrator has not assigned a verified role yet. Please ask a server admin to configure the Verified Role in `/setup` or Nora Studio.';
             if (interaction.deferred || interaction.replied) {
                 return await interaction.editReply({ content: msg }).catch(() => {});
             } else {
@@ -365,6 +401,10 @@ async function handleReactionVerification(reaction, user, settings) {
                 .setColor(0x2ea043)
                 .setTimestamp();
             await user.send({ embeds: [dmEmbed] }).catch(() => {});
+        } catch (e) {}
+    } else if (!result.success && result.message) {
+        try {
+            await user.send({ content: result.message }).catch(() => {});
         } catch (e) {}
     }
 }

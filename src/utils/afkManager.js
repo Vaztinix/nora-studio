@@ -33,6 +33,7 @@ async function loadAll() {
                     guildId: data.guildId,
                     status: data.status || 'AFK',
                     timestamp: Number(data.timestamp) || Date.now(),
+                    expiresAt: data.expiresAt ? Number(data.expiresAt) : null,
                     originalNickname: data.originalNickname || null,
                     autoNicknameChanged: !!data.autoNicknameChanged
                 });
@@ -57,9 +58,10 @@ async function loadAll() {
  * @param {string} status 
  * @param {string|null} originalNickname 
  * @param {boolean} autoNicknameChanged 
+ * @param {number|null} expiresAt
  * @returns {Promise<Object>}
  */
-async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, autoNicknameChanged = false) {
+async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, autoNicknameChanged = false, expiresAt = null) {
     await loadAll();
     const cleanStatus = (status && typeof status === 'string' && status.trim()) 
         ? status.trim().substring(0, 500) 
@@ -71,6 +73,7 @@ async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, 
         userId,
         status: cleanStatus,
         timestamp,
+        expiresAt: expiresAt ? Number(expiresAt) : null,
         originalNickname: originalNickname || null,
         autoNicknameChanged: !!autoNicknameChanged
     };
@@ -90,6 +93,98 @@ async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, 
     const key = `${guildId}:${userId}`;
     afkCache.set(key, recordData);
     return recordData;
+}
+
+/**
+ * Applies the server's configured AFK role to a member if available
+ * @param {import('discord.js').Guild} guild 
+ * @param {import('discord.js').GuildMember} member 
+ * @returns {Promise<boolean>}
+ */
+async function applyAfkRole(guild, member) {
+    if (!guild || !member) return false;
+    try {
+        const settingsCache = require('./settingsCache');
+        const settings = await settingsCache.get(guild.id);
+        if (!settings?.afkRoleId) return false;
+
+        const roleId = String(settings.afkRoleId).replace(/[^0-9]/g, '');
+        if (!roleId || member.roles.cache.has(roleId)) return false;
+
+        const me = guild.members.me;
+        const { PermissionFlagsBits } = require('discord.js');
+        if (!me || !me.permissions.has(PermissionFlagsBits.ManageRoles)) return false;
+
+        const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
+        if (!role || role.position >= me.roles.highest.position || role.managed) return false;
+
+        await member.roles.add(role, 'User is now AFK').catch(() => {});
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Safely clears a user's AFK status: removes from DB/cache, restores nickname, and strips AFK role.
+ * @param {import('discord.js').Guild} guild 
+ * @param {import('discord.js').GuildMember|string} memberOrId 
+ * @param {Object} options 
+ * @returns {Promise<{ wasAfk: boolean, afkData: Object|null, member: Object|null }>}
+ */
+async function clearUserAfk(guild, memberOrId, options = {}) {
+    if (!guild || !memberOrId) return { wasAfk: false, afkData: null, member: null };
+    const userId = typeof memberOrId === 'string' ? memberOrId : memberOrId.id;
+    const afkData = getAfk(guild.id, userId);
+
+    if (!afkData) {
+        return { wasAfk: false, afkData: null, member: null };
+    }
+
+    // 1. Remove record from cache and SQLite
+    await removeAfk(guild.id, userId);
+
+    // 2. Fetch member if needed
+    let member = (typeof memberOrId === 'object' && memberOrId?.guild) ? memberOrId : null;
+    if (!member) {
+        member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+    }
+
+    if (member) {
+        // 3. Restore nickname if it was altered or prefixed
+        try {
+            if (member.manageable) {
+                const currentNick = member.displayName;
+                if (currentNick.startsWith('[AFK]') || currentNick.startsWith('{AFK]') || currentNick.startsWith('{AFK}')) {
+                    const targetRestore = (afkData.originalNickname !== undefined && afkData.originalNickname !== null)
+                        ? afkData.originalNickname
+                        : currentNick.replace(/^(\[AFK\]|\{AFK\]|\{AFK\})\s*/i, '');
+                    await member.setNickname(targetRestore).catch(() => {});
+                }
+            }
+        } catch (_) {}
+
+        // 4. Remove AFK Role if configured and assigned
+        try {
+            const settingsCache = require('./settingsCache');
+            const settings = await settingsCache.get(guild.id);
+            if (settings?.afkRoleId) {
+                const roleId = String(settings.afkRoleId).replace(/[^0-9]/g, '');
+                if (roleId && member.roles.cache.has(roleId)) {
+                    const me = guild.members.me;
+                    const { PermissionFlagsBits } = require('discord.js');
+                    if (me && me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+                        const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
+                        if (role && role.position < me.roles.highest.position && !role.managed) {
+                            await member.roles.remove(role, options.reason || 'User is no longer AFK').catch(() => {});
+                        }
+                    }
+                }
+            }
+        } catch (_) {}
+    }
+
+    return { wasAfk: true, afkData, member };
 }
 
 /**
@@ -181,6 +276,8 @@ function checkMentionCooldown(guildId, userId, channelId) {
 module.exports = {
     loadAll,
     setAfk,
+    applyAfkRole,
+    clearUserAfk,
     getAfk,
     isAfk,
     removeAfk,

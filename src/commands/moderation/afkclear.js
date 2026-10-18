@@ -28,15 +28,9 @@ module.exports = {
             return await handleError(interaction, 'Not AFK', `<@${targetUser.id}> is not currently marked as AFK in this server.`);
         }
 
-        await afkManager.removeAfk(interaction.guild.id, targetUser.id);
-
-        // Try to restore original nickname if it was altered
-        try {
-            const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
-            if (member && member.manageable && afkData.autoNicknameChanged) {
-                await member.setNickname(afkData.originalNickname).catch(() => {});
-            }
-        } catch (e) {}
+        await afkManager.clearUserAfk(interaction.guild, targetUser.id, {
+            reason: `AFK cleared by staff: ${interaction.user.tag}`
+        });
 
         const embed = new EmbedBuilder()
             .setColor('#10b981')

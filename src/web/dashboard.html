@@ -3809,7 +3809,7 @@
                 if (!window.previousSettings || Object.keys(window.previousSettings).length === 0) {
                     return diffs;
                 }
-                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode'];
+                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId'];
 
                 KEYS_ARRAY.forEach(k => {
                     const el = document.getElementById('setting-' + k);
@@ -7655,7 +7655,7 @@
 
                                 <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
                                     <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 6px; display: block;">Assign Roles on Join</label>
-                                    <input type="hidden" id="setting-welcomeRoleId" value="[]">
+                                    <input type="hidden" id="setting-welcomeRoleId" value="">
                                     <div id="setting-welcomeRoleId-container" class="multiselect-container"></div>
                                 </div>
 
@@ -8804,6 +8804,13 @@
                             </div>
                             <select id="setting-countingChannelId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;" onchange="updateCountingBanner(this.value)"><option value="">Select channel...</option></select>
                         </div>
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="row-info">
+                                <h4>Top Counter Role Reward</h4>
+                                <p>Automatically award a dynamic role to the #1 counter in this server (transfers automatically if someone takes the lead).</p>
+                            </div>
+                            <select id="setting-countingTopCounterRoleId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;"><option value="">None (Disabled)</option></select>
+                        </div>
                         <div class="input-group" style="margin-top: 15px;"><label>XP Reward Per Count</label><input type="number" id="setting-countingChannelXpReward" placeholder="5"></div>
 
                         <div class="input-group" style="margin-top: 15px;">
@@ -8848,6 +8855,14 @@
                             <label class="switch"><input type="checkbox" id="setting-oneWordStoryAllowConsecutive"><span class="slider"></span></label>
                         </div>
 
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="row-info">
+                                <h4>Always Auto-Start Story</h4>
+                                <p>Automatically start a new story when words are posted or after a story concludes without needing manual /onewordstory start.</p>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="setting-oneWordStoryAlwaysAutoStart"><span class="slider"></span></label>
+                        </div>
+
                         <hr style="border: 0; border-top: 1px solid var(--border); margin: 25px 0;">
 
                         <h4><i class="fas fa-moon" style="color: var(--primary);"></i> AFK System</h4>
@@ -8875,6 +8890,14 @@
                                 <p>Automatically delete AFK mention notices (10s) and welcome-back messages (7s) to keep chat clean.</p>
                             </div>
                             <label class="switch"><input type="checkbox" id="setting-afkCleanMessage"><span class="slider"></span></label>
+                        </div>
+
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="row-info">
+                                <h4>AFK Role</h4>
+                                <p>Assign this role to members when they go AFK, and automatically remove it when they return.</p>
+                            </div>
+                            <select id="setting-afkRoleId" style="width: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 6px 12px; border-radius: 6px;"><option value="">None (Disabled)</option></select>
                         </div>
                     </div>
                 </div>
@@ -9134,9 +9157,6 @@
                 </div>
 
 <div id="tab-autoresponder" class="tab-content" style="display: none;">
-                    
-                    </div>
-
                     <div class="panel">
                         <h3>Autoresponder System</h3>
                         <p>Configure custom rules to automatically reply to messages matching triggers.</p>
@@ -9377,7 +9397,7 @@
 
                                 <div class="input-group" style="margin-bottom: 0;">
                                     <label style="font-weight: 600; font-size: 0.8rem;">Verified Roles to Grant</label>
-                                    <input type="hidden" id="setting-verifyRoleId" value="[]">
+                                    <input type="hidden" id="setting-verifyRoleId" value="">
                                     <div id="setting-verifyRoleId-container" class="multiselect-container"></div>
                                 </div>
 
@@ -10307,6 +10327,29 @@
                                         <input type="checkbox" id="setting-starboardNotifyAuthor" checked>
                                         <span class="slider"></span>
                                     </label>
+                                </div>
+                            </div>
+
+                            <!-- Card 2.5: Starboard Role Rewards -->
+                            <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 24px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"><i class="fas fa-award"></i></div>
+                                        <div>
+                                            <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0;">Starboard Role Rewards</h3>
+                                            <p style="font-size: 0.78rem; color: var(--muted); margin: 2px 0 0 0;">Award server roles when members reach starboard milestones.</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-outline" onclick="addStarboardRoleReward()" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 8px; background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); cursor: pointer;">
+                                        <i class="fas fa-plus"></i> Add Reward
+                                    </button>
+                                </div>
+
+                                <input type="hidden" id="setting-starboardRoleRewards" value="[]">
+                                <div id="starboard-role-rewards-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                                <div id="starboard-role-rewards-empty" style="text-align: center; color: var(--muted); padding: 24px 10px; font-size: 0.82rem; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
+                                    <i class="fas fa-award" style="font-size: 1.4rem; opacity: 0.4; margin-bottom: 6px; display: block;"></i>
+                                    No role rewards configured yet. Click <strong>Add Reward</strong> to set up milestone roles.
                                 </div>
                             </div>
 
@@ -12563,7 +12606,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId'];
 
 
 
@@ -20440,6 +20483,114 @@
             }
         };
 
+        window.getStarboardRoleRewards = function() {
+            const el = document.getElementById('setting-starboardRoleRewards');
+            if (!el || !el.value) return [];
+            try {
+                const val = typeof el.value === 'string' ? JSON.parse(el.value) : el.value;
+                return Array.isArray(val) ? val : [];
+            } catch (_) {
+                return [];
+            }
+        };
+
+        window.setStarboardRoleRewards = function(arr) {
+            const el = document.getElementById('setting-starboardRoleRewards');
+            if (el) {
+                el.value = JSON.stringify(arr);
+                renderStarboardRoleRewards();
+                if (typeof window.markFormDirty === 'function') window.markFormDirty();
+            }
+        };
+
+        window.renderStarboardRoleRewards = function() {
+            const container = document.getElementById('starboard-role-rewards-list');
+            const emptyNotice = document.getElementById('starboard-role-rewards-empty');
+            if (!container) return;
+
+            const rewards = getStarboardRoleRewards();
+            if (!rewards.length) {
+                container.innerHTML = '';
+                if (emptyNotice) emptyNotice.style.display = 'block';
+                return;
+            }
+
+            if (emptyNotice) emptyNotice.style.display = 'none';
+            const roles = window._cachedGuildRoles || [];
+
+            let html = '';
+            rewards.forEach((item, index) => {
+                const cond = item.condition || 'total_stars';
+                const thresh = item.threshold || 10;
+                const roleId = item.roleId || '';
+
+                let roleOptions = '<option value="">Select Role...</option>';
+                roles.forEach(r => {
+                    const isSel = r.id === roleId ? 'selected' : '';
+                    const dis = r.higherThanBot ? 'disabled' : '';
+                    const extra = r.higherThanBot ? ' (Higher than Nora)' : '';
+                    roleOptions += `<option value="${r.id}" ${isSel} ${dis} style="color: ${r.color || '#fff'}">${r.name}${extra}</option>`;
+                });
+
+                html += `
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 1.4fr 1fr 1.6fr auto; gap: 12px; align-items: center;">
+                    <div>
+                        <label style="font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; display: block; font-weight: 600;">Condition</label>
+                        <select style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;" onchange="updateStarboardRewardField(${index}, 'condition', this.value)">
+                            <option value="total_stars" ${cond === 'total_stars' ? 'selected' : ''}>⭐ Total Stars Earned</option>
+                            <option value="times_starboarded" ${cond === 'times_starboarded' ? 'selected' : ''}>🏆 Times Starboarded</option>
+                            <option value="single_message_stars" ${cond === 'single_message_stars' ? 'selected' : ''}>🌟 Single Post Stars</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; display: block; font-weight: 600;">Threshold</label>
+                        <input type="number" min="1" max="10000" value="${thresh}" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;" oninput="updateStarboardRewardField(${index}, 'threshold', parseInt(this.value, 10) || 1)">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; display: block; font-weight: 600;">Reward Role</label>
+                        <select style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;" onchange="updateStarboardRewardField(${index}, 'roleId', this.value)">
+                            ${roleOptions}
+                        </select>
+                    </div>
+                    <div style="padding-top: 18px;">
+                        <button type="button" onclick="removeStarboardRoleReward(${index})" style="padding: 8px 12px; border-radius: 8px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer;" title="Delete reward">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        };
+
+        window.addStarboardRoleReward = function() {
+            const list = getStarboardRoleRewards();
+            list.push({
+                id: 'rew_' + Date.now(),
+                condition: 'total_stars',
+                threshold: 25,
+                roleId: ''
+            });
+            setStarboardRoleRewards(list);
+        };
+
+        window.removeStarboardRoleReward = function(index) {
+            const list = getStarboardRoleRewards();
+            list.splice(index, 1);
+            setStarboardRoleRewards(list);
+        };
+
+        window.updateStarboardRewardField = function(index, field, value) {
+            const list = getStarboardRoleRewards();
+            if (list[index]) {
+                list[index][field] = value;
+                const el = document.getElementById('setting-starboardRoleRewards');
+                if (el) el.value = JSON.stringify(list);
+                if (typeof window.markFormDirty === 'function') window.markFormDirty();
+            }
+        };
+
         window.setStarboardPresetColor = function(hex) {
             const textInput = document.getElementById('setting-starboardEmbedColor');
             const colorInput = document.getElementById('starboard-color-picker-input');
@@ -22259,6 +22410,7 @@
 
         function _applyRoles(roles) {
             if (!roles) return;
+            window._cachedGuildRoles = roles;
             try {
                 const selects = [
                     'setting-topggRewardRoleId',
@@ -22267,6 +22419,8 @@
                     'setting-ticketSupportRoleId',
                     'setting-promoterRoleId',
                     'setting-unverifiedRoleId',
+                    'setting-countingTopCounterRoleId',
+                    'setting-afkRoleId',
                     'rr-role-1',
                     'rr-role-2',
                     'rr-role-3',
@@ -22290,6 +22444,10 @@
                         initCustomDropdown(id);
                     }
                 });
+
+                if (typeof renderStarboardRoleRewards === 'function') {
+                    renderStarboardRoleRewards();
+                }
 
                 // Populate Wizard role select dropdowns
                 document.querySelectorAll('.wizard-role-select').forEach(el => {
@@ -22824,7 +22982,7 @@
                 const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
                 const vals = Array.from(checkedBoxes).map(cb => cb.parentNode.getAttribute('data-value'));
                 
-                if (hiddenInputId === 'setting-automodImmuneRoles' || hiddenInputId === 'setting-automodImmuneChannels' || hiddenInputId === 'setting-countingWhitelistedRoles' || hiddenInputId === 'setting-countingBlacklistedRoles' || hiddenInputId === 'setting-starboardIgnoredChannels' || hiddenInputId === 'setting-verifyRoleId' || hiddenInputId === 'setting-welcomeRoleId' || hiddenInputId === 'setting-levelingIgnoredRoles' || hiddenInputId === 'setting-levelingIgnoredChannels') {
+                if (hiddenInputId === 'setting-automodImmuneRoles' || hiddenInputId === 'setting-automodImmuneChannels' || hiddenInputId === 'setting-countingWhitelistedRoles' || hiddenInputId === 'setting-countingBlacklistedRoles' || hiddenInputId === 'setting-starboardIgnoredChannels' || hiddenInputId === 'setting-levelingIgnoredRoles' || hiddenInputId === 'setting-levelingIgnoredChannels') {
                     input.value = JSON.stringify(vals);
                 } else {
                     input.value = vals.join(',');
@@ -23397,11 +23555,14 @@
                 });
 
                 // Populate single role dropdowns
+                window._cachedGuildRoles = rlRes;
                 const singleRoleSelects = [
                     document.getElementById('setting-boostRewardRoleId'),
                     document.getElementById('setting-topggRewardRoleId'),
                     document.getElementById('setting-ticketSupportRoleId'),
-                    document.getElementById('setting-quarantineRoleId')
+                    document.getElementById('setting-quarantineRoleId'),
+                    document.getElementById('setting-countingTopCounterRoleId'),
+                    document.getElementById('setting-afkRoleId')
                 ];
                 singleRoleSelects.forEach(select => {
                     if (select) {
@@ -23414,6 +23575,10 @@
                         if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown(select.id);
                     }
                 });
+
+                if (typeof renderStarboardRoleRewards === 'function') {
+                    renderStarboardRoleRewards();
+                }
 
                 // Refresh any existing RR slot role dropdowns
                 document.querySelectorAll('.rr-role-select').forEach(select => {
@@ -23509,6 +23674,10 @@
                         el.value = (s[k] !== null && s[k] !== undefined) ? s[k] : '';
                     }
                 });
+
+                if (typeof renderStarboardRoleRewards === 'function') {
+                    renderStarboardRoleRewards();
+                }
 
                 // Populate split logging channels from settings s
                 let loggingChannelsObj = {};

@@ -15,7 +15,17 @@ module.exports = {
         if (!settings || settings.oneWordStoryEnabled === false) return;
 
         // Check if there is an active game in this channel
-        const activeGame = await oneWordStoryManager.getActiveGame(message.channel.id);
+        let activeGame = await oneWordStoryManager.getActiveGame(message.channel.id);
+        
+        // If no active game, check if this is the designated story channel and oneWordStoryAlwaysAutoStart is enabled
+        const isDesignatedChannel = settings.oneWordStoryChannelId && message.channel.id === settings.oneWordStoryChannelId;
+        if (!activeGame && isDesignatedChannel && settings.oneWordStoryAlwaysAutoStart) {
+            const startResult = await oneWordStoryManager.startGame(message.guild.id, message.channel.id, client.user.id, 0);
+            if (startResult.success) {
+                activeGame = startResult.game;
+            }
+        }
+
         if (!activeGame) return;
 
         const allowConsecutive = !!settings.oneWordStoryAllowConsecutive;
@@ -40,8 +50,9 @@ module.exports = {
                 if (endResult.success) {
                     const topList = endResult.topContributors.slice(0, 5).map((c, idx) => `${idx + 1}. **${c.username}**: ${c.count} words`).join('\n') || 'None';
 
-                    const footerText = endResult.autoRestartRemaining > 0
-                        ? `🔄 Auto-restarting in 5 seconds... (${endResult.autoRestartRemaining} round${endResult.autoRestartRemaining !== 1 ? 's' : ''} remaining)`
+                    const shouldAutoRestart = endResult.autoRestartRemaining > 0 || settings.oneWordStoryAlwaysAutoStart;
+                    const footerText = shouldAutoRestart
+                        ? '🔄 Auto-restarting new story in 5 seconds...'
                         : `Reached ${endResult.sentenceCount || maxSentences} sentence story milestone 🎯`;
 
                     const embed = new EmbedBuilder()
@@ -60,10 +71,10 @@ module.exports = {
                     await message.channel.send({ embeds: [embed] }).catch(() => {});
 
                     // Auto-restart logic
-                    if (endResult.autoRestartRemaining > 0) {
+                    if (shouldAutoRestart) {
                         const channelId = message.channel.id;
                         const guildId = message.guild.id;
-                        const remainingRounds = endResult.autoRestartRemaining - 1;
+                        const remainingRounds = settings.oneWordStoryAlwaysAutoStart ? 0 : (endResult.autoRestartRemaining - 1);
 
                         setTimeout(async () => {
                             try {
@@ -74,9 +85,9 @@ module.exports = {
                                 const startResult = await oneWordStoryManager.startGame(guildId, channelId, client.user.id, remainingRounds);
                                 if (!startResult.success) return;
 
-                                const roundLabel = remainingRounds > 0
-                                    ? `(${remainingRounds} auto-restart${remainingRounds !== 1 ? 's' : ''} remaining)`
-                                    : '(Final round)';
+                                const roundLabel = settings.oneWordStoryAlwaysAutoStart
+                                    ? '(Continuous Auto-Start Enabled)'
+                                    : (remainingRounds > 0 ? `(${remainingRounds} auto-restart${remainingRounds !== 1 ? 's' : ''} remaining)` : '(Final round)');
 
                                 const startEmbed = new EmbedBuilder()
                                     .setTitle('📖 One Word Story — New Round!')

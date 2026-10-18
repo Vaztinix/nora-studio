@@ -23,6 +23,11 @@ const AfkUser = sequelize.define('AfkUser', {
         type: DataTypes.BIGINT,
         allowNull: false
     },
+    expiresAt: {
+        type: DataTypes.BIGINT,
+        allowNull: true,
+        defaultValue: null
+    },
     originalNickname: {
         type: DataTypes.STRING,
         allowNull: true,

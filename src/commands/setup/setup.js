@@ -96,14 +96,14 @@ module.exports = {
             leveling: 'view_leveling',
             logging: 'view_logging',
             games: 'view_games',
-            afk: 'view_afk',
+            afk: 'view_games',
             ticket: 'view_tickets',
             verify: 'view_verify',
             roblox: 'view_verify',
             security: 'view_verify_security',
-            starboard: 'view_starboard',
-            onewordstory: 'view_onewordstory',
-            counting: 'view_counting',
+            starboard: 'view_games',
+            onewordstory: 'view_games',
+            counting: 'view_games',
             ai: 'view_ai',
             moderation: 'view_moderation',
             adaptiveslowmode: 'view_adaptiveslowmode'
@@ -161,8 +161,9 @@ module.exports = {
                 ].filter(Boolean).length;
 
                 const isPremium = settings.isPremium === true || settings.isManualPremium === true;
-                const autoRoles = (settings.welcomeRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
-                const verifyRoles = (settings.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+                const { parseRoleIds } = require('../../utils/roleUtils');
+                const autoRoles = parseRoleIds(settings.welcomeRoleId);
+                const verifyRoles = parseRoleIds(settings.verifyRoleId);
 
                 const autoRoleText = autoRoles.length > 0 
                     ? (autoRoles.length <= 2 ? autoRoles.map(id => `<@&${id}>`).join(' ') : `**${autoRoles.length} roles**`) 
@@ -339,7 +340,8 @@ module.exports = {
             if (viewName === 'view_welcomer') {
                 const isPremium = settings.isPremium === true || settings.isManualPremium === true;
                 const maxAutoRoles = isPremium ? 5 : 3;
-                const currentRoles = (settings.welcomeRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+                const { parseRoleIds } = require('../../utils/roleUtils');
+                const currentRoles = parseRoleIds(settings.welcomeRoleId);
 
                 embed.setTitle('Welcomer & Goodbye Configuration Suite')
                     .setDescription(
@@ -538,33 +540,47 @@ module.exports = {
             // COMMUNITY GAMES, STARBOARD & AFK
             // ==========================================
             if (viewName === 'view_games') {
+                const starboardRewardsCount = (() => {
+                    try {
+                        const r = JSON.parse(settings.starboardRoleRewards || '[]');
+                        return Array.isArray(r) && r.length > 0 ? `**${r.length} reward(s)**` : '*None*';
+                    } catch (_) { return '*None*'; }
+                })();
+
                 embed.setTitle('Community Games, Starboard & AFK')
-                    .setDescription('Configure interactive server games and community features.')
+                    .setDescription('Configure interactive server games, dynamic role rewards, and AFK roles.')
                     .addFields(
                         { name: 'AFK System', value: settings.afkEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'AFK Role', value: settings.afkRoleId ? `<@&${settings.afkRoleId}>` : '*None*', inline: true },
                         { name: 'Counting Game', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : '**Disabled**', inline: true },
-                        { name: 'One Word Story', value: settings.oneWordStoryEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Top Counter Role', value: settings.countingTopCounterRoleId ? `<@&${settings.countingTopCounterRoleId}>` : '*None*', inline: true },
+                        { name: 'One Word Story', value: settings.oneWordStoryEnabled !== false ? (settings.oneWordStoryAlwaysAutoStart ? '**Always Auto-Start**' : '**Enabled (Manual)**') : '**Disabled**', inline: true },
                         { name: 'Starboard', value: settings.starboardEnabled ? `<#${settings.starboardChannelId || 'Unset'}> (${settings.starboardThreshold || 3}⭐)` : '**Disabled**', inline: true },
+                        { name: 'Starboard Role Rewards', value: starboardRewardsCount, inline: true },
                         { name: 'Self-Star Policy', value: settings.starboardSelfStar ? '**Allowed**' : '**Blocked**', inline: true },
                         { name: 'Starboard XP', value: `**+${settings.starboardAuthorRewardXp !== undefined ? settings.starboardAuthorRewardXp : 25} XP**`, inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_afk_toggle').setLabel(settings.afkEnabled !== false ? 'Disable AFK' : 'Enable AFK').setStyle(settings.afkEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_onewordstory_toggle').setLabel(settings.oneWordStoryEnabled !== false ? 'Disable Story' : 'Enable Story').setStyle(settings.oneWordStoryEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_story_autostart_toggle').setLabel(settings.oneWordStoryAlwaysAutoStart ? 'Story Auto-Start: ON' : 'Story Auto-Start: OFF').setStyle(settings.oneWordStoryAlwaysAutoStart ? ButtonStyle.Success : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_starboard_selfstar').setLabel(settings.starboardSelfStar ? 'Self-Star: On' : 'Self-Star: Off').setStyle(ButtonStyle.Secondary)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder().setCustomId('action_counting_channel').setPlaceholder('Select / Change Counting Channel...').setChannelTypes(ChannelType.GuildText)
+                    new RoleSelectMenuBuilder().setCustomId('action_afk_role').setPlaceholder('Select AFK Role (Assigned when AFK, removed on return)...').setMinValues(0).setMaxValues(1)
                 );
 
                 const rowC = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder().setCustomId('action_starboard_channel').setPlaceholder('Select Starboard Channel...').setChannelTypes(ChannelType.GuildText)
+                    new RoleSelectMenuBuilder().setCustomId('action_counting_top_role').setPlaceholder('Select Top Counter Role (Awarded to #1 counter)...').setMinValues(0).setMaxValues(1)
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+                const rowD = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_counting_channel').setPlaceholder('Select / Change Counting Channel...').setChannelTypes(ChannelType.GuildText)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
             // ==========================================
@@ -581,7 +597,8 @@ module.exports = {
 
                 const isPremium = settings.isPremium === true || settings.isManualPremium === true;
                 const maxVerifyRoles = isPremium ? 5 : 3;
-                const verifiedRoles = (settings.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean);
+                const { parseRoleIds } = require('../../utils/roleUtils');
+                const verifiedRoles = parseRoleIds(settings.verifyRoleId);
 
                 embed.setTitle('Server Verification & Gatekeeper')
                     .setDescription(
@@ -1104,10 +1121,13 @@ module.exports = {
 
                 // Games & AFK
                 if (i.customId === 'action_afk_toggle') { settings.afkEnabled = settings.afkEnabled !== false ? false : true; update = true; }
+                if (i.customId === 'action_afk_role') { settings.afkRoleId = i.values.length > 0 ? i.values[0] : null; update = true; }
                 if (i.customId === 'action_onewordstory_toggle') { settings.oneWordStoryEnabled = !settings.oneWordStoryEnabled; update = true; }
+                if (i.customId === 'action_story_autostart_toggle') { settings.oneWordStoryAlwaysAutoStart = !settings.oneWordStoryAlwaysAutoStart; update = true; }
                 if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }
                 if (i.customId === 'action_starboard_selfstar') { settings.starboardSelfStar = !settings.starboardSelfStar; update = true; }
                 if (i.customId === 'action_counting_channel') { settings.countingChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_counting_top_role') { settings.countingTopCounterRoleId = i.values.length > 0 ? i.values[0] : null; update = true; }
                 if (i.customId === 'action_starboard_channel') { settings.starboardChannelId = i.values[0]; update = true; }
 
                 // Logging & Section Routing
@@ -1195,7 +1215,9 @@ module.exports = {
                 }
 
                 if (i.customId === 'action_verify_spawn_active' || i.customId.startsWith('action_verify_spawn')) {
-                    if (!settings.verifyRoleId) return i.reply({ content: '⚠️ You must configure at least one **Verified Role** in the dropdown first!', ephemeral: true });
+                    const { parseRoleIds } = require('../../utils/roleUtils');
+                    const hasValidRoles = parseRoleIds(settings.verifyRoleId).length > 0 || parseRoleIds(settings.robloxVerifyRoleId).length > 0;
+                    if (!hasValidRoles) return i.reply({ content: '⚠️ You must configure at least one **Verified Role** in the dropdown first!', ephemeral: true });
                     const targetChannelId = settings.verifyChannelId || i.channel.id;
                     const channel = i.guild.channels.cache.get(targetChannelId) || i.channel;
 

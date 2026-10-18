@@ -82,20 +82,9 @@ module.exports = {
                     const elapsed = Date.now() - authorAfk.timestamp;
                     // 5-second grace period: ignore messages typed immediately after setting AFK
                     if (elapsed > 5000) {
-                        await afkManager.removeAfk(message.guild.id, message.author.id);
-
-                        // Restore original nickname if it was altered or prefixed
-                        if (message.member && message.member.manageable) {
-                            try {
-                                const currentNick = message.member.displayName;
-                                if (currentNick.startsWith('[AFK]') || currentNick.startsWith('{AFK]') || currentNick.startsWith('{AFK}')) {
-                                    const targetRestore = (authorAfk.originalNickname !== undefined) 
-                                        ? authorAfk.originalNickname 
-                                        : currentNick.replace(/^(\[AFK\]|\{AFK\]|\{AFK\})\s*/i, '');
-                                    await message.member.setNickname(targetRestore).catch(() => {});
-                                }
-                            } catch (e) {}
-                        }
+                        await afkManager.clearUserAfk(message.guild, message.member || message.author.id, {
+                            reason: 'User sent a message'
+                        });
 
                         const welcomeMsg = await message.reply({
                             content: `Welcome back ${message.author}, your AFK status has been removed. *(Away <t:${Math.floor(authorAfk.timestamp / 1000)}:R>)*`,
@@ -108,7 +97,30 @@ module.exports = {
                     }
                 }
 
-                // 2. Check if the message mentioned any AFK users
+                // 2. Check if this message was triggered by a user running an interaction on ANY bot / application
+                const interactingUser = message.interaction?.user || message.interactionMetadata?.user;
+                if (interactingUser && !interactingUser.bot && interactingUser.id !== message.author.id) {
+                    const interAfk = afkManager.getAfk(message.guild.id, interactingUser.id);
+                    if (interAfk) {
+                        const interElapsed = Date.now() - interAfk.timestamp;
+                        if (interElapsed > 5000) {
+                            await afkManager.clearUserAfk(message.guild, interactingUser.id, {
+                                reason: 'Executed an application command'
+                            });
+
+                            const appWelcomeMsg = await message.channel.send({
+                                content: `Welcome back <@${interactingUser.id}>, your AFK status has been removed because you used an application command. *(Away <t:${Math.floor(interAfk.timestamp / 1000)}:R>)*`,
+                                allowedMentions: { users: [interactingUser.id] }
+                            }).catch(() => null);
+
+                            if (appWelcomeMsg && (settings?.afkCleanMessage !== false)) {
+                                setTimeout(() => appWelcomeMsg.delete().catch(() => {}), 7000);
+                            }
+                        }
+                    }
+                }
+
+                // 3. Check if the message mentioned any AFK users
                 if (message.mentions && message.mentions.users && message.mentions.users.size > 0) {
                     for (const [mentionedId, mentionedUser] of message.mentions.users) {
                         if (mentionedId === message.author.id || mentionedUser.bot) continue;
@@ -120,19 +132,20 @@ module.exports = {
                                 const targetMember = message.guild.members.cache.get(mentionedId);
                                 const displayName = targetMember ? targetMember.displayName.replace(/^(\[AFK\]|\{AFK\]|\{AFK\})\s*/i, '') : mentionedUser.username;
                                 const timeTag = `<t:${Math.floor(targetAfk.timestamp / 1000)}:R>`;
+                                const backTag = targetAfk.expiresAt ? ` *(Back <t:${Math.floor(targetAfk.expiresAt / 1000)}:R>)*` : '';
                                 const urlRegex = /(https?:\/\/[^\s]+)/gi;
                                 const urls = (targetAfk.status || '').match(urlRegex);
                                 let noticeContent;
 
                                 if (!urls) {
-                                    noticeContent = `**${displayName}** is AFK: ${targetAfk.status} — ${timeTag}`;
+                                    noticeContent = `**${displayName}** is AFK: ${targetAfk.status} — Away ${timeTag}${backTag}`;
                                 } else {
                                     const textOnly = (targetAfk.status || '').replace(urlRegex, '').replace(/\s+/g, ' ').trim();
                                     const urlString = urls.join('\n');
                                     if (!textOnly) {
-                                        noticeContent = `**${displayName}** is AFK (${timeTag}):\n${urlString}`;
+                                        noticeContent = `**${displayName}** is AFK (Away ${timeTag}${backTag}):\n${urlString}`;
                                     } else {
-                                        noticeContent = `**${displayName}** is AFK: ${textOnly} — ${timeTag}\n${urlString}`;
+                                        noticeContent = `**${displayName}** is AFK: ${textOnly} — Away ${timeTag}${backTag}\n${urlString}`;
                                     }
                                 }
 

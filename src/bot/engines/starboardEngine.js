@@ -309,6 +309,98 @@ async function handleReactionAdd(reaction, user) {
             } catch (e) {}
         }
     }
+
+    // Evaluate and grant Starboard Role Rewards for author
+    await evaluateStarboardRoleRewards(guild, message.author.id, settings, validCount, starboardChannel).catch(() => {});
+}
+
+/**
+ * Evaluates and grants Starboard Role Rewards to message authors based on configured milestones.
+ * Supports conditions:
+ * - 'total_stars': Total stars accumulated across all user messages in the guild
+ * - 'times_starboarded': Number of distinct messages that made the starboard
+ * - 'single_message_stars': Star count on a single message
+ */
+async function evaluateStarboardRoleRewards(guild, authorId, settings, currentMsgStars = 0, starboardChannel = null) {
+    if (!guild || !authorId || !settings || !settings.starboardRoleRewards) return;
+
+    let rewards = [];
+    try {
+        rewards = typeof settings.starboardRoleRewards === 'string'
+            ? JSON.parse(settings.starboardRoleRewards)
+            : settings.starboardRoleRewards;
+    } catch (_) {
+        return;
+    }
+
+    if (!Array.isArray(rewards) || rewards.length === 0) return;
+
+    const me = guild.members.me;
+    const { PermissionFlagsBits } = require('discord.js');
+    if (!me || !me.permissions.has(PermissionFlagsBits.ManageRoles)) return;
+
+    const member = await guild.members.fetch(authorId).catch(() => null);
+    if (!member) return;
+
+    // Calculate author stats
+    let totalStars = 0;
+    let timesStarboarded = 0;
+    try {
+        totalStars = await StarboardEntry.sum('starCount', { where: { guildId: guild.id, authorId } }) || 0;
+        timesStarboarded = await StarboardEntry.count({ where: { guildId: guild.id, authorId } }) || 0;
+    } catch (dbErr) {
+        console.error('[Starboard Role Rewards] DB error calculating stats:', dbErr.message);
+    }
+
+    const botHighest = me.roles.highest.position;
+    const grantedRoles = [];
+
+    for (const reward of rewards) {
+        if (!reward || !reward.roleId) continue;
+        const targetRoleId = String(reward.roleId).replace(/[^0-9]/g, '');
+        if (!targetRoleId || member.roles.cache.has(targetRoleId)) continue;
+
+        const condition = reward.condition || 'total_stars';
+        const threshold = Number(reward.threshold) || 1;
+
+        let meetsCondition = false;
+        let metricLabel = '';
+
+        if (condition === 'total_stars') {
+            meetsCondition = totalStars >= threshold;
+            metricLabel = `${totalStars}/${threshold} Total Stars`;
+        } else if (condition === 'times_starboarded') {
+            meetsCondition = timesStarboarded >= threshold;
+            metricLabel = `${timesStarboarded}/${threshold} Messages Starboarded`;
+        } else if (condition === 'single_message_stars') {
+            meetsCondition = currentMsgStars >= threshold;
+            metricLabel = `${currentMsgStars}/${threshold} Stars on Message`;
+        }
+
+        if (meetsCondition) {
+            const roleObj = guild.roles.cache.get(targetRoleId) || await guild.roles.fetch(targetRoleId).catch(() => null);
+            if (!roleObj || roleObj.position >= botHighest || roleObj.managed) continue;
+
+            try {
+                await member.roles.add(roleObj, `Nora Starboard Reward: Reached ${threshold} (${condition})`);
+                grantedRoles.push({ role: roleObj, condition, threshold, metricLabel });
+            } catch (roleErr) {
+                console.error(`[Starboard Role Rewards] Failed to grant role ${targetRoleId} to ${authorId}:`, roleErr.message);
+            }
+        }
+    }
+
+    if (grantedRoles.length > 0 && starboardChannel) {
+        try {
+            const roleMentions = grantedRoles.map(g => `<@&${g.role.id}> (${g.metricLabel})`).join(', ');
+            const rewardEmbed = new EmbedBuilder()
+                .setTitle('🌟 Starboard Role Reward Unlocked!')
+                .setDescription(`Congratulations <@${authorId}>! You unlocked a Starboard Role Reward:\n${roleMentions}`)
+                .setColor(0xFFA500)
+                .setTimestamp();
+            await starboardChannel.send({ embeds: [rewardEmbed] }).catch(() => {});
+        } catch (_) {}
+    }
 }
 
 /**

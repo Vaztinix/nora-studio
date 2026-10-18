@@ -303,6 +303,57 @@ module.exports = {
         allData[message.guild.id] = guildData;
         queueSave();
 
+        // 4. Top Counter Role Reward Assignment
+        if (settings?.countingTopCounterRoleId) {
+            try {
+                const { PermissionFlagsBits } = require('discord.js');
+                const me = message.guild.members.me;
+                if (me && me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+                    const topRoleId = String(settings.countingTopCounterRoleId).replace(/[^0-9]/g, '');
+                    const roleObj = message.guild.roles.cache.get(topRoleId) || await message.guild.roles.fetch(topRoleId).catch(() => null);
+
+                    if (roleObj && roleObj.position < me.roles.highest.position && !roleObj.managed) {
+                        let leaderId = null;
+                        let maxCounts = 0;
+                        for (const [uId, countVal] of Object.entries(guildData.userCounts)) {
+                            if (countVal > maxCounts) {
+                                maxCounts = countVal;
+                                leaderId = uId;
+                            }
+                        }
+
+                        const previousLeaderId = guildData.currentTopCounterId || null;
+
+                        if (leaderId && leaderId !== previousLeaderId) {
+                            if (previousLeaderId) {
+                                const prevMember = await message.guild.members.fetch(previousLeaderId).catch(() => null);
+                                if (prevMember && prevMember.roles.cache.has(topRoleId)) {
+                                    await prevMember.roles.remove(roleObj, 'Counting: Overtaken by new #1 Top Counter').catch(() => {});
+                                }
+                            }
+
+                            const newLeaderMember = await message.guild.members.fetch(leaderId).catch(() => null);
+                            if (newLeaderMember && !newLeaderMember.roles.cache.has(topRoleId)) {
+                                await newLeaderMember.roles.add(roleObj, `Counting: Reached #1 Top Counter with ${maxCounts} counts`).catch(() => {});
+                            }
+
+                            guildData.currentTopCounterId = leaderId;
+
+                            await message.channel.send({
+                                content: `👑 <@${leaderId}> has taken the lead as the **#1 Top Counter** with **${maxCounts}** counts and earned the <@&${topRoleId}> role! 🎉`,
+                                allowedMentions: { users: [leaderId], roles: [] }
+                            }).catch(() => {});
+                        } else if (leaderId && leaderId === message.author.id && !message.member.roles.cache.has(topRoleId)) {
+                            await message.member.roles.add(roleObj, `Counting: Leader role sync (${maxCounts} counts)`).catch(() => {});
+                            guildData.currentTopCounterId = leaderId;
+                        }
+                    }
+                }
+            } catch (roleErr) {
+                console.error('[Counting Top Counter Role Error]:', roleErr.message);
+            }
+        }
+
         // Reactions:
         // 💯 Emoji for count hitting 100 (or 100 milestones!)
         // Blue Checkmark (☑️) for NEW BEST per server!

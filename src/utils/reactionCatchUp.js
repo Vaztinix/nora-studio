@@ -98,9 +98,16 @@ async function syncGuildVerification(guild) {
         const targetReaction = message.reactions.cache.find(r => matchesEmoji(r.emoji, triggerEmoji));
         if (!targetReaction) return;
 
+        const { parseRoleIds } = require('./roleUtils');
         const isPremium = settings.isPremium === true || settings.isManualPremium === true;
         const maxVerifiedRoles = isPremium ? 5 : 3;
-        const targetRoleIds = (settings.verifyRoleId || '').split(',').map(r => r.trim()).filter(Boolean).slice(0, maxVerifiedRoles);
+        const targetRoleIds = parseRoleIds(settings.verifyRoleId).slice(0, maxVerifiedRoles);
+        if (settings.robloxVerifyRoleId) {
+            const robloxIds = parseRoleIds(settings.robloxVerifyRoleId);
+            for (const rid of robloxIds) {
+                if (!targetRoleIds.includes(rid)) targetRoleIds.push(rid);
+            }
+        }
         if (!targetRoleIds.length) return;
 
         const users = await fetchAllReactionUsers(targetReaction);
@@ -117,8 +124,8 @@ async function syncGuildVerification(guild) {
             // Check unverified role status if configured
             let hasUnverified = false;
             if (settings.removeUnverifiedRoleOnVerify !== false) {
-                if (settings.unverifiedRoleId) {
-                    const unvIds = settings.unverifiedRoleId.split(',').map(r => r.trim()).filter(Boolean);
+                const unvIds = parseRoleIds(settings.unverifiedRoleId);
+                if (unvIds.length > 0) {
                     hasUnverified = unvIds.some(uId => member.roles.cache.has(uId));
                 } else {
                     hasUnverified = member.roles.cache.some(r => r.name.toLowerCase() === 'unverified');

@@ -425,6 +425,11 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyBtnLabel` VARCHAR(255) DEFAULT 'Verify Account';"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyBtnEmoji` VARCHAR(255) DEFAULT '🔒';"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verificationLogChannelId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `countingTopCounterRoleId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardRoleRewards` TEXT DEFAULT '[]';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAlwaysAutoStart` TINYINT(1) DEFAULT 0;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkRoleId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `AfkUsers` ADD COLUMN `expiresAt` BIGINT NULL;"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {
@@ -3161,34 +3166,9 @@ async function syncUserRolesAcrossGuilds(userId, robloxId, specificGuildId = nul
             const member = await guild.members.fetch(userId).catch(() => null);
             if (member) {
                 const settings = await settingsCache.get(guild.id);
-                if (settings && (settings.robloxVerifyEnabled || settings.verifyRoleId)) {
-                    // 🛡️ Security Background Check
-                    const { performSecurityBackgroundCheck } = require('./utils/userSecurityCheck');
-                    const sec = await performSecurityBackgroundCheck(member, settings, {}, 'Roblox Link Verification');
-                    if (sec.isFlagged) {
-                        continue; // Block verification roles for flagged members
-                    }
-
-                    // Grant base verification role
-                    if (settings.robloxVerifyRoleId) {
-                        const role = guild.roles.cache.get(settings.robloxVerifyRoleId);
-                        if (role) await member.roles.add(role).catch(() => {});
-                    }
-                    if (settings.verifyRoleId) {
-                        const roles = settings.verifyRoleId.split(',').map(r => r.trim()).filter(Boolean);
-                        for (const rId of roles) {
-                            const role = guild.roles.cache.get(rId);
-                            if (role) await member.roles.add(role).catch(() => {});
-                        }
-                    }
-
-                    // Remove unverified role if configured
-                    if (settings.removeUnverifiedRoleOnVerify !== false) {
-                        const unvId = settings.unverifiedRoleId || member.roles.cache.find(r => r.name.toLowerCase() === 'unverified')?.id;
-                        if (unvId && member.roles.cache.has(unvId)) {
-                            await member.roles.remove(unvId).catch(() => {});
-                        }
-                    }
+                if (settings && (settings.robloxVerifyEnabled || settings.verifyRoleId || settings.robloxVerifyRoleId)) {
+                    const verifyEngine = require('./bot/engines/verify');
+                    await verifyEngine.grantVerificationRoles(member, settings, {}, 'Roblox Link Verification');
 
                     let groupBindings = [];
                     try { groupBindings = JSON.parse(settings.robloxGroupBindings || '[]'); } catch (e) { }

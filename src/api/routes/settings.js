@@ -168,21 +168,82 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             }
         }
 
-        // Validate auto-role on join (welcomeRoleId) limits
-        if (payload.welcomeRoleId) {
-            const roleCount = payload.welcomeRoleId.split(',').map(r => r.trim()).filter(Boolean).length;
+        const { parseRoleIds, normalizeRoleIds } = require('../../utils/roleUtils');
+
+        // Validate and sanitize auto-role on join (welcomeRoleId) limits
+        if (payload.welcomeRoleId !== undefined) {
+            const welcomeList = parseRoleIds(payload.welcomeRoleId);
             const maxRoles = isPremium ? 5 : 3;
-            if (roleCount > maxRoles) {
-                return res.status(400).json({ error: `Auto-Role Limit Exceeded: Free servers can configure up to 3 auto-roles upon join. Nora Plus unlocks up to 5 roles. You selected ${roleCount}.` });
+            if (welcomeList.length > maxRoles) {
+                return res.status(400).json({ error: `Auto-Role Limit Exceeded: Free servers can configure up to 3 auto-roles upon join. Nora Plus unlocks up to 5 roles. You selected ${welcomeList.length}.` });
             }
+            payload.welcomeRoleId = normalizeRoleIds(payload.welcomeRoleId, maxRoles);
         }
 
-        // Validate verification role (verifyRoleId) limits
-        if (payload.verifyRoleId) {
-            const roleCount = payload.verifyRoleId.split(',').map(r => r.trim()).filter(Boolean).length;
+        // Validate and sanitize verification role (verifyRoleId) limits
+        if (payload.verifyRoleId !== undefined) {
+            const verifyList = parseRoleIds(payload.verifyRoleId);
             const maxRoles = isPremium ? 5 : 3;
-            if (roleCount > maxRoles) {
-                return res.status(400).json({ error: `Verification Role Limit Exceeded: Free servers can configure up to 3 verified roles. Nora Plus unlocks up to 5 roles. You selected ${roleCount}.` });
+            if (verifyList.length > maxRoles) {
+                return res.status(400).json({ error: `Verification Role Limit Exceeded: Free servers can configure up to 3 verified roles. Nora Plus unlocks up to 5 roles. You selected ${verifyList.length}.` });
+            }
+            payload.verifyRoleId = normalizeRoleIds(payload.verifyRoleId, maxRoles);
+        }
+
+        // Sanitize unverified quarantine role
+        if (payload.unverifiedRoleId !== undefined) {
+            payload.unverifiedRoleId = normalizeRoleIds(payload.unverifiedRoleId, 1);
+        }
+
+        // Sanitize roblox verification role
+        if (payload.robloxVerifyRoleId !== undefined) {
+            payload.robloxVerifyRoleId = normalizeRoleIds(payload.robloxVerifyRoleId, 1);
+        }
+
+        // Sanitize counting top counter role
+        if (payload.countingTopCounterRoleId !== undefined) {
+            payload.countingTopCounterRoleId = normalizeRoleIds(payload.countingTopCounterRoleId, 1);
+        }
+
+        // Sanitize AFK role
+        if (payload.afkRoleId !== undefined) {
+            payload.afkRoleId = normalizeRoleIds(payload.afkRoleId, 1);
+        }
+
+        // Sanitize & validate starboardRoleRewards
+        if (payload.starboardRoleRewards !== undefined) {
+            if (!payload.starboardRoleRewards) {
+                payload.starboardRoleRewards = '[]';
+            } else {
+                try {
+                    const parsed = typeof payload.starboardRoleRewards === 'string'
+                        ? JSON.parse(payload.starboardRoleRewards)
+                        : payload.starboardRoleRewards;
+                    if (Array.isArray(parsed)) {
+                        const cap = isPremium ? 20 : 5;
+                        const sanitizedRewards = [];
+                        for (const item of parsed.slice(0, cap)) {
+                            if (!item || typeof item !== 'object') continue;
+                            const roleList = parseRoleIds(item.roleId);
+                            if (roleList.length === 0) continue;
+                            const condition = ['total_stars', 'times_starboarded', 'single_message_stars'].includes(item.condition)
+                                ? item.condition
+                                : 'total_stars';
+                            const threshold = Math.max(1, parseInt(item.threshold, 10) || 1);
+                            sanitizedRewards.push({
+                                id: item.id || `rew_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                                roleId: roleList[0],
+                                condition,
+                                threshold
+                            });
+                        }
+                        payload.starboardRoleRewards = JSON.stringify(sanitizedRewards);
+                    } else {
+                        payload.starboardRoleRewards = '[]';
+                    }
+                } catch (e) {
+                    payload.starboardRoleRewards = '[]';
+                }
             }
         }
 
