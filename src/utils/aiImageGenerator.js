@@ -67,7 +67,7 @@ function extractImageSubject(text) {
 async function generateAIImage(prompt) {
     const rawSubject = extractImageSubject(prompt);
     if (!rawSubject || rawSubject.length < 2) {
-        throw new Error('Please specify what you would like Google Imagen to create.');
+        throw new Error('Please specify what you would like Google to create.');
     }
 
     const availableKeys = geminiKeyManager.getRotatedAvailableKeys();
@@ -78,11 +78,52 @@ async function generateAIImage(prompt) {
     let lastError = null;
 
     for (const apiKey of availableKeys) {
+        // 1. Try Google Gemini Multimodal Image Generation
         try {
-            // Google Imagen 3 generate endpoint
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-            
-            const payload = {
+            const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+            const geminiPayload = {
+                contents: [{
+                    parts: [{ text: `Generate an image of: ${rawSubject}` }]
+                }],
+                generationConfig: {
+                    responseModalities: ["IMAGE"]
+                }
+            };
+
+            const response = await axios.post(geminiEndpoint, geminiPayload, {
+                timeout: 35000,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'NoraBot-GoogleGemini/2.0'
+                }
+            });
+
+            const candidate = response.data?.candidates?.[0];
+            const parts = candidate?.content?.parts || [];
+            for (const part of parts) {
+                if (part.inlineData && part.inlineData.data) {
+                    const buffer = Buffer.from(part.inlineData.data, 'base64');
+                    return {
+                        buffer,
+                        filename: `nora_gemini_${Date.now()}.png`,
+                        enhancedPrompt: rawSubject
+                    };
+                }
+            }
+        } catch (err) {
+            const msg = (err?.response?.data?.error?.message || err?.message || '').toLowerCase();
+            const status = err?.response?.status;
+            if (msg.includes('limit: 0') || (status === 429 && msg.includes('quota'))) {
+                lastError = new Error('Google Gemini requires an active project with image generation billing/quota enabled (free-tier keys have a limit of 0). Server administrators can disable image generation in `/setup ai`.');
+            } else if (msg.includes('safety') || msg.includes('blocked') || msg.includes('filtered') || msg.includes('prohibited')) {
+                throw new Error('Google Safety Filters blocked this image request. Inappropriate or sexual content is strictly forbidden.');
+            }
+        }
+
+        // 2. Fallback to Google Imagen 3 Predict endpoint
+        try {
+            const imagenEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+            const imagenPayload = {
                 instances: [
                     { prompt: rawSubject }
                 ],
@@ -94,7 +135,7 @@ async function generateAIImage(prompt) {
                 }
             };
 
-            const response = await axios.post(endpoint, payload, {
+            const response = await axios.post(imagenEndpoint, imagenPayload, {
                 timeout: 35000,
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,24 +156,18 @@ async function generateAIImage(prompt) {
                     };
                 }
             }
-
-            // If safety filter triggered or empty output
-            if (response.data && response.data.error) {
-                throw new Error(response.data.error.message || 'Google Safety Filter blocked this request');
-            }
         } catch (err) {
-            lastError = err;
             const msg = (err?.response?.data?.error?.message || err?.message || '').toLowerCase();
-            
             if (msg.includes('safety') || msg.includes('blocked') || msg.includes('filtered') || msg.includes('prohibited')) {
                 throw new Error('Google Safety Filters blocked this image request. Inappropriate or sexual content is strictly forbidden.');
             }
-
-            console.warn(`[Google Imagen 3] Request failed with key ...${apiKey.slice(-6)}:`, err?.message || err);
+            if (!lastError) {
+                lastError = err;
+            }
         }
     }
 
-    throw lastError || new Error('Google Imagen 3 was unable to generate the requested image.');
+    throw lastError || new Error('Google was unable to generate the requested image. Check key quota or disable in `/setup ai`.');
 }
 
 module.exports = {

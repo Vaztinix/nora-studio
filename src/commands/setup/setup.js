@@ -96,14 +96,14 @@ module.exports = {
             leveling: 'view_leveling',
             logging: 'view_logging',
             games: 'view_games',
-            afk: 'view_games',
+            afk: 'view_afk',
             ticket: 'view_tickets',
             verify: 'view_verify',
             roblox: 'view_verify',
             security: 'view_verify_security',
-            starboard: 'view_games',
-            onewordstory: 'view_games',
-            counting: 'view_games',
+            starboard: 'view_starboard',
+            onewordstory: 'view_onewordstory',
+            counting: 'view_counting',
             ai: 'view_ai',
             moderation: 'view_moderation',
             adaptiveslowmode: 'view_adaptiveslowmode'
@@ -129,6 +129,7 @@ module.exports = {
         let state = {
             currentView: initialViewName || 'main',
             selectedLogCategory: settings.selectedLogCategory || 'default',
+            pendingStarboardRole: null,
             autoresponderCount,
             youtubeFeedCount
         };
@@ -220,11 +221,15 @@ module.exports = {
                         { label: 'Welcomer & Auto-Roles', value: 'view_welcomer', description: 'Custom welcome cards, join messages, and starter roles' },
                         { label: 'Leveling & Experience', value: 'view_leveling', description: 'Chat & Voice XP, level-up notifications, and multipliers' },
                         { label: 'Server Logs & Routing', value: 'view_logging', description: 'Multi-channel audit logs for members, messages, and voice' },
-                        { label: 'Community Games & AFK', value: 'view_games', description: 'AFK module, Counting, One Word Story, and Starboard' },
+                        { label: 'Community Games Hub', value: 'view_games', description: 'Overview of Counting, Starboard, Story, and AFK' },
+                        { label: '⭐ Starboard & Role Rewards', value: 'view_starboard', description: 'Star thresholds, destination channel, and milestone role rewards' },
+                        { label: '🔢 Counting & Top Counter Role', value: 'view_counting', description: 'Sequential counting streak and dynamic top counter role award' },
+                        { label: '📖 One Word Story Game', value: 'view_onewordstory', description: 'Collaborative story game and continuous auto-start setting' },
+                        { label: '💤 AFK System & AFK Role', value: 'view_afk', description: 'AFK module, presets, and temporary AFK role assignment' },
                         { label: 'Member Verification', value: 'view_verify', description: 'Human CAPTCHA gate, 1-click button, reaction, and Roblox sync' },
                         { label: '🛡️ Verification Threat Gatekeeper', value: 'view_verify_security', description: 'Automated background risk screening, online threat intel, ban evasion matching' },
                         { label: 'Support Ticket System', value: 'view_tickets', description: 'Private staff ticket categories, panels, and transcripts' },
-                        { label: 'Nora AI & Auto-Response', value: 'view_ai', description: 'Configure AI engine and unprompted auto-respond channel' },
+                        { label: 'Nora AI & Image Generation', value: 'view_ai', description: 'Configure Gemini models, auto-chat channel, and Google Image Gen' },
                         { label: 'Adaptive Slowmode & Velocity', value: 'view_adaptiveslowmode', description: 'AI-assisted chat defense with 0s lowest floor' },
                         { label: 'Self Roles & Feeds', value: 'view_utility', description: 'Interactive button role panels and YouTube feeds' }
                     ]);
@@ -548,39 +553,188 @@ module.exports = {
                 })();
 
                 embed.setTitle('Community Games, Starboard & AFK')
-                    .setDescription('Configure interactive server games, dynamic role rewards, and AFK roles.')
+                    .setDescription('Configure interactive server games, dynamic role rewards, and AFK roles. Click any module below for deep configuration.')
                     .addFields(
-                        { name: 'AFK System', value: settings.afkEnabled !== false ? '**Enabled**' : '**Disabled**', inline: true },
-                        { name: 'AFK Role', value: settings.afkRoleId ? `<@&${settings.afkRoleId}>` : '*None*', inline: true },
-                        { name: 'Counting Game', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : '**Disabled**', inline: true },
-                        { name: 'Top Counter Role', value: settings.countingTopCounterRoleId ? `<@&${settings.countingTopCounterRoleId}>` : '*None*', inline: true },
-                        { name: 'One Word Story', value: settings.oneWordStoryEnabled !== false ? (settings.oneWordStoryAlwaysAutoStart ? '**Always Auto-Start**' : '**Enabled (Manual)**') : '**Disabled**', inline: true },
-                        { name: 'Starboard', value: settings.starboardEnabled ? `<#${settings.starboardChannelId || 'Unset'}> (${settings.starboardThreshold || 3}⭐)` : '**Disabled**', inline: true },
+                        { name: 'AFK System', value: settings.afkEnabled !== false ? `🟢 **Enabled** (${settings.afkRoleId ? `<@&${settings.afkRoleId}>` : '*No Role*'})` : '🔴 **Disabled**', inline: true },
+                        { name: 'Counting Game', value: settings.countingChannelId ? `🟢 <#${settings.countingChannelId}> (${settings.countingTopCounterRoleId ? `<@&${settings.countingTopCounterRoleId}>` : '*No Top Role*'})` : '🔴 **Disabled**', inline: true },
+                        { name: 'One Word Story', value: settings.oneWordStoryEnabled !== false ? (settings.oneWordStoryAlwaysAutoStart ? '🟢 **Always Auto-Start**' : '🟢 **Manual Commands**') : '🔴 **Disabled**', inline: true },
+                        { name: 'Starboard', value: settings.starboardEnabled ? `<#${settings.starboardChannelId || 'Unset'}> (${settings.starboardThreshold || 3}⭐)` : '🔴 **Disabled**', inline: true },
                         { name: 'Starboard Role Rewards', value: starboardRewardsCount, inline: true },
-                        { name: 'Self-Star Policy', value: settings.starboardSelfStar ? '**Allowed**' : '**Blocked**', inline: true },
-                        { name: 'Starboard XP', value: `**+${settings.starboardAuthorRewardXp !== undefined ? settings.starboardAuthorRewardXp : 25} XP**`, inline: true }
+                        { name: 'Self-Star Policy', value: settings.starboardSelfStar ? '**Allowed**' : '**Blocked**', inline: true }
                     );
 
-                const rowA = new ActionRowBuilder().addComponents(
+                const rowNav = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_goto_starboard').setLabel('⭐ Starboard & Rewards').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('action_goto_counting').setLabel('🔢 Counting & Top Role').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('action_goto_onewordstory').setLabel('📖 One Word Story').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('action_goto_afk').setLabel('💤 AFK & Role').setStyle(ButtonStyle.Primary)
+                );
+
+                const rowToggles = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_afk_toggle').setLabel(settings.afkEnabled !== false ? 'Disable AFK' : 'Enable AFK').setStyle(settings.afkEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_story_autostart_toggle').setLabel(settings.oneWordStoryAlwaysAutoStart ? 'Story Auto-Start: ON' : 'Story Auto-Start: OFF').setStyle(settings.oneWordStoryAlwaysAutoStart ? ButtonStyle.Success : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_starboard_selfstar').setLabel(settings.starboardSelfStar ? 'Self-Star: On' : 'Self-Star: Off').setStyle(ButtonStyle.Secondary)
                 );
 
-                const rowB = new ActionRowBuilder().addComponents(
-                    new RoleSelectMenuBuilder().setCustomId('action_afk_role').setPlaceholder('Select AFK Role (Assigned when AFK, removed on return)...').setMinValues(0).setMaxValues(1)
+                const rowAfkRole = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_afk_role').setPlaceholder('Quick Select AFK Role (Assigned when AFK, removed on return)...').setMinValues(0).setMaxValues(1)
                 );
 
-                const rowC = new ActionRowBuilder().addComponents(
-                    new RoleSelectMenuBuilder().setCustomId('action_counting_top_role').setPlaceholder('Select Top Counter Role (Awarded to #1 counter)...').setMinValues(0).setMaxValues(1)
+                const rowCountingRole = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_counting_top_role').setPlaceholder('Quick Select Top Counter Role (Awarded to #1 counter)...').setMinValues(0).setMaxValues(1)
                 );
 
-                const rowD = new ActionRowBuilder().addComponents(
+                return { embeds: [embed], components: [rowNav, rowToggles, rowAfkRole, rowCountingRole, backRow] };
+            }
+
+            // ==========================================
+            // ⭐ STARBOARD & ROLE REWARDS
+            // ==========================================
+            if (viewName === 'view_starboard') {
+                const rewards = (() => {
+                    try {
+                        const r = JSON.parse(settings.starboardRoleRewards || '[]');
+                        return Array.isArray(r) ? r : [];
+                    } catch (_) { return []; }
+                })();
+
+                let rewardsListStr = '*No role rewards configured. Select a role and condition below to add one!*';
+                if (rewards.length > 0) {
+                    rewardsListStr = rewards.map((rew, idx) => {
+                        const condLabel = rew.condition === 'times_starboarded' 
+                            ? `🏆 ${rew.threshold} Times Starboarded`
+                            : (rew.condition === 'single_message_stars' 
+                                ? `🌟 ${rew.threshold} Stars on Single Post` 
+                                : `⭐ ${rew.threshold} Total Stars`);
+                        return `**${idx + 1}.** <@&${rew.roleId}> — Requires: \`${condLabel}\``;
+                    }).join('\n');
+                }
+
+                embed.setTitle('⭐ Starboard & Role Rewards Configuration')
+                    .setDescription('Configure starboard destination channel, star reaction thresholds, and automatic role rewards earned by top contributors.')
+                    .addFields(
+                        { name: 'Starboard Status', value: settings.starboardEnabled ? '🟢 **Enabled**' : '🔴 **Disabled**', inline: true },
+                        { name: 'Starboard Channel', value: settings.starboardChannelId ? `<#${settings.starboardChannelId}>` : '*None (Disabled)*', inline: true },
+                        { name: 'Threshold', value: `⭐ **${settings.starboardThreshold || 3} Stars**`, inline: true },
+                        { name: 'Self-Star Policy', value: settings.starboardSelfStar ? '**Allowed**' : '**Blocked (Fair Play)**', inline: true },
+                        { name: 'Starboard XP Reward', value: `**+${settings.starboardAuthorRewardXp !== undefined ? settings.starboardAuthorRewardXp : 25} XP**`, inline: true },
+                        { name: `Configured Role Rewards (${rewards.length}/20)`, value: rewardsListStr, inline: false }
+                    );
+
+                const row1 = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_starboard_selfstar').setLabel(settings.starboardSelfStar ? 'Self-Star: ON' : 'Self-Star: OFF').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_starboard_clear_rewards').setLabel('Clear All Role Rewards').setStyle(ButtonStyle.Danger).setDisabled(rewards.length === 0),
+                    new ButtonBuilder().setCustomId('view_games').setLabel('Games Hub').setStyle(ButtonStyle.Secondary)
+                );
+
+                const row2 = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_starboard_channel').setPlaceholder('Select Starboard Destination Channel...').setChannelTypes(ChannelType.GuildText)
+                );
+
+                const row3 = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_starboard_reward_role').setPlaceholder('Step 1: Select Role to Award for Starboard Milestones...').setMinValues(0).setMaxValues(1)
+                );
+
+                const isRoleSelected = Boolean(state.pendingStarboardRole);
+                const row4 = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder().setCustomId('action_starboard_add_reward').setPlaceholder(isRoleSelected ? `Step 2: Choose Milestone for selected role...` : 'Step 2: (Select a role in Step 1 first)').addOptions([
+                        { label: '⭐ Earn 10 Total Stars', value: 'total_stars:10', description: 'Award role when author accumulates 10 total stars' },
+                        { label: '⭐ Earn 25 Total Stars', value: 'total_stars:25', description: 'Award role when author accumulates 25 total stars' },
+                        { label: '⭐ Earn 50 Total Stars', value: 'total_stars:50', description: 'Award role when author accumulates 50 total stars' },
+                        { label: '⭐ Earn 100 Total Stars', value: 'total_stars:100', description: 'Award role when author accumulates 100 total stars' },
+                        { label: '🏆 Starboarded 5 Times', value: 'times_starboarded:5', description: 'Award role when author has 5 messages posted to starboard' },
+                        { label: '🏆 Starboarded 10 Times', value: 'times_starboarded:10', description: 'Award role when author has 10 messages posted to starboard' },
+                        { label: '🏆 Starboarded 25 Times', value: 'times_starboarded:25', description: 'Award role when author has 25 messages posted to starboard' },
+                        { label: '🌟 Single Post Hits 10 Stars', value: 'single_message_stars:10', description: 'Award role for a single viral post reaching 10 stars' },
+                        { label: '🌟 Single Post Hits 25 Stars', value: 'single_message_stars:25', description: 'Award role for a single viral post reaching 25 stars' }
+                    ]).setDisabled(!isRoleSelected)
+                );
+
+                return { embeds: [embed], components: [row1, row2, row3, row4, backRow] };
+            }
+
+            // ==========================================
+            // 🔢 SEQUENTIAL COUNTING & TOP COUNTER ROLE
+            // ==========================================
+            if (viewName === 'view_counting') {
+                embed.setTitle('🔢 Sequential Counting Game & Top Counter Role')
+                    .setDescription('Members count upward one number at a time without breaking sequence. Automatically awards and transfers a role to the #1 counter in the server.')
+                    .addFields(
+                        { name: 'Counting Channel', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : '*Disabled*', inline: true },
+                        { name: 'Top Counter Role Reward', value: settings.countingTopCounterRoleId ? `<@&${settings.countingTopCounterRoleId}>` : '*None configured*', inline: true },
+                        { name: 'Dynamic Role Transfer', value: 'Automatically stripped from previous leader and awarded to the new #1 counter in real time with an announcement', inline: false }
+                    );
+
+                const row1 = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_counting_clear_top_role').setLabel('Clear Top Counter Role').setStyle(ButtonStyle.Danger).setDisabled(!settings.countingTopCounterRoleId),
+                    new ButtonBuilder().setCustomId('view_games').setLabel('Games Hub').setStyle(ButtonStyle.Secondary)
+                );
+
+                const row2 = new ActionRowBuilder().addComponents(
                     new ChannelSelectMenuBuilder().setCustomId('action_counting_channel').setPlaceholder('Select / Change Counting Channel...').setChannelTypes(ChannelType.GuildText)
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
+                const row3 = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_counting_top_role').setPlaceholder('Select Top Counter Role (Awarded to #1 counter)...').setMinValues(0).setMaxValues(1)
+                );
+
+                return { embeds: [embed], components: [row1, row2, row3, backRow] };
+            }
+
+            // ==========================================
+            // 📖 ONE WORD STORY GAME
+            // ==========================================
+            if (viewName === 'view_onewordstory') {
+                embed.setTitle('📖 One Word Story Game Configuration')
+                    .setDescription('Members build collaborative sentences one word at a time. Supports continuous auto-start so games automatically restart without manual commands.')
+                    .addFields(
+                        { name: 'One Word Story Game', value: settings.oneWordStoryEnabled !== false ? '🟢 **Enabled**' : '🔴 **Disabled**', inline: true },
+                        { name: 'Story Channel', value: settings.oneWordStoryChannelId ? `<#${settings.oneWordStoryChannelId}>` : '*None configured*', inline: true },
+                        { name: 'Continuous Auto-Start', value: settings.oneWordStoryAlwaysAutoStart ? '🟢 **ON (Always Auto-Starts New Stories)**' : '⚪ **OFF (Manual Commands Required)**', inline: true },
+                        { name: 'Consecutive Words', value: settings.oneWordStoryAllowConsecutive ? '**Allowed**' : '**Blocked (Alternating members only)**', inline: true }
+                    );
+
+                const row1 = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_onewordstory_toggle').setLabel(settings.oneWordStoryEnabled !== false ? 'Disable Story' : 'Enable Story').setStyle(settings.oneWordStoryEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_story_autostart_toggle').setLabel(settings.oneWordStoryAlwaysAutoStart ? 'Story Auto-Start: ON' : 'Story Auto-Start: OFF').setStyle(settings.oneWordStoryAlwaysAutoStart ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_story_consecutive_toggle').setLabel(settings.oneWordStoryAllowConsecutive ? 'Consecutive: ON' : 'Consecutive: OFF').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('view_games').setLabel('Games Hub').setStyle(ButtonStyle.Secondary)
+                );
+
+                const row2 = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder().setCustomId('action_onewordstory_channel').setPlaceholder('Select One Word Story Channel...').setChannelTypes(ChannelType.GuildText)
+                );
+
+                return { embeds: [embed], components: [row1, row2, backRow] };
+            }
+
+            // ==========================================
+            // 💤 AFK SYSTEM & AFK ROLE
+            // ==========================================
+            if (viewName === 'view_afk') {
+                embed.setTitle('💤 AFK System & Role Assignment Configuration')
+                    .setDescription('Allow members to go AFK with rich presets and durations. Assign an AFK role while away and automatically clear when they interact.')
+                    .addFields(
+                        { name: 'AFK System', value: settings.afkEnabled !== false ? '🟢 **Enabled**' : '🔴 **Disabled**', inline: true },
+                        { name: 'AFK Role Reward', value: settings.afkRoleId ? `<@&${settings.afkRoleId}>` : '*None configured*', inline: true },
+                        { name: 'Auto-Nickname', value: settings.afkAutoNickname !== false ? '🟢 **Enabled ([AFK] Prefix)**' : '⚪ **Disabled**', inline: true },
+                        { name: 'Auto-Wake on Commands', value: '🟢 **Active** (Clears if user runs any command on Nora or ANY other bot/application in this server)', inline: false }
+                    );
+
+                const row1 = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_afk_toggle').setLabel(settings.afkEnabled !== false ? 'Disable AFK' : 'Enable AFK').setStyle(settings.afkEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_afk_nick_toggle').setLabel(settings.afkAutoNickname !== false ? 'Auto-Nick: ON' : 'Auto-Nick: OFF').setStyle(settings.afkAutoNickname !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_afk_clear_role').setLabel('Clear AFK Role').setStyle(ButtonStyle.Danger).setDisabled(!settings.afkRoleId),
+                    new ButtonBuilder().setCustomId('view_games').setLabel('Games Hub').setStyle(ButtonStyle.Secondary)
+                );
+
+                const row2 = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_afk_role').setPlaceholder('Select AFK Role (Assigned when AFK, stripped on return)...').setMinValues(0).setMaxValues(1)
+                );
+
+                return { embeds: [embed], components: [row1, row2, backRow] };
             }
 
             // ==========================================
@@ -812,23 +966,25 @@ module.exports = {
                     }
                 } catch (_) {}
 
+                const isImageGenActive = settings.aiImageGenerationEnabled !== false;
                 const privacyFlags = [
                     `Memory: ${settings.aiMemoryEnabled !== false ? '🟢 **ON**' : '⚪ **OFF**'}`,
                     `Roles: ${settings.aiRoleViewingEnabled !== false ? '🟢 **ON**' : '⚪ **OFF**'}`,
                     `Names: ${settings.aiNameViewingEnabled !== false ? '🟢 **ON**' : '⚪ **OFF**'}`,
-                    `Google Imagen 3: ${settings.aiImageGenerationEnabled !== false ? '🟢 **ON**' : '⚪ **OFF**'}`
+                    `Google Image Gen: ${isImageGenActive ? '🟢 **ON**' : '🔴 **OFF**'}`
                 ].join(' • ');
 
                 embed.setTitle('🧠 Nora AI Management & Intelligence Studio')
                     .setDescription(
                         'Full control over Nora AI behavior, Google Gemini model selection, personality templates, channel routing, and safe Google image generation.\n\n' +
-                        '• **Google Gemini & Imagen 3:** Powered strictly by official Google models with strict cloud safety filtering.\n' +
+                        '• **Google Gemini & Image Gen:** Powered strictly by official Google models with strict cloud safety filtering.\n' +
                         '• **Channel Control:** Dedicated auto-respond channel requires zero pings; excluded channels stop all AI replies entirely.\n' +
                         '• **Privacy & Memory:** Toggle conversational memory, role viewing, and display name visibility anytime.'
                     )
                     .addFields(
                         { name: 'Nora AI Master Switch', value: isAiEnabled ? '🟢 **Active & Enabled**' : '🔴 **Completely Disabled**', inline: true },
                         { name: 'Google Gemini Model', value: `🧠 \`${currentModel}\``, inline: true },
+                        { name: 'Google Image Gen', value: isImageGenActive ? '🟢 **Enabled (Google)**' : '🔴 **Disabled**', inline: true },
                         { name: 'Personality Template', value: `🎭 \`${currentTemplate.toUpperCase()}\``, inline: true },
                         { name: 'Dedicated Auto-Respond Channel', value: autoChannelText, inline: true },
                         { name: 'Auto-Respond Status', value: autoRespondActive ? '🟢 **Active (No Ping Required)**' : '⚪ **Inactive / Mentions Only**', inline: true },
@@ -853,8 +1009,8 @@ module.exports = {
                         .setStyle(settings.aiMemoryEnabled !== false ? ButtonStyle.Primary : ButtonStyle.Secondary),
                     new ButtonBuilder()
                         .setCustomId('action_ai_image_toggle')
-                        .setLabel(settings.aiImageGenerationEnabled !== false ? 'Imagen 3: ON' : 'Imagen 3: OFF')
-                        .setStyle(settings.aiImageGenerationEnabled !== false ? ButtonStyle.Primary : ButtonStyle.Secondary)
+                        .setLabel(isImageGenActive ? 'Image Gen: ON' : 'Image Gen: OFF')
+                        .setStyle(isImageGenActive ? ButtonStyle.Success : ButtonStyle.Danger)
                 );
 
                 const row2 = new ActionRowBuilder().addComponents(
@@ -1119,16 +1275,61 @@ module.exports = {
                 if (i.customId === 'action_leveling_cooldown') { settings.levelingCooldownSec = parseInt(i.values[0], 10); update = true; }
                 if (i.customId === 'action_levelalert_channel') { settings.levelUpChannelId = i.values[0]; update = true; }
 
-                // Games & AFK
+                // Games, Starboard & AFK Navigation
+                if (i.customId === 'action_goto_starboard') { state.currentView = 'view_starboard'; return i.update(buildDashboard('view_starboard')); }
+                if (i.customId === 'action_goto_counting') { state.currentView = 'view_counting'; return i.update(buildDashboard('view_counting')); }
+                if (i.customId === 'action_goto_onewordstory') { state.currentView = 'view_onewordstory'; return i.update(buildDashboard('view_onewordstory')); }
+                if (i.customId === 'action_goto_afk') { state.currentView = 'view_afk'; return i.update(buildDashboard('view_afk')); }
+
+                // AFK Module
                 if (i.customId === 'action_afk_toggle') { settings.afkEnabled = settings.afkEnabled !== false ? false : true; update = true; }
                 if (i.customId === 'action_afk_role') { settings.afkRoleId = i.values.length > 0 ? i.values[0] : null; update = true; }
+                if (i.customId === 'action_afk_clear_role') { settings.afkRoleId = null; update = true; }
+                if (i.customId === 'action_afk_nick_toggle') { settings.afkAutoNickname = settings.afkAutoNickname !== false ? false : true; update = true; }
+
+                // One Word Story
                 if (i.customId === 'action_onewordstory_toggle') { settings.oneWordStoryEnabled = !settings.oneWordStoryEnabled; update = true; }
                 if (i.customId === 'action_story_autostart_toggle') { settings.oneWordStoryAlwaysAutoStart = !settings.oneWordStoryAlwaysAutoStart; update = true; }
-                if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }
-                if (i.customId === 'action_starboard_selfstar') { settings.starboardSelfStar = !settings.starboardSelfStar; update = true; }
+                if (i.customId === 'action_story_consecutive_toggle') { settings.oneWordStoryAllowConsecutive = !settings.oneWordStoryAllowConsecutive; update = true; }
+                if (i.customId === 'action_onewordstory_channel') { settings.oneWordStoryChannelId = i.values[0]; update = true; }
+
+                // Counting Game & Top Counter Role
                 if (i.customId === 'action_counting_channel') { settings.countingChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_counting_top_role') { settings.countingTopCounterRoleId = i.values.length > 0 ? i.values[0] : null; update = true; }
+                if (i.customId === 'action_counting_clear_top_role') { settings.countingTopCounterRoleId = null; update = true; }
+
+                // Starboard & Role Rewards
+                if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }
+                if (i.customId === 'action_starboard_selfstar') { settings.starboardSelfStar = !settings.starboardSelfStar; update = true; }
                 if (i.customId === 'action_starboard_channel') { settings.starboardChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_starboard_reward_role') {
+                    state.pendingStarboardRole = i.values.length > 0 ? i.values[0] : null;
+                    return i.update(buildDashboard('view_starboard'));
+                }
+                if (i.customId === 'action_starboard_add_reward') {
+                    if (state.pendingStarboardRole) {
+                        const parts = i.values[0].split(':');
+                        const cond = parts[0];
+                        const thresh = parseInt(parts[1], 10) || 10;
+                        let existing = [];
+                        try { existing = JSON.parse(settings.starboardRoleRewards || '[]'); } catch (_) { existing = []; }
+                        if (!Array.isArray(existing)) existing = [];
+                        existing.push({
+                            id: `rew_${Date.now()}`,
+                            roleId: state.pendingStarboardRole,
+                            condition: cond,
+                            threshold: thresh
+                        });
+                        settings.starboardRoleRewards = JSON.stringify(existing);
+                        state.pendingStarboardRole = null;
+                        update = true;
+                    }
+                }
+                if (i.customId === 'action_starboard_clear_rewards') {
+                    settings.starboardRoleRewards = '[]';
+                    state.pendingStarboardRole = null;
+                    update = true;
+                }
 
                 // Logging & Section Routing
                 if (i.customId === 'action_log_part_select') {

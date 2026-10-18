@@ -171,12 +171,12 @@ async function processMessageInternal(message, client) {
         // Send typing indicator
         await message.channel.sendTyping().catch(() => {});
 
-        // 🎨 2. Check for AI Image Generation Intent (Google Imagen 3 ONLY)
+        // 🎨 2. Check for AI Image Generation Intent (Google Gemini & Imagen ONLY)
         if (isImageGenerationPrompt(plainContent)) {
             const imageGenEnabled = Boolean(settings?.aiImageGenerationEnabled);
             if (!imageGenEnabled) {
                 return message.reply({
-                    content: "🎨 AI Image Generation is currently disabled on this server. A server administrator can enable it with Google Imagen 3 in the Nora AI Studio dashboard.",
+                    content: "🎨 AI Image Generation is currently disabled on this server. A server administrator can enable or disable it anytime in `/setup ai` or the Nora Web Dashboard.",
                     allowedMentions: { repliedUser: false }
                 }).catch(() => {});
             }
@@ -185,9 +185,9 @@ async function processMessageInternal(message, client) {
                 const imgResult = await generateAIImage(plainContent);
                 const attachment = new AttachmentBuilder(imgResult.buffer, { name: imgResult.filename });
                 const wittyImageCaptions = [
-                    `Here is what I created with Google Imagen for you: **${imgResult.enhancedPrompt}** 🎨✨`,
-                    `Freshly rendered via Google Imagen: **${imgResult.enhancedPrompt}**! Hope you love it ✨`,
-                    `Done! Here's your Google Imagen artwork of **${imgResult.enhancedPrompt}** 🖼️`
+                    `Here is what I created with Google for you: **${imgResult.enhancedPrompt}** 🎨✨`,
+                    `Freshly rendered via Google: **${imgResult.enhancedPrompt}**! Hope you love it ✨`,
+                    `Done! Here's your Google artwork of **${imgResult.enhancedPrompt}** 🖼️`
                 ];
                 const caption = wittyImageCaptions[Math.floor(Math.random() * wittyImageCaptions.length)];
                 return message.reply({
@@ -196,14 +196,17 @@ async function processMessageInternal(message, client) {
                     allowedMentions: { repliedUser: false }
                 }).catch(() => {});
             } catch (err) {
-                console.error('[ChatAI] Google Imagen generation error:', err.message);
+                console.error('[ChatAI] Google image generation error:', err.message);
                 if (err.message && err.message.toLowerCase().includes('safety')) {
                     return message.reply({
-                        content: `🛡️ **Image Blocked by Google Safety Filter**: Google Imagen strictly prohibits sexual, explicit, or inappropriate requests.`,
+                        content: `🛡️ **Image Blocked by Google Safety Filter**: Google strictly prohibits sexual, explicit, or inappropriate requests.`,
                         allowedMentions: { repliedUser: false }
                     }).catch(() => {});
                 }
-                // If other image generation error occurs, continue to normal conversational reply
+                return message.reply({
+                    content: `🎨 **Google Image Generation**: ${err.message || 'Unable to generate image with Google at this time.'}\n*(Server staff can disable this feature anytime in \`/setup ai\`)*`,
+                    allowedMentions: { repliedUser: false }
+                }).catch(() => {});
             }
         }
 
