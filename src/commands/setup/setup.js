@@ -79,7 +79,7 @@ module.exports = {
                 .setDescription('Configure moderation actions, autonomous Nora enforcement, and mod logs.'))
         .addSubcommand(sub =>
             sub.setName('adaptiveslowmode')
-                .setDescription('Configure AI-powered Adaptive Slowmode chat velocity defense.')),
+                .setDescription('Configure automatic chat pacing with Adaptive Slowmode.')),
 
     async execute(interaction) {
         if (!interaction.deferred && !interaction.replied) {
@@ -230,7 +230,7 @@ module.exports = {
                         { label: '🛡️ Verification Threat Gatekeeper', value: 'view_verify_security', description: 'Automated background risk screening, online threat intel, ban evasion matching' },
                         { label: 'Support Ticket System', value: 'view_tickets', description: 'Private staff ticket categories, panels, and transcripts' },
                         { label: 'Nora AI & Image Generation', value: 'view_ai', description: 'Configure Gemini models, auto-chat channel, and Google Image Gen' },
-                        { label: 'Adaptive Slowmode & Velocity', value: 'view_adaptiveslowmode', description: 'AI-assisted chat defense with 0s lowest floor' },
+                        { label: 'Adaptive Slowmode', value: 'view_adaptiveslowmode', description: 'Automatic chat pacing and anti-flood protection' },
                         { label: 'Self Roles & Feeds', value: 'view_utility', description: 'Interactive button role panels and YouTube feeds' }
                     ]);
 
@@ -417,7 +417,8 @@ module.exports = {
                     new ButtonBuilder().setCustomId('action_leveling_toggle').setLabel(settings.levelingEnabled ? 'Disable Leveling' : 'Enable Leveling').setStyle(settings.levelingEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_levelalert_toggle').setLabel(settings.levelUpNotificationsEnabled !== false ? 'Disable Alerts' : 'Enable Alerts').setStyle(settings.levelUpNotificationsEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_leveldm_toggle').setLabel(settings.levelUpDmEnabled ? 'Disable DM Alerts' : 'Enable DM Alerts').setStyle(settings.levelUpDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_rolestack_toggle').setLabel(settings.roleRewardsStack !== false ? 'Stack Roles: ON' : 'Stack Roles: OFF').setStyle(ButtonStyle.Secondary)
+                    new ButtonBuilder().setCustomId('action_rolestack_toggle').setLabel(settings.roleRewardsStack !== false ? 'Stack Roles: ON' : 'Stack Roles: OFF').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_levelpfp_toggle').setLabel(settings.levelingPfpEnabled !== false ? 'Card Avatars: ON' : 'Card Avatars: OFF').setStyle(settings.levelingPfpEnabled !== false ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
@@ -1115,20 +1116,20 @@ module.exports = {
                     } catch (_) {}
                 }
 
-                embed.setTitle('⏱️ Adaptive Slowmode & AI Velocity Defense')
+                embed.setTitle('⏱️ Adaptive Slowmode')
                     .setDescription(
-                        'Dynamically regulate channel slowmode based on real-time message velocity and AI pattern detection.\n\n' +
-                        '• **AI Intelligence:** Analyzes message floods, copy-paste repetition, and sudden chatter surges even when staff are active.\n' +
-                        '• **0-Second Floor (0 = Off):** Slowmode decays smoothly down to 0s when chat cools down.\n' +
-                        '• **Active Rate Limits:** The bot actively modifies channel rate limits in real-time.'
+                        'Automatically slows down chat during rapid message bursts or spam raids, then gracefully restores normal chat speed when conversation calms down.\n\n' +
+                        '• **0-Second Floor (0 = Off):** Slowmode automatically decays back to 0s once chat calms down.\n' +
+                        '• **Automatic Chat Pacing:** Dynamically adjusts channel slowmode in real-time.\n' +
+                        '• **AI Boost:** Analyzes message velocity and sudden chatter spikes even when staff are active.'
                     )
                     .addFields(
                         { name: 'Status', value: isEnabled ? '🟢 **Enabled**' : '🔴 **Disabled**', inline: true },
-                        { name: 'AI Defense', value: isAiEnabled ? '🧠 **AI Enhanced**' : '⚪ **Standard Heuristic**', inline: true },
-                        { name: 'Lowest Rate Limit', value: `\`${floorSec}s\` (${floorSec === 0 ? '0 = Off' : 'Active floor'})`, inline: true },
-                        { name: 'Tiers (Small / Large / Surge)', value: `\`${settings.adaptiveSlowmodeSmallSec ?? 3}s\` / \`${settings.adaptiveSlowmodeLargeSec ?? 6}s\` / \`${settings.adaptiveSlowmodeSurgeSec ?? 10}s\``, inline: true },
-                        { name: 'Thresholds', value: `\`${settings.adaptiveSlowmodeSmallThreshold ?? 3}\` / \`${settings.adaptiveSlowmodeLargeThreshold ?? 7}\` / \`${settings.adaptiveSlowmodeSurgeThreshold ?? 13}\` msgs/10s`, inline: true },
-                        { name: 'Decay Timer', value: `\`${settings.adaptiveSlowmodeDecaySec ?? 20}s\` quiet chat`, inline: true },
+                        { name: 'AI Boost', value: isAiEnabled ? '🧠 **AI Enhanced**' : '⚪ **Standard Heuristic**', inline: true },
+                        { name: 'Applied Slowmode', value: `\`${settings.adaptiveSlowmodeLargeSec ?? 6}s\``, inline: true },
+                        { name: 'Spam Trigger Speed', value: `\`${settings.adaptiveSlowmodeSmallThreshold ?? 5} msgs/sec\``, inline: true },
+                        { name: 'Cooldown Reset Time', value: `\`${settings.adaptiveSlowmodeDecaySec ?? 20}s\` quiet chat`, inline: true },
+                        { name: 'Emergency Raid Cap', value: `\`${settings.adaptiveSlowmodeSurgeSec ?? 10}s\``, inline: true },
                         { name: 'Monitored Channels', value: channelListText, inline: false }
                     );
 
@@ -1152,9 +1153,10 @@ module.exports = {
                         .setCustomId('action_adaptiveslowmode_sensitivity')
                         .setPlaceholder('Choose Sensitivity Preset...')
                         .addOptions([
-                            { label: 'Strict (Triggers quickly at 2 msgs/10s)', value: 'strict' },
-                            { label: 'Balanced (Recommended: 3 msgs/10s)', value: 'balanced', default: true },
-                            { label: 'Casual (Tolerant: 5 msgs/10s)', value: 'casual' }
+                            { label: '🟢 Casual (10 msgs/s)', value: 'casual', description: 'Relaxed threshold for community chats' },
+                            { label: '🔵 Balanced (5 msgs/s - Recommended)', value: 'balanced', description: 'Standard protection for active servers' },
+                            { label: '🟠 Strict (2 msgs/s)', value: 'strict', description: 'Fast rate-limit response for sensitive channels' },
+                            { label: '🔴 Maximum (1 msg/s)', value: 'maximum', description: 'Heavy lock against aggressive token raids' }
                         ])
                 );
 
@@ -1274,6 +1276,7 @@ module.exports = {
                 if (i.customId === 'action_levelalert_toggle') { settings.levelUpNotificationsEnabled = !settings.levelUpNotificationsEnabled; update = true; }
                 if (i.customId === 'action_leveldm_toggle') { settings.levelUpDmEnabled = !settings.levelUpDmEnabled; update = true; }
                 if (i.customId === 'action_rolestack_toggle') { settings.roleRewardsStack = settings.roleRewardsStack !== false ? false : true; update = true; }
+                if (i.customId === 'action_levelpfp_toggle') { settings.levelingPfpEnabled = settings.levelingPfpEnabled === false ? true : false; update = true; }
                 if (i.customId === 'action_leveling_cooldown') { settings.levelingCooldownSec = parseInt(i.values[0], 10); update = true; }
                 if (i.customId === 'action_levelalert_channel') { settings.levelUpChannelId = i.values[0]; update = true; }
 
@@ -1660,16 +1663,20 @@ module.exports = {
                     const preset = i.values[0];
                     if (preset === 'strict') {
                         settings.adaptiveSlowmodeSmallThreshold = 2;
-                        settings.adaptiveSlowmodeLargeThreshold = 5;
-                        settings.adaptiveSlowmodeSurgeThreshold = 9;
+                        settings.adaptiveSlowmodeLargeSec = 15;
+                        settings.adaptiveSlowmodeDecaySec = 30;
                     } else if (preset === 'casual') {
+                        settings.adaptiveSlowmodeSmallThreshold = 10;
+                        settings.adaptiveSlowmodeLargeSec = 3;
+                        settings.adaptiveSlowmodeDecaySec = 15;
+                    } else if (preset === 'maximum') {
+                        settings.adaptiveSlowmodeSmallThreshold = 1;
+                        settings.adaptiveSlowmodeLargeSec = 30;
+                        settings.adaptiveSlowmodeDecaySec = 60;
+                    } else { // balanced
                         settings.adaptiveSlowmodeSmallThreshold = 5;
-                        settings.adaptiveSlowmodeLargeThreshold = 10;
-                        settings.adaptiveSlowmodeSurgeThreshold = 18;
-                    } else {
-                        settings.adaptiveSlowmodeSmallThreshold = 3;
-                        settings.adaptiveSlowmodeLargeThreshold = 7;
-                        settings.adaptiveSlowmodeSurgeThreshold = 13;
+                        settings.adaptiveSlowmodeLargeSec = 6;
+                        settings.adaptiveSlowmodeDecaySec = 20;
                     }
                     update = true;
                 }
