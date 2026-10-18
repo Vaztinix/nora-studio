@@ -134,8 +134,13 @@ module.exports = {
      */
     secureLink: (url) => {
         if (!url) return '';
-        // If it's already secured or an internal Discord link, don't double-proxy.
-        if (url.includes('nora.ink') || url.includes('discord.com/api')) return url;
+        try {
+            const parsed = new URL(url);
+            if (parsed.hostname === 'nora.ink' || parsed.hostname.endsWith('.nora.ink') || 
+                (parsed.hostname === 'discord.com' && parsed.pathname.startsWith('/api'))) {
+                return url;
+            }
+        } catch (e) {}
         return `${SAFE_LINK_PREFIX}${encodeURIComponent(url)}`;
     },
 

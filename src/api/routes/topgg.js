@@ -679,8 +679,10 @@ module.exports = (client) => {
             const { token, botId } = req.body;
             if (!token) return res.status(400).json({ valid: false, error: 'Token is required' });
 
-            const targetBot = botId || '593420060990005248';
-            const response = await axios.get(`https://top.gg/api/bots/${targetBot}/stats`, {
+            const safeBotId = (typeof botId === 'string' && /^\d{17,20}$/.test(botId.trim()))
+                ? botId.trim()
+                : '593420060990005248';
+            const response = await axios.get(`https://top.gg/api/bots/${safeBotId}/stats`, {
                 headers: { Authorization: token },
                 timeout: 5000
             }).catch(err => {

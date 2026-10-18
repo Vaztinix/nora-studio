@@ -891,9 +891,16 @@
                     document.getElementById('roblox-username').textContent = `@${active.robloxUsername || active.robloxId}`;
                     document.getElementById('roblox-id').textContent = `Roblox ID: ${active.robloxId}`;
                     
-                    const robloxAvatarUrl = (active.avatar && !active.avatar.includes('thumbnails.roblox.com')) 
+                    let isRobloxThumb = false;
+                    try {
+                        const parsedAvatar = new URL(active.avatar);
+                        if (parsedAvatar.hostname === 'thumbnails.roblox.com' || parsedAvatar.hostname.endsWith('.roblox.com')) {
+                            isRobloxThumb = true;
+                        }
+                    } catch (e) {}
+                    const robloxAvatarUrl = (active.avatar && !isRobloxThumb) 
                         ? active.avatar 
-                        : (getApiBaseUrl() + `/api/user/roblox/avatar?userId=${active.robloxId}`);
+                        : (getApiBaseUrl() + `/api/user/roblox/avatar?userId=${encodeURIComponent(active.robloxId)}`);
                     document.getElementById('roblox-avatar').src = robloxAvatarUrl;
                 } else {
                     document.getElementById('active-roblox-container').style.display = 'none';

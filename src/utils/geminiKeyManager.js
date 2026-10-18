@@ -327,7 +327,9 @@ class GeminiKeyManager {
             this.isDailyQuota.set(key, true);
         }
         this.lastGlobalQuotaHit = expiry;
-        console.warn(`[GeminiKeyManager] Key ...${key.slice(-6)} placed on cooldown for ${Math.round(cooldownMs / 1000)}s ${isDaily ? '(Daily Quota)' : ''}.`);
+        const keyIdx = this.keys.indexOf(key);
+        const keyId = keyIdx !== -1 ? `#${keyIdx + 1}` : 'pool item';
+        console.warn(`[GeminiKeyManager] Key ${keyId} placed on cooldown for ${Math.round(cooldownMs / 1000)}s ${isDaily ? '(Daily Quota)' : ''}.`);
     }
 }
 

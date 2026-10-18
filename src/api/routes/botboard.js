@@ -23,8 +23,12 @@ async function dispatchBotBoardEmbed(client, targetUrlOrChannel, embed) {
                 console.warn('[BotBoard Webhook Security] Blocked invalid or non-Discord webhook dispatch target:', hostname);
                 return false;
             }
-            // Explicitly reconstruct safe webhook URL from validated components
-            const safeWebhookUrl = `https://${hostname}/api/webhooks/${webhookMatch[1]}/${webhookMatch[2]}`;
+            // Explicitly reconstruct safe webhook URL from static validated host and validated snowflake segments
+            const canonicalHost = hostname === 'canary.discord.com' ? 'canary.discord.com'
+                : hostname === 'ptb.discord.com' ? 'ptb.discord.com'
+                : hostname === 'discordapp.com' ? 'discordapp.com'
+                : 'discord.com';
+            const safeWebhookUrl = `https://${canonicalHost}/api/webhooks/${encodeURIComponent(webhookMatch[1])}/${encodeURIComponent(webhookMatch[2])}`;
             await axios.post(safeWebhookUrl, {
                 embeds: [embed.toJSON()]
             }, { timeout: 5000 });

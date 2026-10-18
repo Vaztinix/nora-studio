@@ -4,6 +4,17 @@ const axios = require('axios');
  * 🌐 Nora Multi-Source Web Search Engine
  * Privacy-first real-time web intelligence querying Wikipedia, DuckDuckGo, and Tech News.
  */
+function stripHtmlTags(str) {
+    if (!str || typeof str !== 'string') return '';
+    let prev;
+    let clean = str;
+    do {
+        prev = clean;
+        clean = clean.replace(/<[^>]*>/g, '');
+    } while (clean !== prev);
+    return clean.trim();
+}
+
 async function searchWeb(query) {
     if (!query || typeof query !== 'string' || query.trim().length < 2) return null;
     const cleanQuery = query.trim().replace(/^nora\s+/i, '').replace(/^(?:search(?:\s+the\s+web)?(?:\s+for)?|look\s+up|google)\s+/i, '').trim();
@@ -30,7 +41,7 @@ async function searchWeb(query) {
             results.push({
                 source: 'Wikipedia',
                 title: item.title,
-                snippet: item.snippet.replace(/<[^>]+>/g, '').trim()
+                snippet: stripHtmlTags(item.snippet)
             });
         }
     } catch (e) {}

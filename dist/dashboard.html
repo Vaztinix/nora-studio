@@ -11698,7 +11698,17 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;')
                 .replace(/`/g, '&#096;');
+        function generateSecureRandomHex(bytes = 16) {
+            try {
+                if (window.crypto && window.crypto.getRandomValues) {
+                    const arr = new Uint8Array(bytes);
+                    window.crypto.getRandomValues(arr);
+                    return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+                }
+            } catch (e) {}
+            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         }
+
         let notifications = [];
         let newNotifCount = 0;
         // API Base URL interceptor for static site hosting (e.g. GitHub Pages / custom domains)
@@ -11712,7 +11722,12 @@
             if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || !host || window.location.protocol === 'file:') {
                 // Clear any stale production override in localStorage that would hijack localhost
                 const saved = localStorage.getItem('nora_api_url');
-                if (saved && !saved.includes('localhost') && !saved.includes('127.0.0.1')) {
+                let isLocalSaved = false;
+                try {
+                    const parsedSaved = new URL(saved);
+                    isLocalSaved = parsedSaved.hostname === 'localhost' || parsedSaved.hostname === '127.0.0.1';
+                } catch (e) {}
+                if (saved && !isLocalSaved) {
                     localStorage.removeItem('nora_api_url');
                 }
                 return (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:'))
@@ -13775,9 +13790,16 @@
 
                 accounts.forEach(acc => {
                     const isVerified = acc.status === 'VERIFIED';
-                    const avatarUrl = (acc.avatar && !acc.avatar.includes('thumbnails.roblox.com')) 
+                    let isRobloxThumb = false;
+                    try {
+                        const parsedAvatar = new URL(acc.avatar);
+                        if (parsedAvatar.hostname === 'thumbnails.roblox.com' || parsedAvatar.hostname.endsWith('.roblox.com')) {
+                            isRobloxThumb = true;
+                        }
+                    } catch (e) {}
+                    const avatarUrl = (acc.avatar && !isRobloxThumb) 
                         ? acc.avatar 
-                        : ((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/roblox/avatar?userId=${acc.robloxId}`);
+                        : ((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/roblox/avatar?userId=${encodeURIComponent(acc.robloxId)}`);
 
                     const card = document.createElement('div');
                     card.style.cssText = `
@@ -14375,7 +14397,15 @@
             if (!val || typeof val !== 'string') return;
             
             // Auto-resolve Klipy URLs
-            if (val.includes('klipy.com')) {
+            let isKlipy = false;
+            try {
+                const parsedVal = new URL(val);
+                if (parsedVal.hostname === 'klipy.com' || parsedVal.hostname.endsWith('.klipy.com')) {
+                    isKlipy = true;
+                }
+            } catch (e) {}
+
+            if (isKlipy) {
                 const slugMatch = val.match(/klipy\.com\/(?:gifs|watch|clips|stickers|media)\/([a-zA-Z0-9_-]+)/i);
                 if (slugMatch && slugMatch[1]) {
                     const slug = slugMatch[1];
@@ -14607,10 +14637,16 @@
                 `;
             } else {
                 const verifiedAcc = accs.find(a => a.status === 'VERIFIED' && a.isActive) || accs.find(a => a.status === 'VERIFIED') || accs[0];
-                if (verifiedAcc && verifiedAcc.status === 'VERIFIED') {
-                    const avatarImg = (verifiedAcc.avatar && !verifiedAcc.avatar.includes('thumbnails.roblox.com')) 
+                    let isRobloxThumb = false;
+                    try {
+                        const parsedAvatar = new URL(verifiedAcc.avatar);
+                        if (parsedAvatar.hostname === 'thumbnails.roblox.com' || parsedAvatar.hostname.endsWith('.roblox.com')) {
+                            isRobloxThumb = true;
+                        }
+                    } catch (e) {}
+                    const avatarImg = (verifiedAcc.avatar && !isRobloxThumb) 
                         ? verifiedAcc.avatar 
-                        : ((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/roblox/avatar?userId=${verifiedAcc.robloxId}`);
+                        : ((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/user/roblox/avatar?userId=${encodeURIComponent(verifiedAcc.robloxId)}`);
                     robloxVal.innerHTML = `
                         <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                             <div>

@@ -719,12 +719,12 @@ const ALLOWED_ORIGINS = [
     /^http:\/\/127\.0\.0\.1(:\d+)?$/,
     /^https:\/\/vaztinix\.github\.io$/,
     /^https:\/\/vaztinix\.dev$/,
-    /^https:\/\/.*\.vaztinix\.dev$/,
-    /^https:\/\/.*\.pages\.dev$/,
+    /^https:\/\/[a-zA-Z0-9-]+\.vaztinix\.dev$/,
+    /^https:\/\/[a-zA-Z0-9-]+\.pages\.dev$/,
     /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
     /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
     /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
-    /^https?:\/\/.*\.local(:\d+)?$/
+    /^https?:\/\/[a-zA-Z0-9-]+\.local(:\d+)?$/
 ];
 
 function isAllowedOrigin(origin) {
@@ -748,6 +748,9 @@ app.use((req, res, next) => {
     const requestHeaders = req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma, X-Real-IP, CF-Connecting-IP';
     res.setHeader('Access-Control-Allow-Headers', requestHeaders);
     res.setHeader('Access-Control-Max-Age', '86400');
+    if (req.headers['access-control-request-private-network']) {
+        res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    }
     if (req.method === 'OPTIONS') {
         return res.status(204).end();
     }
@@ -954,27 +957,6 @@ const recordFail2ban404 = (ip) => {
 // 🛡️ SECURE HTTP HEADERS + CSP
 // ─────────────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
-    // Enable CORS for frontend requests
-    const origin = req.headers.origin;
-    if (origin) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma');
-    } else {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma');
-    }
-    res.setHeader('Access-Control-Max-Age', '86400');
-    if (req.headers['access-control-request-private-network']) {
-        res.setHeader('Access-Control-Allow-Private-Network', 'true');
-    }
-
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(204);
-    }
-
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
@@ -1637,15 +1619,18 @@ const clientLogRateLimiter = (req, res, next) => {
 
 // Client telemetry logs endpoint
 const clientLogHandler = (req, res) => {
-    const { level, message, context, stack } = req.body;
-    const cleanContext = (context && typeof context === 'object') ? JSON.stringify(context) : (context || '');
-    const cleanStack = stack ? `\nStack: ${stack}` : '';
-    const logString = `[CLIENT_${level}] ${message} ${cleanContext}${cleanStack}`;
+    const { level, message, context, stack } = req.body || {};
+    const safeLevel = String(level || 'INFO').toUpperCase().replace(/[^A-Z_]/g, '');
+    const rawMessage = String(message || '').replace(/[\r\n\t]/g, ' ').substring(0, 500);
+    // Redact tokens or authorization headers if present
+    const safeMessage = rawMessage.replace(/([a-zA-Z0-9_-]{24,}\.[a-zA-Z0-9_-]{6,}\.[a-zA-Z0-9_-]{27,}|Bearer\s+[A-Za-z0-9._~+/-]+=*)/gi, '[REDACTED_SECRET]');
+    const rawContext = (context && typeof context === 'object') ? JSON.stringify(context) : String(context || '');
+    const cleanContext = rawContext.replace(/([a-zA-Z0-9_-]{24,}\.[a-zA-Z0-9_-]{6,}\.[a-zA-Z0-9_-]{27,}|Bearer\s+[A-Za-z0-9._~+/-]+=*)/gi, '[REDACTED_SECRET]').substring(0, 500);
+    const logString = `[CLIENT_${safeLevel}] ${safeMessage} ${cleanContext}`;
 
-    const uppercaseLevel = String(level).toUpperCase();
-    if (uppercaseLevel === 'ERROR' || uppercaseLevel === 'FATAL' || uppercaseLevel === 'PANIC' || uppercaseLevel === 'PANIC_PROMISE') {
+    if (safeLevel === 'ERROR' || safeLevel === 'FATAL' || safeLevel === 'PANIC' || safeLevel === 'PANIC_PROMISE') {
         console.error(logString);
-    } else if (uppercaseLevel === 'WARN' || uppercaseLevel === 'WARNING') {
+    } else if (safeLevel === 'WARN' || safeLevel === 'WARNING') {
         console.warn(logString);
     } else {
         console.log(logString);
@@ -2388,16 +2373,27 @@ app.get('/api/proxy-image', async (req, res) => {
     const rawUrl = req.query.url;
     if (!rawUrl || typeof rawUrl !== 'string') return res.status(400).send('Missing url parameter');
     try {
+        const security = require('./utils/security');
+        if (!security.validateExternalUrl(rawUrl)) {
+            return res.status(400).send('Invalid or prohibited target URL');
+        }
+        const parsed = new URL(rawUrl);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
-        const fetchRes = await fetch(rawUrl, {
+        const fetchRes = await fetch(parsed.href, {
             signal: controller.signal,
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
         });
         clearTimeout(timeoutId);
         if (!fetchRes.ok) return res.status(502).send('Failed to fetch image');
-        const contentType = fetchRes.headers.get('content-type') || 'image/png';
+        const contentType = fetchRes.headers.get('content-type') || '';
+        if (!contentType.toLowerCase().startsWith('image/')) {
+            return res.status(400).send('Target resource is not a valid image format');
+        }
         const arrayBuf = await fetchRes.arrayBuffer();
+        if (arrayBuf.byteLength > 15 * 1024 * 1024) {
+            return res.status(413).send('Image exceeds size limit');
+        }
         const buffer = Buffer.from(arrayBuf);
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Content-Type', contentType);
@@ -3479,8 +3475,9 @@ app.get('/api/user/roblox/callback', async (req, res) => {
             targetGuild = client.guilds.cache.get(requestedGuildId);
         }
 
-        const returnUrl = requestedGuildId 
-            ? `https://vaztinix.dev/verify?guild=${requestedGuildId}&verified=true`
+        const safeGuildId = (requestedGuildId && /^\d{17,20}$/.test(String(requestedGuildId))) ? String(requestedGuildId) : null;
+        const returnUrl = safeGuildId 
+            ? `https://vaztinix.dev/verify?guild=${encodeURIComponent(safeGuildId)}&verified=true`
             : `https://vaztinix.dev/verify?verified=true`;
 
         res.send(`
@@ -3606,14 +3603,14 @@ app.get('/api/user/roblox/callback', async (req, res) => {
                     <p style="color: #9d9d9d; font-size: 0.88rem; line-height: 1.5; margin: 0;">Your Roblox identity has been successfully authenticated and server roles have been granted.</p>
 
                     <div class="roblox-box">
-                        <img class="roblox-avatar" src="/api/user/roblox/avatar?userId=${robloxId}" alt="Avatar">
+                        <img class="roblox-avatar" src="/api/user/roblox/avatar?userId=${encodeURIComponent(String(record.robloxId || ''))}" alt="Avatar">
                         <div>
                             <div style="font-weight: 700; font-size: 0.95rem; color: #fff;">@${String(robloxUsername || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
                             <div style="font-size: 0.75rem; color: var(--success); font-weight: 600;"><i class="fas fa-shield-check"></i> Roles Synchronized</div>
                         </div>
                     </div>
 
-                    <a href="${returnUrl}" class="btn-primary">
+                    <a href="${encodeURI(returnUrl)}" class="btn-primary">
                         <i class="fas fa-arrow-left"></i> Return to Nora Portal
                     </a>
                 </div>

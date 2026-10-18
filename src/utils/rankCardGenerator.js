@@ -35,7 +35,15 @@ async function resolveDirectMediaUrl(url, timeoutMs = 2500) {
     if (url.startsWith('data:image')) return url;
 
     // Klipy URL direct API resolver
-    if (url.includes('klipy.com')) {
+    let isKlipy = false;
+    try {
+        const parsed = new URL(url);
+        if (parsed.hostname === 'klipy.com' || parsed.hostname.endsWith('.klipy.com')) {
+            isKlipy = true;
+        }
+    } catch (e) {}
+
+    if (isKlipy) {
         const slugMatch = url.match(/klipy\.com\/(?:gifs|watch|clips|stickers|media)\/([a-zA-Z0-9_-]+)/i);
         if (slugMatch && slugMatch[1]) {
             const slug = slugMatch[1];

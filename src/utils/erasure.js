@@ -83,7 +83,7 @@ async function performCascadingErasure(guildId) {
         console.log(`[Cascading Erasure] Absolute cascading erasure completed successfully for guild ${guildId}.`);
         return true;
     } catch (error) {
-        console.error('[Cascading Erasure Error] Failed during erasure sequence for guild %s:', String(guildId), error);
+        console.error(`[Cascading Erasure Error] Failed during erasure sequence for guild ${String(guildId)}:`, error);
         throw error;
     }
 }

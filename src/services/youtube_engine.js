@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const Redis = require('ioredis');
 const { google } = require('googleapis');
 const xml2js = require('xml2js');
@@ -133,20 +134,15 @@ async function resolveChannelId(input) {
 function createWebSubRouter(client, getGuildSubscriptions) {
     const router = express.Router();
 
-    const webSubRequests = new Map();
-    const webSubRateLimiter = (req, res, next) => {
-        const ip = req.headers['x-forwarded-for'] || req.ip || 'global';
-        const now = Date.now();
-        const timestamps = (webSubRequests.get(ip) || []).filter(ts => now - ts < 10000);
-        if (timestamps.length >= 100) {
-            return res.status(429).type('text/plain').send('Rate limit exceeded');
-        }
-        timestamps.push(now);
-        webSubRequests.set(ip, timestamps);
-        next();
-    };
+    const webSubRateLimiter = rateLimit({
+        windowMs: 60 * 1000,
+        max: 120,
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: 'Rate limit exceeded'
+    });
 
-    router.use('/youtube/webhook', webSubRateLimiter);
+    router.use(webSubRateLimiter);
 
     // 1. GET Request: Google WebSub Subscription Verification (hub.challenge)
     router.get('/youtube/webhook', (req, res) => {
