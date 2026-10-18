@@ -1980,7 +1980,40 @@
         });
     };
 
+    let isTranslationObserverStarted = false;
+    function ensureTranslationsInitialized() {
+        if (isTranslationObserverStarted) return;
+        isTranslationObserverStarted = true;
+        document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(input => {
+            const placeholder = input.getAttribute('placeholder');
+            if (placeholder && !input.hasAttribute('data-i18n-placeholder')) {
+                input.setAttribute('data-i18n-placeholder', placeholder);
+            }
+        });
+        tagStaticElements(document.body);
+        translationObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
     window.applyLanguageTranslations = function(lang) {
+        if (!lang || lang === 'en') {
+            if (isTranslationObserverStarted) {
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const originalFullText = el.getAttribute('data-i18n-original-text') || el.getAttribute('data-i18n');
+                    if (originalFullText) el.textContent = originalFullText;
+                });
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(input => {
+                    const original = input.getAttribute('data-i18n-placeholder');
+                    if (original) input.setAttribute('placeholder', original);
+                });
+            }
+            return;
+        }
+
+        ensureTranslationsInitialized();
+
         window.isTranslating = true;
         try {
             window.translateDOM(document.body, lang);
@@ -2308,28 +2341,11 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Tag initial placeholders
-        document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(input => {
-            const placeholder = input.getAttribute('placeholder');
-            if (placeholder && !input.hasAttribute('data-i18n-placeholder')) {
-                input.setAttribute('data-i18n-placeholder', placeholder);
-            }
-        });
-
-        // Tag initial elements
-        tagStaticElements(document.body);
-
         injectLanguageSelector();
         
-        // Observe changes
-        translationObserver.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        
-        // Initial translation run
         const activeLang = localStorage.getItem('nora_language') || 'en';
         if (activeLang !== 'en') {
+            ensureTranslationsInitialized();
             window.applyLanguageTranslations(activeLang);
         }
     });

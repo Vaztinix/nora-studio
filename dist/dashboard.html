@@ -8,16 +8,6 @@
     <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        if (typeof tailwind !== 'undefined') {
-            tailwind.config = {
-                corePlugins: {
-                    preflight: false
-                }
-            };
-        }
-    </script>
     <script src="/translate.js"></script>
     <script src="/nora-sentinel.js?v=2.2" defer></script>
     <script>
@@ -233,89 +223,9 @@
             transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
         }
 
-        /* Premium Custom Cursor */
+        /* Native Hardware Cursor: Zero Latency, Maximum Responsiveness */
         .custom-cursor {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 999999;
-            opacity: 0;
-            transition: opacity 0.25s ease;
-        }
-
-        .cursor-dot {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background-color: var(--primary);
-            border-radius: 50%;
-            transform: translate3d(-50%, -50%, 0);
-            transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease, border-radius 0.2s ease;
-            will-change: transform, width, height;
-        }
-
-        .cursor-ring {
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--primary);
-            opacity: 0.4;
-            border-radius: 50%;
-            transform: translate3d(-50%, -50%, 0);
-            transition: width 0.25s cubic-bezier(0.1, 0.8, 0.3, 1), 
-                        height 0.25s cubic-bezier(0.1, 0.8, 0.3, 1), 
-                        opacity 0.25s ease,
-                        background-color 0.25s ease,
-                        border-color 0.25s ease,
-                        border-width 0.25s ease;
-            will-change: transform, width, height;
-        }
-
-        /* Desktop cursor hiding */
-        @media (min-width: 1025px) {
-            body.device-desktop,
-            body.device-desktop * {
-                cursor: none !important;
-            }
-            body.device-desktop .custom-cursor {
-                opacity: 1;
-            }
-        }
-
-        /* Custom Cursor States */
-        .custom-cursor.cursor-hidden {
-            opacity: 0 !important;
-        }
-
-        /* Hoverable State */
-        .custom-cursor.cursor-hover .cursor-dot {
-            width: 4px;
-            height: 4px;
-            background-color: #fff;
-        }
-        .custom-cursor.cursor-hover .cursor-ring {
-            width: 38px;
-            height: 38px;
-            opacity: 1;
-            border-width: 1px;
-            background-color: rgba(255, 255, 255, 0.08);
-        }
-
-        /* Text Focus State */
-        .custom-cursor.cursor-text .cursor-dot {
-            width: 2px;
-            height: 16px;
-            background-color: var(--text);
-            border-radius: 1px;
-        }
-        .custom-cursor.cursor-text .cursor-ring {
-            width: 0;
-            height: 0;
-            border-width: 0;
-            opacity: 0;
+            display: none !important;
         }
 
         body.theme-light,
@@ -2117,58 +2027,21 @@
             color: var(--primary);
         }
 
-        /* iOS-like Liquid Blobs */
+        /* Performance: Liquid Blobs disabled to eliminate GPU thrashing */
         .liquid-blob {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0;
-            pointer-events: none;
-            z-index: -1;
-            transition: opacity 1.5s ease;
-        }
-        body.theme-glass .liquid-blob {
-            opacity: 0.42;
-        }
-        .liquid-blob-1 {
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(255, 142, 60, 0.35) 0%, rgba(255, 142, 60, 0) 70%);
-            top: -10%;
-            left: -10%;
-            animation: drift 25s infinite alternate ease-in-out;
-        }
-        .liquid-blob-2 {
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(155, 93, 229, 0.3) 0%, rgba(155, 93, 229, 0) 70%);
-            bottom: -15%;
-            right: -10%;
-            animation: drift-reverse 30s infinite alternate ease-in-out;
-        }
-        .liquid-blob-3 {
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(255, 186, 8, 0.25) 0%, rgba(255, 186, 8, 0) 70%);
-            top: 40%;
-            left: 50%;
-            animation: drift-middle 22s infinite alternate ease-in-out;
+            display: none !important;
         }
 
-        @keyframes drift {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(150px, 80px) scale(1.2) rotate(90deg); }
-            100% { transform: translate(-50px, 150px) scale(0.9) rotate(180deg); }
+        /* High-Performance Rendering & Offscreen Layout Containment */
+        .tab-content:not(.active) {
+            display: none !important;
+            content-visibility: hidden;
         }
-        @keyframes drift-reverse {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-120px, -100px) scale(0.8) rotate(-60deg); }
-            100% { transform: translate(100px, 50px) scale(1.1) rotate(-120deg); }
+        .tab-content.active {
+            content-visibility: visible;
         }
-        @keyframes drift-middle {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-30%, -60%) scale(1.3); }
-            100% { transform: translate(-60%, -40%) scale(0.9); }
+        .card, .form-card, .table-container {
+            contain: layout style;
         }
 
         /* Responsive CSS Media Queries & Mobile Sidebar Drawer */
@@ -3958,12 +3831,21 @@
                 bar.style.display = 'flex';
             };
 
+            let _unsavedChangesDebounce = null;
             window.markFormDirty = function(fieldId) {
                 window.isFormDirty = true;
+                const saveBtn = document.getElementById('save-settings-btn');
+                if (saveBtn && saveBtn.disabled) {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('disabled');
+                }
                 if (fieldId) {
                     window.unsavedChangeHistory = [fieldId, ...window.unsavedChangeHistory.filter(f => f !== fieldId)];
                 }
-                window.updateUnsavedChangesPopup();
+                clearTimeout(_unsavedChangesDebounce);
+                _unsavedChangesDebounce = setTimeout(() => {
+                    window.updateUnsavedChangesPopup();
+                }, 120);
             };
 
             window.markFormClean = function() {
@@ -12647,89 +12529,7 @@
             detectDevice();
             window.addEventListener('resize', detectDevice);
 
-            // Premium Custom Cursor Logic (Desktop Only)
-            const customCursor = document.getElementById('custom-cursor');
-            const cursorDot = customCursor ? customCursor.querySelector('.cursor-dot') : null;
-            const cursorRing = customCursor ? customCursor.querySelector('.cursor-ring') : null;
-
-            if (customCursor && cursorDot && cursorRing) {
-                let mouseX = 0, mouseY = 0;
-                let ringX = 0, ringY = 0;
-                let firstMove = true;
-                let rafId = null;
-
-                const updateRing = () => {
-                    // Smooth tracking LERP delay for outer ring
-                    const delay = 0.15;
-                    ringX += (mouseX - ringX) * delay;
-                    ringY += (mouseY - ringY) * delay;
-
-                    cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate3d(-50%, -50%, 0)`;
-                    rafId = requestAnimationFrame(updateRing);
-                };
-
-                window.addEventListener('mousemove', (e) => {
-                    if (document.body.classList.contains('device-mobile') || document.body.classList.contains('device-tablet')) {
-                        customCursor.classList.add('cursor-hidden');
-                        return;
-                    }
-
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
-
-                    if (firstMove) {
-                        ringX = mouseX;
-                        ringY = mouseY;
-                        firstMove = false;
-                        customCursor.classList.remove('cursor-hidden');
-                        rafId = requestAnimationFrame(updateRing);
-                    }
-
-                    // Move dot instantly
-                    cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate3d(-50%, -50%, 0)`;
-                });
-
-                window.addEventListener('mouseleave', () => {
-                    customCursor.classList.add('cursor-hidden');
-                });
-
-                window.addEventListener('mouseenter', () => {
-                    if (!document.body.classList.contains('device-mobile') && !document.body.classList.contains('device-tablet')) {
-                        customCursor.classList.remove('cursor-hidden');
-                    }
-                });
-
-                // Event delegation for cursor hover and text selection states
-                window.addEventListener('mouseover', (e) => {
-                    if (document.body.classList.contains('device-mobile') || document.body.classList.contains('device-tablet')) return;
-
-                    const target = e.target;
-                    if (!target) return;
-
-                    // 1. Text input states
-                    const isTextInput = target.tagName === 'TEXTAREA' || 
-                                        (target.tagName === 'INPUT' && 
-                                         ['text', 'password', 'search', 'email', 'number', 'tel', 'url'].includes(target.type || 'text'));
-
-                    if (isTextInput) {
-                        customCursor.className = 'custom-cursor cursor-text';
-                        return;
-                    }
-
-                    // 2. Clickable/hoverable elements
-                    const isClickable = target.closest('a, button, select, label, .h-tab, .sidebar-link, .config-btn, .switch, .multiselect-trigger') ||
-                                        (target.tagName === 'INPUT' && ['submit', 'button', 'checkbox', 'radio', 'range', 'color'].includes(target.type)) ||
-                                        target.classList.contains('clickable') ||
-                                        window.getComputedStyle(target).cursor === 'pointer';
-
-                    if (isClickable) {
-                        customCursor.className = 'custom-cursor cursor-hover';
-                    } else {
-                        customCursor.className = 'custom-cursor';
-                    }
-                });
-            }
-
+            // Device detection complete: Native hardware cursor active for 0ms lag
             // Mobile Navigation Helpers & Toggle Listeners
             window.toggleMobileNav = function() {
                 const drawer = document.getElementById('mobile-nav-drawer');
