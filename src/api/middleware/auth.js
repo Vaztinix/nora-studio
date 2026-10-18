@@ -221,7 +221,28 @@ const requireGuildPermission = async (req, res, next) => {
         const guilds = await getCachedUserGuilds(token);
         
         // Find the requested guild in the user's guild list
-        const guild = guilds.find(g => g.id === guildId);
+        let guild = guilds.find(g => g.id === guildId);
+        
+        // Fallback check against bot's live guild cache if not found in OAuth list (e.g. newly joined or >200 guilds)
+        if (!guild && req.client && req.client.guilds) {
+            try {
+                const botGuild = req.client.guilds.cache.get(guildId);
+                const user = await getDiscordUser(token).catch(() => null);
+                if (botGuild && user) {
+                    if (botGuild.ownerId === user.id) {
+                        guild = { id: guildId, name: botGuild.name, owner: true, permissions: '1099511627775' };
+                    } else {
+                        const member = await botGuild.members.fetch(user.id).catch(() => null);
+                        if (member) {
+                            const perms = member.permissions;
+                            if (perms.has('Administrator') || perms.has('ManageGuild')) {
+                                guild = { id: guildId, name: botGuild.name, owner: false, permissions: perms.bitfield.toString() };
+                            }
+                        }
+                    }
+                }
+            } catch (_) {}
+        }
         
         if (!guild) {
             return res.status(403).json({ error: 'User is not in this guild or missing permissions.' });

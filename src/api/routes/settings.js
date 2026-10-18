@@ -82,36 +82,34 @@ router.post('/', settingsRateLimiter, async (req, res) => {
         const { guildId } = req.params;
         const payload = req.body;
 
-        // Verify Top.gg keys ownership
-        const topggFields = [
-            'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 
-            'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 
-            'topggRewardRoleId', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 
-            'topggReminders', 'topggWebhookName', 'topggWebhookAvatar'
-        ];
-        const containsTopggFields = Object.keys(payload).some(key => topggFields.includes(key));
-        if (containsTopggFields) {
+        // Check if caller is the bot owner for bot-level configuration fields
+        const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
+        let isBotOwner = false;
+        try {
             const authHeader = req.headers.authorization;
-            if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-            const token = authHeader.split(' ')[1];
-            
-            const user = await getDiscordUser(token).catch(() => null);
-            if (!user) return res.status(401).json({ error: 'Invalid Discord token' });
-            
-            const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
-            let isOwner = APP_OWNER_IDS.includes(user.id);
-            if (!isOwner) {
-                try {
-                    const app = await req.client.application.fetch();
-                    if (app.owner) {
-                        if (app.owner.id === user.id || (app.owner.members && app.owner.members.has(user.id))) {
-                            isOwner = true;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const token = authHeader.split(' ')[1];
+                const user = await getDiscordUser(token).catch(() => null);
+                if (user) {
+                    if (APP_OWNER_IDS.includes(user.id)) {
+                        isBotOwner = true;
+                    } else if (req.client && req.client.application) {
+                        const app = await req.client.application.fetch().catch(() => null);
+                        if (app && (app.owner?.id === user.id || app.owner?.members?.has(user.id))) {
+                            isBotOwner = true;
                         }
                     }
-                } catch (e) {}
+                }
             }
-            if (!isOwner) {
-                return res.status(403).json({ error: 'Forbidden: Only the bot owner can configure Top.gg settings.' });
+        } catch (_) {}
+
+        // If caller is not the global bot owner, strip global bot credentials so normal server owners can save all their settings without 403 errors
+        if (!isBotOwner) {
+            const ownerRestrictedFields = [
+                'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVerified'
+            ];
+            for (const f of ownerRestrictedFields) {
+                delete payload[f];
             }
         }
 
