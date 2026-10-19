@@ -1406,22 +1406,39 @@
                             <span>Social & Community Links</span>
                             <span class="form-hint">Leave blank to exclude any link</span>
                         </label>
+                        <div style="margin-bottom: 10px; padding: 10px 14px; background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                            <div style="font-size: 0.8rem; color: #c7d2fe; display: flex; align-items: center; gap: 8px;">
+                                <i class="fab fa-discord" style="color: #5865F2; font-size: 1rem;"></i>
+                                <span>Discord Profile: <strong style="color: #fff;">Auto-linked to your account</strong></span>
+                            </div>
+                            <span style="font-size: 0.72rem; color: #818cf8; background: rgba(88, 101, 242, 0.15); padding: 2px 8px; border-radius: 4px; font-weight: 700;">Automatic</span>
+                        </div>
                         <div class="form-row-2">
                             <input type="url" id="link-github" class="form-input" placeholder="GitHub URL (https://github.com/...)" oninput="updateLivePreview()">
-                            <input type="url" id="link-discord" class="form-input" placeholder="Discord Profile URL" oninput="updateLivePreview()">
+                            <input type="url" id="link-roblox" class="form-input" placeholder="Roblox Profile URL (https://www.roblox.com/...)" oninput="updateLivePreview()">
                         </div>
                         <div class="form-row-2" style="margin-top: 8px;">
                             <input type="url" id="link-youtube" class="form-input" placeholder="YouTube URL" oninput="updateLivePreview()">
                             <input type="url" id="link-twitch" class="form-input" placeholder="Twitch URL" oninput="updateLivePreview()">
                         </div>
                         <div class="form-row-2" style="margin-top: 8px;">
-                            <input type="url" id="link-roblox" class="form-input" placeholder="Roblox Profile URL" oninput="updateLivePreview()">
                             <input type="url" id="link-other" class="form-input" placeholder="Strawpage / Portfolio / Website URL" oninput="updateLivePreview()">
                         </div>
                     </div>
 
                     <!-- Privacy & Visibility Toggles -->
                     <div class="toggle-group">
+                        <label class="toggle-item">
+                            <div class="toggle-info">
+                                <span class="toggle-title"><i class="fab fa-discord" style="color: #5865F2;"></i> Show Discord Profile Link</span>
+                                <span class="toggle-sub">Automatically shows a direct link button to your Discord profile on your card</span>
+                            </div>
+                            <div class="switch-wrap">
+                                <input type="checkbox" id="toggle-show-discord" checked onchange="updateLivePreview()">
+                                <span class="switch-slider"></span>
+                            </div>
+                        </label>
+
                         <label class="toggle-item">
                             <div class="toggle-info">
                                 <span class="toggle-title"><i class="fas fa-shield-alt" style="color: #a78bfa;"></i> Hide Role Badge</span>
@@ -1502,7 +1519,7 @@
                     <a href="https://www.youtube.com/@Vaztinix" target="_blank" class="social-btn"><i class="fab fa-youtube"></i> YouTube</a>
                     <a href="https://www.twitch.tv/vaztinix" target="_blank" class="social-btn"><i class="fab fa-twitch"></i> Twitch</a>
                     <a href="https://guns.lol/vaztinix" target="_blank" class="social-btn"><i class="fas fa-link"></i> guns.lol</a>
-                    <a href="https://www.roblox.com/users/4751178852/profile" target="_blank" class="social-btn"><i class="fas fa-cube"></i> Roblox</a>
+                    <a href="https://www.roblox.com/users/4751178852/profile" target="_blank" class="social-btn"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg> Roblox</a>
                     <a href="https://discord.com/users/1214048435632603137" target="_blank" class="social-btn"><i class="fab fa-discord"></i> Discord</a>
                 </div>
             </article>
@@ -1611,7 +1628,7 @@
                 <p class="member-bio">Provides feature ideas, beta tests release candidates, and supports server integrations.</p>
                 <span class="member-join-date">Joined: Feb 2022</span>
                 <div class="social-links">
-                    <a href="https://www.roblox.com/users/2987228682/profile" target="_blank" class="social-btn"><i class="fas fa-cube"></i> Roblox Profile</a>
+                    <a href="https://www.roblox.com/users/2987228682/profile" target="_blank" class="social-btn"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg> Roblox Profile</a>
                     <a href="https://discord.com/users/941084096673755188" target="_blank" class="social-btn"><i class="fab fa-discord"></i> Discord</a>
                 </div>
             </article>
@@ -1887,14 +1904,14 @@
             return badges.map(b => `<span class="discord-badge" title="${b.name}">${b.emoji}</span>`).join('');
         }
 
-        function renderSocialButtonsHtml(links) {
-            if (!links || typeof links !== 'object') return '';
+        function renderSocialButtonsHtml(links, userId, hideDiscord) {
+            if (!links || typeof links !== 'object') links = {};
+            const robloxSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg>';
             let html = '';
             if (links.github) html += `<a href="${links.github}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-github"></i> GitHub</a>`;
-            if (links.discord) html += `<a href="${links.discord}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-discord"></i> Discord</a>`;
             if (links.youtube) html += `<a href="${links.youtube}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-youtube"></i> YouTube</a>`;
             if (links.twitch) html += `<a href="${links.twitch}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-twitch"></i> Twitch</a>`;
-            if (links.roblox) html += `<a href="${links.roblox}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-cube"></i> Roblox</a>`;
+            if (links.roblox) html += `<a href="${links.roblox}" target="_blank" rel="noopener" class="social-btn">${robloxSvg} Roblox</a>`;
             if (links.gunslol) html += `<a href="${links.gunslol}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> guns.lol</a>`;
             if (links.strawpage) html += `<a href="${links.strawpage}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> Strawpage</a>`;
             if (links.pronouns) html += `<a href="${links.pronouns}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> pronouns.cc</a>`;
@@ -1902,6 +1919,13 @@
             if (links.other && links.other !== links.strawpage) html += `<a href="${links.other}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-globe"></i> Link</a>`;
             if (links.invite) html += `<a href="${links.invite}" class="social-btn"><i class="fab fa-discord"></i> Add to Discord</a>`;
             if (links.docs) html += `<a href="${links.docs}" class="social-btn"><i class="fas fa-book"></i> Docs</a>`;
+
+            // Auto-generate Discord profile button if not hidden
+            const targetDiscord = links.discord || (userId && userId !== '1375943730951098549' ? `https://discord.com/users/${userId}` : null);
+            if (targetDiscord && !hideDiscord) {
+                html += `<a href="${targetDiscord}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-discord"></i> Discord</a>`;
+            }
+
             return html ? `<div class="social-links">${html}</div>` : '';
         }
 
@@ -1916,18 +1940,21 @@
             const hideRole = document.getElementById('toggle-hide-role')?.checked;
             const hideJoin = document.getElementById('toggle-hide-join')?.checked;
             const hideCard = document.getElementById('toggle-hide-card')?.checked;
+            const showDiscord = document.getElementById('toggle-show-discord')?.checked;
 
             const hiddenTag = document.getElementById('preview-hidden-tag');
             if (hiddenTag) hiddenTag.style.display = hideCard ? 'inline-block' : 'none';
 
             const links = {
                 github: document.getElementById('link-github')?.value.trim(),
-                discord: document.getElementById('link-discord')?.value.trim(),
                 youtube: document.getElementById('link-youtube')?.value.trim(),
                 twitch: document.getElementById('link-twitch')?.value.trim(),
                 roblox: document.getElementById('link-roblox')?.value.trim(),
                 other: document.getElementById('link-other')?.value.trim()
             };
+            if (showDiscord) {
+                links.discord = `https://discord.com/users/${currentStaffUser?.id || currentStaffCard.id}`;
+            }
 
             const roleClass = currentStaffCard.roleClass || 'member';
             const roleName = currentStaffCard.role || 'Staff Member';
@@ -1948,7 +1975,7 @@
                     <div class="discord-badges"></div>
                     ${bio ? `<p class="member-bio">${bio}</p>` : ''}
                     ${!hideJoin ? `<span class="member-join-date">${getDiscordJoinDate(currentStaffCard.id)}</span>` : ''}
-                    ${renderSocialButtonsHtml(links)}
+                    ${renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, !showDiscord)}
                 </article>
             `;
         }
@@ -1969,11 +1996,11 @@
             document.getElementById('edit-avatar-url').value = '';
             document.getElementById('edit-bio').value = '';
             document.getElementById('link-github').value = '';
-            document.getElementById('link-discord').value = '';
             document.getElementById('link-youtube').value = '';
             document.getElementById('link-twitch').value = '';
             document.getElementById('link-roblox').value = '';
             document.getElementById('link-other').value = '';
+            document.getElementById('toggle-show-discord').checked = true;
             document.getElementById('toggle-hide-role').checked = false;
             document.getElementById('toggle-hide-join').checked = false;
             document.getElementById('toggle-hide-card').checked = false;
@@ -1992,13 +2019,11 @@
 
             const links = {};
             const gh = document.getElementById('link-github')?.value.trim();
-            const dc = document.getElementById('link-discord')?.value.trim();
             const yt = document.getElementById('link-youtube')?.value.trim();
             const tw = document.getElementById('link-twitch')?.value.trim();
             const rb = document.getElementById('link-roblox')?.value.trim();
             const ot = document.getElementById('link-other')?.value.trim();
             if (gh) links.github = gh;
-            if (dc) links.discord = dc;
             if (yt) links.youtube = yt;
             if (tw) links.twitch = tw;
             if (rb) links.roblox = rb;
@@ -2011,7 +2036,8 @@
                 links: links,
                 hideRole: document.getElementById('toggle-hide-role')?.checked || false,
                 hideJoinDate: document.getElementById('toggle-hide-join')?.checked || false,
-                hideCard: document.getElementById('toggle-hide-card')?.checked || false
+                hideCard: document.getElementById('toggle-hide-card')?.checked || false,
+                hideDiscord: !document.getElementById('toggle-show-discord')?.checked
             };
 
             btn.disabled = true;
@@ -2109,13 +2135,13 @@
                     if (card.links) {
                         const l = typeof card.links === 'string' ? JSON.parse(card.links || '{}') : card.links;
                         if (document.getElementById('link-github')) document.getElementById('link-github').value = l.github || '';
-                        if (document.getElementById('link-discord')) document.getElementById('link-discord').value = l.discord || '';
                         if (document.getElementById('link-youtube')) document.getElementById('link-youtube').value = l.youtube || '';
                         if (document.getElementById('link-twitch')) document.getElementById('link-twitch').value = l.twitch || '';
                         if (document.getElementById('link-roblox')) document.getElementById('link-roblox').value = l.roblox || '';
                         if (document.getElementById('link-other')) document.getElementById('link-other').value = l.other || l.strawpage || l.pronouns || l.hackerone || '';
                     }
 
+                    if (document.getElementById('toggle-show-discord')) document.getElementById('toggle-show-discord').checked = !card.hideDiscord;
                     if (document.getElementById('toggle-hide-role')) document.getElementById('toggle-hide-role').checked = !!card.hideRole;
                     if (document.getElementById('toggle-hide-join')) document.getElementById('toggle-hide-join').checked = !!card.hideJoinDate;
                     if (document.getElementById('toggle-hide-card')) document.getElementById('toggle-hide-card').checked = !!card.hideCard;
@@ -2178,7 +2204,7 @@
                             if (typeof linksObj === 'string') {
                                 try { linksObj = JSON.parse(linksObj); } catch(e) { linksObj = {}; }
                             }
-                            const linksHtml = renderSocialButtonsHtml(linksObj);
+                            const linksHtml = renderSocialButtonsHtml(linksObj, m.id, !!m.hideDiscord);
 
                             card.innerHTML = `
                                 <div class="card-top">

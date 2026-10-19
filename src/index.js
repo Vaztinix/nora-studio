@@ -2170,14 +2170,22 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                 continue;
             }
 
-            let links = def.defaultLinks;
+            let links = def.defaultLinks ? { ...def.defaultLinks } : {};
             if (p && p.teamCardLinks) {
                 try {
                     const parsed = typeof p.teamCardLinks === 'string' ? JSON.parse(p.teamCardLinks) : p.teamCardLinks;
                     if (parsed && typeof parsed === 'object') {
-                        links = parsed;
+                        links = { ...links, ...parsed };
                     }
                 } catch (e) {}
+            }
+
+            // Automatically link to Discord profile unless explicitly hidden or if card is an app
+            const showDiscord = !(p && p.teamCardHideDiscord) && !def.isApp;
+            if (showDiscord) {
+                links.discord = links.discord || `https://discord.com/users/${def.id}`;
+            } else {
+                delete links.discord;
             }
 
             // Determine bio: If staff set empty string, respect empty description
@@ -2200,6 +2208,7 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                 hideRole: !!(p && p.teamCardHideRole),
                 hideJoinDate: !!(p && p.teamCardHideJoinDate),
                 hideCard: !!(p && p.teamCardHideCard),
+                hideDiscord: !!(p && p.teamCardHideDiscord),
                 isApp: !!def.isApp
             });
         }
@@ -2215,6 +2224,12 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                         links = typeof p.teamCardLinks === 'string' ? JSON.parse(p.teamCardLinks) : p.teamCardLinks;
                     } catch (e) {}
                 }
+                const showDiscord = !p.teamCardHideDiscord;
+                if (showDiscord) {
+                    links.discord = links.discord || `https://discord.com/users/${p.userId}`;
+                } else {
+                    delete links.discord;
+                }
                 cards.push({
                     id: p.userId,
                     username: p.username || 'staff',
@@ -2229,6 +2244,7 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                     hideRole: !!p.teamCardHideRole,
                     hideJoinDate: !!p.teamCardHideJoinDate,
                     hideCard: !!p.teamCardHideCard,
+                    hideDiscord: !!p.teamCardHideDiscord,
                     isApp: false
                 });
             }
@@ -2273,11 +2289,21 @@ app.get('/api/team/my-card', async (req, res) => {
             defaultLinks: { discord: `https://discord.com/users/${user.id}` }
         };
 
-        let links = def.defaultLinks;
+        let links = def.defaultLinks ? { ...def.defaultLinks } : {};
         if (prefs.teamCardLinks) {
             try {
-                links = typeof prefs.teamCardLinks === 'string' ? JSON.parse(prefs.teamCardLinks) : prefs.teamCardLinks;
+                const parsed = typeof prefs.teamCardLinks === 'string' ? JSON.parse(prefs.teamCardLinks) : prefs.teamCardLinks;
+                if (parsed && typeof parsed === 'object') {
+                    links = { ...links, ...parsed };
+                }
             } catch (e) {}
+        }
+
+        const showDiscord = !prefs.teamCardHideDiscord && !def.isApp;
+        if (showDiscord) {
+            links.discord = links.discord || `https://discord.com/users/${user.id}`;
+        } else {
+            delete links.discord;
         }
 
         res.json({
@@ -2300,7 +2326,8 @@ app.get('/api/team/my-card', async (req, res) => {
                 links: links || {},
                 hideRole: !!prefs.teamCardHideRole,
                 hideJoinDate: !!prefs.teamCardHideJoinDate,
-                hideCard: !!prefs.teamCardHideCard
+                hideCard: !!prefs.teamCardHideCard,
+                hideDiscord: !!prefs.teamCardHideDiscord
             }
         });
     } catch (e) {
@@ -2336,7 +2363,8 @@ app.post('/api/team/my-card', async (req, res) => {
             links,
             hideRole,
             hideJoinDate,
-            hideCard
+            hideCard,
+            hideDiscord
         } = req.body;
 
         if (displayName !== undefined) prefs.teamCardDisplayName = displayName ? String(displayName).trim().slice(0, 60) : null;
@@ -2349,6 +2377,7 @@ app.post('/api/team/my-card', async (req, res) => {
         if (hideRole !== undefined) prefs.teamCardHideRole = !!hideRole;
         if (hideJoinDate !== undefined) prefs.teamCardHideJoinDate = !!hideJoinDate;
         if (hideCard !== undefined) prefs.teamCardHideCard = !!hideCard;
+        if (hideDiscord !== undefined) prefs.teamCardHideDiscord = !!hideDiscord;
 
         if (user.username && !prefs.username) prefs.username = user.username;
         prefs.hasTeamCard = true;
@@ -2359,6 +2388,7 @@ app.post('/api/team/my-card', async (req, res) => {
             success: true,
             message: 'Your team card has been updated successfully!',
             card: {
+                id: user.id,
                 displayName: prefs.teamCardDisplayName,
                 description: prefs.teamCardDescription,
                 image: prefs.teamCardImage,
@@ -2366,7 +2396,8 @@ app.post('/api/team/my-card', async (req, res) => {
                 links: typeof prefs.teamCardLinks === 'string' ? JSON.parse(prefs.teamCardLinks || '{}') : prefs.teamCardLinks,
                 hideRole: prefs.teamCardHideRole,
                 hideJoinDate: prefs.teamCardHideJoinDate,
-                hideCard: prefs.teamCardHideCard
+                hideCard: prefs.teamCardHideCard,
+                hideDiscord: prefs.teamCardHideDiscord
             }
         });
     } catch (e) {

@@ -204,6 +204,10 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    teamCardHideDiscord: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     customCardShape: {
         type: DataTypes.STRING,
         defaultValue: 'default'
