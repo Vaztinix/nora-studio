@@ -173,6 +173,11 @@ const UserPrefs = sequelize.define('UserPrefs', {
         allowNull: true,
         defaultValue: null
     },
+    teamCardUsername: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
     teamCardRole: {
         type: DataTypes.STRING,
         allowNull: true,

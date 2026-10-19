@@ -1988,20 +1988,19 @@ app.get('/api/user/me', async (req, res) => {
 const TEAM_MEMBERS_DIRECTORY = [
     {
         id: "1214048435632603137",
-        username: "vaztinix",
-        defaultName: "Vaz",
+        username: "lunarzlynz",
+        defaultName: "Demi",
         defaultRole: "Founder & Lead Dev",
         roleClass: "lead",
-        defaultBio: "💕 | I care for everyone, but those closest to me will never understand the trust they have.",
+        defaultBio: "Hey, I’m Lunar! I love the outdoors and learning new things!! I am also a very friendly person so say hi, I don't bite... *usually*. :D\n \nThe world is a loving place so respect it.",
         defaultJoined: "Mar 2024",
         defaultImage: "ReVaztinix.jpeg",
         defaultLinks: {
             github: "https://github.com/Vaztinix",
             youtube: "https://www.youtube.com/@Vaztinix",
             twitch: "https://www.twitch.tv/vaztinix",
-            gunslol: "https://guns.lol/vaztinix",
             roblox: "https://www.roblox.com/users/4751178852/profile",
-            discord: "https://discord.com/users/1214048435632603137"
+            other: "https://vaztinix.dev"
         }
     },
     {
@@ -2196,7 +2195,7 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
 
             cards.push({
                 id: def.id,
-                username: def.username,
+                username: (p && (p.teamCardUsername || p.username)) ? (p.teamCardUsername || p.username) : def.username,
                 displayName: (p && p.teamCardDisplayName) ? p.teamCardDisplayName : def.defaultName,
                 role: (p && p.teamCardHideRole) ? null : ((p && p.teamCardRole) ? p.teamCardRole : def.defaultRole),
                 roleClass: def.roleClass,
@@ -2232,7 +2231,7 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                 }
                 cards.push({
                     id: p.userId,
-                    username: p.username || 'staff',
+                    username: p.teamCardUsername || p.username || 'staff',
                     displayName: p.teamCardDisplayName || p.username || 'Team Member',
                     role: p.teamCardHideRole ? null : (p.teamCardRole || 'Team Member'),
                     roleClass: 'member',
@@ -2306,6 +2305,11 @@ app.get('/api/team/my-card', async (req, res) => {
             delete links.discord;
         }
 
+        if (user.username && prefs.teamCardUsername !== user.username) {
+            prefs.teamCardUsername = user.username;
+            await prefs.save().catch(() => {});
+        }
+
         res.json({
             authenticated: true,
             isTeamMember: true,
@@ -2317,6 +2321,7 @@ app.get('/api/team/my-card', async (req, res) => {
             },
             card: {
                 id: user.id,
+                username: prefs.teamCardUsername || user.username || def.username,
                 displayName: prefs.teamCardDisplayName || def.defaultName || user.global_name || user.username,
                 role: prefs.teamCardRole || def.defaultRole,
                 roleClass: def.roleClass,
@@ -2367,10 +2372,24 @@ app.post('/api/team/my-card', async (req, res) => {
             hideDiscord
         } = req.body;
 
+        const { saveBase64Image } = require('./utils/imageSaver');
+
         if (displayName !== undefined) prefs.teamCardDisplayName = displayName ? String(displayName).trim().slice(0, 60) : null;
         if (description !== undefined) prefs.teamCardDescription = description !== null ? String(description).slice(0, 400) : null;
-        if (image !== undefined) prefs.teamCardImage = image ? String(image).trim() : null;
-        if (banner !== undefined) prefs.teamCardBanner = banner ? String(banner).trim() : null;
+        if (image !== undefined) {
+            if (image && typeof image === 'string' && image.startsWith('data:image/')) {
+                prefs.teamCardImage = saveBase64Image(image, 'team_avatar');
+            } else {
+                prefs.teamCardImage = image ? String(image).trim() : null;
+            }
+        }
+        if (banner !== undefined) {
+            if (banner && typeof banner === 'string' && banner.startsWith('data:image/')) {
+                prefs.teamCardBanner = saveBase64Image(banner, 'team_bg');
+            } else {
+                prefs.teamCardBanner = banner ? String(banner).trim() : null;
+            }
+        }
         if (links !== undefined) {
             prefs.teamCardLinks = typeof links === 'object' ? JSON.stringify(links) : String(links);
         }
@@ -2379,7 +2398,10 @@ app.post('/api/team/my-card', async (req, res) => {
         if (hideCard !== undefined) prefs.teamCardHideCard = !!hideCard;
         if (hideDiscord !== undefined) prefs.teamCardHideDiscord = !!hideDiscord;
 
-        if (user.username && !prefs.username) prefs.username = user.username;
+        if (user.username) {
+            prefs.teamCardUsername = user.username;
+            prefs.username = user.username;
+        }
         prefs.hasTeamCard = true;
         prefs.isTeamMember = true;
         await prefs.save();
@@ -2389,6 +2411,7 @@ app.post('/api/team/my-card', async (req, res) => {
             message: 'Your team card has been updated successfully!',
             card: {
                 id: user.id,
+                username: prefs.teamCardUsername || user.username,
                 displayName: prefs.teamCardDisplayName,
                 description: prefs.teamCardDescription,
                 image: prefs.teamCardImage,

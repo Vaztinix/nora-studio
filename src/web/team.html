@@ -663,12 +663,69 @@
             font-size: 0.95rem;
         }
 
+        .team-card.has-custom-bg {
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+        }
+        .team-card.has-custom-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(11, 12, 18, 0.72) 0%, rgba(11, 12, 18, 0.92) 100%);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .team-card.has-custom-bg > * {
+            position: relative;
+            z-index: 1;
+        }
+
         .member-bio {
             color: var(--text-muted);
             font-size: 0.92rem;
             line-height: 1.6;
             margin: 10px 0 16px 0;
             flex-grow: 1;
+            word-break: break-word;
+        }
+        .member-bio blockquote {
+            border-left: 3px solid #5865F2;
+            padding: 3px 0 3px 10px;
+            margin: 6px 0;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(88, 101, 242, 0.08);
+            border-radius: 0 6px 6px 0;
+        }
+        .member-bio a {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+        .member-bio a:hover {
+            color: #93c5fd;
+        }
+        .member-bio code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: monospace;
+        }
+        .discord-spoiler {
+            background: rgba(255, 255, 255, 0.25);
+            color: transparent;
+            border-radius: 3px;
+            padding: 0 4px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s, color 0.15s;
+        }
+        .discord-spoiler.revealed {
+            background: rgba(255, 255, 255, 0.1);
+            color: inherit;
+            user-select: auto;
         }
 
         .member-join-date {
@@ -1377,26 +1434,50 @@
                                 <span>Display Name</span>
                                 <span class="form-hint">Shown on your card</span>
                             </label>
-                            <input type="text" id="edit-display-name" class="form-input" placeholder="e.g. Vaz, Demi" maxlength="60" oninput="updateLivePreview()">
+                            <input type="text" id="edit-display-name" class="form-input" placeholder="e.g. Demi, Lunar" maxlength="60" oninput="updateLivePreview()">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="edit-avatar-url">
-                                <span>Custom Card Image URL</span>
-                                <span class="form-hint">Avatar / Image URL</span>
+                                <span>Profile Picture (Avatar)</span>
+                                <span class="form-hint">Device upload or URL</span>
                             </label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="url" id="edit-avatar-url" class="form-input" placeholder="https://... or leave blank for Discord pfp" oninput="updateLivePreview()">
-                                <button type="button" class="staff-pill-btn" onclick="useDiscordAvatar()" title="Use live Discord avatar" style="padding: 0 12px; flex-shrink: 0;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                <input type="text" id="edit-avatar-url" class="form-input" placeholder="https://... or choose image" oninput="updateLivePreview()" style="flex: 1; min-width: 170px;">
+                                <label class="staff-pill-btn" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; margin: 0; flex-shrink: 0; background: rgba(88, 101, 242, 0.15); border: 1px solid rgba(88, 101, 242, 0.35); color: #c7d2fe; border-radius: 8px;">
+                                    <i class="fas fa-upload"></i> Upload
+                                    <input type="file" id="upload-avatar-file" accept="image/*" style="display: none;" onchange="handleDeviceImageUpload(event, 'avatar')">
+                                </label>
+                                <button type="button" class="staff-pill-btn" onclick="useDiscordAvatar()" title="Use live Discord avatar" style="padding: 8px 10px; flex-shrink: 0; border-radius: 8px;">
                                     <i class="fab fa-discord"></i> Reset
                                 </button>
                             </div>
+                            <div id="avatar-file-name" style="font-size: 0.72rem; color: #34d399; margin-top: 4px; display: none;"></div>
                         </div>
+                    </div>
+
+                    <!-- Card Background & Styling Section -->
+                    <div class="form-group">
+                        <label class="form-label" for="edit-banner-url">
+                            <span>Card Background & Banner</span>
+                            <span class="form-hint">Upload device backdrop or enter URL</span>
+                        </label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                            <input type="text" id="edit-banner-url" class="form-input" placeholder="https://... or choose background image" oninput="updateLivePreview()" style="flex: 1; min-width: 170px;">
+                            <label class="staff-pill-btn" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; margin: 0; flex-shrink: 0; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; border-radius: 8px;">
+                                <i class="fas fa-image"></i> Upload Background
+                                <input type="file" id="upload-banner-file" accept="image/*" style="display: none;" onchange="handleDeviceImageUpload(event, 'banner')">
+                            </label>
+                            <button type="button" class="staff-pill-btn" onclick="resetCardBackground()" title="Clear card background" style="padding: 8px 12px; flex-shrink: 0; border-radius: 8px;">
+                                <i class="fas fa-trash-alt"></i> Clear
+                            </button>
+                        </div>
+                        <div id="banner-file-name" style="font-size: 0.72rem; color: #c084fc; margin-top: 4px; display: none;"></div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="edit-bio">
                             <span>Description / Bio</span>
-                            <span class="form-hint" id="bio-hint">Leave completely blank for no description</span>
+                            <span class="form-hint" id="bio-hint">Supports Discord Markdown: **bold**, *italic*, __underline__, ~~strike~~, > quote, `code`, ||spoiler||</span>
                         </label>
                         <textarea id="edit-bio" class="form-textarea" placeholder="Tell the community about yourself, your role, or what you work on..." maxlength="400" oninput="updateLivePreview()"></textarea>
                     </div>
@@ -1498,29 +1579,28 @@
         </div>
 
         <div class="team-grid" id="team-cards-grid">
-            <!-- Vaz -->
-            <article class="team-card" data-user="1214048435632603137" id="vaztinix">
+            <!-- Demi / Lunar -->
+            <article class="team-card" data-user="1214048435632603137" id="lunarzlynz">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="ReVaztinix.jpeg" alt="Vaz" onerror="this.onerror=null; this.src='nora.png';">
+                        <img class="avatar-img" src="ReVaztinix.jpeg" alt="Demi" onerror="this.onerror=null; this.src='nora.png';">
                         <span class="status-dot"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill lead">Founder & Lead Dev</span>
-                        <h2 class="member-name">Vaz</h2>
-                        <span class="member-handle">@vaztinix</span>
+                        <h2 class="member-name">Demi</h2>
+                        <span class="member-handle">@lunarzlynz</span>
                     </div>
                 </div>
                 <div class="discord-badges"></div>
-                <p class="member-bio">💕 | I care for everyone, but those closest to me will never understand the trust they have.</p>
+                <div class="member-bio">Hey, I’m Lunar! I love the outdoors and learning new things!! I am also a very friendly person so say hi, I don't bite... <em>usually</em>. :D<br><br>The world is a loving place so respect it.</div>
                 <span class="member-join-date">Joined: Mar 2024</span>
                 <div class="social-links">
                     <a href="https://github.com/Vaztinix" target="_blank" class="social-btn"><i class="fab fa-github"></i> GitHub</a>
                     <a href="https://www.youtube.com/@Vaztinix" target="_blank" class="social-btn"><i class="fab fa-youtube"></i> YouTube</a>
                     <a href="https://www.twitch.tv/vaztinix" target="_blank" class="social-btn"><i class="fab fa-twitch"></i> Twitch</a>
-                    <a href="https://guns.lol/vaztinix" target="_blank" class="social-btn"><i class="fas fa-link"></i> guns.lol</a>
                     <a href="https://www.roblox.com/users/4751178852/profile" target="_blank" class="social-btn"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg> Roblox</a>
-                    <a href="https://discord.com/users/1214048435632603137" target="_blank" class="social-btn"><i class="fab fa-discord"></i> Discord</a>
+                    <a href="https://vaztinix.dev" target="_blank" class="social-btn"><i class="fas fa-globe"></i> Link</a>
                 </div>
             </article>
 
@@ -1904,6 +1984,119 @@
             return badges.map(b => `<span class="discord-badge" title="${b.name}">${b.emoji}</span>`).join('');
         }
 
+        function formatDiscordMarkdown(text) {
+            if (!text || typeof text !== 'string') return '';
+            // HTML escape first for safety
+            let escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            // Code blocks ```lang\ncode```
+            escaped = escaped.replace(/```(?:[a-zA-Z0-9_-]+)?\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+            // Inline code `code`
+            escaped = escaped.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+            // Discord Spoilers ||hidden text||
+            escaped = escaped.replace(/\|\|([\s\S]+?)\|\|/g, '<span class="discord-spoiler" onclick="this.classList.toggle(\'revealed\')" title="Click to reveal spoiler">$1</span>');
+            // Bold italic ***text***
+            escaped = escaped.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+            // Bold **text**
+            escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            // Underline __text__
+            escaped = escaped.replace(/__([^_]+)__/g, '<u>$1</u>');
+            // Italic *text*
+            escaped = escaped.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+            // Italic _text_ (isolated)
+            escaped = escaped.replace(/(^|\s)_([^_]+)_(?=\s|$)/g, '$1<em>$2</em>');
+            // Strikethrough ~~text~~
+            escaped = escaped.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+            // Markdown link [title](url)
+            escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+            // Handle blockquotes (> quote) line-by-line
+            const lines = escaped.split('\n');
+            const processedLines = [];
+            let inQuote = false;
+            let quoteBuffer = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (line.startsWith('&gt; ') || line.startsWith('&gt;')) {
+                    const quoteContent = line.startsWith('&gt; ') ? line.substring(5) : line.substring(4);
+                    quoteBuffer.push(quoteContent);
+                    inQuote = true;
+                } else {
+                    if (inQuote) {
+                        processedLines.push('<blockquote>' + quoteBuffer.join('<br>') + '</blockquote>');
+                        quoteBuffer = [];
+                        inQuote = false;
+                    }
+                    processedLines.push(line);
+                }
+            }
+            if (inQuote) {
+                processedLines.push('<blockquote>' + quoteBuffer.join('<br>') + '</blockquote>');
+            }
+
+            return processedLines.join('<br>')
+                .replace(/(<br>\s*)+<blockquote>/g, '<blockquote>')
+                .replace(/<\/blockquote>(\s*<br>)+/g, '</blockquote>');
+        }
+
+        function handleDeviceImageUpload(event, type) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please choose an image file (PNG, JPG, WEBP, GIF, SVG).');
+                return;
+            }
+
+            if (file.size > 8 * 1024 * 1024) {
+                alert('Image must be under 8MB in size.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                if (type === 'avatar') {
+                    const avatarInput = document.getElementById('edit-avatar-url');
+                    if (avatarInput) avatarInput.value = base64;
+                    const nameEl = document.getElementById('avatar-file-name');
+                    if (nameEl) {
+                        nameEl.style.display = 'block';
+                        nameEl.textContent = 'Selected: ' + file.name;
+                    }
+                } else if (type === 'banner') {
+                    const bannerInput = document.getElementById('edit-banner-url');
+                    if (bannerInput) bannerInput.value = base64;
+                    const nameEl = document.getElementById('banner-file-name');
+                    if (nameEl) {
+                        nameEl.style.display = 'block';
+                        nameEl.textContent = 'Selected: ' + file.name;
+                    }
+                }
+                updateLivePreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetCardBackground() {
+            const bannerInput = document.getElementById('edit-banner-url');
+            if (bannerInput) bannerInput.value = '';
+            const bannerFile = document.getElementById('upload-banner-file');
+            if (bannerFile) bannerFile.value = '';
+            const nameEl = document.getElementById('banner-file-name');
+            if (nameEl) {
+                nameEl.style.display = 'none';
+                nameEl.textContent = '';
+            }
+            updateLivePreview();
+        }
+
         function renderSocialButtonsHtml(links, userId, hideDiscord) {
             if (!links || typeof links !== 'object') links = {};
             const robloxSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg>';
@@ -1920,10 +2113,12 @@
             if (links.invite) html += `<a href="${links.invite}" class="social-btn"><i class="fab fa-discord"></i> Add to Discord</a>`;
             if (links.docs) html += `<a href="${links.docs}" class="social-btn"><i class="fas fa-book"></i> Docs</a>`;
 
-            // Auto-generate Discord profile button if not hidden
-            const targetDiscord = links.discord || (userId && userId !== '1375943730951098549' ? `https://discord.com/users/${userId}` : null);
-            if (targetDiscord && !hideDiscord) {
-                html += `<a href="${targetDiscord}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-discord"></i> Discord</a>`;
+            // Auto-generate Discord profile button strictly if NOT hidden
+            if (!hideDiscord) {
+                const targetDiscord = links.discord || (userId && userId !== '1375943730951098549' ? `https://discord.com/users/${userId}` : null);
+                if (targetDiscord) {
+                    html += `<a href="${targetDiscord}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-discord"></i> Discord</a>`;
+                }
             }
 
             return html ? `<div class="social-links">${html}</div>` : '';
@@ -1936,7 +2131,9 @@
 
             const name = document.getElementById('edit-display-name')?.value.trim() || currentStaffCard.displayName || 'Staff Member';
             const avatarUrl = document.getElementById('edit-avatar-url')?.value.trim() || currentStaffUser?.avatar || currentStaffCard.image || 'nora.png';
-            const bio = document.getElementById('edit-bio')?.value.trim();
+            const bannerUrl = document.getElementById('edit-banner-url')?.value.trim() || currentStaffCard.banner || '';
+            const bioRaw = document.getElementById('edit-bio')?.value.trim();
+            const formattedBio = formatDiscordMarkdown(bioRaw);
             const hideRole = document.getElementById('toggle-hide-role')?.checked;
             const hideJoin = document.getElementById('toggle-hide-join')?.checked;
             const hideCard = document.getElementById('toggle-hide-card')?.checked;
@@ -1958,9 +2155,11 @@
 
             const roleClass = currentStaffCard.roleClass || 'member';
             const roleName = currentStaffCard.role || 'Staff Member';
+            const hasBg = !!bannerUrl;
+            const bgStyle = hasBg ? `background-image: url('${bannerUrl}');` : '';
 
             wrap.innerHTML = `
-                <article class="team-card" style="box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2) !important;">
+                <article class="team-card ${hasBg ? 'has-custom-bg' : ''}" style="${bgStyle} box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2) !important;">
                     <div class="card-top">
                         <div class="avatar-wrap">
                             <img class="avatar-img" src="${avatarUrl}" alt="${name}" onerror="this.onerror=null; this.src='nora.png';">
@@ -1969,11 +2168,11 @@
                         <div class="card-header-info">
                             ${!hideRole ? `<span class="role-pill ${roleClass}">${roleName}</span>` : ''}
                             <h2 class="member-name">${name}</h2>
-                            <span class="member-handle">@${currentStaffUser?.username || 'member'}</span>
+                            <span class="member-handle">@${currentStaffUser?.username || currentStaffCard.username || 'member'}</span>
                         </div>
                     </div>
                     <div class="discord-badges"></div>
-                    ${bio ? `<p class="member-bio">${bio}</p>` : ''}
+                    ${formattedBio ? `<div class="member-bio">${formattedBio}</div>` : ''}
                     ${!hideJoin ? `<span class="member-join-date">${getDiscordJoinDate(currentStaffCard.id)}</span>` : ''}
                     ${renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, !showDiscord)}
                 </article>
@@ -1985,6 +2184,8 @@
                 const input = document.getElementById('edit-avatar-url');
                 if (input) {
                     input.value = currentStaffUser.avatar;
+                    const nameEl = document.getElementById('avatar-file-name');
+                    if (nameEl) { nameEl.style.display = 'none'; nameEl.textContent = ''; }
                     updateLivePreview();
                 }
             }
@@ -1994,6 +2195,15 @@
             if (!currentStaffCard) return;
             document.getElementById('edit-display-name').value = '';
             document.getElementById('edit-avatar-url').value = '';
+            if (document.getElementById('upload-avatar-file')) document.getElementById('upload-avatar-file').value = '';
+            const avatarFileName = document.getElementById('avatar-file-name');
+            if (avatarFileName) { avatarFileName.style.display = 'none'; avatarFileName.textContent = ''; }
+
+            if (document.getElementById('edit-banner-url')) document.getElementById('edit-banner-url').value = '';
+            if (document.getElementById('upload-banner-file')) document.getElementById('upload-banner-file').value = '';
+            const bannerFileName = document.getElementById('banner-file-name');
+            if (bannerFileName) { bannerFileName.style.display = 'none'; bannerFileName.textContent = ''; }
+
             document.getElementById('edit-bio').value = '';
             document.getElementById('link-github').value = '';
             document.getElementById('link-youtube').value = '';
@@ -2029,15 +2239,17 @@
             if (rb) links.roblox = rb;
             if (ot) links.other = ot;
 
+            const hideDiscord = !document.getElementById('toggle-show-discord')?.checked;
             const payload = {
                 displayName: document.getElementById('edit-display-name')?.value.trim() || null,
                 description: document.getElementById('edit-bio')?.value.trim(),
                 image: document.getElementById('edit-avatar-url')?.value.trim() || null,
+                banner: document.getElementById('edit-banner-url')?.value.trim() || null,
                 links: links,
                 hideRole: document.getElementById('toggle-hide-role')?.checked || false,
                 hideJoinDate: document.getElementById('toggle-hide-join')?.checked || false,
                 hideCard: document.getElementById('toggle-hide-card')?.checked || false,
-                hideDiscord: !document.getElementById('toggle-show-discord')?.checked
+                hideDiscord: hideDiscord
             };
 
             btn.disabled = true;
@@ -2061,9 +2273,81 @@
 
                     // Update local reference & live preview
                     if (data.card) {
-                        currentStaffCard = { ...currentStaffCard, ...data.card };
+                        currentStaffCard = { ...currentStaffCard, ...data.card, hideDiscord };
+                        // Persist to local storage so page reload instantly reflects changes
+                        try {
+                            const myId = currentStaffUser?.id || currentStaffCard.id;
+                            localStorage.setItem('nora_team_override_' + myId, JSON.stringify({
+                                ...currentStaffCard,
+                                hideDiscord: hideDiscord
+                            }));
+                        } catch(e) {}
                     }
                     updateLivePreview();
+
+                    // Apply updates immediately to existing DOM card on the page grid
+                    const myId = currentStaffUser?.id || currentStaffCard?.id;
+                    const myCardEl = (myId ? document.querySelector(`.team-card[data-user="${myId}"]`) : null) ||
+                                     document.getElementById(currentStaffUser?.username || 'lunarzlynz');
+                    if (myCardEl) {
+                        if (payload.hideCard) {
+                            myCardEl.style.display = 'none';
+                        } else {
+                            myCardEl.style.display = '';
+                            const avatarEl = myCardEl.querySelector('.avatar-img');
+                            if (avatarEl && (data.card?.image || payload.image)) {
+                                avatarEl.src = data.card?.image || payload.image;
+                            }
+                            const nameEl = myCardEl.querySelector('.member-name');
+                            if (nameEl && payload.displayName) {
+                                nameEl.textContent = payload.displayName;
+                            }
+                            const handleEl = myCardEl.querySelector('.member-handle');
+                            if (handleEl && currentStaffUser?.username) {
+                                handleEl.textContent = '@' + currentStaffUser.username;
+                            }
+                            let bioEl = myCardEl.querySelector('.member-bio');
+                            if (payload.description) {
+                                if (!bioEl) {
+                                    bioEl = document.createElement('div');
+                                    bioEl.className = 'member-bio';
+                                    const badgesEl = myCardEl.querySelector('.discord-badges');
+                                    if (badgesEl) badgesEl.after(bioEl);
+                                    else myCardEl.appendChild(bioEl);
+                                }
+                                bioEl.innerHTML = formatDiscordMarkdown(payload.description);
+                            } else if (bioEl) {
+                                bioEl.remove();
+                            }
+
+                            // Banner styling
+                            const finalBanner = data.card?.banner || payload.banner;
+                            if (finalBanner) {
+                                myCardEl.classList.add('has-custom-bg');
+                                myCardEl.style.backgroundImage = `url('${finalBanner}')`;
+                            } else {
+                                myCardEl.classList.remove('has-custom-bg');
+                                myCardEl.style.backgroundImage = '';
+                            }
+
+                            // Social links
+                            const linksHtml = renderSocialButtonsHtml(payload.links, myId, hideDiscord);
+                            let socialWrap = myCardEl.querySelector('.social-links');
+                            if (socialWrap) {
+                                if (linksHtml) {
+                                    const tempDiv = document.createElement('div');
+                                    tempDiv.innerHTML = linksHtml;
+                                    socialWrap.replaceWith(tempDiv.firstElementChild);
+                                } else {
+                                    socialWrap.remove();
+                                }
+                            } else if (linksHtml) {
+                                const tempDiv = document.createElement('div');
+                                tempDiv.innerHTML = linksHtml;
+                                myCardEl.appendChild(tempDiv.firstElementChild);
+                            }
+                        }
+                    }
 
                     // Reload full team directory immediately to reflect live for all visitors
                     await loadTeamCards();
@@ -2130,6 +2414,7 @@
                     const card = data.card;
                     if (document.getElementById('edit-display-name')) document.getElementById('edit-display-name').value = card.displayName || '';
                     if (document.getElementById('edit-avatar-url')) document.getElementById('edit-avatar-url').value = card.image || '';
+                    if (document.getElementById('edit-banner-url')) document.getElementById('edit-banner-url').value = card.banner || '';
                     if (document.getElementById('edit-bio')) document.getElementById('edit-bio').value = card.description || '';
 
                     if (card.links) {
@@ -2190,8 +2475,22 @@
                     if (data.success && Array.isArray(data.cards) && data.cards.length > 0) {
                         grid.innerHTML = '';
                         data.cards.forEach(m => {
+                            // Check local overrides if any saved from this session
+                            try {
+                                const localOverride = localStorage.getItem('nora_team_override_' + m.id);
+                                if (localOverride) {
+                                    const parsed = JSON.parse(localOverride);
+                                    m = { ...m, ...parsed };
+                                }
+                            } catch(e) {}
+
+                            if (m.hideCard) return;
+
                             const card = document.createElement('article');
-                            card.className = 'team-card';
+                            card.className = 'team-card' + (m.banner ? ' has-custom-bg' : '');
+                            if (m.banner) {
+                                card.style.backgroundImage = `url('${m.banner}')`;
+                            }
                             card.setAttribute('data-user', m.id);
                             if (m.username) card.id = m.username.replace(/[^a-zA-Z0-9_]/g, '');
 
@@ -2199,7 +2498,8 @@
                             const roleClass = m.roleClass || 'member';
                             const roleHtml = (!m.hideRole && m.role) ? `<span class="role-pill ${roleClass}">${m.role}</span>` : '';
                             const joinHtml = (!m.hideJoinDate && m.joined) ? `<span class="member-join-date">${m.joined}</span>` : '';
-                            const bioHtml = m.bio ? `<p class="member-bio">${m.bio}</p>` : '';
+                            const bioText = m.bio || m.description || '';
+                            const bioHtml = bioText ? `<div class="member-bio">${formatDiscordMarkdown(bioText)}</div>` : '';
                             let linksObj = m.links;
                             if (typeof linksObj === 'string') {
                                 try { linksObj = JSON.parse(linksObj); } catch(e) { linksObj = {}; }
