@@ -856,7 +856,7 @@ router.post('/entitlement-unbind', requireOwner, async (req, res) => {
             await prefs.save();
 
             const settingsCache = require('../../utils/settingsCache');
-            settingsCache.delete(oldGuild);
+            settingsCache.invalidate(oldGuild);
         }
 
         res.json({ success: true, message: `Successfully released bound premium slot for user ${userId}.` });

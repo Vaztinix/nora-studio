@@ -843,7 +843,7 @@ router.post('/bind-target-server', requireAuth, async (req, res) => {
         // If transferring from a previous guild, invalidate old guild cache
         const settingsCache = require('../../utils/settingsCache');
         if (oldGuildId && oldGuildId !== guildId) {
-            settingsCache.delete(oldGuildId);
+            settingsCache.invalidate(oldGuildId);
         }
 
         // Update user record
@@ -854,7 +854,7 @@ router.post('/bind-target-server', requireAuth, async (req, res) => {
         // Ensure GuildSettings exist and refresh cache
         const GuildSettings = require('../../database/models/GuildSettings');
         const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
-        settingsCache.delete(guildId);
+        settingsCache.invalidate(guildId);
 
         // Send confirmation notification
         const Notification = require('../../database/models/Notification');
@@ -898,7 +898,7 @@ router.post('/unbind-target-server', requireAuth, async (req, res) => {
         await prefs.save();
 
         const settingsCache = require('../../utils/settingsCache');
-        settingsCache.delete(oldGuildId);
+        settingsCache.invalidate(oldGuildId);
 
         res.json({
             success: true,

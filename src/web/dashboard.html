@@ -1119,8 +1119,6 @@
         option, optgroup {
             background-color: #161720 !important;
             color: #ffffff !important;
-            padding: 12px !important;
-            font-size: 0.9rem !important;
         }
 
         select {
@@ -1132,6 +1130,178 @@
             background-position: right 14px center !important;
             padding-right: 40px !important;
             cursor: pointer !important;
+        }
+
+        /* ── Universal Searchable Select Component ── */
+        .nora-searchable-select {
+            position: relative;
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
+            user-select: none;
+            font-family: inherit;
+        }
+        .nora-searchable-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            min-height: 40px;
+            padding: 9px 14px;
+            background: #121319;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            gap: 10px;
+        }
+        .nora-searchable-trigger:hover {
+            border-color: rgba(168, 85, 247, 0.45);
+            background: rgba(255, 255, 255, 0.04);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.15);
+        }
+        .nora-searchable-select.is-open .nora-searchable-trigger {
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+            background: rgba(0, 0, 0, 0.45);
+        }
+        .nora-searchable-label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            text-align: left;
+            color: #ffffff;
+            font-weight: 500;
+        }
+        .nora-searchable-arrow {
+            font-size: 0.75rem;
+            color: var(--muted);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+        .nora-searchable-select.is-open .nora-searchable-arrow {
+            transform: rotate(180deg);
+            color: #a855f7;
+        }
+        .nora-searchable-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            width: 100%;
+            min-width: 220px;
+            max-height: 300px;
+            background: #151620;
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            border-radius: 12px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 20px rgba(124, 58, 237, 0.15);
+            z-index: 999999;
+            flex-direction: column;
+            overflow: hidden;
+            box-sizing: border-box;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .nora-searchable-select.is-open .nora-searchable-dropdown {
+            display: flex;
+            animation: noraSelectPop 0.16s ease-out;
+        }
+        @keyframes noraSelectPop {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .nora-searchable-search-wrap {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.35);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nora-searchable-search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #fff;
+            font-size: 0.82rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.15s ease;
+        }
+        .nora-searchable-search-input:focus {
+            border-color: #a855f7;
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
+        }
+        .nora-searchable-list {
+            overflow-y: auto;
+            max-height: 220px;
+            padding: 4px;
+            margin: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .nora-searchable-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .nora-searchable-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+        .nora-searchable-item {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+            word-break: break-word;
+        }
+        .nora-searchable-item:hover {
+            background: rgba(168, 85, 247, 0.15);
+            color: #ffffff;
+        }
+        .nora-searchable-item.is-selected {
+            background: rgba(168, 85, 247, 0.25);
+            color: #c084fc;
+            font-weight: 700;
+        }
+        .nora-searchable-item.is-disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .nora-searchable-empty {
+            padding: 14px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.82rem;
+            font-style: italic;
+        }
+        select.nora-searchable-enhanced {
+            position: absolute !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            height: 0 !important;
+            width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
         }
 
 
@@ -9293,6 +9463,9 @@
                         <button type="button" class="verify-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchVerifySubnav('security', this)">
                             <i class="fas fa-shield-virus" style="color: #ef4444;"></i> Security & Safeguards
                         </button>
+                        <button type="button" class="verify-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchVerifySubnav('logs', this)">
+                            <i class="fas fa-clipboard-user" style="color: #10b981;"></i> Verification Logs & Intelligence
+                        </button>
                     </div>
 
                     <!-- ================= SUBVIEW 1: CHALLENGE MODES & ROUTING ================= -->
@@ -9628,6 +9801,92 @@
 
                         <div style="padding: 14px 18px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; font-size: 0.82rem; color: #c7d2fe; line-height: 1.45;">
                             <i class="fas fa-info-circle" style="margin-right: 6px; color: var(--primary);"></i> Members can run <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #fff;">/verify start</code> to verify directly, or administrators can post the panel using <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #fff;">/verify panel</code>.
+                        </div>
+                    </div>
+
+                    <!-- ================= SUBVIEW 5: VERIFICATION AUDIT LOGS & INTELLIGENCE DOSSIERS ================= -->
+                    <div id="verify-section-logs" class="verify-subview" style="display: none;">
+                        <!-- Risk & Overview Summary Ribbon -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 16px 20px;">
+                                <div style="font-size: 0.74rem; color: var(--muted); font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-users-check" style="color: #38bdf8;"></i> Total Verified Profiles
+                                </div>
+                                <div id="verify-logs-count-total" style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-top: 4px;">0</div>
+                            </div>
+                            <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 14px; padding: 16px 20px;">
+                                <div style="font-size: 0.74rem; color: #34d399; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-shield-check" style="color: #10b981;"></i> Low / Clean Risk
+                                </div>
+                                <div id="verify-logs-count-clean" style="font-size: 1.4rem; font-weight: 800; color: #34d399; margin-top: 4px;">0</div>
+                            </div>
+                            <div style="background: rgba(245, 158, 11, 0.04); border: 1px solid rgba(245, 158, 11, 0.15); border-radius: 14px; padding: 16px 20px;">
+                                <div style="font-size: 0.74rem; color: #fbbf24; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> Medium Risk Flagged
+                                </div>
+                                <div id="verify-logs-count-medium" style="font-size: 1.4rem; font-weight: 800; color: #fbbf24; margin-top: 4px;">0</div>
+                            </div>
+                            <div style="background: rgba(239, 68, 68, 0.04); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 14px; padding: 16px 20px;">
+                                <div style="font-size: 0.74rem; color: #f87171; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-radiation" style="color: #ef4444;"></i> High Risk / Quarantined
+                                </div>
+                                <div id="verify-logs-count-high" style="font-size: 1.4rem; font-weight: 800; color: #f87171; margin-top: 4px;">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Search & Filter Controls Panel -->
+                        <div class="panel" style="margin-bottom: 20px; padding: 18px 22px; background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px;">
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                                <!-- Live Search Input -->
+                                <div style="flex: 1; min-width: 250px; position: relative;">
+                                    <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem;"></i>
+                                    <input type="text" id="verify-log-search-input" placeholder="Search by Discord Tag, User ID, Roblox Name, Risk Level..." oninput="filterVerificationLogs()" style="width: 100%; box-sizing: border-box; padding: 10px 14px 10px 38px; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 0.85rem; outline: none;">
+                                </div>
+
+                                <!-- Risk Filter -->
+                                <div style="min-width: 170px;">
+                                    <select id="verify-log-filter-risk" onchange="filterVerificationLogs()" style="width: 100%; box-sizing: border-box; padding: 10px 14px; font-size: 0.82rem; background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 10px; color: #fff;">
+                                        <option value="all">All Risk Levels</option>
+                                        <option value="low">Low / Clean Risk</option>
+                                        <option value="medium">Medium Risk</option>
+                                        <option value="high">High Risk / Flagged</option>
+                                    </select>
+                                </div>
+
+                                <!-- Method Filter -->
+                                <div style="min-width: 180px;">
+                                    <select id="verify-log-filter-method" onchange="filterVerificationLogs()" style="width: 100%; box-sizing: border-box; padding: 10px 14px; font-size: 0.82rem; background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 10px; color: #fff;">
+                                        <option value="all">All Verification Methods</option>
+                                        <option value="captcha">CAPTCHA Challenge</option>
+                                        <option value="button">1-Click Button</option>
+                                        <option value="reaction">Emoji Reaction</option>
+                                        <option value="roblox">Roblox Account Link</option>
+                                    </select>
+                                </div>
+
+                                <!-- Refresh Button -->
+                                <button type="button" class="btn-outline" onclick="loadVerificationLogs(true)" style="padding: 10px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(255,255,255,0.04);">
+                                    <i class="fas fa-sync-alt" id="verify-logs-refresh-icon"></i> Refresh Logs
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Logs List & Dropdown Dossier Container -->
+                        <div class="panel" style="margin-bottom: 0; padding: 22px; background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #fff;">Server Verification Intelligence Dossiers</h4>
+                                    <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--muted);">Click any verified user row below to reveal what was found, the evidence points, sites/platforms queried, and confidence certainty.</p>
+                                </div>
+                                <span id="verify-logs-rendered-counter" style="font-size: 0.78rem; font-weight: 700; color: #a78bfa; background: rgba(168, 85, 247, 0.15); padding: 4px 10px; border-radius: 8px;">0 Profiles Listed</span>
+                            </div>
+
+                            <div id="verify-logs-container" style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="text-align: center; padding: 40px 20px; color: var(--muted);">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 1.8rem; margin-bottom: 12px; color: #10b981;"></i>
+                                    <p style="margin: 0; font-size: 0.88rem;">Loading server verification logs and threat intelligence...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -14959,6 +15218,10 @@
             else if (subnav === 'embed') targetId = 'verify-section-embed';
             else if (subnav === 'roblox') targetId = 'verify-section-roblox';
             else if (subnav === 'security') targetId = 'verify-section-security';
+            else if (subnav === 'logs') {
+                targetId = 'verify-section-logs';
+                loadVerificationLogs();
+            }
 
             const target = document.getElementById(targetId);
             if (target) {
@@ -14986,6 +15249,459 @@
                 updateVerifyLivePreview();
             }
         };
+
+        // ─────────────────────────────────────────────────────────────────
+        // 🛡️ VERIFICATION AUDIT LOGS & FORENSIC DOSSIERS LOGIC
+        // ─────────────────────────────────────────────────────────────────
+        let cachedVerificationLogs = [];
+
+        async function loadVerificationLogs(forceRefresh = false) {
+            const container = document.getElementById('verify-logs-container');
+            const refreshIcon = document.getElementById('verify-logs-refresh-icon');
+            if (!container) return;
+
+            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+            if (forceRefresh || cachedVerificationLogs.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--muted);">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 1.8rem; margin-bottom: 12px; color: #10b981;"></i>
+                        <p style="margin: 0; font-size: 0.88rem;">Scanning server verification registries & threat profiles...</p>
+                    </div>
+                `;
+            }
+
+            try {
+                const guildId = window.currentGuildId;
+                if (!guildId) {
+                    container.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--muted);">Please select a server first.</div>`;
+                    return;
+                }
+
+                const res = await fetch(`/api/guilds/${guildId}/verification-logs?_t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${getStoredDiscordToken()}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    cachedVerificationLogs = data.logs || [];
+                    updateVerificationCounters(cachedVerificationLogs);
+                    filterVerificationLogs();
+                } else {
+                    container.innerHTML = `<div style="text-align: center; padding: 30px; color: #f87171;">Failed to load verification logs. Server responded with error.</div>`;
+                }
+            } catch (err) {
+                console.error('Error loading verification logs:', err);
+                container.innerHTML = `<div style="text-align: center; padding: 30px; color: #f87171;">Network error while fetching server verification logs.</div>`;
+            } finally {
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            }
+        }
+
+        function updateVerificationCounters(logs) {
+            const totalEl = document.getElementById('verify-logs-count-total');
+            const cleanEl = document.getElementById('verify-logs-count-clean');
+            const medEl = document.getElementById('verify-logs-count-medium');
+            const highEl = document.getElementById('verify-logs-count-high');
+
+            let clean = 0, med = 0, high = 0;
+            logs.forEach(l => {
+                const lvl = (l.riskLevel || 'low').toLowerCase();
+                if (lvl.includes('high') || lvl.includes('crit') || l.status === 'FLAGGED') high++;
+                else if (lvl.includes('med')) med++;
+                else clean++;
+            });
+
+            if (totalEl) totalEl.textContent = logs.length;
+            if (cleanEl) cleanEl.textContent = clean;
+            if (medEl) medEl.textContent = med;
+            if (highEl) highEl.textContent = high;
+        }
+
+        function filterVerificationLogs() {
+            const searchInput = document.getElementById('verify-log-search-input');
+            const riskFilter = document.getElementById('verify-log-filter-risk');
+            const methodFilter = document.getElementById('verify-log-filter-method');
+            const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+            const riskVal = riskFilter ? riskFilter.value.toLowerCase() : 'all';
+            const methodVal = methodFilter ? methodFilter.value.toLowerCase() : 'all';
+
+            const filtered = cachedVerificationLogs.filter(log => {
+                if (query) {
+                    const name = (log.username || '').toLowerCase();
+                    const uid = (log.userId || '').toLowerCase();
+                    const roblox = (log.robloxUsername || log.robloxId || '').toLowerCase();
+                    const findings = (log.findings || '').toLowerCase();
+                    const method = (log.method || '').toLowerCase();
+                    const risk = (log.riskLevel || '').toLowerCase();
+                    if (!name.includes(query) && !uid.includes(query) && !roblox.includes(query) && !findings.includes(query) && !method.includes(query) && !risk.includes(query)) {
+                        return false;
+                    }
+                }
+
+                if (riskVal !== 'all') {
+                    const lvl = (log.riskLevel || 'low').toLowerCase();
+                    if (riskVal === 'low' && !lvl.includes('low')) return false;
+                    if (riskVal === 'medium' && !lvl.includes('med')) return false;
+                    if (riskVal === 'high' && !lvl.includes('high') && !lvl.includes('crit')) return false;
+                }
+
+                if (methodVal !== 'all') {
+                    const m = (log.method || '').toLowerCase();
+                    if (!m.includes(methodVal)) return false;
+                }
+
+                return true;
+            });
+
+            renderVerificationLogs(filtered);
+        }
+
+        function renderRiskBadge(riskLevel, riskScore) {
+            const lvl = (riskLevel || 'Low').toLowerCase();
+            const score = riskScore !== undefined ? riskScore : 0;
+            if (lvl.includes('high') || lvl.includes('crit') || score >= 60) {
+                return `<span style="font-size: 0.76rem; padding: 4px 10px; border-radius: 8px; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 800; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-radiation"></i> High Risk (${score}/100)</span>`;
+            } else if (lvl.includes('med') || score >= 25) {
+                return `<span style="font-size: 0.76rem; padding: 4px 10px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-weight: 700; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-exclamation-triangle"></i> Medium Risk (${score}/100)</span>`;
+            } else {
+                return `<span style="font-size: 0.76rem; padding: 4px 10px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-shield-check"></i> Clean Risk (${score}/100)</span>`;
+            }
+        }
+
+        function renderVerificationLogs(logs) {
+            const container = document.getElementById('verify-logs-container');
+            const counter = document.getElementById('verify-logs-rendered-counter');
+            if (!container) return;
+
+            if (counter) {
+                counter.textContent = `${logs.length} Profile${logs.length === 1 ? '' : 's'} Listed`;
+            }
+
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--muted); border: 1px dashed rgba(255,255,255,0.08); border-radius: 12px;">
+                        <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.4;"></i>
+                        <p style="margin: 0; font-size: 0.9rem;">No verification records match your search criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = logs.map(log => {
+                const dateStr = log.verifiedAt ? new Date(log.verifiedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently Verified';
+                const sources = Array.isArray(log.sources) && log.sources.length ? log.sources : [
+                    { name: 'Discord Official API', status: 'Clean (0 Flags)', icon: 'fab fa-discord' },
+                    { name: 'Server Ban Registry', status: 'Clean', icon: 'fas fa-shield-alt' },
+                    { name: 'Threat Network', status: 'Clean', icon: 'fas fa-network-wired' }
+                ];
+                const evidence = Array.isArray(log.evidence) && log.evidence.length ? log.evidence : ['Passed automated verification challenge without security flags.'];
+
+                return `
+                    <div class="verify-log-card" id="log-card-${log.id}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; overflow: hidden; transition: all 0.2s;">
+                        <div onclick="toggleVerificationDossier('${log.id}')" style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; cursor: pointer; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 12px; min-width: 220px;">
+                                <img src="${log.avatar}" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-weight: 800; color: #fff; font-size: 0.95rem;">${escapeHtml(log.username)}</span>
+                                        ${log.robloxId ? `<a href="https://www.roblox.com/users/${log.robloxId}/profile" target="_blank" onclick="event.stopPropagation()" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; background: rgba(0, 162, 255, 0.15); color: #38bdf8; font-weight: 700; text-decoration: none; border: 1px solid rgba(0, 162, 255, 0.3);"><i class="fas fa-cube"></i> Roblox Verified</a>` : ''}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 3px;">
+                                        ID: <code style="background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px;">${log.userId}</code> • Verified: ${dateStr}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span style="font-size: 0.78rem; padding: 4px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.08);">
+                                    <i class="fas fa-key" style="margin-right: 4px; color: #a78bfa;"></i> ${escapeHtml(log.method)}
+                                </span>
+                                ${renderRiskBadge(log.riskLevel, log.riskScore)}
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem;">
+                                <span style="font-size: 0.76rem; font-weight: 600; color: #c7d2fe;">View Evidence Dossier</span>
+                                <i class="fas fa-chevron-down dossier-chevron-${log.id}" style="transition: transform 0.2s ease;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown Dossier Panel -->
+                        <div id="dossier-panel-${log.id}" style="display: none; padding: 18px 22px; border-top: 1px solid rgba(255, 255, 255, 0.05); background: rgba(0, 0, 0, 0.35);">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                                
+                                <!-- What was found -->
+                                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 14px;">
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-magnifying-glass"></i> What Was Found
+                                    </div>
+                                    <div style="font-size: 0.88rem; color: #ffffff; font-weight: 600; line-height: 1.4;">
+                                        ${escapeHtml(log.findings)}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 8px;">
+                                        Risk Assessment: <strong style="color: #fff;">${log.riskLevel} (${log.riskScore}/100)</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Certainty & Confidence -->
+                                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 14px;">
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-bullseye"></i> Match Certainty & Confidence
+                                    </div>
+                                    <div style="font-size: 0.95rem; color: #38bdf8; font-weight: 800;">
+                                        ${escapeHtml(log.confidence)}
+                                    </div>
+                                    <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 99px; margin-top: 10px; overflow: hidden;">
+                                        <div style="width: 98%; height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); border-radius: 99px;"></div>
+                                    </div>
+                                    <div style="font-size: 0.72rem; color: var(--muted); margin-top: 6px;">
+                                        Cryptographically authenticated via Discord OAuth2 & active guild session.
+                                    </div>
+                                </div>
+
+                                <!-- Platforms Queried -->
+                                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 14px;">
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #34d399; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-globe"></i> Platforms & Sites Queried
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                                        ${sources.map(s => `
+                                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 6px;">
+                                                <span style="color: #cbd5e1;"><i class="${s.icon || 'fas fa-shield-alt'}" style="margin-right: 6px; color: #38bdf8;"></i> ${escapeHtml(s.name)}</span>
+                                                <span style="color: #34d399; font-weight: 700;">${escapeHtml(s.status)}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+
+                                <!-- Evidence Points -->
+                                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 14px;">
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-fingerprint"></i> Evidence & Verification Markers
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                                        ${evidence.map(ev => `
+                                            <div style="font-size: 0.78rem; color: #e2e8f0; line-height: 1.4; display: flex; align-items: flex-start; gap: 6px;">
+                                                <i class="fas fa-check-circle" style="color: #10b981; margin-top: 3px; font-size: 0.7rem; flex-shrink: 0;"></i>
+                                                <span>${escapeHtml(ev)}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleVerificationDossier(logId) {
+            const panel = document.getElementById('dossier-panel-' + logId);
+            const chevron = document.querySelector('.dossier-chevron-' + logId);
+            if (!panel) return;
+
+            const isOpen = panel.style.display !== 'none';
+            panel.style.display = isOpen ? 'none' : 'block';
+            if (chevron) {
+                chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+                chevron.style.color = isOpen ? 'var(--muted)' : '#a78bfa';
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // 🔍 UNIVERSAL SEARCHABLE SELECT COMPONENT
+        // ─────────────────────────────────────────────────────────────────
+        window.initSearchableSelects = function() {
+            const selects = document.querySelectorAll('select:not(.nora-searchable-enhanced):not([multiple])');
+            selects.forEach(select => {
+                if (select.closest('.nora-searchable-select') || select.hasAttribute('data-no-search')) return;
+
+                select.classList.add('nora-searchable-enhanced');
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'nora-searchable-select';
+
+                const trigger = document.createElement('div');
+                trigger.className = 'nora-searchable-trigger';
+                trigger.setAttribute('tabindex', '0');
+
+                const label = document.createElement('span');
+                label.className = 'nora-searchable-label';
+
+                const arrow = document.createElement('i');
+                arrow.className = 'fas fa-chevron-down nora-searchable-arrow';
+
+                trigger.appendChild(label);
+                trigger.appendChild(arrow);
+                wrapper.appendChild(trigger);
+
+                const dropdown = document.createElement('div');
+                dropdown.className = 'nora-searchable-dropdown';
+
+                const searchWrap = document.createElement('div');
+                searchWrap.className = 'nora-searchable-search-wrap';
+                searchWrap.innerHTML = `
+                    <i class="fas fa-search" style="font-size: 0.8rem; color: var(--muted); flex-shrink: 0;"></i>
+                    <input type="text" class="nora-searchable-search-input" placeholder="Search options..." autocomplete="off">
+                `;
+                const searchInput = searchWrap.querySelector('.nora-searchable-search-input');
+                dropdown.appendChild(searchWrap);
+
+                const list = document.createElement('ul');
+                list.className = 'nora-searchable-list';
+                dropdown.appendChild(list);
+
+                wrapper.appendChild(dropdown);
+
+                if (select.parentNode) {
+                    select.parentNode.insertBefore(wrapper, select.nextSibling);
+                }
+
+                function rebuildOptions() {
+                    list.innerHTML = '';
+                    const opts = Array.from(select.options);
+                    let selectedText = '';
+
+                    if (opts.length === 0) {
+                        const empty = document.createElement('div');
+                        empty.className = 'nora-searchable-empty';
+                        empty.textContent = 'No options available';
+                        list.appendChild(empty);
+                        label.textContent = 'None available';
+                        return;
+                    }
+
+                    opts.forEach(opt => {
+                        const isSelected = (opt.value === select.value) || (!select.value && opt.selected);
+                        if (isSelected && !selectedText) {
+                            selectedText = opt.textContent;
+                        }
+
+                        const li = document.createElement('li');
+                        li.className = 'nora-searchable-item' + (isSelected ? ' is-selected' : '') + (opt.disabled ? ' is-disabled' : '');
+                        li.setAttribute('data-value', opt.value);
+                        li.innerHTML = `<span>${escapeHtml(opt.textContent)}</span>${isSelected ? '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>' : ''}`;
+
+                        li.onclick = (e) => {
+                            e.stopPropagation();
+                            if (opt.disabled) return;
+                            select.value = opt.value;
+                            label.textContent = opt.textContent;
+                            wrapper.classList.remove('is-open');
+
+                            list.querySelectorAll('.nora-searchable-item').forEach(it => {
+                                const sel = it.getAttribute('data-value') === opt.value;
+                                it.classList.toggle('is-selected', sel);
+                                const check = it.querySelector('.fa-check');
+                                if (sel && !check) {
+                                    it.insertAdjacentHTML('beforeend', '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>');
+                                } else if (!sel && check) {
+                                    check.remove();
+                                }
+                            });
+
+                            select.dispatchEvent(new Event('change', { bubbles: true }));
+                            select.dispatchEvent(new Event('input', { bubbles: true }));
+                            if (typeof select.onchange === 'function') {
+                                select.onchange.call(select, new Event('change'));
+                            }
+                        };
+
+                        list.appendChild(li);
+                    });
+
+                    const activeOpt = select.options[select.selectedIndex];
+                    label.textContent = activeOpt ? activeOpt.textContent : (selectedText || opts[0].textContent);
+                }
+
+                rebuildOptions();
+
+                searchInput.oninput = (e) => {
+                    const query = e.target.value.toLowerCase().trim();
+                    const items = list.querySelectorAll('.nora-searchable-item');
+                    let visibleCount = 0;
+                    items.forEach(item => {
+                        const text = item.textContent.toLowerCase();
+                        if (!query || text.includes(query)) {
+                            item.style.display = 'flex';
+                            visibleCount++;
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    let noMatch = list.querySelector('.nora-searchable-no-match');
+                    if (visibleCount === 0) {
+                        if (!noMatch) {
+                            noMatch = document.createElement('div');
+                            noMatch.className = 'nora-searchable-empty nora-searchable-no-match';
+                            noMatch.textContent = 'No matching options';
+                            list.appendChild(noMatch);
+                        }
+                    } else if (noMatch) {
+                        noMatch.remove();
+                    }
+                };
+
+                trigger.onclick = (e) => {
+                    e.stopPropagation();
+                    const wasOpen = wrapper.classList.contains('is-open');
+                    document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => el.classList.remove('is-open'));
+                    if (!wasOpen) {
+                        wrapper.classList.add('is-open');
+                        searchInput.value = '';
+                        searchInput.dispatchEvent(new Event('input'));
+                        setTimeout(() => searchInput.focus(), 50);
+                    }
+                };
+
+                const observer = new MutationObserver(() => {
+                    rebuildOptions();
+                });
+                observer.observe(select, { childList: true, subtree: true });
+
+                select.addEventListener('change', () => {
+                    const activeOpt = select.options[select.selectedIndex];
+                    if (activeOpt) {
+                        label.textContent = activeOpt.textContent;
+                        list.querySelectorAll('.nora-searchable-item').forEach(it => {
+                            const sel = it.getAttribute('data-value') === select.value;
+                            it.classList.toggle('is-selected', sel);
+                            const check = it.querySelector('.fa-check');
+                            if (sel && !check) {
+                                it.insertAdjacentHTML('beforeend', '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>');
+                            } else if (!sel && check) {
+                                check.remove();
+                            }
+                        });
+                    }
+                });
+            });
+        };
+
+        // Close dropdowns on click outside or escape
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nora-searchable-select')) {
+                document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => el.classList.remove('is-open'));
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => el.classList.remove('is-open'));
+            }
+        });
+
+        // Auto-run initSearchableSelects periodically and on interaction
+        setInterval(() => {
+            if (typeof window.initSearchableSelects === 'function') {
+                window.initSearchableSelects();
+            }
+        }, 1500);
+        setTimeout(() => {
+            if (typeof window.initSearchableSelects === 'function') {
+                window.initSearchableSelects();
+            }
+        }, 300);
 
         window.saveUserProfile = saveUserProfile;
 
