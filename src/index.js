@@ -2132,17 +2132,26 @@ const TEAM_MEMBERS_DIRECTORY = [
 ];
 
 // Helper: Check if user ID qualifies as a recognized team member
-function isRecognizedTeamMember(userId, prefs) {
+function isRecognizedTeamMember(userId, prefs, discordClient) {
     if (!userId) return false;
-    const isDefault = TEAM_MEMBERS_DIRECTORY.some(m => m.id === String(userId));
-    if (isDefault) return true;
+    const uid = String(userId);
+    if (TEAM_MEMBERS_DIRECTORY.some(m => m.id === uid)) return true;
     if (prefs && (prefs.isTeamMember || prefs.hasTeamCard)) return true;
     const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
-    return APP_OWNER_IDS.includes(String(userId));
+    if (APP_OWNER_IDS.includes(uid)) return true;
+    const cl = discordClient || (typeof client !== 'undefined' ? client : null);
+    if (cl && cl.application && cl.application.owner) {
+        if (cl.application.owner.id === uid) return true;
+        if (cl.application.owner.members && cl.application.owner.members.has(uid)) return true;
+    }
+    return false;
 }
 
 // GET /api/team/cards — Returns full merged list of public team cards
 app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     try {
         const UserPrefs = require('./database/models/UserPrefs');
         const allPrefs = await UserPrefs.findAll().catch(() => []);
@@ -2152,7 +2161,9 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
         }
 
         const cards = [];
+        const seenIds = new Set();
         for (const def of TEAM_MEMBERS_DIRECTORY) {
+            seenIds.add(String(def.id));
             const p = prefsMap.get(String(def.id));
             // Check if member explicitly chose to hide their card completely
             if (p && p.teamCardHideCard) {
@@ -2193,6 +2204,36 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
             });
         }
 
+        // Include any additional staff members from UserPrefs who are recognized
+        for (const p of allPrefs) {
+            if (seenIds.has(String(p.userId))) continue;
+            if ((p.isTeamMember || p.hasTeamCard) && !p.teamCardHideCard) {
+                seenIds.add(String(p.userId));
+                let links = {};
+                if (p.teamCardLinks) {
+                    try {
+                        links = typeof p.teamCardLinks === 'string' ? JSON.parse(p.teamCardLinks) : p.teamCardLinks;
+                    } catch (e) {}
+                }
+                cards.push({
+                    id: p.userId,
+                    username: p.username || 'staff',
+                    displayName: p.teamCardDisplayName || p.username || 'Team Member',
+                    role: p.teamCardHideRole ? null : (p.teamCardRole || 'Team Member'),
+                    roleClass: 'member',
+                    bio: p.teamCardDescription || '',
+                    joined: p.teamCardHideJoinDate ? null : (p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }) : 'Recently'),
+                    image: p.teamCardImage || 'nora.png',
+                    banner: p.teamCardBanner || null,
+                    links: links,
+                    hideRole: !!p.teamCardHideRole,
+                    hideJoinDate: !!p.teamCardHideJoinDate,
+                    hideCard: !!p.teamCardHideCard,
+                    isApp: false
+                });
+            }
+        }
+
         res.json({ success: true, cards, teamCards: cards });
     } catch (e) {
         console.error('Error in /api/team/cards:', e);
@@ -2202,6 +2243,7 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
 
 // GET /api/team/my-card — Staff member self-inspects their own card
 app.get('/api/team/my-card', async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ authenticated: false, error: 'Unauthorized: Discord login required' });
@@ -2214,9 +2256,9 @@ app.get('/api/team/my-card', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
 
-        const isTeam = isRecognizedTeamMember(user.id, prefs);
+        const isTeam = isRecognizedTeamMember(user.id, prefs, req.client || (typeof client !== 'undefined' ? client : null));
         if (!isTeam) {
-            return res.json({ authenticated: true, isTeamMember: false });
+            return res.json({ authenticated: true, isTeamMember: false, user: { id: user.id, username: user.username, global_name: user.global_name } });
         }
 
         const def = TEAM_MEMBERS_DIRECTORY.find(m => m.id === String(user.id)) || {
@@ -2281,7 +2323,7 @@ app.post('/api/team/my-card', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
 
-        const isTeam = isRecognizedTeamMember(user.id, prefs);
+        const isTeam = isRecognizedTeamMember(user.id, prefs, req.client || (typeof client !== 'undefined' ? client : null));
         if (!isTeam) {
             return res.status(403).json({ success: false, error: 'You do not have permission to manage a team card.' });
         }
@@ -2308,6 +2350,7 @@ app.post('/api/team/my-card', async (req, res) => {
         if (hideJoinDate !== undefined) prefs.teamCardHideJoinDate = !!hideJoinDate;
         if (hideCard !== undefined) prefs.teamCardHideCard = !!hideCard;
 
+        if (user.username && !prefs.username) prefs.username = user.username;
         prefs.hasTeamCard = true;
         prefs.isTeamMember = true;
         await prefs.save();

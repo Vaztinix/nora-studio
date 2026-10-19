@@ -1336,6 +1336,9 @@
                 <button id="btn-toggle-editor" class="staff-pill-btn primary" style="display: none;" onclick="toggleCardEditor()">
                     <i class="fas fa-id-card"></i> Manage Your Team Card
                 </button>
+                <button id="btn-staff-logout" class="staff-pill-btn" style="display: none;" onclick="logoutStaff(event)">
+                    <i class="fas fa-sign-out-alt"></i> Switch Account
+                </button>
                 <a id="btn-staff-login" href="#" onclick="loginWithDiscord(event)" class="staff-pill-btn" style="display: none;">
                     <i class="fab fa-discord"></i> Staff Card Login
                 </a>
@@ -1356,6 +1359,9 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span id="editor-status-badge" class="team-manage-badge">Verified Staff</span>
+                    <button type="button" onclick="logoutStaff(event)" class="staff-pill-btn" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(255,255,255,0.06);" title="Switch or log out of this account">
+                        <i class="fas fa-sign-out-alt"></i> Switch Account
+                    </button>
                     <button type="button" onclick="toggleCardEditor()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px 8px;" title="Close editor">
                         <i class="fas fa-times"></i>
                     </button>
@@ -1775,11 +1781,37 @@
                    localStorage.getItem('token');
         }
 
+        function getApiBaseUrl() {
+            const host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || !host || window.location.protocol === 'file:') {
+                return (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:'))
+                    ? window.location.origin
+                    : 'http://localhost:3000';
+            }
+            if (window.__NORA_API_BASE_URL__) return window.__NORA_API_BASE_URL__;
+            const savedUrl = localStorage.getItem('nora_api_url');
+            if (savedUrl && typeof savedUrl === 'string' && savedUrl.startsWith('https://')) return savedUrl;
+            if (host === 'api.vaztinix.dev') return window.location.origin;
+            return 'https://api.vaztinix.dev';
+        }
+
         function loginWithDiscord(event) {
             if (event) event.preventDefault();
             const clientId = '1375943730951098549';
             const redirectUri = encodeURIComponent(window.location.origin + '/team');
-            window.location.href = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify`;
+            window.location.href = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify&prompt=consent`;
+        }
+
+        function logoutStaff(event) {
+            if (event) event.preventDefault();
+            sessionStorage.removeItem('discord_token');
+            localStorage.removeItem('discord_token');
+            localStorage.removeItem('discord_token_val');
+            localStorage.removeItem('nora_discord_token');
+            localStorage.removeItem('token');
+            const clientId = '1375943730951098549';
+            const redirectUri = encodeURIComponent(window.location.origin + '/team');
+            window.location.href = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify&prompt=consent`;
         }
 
         function toggleMobileMenu() {
@@ -1987,7 +2019,7 @@
             msg.textContent = '';
 
             try {
-                const res = await fetch('/api/team/my-card', {
+                const res = await fetch(getApiBaseUrl() + '/api/team/my-card', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2000,8 +2032,15 @@
                     msg.style.color = '#34d399';
                     msg.textContent = '✅ Card changes saved successfully!';
                     setTimeout(() => { if (msg) msg.textContent = ''; }, 4500);
-                    // Reload team directory to reflect updates immediately
-                    loadTeamCards();
+
+                    // Update local reference & live preview
+                    if (data.card) {
+                        currentStaffCard = { ...currentStaffCard, ...data.card };
+                    }
+                    updateLivePreview();
+
+                    // Reload full team directory immediately to reflect live for all visitors
+                    await loadTeamCards();
                 } else {
                     msg.style.color = '#f87171';
                     msg.textContent = '❌ ' + (data.error || 'Failed to save changes');
@@ -2020,18 +2059,31 @@
             const token = getStoredDiscordToken();
             const loginBtn = document.getElementById('btn-staff-login');
             const editorBtn = document.getElementById('btn-toggle-editor');
+            const logoutBtn = document.getElementById('btn-staff-logout');
 
             if (!token) {
-                if (loginBtn) loginBtn.style.display = 'inline-flex';
+                if (loginBtn) {
+                    loginBtn.style.display = 'inline-flex';
+                    loginBtn.innerHTML = '<i class="fab fa-discord"></i> Staff Card Login';
+                    loginBtn.onclick = loginWithDiscord;
+                }
+                if (editorBtn) editorBtn.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'none';
                 return;
             }
 
             try {
-                const res = await fetch('/api/team/my-card', {
+                const res = await fetch(getApiBaseUrl() + '/api/team/my-card', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) {
-                    if (loginBtn) loginBtn.style.display = 'inline-flex';
+                    if (loginBtn) {
+                        loginBtn.style.display = 'inline-flex';
+                        loginBtn.innerHTML = '<i class="fab fa-discord"></i> Staff Card Login';
+                        loginBtn.onclick = loginWithDiscord;
+                    }
+                    if (editorBtn) editorBtn.style.display = 'none';
+                    if (logoutBtn) logoutBtn.style.display = 'none';
                     return;
                 }
                 const data = await res.json();
@@ -2044,6 +2096,9 @@
                         editorBtn.style.display = 'inline-flex';
                         editorBtn.innerHTML = `<i class="fas fa-id-card"></i> Manage Card (@${data.user.username})`;
                     }
+                    if (logoutBtn) {
+                        logoutBtn.style.display = 'inline-flex';
+                    }
 
                     // Populate Editor Form
                     const card = data.card;
@@ -2052,12 +2107,13 @@
                     if (document.getElementById('edit-bio')) document.getElementById('edit-bio').value = card.description || '';
 
                     if (card.links) {
-                        if (document.getElementById('link-github')) document.getElementById('link-github').value = card.links.github || '';
-                        if (document.getElementById('link-discord')) document.getElementById('link-discord').value = card.links.discord || '';
-                        if (document.getElementById('link-youtube')) document.getElementById('link-youtube').value = card.links.youtube || '';
-                        if (document.getElementById('link-twitch')) document.getElementById('link-twitch').value = card.links.twitch || '';
-                        if (document.getElementById('link-roblox')) document.getElementById('link-roblox').value = card.links.roblox || '';
-                        if (document.getElementById('link-other')) document.getElementById('link-other').value = card.links.other || card.links.strawpage || card.links.pronouns || card.links.hackerone || '';
+                        const l = typeof card.links === 'string' ? JSON.parse(card.links || '{}') : card.links;
+                        if (document.getElementById('link-github')) document.getElementById('link-github').value = l.github || '';
+                        if (document.getElementById('link-discord')) document.getElementById('link-discord').value = l.discord || '';
+                        if (document.getElementById('link-youtube')) document.getElementById('link-youtube').value = l.youtube || '';
+                        if (document.getElementById('link-twitch')) document.getElementById('link-twitch').value = l.twitch || '';
+                        if (document.getElementById('link-roblox')) document.getElementById('link-roblox').value = l.roblox || '';
+                        if (document.getElementById('link-other')) document.getElementById('link-other').value = l.other || l.strawpage || l.pronouns || l.hackerone || '';
                     }
 
                     if (document.getElementById('toggle-hide-role')) document.getElementById('toggle-hide-role').checked = !!card.hideRole;
@@ -2065,10 +2121,31 @@
                     if (document.getElementById('toggle-hide-card')) document.getElementById('toggle-hide-card').checked = !!card.hideCard;
 
                     updateLivePreview();
+
+                    // Automatically open editor when recognized user logs in
+                    const container = document.getElementById('team-manage-container');
+                    if (container) {
+                        container.style.display = 'block';
+                    }
+                } else if (data.authenticated && !data.isTeamMember) {
+                    // Logged in with wrong/non-staff account
+                    if (editorBtn) editorBtn.style.display = 'none';
+                    if (loginBtn) {
+                        loginBtn.style.display = 'inline-flex';
+                        loginBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> @${data.user?.username || 'user'} (Not Staff) — Switch Account`;
+                        loginBtn.onclick = logoutStaff;
+                    }
                 } else {
-                    if (loginBtn) loginBtn.style.display = 'none';
+                    if (loginBtn) {
+                        loginBtn.style.display = 'inline-flex';
+                        loginBtn.innerHTML = '<i class="fab fa-discord"></i> Staff Card Login';
+                        loginBtn.onclick = loginWithDiscord;
+                    }
+                    if (editorBtn) editorBtn.style.display = 'none';
+                    if (logoutBtn) logoutBtn.style.display = 'none';
                 }
             } catch (e) {
+                console.error('Failed to verify staff login:', e);
                 if (loginBtn) loginBtn.style.display = 'inline-flex';
             }
         }
@@ -2079,7 +2156,9 @@
             if (!grid) return;
 
             try {
-                const res = await fetch('/api/team/cards');
+                const res = await fetch(getApiBaseUrl() + '/api/team/cards?_t=' + Date.now(), {
+                    cache: 'no-store'
+                });
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && Array.isArray(data.cards) && data.cards.length > 0) {
@@ -2095,7 +2174,11 @@
                             const roleHtml = (!m.hideRole && m.role) ? `<span class="role-pill ${roleClass}">${m.role}</span>` : '';
                             const joinHtml = (!m.hideJoinDate && m.joined) ? `<span class="member-join-date">${m.joined}</span>` : '';
                             const bioHtml = m.bio ? `<p class="member-bio">${m.bio}</p>` : '';
-                            const linksHtml = renderSocialButtonsHtml(m.links);
+                            let linksObj = m.links;
+                            if (typeof linksObj === 'string') {
+                                try { linksObj = JSON.parse(linksObj); } catch(e) { linksObj = {}; }
+                            }
+                            const linksHtml = renderSocialButtonsHtml(linksObj);
 
                             card.innerHTML = `
                                 <div class="card-top">
