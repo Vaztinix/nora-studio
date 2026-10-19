@@ -1386,7 +1386,7 @@
                     </div>
                     <div class="stock-stat-item">
                         <span class="stock-stat-lbl">Stability</span>
-                        <span class="stock-stat-val" style="color: #34d399;">99.98%</span>
+                        <span id="stat-ping-stability" class="stock-stat-val" style="color: #34d399;">--%</span>
                     </div>
                 </div>
             </div>
@@ -1490,19 +1490,37 @@
                 }
             }
 
-            // If all endpoints fail or time out, render true offline state
+            // If dynamic endpoints fail or time out, inspect 30-minute static telemetry snapshot
+            let cachedTelem = null;
+            try {
+                const c = localStorage.getItem('nora_telemetry_30m_cache');
+                if (c) cachedTelem = JSON.parse(c)?.data;
+            } catch(e) {}
+            if (!cachedTelem) {
+                try {
+                    const res = await fetch('/telemetry.json', { signal: AbortSignal.timeout(2000) });
+                    if (res.ok) cachedTelem = await res.json();
+                } catch(e) {}
+            }
+
+            const cachedServers = cachedTelem?.serverCount || 90;
+            const cachedMembers = cachedTelem?.memberCount || 9672;
+
+            // Render true offline state while retaining static numbers
             renderStatus({
                 systemStatus: 'offline',
                 statusText: 'Offline',
                 statusDesc: 'Unable to establish connection to Nora bot core and API gateway.',
+                serverCount: cachedServers,
+                memberCount: cachedMembers,
                 shards: [
                     {
                         id: 0,
                         name: 'Shard #0 (Primary)',
                         status: 'OFFLINE',
                         pingMs: 0,
-                        guilds: 'Offline',
-                        users: 'Offline',
+                        guilds: `${cachedServers} (Static)`,
+                        users: `${cachedMembers.toLocaleString()} (Static)`,
                         uptimeSeconds: 0,
                         memoryUsedMB: 0,
                         memoryRssMB: 0,
@@ -1766,6 +1784,40 @@
                 if (statAvg) statAvg.textContent = '0 ms';
                 if (statMin) statMin.textContent = '0 ms';
                 if (statMax) statMax.textContent = '0 ms';
+            }
+
+            // Stability Calculation: Dynamically averaged by how often the server is optimal (<75ms), slow (>160ms), or experiencing issues (<=0ms/outage)
+            const statStability = document.getElementById('stat-ping-stability');
+            if (statStability) {
+                if (pings.length === 0 || quality.cls === 'offline') {
+                    statStability.textContent = '0.00%';
+                    statStability.style.color = 'var(--red)';
+                } else {
+                    let totalHealthScore = 0;
+                    points.forEach(p => {
+                        if (p.ping <= 0) {
+                            totalHealthScore += 0; // Outage / Disconnected
+                        } else if (p.ping < 75) {
+                            totalHealthScore += 100; // Optimal
+                        } else if (p.ping <= 160) {
+                            totalHealthScore += 96; // Normal / Good
+                        } else {
+                            totalHealthScore += 70; // Slow / Issues
+                        }
+                    });
+
+                    const stabilityScore = totalHealthScore / Math.max(1, points.length);
+                    const formattedStability = stabilityScore.toFixed(2);
+                    statStability.textContent = `${formattedStability}%`;
+
+                    if (stabilityScore >= 98) {
+                        statStability.style.color = '#34d399';
+                    } else if (stabilityScore >= 90) {
+                        statStability.style.color = '#fbbf24';
+                    } else {
+                        statStability.style.color = 'var(--red)';
+                    }
+                }
             }
         }
 

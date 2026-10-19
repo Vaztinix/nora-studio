@@ -1413,7 +1413,7 @@
             <div class="container">
                 <div class="hero-content">
                     <div class="hero-announcement-pill" id="hero-announcement">
-                        <i class="fab fa-discord"></i> Built for Discord Communities • 65+ Servers
+                        <i class="fab fa-discord"></i> Built for Discord Communities • 90+ Servers
                     </div>
                     
                     <h1 class="hero-heading">
@@ -1435,19 +1435,19 @@
 
                     <div class="hero-stats-bar">
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-servers">65+</span>
+                            <span class="stat-value" id="stat-servers">90+</span>
                             <span class="stat-label">Active Servers</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-members">10,700+</span>
+                            <span class="stat-value" id="stat-members">9,672+</span>
                             <span class="stat-label">Total Members</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-commands">59</span>
+                            <span class="stat-value" id="stat-commands">63</span>
                             <span class="stat-label">Commands</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-ping">18ms</span>
+                            <span class="stat-value" id="stat-ping">38ms</span>
                             <span class="stat-label">Gateway Ping</span>
                         </div>
                     </div>
@@ -1778,10 +1778,10 @@
 
     <!-- Interactive Simulator & Telemetry Logic -->
     <script>
-        // Hourly Cached Telemetry (Static presentation with 1-hour hourly refresh)
-        (async function fetchHourlyTelemetry() {
-            const CACHE_KEY = 'nora_hourly_telemetry_cache';
-            const ONE_HOUR_MS = 60 * 60 * 1000;
+        // 30-Minute Cached Static Telemetry (Static presentation, updated every 30 minutes, visible even when API is down)
+        (async function fetch30mTelemetry() {
+            const CACHE_KEY = 'nora_telemetry_30m_cache';
+            const THIRTY_MIN_MS = 30 * 60 * 1000;
             const now = Date.now();
 
             function applyTelemetryData(data) {
@@ -1790,6 +1790,7 @@
                 const statMembers = document.getElementById('stat-members');
                 const statCommands = document.getElementById('stat-commands');
                 const statPing = document.getElementById('stat-ping');
+                const heroAnnouncement = document.getElementById('hero-announcement');
                 const headerBadge = document.getElementById('header-server-count');
                 const statusTextEl = document.getElementById('landing-status-text');
                 const statusDotEl = document.getElementById('landing-status-dot');
@@ -1797,6 +1798,7 @@
                 if (data.serverCount) {
                     const countFormatted = Number(data.serverCount).toLocaleString();
                     if (statServers) statServers.innerText = `${countFormatted}+`;
+                    if (heroAnnouncement) heroAnnouncement.innerHTML = `<i class="fab fa-discord"></i> Built for Discord Communities • ${countFormatted}+ Servers`;
                     if (headerBadge) headerBadge.innerText = `${countFormatted} Servers Online`;
                 }
                 if (data.memberCount) {
@@ -1829,42 +1831,60 @@
                 }
             }
 
-            // 1. Check local storage cache first
+            // 1. Check local storage cache first (sticks to static 30m cache, zero layout shift)
+            let cacheValid = false;
             try {
                 const cachedRaw = localStorage.getItem(CACHE_KEY);
                 if (cachedRaw) {
                     const cachedObj = JSON.parse(cachedRaw);
-                    if (cachedObj && cachedObj.timestamp && (now - cachedObj.timestamp < ONE_HOUR_MS)) {
-                        // Sticks with cached data, zero continuous network polling
+                    if (cachedObj && cachedObj.timestamp && (now - cachedObj.timestamp < THIRTY_MIN_MS)) {
                         applyTelemetryData(cachedObj.data);
-                        return;
+                        cacheValid = true;
                     }
                 }
             } catch (e) {}
 
-            // 2. Fetch fresh snapshot once per hour
-            try {
-                const res = await fetch('/api/status/public', { signal: AbortSignal.timeout(4000) });
-                if (res.ok) {
-                    const data = await res.json();
-                    applyTelemetryData(data);
+            // 2. If 30-minute cache expired or absent, fetch fresh snapshot
+            if (!cacheValid) {
+                let freshData = null;
+                // Try live API first
+                try {
+                    const res = await fetch('/api/status/public', { signal: AbortSignal.timeout(3500) });
+                    if (res.ok) {
+                        freshData = await res.json();
+                    }
+                } catch (e) {}
+
+                // If API is down or restarting, try static snapshot file
+                if (!freshData) {
+                    try {
+                        const res = await fetch('/telemetry.json', { signal: AbortSignal.timeout(2500) });
+                        if (res.ok) {
+                            freshData = await res.json();
+                        }
+                    } catch (e) {}
+                }
+
+                if (freshData) {
+                    applyTelemetryData(freshData);
                     try {
                         localStorage.setItem(CACHE_KEY, JSON.stringify({
                             timestamp: now,
                             data: {
-                                serverCount: data.serverCount || 65,
-                                memberCount: data.memberCount || 10700,
-                                commandCount: data.commandCount || 59,
-                                ping: data.ping || 18,
-                                statusText: data.statusText || 'Online',
-                                systemStatus: data.systemStatus || 'online'
+                                serverCount: freshData.serverCount || 90,
+                                memberCount: freshData.memberCount || 9672,
+                                commandCount: freshData.commandCount || 63,
+                                ping: freshData.ping || 38,
+                                statusText: freshData.statusText || 'Online',
+                                systemStatus: freshData.systemStatus || 'online'
                             }
                         }));
                     } catch (e) {}
                 }
-            } catch (e) {
-                // Fallback gracefully to static defaults
             }
+
+            // Schedule recurring 30-minute refresh
+            setInterval(fetch30mTelemetry, THIRTY_MIN_MS);
         })();
 
         // FAQ Toggle

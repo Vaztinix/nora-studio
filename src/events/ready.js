@@ -195,6 +195,14 @@ module.exports = {
             console.error('[Vote Reminder Scheduler Startup Error]:', err.message);
         }
 
+        // 📊 30-Minute Static Telemetry & Ping Scheduler (keeps static website updated even if API goes offline)
+        try {
+            const { startTelemetryScheduler } = require('../utils/telemetrySnapshot');
+            startTelemetryScheduler(client);
+        } catch (err) {
+            console.error('[Telemetry Scheduler Startup Error]:', err.message);
+        }
+
         console.log(`[System Check] Keeping an eye on things! Heartbeat active.`);
     },
 };
