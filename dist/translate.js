@@ -1899,7 +1899,7 @@
             // Helper to tag single element if it is a static leaf node or contains mixed content
             function tagEl(el) {
                 if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'IFRAME') return;
-                if (el.hasAttribute && (el.hasAttribute('data-no-translate') || el.classList?.contains('no-translate') || (el.closest && el.closest('[data-no-translate], .no-translate')))) return;
+                if (el.hasAttribute && (el.hasAttribute('data-no-translate') || el.classList?.contains('no-translate') || (el.closest && el.closest('[data-no-translate], .no-translate, .nora-searchable-select, .custom-dropdown-container, select')))) return;
                 
                 // If it has only a single text node child, tag the element itself
                 if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
@@ -1984,6 +1984,9 @@
     function ensureTranslationsInitialized() {
         if (isTranslationObserverStarted) return;
         isTranslationObserverStarted = true;
+        // Skip heavy full-body mutation observer on /dashboard to keep performance smooth
+        if (window.location.pathname.includes('/dashboard')) return;
+
         document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(input => {
             const placeholder = input.getAttribute('placeholder');
             if (placeholder && !input.hasAttribute('data-i18n-placeholder')) {
@@ -1999,20 +2002,20 @@
 
     window.applyLanguageTranslations = function(lang) {
         if (!lang || lang === 'en') {
-            if (isTranslationObserverStarted) {
-                document.querySelectorAll('[data-i18n]').forEach(el => {
-                    const originalFullText = el.getAttribute('data-i18n-original-text') || el.getAttribute('data-i18n');
-                    if (originalFullText) el.textContent = originalFullText;
-                });
-                document.querySelectorAll('[data-i18n-placeholder]').forEach(input => {
-                    const original = input.getAttribute('data-i18n-placeholder');
-                    if (original) input.setAttribute('placeholder', original);
-                });
-            }
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const originalFullText = el.getAttribute('data-i18n-original-text') || el.getAttribute('data-i18n');
+                if (originalFullText) el.textContent = originalFullText;
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(input => {
+                const original = input.getAttribute('data-i18n-placeholder');
+                if (original) input.setAttribute('placeholder', original);
+            });
             return;
         }
 
-        ensureTranslationsInitialized();
+        if (!window.location.pathname.includes('/dashboard')) {
+            ensureTranslationsInitialized();
+        }
 
         window.isTranslating = true;
         try {
@@ -2343,6 +2346,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         injectLanguageSelector();
         
+        if (window.location.pathname.includes('/dashboard')) return;
+
         const activeLang = localStorage.getItem('nora_language') || 'en';
         if (activeLang !== 'en') {
             ensureTranslationsInitialized();

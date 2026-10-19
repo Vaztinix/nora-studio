@@ -1037,6 +1037,10 @@
         .row.has-open-dropdown,
         .input-group.has-open-dropdown,
         .config-card.has-open-dropdown,
+        .row:has(.nora-searchable-select.is-open),
+        .panel:has(.nora-searchable-select.is-open),
+        .input-group:has(.nora-searchable-select.is-open),
+        .config-card:has(.nora-searchable-select.is-open),
         .row:has(.custom-dropdown-container.open),
         .row:has(.multiselect-container.open),
         .panel:has(.custom-dropdown-container.open),
@@ -1294,6 +1298,7 @@
             font-style: italic;
         }
         select.nora-searchable-enhanced {
+            display: none !important;
             position: absolute !important;
             opacity: 0 !important;
             pointer-events: none !important;
@@ -1968,10 +1973,15 @@
         .switch.small .slider:before { height: 12px; width: 12px; left: 3px; bottom: 3px; }
         .switch.small input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Custom Dropdown Styling */
+        /* Legacy Custom Dropdown Styling (deprecated/hidden to prevent duplicate dropdowns) */
         .custom-dropdown-container {
-            position: relative;
-            width: 100%;
+            display: none !important;
+            visibility: hidden !important;
+            position: absolute !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            overflow: hidden !important;
         }
         .custom-dropdown-trigger {
             background: rgba(0, 0, 0, 0.2);
@@ -15511,15 +15521,50 @@
         // ─────────────────────────────────────────────────────────────────
         // 🔍 UNIVERSAL SEARCHABLE SELECT COMPONENT
         // ─────────────────────────────────────────────────────────────────
-        window.initSearchableSelects = function() {
-            const selects = document.querySelectorAll('select:not(.nora-searchable-enhanced):not([multiple])');
+        window.initSearchableSelects = function(targetEl) {
+            let selects;
+            if (targetEl) {
+                const el = typeof targetEl === 'string' ? document.getElementById(targetEl) : targetEl;
+                if (!el || el.tagName !== 'SELECT') return;
+                selects = [el];
+            } else {
+                selects = Array.from(document.querySelectorAll('select:not([multiple])'));
+            }
+
+            // Always purge any duplicate legacy custom-dropdown containers
+            document.querySelectorAll('.custom-dropdown-container').forEach(c => c.remove());
+
             selects.forEach(select => {
-                if (select.closest('.nora-searchable-select') || select.hasAttribute('data-no-search')) return;
+                if (!select || select.closest('.nora-searchable-select') || select.closest('.discord-preview-container') || select.id === 'sidebar-server-dropdown') return;
 
+                // Ensure native select is completely hidden
                 select.classList.add('nora-searchable-enhanced');
+                select.style.setProperty('display', 'none', 'important');
 
-                const wrapper = document.createElement('div');
+                // Check if wrapper already exists
+                let wrapper = (select.id ? document.getElementById('nora-searchable-wrapper-' + select.id) : null);
+                if (!wrapper && select.nextElementSibling && select.nextElementSibling.classList.contains('nora-searchable-select')) {
+                    wrapper = select.nextElementSibling;
+                }
+
+                if (wrapper) {
+                    // Clean up any stray duplicates in the same parent container
+                    if (select.parentNode) {
+                        select.parentNode.querySelectorAll(':scope > .custom-dropdown-container').forEach(c => c.remove());
+                        const allWrappers = select.parentNode.querySelectorAll(':scope > .nora-searchable-select');
+                        allWrappers.forEach(w => {
+                            if (w !== wrapper) w.remove();
+                        });
+                    }
+                    if (typeof select.syncSearchableActiveState === 'function') {
+                        select.syncSearchableActiveState();
+                    }
+                    return;
+                }
+
+                wrapper = document.createElement('div');
                 wrapper.className = 'nora-searchable-select';
+                if (select.id) wrapper.id = 'nora-searchable-wrapper-' + select.id;
 
                 const trigger = document.createElement('div');
                 trigger.className = 'nora-searchable-trigger';
@@ -15545,6 +15590,7 @@
                     <input type="text" class="nora-searchable-search-input" placeholder="Search options..." autocomplete="off">
                 `;
                 const searchInput = searchWrap.querySelector('.nora-searchable-search-input');
+                searchInput.onclick = (e) => e.stopPropagation();
                 dropdown.appendChild(searchWrap);
 
                 const list = document.createElement('ul');
@@ -15554,64 +15600,104 @@
                 wrapper.appendChild(dropdown);
 
                 if (select.parentNode) {
+                    select.parentNode.querySelectorAll(':scope > .custom-dropdown-container').forEach(c => c.remove());
                     select.parentNode.insertBefore(wrapper, select.nextSibling);
                 }
 
-                function rebuildOptions() {
-                    list.innerHTML = '';
-                    const opts = Array.from(select.options);
-                    let selectedText = '';
-
-                    if (opts.length === 0) {
-                        const empty = document.createElement('div');
-                        empty.className = 'nora-searchable-empty';
-                        empty.textContent = 'No options available';
-                        list.appendChild(empty);
-                        label.textContent = 'None available';
-                        return;
+                function syncActiveState() {
+                    if (select.disabled) {
+                        wrapper.classList.add('is-disabled');
+                        trigger.style.opacity = '0.5';
+                        trigger.style.cursor = 'not-allowed';
+                        trigger.style.pointerEvents = 'none';
+                    } else {
+                        wrapper.classList.remove('is-disabled');
+                        trigger.style.opacity = '';
+                        trigger.style.cursor = '';
+                        trigger.style.pointerEvents = '';
                     }
 
-                    opts.forEach(opt => {
-                        const isSelected = (opt.value === select.value) || (!select.value && opt.selected);
-                        if (isSelected && !selectedText) {
-                            selectedText = opt.textContent;
+                    const currentVal = select.value;
+                    const matchedOpt = Array.from(select.options).find(o => o.value === currentVal) || (select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null) || select.options[0];
+                    if (matchedOpt) {
+                        label.textContent = matchedOpt.textContent;
+                        label.style.color = (matchedOpt.style && matchedOpt.style.color) ? matchedOpt.style.color : '#ffffff';
+                    } else {
+                        label.textContent = 'None available';
+                        label.style.color = '#ffffff';
+                    }
+
+                    list.querySelectorAll('.nora-searchable-item').forEach(it => {
+                        const sel = it.getAttribute('data-value') === currentVal;
+                        it.classList.toggle('is-selected', sel);
+                        const check = it.querySelector('.fa-check');
+                        if (sel && !check) {
+                            it.insertAdjacentHTML('beforeend', '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>');
+                        } else if (!sel && check) {
+                            check.remove();
+                        }
+                    });
+                }
+
+                let isRebuilding = false;
+                function rebuildOptions() {
+                    if (isRebuilding) return;
+                    isRebuilding = true;
+                    try {
+                        list.innerHTML = '';
+                        const opts = Array.from(select.options);
+
+                        if (opts.length === 0) {
+                            const empty = document.createElement('div');
+                            empty.className = 'nora-searchable-empty';
+                            empty.textContent = 'No options available';
+                            list.appendChild(empty);
+                            label.textContent = 'None available';
+                            label.style.color = '#ffffff';
+                            return;
                         }
 
-                        const li = document.createElement('li');
-                        li.className = 'nora-searchable-item' + (isSelected ? ' is-selected' : '') + (opt.disabled ? ' is-disabled' : '');
-                        li.setAttribute('data-value', opt.value);
-                        li.innerHTML = `<span>${escapeHtml(opt.textContent)}</span>${isSelected ? '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>' : ''}`;
+                        opts.forEach(opt => {
+                            const isSelected = (opt.value === select.value) || (!select.value && opt.selected);
 
-                        li.onclick = (e) => {
-                            e.stopPropagation();
-                            if (opt.disabled) return;
-                            select.value = opt.value;
-                            label.textContent = opt.textContent;
-                            wrapper.classList.remove('is-open');
-
-                            list.querySelectorAll('.nora-searchable-item').forEach(it => {
-                                const sel = it.getAttribute('data-value') === opt.value;
-                                it.classList.toggle('is-selected', sel);
-                                const check = it.querySelector('.fa-check');
-                                if (sel && !check) {
-                                    it.insertAdjacentHTML('beforeend', '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>');
-                                } else if (!sel && check) {
-                                    check.remove();
-                                }
-                            });
-
-                            select.dispatchEvent(new Event('change', { bubbles: true }));
-                            select.dispatchEvent(new Event('input', { bubbles: true }));
-                            if (typeof select.onchange === 'function') {
-                                select.onchange.call(select, new Event('change'));
+                            const li = document.createElement('li');
+                            li.className = 'nora-searchable-item' + (isSelected ? ' is-selected' : '') + (opt.disabled ? ' is-disabled' : '');
+                            li.setAttribute('data-value', opt.value);
+                            if (opt.style && opt.style.color) {
+                                li.style.color = opt.style.color;
                             }
-                        };
 
-                        list.appendChild(li);
-                    });
+                            if (select.id === 'new-feed-platform' && opt.value === 'twitch') {
+                                li.classList.add('is-disabled');
+                                if (!opt.disabled) opt.disabled = true;
+                            }
 
-                    const activeOpt = select.options[select.selectedIndex];
-                    label.textContent = activeOpt ? activeOpt.textContent : (selectedText || opts[0].textContent);
+                            li.innerHTML = `<span>${escapeHtml(opt.textContent)}</span>${isSelected ? '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>' : ''}`;
+
+                            li.onclick = (e) => {
+                                e.stopPropagation();
+                                if (opt.disabled) return;
+                                select.value = opt.value;
+                                wrapper.classList.remove('is-open');
+                                const pRow = wrapper.closest('.row, .panel, .input-group, .config-card');
+                                if (pRow) pRow.classList.remove('has-open-dropdown');
+
+                                syncActiveState();
+
+                                select.dispatchEvent(new Event('change', { bubbles: true }));
+                                select.dispatchEvent(new Event('input', { bubbles: true }));
+                                if (typeof select.onchange === 'function') {
+                                    select.onchange.call(select, new Event('change'));
+                                }
+                            };
+
+                            list.appendChild(li);
+                        });
+
+                        syncActiveState();
+                    } finally {
+                        isRebuilding = false;
+                    }
                 }
 
                 rebuildOptions();
@@ -15646,62 +15732,65 @@
                 trigger.onclick = (e) => {
                     e.stopPropagation();
                     const wasOpen = wrapper.classList.contains('is-open');
-                    document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => el.classList.remove('is-open'));
+                    document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => {
+                        el.classList.remove('is-open');
+                        const p = el.closest('.row, .panel, .input-group, .config-card');
+                        if (p) p.classList.remove('has-open-dropdown');
+                    });
                     if (!wasOpen) {
                         wrapper.classList.add('is-open');
+                        const pRow = wrapper.closest('.row, .panel, .input-group, .config-card');
+                        if (pRow) pRow.classList.add('has-open-dropdown');
                         searchInput.value = '';
                         searchInput.dispatchEvent(new Event('input'));
                         setTimeout(() => searchInput.focus(), 50);
                     }
                 };
 
+                // Guarded observer: observes options childList and select disabled state (NO recursive subtree attributes)
                 const observer = new MutationObserver(() => {
+                    if (isRebuilding) return;
                     rebuildOptions();
                 });
-                observer.observe(select, { childList: true, subtree: true });
+                observer.observe(select, { childList: true, attributes: true, attributeFilter: ['disabled'] });
 
                 select.addEventListener('change', () => {
-                    const activeOpt = select.options[select.selectedIndex];
-                    if (activeOpt) {
-                        label.textContent = activeOpt.textContent;
-                        list.querySelectorAll('.nora-searchable-item').forEach(it => {
-                            const sel = it.getAttribute('data-value') === select.value;
-                            it.classList.toggle('is-selected', sel);
-                            const check = it.querySelector('.fa-check');
-                            if (sel && !check) {
-                                it.insertAdjacentHTML('beforeend', '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>');
-                            } else if (!sel && check) {
-                                check.remove();
-                            }
-                        });
-                    }
+                    syncActiveState();
                 });
+
+                // Attach methods to select for manual invocation
+                select.refreshSearchableSelect = rebuildOptions;
+                select.refreshCustomDropdown = rebuildOptions;
+                select.syncSearchableActiveState = syncActiveState;
             });
         };
 
         // Close dropdowns on click outside or escape
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.nora-searchable-select')) {
-                document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => el.classList.remove('is-open'));
+                document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => {
+                    el.classList.remove('is-open');
+                    const p = el.closest('.row, .panel, .input-group, .config-card');
+                    if (p) p.classList.remove('has-open-dropdown');
+                });
             }
         });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => el.classList.remove('is-open'));
+                document.querySelectorAll('.nora-searchable-select.is-open').forEach(el => {
+                    el.classList.remove('is-open');
+                    const p = el.closest('.row, .panel, .input-group, .config-card');
+                    if (p) p.classList.remove('has-open-dropdown');
+                });
             }
         });
 
-        // Auto-run initSearchableSelects periodically and on interaction
-        setInterval(() => {
-            if (typeof window.initSearchableSelects === 'function') {
-                window.initSearchableSelects();
-            }
-        }, 1500);
+        // Safe initialization on load
         setTimeout(() => {
             if (typeof window.initSearchableSelects === 'function') {
                 window.initSearchableSelects();
             }
-        }, 300);
+        }, 100);
 
         window.saveUserProfile = saveUserProfile;
 
@@ -23543,169 +23632,37 @@
         }
 
         function initializeAllDropdowns() {
-            const selects = document.querySelectorAll('select[id]');
-            selects.forEach(sel => {
-                if (sel.id === 'sidebar-server-dropdown' || sel.closest('.discord-preview-container')) return;
-                initCustomDropdown(sel.id);
-            });
+            document.querySelectorAll('.custom-dropdown-container').forEach(el => el.remove());
+            if (typeof window.initSearchableSelects === 'function') {
+                window.initSearchableSelects();
+            }
         }
+
         function refreshCustomDropdown(selectId) {
-            const selectEl = document.getElementById(selectId);
+            const selectEl = typeof selectId === 'string' ? document.getElementById(selectId) : selectId;
             if (!selectEl) return;
-            const container = document.getElementById('custom-dropdown-container-' + selectId);
-            if (!container) return;
-            const menu = document.getElementById('custom-dropdown-menu-' + selectId);
-            const trigger = document.getElementById('custom-dropdown-trigger-' + selectId);
-            if (!menu || !trigger) return;
+            const legacy = document.getElementById('custom-dropdown-container-' + (selectEl.id || selectId));
+            if (legacy) legacy.remove();
 
-            let selectedText = '';
-            let hasActiveSelection = false;
-
-            Array.from(menu.children).forEach(item => {
-                const itemVal = item.getAttribute('data-value');
-                if (itemVal === selectEl.value) {
-                    selectedText = item.textContent;
-                    hasActiveSelection = true;
-                    item.style.color = 'var(--primary)';
-                    item.style.fontWeight = '700';
-                } else {
-                    item.style.color = '';
-                    item.style.fontWeight = '';
-                }
-            });
-
-            if (!hasActiveSelection && selectEl.options.length > 0) {
-                const selectedOpt = Array.from(selectEl.options).find(opt => opt.value === selectEl.value) || selectEl.options[0];
-                selectedText = selectedOpt.textContent;
+            if (typeof selectEl.refreshSearchableSelect === 'function') {
+                selectEl.refreshSearchableSelect();
+            } else if (typeof selectEl.refreshCustomDropdown === 'function') {
+                selectEl.refreshCustomDropdown();
+            } else if (typeof window.initSearchableSelects === 'function') {
+                window.initSearchableSelects(selectEl);
             }
-            trigger.innerHTML = `${escapeHtml(selectedText)} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
         }
 
-        /* Custom Single-Select Dropdown Logic */
+        /* Custom Single-Select Dropdown Logic - unified with Searchable Selects */
         function initCustomDropdown(selectId) {
-            const selectEl = document.getElementById(selectId);
+            const selectEl = typeof selectId === 'string' ? document.getElementById(selectId) : selectId;
             if (!selectEl) return;
+            const legacy = document.getElementById('custom-dropdown-container-' + (selectEl.id || selectId));
+            if (legacy) legacy.remove();
 
-            // Hide the native select element
-            selectEl.style.display = 'none';
-
-            // Clean up any existing custom dropdown container for this select to prevent duplicates
-            const existingContainer = document.getElementById('custom-dropdown-container-' + selectId);
-            if (existingContainer) {
-                existingContainer.remove();
+            if (typeof window.initSearchableSelects === 'function') {
+                window.initSearchableSelects(selectEl);
             }
-
-            const container = document.createElement('div');
-            container.className = 'custom-dropdown-container';
-            container.id = 'custom-dropdown-container-' + selectId;
-
-            const trigger = document.createElement('div');
-            trigger.className = 'custom-dropdown-trigger';
-            trigger.id = 'custom-dropdown-trigger-' + selectId;
-
-            const menu = document.createElement('div');
-            menu.className = 'custom-dropdown-menu';
-            menu.id = 'custom-dropdown-menu-' + selectId;
-
-            container.appendChild(trigger);
-            container.appendChild(menu);
-            selectEl.parentNode.insertBefore(container, selectEl.nextSibling);
-
-            // Function to rebuild options from the native select
-            function rebuildOptions() {
-                menu.innerHTML = '';
-                let selectedText = '';
-                let hasActiveSelection = false;
-
-                Array.from(selectEl.options).forEach((opt, idx) => {
-                    const item = document.createElement('div');
-                    item.className = 'custom-dropdown-item';
-                    item.textContent = opt.textContent;
-                    item.setAttribute('data-value', opt.value);
-
-                    // Twitch is disabled/grayed out
-                    if (selectId === 'new-feed-platform' && opt.value === 'twitch') {
-                        item.classList.add('disabled');
-                        opt.disabled = true;
-                    }
-
-                    if (opt.selected) {
-                        selectedText = opt.textContent;
-                        hasActiveSelection = true;
-                        item.style.color = 'var(--primary)';
-                        item.style.fontWeight = '700';
-                    }
-
-                    item.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (item.classList.contains('disabled')) return;
-
-                        selectEl.value = opt.value;
-                        
-                        // Trigger change event on native select
-                        const event = new Event('change', { bubbles: true });
-                        selectEl.dispatchEvent(event);
-
-                        rebuildOptions();
-                        menu.style.display = 'none';
-                        container.classList.remove('open');
-                        const pRow = container.closest('.row, .panel, .input-group, .config-card');
-                        if (pRow) pRow.classList.remove('has-open-dropdown');
-                    });
-
-                    menu.appendChild(item);
-                });
-
-                if (!hasActiveSelection && selectEl.options.length > 0) {
-                    selectedText = selectEl.options[0].textContent;
-                }
-                trigger.innerHTML = `${escapeHtml(selectedText)} <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 8px;"></i>`;
-            }
-
-            rebuildOptions();
-
-            // Toggle menu display
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                // Close other custom dropdowns
-                document.querySelectorAll('.custom-dropdown-container').forEach(c => {
-                    if (c !== container) {
-                        c.classList.remove('open');
-                        const m = c.querySelector('.custom-dropdown-menu');
-                        if (m) m.style.display = 'none';
-                        const p = c.closest('.row, .panel, .input-group, .config-card');
-                        if (p) p.classList.remove('has-open-dropdown');
-                    }
-                });
-
-                const isOpen = menu.style.display === 'flex';
-                if (isOpen) {
-                    menu.style.display = 'none';
-                    container.classList.remove('open');
-                    const pRow = container.closest('.row, .panel, .input-group, .config-card');
-                    if (pRow) pRow.classList.remove('has-open-dropdown');
-                } else {
-                    rebuildOptions(); // Refresh items in case options changed dynamically
-                    menu.style.display = 'flex';
-                    container.classList.add('open');
-                    const pRow = container.closest('.row, .panel, .input-group, .config-card');
-                    if (pRow) pRow.classList.add('has-open-dropdown');
-                }
-            });
-
-            // Close when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!container.contains(e.target)) {
-                    menu.style.display = 'none';
-                    container.classList.remove('open');
-                    const pRow = container.closest('.row, .panel, .input-group, .config-card');
-                    if (pRow) pRow.classList.remove('has-open-dropdown');
-                }
-            });
-
-            // Expose a helper to refresh the dropdown UI if options are modified
-            selectEl.refreshCustomDropdown = rebuildOptions;
         }
 
         
@@ -28096,7 +28053,8 @@ document.addEventListener('keydown', (e) => {
 
     window.addEventListener('resize', syncMobileActionBar);
     document.addEventListener('click', function() { setTimeout(syncMobileActionBar, 50); });
-    setInterval(syncMobileActionBar, 500);
+    // Safe fallback sync
+    setInterval(syncMobileActionBar, 5000);
 })();
 
 // Live Dynamic System Status Synchronizer
