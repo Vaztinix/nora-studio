@@ -9098,8 +9098,8 @@
                         <!-- Chat Feed Window -->
                         <div id="ai-sandbox-messages" style="height: 260px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
                             <div style="display: flex; gap: 10px; align-items: flex-start;">
-                                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #fff; flex-shrink: 0;">
-                                    <i class="fas fa-robot"></i>
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    <img src="nora.png" alt="Nora" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" onerror="this.onerror=null; this.src='/nora.png';">
                                 </div>
                                 <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px; max-width: 80%;">
                                     <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; margin-bottom: 3px;">Nora Assistant</div>
@@ -28670,8 +28670,8 @@ try {
             if (box) {
                 box.innerHTML = `
                     <div style="display: flex; gap: 12px; align-items: flex-start;">
-                        <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0;">
-                            <i class="fas fa-robot"></i>
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                            <img src="nora.png" alt="Nora" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;" onerror="this.onerror=null; this.src='/nora.png';">
                         </div>
                         <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
                             <div style="font-size: 0.75rem; color: #c084fc; font-weight: 700; margin-bottom: 4px;">Nora Assistant</div>
@@ -28706,8 +28706,11 @@ try {
             typingMsg.id = 'ai-typing-indicator';
             typingMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start;';
             typingMsg.innerHTML = `
-                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0;">
-                    <i class="fas fa-spinner fa-spin"></i>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; flex-shrink: 0;">
+                    <img src="nora.png" alt="Nora" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; opacity: 0.75;" onerror="this.onerror=null; this.src='/nora.png';">
+                    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-spinner fa-spin" style="color: #fff; font-size: 0.9rem;"></i>
+                    </div>
                 </div>
                 <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
                     <div style="font-size: 0.75rem; color: #c084fc; font-weight: 700; margin-bottom: 4px;">Nora Assistant</div>
@@ -28742,8 +28745,8 @@ try {
                 const noraMsg = document.createElement('div');
                 noraMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start;';
                 noraMsg.innerHTML = `
-                    <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0;">
-                        <i class="fas fa-robot"></i>
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                        <img src="nora.png" alt="Nora" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;" onerror="this.onerror=null; this.src='/nora.png';">
                     </div>
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; max-width: 80%;">
                         <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px;">
