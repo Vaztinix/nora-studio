@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="nora.png">
     <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Poppins:wght@400;600;700;800;900&family=Montserrat:wght@400;600;700;800;900&family=Roboto:wght@400;500;700;900&family=Bebas+Neue&family=Orbitron:wght@500;700;900&family=Cinzel:wght@600;700;900&family=Righteous&family=Rajdhani:wght@500;600;700&family=Press+Start+2P&family=Fredoka:wght@500;600;700&family=Chakra+Petch:wght@500;600;700&family=Russo+One&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&family=Audiowide&family=Black+Ops+One&family=Exo+2:wght@500;600;700;800&family=Lexend:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/translate.js"></script>
     <script src="/nora-sentinel.js?v=2.2" defer></script>
@@ -3856,7 +3857,7 @@
                 if (!window.previousSettings || Object.keys(window.previousSettings).length === 0) {
                     return diffs;
                 }
-                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId'];
+                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'levelUpDisablePing', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId'];
 
                 KEYS_ARRAY.forEach(k => {
                     const el = document.getElementById('setting-' + k);
@@ -5635,6 +5636,90 @@
                                             <button type="button" class="btn-outline" style="padding: 0 12px; font-size: 0.78rem; color: #ff5555; border-color: rgba(255,85,85,0.25); white-space: nowrap;" onclick="clearUserRankCardBg()"><i class="fas fa-trash-alt"></i> Clear</button>
                                         </div>
                                     </div>
+                                <!-- Typography & Font Manager Section -->
+                                <div id="user-rankcard-font-manager-section" style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                        <div>
+                                            <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 6px;">
+                                                <i class="fas fa-font" style="color: #c084fc;"></i> Font Manager
+                                            </label>
+                                            <p style="margin: 2px 0 0 0; font-size: 0.72rem; color: var(--muted);">Choose and star custom fonts for your card typography.</p>
+                                        </div>
+                                        <input type="hidden" id="user-pref-rankCardFont" value="Outfit">
+                                        <span id="active-font-badge" style="font-size: 0.72rem; font-weight: 700; color: #c084fc; background: rgba(192,132,252,0.12); border: 1px solid rgba(192,132,252,0.25); padding: 2px 8px; border-radius: 6px;">Outfit</span>
+                                    </div>
+
+                                    <!-- Searchable Font Filter Input -->
+                                    <div style="position: relative;">
+                                        <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--muted); pointer-events: none;"></i>
+                                        <input type="text" id="rank-font-search-input" placeholder="Search fonts (e.g. Outfit, Cyber, Serif, Impact)..." oninput="filterRankFonts(this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 7px 10px 7px 28px; border-radius: 8px; font-size: 0.78rem; outline: none;">
+                                    </div>
+
+                                    <!-- Font Browser List Container -->
+                                    <div id="rank-fonts-list-container" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                                        <!-- Dynamically populated via renderRankFontsList() -->
+                                    </div>
+                                </div>
+
+                                <!-- Element Y-Axis Positioning Section -->
+                                <div id="user-rankcard-offsets-section" style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 12px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                        <div>
+                                            <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 6px;">
+                                                <i class="fas fa-arrows-up-down" style="color: #38bdf8;"></i> Element Y-Axis Positioning
+                                            </label>
+                                            <p style="margin: 2px 0 0 0; font-size: 0.72rem; color: var(--muted);">Shift card components up or down within safe boundaries (-25px to +25px).</p>
+                                        </div>
+                                        <button type="button" class="btn-outline" onclick="resetAllRankCardOffsets()" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; color: var(--muted); cursor: pointer;">Reset All</button>
+                                    </div>
+
+                                    <!-- Avatar Y Slider -->
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-user-circle" style="color: #a78bfa; margin-right: 4px;"></i> Profile Picture</span>
+                                            <span id="val-user-pref-avatarY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input type="range" id="user-pref-avatarY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('avatarY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
+                                            <button type="button" onclick="resetRankOffset('avatarY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Username & Level Y Slider -->
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-signature" style="color: #f472b6; margin-right: 4px;"></i> Username & Level</span>
+                                            <span id="val-user-pref-usernameY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input type="range" id="user-pref-usernameY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('usernameY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
+                                            <button type="button" onclick="resetRankOffset('usernameY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rank Badge Y Slider -->
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-medal" style="color: #fbbf24; margin-right: 4px;"></i> Rank Badge</span>
+                                            <span id="val-user-pref-rankY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input type="range" id="user-pref-rankY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('rankY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
+                                            <button type="button" onclick="resetRankOffset('rankY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Progress Bar Y Slider -->
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-bars-progress" style="color: #34d399; margin-right: 4px;"></i> Progress Bar</span>
+                                            <span id="val-user-pref-progressY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input type="range" id="user-pref-progressY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('progressY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
+                                            <button type="button" onclick="resetRankOffset('progressY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <button class="save-btn" style="width: 100%; padding: 11px; font-size: 0.88rem; font-weight: 600; border-radius: 10px; background: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="saveUserProfile()"><i class="fas fa-check"></i> Save Changes</button>
@@ -5739,22 +5824,22 @@
                                             <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,10,16,0.85) 0%, rgba(9,10,16,0.65) 60%, rgba(9,10,16,0.45) 100%); pointer-events: none;"></div>
 
                                             <div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 12px; width: 100%;">
-                                                <div style="position: relative; flex-shrink: 0;">
+                                                <div id="live-rank-card-avatar-wrap" style="position: relative; flex-shrink: 0; transition: transform 0.15s ease;">
                                                     <img id="live-rank-card-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 54px; height: 54px; border-radius: 50%; border: 3px solid #7c3aed; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                                                 </div>
                                                 
                                                 <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
                                                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                                        <div style="display: flex; flex-direction: column; min-width: 0;">
+                                                        <div id="live-rank-card-user-wrap" style="display: flex; flex-direction: column; min-width: 0; transition: transform 0.15s ease;">
                                                             <span id="live-rank-card-name" style="font-weight: 800; font-size: 0.92rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@User</span>
                                                             <span id="live-rank-card-level-badge" style="font-size: 0.68rem; font-weight: 800; color: #c084fc; letter-spacing: 0.5px;">LEVEL 12</span>
                                                         </div>
-                                                        <div style="background: rgba(0,0,0,0.65); padding: 3px 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); font-size: 0.68rem; font-weight: 800; color: #fff; white-space: nowrap;">
+                                                        <div id="live-rank-card-rank-wrap" style="background: rgba(0,0,0,0.65); padding: 3px 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); font-size: 0.68rem; font-weight: 800; color: #fff; white-space: nowrap; transition: transform 0.15s ease;">
                                                             RANK <span id="live-rank-card-rank-val" style="color: #7c3aed;">#1</span>
                                                         </div>
                                                     </div>
 
-                                                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                                                    <div id="live-rank-card-progress-wrap" style="display: flex; flex-direction: column; gap: 3px; transition: transform 0.15s ease;">
                                                         <div style="width: 100%; height: 7px; background: rgba(0,0,0,0.6); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
                                                             <div id="live-rank-card-progress-bar" style="width: 68%; height: 100%; background: linear-gradient(90deg, #7c3aed, #38bdf8); border-radius: 6px; transition: all 0.3s ease;"></div>
                                                         </div>
@@ -8369,6 +8454,20 @@
                                     <button type="button" class="btn-outline" style="font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;" onclick="insertLevelPlaceholder('{level}')"><code>{level}</code></button>
                                     <button type="button" class="btn-outline" style="font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;" onclick="insertLevelPlaceholder('{guild}')"><code>{guild}</code></button>
                                     <button type="button" class="btn-outline" style="font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;" onclick="insertLevelPlaceholder('{membercount}')"><code>{membercount}</code></button>
+                                </div>
+
+                                <!-- Silent Level-Up Announcements Toggle -->
+                                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.88rem; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-bell-slash" style="color: #94a3b8; font-size: 0.85rem;"></i>
+                                            Silent Level-Up Announcements
+                                        </h4>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--muted); line-height: 1.4;">
+                                            Keep sending celebratory level-up messages and cards, but suppress user @mentions so members aren't pinged.
+                                        </p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="setting-levelUpDisablePing"><span class="slider"></span></label>
                                 </div>
 
                                 <!-- Live Alert Mockup -->
@@ -12864,7 +12963,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'levelUpDisablePing', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId'];
 
 
 

@@ -2511,7 +2511,7 @@ app.post('/api/user/profile', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
 
-        const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts, displayName, overwriteServerPresets, showAvatarInRankCard, rankCardThemeMode, rankCardCustomColor, rankCardBackgroundImage, teamCardDisplayName, teamCardDescription, teamCardBadges, teamCardLinks } = req.body;
+        const { robloxPublic, profilePublic, bio, language, dashboardSettings, dmNotificationsEnabled, dmNotifLevels, dmNotifModeration, dmNotifBroadcasts, displayName, overwriteServerPresets, showAvatarInRankCard, rankCardThemeMode, rankCardCustomColor, rankCardBackgroundImage, rankCardFont, rankCardStarredFonts, rankCardAvatarY, rankCardProgressY, rankCardRankY, rankCardUsernameY, teamCardDisplayName, teamCardDescription, teamCardBadges, teamCardLinks } = req.body;
 
         if (teamCardDisplayName !== undefined || teamCardDescription !== undefined || teamCardLinks !== undefined) {
             prefs.hasTeamCard = true;
@@ -2534,6 +2534,12 @@ app.post('/api/user/profile', async (req, res) => {
         if (rankCardThemeMode !== undefined) prefs.rankCardThemeMode = rankCardThemeMode;
         if (rankCardCustomColor !== undefined) prefs.rankCardCustomColor = rankCardCustomColor;
         if (rankCardBackgroundImage !== undefined) prefs.rankCardBackgroundImage = rankCardBackgroundImage;
+        if (rankCardFont !== undefined) prefs.rankCardFont = rankCardFont;
+        if (rankCardStarredFonts !== undefined) prefs.rankCardStarredFonts = typeof rankCardStarredFonts === 'object' ? JSON.stringify(rankCardStarredFonts) : rankCardStarredFonts;
+        if (rankCardAvatarY !== undefined) prefs.rankCardAvatarY = Math.max(-25, Math.min(25, parseInt(rankCardAvatarY, 10) || 0));
+        if (rankCardProgressY !== undefined) prefs.rankCardProgressY = Math.max(-25, Math.min(25, parseInt(rankCardProgressY, 10) || 0));
+        if (rankCardRankY !== undefined) prefs.rankCardRankY = Math.max(-25, Math.min(25, parseInt(rankCardRankY, 10) || 0));
+        if (rankCardUsernameY !== undefined) prefs.rankCardUsernameY = Math.max(-25, Math.min(25, parseInt(rankCardUsernameY, 10) || 0));
         if (language !== undefined) {
             prefs.language = language;
             prefs.customTheme = language;

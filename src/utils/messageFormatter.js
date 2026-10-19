@@ -14,7 +14,7 @@
  * @param {number|string} [level=null] - Optional level milestone
  * @returns {string} formatted string
  */
-function formatMessage(template, member, level = null) {
+function formatMessage(template, member, level = null, disablePing = false) {
     if (!template) return '';
     
     const guild = member.guild;
@@ -31,8 +31,10 @@ function formatMessage(template, member, level = null) {
         username = member.username || '';
     }
     
+    const userDisplay = disablePing ? `**${username}**` : `<@${userId}>`;
+
     return template
-        .replace(/{user}/g, `<@${userId}>`)
+        .replace(/{user}/g, userDisplay)
         .replace(/{username}/g, username)
         .replace(/{id}/g, userId)
         .replace(/{guild}/g, guild ? guild.name : '')
