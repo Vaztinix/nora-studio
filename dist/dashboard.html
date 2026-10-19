@@ -150,16 +150,34 @@
             --rail-width: 210px;
         }
 
-        /* Ticket King Layout - Sidebar toggling */
-        body .sidebar { display: none !important; }
-        body:not(.in-config) .app-layout {
-            padding-left: 20px !important;
-            padding-right: 20px !important;
-            max-width: 1850px !important;
-            margin: 0 auto !important;
-            width: 100% !important;
-            display: block !important;
+        /* Layout - Restored original desktop sidebar navigation layout */
+        @media (min-width: 993px) {
+            body:not(.in-config) .sidebar {
+                display: flex !important;
+            }
+            body.in-config .sidebar {
+                display: none !important;
+            }
+            body:not(.in-config) .app-layout {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 30px !important;
+                max-width: 1850px !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+                padding: 40px 20px !important;
+                box-sizing: border-box !important;
+            }
+            body:not(.in-config) .main-content {
+                flex: 1 !important;
+                min-width: 0 !important;
+            }
+            /* Hide topbar global nav buttons on desktop so original sidebar is the primary navigation */
+            #global-nav-links {
+                display: none !important;
+            }
         }
+
         body.in-config .app-layout {
             padding: 30px 40px 100px 40px !important;
             max-width: 1850px !important;
@@ -168,10 +186,18 @@
             display: block !important;
             box-sizing: border-box !important;
         }
+
         body.in-config #view-config {
+            display: block !important;
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+        }
+        body:not(.in-config) #view-config {
+            display: none !important;
+        }
+        body.in-config #view-greeting {
+            display: none !important;
         }
 
         /* Show breadcrumbs only in config view */
@@ -181,9 +207,6 @@
         body.in-config #cfg-breadcrumbs {
             display: flex !important;
         }
-
-        /* Show global nav links only when not in config view */
-        #global-nav-links { display: flex !important; align-items: center; gap: 10px; }
 
         /* Global Nav Button styling */
         .global-nav-btn {
@@ -5400,7 +5423,7 @@
     <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeMobileNav()"></div>
 
     <div class="app-layout">
-        <aside class="sidebar" style="display: none;">
+        <aside class="sidebar">
             <!-- User Profile in Sidebar -->
             <div class="user-profile" data-no-translate>
                 <div style="position: relative;">
@@ -5414,10 +5437,10 @@
             </div>
 
             <div class="sidebar-nav" style="width: 100%;">
-                <button class="v-tab active" data-tab="servers" onclick="showTab('servers')"><i class="fas fa-server"></i> <span>Servers</span></button>
-                <button class="v-tab" data-tab="profile" onclick="showTab('profile')"><i class="fas fa-user-circle"></i> <span>Profile</span></button>
-                <button class="v-tab" data-tab="notifications" onclick="showTab('notifications')"><i class="fas fa-bell"></i> <span>Notifications</span> <span id="notif-badge" class="notif-badge" style="display: none;">0</span></button>
-                <button class="v-tab" data-tab="prefs" onclick="showTab('prefs')"><i class="fas fa-cog"></i> <span>Settings</span></button>
+                <button class="v-tab active" data-tab="servers" onclick="showTab('servers')" data-tooltip="Servers"><i class="fas fa-server"></i> <span>Servers</span></button>
+                <button class="v-tab" data-tab="profile" onclick="showTab('profile')" data-tooltip="Profile"><i class="fas fa-user-circle"></i> <span>Profile</span></button>
+                <button class="v-tab" data-tab="notifications" onclick="showTab('notifications')" data-tooltip="Notifications"><i class="fas fa-bell"></i> <span>Notifications</span> <span id="notif-badge" class="notif-badge" style="display: none;">0</span></button>
+                <button class="v-tab" data-tab="prefs" onclick="showTab('prefs')" data-tooltip="Personal Settings & Entitlements"><i class="fas fa-user-cog"></i> <span>Personal Settings</span></button>
             </div>
 
             <!-- Logout Button in Sidebar -->
@@ -5636,91 +5659,6 @@
                                             <button type="button" class="btn-outline" style="padding: 0 12px; font-size: 0.78rem; color: #ff5555; border-color: rgba(255,85,85,0.25); white-space: nowrap;" onclick="clearUserRankCardBg()"><i class="fas fa-trash-alt"></i> Clear</button>
                                         </div>
                                     </div>
-                                <!-- Typography & Font Manager Section -->
-                                <div id="user-rankcard-font-manager-section" style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                                        <div>
-                                            <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 6px;">
-                                                <i class="fas fa-font" style="color: #c084fc;"></i> Font Manager
-                                            </label>
-                                            <p style="margin: 2px 0 0 0; font-size: 0.72rem; color: var(--muted);">Choose and star custom fonts for your card typography.</p>
-                                        </div>
-                                        <input type="hidden" id="user-pref-rankCardFont" value="Outfit">
-                                        <span id="active-font-badge" style="font-size: 0.72rem; font-weight: 700; color: #c084fc; background: rgba(192,132,252,0.12); border: 1px solid rgba(192,132,252,0.25); padding: 2px 8px; border-radius: 6px;">Outfit</span>
-                                    </div>
-
-                                    <!-- Searchable Font Filter Input -->
-                                    <div style="position: relative;">
-                                        <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--muted); pointer-events: none;"></i>
-                                        <input type="text" id="rank-font-search-input" placeholder="Search fonts (e.g. Outfit, Cyber, Serif, Impact)..." oninput="filterRankFonts(this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 7px 10px 7px 28px; border-radius: 8px; font-size: 0.78rem; outline: none;">
-                                    </div>
-
-                                    <!-- Font Browser List Container -->
-                                    <div id="rank-fonts-list-container" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
-                                        <!-- Dynamically populated via renderRankFontsList() -->
-                                    </div>
-                                </div>
-
-                                <!-- Element Y-Axis Positioning Section -->
-                                <div id="user-rankcard-offsets-section" style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 12px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                                        <div>
-                                            <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 6px;">
-                                                <i class="fas fa-arrows-up-down" style="color: #38bdf8;"></i> Element Y-Axis Positioning
-                                            </label>
-                                            <p style="margin: 2px 0 0 0; font-size: 0.72rem; color: var(--muted);">Shift card components up or down within safe boundaries (-25px to +25px).</p>
-                                        </div>
-                                        <button type="button" class="btn-outline" onclick="resetAllRankCardOffsets()" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; color: var(--muted); cursor: pointer;">Reset All</button>
-                                    </div>
-
-                                    <!-- Avatar Y Slider -->
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
-                                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-user-circle" style="color: #a78bfa; margin-right: 4px;"></i> Profile Picture</span>
-                                            <span id="val-user-pref-avatarY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="range" id="user-pref-avatarY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('avatarY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
-                                            <button type="button" onclick="resetRankOffset('avatarY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Username & Level Y Slider -->
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
-                                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-signature" style="color: #f472b6; margin-right: 4px;"></i> Username & Level</span>
-                                            <span id="val-user-pref-usernameY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="range" id="user-pref-usernameY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('usernameY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
-                                            <button type="button" onclick="resetRankOffset('usernameY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Rank Badge Y Slider -->
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
-                                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-medal" style="color: #fbbf24; margin-right: 4px;"></i> Rank Badge</span>
-                                            <span id="val-user-pref-rankY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="range" id="user-pref-rankY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('rankY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
-                                            <button type="button" onclick="resetRankOffset('rankY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Progress Bar Y Slider -->
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
-                                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-bars-progress" style="color: #34d399; margin-right: 4px;"></i> Progress Bar</span>
-                                            <span id="val-user-pref-progressY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="range" id="user-pref-progressY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('progressY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
-                                            <button type="button" onclick="resetRankOffset('progressY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
 
                                 <button class="save-btn" style="width: 100%; padding: 11px; font-size: 0.88rem; font-weight: 600; border-radius: 10px; background: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="saveUserProfile()"><i class="fas fa-check"></i> Save Changes</button>
                             </div>
@@ -12957,6 +12895,20 @@
             console.warn('[Token Parse Notice]:', e);
         }
 
+        window.getApiBaseUrl = function() {
+            if (window.__NORA_API_BASE_URL__) return window.__NORA_API_BASE_URL__.replace(/\/$/, '');
+            const custom = localStorage.getItem('nora_api_url');
+            if (custom) return custom.replace(/\/$/, '');
+            const host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || !host || window.location.protocol === 'file:') {
+                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
+                    ? window.location.origin 
+                    : 'http://localhost:3000';
+            }
+            if (host === 'api.vaztinix.dev') return window.location.origin;
+            return 'https://api.vaztinix.dev';
+        };
+
         let authOverlay = null;
         let viewServers, viewConfig, viewPrefs, viewNotifications, viewProfile;
         let currentServerId = null;
@@ -19026,6 +18978,11 @@
                     if (targetServers && targetServers.style) targetServers.style.display = 'block';
                     document.querySelectorAll('.right-server-item').forEach(item => item.classList.remove('selected'));
                     
+                    // Highlight active sidebar vertical tab (.v-tab)
+                    document.querySelectorAll('.v-tab').forEach(btn => btn.classList.remove('active'));
+                    const activeVTabServers = document.querySelector(`.v-tab[data-tab="${tabId}"]`);
+                    if (activeVTabServers) activeVTabServers.classList.add('active');
+
                     // Highlight active global nav topbar tab
                     document.querySelectorAll('.global-nav-btn').forEach(btn => btn.classList.remove('active'));
                     const activeBtn = document.querySelector(`.global-nav-btn[data-tab="${tabId}"]`);
@@ -19054,6 +19011,11 @@
                         }
                     });
                     
+                    // Highlight active sidebar vertical tab (.v-tab)
+                    document.querySelectorAll('.v-tab').forEach(btn => btn.classList.remove('active'));
+                    const activeVTabOther = document.querySelector(`.v-tab[data-tab="${tabId}"]`);
+                    if (activeVTabOther) activeVTabOther.classList.add('active');
+
                     // Highlight active global nav topbar tab
                     document.querySelectorAll('.global-nav-btn').forEach(btn => btn.classList.remove('active'));
                     const activeBtn = document.querySelector(`.global-nav-btn[data-tab="${tabId}"]`);
@@ -19855,7 +19817,8 @@
             document.getElementById('cfg-name').innerHTML = `${escapeHtml(g.name)} <div id="cfg-status" class="status-indicator online" title="Online"></div>`;
             
             [viewServers, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
-            viewConfig.style.display = 'block';
+            const configEl = viewConfig || document.getElementById('view-config');
+            if (configEl) configEl.style.display = 'block';
             document.body.classList.add('in-config');
             
             // Update breadcrumbs
@@ -24926,7 +24889,7 @@
                 const topggWebUrlFinal = document.getElementById('topgg-webhook-url-final');
                 const topggAuthInput = document.getElementById('setting-topggWebhookAuth');
                 
-                const API_WEBHOOK_BASE = window.getApiBaseUrl() || window.location.origin;
+                const API_WEBHOOK_BASE = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') || window.location.origin;
                 if (topggWebUrl) topggWebUrl.value = `${API_WEBHOOK_BASE}/api/webhooks/topgg/${currentServerId}`;
                 if (topggWebUrlFinal) topggWebUrlFinal.value = `${API_WEBHOOK_BASE}/api/webhooks/topgg/${currentServerId}`;
                 
@@ -28884,15 +28847,15 @@ try {
                     <!-- Scrim gradient overlay to match rank card -->
                     <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(5,7,13,0.45) 0%, rgba(5,7,13,0.25) 50%, rgba(5,7,13,0.40) 100%);"></div>
                     <!-- Mockup Avatar Circle -->
-                    <div style="position: absolute; left: 5%; top: 50%; transform: translateY(-50%); width: 14%; aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(56, 189, 248, 0.6); background: rgba(10, 15, 26, 0.45); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); font-size: 0.9rem;">
+                    <div id="crop-guide-avatar-wrap" style="position: absolute; left: 5%; top: 50%; transform: translateY(-50%); width: 14%; aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(56, 189, 248, 0.6); background: rgba(10, 15, 26, 0.45); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); font-size: 0.9rem; transition: transform 0.1s ease;">
                         <i class="fas fa-user"></i>
                     </div>
                     <!-- Mockup Header & Level Bar -->
-                    <div style="position: absolute; left: 24%; top: 22%; right: 5%; display: flex; justify-content: space-between; align-items: center;">
+                    <div id="crop-guide-user-wrap" style="position: absolute; left: 24%; top: 22%; right: 5%; display: flex; justify-content: space-between; align-items: center; transition: transform 0.1s ease;">
                         <div style="height: 14px; width: 28%; background: rgba(255,255,255,0.3); border-radius: 4px;"></div>
-                        <div style="height: 18px; width: 15%; background: rgba(56, 189, 248, 0.3); border: 1px solid rgba(56,189,248,0.5); border-radius: 9px;"></div>
+                        <div id="crop-guide-rank-wrap" style="height: 18px; width: 15%; background: rgba(56, 189, 248, 0.3); border: 1px solid rgba(56,189,248,0.5); border-radius: 9px; transition: transform 0.1s ease;"></div>
                     </div>
-                    <div style="position: absolute; left: 24%; bottom: 35%; right: 5%; height: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; overflow: hidden;">
+                    <div id="crop-guide-progress-wrap" style="position: absolute; left: 24%; bottom: 35%; right: 5%; height: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; overflow: hidden; transition: transform 0.1s ease;">
                         <div style="width: 45%; height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8);"></div>
                     </div>
                     <!-- Safe crop boundary tag -->
@@ -28945,6 +28908,96 @@ try {
                         <input type="checkbox" id="crop-toggle-guides" checked onchange="toggleCropGuides(this.checked)" style="accent-color: #38bdf8;">
                         Show layout guides
                     </label>
+                </div>
+            </div>
+
+            <!-- Typography Font Manager & Element Y-Axis Positioning inside Framing Popup -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+                
+                <!-- Typography & Font Manager Section -->
+                <div id="user-rankcard-font-manager-section" style="background: rgba(255, 255, 255, 0.02); padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.06); display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-font" style="color: #c084fc;"></i> Font Typography Manager
+                            </label>
+                            <p style="margin: 2px 0 0 0; font-size: 0.72rem; color: var(--muted);">Select your preferred typography family for the rank card.</p>
+                        </div>
+                        <input type="hidden" id="user-pref-rankCardFont" value="Outfit">
+                        <span id="active-font-badge" style="font-size: 0.72rem; font-weight: 700; color: #c084fc; background: rgba(192,132,252,0.12); border: 1px solid rgba(192,132,252,0.25); padding: 2px 8px; border-radius: 6px;">Outfit</span>
+                    </div>
+
+                    <!-- Searchable Font Filter Input -->
+                    <div style="position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--muted); pointer-events: none;"></i>
+                        <input type="text" id="rank-font-search-input" placeholder="Search fonts (e.g. Outfit, Inter, Bebas, Roboto)..." oninput="filterRankFonts(this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 7px 10px 7px 28px; border-radius: 8px; font-size: 0.78rem; outline: none;">
+                    </div>
+
+                    <!-- Font Browser List Container -->
+                    <div id="rank-fonts-list-container" style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; padding-right: 4px;">
+                        <!-- Dynamically populated via renderRankFontsList() -->
+                    </div>
+                </div>
+
+                <!-- Element Y-Axis Positioning Section -->
+                <div id="user-rankcard-offsets-section" style="background: rgba(255, 255, 255, 0.02); padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.06); display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-arrows-up-down" style="color: #38bdf8;"></i> Element Y-Axis Positioning
+                            </label>
+                            <p style="margin: 2px 0 0 0; font-size: 0.72rem; color: var(--muted);">Shift card components up or down within safe boundaries (-25px to +25px).</p>
+                        </div>
+                        <button type="button" class="btn-outline" onclick="resetAllRankCardOffsets()" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; color: var(--muted); cursor: pointer;">Reset All</button>
+                    </div>
+
+                    <!-- Avatar Y Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-user-circle" style="color: #a78bfa; margin-right: 4px;"></i> Profile Picture</span>
+                            <span id="val-user-pref-avatarY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="range" id="user-pref-avatarY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('avatarY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
+                            <button type="button" onclick="resetRankOffset('avatarY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Username & Level Y Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-signature" style="color: #f472b6; margin-right: 4px;"></i> Username & Level</span>
+                            <span id="val-user-pref-usernameY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="range" id="user-pref-usernameY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('usernameY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
+                            <button type="button" onclick="resetRankOffset('usernameY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Rank Badge Y Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-medal" style="color: #fbbf24; margin-right: 4px;"></i> Rank Badge</span>
+                            <span id="val-user-pref-rankY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="range" id="user-pref-rankY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('rankY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
+                            <button type="button" onclick="resetRankOffset('rankY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar Y Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                            <span style="color: rgba(255,255,255,0.8);"><i class="fas fa-bars-progress" style="color: #34d399; margin-right: 4px;"></i> Progress Bar</span>
+                            <span id="val-user-pref-progressY" style="font-family: monospace; font-weight: 700; color: #38bdf8;">0px</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="range" id="user-pref-progressY" min="-25" max="25" step="1" value="0" oninput="handleRankOffsetChange('progressY', this.value)" style="flex: 1; accent-color: #38bdf8; cursor: pointer;">
+                            <button type="button" onclick="resetRankOffset('progressY')" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 2px;" title="Reset to 0"><i class="fas fa-undo"></i></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -29012,9 +29065,162 @@ try {
         const gifNotice = document.getElementById('crop-gif-notice');
         const guideOverlay = document.getElementById('crop-guide-overlay');
 
+        // Font Manager Catalog
+        const AVAILABLE_RANK_FONTS = [
+            { name: 'Outfit', category: 'Modern Sans (Default)', family: "'Outfit', sans-serif" },
+            { name: 'Inter', category: 'Clean Geometric', family: "'Inter', sans-serif" },
+            { name: 'Roboto', category: 'Standard Modern', family: "'Roboto', sans-serif" },
+            { name: 'Poppins', category: 'Rounded Display', family: "'Poppins', sans-serif" },
+            { name: 'Montserrat', category: 'Contemporary Sans', family: "'Montserrat', sans-serif" },
+            { name: 'JetBrains Mono', category: 'Code Monospace', family: "'JetBrains Mono', monospace" },
+            { name: 'Space Grotesk', category: 'Futuristic Tech', family: "'Space Grotesk', sans-serif" },
+            { name: 'Bebas Neue', category: 'Bold Impact Condensed', family: "'Bebas Neue', cursive, sans-serif" },
+            { name: 'Orbitron', category: 'Cyber Sci-Fi', family: "'Orbitron', sans-serif" },
+            { name: 'Kanit', category: 'Dynamic Thai-Latin', family: "'Kanit', sans-serif" },
+            { name: 'Oswald', category: 'Editorial Gothic', family: "'Oswald', sans-serif" },
+            { name: 'Satisfy', category: 'Flowing Script', family: "'Satisfy', cursive" },
+            { name: 'Cinzel', category: 'Classical Serif', family: "'Cinzel', serif" },
+            { name: 'Press Start 2P', category: 'Retro 8-Bit Pixel', family: "'Press Start 2P', monospace" }
+        ];
+
+        window.renderRankFontsList = function(query = '') {
+            const container = document.getElementById('rank-fonts-list-container');
+            if (!container) return;
+            const currentFont = document.getElementById('user-pref-rankCardFont')?.value || 'Outfit';
+            const q = (query || '').toLowerCase().trim();
+
+            const filtered = AVAILABLE_RANK_FONTS.filter(f => 
+                !q || f.name.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 14px; color: var(--muted); font-size: 0.76rem;">No fonts matching "${query}"</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(f => {
+                const isSelected = f.name.toLowerCase() === currentFont.toLowerCase();
+                return `
+                    <div class="rank-font-card" onclick="selectRankFont('${f.name}')" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 8px; cursor: pointer; transition: all 0.15s ease; background: ${isSelected ? 'rgba(192, 132, 252, 0.18)' : 'rgba(255, 255, 255, 0.03)'}; border: 1px solid ${isSelected ? 'rgba(192, 132, 252, 0.5)' : 'rgba(255, 255, 255, 0.06)'};">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-family: ${f.family}; font-size: 0.86rem; font-weight: 700; color: ${isSelected ? '#c084fc' : '#fff'};">${f.name}</span>
+                            <span style="font-size: 0.68rem; color: var(--muted);">${f.category}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            ${isSelected ? '<span style="font-size: 0.65rem; font-weight: 700; color: #c084fc; background: rgba(192, 132, 252, 0.2); padding: 2px 6px; border-radius: 4px;"><i class="fas fa-check"></i> Active</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.filterRankFonts = function(query) {
+            renderRankFontsList(query);
+        };
+
+        window.selectRankFont = function(fontName) {
+            const fontInput = document.getElementById('user-pref-rankCardFont');
+            if (fontInput) fontInput.value = fontName;
+            const badge = document.getElementById('active-font-badge');
+            if (badge) badge.textContent = fontName;
+
+            const fontObj = AVAILABLE_RANK_FONTS.find(f => f.name.toLowerCase() === fontName.toLowerCase());
+            const family = fontObj ? fontObj.family : `'${fontName}', sans-serif`;
+
+            // Update live card preview font
+            const liveCard = document.getElementById('live-rank-card-preview-frame');
+            if (liveCard) liveCard.style.fontFamily = family;
+            const liveName = document.getElementById('live-rank-card-name');
+            if (liveName) liveName.style.fontFamily = family;
+
+            const searchVal = document.getElementById('rank-font-search-input')?.value || '';
+            renderRankFontsList(searchVal);
+
+            try {
+                let savedF = {};
+                const str = localStorage.getItem('nora_rankcard_framing');
+                if (str) savedF = JSON.parse(str);
+                savedF.font = fontName;
+                localStorage.setItem('nora_rankcard_framing', JSON.stringify(savedF));
+                if (typeof currentDashboardSettings !== 'undefined' && currentDashboardSettings) {
+                    if (!currentDashboardSettings.rankCardFraming) currentDashboardSettings.rankCardFraming = {};
+                    currentDashboardSettings.rankCardFraming.font = fontName;
+                }
+            } catch(e) {}
+        };
+
+        window.handleRankOffsetChange = function(key, val) {
+            const num = parseInt(val, 10) || 0;
+            const valSpan = document.getElementById('val-user-pref-' + key);
+            if (valSpan) valSpan.textContent = (num >= 0 ? `+${num}` : num) + 'px';
+            const slider = document.getElementById('user-pref-' + key);
+            if (slider && parseInt(slider.value, 10) !== num) slider.value = num;
+
+            // Live updates to preview card elements
+            if (key === 'avatarY') {
+                const el = document.getElementById('live-rank-card-avatar-wrap');
+                if (el) el.style.transform = `translateY(${num}px)`;
+                const guide = document.getElementById('crop-guide-avatar-wrap');
+                if (guide) guide.style.transform = `translateY(calc(-50% + ${num}px))`;
+            } else if (key === 'usernameY') {
+                const el = document.getElementById('live-rank-card-user-wrap');
+                if (el) el.style.transform = `translateY(${num}px)`;
+                const guide = document.getElementById('crop-guide-user-wrap');
+                if (guide) guide.style.transform = `translateY(${num}px)`;
+            } else if (key === 'rankY') {
+                const el = document.getElementById('live-rank-card-rank-wrap');
+                if (el) el.style.transform = `translateY(${num}px)`;
+                const guide = document.getElementById('crop-guide-rank-wrap');
+                if (guide) guide.style.transform = `translateY(${num}px)`;
+            } else if (key === 'progressY') {
+                const el = document.getElementById('live-rank-card-progress-wrap');
+                if (el) el.style.transform = `translateY(${num}px)`;
+                const guide = document.getElementById('crop-guide-progress-wrap');
+                if (guide) guide.style.transform = `translateY(${num}px)`;
+            }
+
+            try {
+                let savedF = {};
+                const str = localStorage.getItem('nora_rankcard_framing');
+                if (str) savedF = JSON.parse(str);
+                savedF[key] = num;
+                localStorage.setItem('nora_rankcard_framing', JSON.stringify(savedF));
+                if (typeof currentDashboardSettings !== 'undefined' && currentDashboardSettings) {
+                    if (!currentDashboardSettings.rankCardFraming) currentDashboardSettings.rankCardFraming = {};
+                    currentDashboardSettings.rankCardFraming[key] = num;
+                }
+            } catch(e) {}
+        };
+
+        window.resetRankOffset = function(key) {
+            const slider = document.getElementById('user-pref-' + key);
+            if (slider) slider.value = 0;
+            handleRankOffsetChange(key, 0);
+        };
+
+        window.resetAllRankCardOffsets = function() {
+            ['avatarY', 'usernameY', 'rankY', 'progressY'].forEach(k => {
+                resetRankOffset(k);
+            });
+        };
+
         window.openRankCardCropModal = function(target = 'user', explicitSrc = null) {
             currentTarget = target;
             let srcToUse = explicitSrc;
+
+            // Initialize font manager & offset sliders inside modal
+            renderRankFontsList();
+            try {
+                const key = currentTarget === 'user' ? 'nora_rankcard_framing' : 'nora_server_rankcard_framing';
+                const str = localStorage.getItem(key);
+                if (str) {
+                    const savedF = JSON.parse(str);
+                    if (savedF.font) selectRankFont(savedF.font);
+                    ['avatarY', 'usernameY', 'rankY', 'progressY'].forEach(k => {
+                        if (savedF[k] !== undefined) handleRankOffsetChange(k, savedF[k]);
+                    });
+                }
+            } catch(e) {}
 
             if (!srcToUse) {
                 if (target === 'user') {
@@ -29358,11 +29564,22 @@ try {
                 }
             }
 
-            // Persist framing coordinates
+            // Persist framing coordinates, typography font, and element Y-offsets
+            const currentFont = document.getElementById('user-pref-rankCardFont')?.value || 'Outfit';
+            const avatarY = parseInt(document.getElementById('user-pref-avatarY')?.value || 0, 10);
+            const usernameY = parseInt(document.getElementById('user-pref-usernameY')?.value || 0, 10);
+            const rankY = parseInt(document.getElementById('user-pref-rankY')?.value || 0, 10);
+            const progressY = parseInt(document.getElementById('user-pref-progressY')?.value || 0, 10);
+
             const framingData = {
                 panX: Math.round(panX),
                 panY: Math.round(panY),
-                zoomLevel: Math.round(zoomLevel)
+                zoomLevel: Math.round(zoomLevel),
+                font: currentFont,
+                avatarY: avatarY,
+                usernameY: usernameY,
+                rankY: rankY,
+                progressY: progressY
             };
             const storageKey = currentTarget === 'user' ? 'nora_rankcard_framing' : 'nora_server_rankcard_framing';
             try {
