@@ -11709,6 +11709,8 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;')
                 .replace(/`/g, '&#096;');
+        }
+
         function generateSecureRandomHex(bytes = 16) {
             try {
                 if (window.crypto && window.crypto.getRandomValues) {
@@ -14133,6 +14135,10 @@
                 if (typeof currentDashboardSettings !== 'undefined' && currentDashboardSettings) {
                     dSettings = { ...currentDashboardSettings };
                 }
+                const savedFraming = localStorage.getItem('nora_rankcard_framing');
+                if (savedFraming) {
+                    dSettings.rankCardFraming = JSON.parse(savedFraming);
+                }
             } catch(e) {}
             dSettings.socialLinks = { github: linkGithub, twitter: linkTwitter, youtube: linkYoutube, web: linkWeb };
 
@@ -14229,6 +14235,9 @@
                                 if (linkTwitter && parsed.socialLinks.twitter) linkTwitter.value = parsed.socialLinks.twitter;
                                 if (linkYoutube && parsed.socialLinks.youtube) linkYoutube.value = parsed.socialLinks.youtube;
                                 if (linkWeb && parsed.socialLinks.web) linkWeb.value = parsed.socialLinks.web;
+                            }
+                            if (parsed && parsed.rankCardFraming) {
+                                localStorage.setItem('nora_rankcard_framing', JSON.stringify(parsed.rankCardFraming));
                             }
                         } catch(e) {}
                     }
@@ -14630,7 +14639,7 @@
 
                 if (customBgUrl) {
                     bgLayer.style.display = 'block';
-                    bgLayer.style.backgroundImage = 'url("' + customBgUrl + '")';
+                    bgLayer.style.overflow = 'hidden';
                     bgLayer.style.backgroundColor = 'transparent';
 
                     // Apply framing if available
@@ -14640,20 +14649,67 @@
                         if (savedF) framing = JSON.parse(savedF);
                     } catch(e) {}
 
-                    if (framing && (framing.panX !== undefined || framing.zoomLevel !== undefined)) {
-                        const previewW = bgLayer.offsetWidth || 400;
-                        const previewScale = previewW / 860;
-                        const pX = (framing.panX || 0) * previewScale;
-                        const pY = (framing.panY || 0) * previewScale;
-                        const zoom = (framing.zoomLevel || 100);
-                        bgLayer.style.backgroundPosition = `calc(50% + ${pX}px) calc(50% + ${pY}px)`;
-                        bgLayer.style.backgroundSize = `${zoom}% auto`;
-                    } else {
-                        bgLayer.style.backgroundPosition = 'center';
-                        bgLayer.style.backgroundSize = 'cover';
+                    let bgImg = document.getElementById('live-rank-card-bg-img');
+                    if (!bgImg) {
+                        bgImg = document.createElement('img');
+                        bgImg.id = 'live-rank-card-bg-img';
+                        bgImg.alt = 'Rank Card Background';
+                        bgImg.style.position = 'absolute';
+                        bgImg.style.pointerEvents = 'none';
+                        bgImg.style.maxWidth = 'none';
+                        bgImg.style.willChange = 'transform';
+                        bgLayer.innerHTML = '';
+                        bgLayer.appendChild(bgImg);
                     }
+                    if (bgImg.src !== customBgUrl) {
+                        bgImg.src = customBgUrl;
+                    }
+
+                    const updateImgFraming = function() {
+                        const previewW = bgLayer.offsetWidth || 400;
+                        const previewH = bgLayer.offsetHeight || Math.round(previewW * (240 / 860));
+                        const targetRatio = previewW / Math.max(1, previewH);
+                        const domScale = previewW / 860;
+
+                        const natW = bgImg.naturalWidth || previewW;
+                        const natH = bgImg.naturalHeight || previewH;
+                        const imgRatio = natW / Math.max(1, natH);
+
+                        let baseW, baseH;
+                        if (imgRatio > targetRatio) {
+                            baseH = previewH;
+                            baseW = previewH * imgRatio;
+                        } else {
+                            baseW = previewW;
+                            baseH = previewW / imgRatio;
+                        }
+
+                        const scale = (framing?.zoomLevel || 100) / 100;
+                        const curW = baseW * scale;
+                        const curH = baseH * scale;
+                        const pX = (framing?.panX || 0) * domScale;
+                        const pY = (framing?.panY || 0) * domScale;
+
+                        bgImg.style.width = curW + 'px';
+                        bgImg.style.height = curH + 'px';
+                        bgImg.style.left = '50%';
+                        bgImg.style.top = '50%';
+                        bgImg.style.marginLeft = (-curW / 2) + 'px';
+                        bgImg.style.marginTop = (-curH / 2) + 'px';
+                        bgImg.style.transform = `translate(${pX}px, ${pY}px)`;
+                    };
+
+                    bgImg.onload = updateImgFraming;
+                    if (bgImg.complete && bgImg.naturalWidth) updateImgFraming();
+                    else setTimeout(updateImgFraming, 100);
+
+                    // CSS fallback
+                    bgLayer.style.backgroundImage = 'url("' + customBgUrl + '")';
+                    bgLayer.style.backgroundPosition = 'center';
+                    bgLayer.style.backgroundSize = 'cover';
                 } else {
                     bgLayer.style.display = 'none';
+                    bgLayer.innerHTML = '';
                     bgLayer.style.backgroundImage = 'none';
                 }
             }
@@ -14720,6 +14776,7 @@
                 `;
             } else {
                 const verifiedAcc = accs.find(a => a.status === 'VERIFIED' && a.isActive) || accs.find(a => a.status === 'VERIFIED') || accs[0];
+                if (verifiedAcc && verifiedAcc.status === 'VERIFIED') {
                     let isRobloxThumb = false;
                     try {
                         const parsedAvatar = new URL(verifiedAcc.avatar);
@@ -27962,7 +28019,26 @@ try {
                 img.crossOrigin = 'anonymous';
                 img.onload = function() {
                     calculateBaseDimensions();
-                    resetCropState();
+                    // Restore previous framing so the user never has to reset or re-add
+                    let savedF = null;
+                    try {
+                        const key = currentTarget === 'user' ? 'nora_rankcard_framing' : 'nora_server_rankcard_framing';
+                        const str = localStorage.getItem(key);
+                        if (str) savedF = JSON.parse(str);
+                        if (!savedF && currentTarget === 'user' && window.currentUser?.prefs?.dashboardSettings) {
+                            const ds = typeof window.currentUser.prefs.dashboardSettings === 'string' ? JSON.parse(window.currentUser.prefs.dashboardSettings) : window.currentUser.prefs.dashboardSettings;
+                            if (ds?.rankCardFraming) savedF = ds.rankCardFraming;
+                        }
+                    } catch(e) {}
+
+                    if (savedF && (savedF.panX !== undefined || savedF.zoomLevel !== undefined)) {
+                        panX = typeof savedF.panX === 'number' ? savedF.panX : 0;
+                        panY = typeof savedF.panY === 'number' ? savedF.panY : 0;
+                        zoomLevel = typeof savedF.zoomLevel === 'number' ? savedF.zoomLevel : 100;
+                        applyTransform();
+                    } else {
+                        resetCropState();
+                    }
                 };
                 img.onerror = function() {
                     if (srcToUse.startsWith('http://') || srcToUse.startsWith('https://')) {
@@ -28218,18 +28294,18 @@ try {
         };
 
         window.applyCropSelection = function(explicitKeepLoop = null) {
-            let keepLoop = false;
+            let keepOriginalMedia = true; // By default preserve original link and animation!
             if (isGif) {
                 if (explicitKeepLoop !== null) {
-                    keepLoop = explicitKeepLoop;
+                    keepOriginalMedia = explicitKeepLoop;
                 } else {
                     const selectedMode = document.querySelector('input[name="cropGifExportMode"]:checked')?.value;
-                    keepLoop = (selectedMode === 'loop' || selectedMode === undefined);
+                    keepOriginalMedia = (selectedMode !== 'static');
                 }
             }
 
             let finalMediaValue = currentSrc;
-            if (!keepLoop) {
+            if (!keepOriginalMedia) {
                 const croppedData = generateCroppedCanvasPng();
                 if (croppedData) {
                     finalMediaValue = croppedData;
@@ -28242,11 +28318,16 @@ try {
                 panY: Math.round(panY),
                 zoomLevel: Math.round(zoomLevel)
             };
+            const storageKey = currentTarget === 'user' ? 'nora_rankcard_framing' : 'nora_server_rankcard_framing';
             try {
-                localStorage.setItem('nora_rankcard_framing', JSON.stringify(framingData));
-                if (window.currentUser) {
+                localStorage.setItem(storageKey, JSON.stringify(framingData));
+                if (currentTarget === 'user') {
+                    if (!window.currentUser) window.currentUser = {};
                     if (!window.currentUser.prefs) window.currentUser.prefs = {};
                     window.currentUser.prefs.rankCardFraming = framingData;
+                    if (typeof currentDashboardSettings !== 'undefined' && currentDashboardSettings) {
+                        currentDashboardSettings.rankCardFraming = framingData;
+                    }
                 }
             } catch(e) {}
 
@@ -28274,7 +28355,7 @@ try {
                 }
 
                 if (typeof showToast === 'function') {
-                    showToast(keepLoop ? 'Animated looping GIF applied with framing & saved!' : 'Cropped rank card media applied & saved!', 'success');
+                    showToast(isGif ? 'Animated looping GIF applied with framing & saved!' : 'Rank card framing applied & saved!', 'success');
                 }
             } else {
                 const serverInput = document.getElementById('setting-levelingCardBackgroundImage');
@@ -28289,7 +28370,7 @@ try {
                 }
 
                 if (typeof showToast === 'function') {
-                    showToast(keepLoop ? 'Server looping GIF applied with framing & saved!' : 'Server rank card cropped media applied & saved!', 'success');
+                    showToast(isGif ? 'Server looping GIF applied with framing & saved!' : 'Server rank card framing applied & saved!', 'success');
                 }
             }
 
