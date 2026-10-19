@@ -5379,15 +5379,26 @@
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85);">Customization Mode</label>
                                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-preset" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;">
-                                            <input type="radio" name="userRankCardThemeMode" value="preset" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Server Preset
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-preset" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;" onclick="selectUserRankThemeMode('preset')">
+                                            <input type="radio" name="userRankCardThemeMode" value="preset"> Server Preset
                                         </label>
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-custom" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;">
-                                            <input type="radio" name="userRankCardThemeMode" value="custom" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Custom Accent
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-custom" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;" onclick="selectUserRankThemeMode('custom')">
+                                            <input type="radio" name="userRankCardThemeMode" value="custom"> Custom Accent
                                         </label>
-                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-image" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;">
-                                            <input type="radio" name="userRankCardThemeMode" value="image" onchange="toggleUserRankCardThemeModeUI(); updateLiveRankCardPreview();"> Animated GIF / Image
+                                        <label class="btn-outline rank-mode-btn" id="lbl-mode-image" style="cursor: pointer; padding: 8px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border); transition: 0.2s;" onclick="selectUserRankThemeMode('image')">
+                                            <input type="radio" name="userRankCardThemeMode" value="image"> Animated GIF / Image
                                         </label>
+                                    </div>
+                                </div>
+
+                                <!-- Server Preset Info Banner (shown when preset mode is active) -->
+                                <div id="user-rankcard-preset-info-section" style="display: none; background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.2); border-radius: 12px; padding: 14px 16px; align-items: center; gap: 12px;">
+                                    <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(88, 101, 242, 0.2); display: flex; align-items: center; justify-content: center; color: #5865f2; font-size: 1.1rem; flex-shrink: 0;">
+                                        <i class="fas fa-server"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.84rem; font-weight: 700; color: #fff;">Server Preset Active</div>
+                                        <div style="font-size: 0.76rem; color: var(--muted); margin-top: 2px;">Your card displays the server default obsidian theme. Switch to Custom Accent or Animated GIF / Image to customize.</div>
                                     </div>
                                 </div>
 
@@ -14236,10 +14247,21 @@
         }
         window.fetchUserProfile = fetchUserProfile;
 
+        window.selectUserRankThemeMode = function(mode) {
+            const radio = document.querySelector('input[name="userRankCardThemeMode"][value="' + mode + '"]');
+            if (radio) {
+                radio.checked = true;
+            }
+            if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI(true);
+            if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
+            if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();
+        };
+
         window.toggleUserRankCardThemeModeUI = function(shouldAutoSave = true) {
             const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
             const colorSec = document.getElementById('user-rankcard-color-picker-section');
             const imageSec = document.getElementById('user-rankcard-image-upload-section');
+            const presetInfoSec = document.getElementById('user-rankcard-preset-info-section');
 
             const lblPreset = document.getElementById('lbl-mode-preset');
             const lblCustom = document.getElementById('lbl-mode-custom');
@@ -14247,24 +14269,44 @@
 
             [lblPreset, lblCustom, lblImage].forEach(lbl => {
                 if (lbl) {
-                    lbl.style.borderColor = 'var(--border)';
+                    lbl.style.borderColor = 'rgba(255,255,255,0.1)';
                     lbl.style.background = 'rgba(255,255,255,0.02)';
+                    lbl.style.color = 'var(--muted)';
+                    lbl.style.boxShadow = 'none';
                 }
             });
 
-            if (mode === 'preset' && lblPreset) {
-                lblPreset.style.borderColor = 'var(--primary)';
-                lblPreset.style.background = 'rgba(124, 58, 237, 0.15)';
-            } else if (mode === 'custom' && lblCustom) {
-                lblCustom.style.borderColor = '#38bdf8';
-                lblCustom.style.background = 'rgba(56, 189, 248, 0.15)';
-            } else if (mode === 'image' && lblImage) {
-                lblImage.style.borderColor = '#a855f7';
-                lblImage.style.background = 'rgba(168, 85, 247, 0.15)';
+            if (mode === 'preset') {
+                if (lblPreset) {
+                    lblPreset.style.borderColor = '#5865f2';
+                    lblPreset.style.background = 'rgba(88, 101, 242, 0.18)';
+                    lblPreset.style.color = '#fff';
+                    lblPreset.style.boxShadow = '0 0 16px rgba(88, 101, 242, 0.25)';
+                }
+                if (colorSec) colorSec.style.display = 'none';
+                if (imageSec) imageSec.style.display = 'none';
+                if (presetInfoSec) presetInfoSec.style.display = 'flex';
+            } else if (mode === 'custom') {
+                if (lblCustom) {
+                    lblCustom.style.borderColor = '#38bdf8';
+                    lblCustom.style.background = 'rgba(56, 189, 248, 0.18)';
+                    lblCustom.style.color = '#fff';
+                    lblCustom.style.boxShadow = '0 0 16px rgba(56, 189, 248, 0.25)';
+                }
+                if (colorSec) colorSec.style.display = 'flex';
+                if (imageSec) imageSec.style.display = 'none';
+                if (presetInfoSec) presetInfoSec.style.display = 'none';
+            } else if (mode === 'image') {
+                if (lblImage) {
+                    lblImage.style.borderColor = '#c084fc';
+                    lblImage.style.background = 'rgba(192, 132, 252, 0.18)';
+                    lblImage.style.color = '#fff';
+                    lblImage.style.boxShadow = '0 0 16px rgba(192, 132, 252, 0.25)';
+                }
+                if (colorSec) colorSec.style.display = 'flex';
+                if (imageSec) imageSec.style.display = 'flex';
+                if (presetInfoSec) presetInfoSec.style.display = 'none';
             }
-
-            if (colorSec) colorSec.style.display = (mode === 'custom' || mode === 'image') ? 'flex' : 'none';
-            if (imageSec) imageSec.style.display = (mode === 'image') ? 'flex' : 'none';
 
             if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
             if (shouldAutoSave && typeof debouncedSaveUserProfile === 'function') {
@@ -14498,8 +14540,8 @@
             const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
             const customColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#7c3aed';
             const customBgUrl = document.getElementById('user-pref-rankCardBackgroundImage')?.value || '';
-            const overwritePresets = document.getElementById('user-pref-overwriteServerPresets')?.checked || false;
             const bgLayer = document.getElementById('live-rank-card-bg-layer');
+            const cardFrame = document.getElementById('live-rank-card-preview-frame');
             const progressBar = document.getElementById('live-rank-card-progress-bar');
             const nameEl = document.getElementById('live-rank-card-name');
             const avatarEl = document.getElementById('live-rank-card-avatar');
@@ -14507,29 +14549,30 @@
             const rankValEl = document.getElementById('live-rank-card-rank-val');
             const previewTag = document.getElementById('rank-card-preview-tag');
             const bannerEl = document.getElementById('profile-banner');
+            const bioEl = document.getElementById('profile-preview-bio');
 
-            let activeAccent = '#7c3aed';
+            let activeAccent = '#5865f2';
             if (mode === 'custom' || mode === 'image') {
                 activeAccent = customColor || '#7c3aed';
             }
 
             if (previewTag) {
                 if (mode === 'preset') {
-                    previewTag.textContent = overwritePresets ? 'Server Preset (Overwrite Enabled)' : 'Server Preset';
+                    previewTag.textContent = 'SERVER PRESET';
                     previewTag.style.color = '#38bdf8';
-                    previewTag.style.borderColor = 'rgba(56, 189, 248, 0.3)';
-                    previewTag.style.background = 'rgba(56, 189, 248, 0.1)';
+                    previewTag.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+                    previewTag.style.background = 'rgba(56, 189, 248, 0.15)';
                 } else if (mode === 'custom') {
-                    previewTag.textContent = overwritePresets ? 'Custom Accent (Global Overwrite)' : 'Custom Accent';
+                    previewTag.textContent = 'CUSTOM ACCENT';
                     previewTag.style.color = activeAccent;
                     previewTag.style.borderColor = activeAccent + '66';
                     previewTag.style.background = activeAccent + '22';
                 } else if (mode === 'image') {
                     const isGifMedia = customBgUrl && (customBgUrl.includes('.gif') || customBgUrl.startsWith('data:image/gif'));
-                    previewTag.textContent = isGifMedia ? 'Animated GIF' : 'Custom Image';
+                    previewTag.textContent = isGifMedia ? 'ANIMATED GIF' : 'CUSTOM IMAGE';
                     previewTag.style.color = '#c084fc';
-                    previewTag.style.borderColor = 'rgba(192, 132, 252, 0.4)';
-                    previewTag.style.background = 'rgba(192, 132, 252, 0.15)';
+                    previewTag.style.borderColor = 'rgba(192, 132, 252, 0.5)';
+                    previewTag.style.background = 'rgba(192, 132, 252, 0.2)';
                 }
             }
 
@@ -14543,36 +14586,76 @@
             if (avatarEl) avatarEl.style.borderColor = activeAccent;
             if (levelBadgeEl) levelBadgeEl.style.color = activeAccent;
             if (rankValEl) rankValEl.style.color = activeAccent;
+            if (bioEl) bioEl.style.borderLeftColor = activeAccent;
 
             if (bannerEl && (!window.currentUser || !window.currentUser.banner)) {
                 if (mode === 'image' && customBgUrl) {
                     bannerEl.style.backgroundImage = `url("${customBgUrl}")`;
                     bannerEl.style.backgroundSize = 'cover';
                     bannerEl.style.backgroundPosition = 'center';
+                    bannerEl.style.backgroundColor = 'transparent';
                 } else if (mode === 'custom') {
                     bannerEl.style.backgroundImage = 'none';
                     bannerEl.style.backgroundColor = activeAccent;
                 } else {
-                    bannerEl.style.backgroundImage = `linear-gradient(135deg, ${activeAccent} 0%, #38bdf8 100%)`;
+                    bannerEl.style.backgroundImage = `linear-gradient(135deg, #5865f2 0%, #38bdf8 100%)`;
                 }
             }
 
-            if (!bgLayer) return;
+            if (!bgLayer || !cardFrame) return;
 
-            if (mode === 'image' && customBgUrl) {
-                bgLayer.style.backgroundImage = 'url("' + customBgUrl + '")';
-                bgLayer.style.backgroundSize = 'cover';
-                bgLayer.style.backgroundPosition = 'center';
-                bgLayer.style.backgroundColor = 'transparent';
-                if (progressBar) progressBar.style.background = `linear-gradient(90deg, ${activeAccent}, #38bdf8)`;
+            // Distinct Rank Card Theme Visual Rendering
+            if (mode === 'preset') {
+                // 1. Server Preset: Clean obsidian glass with tech grid & Discord/Nora blurple accents
+                bgLayer.style.display = 'none';
+                bgLayer.style.backgroundImage = 'none';
+                cardFrame.style.background = 'linear-gradient(135deg, #090a10 0%, #121320 50%, #07080d 100%)';
+                cardFrame.style.border = '1px solid rgba(88, 101, 242, 0.35)';
+                cardFrame.style.boxShadow = '0 8px 25px rgba(0,0,0,0.5), inset 0 0 30px rgba(88, 101, 242, 0.08)';
+                if (progressBar) progressBar.style.background = 'linear-gradient(90deg, #5865f2, #38bdf8)';
             } else if (mode === 'custom') {
+                // 2. Custom Accent: Obsidian glass with ambient radial glow of the chosen accent color
+                bgLayer.style.display = 'none';
                 bgLayer.style.backgroundImage = 'none';
-                bgLayer.style.backgroundColor = '#0b0c10';
+                cardFrame.style.background = `radial-gradient(circle at 80% 20%, ${activeAccent}25 0%, transparent 65%), #0b0c10`;
+                cardFrame.style.border = `1px solid ${activeAccent}55`;
+                cardFrame.style.boxShadow = `0 8px 25px rgba(0,0,0,0.5), 0 0 20px ${activeAccent}1a`;
                 if (progressBar) progressBar.style.background = `linear-gradient(90deg, ${activeAccent}, #38bdf8)`;
-            } else {
-                bgLayer.style.backgroundImage = 'none';
-                bgLayer.style.backgroundColor = '#0b0c10';
-                if (progressBar) progressBar.style.background = 'linear-gradient(90deg, #7c3aed, #38bdf8)';
+            } else if (mode === 'image') {
+                // 3. Animated GIF / Image: Rich background media with framing position and scrim overlay
+                cardFrame.style.background = '#0b0c10';
+                cardFrame.style.border = `1px solid ${activeAccent}55`;
+                cardFrame.style.boxShadow = '0 8px 25px rgba(0,0,0,0.6)';
+                if (progressBar) progressBar.style.background = `linear-gradient(90deg, ${activeAccent}, #38bdf8)`;
+
+                if (customBgUrl) {
+                    bgLayer.style.display = 'block';
+                    bgLayer.style.backgroundImage = 'url("' + customBgUrl + '")';
+                    bgLayer.style.backgroundColor = 'transparent';
+
+                    // Apply framing if available
+                    let framing = null;
+                    try {
+                        const savedF = localStorage.getItem('nora_rankcard_framing');
+                        if (savedF) framing = JSON.parse(savedF);
+                    } catch(e) {}
+
+                    if (framing && (framing.panX !== undefined || framing.zoomLevel !== undefined)) {
+                        const previewW = bgLayer.offsetWidth || 400;
+                        const previewScale = previewW / 860;
+                        const pX = (framing.panX || 0) * previewScale;
+                        const pY = (framing.panY || 0) * previewScale;
+                        const zoom = (framing.zoomLevel || 100);
+                        bgLayer.style.backgroundPosition = `calc(50% + ${pX}px) calc(50% + ${pY}px)`;
+                        bgLayer.style.backgroundSize = `${zoom}% auto`;
+                    } else {
+                        bgLayer.style.backgroundPosition = 'center';
+                        bgLayer.style.backgroundSize = 'cover';
+                    }
+                } else {
+                    bgLayer.style.display = 'none';
+                    bgLayer.style.backgroundImage = 'none';
+                }
             }
         };
 
@@ -27762,19 +27845,24 @@ try {
                 </div>
             </div>
 
-            <!-- Animated GIF Notice (Visible when GIF is loaded) -->
-            <div id="crop-gif-notice" style="display: none; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 10px; padding: 10px 14px; font-size: 0.78rem; color: #e9d5ff; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-film" style="color: #c084fc;"></i>
-                    <span>Animated GIF detected: Apply this cropped frame as a crisp card, or keep the original GIF looping!</span>
+            <!-- Animated GIF Format Controller (Visible when GIF is detected) -->
+            <div id="crop-gif-notice" style="display: none; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 12px 16px; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); display: flex; align-items: center; justify-content: center; color: #c084fc; font-size: 0.95rem; flex-shrink: 0;">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.84rem; font-weight: 700; color: #fff;">Animated GIF Detected</div>
+                        <div style="font-size: 0.74rem; color: #d8b4fe;">Crop & fit the animated GIF without turning it into a static image, or choose still frame.</div>
+                    </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button type="button" class="btn-outline" onclick="applyCropSelection(true, true)" style="padding: 5px 10px; font-size: 0.74rem; background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.4); color: #fff; border-radius: 6px; cursor: pointer;">
-                        <i class="fas fa-film"></i> Apply Looping GIF
-                    </button>
-                    <button type="button" class="btn-outline" onclick="applyCropSelection(true, false)" style="padding: 5px 10px; font-size: 0.74rem; background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.4); color: #fff; border-radius: 6px; cursor: pointer;">
-                        <i class="fas fa-camera"></i> Crop Frame as Static PNG
-                    </button>
+                    <label id="lbl-crop-gif-loop" class="btn-outline" style="cursor: pointer; padding: 7px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; background: rgba(168, 85, 247, 0.25); border: 1px solid #c084fc; color: #fff; transition: all 0.2s ease;" onclick="setCropGifExportMode('loop')">
+                        <input type="radio" name="cropGifExportMode" value="loop" checked style="accent-color: #c084fc;"> <i class="fas fa-infinity"></i> Keep Animated GIF (Looping)
+                    </label>
+                    <label id="lbl-crop-gif-static" class="btn-outline" style="cursor: pointer; padding: 7px 14px; font-size: 0.78rem; font-weight: 600; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255,255,255,0.12); color: var(--muted); transition: all 0.2s ease;" onclick="setCropGifExportMode('static')">
+                        <input type="radio" name="cropGifExportMode" value="static" style="accent-color: #38bdf8;"> <i class="fas fa-camera"></i> Still Frame (PNG)
+                    </label>
                 </div>
             </div>
 
@@ -27783,7 +27871,7 @@ try {
                 <button type="button" onclick="closeRankCardCropModal()" style="padding: 10px 18px; font-size: 0.84rem; font-weight: 600; border-radius: 10px; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.12); cursor: pointer;">
                     Cancel
                 </button>
-                <button type="button" id="crop-apply-btn" onclick="applyCropSelection(false, false)" style="padding: 10px 22px; font-size: 0.84rem; font-weight: 700; border-radius: 10px; background: #ffffff; color: #000000; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 8px;">
+                <button type="button" id="crop-apply-btn" onclick="applyCropSelection()" style="padding: 10px 22px; font-size: 0.84rem; font-weight: 700; border-radius: 10px; background: #ffffff; color: #000000; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fas fa-check"></i> Apply & Fit
                 </button>
             </div>
@@ -27859,6 +27947,16 @@ try {
 
             if (gifBadge) gifBadge.style.display = isGif ? 'inline-block' : 'none';
             if (gifNotice) gifNotice.style.display = isGif ? 'flex' : 'none';
+            if (isGif && typeof setCropGifExportMode === 'function') {
+                setCropGifExportMode('loop');
+            } else {
+                const applyBtn = document.getElementById('crop-apply-btn');
+                if (applyBtn) {
+                    applyBtn.innerHTML = '<i class="fas fa-check"></i> Apply & Fit';
+                    applyBtn.style.background = '#ffffff';
+                    applyBtn.style.color = '#000000';
+                }
+            }
 
             if (img) {
                 img.crossOrigin = 'anonymous';
@@ -28075,17 +28173,82 @@ try {
             }
         }
 
-        window.applyCropSelection = function(isGifNoticeAction = false, keepLoopingGif = false) {
-            let finalMediaValue = currentSrc;
+        window.setCropGifExportMode = function(mode) {
+            const loopRadio = document.querySelector('input[name="cropGifExportMode"][value="loop"]');
+            const staticRadio = document.querySelector('input[name="cropGifExportMode"][value="static"]');
+            const lblLoop = document.getElementById('lbl-crop-gif-loop');
+            const lblStatic = document.getElementById('lbl-crop-gif-static');
+            const applyBtn = document.getElementById('crop-apply-btn');
 
-            if (keepLoopingGif && isGif) {
-                finalMediaValue = currentSrc;
+            if (mode === 'loop') {
+                if (loopRadio) loopRadio.checked = true;
+                if (lblLoop) {
+                    lblLoop.style.background = 'rgba(168, 85, 247, 0.25)';
+                    lblLoop.style.borderColor = '#c084fc';
+                    lblLoop.style.color = '#fff';
+                }
+                if (lblStatic) {
+                    lblStatic.style.background = 'rgba(255, 255, 255, 0.04)';
+                    lblStatic.style.borderColor = 'rgba(255,255,255,0.12)';
+                    lblStatic.style.color = 'var(--muted)';
+                }
+                if (applyBtn) {
+                    applyBtn.innerHTML = '<i class="fas fa-infinity"></i> Apply Looping GIF & Fit';
+                    applyBtn.style.background = '#c084fc';
+                    applyBtn.style.color = '#000000';
+                }
             } else {
+                if (staticRadio) staticRadio.checked = true;
+                if (lblStatic) {
+                    lblStatic.style.background = 'rgba(56, 189, 248, 0.25)';
+                    lblStatic.style.borderColor = '#38bdf8';
+                    lblStatic.style.color = '#fff';
+                }
+                if (lblLoop) {
+                    lblLoop.style.background = 'rgba(255, 255, 255, 0.04)';
+                    lblLoop.style.borderColor = 'rgba(255,255,255,0.12)';
+                    lblLoop.style.color = 'var(--muted)';
+                }
+                if (applyBtn) {
+                    applyBtn.innerHTML = '<i class="fas fa-camera"></i> Crop Frame as Static PNG';
+                    applyBtn.style.background = '#38bdf8';
+                    applyBtn.style.color = '#000000';
+                }
+            }
+        };
+
+        window.applyCropSelection = function(explicitKeepLoop = null) {
+            let keepLoop = false;
+            if (isGif) {
+                if (explicitKeepLoop !== null) {
+                    keepLoop = explicitKeepLoop;
+                } else {
+                    const selectedMode = document.querySelector('input[name="cropGifExportMode"]:checked')?.value;
+                    keepLoop = (selectedMode === 'loop' || selectedMode === undefined);
+                }
+            }
+
+            let finalMediaValue = currentSrc;
+            if (!keepLoop) {
                 const croppedData = generateCroppedCanvasPng();
                 if (croppedData) {
                     finalMediaValue = croppedData;
                 }
             }
+
+            // Persist framing coordinates
+            const framingData = {
+                panX: Math.round(panX),
+                panY: Math.round(panY),
+                zoomLevel: Math.round(zoomLevel)
+            };
+            try {
+                localStorage.setItem('nora_rankcard_framing', JSON.stringify(framingData));
+                if (window.currentUser) {
+                    if (!window.currentUser.prefs) window.currentUser.prefs = {};
+                    window.currentUser.prefs.rankCardFraming = framingData;
+                }
+            } catch(e) {}
 
             if (currentTarget === 'user') {
                 const bgInput = document.getElementById('user-pref-rankCardBackgroundImage');
@@ -28111,7 +28274,7 @@ try {
                 }
 
                 if (typeof showToast === 'function') {
-                    showToast(keepLoopingGif ? 'Animated looping GIF applied & saved instantly!' : 'Cropped rank card media applied & saved instantly!', 'success');
+                    showToast(keepLoop ? 'Animated looping GIF applied with framing & saved!' : 'Cropped rank card media applied & saved!', 'success');
                 }
             } else {
                 const serverInput = document.getElementById('setting-levelingCardBackgroundImage');
@@ -28126,7 +28289,7 @@ try {
                 }
 
                 if (typeof showToast === 'function') {
-                    showToast(keepLoopingGif ? 'Server looping GIF applied & saved instantly!' : 'Server rank card cropped media applied & saved instantly!', 'success');
+                    showToast(keepLoop ? 'Server looping GIF applied with framing & saved!' : 'Server rank card cropped media applied & saved!', 'success');
                 }
             }
 

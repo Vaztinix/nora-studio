@@ -120,17 +120,16 @@ module.exports = {
             const finalShowPfp = showPfp && userShowAvatar;
 
             const themeMode = targetPrefs?.rankCardThemeMode || 'preset';
-            const shouldOverwrite = targetPrefs ? (targetPrefs.overwriteServerPresets || themeMode !== 'preset') : false;
 
             let cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
             let cardBgColor = settings?.levelingCardBgColor || '#111217';
             let cardBorder = settings?.levelingCardBorderColor || '#23252e';
             let cardUserBg = null;
 
-            if (themeMode === 'image' || (shouldOverwrite && targetPrefs?.rankCardBackgroundImage)) {
+            if (themeMode === 'image') {
                 cardUserBg = targetPrefs?.rankCardBackgroundImage || null;
                 if (targetPrefs?.rankCardCustomColor) cardAccent = targetPrefs.rankCardCustomColor;
-            } else if (themeMode === 'custom' || (shouldOverwrite && targetPrefs?.rankCardCustomColor)) {
+            } else if (themeMode === 'custom') {
                 cardUserBg = null;
                 if (targetPrefs?.rankCardCustomColor) cardAccent = targetPrefs.rankCardCustomColor;
             } else {

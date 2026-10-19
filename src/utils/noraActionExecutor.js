@@ -644,11 +644,10 @@ async function executeUtility(message, client, intent) {
                     rank: rankIndex,
                     avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
                     showPfp: userPrefs?.showAvatarInRankCard !== false,
-                    bgColor: settings?.levelingCardBgColor || '#111217',
-                    accentColor: (userPrefs?.rankCardThemeMode === 'custom' || userPrefs?.rankCardThemeMode === 'image' || userPrefs?.overwriteServerPresets) ? (userPrefs?.rankCardCustomColor || settings?.levelingCardAccentColor || '#7c3aed') : (settings?.levelingCardAccentColor || '#7c3aed'),
+                    accentColor: (userPrefs?.rankCardThemeMode === 'custom' || userPrefs?.rankCardThemeMode === 'image') ? (userPrefs?.rankCardCustomColor || settings?.levelingCardAccentColor || '#7c3aed') : (settings?.levelingCardAccentColor || '#7c3aed'),
                     borderColor: settings?.levelingCardBorderColor || '#23252e',
                     isPremium: true,
-                    userCustomBg: (userPrefs?.rankCardThemeMode === 'image' || userPrefs?.overwriteServerPresets) ? (userPrefs?.rankCardBackgroundImage || null) : null,
+                    userCustomBg: (userPrefs?.rankCardThemeMode === 'image') ? (userPrefs?.rankCardBackgroundImage || null) : null,
                     serverCustomBg: settings?.levelingCardBackgroundImage || null
                 }),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
