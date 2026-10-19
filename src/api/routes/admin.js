@@ -663,4 +663,234 @@ router.post('/leave-server', requireOwner, async (req, res) => {
     }
 });
 
+// ==========================================
+// 🧠 GEMINI AI ENGINE CONTROL & TELEMETRY
+// ==========================================
+
+// GET /api/admin/ai-stats
+router.get('/ai-stats', requireOwner, async (req, res) => {
+    try {
+        const geminiKeyManager = require('../../utils/geminiKeyManager');
+        const stats = geminiKeyManager.getQuotaStats();
+        res.json({ success: true, stats });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ai-reset-cooldowns
+router.post('/ai-reset-cooldowns', requireOwner, async (req, res) => {
+    try {
+        const geminiKeyManager = require('../../utils/geminiKeyManager');
+        geminiKeyManager.cooldowns.clear();
+        geminiKeyManager.strikes.clear();
+        geminiKeyManager.isDailyQuota.clear();
+        console.log(`[Admin Desk] Bot Owner reset all Gemini Key cooldowns and strikes.`);
+        res.json({ success: true, message: 'All Gemini API key cooldowns and quota strikes cleared successfully.' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ai-test-ping
+router.post('/ai-test-ping', requireOwner, async (req, res) => {
+    try {
+        const geminiKeyManager = require('../../utils/geminiKeyManager');
+        const available = geminiKeyManager.getAvailableKeys();
+        if (available.length === 0) {
+            return res.status(503).json({ error: 'All Gemini API keys are currently cooling down.' });
+        }
+        const { GoogleGenerativeAI } = require('@google/generative-ai');
+        const startTime = Date.now();
+        const genAI = new GoogleGenerativeAI(available[0]);
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent('Return exactly the word "OPERATIONAL" and nothing else.');
+        const latencyMs = Date.now() - startTime;
+        const text = result.response.text();
+        geminiKeyManager.reportSuccess(available[0], text);
+        res.json({ success: true, latencyMs, response: text.trim() });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ==========================================
+// 📢 SITE ALERTS & BROADCAST NOTIFICATIONS
+// ==========================================
+
+// GET /api/admin/site-alerts
+router.get('/site-alerts', requireOwner, async (req, res) => {
+    try {
+        const SiteAlert = require('../../database/models/SiteAlert');
+        const alerts = await SiteAlert.findAll({ order: [['id', 'DESC']], limit: 30 });
+        res.json({ alerts });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/site-alert
+router.post('/site-alert', requireOwner, async (req, res) => {
+    try {
+        const { title, message, type, isActive } = req.body;
+        if (!message) {
+            return res.status(400).json({ error: 'Missing alert message' });
+        }
+        const SiteAlert = require('../../database/models/SiteAlert');
+        const alert = await SiteAlert.create({
+            title: title || '📢 Nora Announcement',
+            message,
+            type: type || 'announcement',
+            authorId: req.user.id,
+            isActive: isActive !== undefined ? !!isActive : true
+        });
+        res.json({ success: true, alert });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// DELETE /api/admin/site-alert/:id
+router.delete('/site-alert/:id', requireOwner, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const SiteAlert = require('../../database/models/SiteAlert');
+        await SiteAlert.destroy({ where: { id } });
+        res.json({ success: true, message: `Alert #${id} deleted.` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/broadcast-notification
+router.post('/broadcast-notification', requireOwner, async (req, res) => {
+    try {
+        const { title, content, type, targetUserId } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ error: 'Missing notification title or content' });
+        }
+        const Notification = require('../../database/models/Notification');
+
+        if (targetUserId) {
+            await Notification.create({
+                userId: targetUserId,
+                title,
+                content,
+                type: type || 'special',
+                isSpecial: true,
+                isOwnerAction: true
+            });
+            return res.json({ success: true, message: `Notification sent to user ${targetUserId}` });
+        }
+
+        // Broadcast to all authenticated users in UserPrefs
+        const allUsers = await UserPrefs.findAll({ attributes: ['userId'] });
+        const records = allUsers.map(u => ({
+            userId: u.userId,
+            title,
+            content,
+            type: type || 'special',
+            isSpecial: true,
+            isOwnerAction: true
+        }));
+
+        if (records.length > 0) {
+            await Notification.bulkCreate(records);
+        }
+
+        res.json({ success: true, count: records.length, message: `Broadcast sent to ${records.length} user dashboard inboxes.` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ==========================================
+// 💎 ENTITLEMENT BINDINGS INSPECTOR
+// ==========================================
+
+// GET /api/admin/entitlement-bindings
+router.get('/entitlement-bindings', requireOwner, async (req, res) => {
+    try {
+        const boundPrefs = await UserPrefs.findAll({
+            where: {
+                boundGuildId: { [Op.ne]: null }
+            }
+        });
+
+        const list = await Promise.all(boundPrefs.map(async p => {
+            let userObj = req.client.users.cache.get(p.userId);
+            if (!userObj) {
+                try { userObj = await req.client.users.fetch(p.userId); } catch (e) {}
+            }
+            const guildObj = req.client.guilds.cache.get(p.boundGuildId);
+            return {
+                userId: p.userId,
+                username: userObj ? userObj.username : `ID: ${p.userId}`,
+                avatar: userObj ? userObj.displayAvatarURL() : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                boundGuildId: p.boundGuildId,
+                boundGuildName: guildObj ? guildObj.name : (p.boundGuildName || 'Unknown Guild'),
+                guildIcon: guildObj && guildObj.icon ? `https://cdn.discordapp.com/icons/${guildObj.id}/${guildObj.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                isPremium: !!p.isPremium,
+                isManualPremium: !!p.isManualPremium,
+                paidExpiresAt: p.paidExpiresAt
+            };
+        }));
+
+        res.json({ bindings: list });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/entitlement-unbind
+router.post('/entitlement-unbind', requireOwner, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        if (!userId) return res.status(400).json({ error: 'Missing userId' });
+
+        const prefs = await UserPrefs.findOne({ where: { userId } });
+        if (prefs && prefs.boundGuildId) {
+            const oldGuild = prefs.boundGuildId;
+            prefs.boundGuildId = null;
+            prefs.boundGuildName = null;
+            await prefs.save();
+
+            const settingsCache = require('../../utils/settingsCache');
+            settingsCache.delete(oldGuild);
+        }
+
+        res.json({ success: true, message: `Successfully released bound premium slot for user ${userId}.` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ==========================================
+// ⚙️ SYSTEM CORE MAINTENANCE & TELEMETRY
+// ==========================================
+
+// POST /api/admin/telemetry-sync
+router.post('/telemetry-sync', requireOwner, async (req, res) => {
+    try {
+        const { updateTelemetrySnapshot } = require('../../utils/telemetrySnapshot');
+        const snapshot = updateTelemetrySnapshot(req.client);
+        res.json({ success: true, snapshot, message: 'Static telemetry snapshot generated and synchronized.' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/clear-cache
+router.post('/clear-cache', requireOwner, async (req, res) => {
+    try {
+        const settingsCache = require('../../utils/settingsCache');
+        if (settingsCache && settingsCache.cache) {
+            settingsCache.cache.clear();
+        }
+        res.json({ success: true, message: 'Settings cache cleared across all nodes.' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

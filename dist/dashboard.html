@@ -4983,7 +4983,7 @@
                     <i class="fas fa-bell"></i> <span>Notifications</span>
                     <span id="topbar-notif-badge" class="notif-badge" style="display: none; margin-left: 5px;">0</span>
                 </button>
-                <button onclick="showTab('prefs')" class="global-nav-btn" data-tab="prefs"><i class="fas fa-sliders-h"></i> <span>Settings</span></button>
+                <button onclick="showTab('prefs')" class="global-nav-btn" data-tab="prefs"><i class="fas fa-user-cog"></i> <span>Personal Settings & Entitlements</span></button>
             </div>
 
             <!-- Topbar Right Actions: Consolidated, Clean & Advanced -->
@@ -5035,6 +5035,7 @@
                             <div class="user-dropdown-sub" id="user-dropdown-sub" data-no-translate style="color: rgba(255,255,255,0.6); font-size: 0.78rem;">@user</div>
                         </div>
                         <div class="user-dropdown-divider"></div>
+                        <a href="javascript:void(0)" onclick="showTab('prefs');" class="user-dropdown-item" style="color: #c084fc; font-weight: 600;"><i class="fas fa-user-cog" style="color: #c084fc;"></i> Personal Settings & Entitlements</a>
                         <a href="/" class="user-dropdown-item"><i class="fas fa-home"></i> Home Page</a>
                         <a href="/docs" class="user-dropdown-item"><i class="fas fa-book"></i> Documentation</a>
                         <a href="/verify" class="user-dropdown-item"><i class="fas fa-user-check"></i> Roblox Verification</a>
@@ -5042,7 +5043,7 @@
                         <a href="/legal" class="user-dropdown-item"><i class="fas fa-shield-alt"></i> Legal Center</a>
                         <a href="/support" class="user-dropdown-item"><i class="fas fa-headset"></i> Support & FAQ</a>
                         <a href="/status.html" class="user-dropdown-item"><i class="fas fa-signal"></i> System Status</a>
-                        <a href="https://discord.gg/wKkG9zJj" target="_blank" class="user-dropdown-item"><i class="fab fa-discord"></i> Community Discord</a>
+                        <a href="https://discord.gg/m9WPYV287q" target="_blank" class="user-dropdown-item"><i class="fab fa-discord"></i> Community Discord</a>
                         <div class="user-dropdown-divider"></div>
                         <button onclick="performLogout()" class="user-dropdown-item item-danger"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
                     </div>
@@ -5203,7 +5204,7 @@
                 <i class="fas fa-signal"></i>
                 <span>System Status</span>
             </a>
-            <a href="https://discord.gg/wKkG9zJj" target="_blank" class="mobile-nav-item" onclick="closeMobileNav();">
+            <a href="https://discord.gg/m9WPYV287q" target="_blank" class="mobile-nav-item" onclick="closeMobileNav();">
                 <i class="fab fa-discord"></i>
                 <span>Community Discord</span>
             </a>
@@ -5270,7 +5271,7 @@
                         </p>
                     </div>
                 </div>
-                <button class="config-btn" style="width: auto; background: rgba(255,85,85,0.2); border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 8px 16px;" onclick="window.open('https://discord.gg/wKkG9zJj', '_blank')">Appeal Suspension</button>
+                <button class="config-btn" style="width: auto; background: rgba(255,85,85,0.2); border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 8px 16px;" onclick="window.open('https://discord.gg/m9WPYV287q', '_blank')">Appeal Suspension</button>
             </div>
             <div id="view-greeting" data-view-servers="true" class="view-panel active">
                 <div class="hero-banner" style="background: linear-gradient(135deg, rgba(14, 17, 29, 0.85) 0%, rgba(20, 24, 42, 0.75) 100%); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);">
@@ -5769,11 +5770,73 @@
                 </div>
             </div>            <div id="view-prefs" class="view-panel" style="display: none;">
                 <div class="hero-banner" style="background: rgba(18, 22, 34, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
-                    <h1 style="font-size: 1.85rem; font-weight: 700; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.02em;">Studio Settings</h1>
-                    <p style="color: rgba(255,255,255,0.65); font-size: 0.92rem; font-weight: 400; line-height: 1.5; margin: 0;">Configure dashboard themes, interface language, and account preferences.</p>
+                    <h1 style="font-size: 1.85rem; font-weight: 700; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.02em;">Personal Settings & Entitlements</h1>
+                    <p style="color: rgba(255,255,255,0.65); font-size: 0.92rem; font-weight: 400; line-height: 1.5; margin: 0;">Manage your user profile, personal subscriptions, and bind your premium slots to your Discord servers.</p>
                 </div>
                 
                 <div style="max-width: 800px; margin: 0 auto;">
+                    <!-- 💎 Personal Settings & Entitlements Card (Bind Target Server) -->
+                    <div class="panel" style="margin-bottom: 24px; background: radial-gradient(circle at top right, rgba(168, 85, 247, 0.12) 0%, rgba(18, 22, 34, 0.75) 60%); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 20px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; box-shadow: 0 12px 36px rgba(0,0,0,0.35); position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: rgba(168, 85, 247, 0.15); border-radius: 50%; filter: blur(40px); pointer-events: none;"></div>
+                        
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 14px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.25) 100%); border: 1px solid rgba(168, 85, 247, 0.4); display: flex; align-items: center; justify-content: center; color: #c084fc; font-size: 1.3rem; box-shadow: 0 0 20px rgba(168,85,247,0.25);">
+                                    <i class="fas fa-gem"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0 0 4px 0; display: flex; align-items: center; gap: 10px;">
+                                        Personal Entitlements & Server Binding
+                                        <span id="entitlement-tier-pill" style="font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 99px; background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.35); color: #ffd700;">Loading Tier...</span>
+                                    </h3>
+                                    <p style="font-size: 0.82rem; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.4;">Your personal booster subscription travels with you! Bind your active slot to any server you manage.</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="loadUserEntitlements()" class="btn-outline" style="font-size: 0.78rem; padding: 6px 14px; border-radius: 8px; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: #fff;">
+                                <i class="fas fa-sync-alt"></i> Refresh Slots
+                            </button>
+                        </div>
+
+                        <!-- Active Slot Binding Status Banner -->
+                        <div style="background: rgba(15, 17, 26, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div id="bound-server-avatar-box" style="width: 42px; height: 42px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; overflow: hidden;">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #a78bfa; margin-bottom: 2px;">Currently Bound Server Slot</div>
+                                    <div id="bound-server-name-display" style="font-size: 1rem; font-weight: 700; color: #fff;">No server currently bound</div>
+                                    <div id="bound-server-sub-display" style="font-size: 0.78rem; color: var(--muted); margin-top: 2px;">Select an administered server below to assign your perks.</div>
+                                </div>
+                            </div>
+                            <div id="bound-server-actions-box">
+                                <button id="btn-unbind-slot" type="button" onclick="unbindTargetServer()" class="btn-outline" style="display: none; font-size: 0.78rem; padding: 7px 14px; border-radius: 8px; color: #ff5555; border-color: rgba(255,85,85,0.3); background: rgba(255,85,85,0.06); cursor: pointer;">
+                                    <i class="fas fa-unlink"></i> Release Slot
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Bind Target Server Control Group -->
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 20px; margin-bottom: 6px;">
+                            <label for="entitlement-server-select" style="display: block; font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-arrow-right-arrow-left" style="color: #c084fc;"></i> Bind Target Server
+                            </label>
+                            <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">
+                                Move your premium benefits between your Discord communities anytime. Once bound, the target server gains priority sub-4ms AutoMod scanning, 200 custom autoresponders, 25 role rewards, and custom GIF rank card unlocks instantly.
+                            </p>
+                            
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                                <div style="flex: 1; min-width: 260px;">
+                                    <select id="entitlement-server-select" style="width: 100%; background: rgba(0,0,0,0.35); border: 1px solid rgba(168,85,247,0.3); color: #fff; padding: 11px 14px; border-radius: 10px; box-sizing: border-box; font-size: 0.88rem; outline: none; font-weight: 500;">
+                                        <option value="" disabled selected>Loading your administered servers...</option>
+                                    </select>
+                                </div>
+                                <button id="btn-bind-target-server" type="button" onclick="bindTargetServer()" class="save-btn" style="width: auto; padding: 11px 22px; font-size: 0.85rem; background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: #fff; font-weight: 700; border-radius: 10px; box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35); border: none; cursor: pointer;">
+                                    <i class="fas fa-link"></i> Bind / Move Premium Slot
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Visual Theme & Transparency Customization Card -->
                     <div class="panel" style="margin-bottom: 20px; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
                         <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">
@@ -13963,6 +14026,163 @@
             }
         }
 
+        // ==========================================
+        // 💎 PERSONAL SETTINGS & ENTITLEMENTS (BIND TARGET SERVER)
+        // ==========================================
+
+        async function loadUserEntitlements() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+
+            const tierPill = document.getElementById('entitlement-tier-pill');
+            const boundNameEl = document.getElementById('bound-server-name-display');
+            const boundSubEl = document.getElementById('bound-server-sub-display');
+            const boundAvatarBox = document.getElementById('bound-server-avatar-box');
+            const unbindBtn = document.getElementById('btn-unbind-slot');
+            const selectEl = document.getElementById('entitlement-server-select');
+
+            try {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/entitlements', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Failed to fetch entitlements');
+                const data = await res.json();
+
+                // 1. Tier & Expiry
+                if (tierPill) {
+                    tierPill.textContent = data.tierName || (data.isPremium ? 'Studio Plus' : 'Standard Free');
+                    if (data.isPremium) {
+                        tierPill.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%)';
+                        tierPill.style.borderColor = 'rgba(255, 215, 0, 0.4)';
+                        tierPill.style.color = '#ffd700';
+                    } else {
+                        tierPill.style.background = 'rgba(255, 255, 255, 0.05)';
+                        tierPill.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                        tierPill.style.color = 'var(--muted)';
+                    }
+                }
+
+                // 2. Bound Server Display
+                if (data.boundGuildId) {
+                    if (boundNameEl) boundNameEl.textContent = data.boundGuildName || `Server (${data.boundGuildId})`;
+                    if (boundSubEl) boundSubEl.innerHTML = `<span style="color: #10b981; font-weight: 600;"><i class="fas fa-check-circle"></i> Active Entitlement Slot Bound</span> • Perks live on this server`;
+                    if (boundAvatarBox) {
+                        const targetGuildObj = (data.availableGuilds || []).find(g => g.id === data.boundGuildId);
+                        if (targetGuildObj && targetGuildObj.icon && !targetGuildObj.icon.includes('embed/avatars')) {
+                            boundAvatarBox.innerHTML = `<img src="${targetGuildObj.icon}" alt="Server Icon" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">`;
+                        } else {
+                            boundAvatarBox.innerHTML = `<i class="fas fa-crown" style="color: #ffd700;"></i>`;
+                        }
+                    }
+                    if (unbindBtn) unbindBtn.style.display = 'inline-flex';
+                } else {
+                    if (boundNameEl) boundNameEl.textContent = 'No server currently bound';
+                    if (boundSubEl) boundSubEl.textContent = data.isPremium 
+                        ? 'Your premium slot is active and ready to be assigned to any server you manage.' 
+                        : 'Upgrade to Studio Plus to unlock and bind personal premium slots.';
+                    if (boundAvatarBox) boundAvatarBox.innerHTML = `<i class="fas fa-server" style="color: var(--muted);"></i>`;
+                    if (unbindBtn) unbindBtn.style.display = 'none';
+                }
+
+                // 3. Populate Available Guilds Selector
+                if (selectEl) {
+                    selectEl.innerHTML = '';
+                    const guilds = data.availableGuilds || [];
+                    if (guilds.length === 0) {
+                        selectEl.innerHTML = '<option value="" disabled selected>No administered servers available</option>';
+                    } else {
+                        const defaultOpt = document.createElement('option');
+                        defaultOpt.value = '';
+                        defaultOpt.disabled = true;
+                        defaultOpt.selected = !data.boundGuildId;
+                        defaultOpt.textContent = 'Select a server to bind your premium perks...';
+                        selectEl.appendChild(defaultOpt);
+
+                        guilds.forEach(g => {
+                            const opt = document.createElement('option');
+                            opt.value = g.id;
+                            const isCurrentlyBound = (data.boundGuildId === g.id);
+                            if (isCurrentlyBound) {
+                                opt.selected = true;
+                                opt.textContent = `👑 ${g.name} (Currently Bound)`;
+                            } else {
+                                opt.textContent = `${g.name}${g.isOwner ? ' [Owner]' : ' [Admin]'}${g.botInGuild ? '' : ' (Invite Bot)'}`;
+                            }
+                            selectEl.appendChild(opt);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn('[Entitlements Load Error]:', err);
+            }
+        }
+
+        async function bindTargetServer() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return showToast('Please sign in to manage premium entitlements.', 'error');
+
+            const selectEl = document.getElementById('entitlement-server-select');
+            const targetGuildId = selectEl ? selectEl.value : null;
+
+            if (!targetGuildId) {
+                return showToast('Please select a target server from the dropdown first.', 'warning');
+            }
+
+            const btn = document.getElementById('btn-bind-target-server');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Binding Slot...';
+            }
+
+            try {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/bind-target-server', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ guildId: targetGuildId })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to bind server');
+                }
+
+                showToast(data.message || 'Successfully bound premium slot!', 'success');
+                await loadUserEntitlements();
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Error binding target server.', 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-link"></i> Bind / Move Premium Slot';
+                }
+            }
+        }
+
+        async function unbindTargetServer() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) return;
+
+            if (!confirm('Are you sure you want to release this premium slot? The server will no longer receive priority perks until bound again.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/unbind-target-server', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to release slot');
+
+                showToast(data.message || 'Slot released successfully.', 'info');
+                await loadUserEntitlements();
+            } catch (err) {
+                showToast(err.message || 'Error releasing slot.', 'error');
+            }
+        }
+
         
         let customTeamLinksList = [];
 
@@ -18037,6 +18257,7 @@
                         loadNotifications();
                     }
                     if (tabId === 'prefs') {
+                        loadUserEntitlements();
                         fetchSessions();
                         startPairedDevicesPolling();
                     }

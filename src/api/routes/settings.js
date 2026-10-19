@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
+const { Op } = require('sequelize');
 const GuildSettings = require('../../database/models/GuildSettings');
 const { requireGuildPermission, getDiscordUser } = require('../middleware/auth');
 const settingsCache = require('../../utils/settingsCache');
@@ -55,6 +56,26 @@ router.get('/', settingsRateLimiter, async (req, res) => {
         const expandedMs = settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0;
         if (paidTime + expandedMs > Date.now()) {
             isPremium = true;
+        }
+
+        // Check if any active subscriber has bound their personal premium slot to this guild
+        if (!isPremium) {
+            try {
+                const UserPrefs = require('../../database/models/UserPrefs');
+                const boundPref = await UserPrefs.findOne({
+                    where: {
+                        boundGuildId: guildId,
+                        [Op.or]: [
+                            { isPremium: true },
+                            { isManualPremium: true },
+                            { paidExpiresAt: { [Op.gt]: new Date() } }
+                        ]
+                    }
+                });
+                if (boundPref) {
+                    isPremium = true;
+                }
+            } catch (e) {}
         }
 
         const settingsData = typeof settings.toJSON === 'function' 

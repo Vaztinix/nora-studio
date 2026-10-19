@@ -75,7 +75,7 @@ module.exports = {
                 .setStyle(ButtonStyle.Link),
             new ButtonBuilder()
                 .setLabel('Support')
-                .setURL('https://discord.gg/Uxb2tNAxtp')
+                .setURL('https://discord.gg/m9WPYV287q')
                 .setStyle(ButtonStyle.Link),
             new ButtonBuilder()
                 .setLabel('Discord Store')

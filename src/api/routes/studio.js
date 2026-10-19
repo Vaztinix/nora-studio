@@ -739,4 +739,175 @@ router.get('/topgg/connections', requireAuth, async (req, res) => {
     }
 });
 
+// ==========================================
+// 💎 PERSONAL SETTINGS & ENTITLEMENTS (BIND TARGET SERVER)
+// ==========================================
+
+const APP_OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
+
+// GET /api/user/entitlements
+// Returns the user's active premium slot, currently bound guild, and available guilds to bind
+router.get('/entitlements', requireAuth, async (req, res) => {
+    try {
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: req.user.id } });
+        const isOwner = APP_OWNER_IDS.includes(req.user.id);
+        const hasTime = prefs.paidExpiresAt && new Date(prefs.paidExpiresAt).getTime() > Date.now();
+        const isPremium = isOwner || !!prefs.isPremium || !!prefs.isManualPremium || !!hasTime;
+
+        let tierName = 'Standard Free';
+        if (isOwner) tierName = 'Developer Lifetime VIP';
+        else if (prefs.isManualPremium) tierName = 'Lifetime Pro Entitlement';
+        else if (prefs.isPremium || hasTime) tierName = 'Studio Plus Subscription';
+
+        // Retrieve user's manageable guilds (admin/owner/manage_guild)
+        let availableGuilds = [];
+        try {
+            const authHeader = req.headers.authorization;
+            const token = authHeader.split(' ')[1];
+            const { getCachedUserGuilds } = require('../middleware/auth');
+            const guilds = await getCachedUserGuilds(token);
+            const filtered = guilds.filter(g => {
+                const perms = BigInt(g.permissions || 0);
+                return (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
+            });
+
+            availableGuilds = filtered.map(g => {
+                const botPresent = req.client && req.client.guilds && req.client.guilds.cache.has(g.id);
+                return {
+                    id: g.id,
+                    name: g.name,
+                    icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                    isOwner: !!g.owner,
+                    botInGuild: botPresent
+                };
+            });
+        } catch (e) {
+            console.error('[Entitlements] Error fetching user manageable guilds:', e.message);
+        }
+
+        // If user already has a bound guild, ensure we have its latest name
+        let boundGuildName = prefs.boundGuildName;
+        if (prefs.boundGuildId) {
+            const cachedG = req.client && req.client.guilds && req.client.guilds.cache.get(prefs.boundGuildId);
+            if (cachedG) boundGuildName = cachedG.name;
+        }
+
+        res.json({
+            isPremium,
+            tierName,
+            paidExpiresAt: prefs.paidExpiresAt,
+            boundGuildId: prefs.boundGuildId || null,
+            boundGuildName: boundGuildName || null,
+            availableGuilds
+        });
+    } catch (e) {
+        console.error('Error fetching entitlements:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/user/bind-target-server
+// Binds or moves a user's personal premium booster entitlement slot to a target server
+router.post('/bind-target-server', requireAuth, async (req, res) => {
+    try {
+        const { guildId } = req.body;
+        if (!guildId) {
+            return res.status(400).json({ error: 'Missing guildId parameter' });
+        }
+
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: req.user.id } });
+        const isOwner = APP_OWNER_IDS.includes(req.user.id);
+        const hasTime = prefs.paidExpiresAt && new Date(prefs.paidExpiresAt).getTime() > Date.now();
+        const isPremium = isOwner || !!prefs.isPremium || !!prefs.isManualPremium || !!hasTime;
+
+        if (!isPremium) {
+            return res.status(403).json({
+                error: 'No active personal premium slot found. Please upgrade to Studio Plus or Booster Tier to unlock entitlement server binding.'
+            });
+        }
+
+        // Verify the user has administrative or ownership permissions on this guild
+        const authHeader = req.headers.authorization;
+        const token = authHeader.split(' ')[1];
+        const { getCachedUserGuilds } = require('../middleware/auth');
+        const guilds = await getCachedUserGuilds(token).catch(() => []);
+        
+        const targetGuildData = guilds.find(g => g.id === guildId);
+        if (!targetGuildData && !isOwner) {
+            return res.status(403).json({ error: 'You do not have management permissions on the selected guild.' });
+        }
+
+        const targetGuildName = targetGuildData ? targetGuildData.name : (req.client.guilds.cache.get(guildId)?.name || 'Unknown Guild');
+        const oldGuildId = prefs.boundGuildId;
+
+        // If transferring from a previous guild, invalidate old guild cache
+        const settingsCache = require('../../utils/settingsCache');
+        if (oldGuildId && oldGuildId !== guildId) {
+            settingsCache.delete(oldGuildId);
+        }
+
+        // Update user record
+        prefs.boundGuildId = guildId;
+        prefs.boundGuildName = targetGuildName;
+        await prefs.save();
+
+        // Ensure GuildSettings exist and refresh cache
+        const GuildSettings = require('../../database/models/GuildSettings');
+        const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
+        settingsCache.delete(guildId);
+
+        // Send confirmation notification
+        const Notification = require('../../database/models/Notification');
+        await Notification.create({
+            userId: req.user.id,
+            title: '✨ Premium Slot Bound',
+            content: `Your personal premium entitlement has been successfully bound to **${targetGuildName}**! All Studio Plus perks are now active on that server.`,
+            type: 'special',
+            isSpecial: true,
+            serverName: targetGuildName
+        }).catch(() => {});
+
+        console.log(`[Entitlement Manager] User ${req.user.id} (${req.user.username}) successfully bound premium slot to guild ${guildId} (${targetGuildName}).`);
+
+        res.json({
+            success: true,
+            boundGuildId: guildId,
+            boundGuildName: targetGuildName,
+            message: `Successfully transferred and bound your personal premium slot to ${targetGuildName}!`
+        });
+    } catch (e) {
+        console.error('Error binding target server:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/user/unbind-target-server
+// Releases the user's bound premium slot so it can float freely
+router.post('/unbind-target-server', requireAuth, async (req, res) => {
+    try {
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: req.user.id } });
+        const oldGuildId = prefs.boundGuildId;
+        const oldGuildName = prefs.boundGuildName || 'Server';
+
+        if (!oldGuildId) {
+            return res.json({ success: true, message: 'No premium slot was currently bound.' });
+        }
+
+        prefs.boundGuildId = null;
+        prefs.boundGuildName = null;
+        await prefs.save();
+
+        const settingsCache = require('../../utils/settingsCache');
+        settingsCache.delete(oldGuildId);
+
+        res.json({
+            success: true,
+            message: `Successfully unassigned your premium slot from ${oldGuildName}. You can re-bind it to any server anytime.`
+        });
+    } catch (e) {
+        console.error('Error unbinding target server:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

@@ -207,6 +207,17 @@ const UserPrefs = sequelize.define('UserPrefs', {
     customCardShape: {
         type: DataTypes.STRING,
         defaultValue: 'default'
+    },
+    // ---- Personal Premium Entitlement & Bound Target Server ----
+    boundGuildId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    boundGuildName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
     }
 });
 
