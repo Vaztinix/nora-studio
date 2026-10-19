@@ -1736,7 +1736,7 @@
 
             const curElem = document.getElementById('stock-current-ping');
             if (curElem) {
-                curElem.textContent = activePing > 0 ? activePing : '--';
+                curElem.textContent = activePing > 0 ? activePing : '0';
                 curElem.style.color = quality.cls === 'offline' ? 'var(--red)' : (quality.cls === 'elevated' ? '#fbbf24' : '#ffffff');
             }
 
@@ -1746,21 +1746,26 @@
                 badgeElem.innerHTML = `<i class="fas ${quality.icon}"></i> ${quality.label}`;
             }
 
+            const statCur = document.getElementById('stat-ping-current');
+            const statAvg = document.getElementById('stat-ping-avg');
+            const statMin = document.getElementById('stat-ping-min');
+            const statMax = document.getElementById('stat-ping-max');
+
             if (pings.length > 0) {
                 const sum = pings.reduce((a, b) => a + b, 0);
                 const avg = Math.round(sum / pings.length);
                 const min = Math.min(...pings);
                 const max = Math.max(...pings);
 
-                const statCur = document.getElementById('stat-ping-current');
-                const statAvg = document.getElementById('stat-ping-avg');
-                const statMin = document.getElementById('stat-ping-min');
-                const statMax = document.getElementById('stat-ping-max');
-
                 if (statCur) statCur.textContent = `${latestPoint.ping} ms`;
                 if (statAvg) statAvg.textContent = `${avg} ms`;
                 if (statMin) statMin.textContent = `${min} ms`;
                 if (statMax) statMax.textContent = `${max} ms`;
+            } else {
+                if (statCur) statCur.textContent = '0 ms';
+                if (statAvg) statAvg.textContent = '0 ms';
+                if (statMin) statMin.textContent = '0 ms';
+                if (statMax) statMax.textContent = '0 ms';
             }
         }
 
@@ -1787,7 +1792,17 @@
             const curPing = isOffline ? 0 : ((data.ping && data.ping > 0) ? data.ping : (primaryShard.pingMs > 0 ? primaryShard.pingMs : 28));
             StockChartState.fallbackBasePing = curPing;
 
-            if (Array.isArray(data.latencyHistory) && data.latencyHistory.length > 0) {
+            if (isOffline) {
+                // If offline, accurately record 0ms baseline without generating fake 16ms optimal readings
+                StockChartState.rawHistory = [];
+                const now = Date.now();
+                for (let i = 24; i >= 0; i--) {
+                    StockChartState.rawHistory.push({
+                        timestamp: now - (i * 60 * 1000),
+                        ping: 0
+                    });
+                }
+            } else if (Array.isArray(data.latencyHistory) && data.latencyHistory.length > 0) {
                 StockChartState.rawHistory = data.latencyHistory.map(p => ({
                     timestamp: Number(p.timestamp) || Date.now(),
                     ping: Number(p.ping) || curPing
@@ -1802,7 +1817,7 @@
                             ping: Math.max(16, curPing + jitter)
                         });
                     }
-                } else if (!isOffline) {
+                } else {
                     StockChartState.rawHistory.push({
                         timestamp: Date.now(),
                         ping: curPing
@@ -1919,9 +1934,13 @@
             // Draw Area Gradient Fill
             const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotH);
             const latestPing = points[points.length - 1].ping;
+            const isOffline = latestPing <= 0;
             const isElevated = latestPing > 160;
 
-            if (isElevated) {
+            if (isOffline) {
+                areaGrad.addColorStop(0, 'rgba(239, 68, 68, 0.28)');
+                areaGrad.addColorStop(1, 'rgba(239, 68, 68, 0.00)');
+            } else if (isElevated) {
                 areaGrad.addColorStop(0, 'rgba(245, 158, 11, 0.28)');
                 areaGrad.addColorStop(1, 'rgba(245, 158, 11, 0.00)');
             } else {
@@ -1941,9 +1960,9 @@
 
             // Draw Line Stroke with Neon Glow
             ctx.save();
-            ctx.shadowColor = isElevated ? '#f59e0b' : '#10b981';
+            ctx.shadowColor = isOffline ? '#ef4444' : (isElevated ? '#f59e0b' : '#10b981');
             ctx.shadowBlur = 10;
-            ctx.strokeStyle = isElevated ? '#fbbf24' : '#34d399';
+            ctx.strokeStyle = isOffline ? '#ef4444' : (isElevated ? '#fbbf24' : '#34d399');
             ctx.lineWidth = 2.5;
             buildSplinePath(ctx);
             ctx.stroke();
