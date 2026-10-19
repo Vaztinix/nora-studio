@@ -593,10 +593,7 @@ module.exports = {
                 }
 
                 const template = settings?.levelUpMessage;
-                const disablePing = settings?.levelUpDisablePing === true;
-                let desc = template 
-                    ? formatMessage(template, message.member || message.author, level, disablePing) 
-                    : (disablePing ? `**${message.author.username}** has reached level **${level}**. GG!` : `<@${message.author.id}> has reached level **${level}**. GG!`);
+                let desc = template ? formatMessage(template, message.member || message.author, level) : `<@${message.author.id}> has reached level **${level}**. GG!`;
                 
                 // AI Level-Up Accolade for milestones or active servers
                 if (settings?.noraAiEnabled !== false && (level % 5 === 0 || level === 2 || level === 3 || level === 10)) {
@@ -622,18 +619,10 @@ module.exports = {
                             borderColor: settings?.levelingCardBorderColor || '#23252e'
                         });
 
-                        const sendPayload = { content: desc, files: [{ attachment: imageBuffer, name: 'level-up.png' }] };
-                        if (disablePing) {
-                            sendPayload.allowedMentions = { parse: [], users: [] };
-                        }
-                        await notifyChannel.send(sendPayload).catch(() => { });
+                        await notifyChannel.send({ content: desc, files: [{ attachment: imageBuffer, name: 'level-up.png' }] }).catch(() => { });
                     } catch (err) {
                         console.error('Error generating level-up card:', err);
-                        const fallbackPayload = { content: desc };
-                        if (disablePing) {
-                            fallbackPayload.allowedMentions = { parse: [], users: [] };
-                        }
-                        await notifyChannel.send(fallbackPayload).catch(() => { });
+                        await notifyChannel.send({ content: desc }).catch(() => { });
                     }
                 }
 

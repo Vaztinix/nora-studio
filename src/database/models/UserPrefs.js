@@ -149,31 +149,6 @@ const UserPrefs = sequelize.define('UserPrefs', {
         allowNull: true,
         defaultValue: null
     },
-    // ---- Rank Card Typography & Element Positioning ----
-    rankCardFont: {
-        type: DataTypes.STRING,
-        defaultValue: 'Outfit'
-    },
-    rankCardStarredFonts: {
-        type: DataTypes.TEXT,
-        defaultValue: '[]'
-    },
-    rankCardAvatarY: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
-    },
-    rankCardProgressY: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
-    },
-    rankCardRankY: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
-    },
-    rankCardUsernameY: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
-    },
     // ---- Team Card Customization & Self-Management ----
     isTeamMember: {
         type: DataTypes.BOOLEAN,

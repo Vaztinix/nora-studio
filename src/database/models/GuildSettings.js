@@ -845,10 +845,6 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-    levelUpDisablePing: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-    },
     levelingIgnoredChannels: {
         type: DataTypes.TEXT,
         defaultValue: '[]'

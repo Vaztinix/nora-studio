@@ -155,12 +155,7 @@ module.exports = {
                     borderColor: cardBorder,
                     isPremium: true, // Always allow animated GIFs when present
                     userCustomBg: cardUserBg,
-                    serverCustomBg: settings?.levelingCardBackgroundImage || null,
-                    fontFamily: targetPrefs?.rankCardFont || 'Outfit',
-                    avatarYOffset: targetPrefs?.rankCardAvatarY || 0,
-                    progressYOffset: targetPrefs?.rankCardProgressY || 0,
-                    rankYOffset: targetPrefs?.rankCardRankY || 0,
-                    usernameYOffset: targetPrefs?.rankCardUsernameY || 0
+                    serverCustomBg: settings?.levelingCardBackgroundImage || null
                 }),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 25000))
             ]);

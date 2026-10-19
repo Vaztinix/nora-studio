@@ -131,11 +131,6 @@ async function generateRankCard({
     // Member image & shape (takes priority)
     userCustomBg = null,
     userShape = null,
-    fontFamily = 'Outfit',
-    avatarYOffset = 0,
-    progressYOffset = 0,
-    rankYOffset = 0,
-    usernameYOffset = 0,
     // Server fallbacks
     serverCustomBg = null,
     serverShape = 'rounded-rect'
@@ -146,12 +141,6 @@ async function generateRankCard({
     const finalBgImage = userCustomBg || serverCustomBg || null;
     const rawShape = (userShape && userShape !== 'default') ? userShape : (serverShape || 'rounded-rect');
     const shape = ['rounded-rect', 'capsule', 'hexagon', 'diamond', 'classic'].includes(rawShape) ? rawShape : 'rounded-rect';
-
-    const safeAvatarY = Math.max(-25, Math.min(25, Number(avatarYOffset) || 0));
-    const safeProgressY = Math.max(-25, Math.min(25, Number(progressYOffset) || 0));
-    const safeRankY = Math.max(-25, Math.min(25, Number(rankYOffset) || 0));
-    const safeUsernameY = Math.max(-25, Math.min(25, Number(usernameYOffset) || 0));
-    const cleanFont = String(fontFamily || 'Outfit').replace(/[^a-zA-Z0-9\s-]/g, '').trim() || 'Outfit';
 
     let avatarPngBuffer = null;
     if (showPfp && avatarUrl) {
@@ -260,9 +249,6 @@ async function generateRankCard({
     const svgString = `
     <svg width="860" height="240" viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" image-rendering="optimizeQuality">
         <defs>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=${encodeURIComponent(cleanFont)}:wght@400;700;800;900&amp;display=swap');
-            </style>
             <linearGradient id="obsidianGlass" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#090a10" />
                 <stop offset="50%" stop-color="#121320" />
@@ -320,38 +306,38 @@ async function generateRankCard({
         <!-- Shape Outline -->
         ${borderSvg}
 
-        <!-- Avatar soft dark backing, glow & ring (Y-offset: ${safeAvatarY}px) -->
-        <circle cx="106" cy="${120 + safeAvatarY}" r="66" fill="rgba(8, 10, 18, 0.45)" />
-        <circle cx="106" cy="${120 + safeAvatarY}" r="70" fill="none" stroke="${accentColor}" stroke-opacity="0.3" stroke-width="6" />
-        <circle cx="106" cy="${120 + safeAvatarY}" r="66" fill="none" stroke="${accentColor}" stroke-width="2.5" />
-        ${!avatarPngBuffer ? `<circle cx="106" cy="${120 + safeAvatarY}" r="62" fill="#13141f" /><text x="106" y="${132 + safeAvatarY}" font-family="'${cleanFont}', Segoe UI, Arial, sans-serif" font-size="38" font-weight="900" fill="${accentColor}" text-anchor="middle">@</text>` : ''}
+        <!-- Avatar soft dark backing, glow & ring -->
+        <circle cx="106" cy="120" r="66" fill="rgba(8, 10, 18, 0.45)" />
+        <circle cx="106" cy="120" r="70" fill="none" stroke="${accentColor}" stroke-opacity="0.3" stroke-width="6" />
+        <circle cx="106" cy="120" r="66" fill="none" stroke="${accentColor}" stroke-width="2.5" />
+        ${!avatarPngBuffer ? `<circle cx="106" cy="120" r="62" fill="#13141f" /><text x="106" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="38" font-weight="900" fill="${accentColor}" text-anchor="middle">@</text>` : ''}
 
-        <!-- Rank Pill Badge (Y-offset: ${safeRankY}px) -->
-        <rect x="696" y="${34 + safeRankY}" width="124" height="36" rx="18" fill="rgba(10, 12, 22, 0.65)" stroke="${accentColor}" stroke-width="1.5" filter="url(#crispShadow)" />
-        <circle cx="718" cy="${52 + safeRankY}" r="4.5" fill="${accentColor}" />
-        <text x="764" y="${57 + safeRankY}" font-family="'${cleanFont}', Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">RANK #${rank}</text>
+        <!-- Rank Pill Badge -->
+        <rect x="696" y="34" width="124" height="36" rx="18" fill="rgba(10, 12, 22, 0.65)" stroke="${accentColor}" stroke-width="1.5" filter="url(#crispShadow)" />
+        <circle cx="718" cy="52" r="4.5" fill="${accentColor}" />
+        <text x="764" y="57" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">RANK #${rank}</text>
 
-        <!-- Username Header (Y-offset: ${safeUsernameY}px) -->
-        <text x="204" y="${72 + safeUsernameY}" font-family="'${cleanFont}', Segoe UI, Inter, Arial, sans-serif" font-size="34" font-weight="900" fill="#ffffff" filter="url(#crispShadow)" letter-spacing="-0.3">@${safeUsername}</text>
+        <!-- Username Header -->
+        <text x="204" y="72" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="34" font-weight="900" fill="#ffffff" filter="url(#crispShadow)" letter-spacing="-0.3">@${safeUsername}</text>
 
         <!-- Level Pill & Stats -->
-        <rect x="204" y="${94 + safeUsernameY}" width="112" height="28" rx="14" fill="rgba(10, 12, 22, 0.65)" stroke="${accentColor}" stroke-opacity="0.75" stroke-width="1.2" filter="url(#crispShadow)" />
-        <text x="260" y="${113 + safeUsernameY}" font-family="'${cleanFont}', Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="900" fill="#e0e7ff" text-anchor="middle" letter-spacing="0.5">LEVEL ${level}</text>
+        <rect x="204" y="94" width="112" height="28" rx="14" fill="rgba(10, 12, 22, 0.65)" stroke="${accentColor}" stroke-opacity="0.75" stroke-width="1.2" filter="url(#crispShadow)" />
+        <text x="260" y="113" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="900" fill="#e0e7ff" text-anchor="middle" letter-spacing="0.5">LEVEL ${level}</text>
 
         <!-- XP Info with subtle glass backplate for extreme contrast -->
-        <text x="820" y="${114 + safeUsernameY}" font-family="'${cleanFont}', Segoe UI, Inter, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="end" filter="url(#crispShadow)">
+        <text x="820" y="114" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="end" filter="url(#crispShadow)">
             <tspan fill="#ffffff" font-weight="900">${finalCurrentXp.toLocaleString()}</tspan>
             <tspan fill="#cbd5e1" font-weight="700"> / ${finalNextLevelXp.toLocaleString()} XP </tspan>
             <tspan fill="${accentColor}" font-weight="900">(${Math.round(progressPercent)}%)</tspan>
         </text>
 
-        <!-- Progress Bar container (Y-offset: ${safeProgressY}px) -->
-        <rect x="204" y="${136 + safeProgressY}" width="${totalBarWidth}" height="22" rx="11" fill="rgba(5, 7, 14, 0.70)" stroke="rgba(255,255,255,0.20)" stroke-width="1.2" filter="url(#crispShadow)" />
+        <!-- Progress Bar container -->
+        <rect x="204" y="136" width="${totalBarWidth}" height="22" rx="11" fill="rgba(5, 7, 14, 0.70)" stroke="rgba(255,255,255,0.20)" stroke-width="1.2" filter="url(#crispShadow)" />
         <!-- Progress fill -->
-        ${barWidth > 0 ? `<rect x="204" y="${136 + safeProgressY}" width="${barWidth}" height="22" rx="11" fill="url(#progressGrad)" />` : ''}
+        ${barWidth > 0 ? `<rect x="204" y="136" width="${barWidth}" height="22" rx="11" fill="url(#progressGrad)" />` : ''}
 
         <!-- Footer Tag -->
-        <text x="204" y="188" font-family="'${cleanFont}', Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#cbd5e1" filter="url(#crispShadow)" letter-spacing="0.8">NORA PROGRESSION NETWORK • VAZTINIX.DEV</text>
+        <text x="204" y="188" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#cbd5e1" filter="url(#crispShadow)" letter-spacing="0.8">NORA PROGRESSION NETWORK • VAZTINIX.DEV</text>
     </svg>
     `.trim();
 
@@ -360,7 +346,7 @@ async function generateRankCard({
         .toBuffer();
 
     const composited = avatarPngBuffer 
-        ? await sharp(basePngBuffer).composite([{ input: avatarPngBuffer, left: 44, top: 58 + safeAvatarY }]).png().toBuffer()
+        ? await sharp(basePngBuffer).composite([{ input: avatarPngBuffer, left: 44, top: 58 }]).png().toBuffer()
         : basePngBuffer;
 
     if (isAnimatedGif && animatedBgBuffer) {
