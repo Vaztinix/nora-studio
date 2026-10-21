@@ -25,7 +25,7 @@ module.exports = {
         .setDMPermission(false)
         .addStringOption(opt =>
             opt.setName('status')
-                .setDescription('The reason/status for being AFK (supports text, links, and GIFs)')
+                .setDescription('The reason/status for being AFK (supports text and links)')
                 .setMaxLength(500)
                 .setRequired(false))
         .addStringOption(opt =>
@@ -56,7 +56,15 @@ module.exports = {
                     { name: '4 Hours', value: '4h' },
                     { name: '8 Hours', value: '8h' },
                     { name: '1 Day', value: '1d' }
-                )),
+                ))
+        .addStringOption(opt =>
+            opt.setName('gif')
+                .setDescription('Optional GIF URL or image link (Tenor, Giphy, or direct image link)')
+                .setRequired(false))
+        .addAttachmentOption(opt =>
+            opt.setName('media')
+                .setDescription('Optional GIF or image attachment to display while AFK')
+                .setRequired(false)),
 
     async execute(interaction) {
         const settings = await settingsCache.get(interaction.guild.id);
@@ -71,6 +79,16 @@ module.exports = {
         const rawStatus = interaction.options.getString('status');
         const rawPreset = interaction.options.getString('preset');
         const rawDuration = interaction.options.getString('duration');
+        const rawGif = interaction.options.getString('gif');
+        const rawMedia = interaction.options.getAttachment('media');
+
+        // Extract GIF / image url if provided via option or attachment or inside status
+        let gifUrl = null;
+        if (rawMedia && (rawMedia.contentType?.startsWith('image/') || rawMedia.url)) {
+            gifUrl = rawMedia.url;
+        } else if (rawGif && /^https?:\/\//i.test(rawGif.trim())) {
+            gifUrl = rawGif.trim();
+        }
 
         // Combine preset and status intelligently
         let combinedStatus = '';
@@ -84,6 +102,21 @@ module.exports = {
             combinedStatus = 'AFK';
         }
 
+        // Also check if status text contains a direct GIF / image link
+        const urlRegex = /(https?:\/\/[^\s]+)/gi;
+        const matchedUrls = combinedStatus.match(urlRegex);
+        if (!gifUrl && matchedUrls) {
+            const potentialGif = matchedUrls.find(u => 
+                /\.(gif|png|jpe?g|webp)(\?.*)?$/i.test(u) || 
+                /tenor\.com|giphy\.com|imgur\.com/i.test(u)
+            );
+            if (potentialGif) {
+                gifUrl = potentialGif;
+                // Clean the URL out of status text for cleaner presentation
+                combinedStatus = combinedStatus.replace(potentialGif, '').replace(/\s+/g, ' ').trim() || 'AFK';
+            }
+        }
+
         // Calculate expiresAt if duration provided
         let expiresAt = null;
         if (rawDuration) {
@@ -94,7 +127,7 @@ module.exports = {
         }
 
         const member = interaction.member;
-        let originalNickname = member.nickname || null;
+        let originalNickname = member?.nickname || null;
         let autoNicknameChanged = false;
 
         const autoNicknameEnabled = settings ? settings.afkAutoNickname !== false : true;
@@ -131,28 +164,11 @@ module.exports = {
             roleAssigned = await afkManager.applyAfkRole(interaction.guild, member);
         }
 
-        // Separate URLs and GIFs from markdown bold so Discord embeds them reliably
-        const urlRegex = /(https?:\/\/[^\s]+)/gi;
-        const urls = combinedStatus.match(urlRegex);
-        let replyContent;
-
         const timeSuffix = expiresAt ? ` *(Back <t:${Math.floor(expiresAt / 1000)}:R>)*` : '';
         const roleSuffix = roleAssigned ? ' • 🏷️ *Role assigned*' : '';
 
-        if (!urls) {
-            replyContent = `Set your AFK: **${combinedStatus}**${timeSuffix}${roleSuffix}`;
-        } else {
-            const textOnly = combinedStatus.replace(urlRegex, '').replace(/\s+/g, ' ').trim();
-            const urlString = urls.join('\n');
-            if (!textOnly) {
-                replyContent = `Set your AFK:${timeSuffix}${roleSuffix}\n${urlString}`;
-            } else {
-                replyContent = `Set your AFK: **${textOnly}**${timeSuffix}${roleSuffix}\n${urlString}`;
-            }
-        }
-
         return await interaction.reply({
-            content: replyContent,
+            content: `Set your AFK: **${combinedStatus}**${timeSuffix}${roleSuffix}`,
             allowedMentions: { repliedUser: false }
         });
     }

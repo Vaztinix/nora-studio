@@ -63,6 +63,18 @@ const UnderageSuspension = sequelize.define('UnderageSuspension', {
     policyNotifiedAt: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    appealNotified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    appealNotifiedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    appealNotifyError: {
+        type: DataTypes.TEXT,
+        allowNull: true
     }
 });
 

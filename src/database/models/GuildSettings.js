@@ -11,6 +11,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    levelingAiEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
     welcomerEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -473,7 +477,7 @@ const GuildSettings = sequelize.define('GuildSettings', {
     },
     aiModel: {
         type: DataTypes.STRING,
-        defaultValue: 'gemini-2.5-flash'
+        defaultValue: 'gemini-3.8-flash'
     },
     managedBotId: {
         type: DataTypes.STRING,
@@ -1100,6 +1104,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         defaultValue: true
     },
     starboardNotifyAuthor: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    starboardAiEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },

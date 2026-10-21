@@ -53,8 +53,8 @@ module.exports = {
     category: 'moderation',
     ephemeral: true,
     data: new SlashCommandBuilder()
-        .setName('underage')
-        .setDescription('Manage underage suspensions, age verification, wait timers, and invite pardons.')
+        .setName('agesuspension')
+        .setDescription('Manage server age suspensions, verification, wait timers, and invite pardons.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
         .setDMPermission(false)
         // Subcommand: LIST
@@ -103,7 +103,7 @@ module.exports = {
                 )
                 .addStringOption(opt =>
                     opt.setName('note')
-                        .setDescription('Staff note (e.g. Proved age via ID on ticket #123)')
+                        .setDescription('Staff note (e.g. Proved age via verification ticket)')
                         .setRequired(false)
                 )
                 .addBooleanOption(opt =>
@@ -115,7 +115,7 @@ module.exports = {
         // Subcommand: NOTE
         .addSubcommand(sub =>
             sub.setName('note')
-                .setDescription('Add or update a staff note on an underage suspension record.')
+                .setDescription('Add or update a staff note on an age suspension record.')
                 .addStringOption(opt =>
                     opt.setName('note')
                         .setDescription('Staff note content')
@@ -135,7 +135,7 @@ module.exports = {
         // Subcommand: SETWAIT
         .addSubcommand(sub =>
             sub.setName('setwait')
-                .setDescription('Set or update how long the user has to wait until eligible to rejoin (e.g. Turns 13).')
+                .setDescription('Set or update how long the user has to wait until eligible to rejoin.')
                 .addUserOption(opt =>
                     opt.setName('user')
                         .setDescription('Target user')
@@ -173,12 +173,12 @@ module.exports = {
         // Subcommand: SYNC
         .addSubcommand(sub =>
             sub.setName('sync')
-                .setDescription('Scan audit channels and synchronize past underage kicks into the registry.')
+                .setDescription('Scan audit channels and synchronize past suspension kicks into the registry.')
         )
         // Subcommand: ADD
         .addSubcommand(sub =>
             sub.setName('add')
-                .setDescription('Manually add an underage user to the suspension registry (with optional kick & timer).')
+                .setDescription('Manually add a user to the suspension registry (with optional kick & timer).')
                 .addUserOption(opt =>
                     opt.setName('user')
                         .setDescription('Select user to suspend')
@@ -191,7 +191,7 @@ module.exports = {
                 )
                 .addStringOption(opt =>
                     opt.setName('reason')
-                        .setDescription('Reason for suspension (default: Determined underage for Discord)')
+                        .setDescription('Reason for suspension (default: Discord minimum age policy)')
                         .setRequired(false)
                 )
                 .addBooleanOption(opt =>
@@ -201,19 +201,19 @@ module.exports = {
                 )
                 .addIntegerOption(opt =>
                     opt.setName('days')
-                        .setDescription('Wait duration in days until age 13')
+                        .setDescription('Wait duration in days until rejoin eligible')
                         .setRequired(false)
                         .setMinValue(1)
                 )
                 .addIntegerOption(opt =>
                     opt.setName('months')
-                        .setDescription('Wait duration in months until age 13')
+                        .setDescription('Wait duration in months until rejoin eligible')
                         .setRequired(false)
                         .setMinValue(1)
                 )
                 .addIntegerOption(opt =>
                     opt.setName('years')
-                        .setDescription('Wait duration in years until age 13')
+                        .setDescription('Wait duration in years until rejoin eligible')
                         .setRequired(false)
                         .setMinValue(1)
                 )
@@ -226,7 +226,7 @@ module.exports = {
         // Subcommand: SETROLE
         .addSubcommand(sub =>
             sub.setName('setrole')
-                .setDescription('Configure the Age-Verified role that grants immunity from underage enforcement.')
+                .setDescription('Configure the Age-Verified role that grants immunity from suspension enforcement.')
                 .addRoleOption(opt =>
                     opt.setName('role')
                         .setDescription('The Age-Verified protected role')
@@ -859,7 +859,7 @@ module.exports = {
                 return handleError(
                     interaction, 
                     'Configuration Required', 
-                    'The Age-Verified role has not been configured yet. Please run `/underage setrole <role>` first.'
+                    'The Age-Verified role has not been configured yet. Please run `/agesuspension setrole <role>` first.'
                 );
             }
 
@@ -1040,29 +1040,46 @@ module.exports = {
                     // Send Advisory DM first
                     try {
                         const dmEmbed = new EmbedBuilder()
-                            .setTitle('⚠️ Notice: Underage Account Policy Enforcement')
+                            .setTitle('⚠️ Notice: Account Age Policy Suspension')
                             .setDescription(
                                 `Hello <@${target.id}>,\n\n` +
-                                `You have been removed from **${interaction.guild.name}** because you have been determined to be underage for Discord.\n\n` +
-                                `You are strongly recommended to delete Discord and refrain from using the platform until you are at least **13 years of age** in accordance with Discord Terms of Service.`
+                                `You have been removed and suspended from **${interaction.guild.name}** in accordance with Discord's minimum age policy.\n\n` +
+                                `You are strongly advised to refrain from using Discord until you meet the required age in accordance with Discord Terms of Service.\n\n` +
+                                `⚖️ **How to Appeal Your Suspension:**\n` +
+                                `If you believe this suspension was made in error or you have proof of age, you can:\n` +
+                                `1. **Click the "Submit Appeal" button below** to send an official appeal form (with explanation, details, and image/proof links), OR\n` +
+                                `2. **Reply directly to this DM** with your explanation and **upload images or screenshots** directly!\n\n` +
+                                `📸 **Add Images or Links to Help Us Verify:**\n` +
+                                `• Paste image links (Imgur, Postimages, Google Drive, etc.) into the form OR send photos directly as attachments in this DM.\n` +
+                                `• Clear proof or verification details help staff review and lift suspensions quickly!\n\n` +
+                                `Your appeal will be delivered straight to administrator **Vaztinix** (<@1214048435632603137>) for review.`
                             )
                             .setColor(0xff4757)
                             .addFields(
-                                { name: 'Server', value: interaction.guild.name, inline: true },
-                                { name: 'Enforcement Action', value: 'Server Kick (Staff Action)', inline: true },
-                                { name: 'Reason', value: reason, inline: false }
+                                { name: '🏰 Server', value: interaction.guild.name, inline: true },
+                                { name: '🛑 Action', value: 'Server Suspension (Staff Action)', inline: true },
+                                { name: '📋 Reason', value: reason, inline: false },
+                                { name: '📸 Proof & Images', value: 'Submit image links via the form or upload photos directly in this DM. Forwarded directly to Vaztinix (`1214048435632603137`).', inline: false }
                             )
                             .setThumbnail(interaction.guild.iconURL({ dynamic: true }) || interaction.client.user.displayAvatarURL())
-                            .setFooter({ text: 'Discord Safety & Underage Policy Enforcement' })
+                            .setFooter({ text: 'Discord Safety & Account Policy Enforcement • Appeals via DM' })
                             .setTimestamp();
+
+                        const dmRow = new ActionRowBuilder().addComponents(
+                            new ButtonBuilder()
+                                .setCustomId('appeal_suspension_btn')
+                                .setLabel('Submit Appeal')
+                                .setStyle(ButtonStyle.Primary)
+                                .setEmoji('⚖️')
+                        );
 
                         const dmChannel = await target.createDM ? await target.createDM() : null;
                         if (dmChannel) {
-                            await dmChannel.send({ embeds: [dmEmbed] });
+                            await dmChannel.send({ embeds: [dmEmbed], components: [dmRow] });
                             dmDelivered = true;
                         }
                     } catch (dmErr) {
-                        console.warn(`[Underage Add] DM failed for ${target.id}:`, dmErr.message);
+                        console.warn(`[AgeSuspension Add] DM failed for ${target.id}:`, dmErr.message);
                     }
 
                     try {

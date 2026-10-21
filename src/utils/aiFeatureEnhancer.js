@@ -2,44 +2,58 @@ const geminiKeyManager = require('./geminiKeyManager');
 
 /**
  * AI Feature Enhancer powered strictly by Google Gemini models.
- * Enhances Counting, Games, Starboard, and Leveling with dynamic AI commentary, roasts, and praise.
+ * Enhances Counting, Games, Starboard, AFK, and Leveling with dynamic AI commentary, roasts, and briefings.
  */
 class AIFeatureEnhancer {
     /**
-     * Executes a fast Google Gemini completion with key rotation and safety fallback.
+     * Executes a fast Google Gemini completion with multi-key rotation and safety fallback.
      */
     static async generateGeminiSnippet(prompt, maxTokens = 60) {
         try {
             const keys = geminiKeyManager.getRotatedAvailableKeys();
             if (!keys || keys.length === 0) return null;
 
-            const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-            const apiKey = keys[0];
+            const models = [
+                'gemini-flash-latest',
+                'gemini-3.8-flash',
+                'gemini-3.7-flash',
+                'gemini-3.5-flash',
+                'gemini-flash-lite-latest',
+                'gemini-3.5-flash-lite'
+            ];
 
-            for (const model of models) {
-                try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                            generationConfig: {
-                                maxOutputTokens: maxTokens,
-                                temperature: 0.85
+            // Iterate across all available keys for high availability & quota endurance
+            for (const apiKey of keys) {
+                for (const model of models) {
+                    try {
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                        const res = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                                generationConfig: {
+                                    maxOutputTokens: Math.max(maxTokens, 300),
+                                    temperature: 0.85,
+                                    thinkingConfig: { thinkingBudget: 0 }
+                                }
+                            })
+                        });
+
+                        if (res.ok) {
+                            const data = await res.json();
+                            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                            if (text && text.trim()) {
+                                geminiKeyManager.reportSuccess(apiKey, text);
+                                return text.trim().replace(/^["']|["']$/g, '');
                             }
-                        })
-                    });
-
-                    if (res.ok) {
-                        const data = await res.json();
-                        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if (text && text.trim()) {
-                            return text.trim().replace(/^["']|["']$/g, '');
+                        } else if (res.status === 429) {
+                            geminiKeyManager.reportQuotaLimit(apiKey, new Error(`HTTP 429 on ${model}`));
+                            break; // cascade to next available key
                         }
+                    } catch (e) {
+                        continue;
                     }
-                } catch (e) {
-                    continue;
                 }
             }
             return null;
@@ -84,17 +98,22 @@ class AIFeatureEnhancer {
     /**
      * Generates a witty AI commentary snippet for a message starred to starboard.
      */
-    static async getStarboardCommentary(authorName, messageSnippet, starCount) {
-        if (!messageSnippet || messageSnippet.trim().length < 3) return null;
-        const cleanSnippet = messageSnippet.replace(/\n+/g, ' ').slice(0, 150);
-        const prompt = `You are Nora, a witty Discord bot. A message by "${authorName}" got pinned to Starboard with ${starCount} stars! Message: "${cleanSnippet}". Write a witty, clever 1-sentence commentary or compliment explaining why this message is iconic. Max 25 words.`;
+    static async getStarboardCommentary(authorName, messageSnippet, starCount, replyContext = '') {
+        if (!messageSnippet || messageSnippet.trim().length < 2) return null;
+        const cleanSnippet = messageSnippet.replace(/\n+/g, ' ').slice(0, 180);
+        const replyPart = replyContext ? ` (${replyContext.slice(0, 80)})` : '';
+        const prompt = `You are Nora, a witty and entertaining Discord bot. A message by "${authorName}"${replyPart} just earned ${starCount} stars and was inducted into the Starboard hall of fame!
+Message: "${cleanSnippet}"
+Write a witty, clever 1-sentence commentary or compliment explaining why this message is iconic. Keep it entertaining and concise. Maximum 25 words.`;
         const aiResponse = await this.generateGeminiSnippet(prompt, 50);
         if (aiResponse) return aiResponse;
 
         const fallbacks = [
             `Framed in the server hall of fame where it rightfully belongs.`,
             `Pure comedy gold — the council has voted and approved!`,
-            `Instant classic. Truly a certified community moment.`
+            `Instant classic. Truly a certified community moment.`,
+            `The stars have aligned, and the server has officially spoken.`,
+            `Immortalized in the archives of server greatness.`
         ];
         return fallbacks[Math.floor(Math.random() * fallbacks.length)];
     }

@@ -73,6 +73,7 @@ async function buildStatsEmbed(guild, settings) {
             { name: 'Self-Star Policy', value: `**${selfStar}**`, inline: true },
             { name: 'All-Time Star MVP', value: topAuthorText, inline: true },
             { name: 'Author XP Reward', value: `**+${xpReward} XP** on highlight`, inline: true },
+            { name: 'AI Spotlight', value: (settings?.noraAiEnabled !== false && settings?.starboardAiEnabled !== false) ? '✨ **Active**' : '❌ **Disabled**', inline: true },
             { name: 'Dynamic Star Tiers', value: '⭐ 3+ • 🌟 6+ • ✨ 10+ • 💫 20+ • 🌠 50+', inline: false }
         )
         .setFooter({ text: 'Nora Starboard Engine • React to messages to feature them' })
@@ -199,6 +200,13 @@ module.exports = {
                 .addBooleanOption(opt =>
                     opt.setName('enabled')
                         .setDescription('True to allow self-starring, False to block self-starring')
+                        .setRequired(true)))
+        .addSubcommand(sub =>
+            sub.setName('spotlight')
+                .setDescription('Toggle Nora AI Spotlight commentary on Starboard messages (Manage Server only).')
+                .addBooleanOption(opt =>
+                    opt.setName('enabled')
+                        .setDescription('True to enable AI Spotlight commentary, False to disable')
                         .setRequired(true))),
 
     async execute(interaction) {
@@ -278,6 +286,31 @@ module.exports = {
 
             return await interaction.reply({
                 content: `✅ Self-starring is now **${allowSelfStar ? 'Allowed' : 'Blocked'}**! ${allowSelfStar ? 'Users can star their own messages.' : 'Users cannot star their own messages to boost threshold counts.'}`,
+                allowedMentions: { repliedUser: false }
+            });
+        }
+
+        // Admin Subcommand: Toggle AI Spotlight
+        if (subcommand === 'spotlight') {
+            if (!member.permissions.has(PermissionFlagsBits.ManageGuild) && !member.permissions.has(PermissionFlagsBits.Administrator)) {
+                return await interaction.reply({
+                    content: '⛔ You need the **Manage Server** permission to modify Starboard settings.',
+                    ephemeral: true
+                });
+            }
+
+            const allowSpotlight = interaction.options.getBoolean('enabled');
+            let settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
+            if (!settings) {
+                settings = await GuildSettings.create({ guildId: guild.id });
+            }
+
+            settings.starboardAiEnabled = allowSpotlight;
+            await settings.save();
+            settingsCache.invalidate(guild.id);
+
+            return await interaction.reply({
+                content: `✨ Starboard **AI Spotlight** commentary is now **${allowSpotlight ? 'Enabled' : 'Disabled'}**!`,
                 allowedMentions: { repliedUser: false }
             });
         }

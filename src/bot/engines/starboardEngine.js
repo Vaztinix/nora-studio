@@ -19,10 +19,30 @@ function getStarTier(count, baseEmoji = '⭐') {
     return { emoji: baseEmoji || '⭐', name: 'Bronze Star', color: 0xFFD700 };
 }
 
+// Per-message lock queue to serialize reaction operations and prevent race conditions
+const messageLocks = new Map();
+
+function queueMessageTask(messageId, task) {
+    const prev = messageLocks.get(messageId) || Promise.resolve();
+    const current = (async () => {
+        try {
+            await prev;
+        } catch (_) {}
+        return await task();
+    })();
+    messageLocks.set(messageId, current);
+    current.finally(() => {
+        if (messageLocks.get(messageId) === current) {
+            messageLocks.delete(messageId);
+        }
+    });
+    return current;
+}
+
 /**
  * Builds the rich Starboard embed and jump button.
  */
-async function buildStarboardPayload(message, count, settings, triggerEmoji) {
+async function buildStarboardPayload(message, count, settings, triggerEmoji, existingAiTake = null) {
     const tier = getStarTier(count, triggerEmoji);
     const useDynamic = settings?.starboardDynamicColors !== false;
     
@@ -43,6 +63,7 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji) {
     let description = message.content || '';
 
     // Check if the message is a reply to another message
+    let replyContext = '';
     if (message.reference && message.reference.messageId) {
         try {
             const refMsg = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
@@ -50,6 +71,7 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji) {
                 const refAuthor = refMsg.author.tag || refMsg.author.username;
                 const snippet = refMsg.content ? (refMsg.content.length > 80 ? refMsg.content.substring(0, 80) + '...' : refMsg.content) : '*Attachment/Embed*';
                 description = `> **Replying to @${refAuthor}:** *${snippet}*\n\n` + description;
+                replyContext = `Replying to @${refAuthor}: "${snippet}"`;
             }
         } catch (e) {}
     }
@@ -80,24 +102,36 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji) {
         });
     }
 
-    // Optional AI Highlight Commentary if Nora AI is enabled
-    if (settings?.noraAiEnabled !== false && message.content && message.content.trim().length > 5) {
-        try {
-            const AIFeatureEnhancer = require('../../utils/aiFeatureEnhancer');
-            const aiTake = await AIFeatureEnhancer.getStarboardCommentary(
-                message.author.username || message.author.tag,
-                message.content,
-                count
-            );
-            if (aiTake) {
-                embed.addFields({
-                    name: '✨ Nora AI Spotlight',
-                    value: `*"${aiTake}"*`,
-                    inline: false
-                });
-            }
-        } catch (_) {}
+    // Nora AI Spotlight Commentary if Nora AI and Starboard AI Spotlight are enabled
+    let aiSpotlightText = existingAiTake || null;
+    if (settings?.noraAiEnabled !== false && settings?.starboardAiEnabled !== false) {
+        if (aiSpotlightText) {
+            embed.addFields({
+                name: '✨ Nora AI Spotlight',
+                value: aiSpotlightText.startsWith('*') ? aiSpotlightText : `*"${aiSpotlightText}"*`,
+                inline: false
+            });
+        } else if ((message.content && message.content.trim().length > 3) || message.attachments?.size > 0) {
+            try {
+                const AIFeatureEnhancer = require('../../utils/aiFeatureEnhancer');
+                const aiTake = await AIFeatureEnhancer.getStarboardCommentary(
+                    message.author.username || message.author.tag,
+                    message.content || (message.attachments?.size > 0 ? '*Media/Image post*' : ''),
+                    count,
+                    replyContext
+                );
+                if (aiTake) {
+                    aiSpotlightText = aiTake;
+                    embed.addFields({
+                        name: '✨ Nora AI Spotlight',
+                        value: `*"${aiTake}"*`,
+                        inline: false
+                    });
+                }
+            } catch (_) {}
+        }
     }
+
 
     // Message template string
     let starText = settings?.starboardMessageTemplate || '{emoji} **{count}** | {channel}';
@@ -115,7 +149,7 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji) {
             .setEmoji('🔗')
     );
 
-    return { starText, embed, components: [row], tier };
+    return { starText, embed, components: [row], tier, aiSpotlightText };
 }
 
 /**
@@ -140,21 +174,26 @@ async function sendOrEditStarboardMessage(starboardChannel, existingMessageId, p
     if (existingMessageId) {
         const existingMsg = await starboardChannel.messages.fetch(existingMessageId).catch(() => null);
         if (existingMsg) {
-            if (existingMsg.webhookId && webhook) {
-                await webhook.editMessage(existingMsg.id, {
-                    content: payload.starText,
-                    embeds: [payload.embed],
-                    components: payload.components,
-                    username: settings.starboardWebhookName || 'Nora Starboard',
-                    avatarURL: settings.starboardWebhookAvatar || null
-                }).catch(() => {});
-                return existingMsg.id;
-            } else {
-                await existingMsg.edit({
-                    content: payload.starText,
-                    embeds: [payload.embed],
-                    components: payload.components
-                }).catch(() => {});
+            try {
+                if (existingMsg.webhookId && webhook) {
+                    await webhook.editMessage(existingMsg.id, {
+                        content: payload.starText,
+                        embeds: [payload.embed],
+                        components: payload.components,
+                        username: settings.starboardWebhookName || 'Nora Starboard',
+                        avatarURL: settings.starboardWebhookAvatar || null
+                    });
+                    return existingMsg.id;
+                } else {
+                    await existingMsg.edit({
+                        content: payload.starText,
+                        embeds: [payload.embed],
+                        components: payload.components
+                    });
+                    return existingMsg.id;
+                }
+            } catch (editErr) {
+                console.error(`[Starboard] Failed to edit message ${existingMessageId}:`, editErr.message);
                 return existingMsg.id;
             }
         }
@@ -224,55 +263,123 @@ async function handleReactionAdd(reaction, user) {
     // Do not star messages in the starboard channel itself
     if (message.channel.id === settings.starboardChannelId) return;
 
-    // Fetch or create persistent StarboardEntry
-    let entry = await StarboardEntry.findOne({ where: { messageId: message.id } });
-    const threshold = settings.starboardThreshold || 3;
-
-    // Recalculate true star count (excluding author if self-star is disabled)
-    let validCount = reaction.count;
-    if (!settings.starboardSelfStar) {
+    return queueMessageTask(message.id, async () => {
+        // Fetch fresh message state to avoid stale reaction counts
         try {
-            const users = await reaction.users.fetch();
-            if (users.has(message.author.id)) {
-                validCount = Math.max(0, validCount - 1);
+            const freshMsg = await message.fetch().catch(() => message);
+            if (freshMsg) message = freshMsg;
+        } catch (_) {}
+
+        // Fetch or create persistent StarboardEntry
+        let entry = await StarboardEntry.findOne({ where: { messageId: message.id } });
+        const threshold = settings.starboardThreshold || 3;
+
+        // Recalculate true star count from reaction cache
+        let matchingReaction = message.reactions?.cache?.find(r => 
+            (emojiId && r.emoji.id === emojiId) || (emojiName && r.emoji.name === emojiName)
+        );
+        let validCount = matchingReaction ? matchingReaction.count : reaction.count;
+        if (!settings.starboardSelfStar) {
+            try {
+                if (matchingReaction) {
+                    const users = await matchingReaction.users.fetch();
+                    if (users.has(message.author.id)) {
+                        validCount = Math.max(0, validCount - 1);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        if (validCount < threshold) return;
+
+        const starboardChannel = guild.channels.cache.get(settings.starboardChannelId) ||
+                                 await guild.channels.fetch(settings.starboardChannelId).catch(() => null);
+        if (!starboardChannel) return;
+
+        let existingMsgId = entry ? entry.starboardMessageId : null;
+        let existingAiTake = entry?.aiSpotlight || null;
+
+        // If no message ID in DB, inspect the starboard channel to find an existing post to edit
+        if (!existingMsgId) {
+            try {
+                const recentMessages = await starboardChannel.messages.fetch({ limit: 40 }).catch(() => null);
+                if (recentMessages) {
+                    const found = recentMessages.find(m => {
+                        const footerText = m.embeds?.[0]?.footer?.text || '';
+                        return footerText.includes(`Message ID: ${message.id}`) || footerText.includes(message.id);
+                    });
+                    if (found) {
+                        existingMsgId = found.id;
+                        if (!existingAiTake) {
+                            const spotlightField = found.embeds?.[0]?.fields?.find(f => f.name.includes('Nora AI Spotlight'));
+                            if (spotlightField?.value) {
+                                existingAiTake = spotlightField.value;
+                            }
+                        }
+                    }
+                }
+            } catch (_) {}
+        } else if (!existingAiTake) {
+            try {
+                const existingMsg = await starboardChannel.messages.fetch(existingMsgId).catch(() => null);
+                const spotlightField = existingMsg?.embeds?.[0]?.fields?.find(f => f.name.includes('Nora AI Spotlight'));
+                if (spotlightField?.value) {
+                    existingAiTake = spotlightField.value;
+                }
+            } catch (_) {}
+        }
+
+        const isNewStarboardPost = !existingMsgId;
+
+        // Clean up any extra duplicate messages for this same source message
+        if (existingMsgId) {
+            try {
+                const channelMsgs = await starboardChannel.messages.fetch({ limit: 40 }).catch(() => null);
+                if (channelMsgs) {
+                    const duplicates = channelMsgs.filter(m => {
+                        if (m.id === existingMsgId) return false;
+                        const footerText = m.embeds?.[0]?.footer?.text || '';
+                        return footerText.includes(`Message ID: ${message.id}`) || footerText.includes(message.id);
+                    });
+                    for (const [, dupMsg] of duplicates) {
+                        await dupMsg.delete().catch(() => {});
+                    }
+                }
+            } catch (_) {}
+        }
+
+        // Build payload reusing original spotlight
+        const payload = await buildStarboardPayload(message, validCount, settings, triggerEmoji, existingAiTake);
+
+        const sentMessageId = await sendOrEditStarboardMessage(starboardChannel, existingMsgId, payload, settings);
+        if (!sentMessageId) return;
+
+        // Save or update entry in database
+        const resolvedSpotlight = payload.aiSpotlightText || existingAiTake || (entry?.aiSpotlight ?? null);
+        if (entry) {
+            entry.starCount = validCount;
+            entry.starboardMessageId = sentMessageId;
+            entry.tierEmoji = payload.tier.emoji;
+            if (resolvedSpotlight) {
+                entry.aiSpotlight = resolvedSpotlight;
             }
-        } catch (e) {}
-    }
-
-    if (validCount < threshold) return;
-
-    const starboardChannel = guild.channels.cache.get(settings.starboardChannelId) ||
-                             await guild.channels.fetch(settings.starboardChannelId).catch(() => null);
-    if (!starboardChannel) return;
-
-    const payload = await buildStarboardPayload(message, validCount, settings, triggerEmoji);
-    const existingMsgId = entry ? entry.starboardMessageId : null;
-    const isNewStarboardPost = !existingMsgId;
-
-    const sentMessageId = await sendOrEditStarboardMessage(starboardChannel, existingMsgId, payload, settings);
-    if (!sentMessageId) return;
-
-    // Save or update entry in database
-    if (entry) {
-        entry.starCount = validCount;
-        entry.starboardMessageId = sentMessageId;
-        entry.tierEmoji = payload.tier.emoji;
-        await entry.save();
-    } else {
-        entry = await StarboardEntry.create({
-            guildId: guild.id,
-            channelId: message.channel.id,
-            messageId: message.id,
-            starboardMessageId: sentMessageId,
-            authorId: message.author.id,
-            authorTag: message.author.tag || message.author.username,
-            content: message.content || '',
-            starCount: validCount,
-            attachmentUrl: message.attachments.first()?.url || null,
-            jumpUrl: message.url,
-            tierEmoji: payload.tier.emoji
-        });
-    }
+            await entry.save();
+        } else {
+            entry = await StarboardEntry.create({
+                guildId: guild.id,
+                channelId: message.channel.id,
+                messageId: message.id,
+                starboardMessageId: sentMessageId,
+                authorId: message.author.id,
+                authorTag: message.author.tag || message.author.username,
+                content: message.content || '',
+                starCount: validCount,
+                attachmentUrl: message.attachments.first()?.url || null,
+                jumpUrl: message.url,
+                tierEmoji: payload.tier.emoji,
+                aiSpotlight: resolvedSpotlight
+            });
+        }
 
     // If this is the first time the message made Starboard, reward author
     if (isNewStarboardPost) {
@@ -312,6 +419,7 @@ async function handleReactionAdd(reaction, user) {
 
     // Evaluate and grant Starboard Role Rewards for author
     await evaluateStarboardRoleRewards(guild, message.author.id, settings, validCount, starboardChannel).catch(() => {});
+});
 }
 
 /**
@@ -425,41 +533,45 @@ async function handleReactionRemove(reaction, user) {
         if (!message) return;
     }
 
-    const entry = await StarboardEntry.findOne({ where: { messageId: message.id } });
-    if (!entry || !entry.starboardMessageId) return;
+    return queueMessageTask(message.id, async () => {
+        const entry = await StarboardEntry.findOne({ where: { messageId: message.id } });
+        if (!entry || !entry.starboardMessageId) return;
 
-    const starboardChannel = guild.channels.cache.get(settings.starboardChannelId) ||
-                             await guild.channels.fetch(settings.starboardChannelId).catch(() => null);
-    if (!starboardChannel) return;
+        const starboardChannel = guild.channels.cache.get(settings.starboardChannelId) ||
+                                 await guild.channels.fetch(settings.starboardChannelId).catch(() => null);
+        if (!starboardChannel) return;
 
-    const threshold = settings.starboardThreshold || 3;
-    let validCount = reaction.count;
-    if (!settings.starboardSelfStar) {
-        try {
-            const users = await reaction.users.fetch();
-            if (users.has(message.author.id)) {
-                validCount = Math.max(0, validCount - 1);
-            }
-        } catch (e) {}
-    }
-
-    if (validCount < threshold) {
-        // Star count fell below threshold -> delete from starboard channel
-        const existingMsg = await starboardChannel.messages.fetch(entry.starboardMessageId).catch(() => null);
-        if (existingMsg) {
-            await existingMsg.delete().catch(() => {});
+        const threshold = settings.starboardThreshold || 3;
+        let validCount = reaction.count;
+        if (!settings.starboardSelfStar) {
+            try {
+                const users = await reaction.users.fetch();
+                if (users.has(message.author.id)) {
+                    validCount = Math.max(0, validCount - 1);
+                }
+            } catch (e) {}
         }
-        entry.starboardMessageId = null;
-        entry.starCount = validCount;
-        await entry.save();
-    } else {
-        // Update starboard post with new count and tier
-        const payload = await buildStarboardPayload(message, validCount, settings, triggerEmoji);
-        await sendOrEditStarboardMessage(starboardChannel, entry.starboardMessageId, payload, settings);
-        entry.starCount = validCount;
-        entry.tierEmoji = payload.tier.emoji;
-        await entry.save();
-    }
+
+        if (validCount < threshold) {
+            // Star count fell below threshold -> delete from starboard channel
+            const existingMsg = await starboardChannel.messages.fetch(entry.starboardMessageId).catch(() => null);
+            if (existingMsg) {
+                await existingMsg.delete().catch(() => {});
+            }
+            entry.starboardMessageId = null;
+            entry.starCount = validCount;
+            await entry.save();
+        } else {
+            const existingAiTake = entry.aiSpotlight || null;
+
+            // Update starboard post with new count and tier, keeping the original spotlight
+            const payload = await buildStarboardPayload(message, validCount, settings, triggerEmoji, existingAiTake);
+            await sendOrEditStarboardMessage(starboardChannel, entry.starboardMessageId, payload, settings);
+            entry.starCount = validCount;
+            entry.tierEmoji = payload.tier.emoji;
+            await entry.save();
+        }
+    });
 }
 
 /**

@@ -47,6 +47,10 @@ const COMMAND_ALIASES = {
     'aslowmode': 'adaptiveslowmode',
     'adaptiveslow': 'adaptiveslowmode',
     'autoslowmode': 'adaptiveslowmode',
+    'agesuspension': 'agesuspension',
+    'agesuspend': 'agesuspension',
+    'suspension': 'agesuspension',
+    'underage': 'agesuspension',
     'tv': 'roku'
 };
 
@@ -557,6 +561,18 @@ async function handlePrefixCommand(message, client) {
     // Parse arguments into named options
     const parsedOptions = {};
     const missingRequired = [];
+
+    // Special handling for AFK prefix command: combine all arguments into the status text
+    if (commandName === 'afk') {
+        parsedOptions['status'] = args.join(' ');
+        const mockInteraction = createMockInteraction(message, commandName, chosenSubcommand, parsedOptions);
+        try {
+            await command.execute(mockInteraction);
+        } catch (execErr) {
+            console.error(`[Prefix Command] Error executing ${commandName}:`, execErr);
+        }
+        return true;
+    }
 
     for (let i = 0; i < optionDefs.length; i++) {
         const def = optionDefs[i];

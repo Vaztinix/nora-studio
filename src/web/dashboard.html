@@ -3802,7 +3802,9 @@
                     adaptiveSlowmodeDecaySec: 'Decay Recovery Time',
                     adaptiveSlowmodeSurgeSec: 'Surge Raid Slowmode Ceiling',
                     adaptiveSlowmodeNotify: 'In-Chat Escalation Notice',
-                    adaptiveSlowmodeModLog: 'Adaptive Mod Log Feed'
+                    adaptiveSlowmodeModLog: 'Adaptive Mod Log Feed',
+                    levelingAiEnabled: 'Leveling AI Enhance',
+                    starboardAiEnabled: 'Starboard AI Spotlight'
                 };
                 if (labelMap[key]) return labelMap[key];
 
@@ -3866,7 +3868,7 @@
                 if (!window.previousSettings || Object.keys(window.previousSettings).length === 0) {
                     return diffs;
                 }
-                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId'];
+                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId', 'levelingAiEnabled', 'starboardAiEnabled'];
 
                 KEYS_ARRAY.forEach(k => {
                     const el = document.getElementById('setting-' + k);
@@ -8305,6 +8307,16 @@
                                         </div>
                                         <label class="switch small"><input type="checkbox" id="setting-levelUpDmEnabled"><span class="slider"></span></label>
                                     </div>
+
+                                    <div class="log-row-compact" style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 12px 14px;">
+                                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                                            <strong style="color: #f1f5f9; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                                                <i class="fas fa-sparkles" style="color: #a855f7;"></i> AI Enhance
+                                            </strong>
+                                            <p style="font-size: 0.72rem; color: var(--muted); margin: 0;">Have Nora AI dynamically craft unique celebratory accolades and witty quips for level-ups</p>
+                                        </div>
+                                        <label class="switch small"><input type="checkbox" id="setting-levelingAiEnabled"><span class="slider"></span></label>
+                                    </div>
                                 </div>
                             </div>
 
@@ -9148,10 +9160,9 @@
                             <div class="input-group" style="margin-bottom: 16px;">
                                 <label style="font-size: 0.8rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Active Gemini Model</label>
                                 <select id="setting-aiModel" style="width: 100%; padding: 11px 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #fff; font-size: 0.85rem;">
-                                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (Ultra-fast, Next-gen Reasoning - Recommended)</option>
-                                    <option value="gemini-2.0-flash">Gemini 2.0 Flash (Fast & Reliable Standard)</option>
-                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (Lightweight & Efficient)</option>
-                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep Code & Multi-step Logic)</option>
+                                    <option value="gemini-3.8-flash">Gemini 3.8 Flash (Ultra-fast, Next-gen Reasoning - Recommended)</option>
+                                    <option value="gemini-3.5-flash">Gemini 3.5 Flash (Fast & Balanced Multimodal)</option>
+                                    <option value="gemini-flash-latest">Gemini Flash Latest (Continuously Updated Standard)</option>
                                     <option value="gemini-flash-lite-latest">Gemini Flash Lite (Ultra-Low Latency Throughput)</option>
                                 </select>
                             </div>
@@ -10559,6 +10570,19 @@
                                     </div>
                                     <label class="switch">
                                         <input type="checkbox" id="setting-starboardDynamicColors" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <label style="margin: 0; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-sparkles" style="color: #fbbf24;"></i> AI Spotlight
+                                        </label>
+                                        <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Have Nora AI dynamically generate insightful commentary and accolades when posts enter the Starboard.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-starboardAiEnabled" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -12874,7 +12898,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId', 'levelingAiEnabled', 'starboardAiEnabled'];
 
 
 
@@ -15556,7 +15580,9 @@
                             if (w !== wrapper) w.remove();
                         });
                     }
-                    if (typeof select.syncSearchableActiveState === 'function') {
+                    if (typeof select.refreshSearchableSelect === 'function') {
+                        select.refreshSearchableSelect();
+                    } else if (typeof select.syncSearchableActiveState === 'function') {
                         select.syncSearchableActiveState();
                     }
                     return;
@@ -15620,8 +15646,18 @@
                     const currentVal = select.value;
                     const matchedOpt = Array.from(select.options).find(o => o.value === currentVal) || (select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null) || select.options[0];
                     if (matchedOpt) {
-                        label.textContent = matchedOpt.textContent;
-                        label.style.color = (matchedOpt.style && matchedOpt.style.color) ? matchedOpt.style.color : '#ffffff';
+                        const optColor = (matchedOpt.style && matchedOpt.style.color && matchedOpt.style.color !== '' && matchedOpt.style.color !== '#000000' && matchedOpt.style.color !== 'inherit') ? matchedOpt.style.color : null;
+                        const optText = matchedOpt.textContent ? matchedOpt.textContent.trim() : '';
+                        if (optColor) {
+                            label.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 8px;"><span class="nora-role-indicator" style="width: 8px; height: 8px; border-radius: 50%; background-color: ${optColor}; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px ${optColor}80;"></span><span style="color: ${optColor}; font-weight: 600;">${escapeHtml(optText.replace(' (Requires Bot Role Higher)', ''))}</span></span>`;
+                            label.style.color = optColor;
+                        } else if (optText.startsWith('#')) {
+                            label.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-hashtag" style="color: #38bdf8; font-size: 0.8rem; opacity: 0.85;"></i><span>${escapeHtml(optText.replace(/^#/, ''))}</span></span>`;
+                            label.style.color = '#ffffff';
+                        } else {
+                            label.textContent = optText;
+                            label.style.color = '#ffffff';
+                        }
                     } else {
                         label.textContent = 'None available';
                         label.style.color = '#ffffff';
@@ -15663,8 +15699,9 @@
                             const li = document.createElement('li');
                             li.className = 'nora-searchable-item' + (isSelected ? ' is-selected' : '') + (opt.disabled ? ' is-disabled' : '');
                             li.setAttribute('data-value', opt.value);
-                            if (opt.style && opt.style.color) {
-                                li.style.color = opt.style.color;
+                            const optColor = (opt.style && opt.style.color && opt.style.color !== '' && opt.style.color !== '#000000' && opt.style.color !== 'inherit') ? opt.style.color : null;
+                            if (optColor) {
+                                li.style.color = optColor;
                             }
 
                             if (select.id === 'new-feed-platform' && opt.value === 'twitch') {
@@ -15672,7 +15709,17 @@
                                 if (!opt.disabled) opt.disabled = true;
                             }
 
-                            li.innerHTML = `<span>${escapeHtml(opt.textContent)}</span>${isSelected ? '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>' : ''}`;
+                            const optText = opt.textContent;
+                            let innerHtmlContent = '';
+                            if (optColor) {
+                                innerHtmlContent = `<span style="display: inline-flex; align-items: center; gap: 8px;"><span class="nora-role-indicator" style="width: 8px; height: 8px; border-radius: 50%; background-color: ${optColor}; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px ${optColor}80;"></span><span style="color: ${optColor}; font-weight: 500;">${escapeHtml(optText)}</span></span>`;
+                            } else if (optText.startsWith('#')) {
+                                innerHtmlContent = `<span style="display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-hashtag" style="color: #38bdf8; font-size: 0.8rem; opacity: 0.85;"></i><span>${escapeHtml(optText.replace(/^#/, ''))}</span></span>`;
+                            } else {
+                                innerHtmlContent = `<span>${escapeHtml(optText)}</span>`;
+                            }
+
+                            li.innerHTML = `${innerHtmlContent}${isSelected ? '<i class="fas fa-check" style="font-size: 0.75rem; color: #a855f7;"></i>' : ''}`;
 
                             li.onclick = (e) => {
                                 e.stopPropagation();
@@ -21610,7 +21657,7 @@
                     </div>
                     <div>
                         <label style="font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; display: block; font-weight: 600;">Reward Role</label>
-                        <select style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;" onchange="updateStarboardRewardField(${index}, 'roleId', this.value)">
+                        <select id="starboard-reward-role-${index}" class="starboard-reward-role-select" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;" onchange="updateStarboardRewardField(${index}, 'roleId', this.value)">
                             ${roleOptions}
                         </select>
                     </div>
@@ -21624,6 +21671,9 @@
             });
 
             container.innerHTML = html;
+            container.querySelectorAll('.starboard-reward-role-select').forEach(sel => {
+                if (typeof initCustomDropdown === 'function') initCustomDropdown(sel);
+            });
         };
 
         window.addStarboardRoleReward = function() {
@@ -23483,6 +23533,8 @@
                     'setting-unverifiedRoleId',
                     'setting-countingTopCounterRoleId',
                     'setting-afkRoleId',
+                    'setting-quarantineRoleId',
+                    'app-auto-role',
                     'rr-role-1',
                     'rr-role-2',
                     'rr-role-3',
@@ -23523,6 +23575,7 @@
                         if (r.higherThanBot) opt.disabled = true;
                         el.appendChild(opt);
                     });
+                    initCustomDropdown(el);
                 });
 
                 // Populate Feed Announcement Ping dropdown
@@ -23860,6 +23913,7 @@
             }
 
             const items = Array.isArray(roles) ? roles : [];
+            const isChannelField = hiddenInputId.toLowerCase().includes('channel');
             items.forEach(r => {
                 if (!r || !r.id) return;
                 const option = document.createElement('div');
@@ -23872,8 +23926,17 @@
                 if (r.higherThanBot) checkbox.disabled = true;
 
                 const label = document.createElement('span');
-                const displayName = r.name ? (hiddenInputId.toLowerCase().includes('channel') && !r.name.startsWith('#') ? '#' + r.name : r.name) : r.id;
-                label.textContent = `${displayName}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}`;
+                label.style.display = 'inline-flex';
+                label.style.alignItems = 'center';
+                label.style.gap = '8px';
+                const displayName = r.name ? (isChannelField && !r.name.startsWith('#') ? '#' + r.name : r.name) : r.id;
+
+                if (isChannelField) {
+                    label.innerHTML = `<i class="fas fa-hashtag" style="color: #38bdf8; font-size: 0.8rem; opacity: 0.85;"></i><span>${escapeHtml(displayName.replace(/^#/, ''))}</span>`;
+                } else {
+                    const roleColor = (r.color && r.color !== '#000000') ? r.color : '#94a3b8';
+                    label.innerHTML = `<span class="nora-role-indicator" style="width: 8px; height: 8px; border-radius: 50%; background-color: ${roleColor}; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px ${roleColor}80;"></span><span style="color: ${r.color || 'inherit'};">${escapeHtml(displayName)}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}</span>`;
+                }
                 if (r.color) label.style.color = r.color;
                 if (r.higherThanBot) label.style.opacity = '0.5';
 
@@ -23934,15 +23997,23 @@
                 curTrigger.innerHTML = '';
                 checkedBoxes.forEach(cb => {
                     const labelSpan = cb.nextSibling;
-                    const labelText = labelSpan ? labelSpan.textContent.replace(' (Requires Bot Role Higher)', '') : (cb.parentNode.getAttribute('data-value') || 'Item');
+                    const labelText = labelSpan ? labelSpan.textContent.replace(' (Requires Bot Role Higher)', '').replace(/^#/, '') : (cb.parentNode.getAttribute('data-value') || 'Item');
                     const color = labelSpan ? labelSpan.style.color : '';
                     const tag = document.createElement('span');
                     tag.className = 'multiselect-tag';
-                    tag.textContent = labelText;
-                    if (color) {
-                        tag.style.color = color;
-                        tag.style.borderColor = color + '4d';
-                        tag.style.background = color + '1a';
+                    tag.style.display = 'inline-flex';
+                    tag.style.alignItems = 'center';
+                    tag.style.gap = '6px';
+                    if (isChannelField) {
+                        tag.innerHTML = `<i class="fas fa-hashtag" style="color: #38bdf8; font-size: 0.75rem;"></i><span>${escapeHtml(labelText)}</span>`;
+                    } else {
+                        const roleColor = (color && color !== '#000000') ? color : '#94a3b8';
+                        tag.innerHTML = `<span class="nora-role-indicator" style="width: 6px; height: 6px; border-radius: 50%; background-color: ${roleColor}; display: inline-block; flex-shrink: 0; box-shadow: 0 0 4px ${roleColor}80;"></span><span>${escapeHtml(labelText)}</span>`;
+                        if (color) {
+                            tag.style.color = color;
+                            tag.style.borderColor = color + '4d';
+                            tag.style.background = color + '1a';
+                        }
                     }
                     curTrigger.appendChild(tag);
                 });
@@ -23984,7 +24055,8 @@
             const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
             const trigger = container.querySelector('.multiselect-trigger');
             if (!trigger) return;
-            const emptyText = hiddenInputId.toLowerCase().includes('channel') ? 'No channels selected' : 'No roles selected';
+            const isChannelField = hiddenInputId.toLowerCase().includes('channel');
+            const emptyText = isChannelField ? 'No channels selected' : 'No roles selected';
 
             if (checkedBoxes.length === 0) {
                 trigger.textContent = emptyText;
@@ -23994,15 +24066,23 @@
             trigger.innerHTML = '';
             checkedBoxes.forEach(cb => {
                 const labelSpan = cb.nextSibling;
-                const labelText = labelSpan ? labelSpan.textContent.replace(' (Requires Bot Role Higher)', '') : (cb.parentNode.getAttribute('data-value') || 'Item');
+                const labelText = labelSpan ? labelSpan.textContent.replace(' (Requires Bot Role Higher)', '').replace(/^#/, '') : (cb.parentNode.getAttribute('data-value') || 'Item');
                 const color = labelSpan ? labelSpan.style.color : '';
                 const tag = document.createElement('span');
                 tag.className = 'multiselect-tag';
-                tag.textContent = labelText;
-                if (color) {
-                    tag.style.color = color;
-                    tag.style.borderColor = color + '4d';
-                    tag.style.background = color + '1a';
+                tag.style.display = 'inline-flex';
+                tag.style.alignItems = 'center';
+                tag.style.gap = '6px';
+                if (isChannelField) {
+                    tag.innerHTML = `<i class="fas fa-hashtag" style="color: #38bdf8; font-size: 0.75rem;"></i><span>${escapeHtml(labelText)}</span>`;
+                } else {
+                    const roleColor = (color && color !== '#000000') ? color : '#94a3b8';
+                    tag.innerHTML = `<span class="nora-role-indicator" style="width: 6px; height: 6px; border-radius: 50%; background-color: ${roleColor}; display: inline-block; flex-shrink: 0; box-shadow: 0 0 4px ${roleColor}80;"></span><span>${escapeHtml(labelText)}</span>`;
+                    if (color) {
+                        tag.style.color = color;
+                        tag.style.borderColor = color + '4d';
+                        tag.style.background = color + '1a';
+                    }
                 }
                 trigger.appendChild(tag);
             });
@@ -24489,20 +24569,25 @@
                 const singleRoleSelects = [
                     document.getElementById('setting-boostRewardRoleId'),
                     document.getElementById('setting-topggRewardRoleId'),
+                    document.getElementById('setting-robloxVerifyRoleId'),
                     document.getElementById('setting-ticketSupportRoleId'),
+                    document.getElementById('setting-promoterRoleId'),
+                    document.getElementById('setting-unverifiedRoleId'),
                     document.getElementById('setting-quarantineRoleId'),
                     document.getElementById('setting-countingTopCounterRoleId'),
-                    document.getElementById('setting-afkRoleId')
+                    document.getElementById('setting-afkRoleId'),
+                    document.getElementById('app-auto-role')
                 ];
                 singleRoleSelects.forEach(select => {
                     if (select) {
                         const currentVal = select.value;
                         let opts = '<option value="">No role selected</option>';
                         rlRes.forEach(r => {
-                            opts += `<option value="${r.id}" ${r.id === currentVal ? 'selected' : ''}>${r.name}</option>`;
+                            const colorStyle = r.color ? ` style="color: ${r.color};"` : '';
+                            opts += `<option value="${r.id}"${colorStyle} ${r.id === currentVal ? 'selected' : ''}>${r.name}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}</option>`;
                         });
                         select.innerHTML = opts;
-                        if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown(select.id);
+                        if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown(select.id || select);
                     }
                 });
 
@@ -24515,9 +24600,11 @@
                     const currentVal = select.value;
                     let opts = '<option value="">Select Role...</option>';
                     rlRes.forEach(r => {
-                        opts += `<option value="${r.id}" ${r.id === currentVal ? 'selected' : ''}>${r.name}</option>`;
+                        const colorStyle = r.color ? ` style="color: ${r.color};"` : '';
+                        opts += `<option value="${r.id}"${colorStyle} ${r.id === currentVal ? 'selected' : ''}>${r.name}${r.higherThanBot ? ' (Requires Bot Role Higher)' : ''}</option>`;
                     });
                     select.innerHTML = opts;
+                    if (typeof initCustomDropdown === 'function') initCustomDropdown(select);
                 });
             } catch (e) {
                 console.error('Failed to fetch guild channels or roles:', e);
@@ -24561,7 +24648,9 @@
                     'aiMemoryEnabled',
                     'aiRoleViewingEnabled',
                     'aiNameViewingEnabled',
-                    'aiImageGenerationEnabled'
+                    'aiImageGenerationEnabled',
+                    'levelingAiEnabled',
+                    'starboardAiEnabled'
                 ];
 
                 KEYS.forEach(k => {

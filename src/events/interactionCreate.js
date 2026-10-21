@@ -54,6 +54,82 @@ module.exports = {
             }
         }
 
+        // ⚖️ Suspension Appeal System: User clicks "Submit Appeal" button in DMs
+        if (interaction.isButton() && interaction.customId === 'appeal_suspension_btn') {
+            const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+            const modal = new ModalBuilder()
+                .setCustomId('appeal_suspension_modal')
+                .setTitle('Suspension Appeal Form');
+
+            const explanationInput = new TextInputBuilder()
+                .setCustomId('appeal_reason')
+                .setLabel('Why should this suspension be lifted?')
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder('Explain why this is a mistake. Include any relevant details or links...')
+                .setRequired(true)
+                .setMaxLength(1000);
+
+            const proofInput = new TextInputBuilder()
+                .setCustomId('appeal_proof')
+                .setLabel('Date of Birth / Verification Details')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('e.g. Month/Year of birth, ID reference, or ticket number')
+                .setRequired(false)
+                .setMaxLength(100);
+
+            const linksInput = new TextInputBuilder()
+                .setCustomId('appeal_links')
+                .setLabel('Proof Images & Links (Imgur, Drive, etc.)')
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder('Paste links to proof images or documents (Imgur, Postimages, Google Drive, etc.)')
+                .setRequired(false)
+                .setMaxLength(1000);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(explanationInput),
+                new ActionRowBuilder().addComponents(proofInput),
+                new ActionRowBuilder().addComponents(linksInput)
+            );
+
+            return interaction.showModal(modal);
+        }
+
+        // ⚖️ Suspension Appeal System: User submits the appeal modal
+        if (interaction.isModalSubmit() && interaction.customId === 'appeal_suspension_modal') {
+            const explanation = interaction.fields.getTextInputValue('appeal_reason');
+            const proof = interaction.fields.getTextInputValue('appeal_proof') || 'None provided';
+            let links = 'None provided';
+            try {
+                links = interaction.fields.getTextInputValue('appeal_links') || 'None provided';
+            } catch (e) {}
+            const dmRelayManager = require('../utils/dmRelayManager');
+            return dmRelayManager.forwardModalAppealToDeveloper(interaction, client, { explanation, proof, links });
+        }
+
+        // ⚖️ Suspension Appeal System: Administrator actions on forwarded appeals (Vaztinix)
+        if (interaction.isButton() && (interaction.customId.startsWith('appeal_lift_') || interaction.customId.startsWith('appeal_deny_'))) {
+            const DEVELOPER_ID = '1214048435632603137';
+            if (interaction.user.id !== DEVELOPER_ID) {
+                return interaction.reply({ content: '❌ You are not authorized to review this appeal.', ephemeral: true });
+            }
+            const dmRelayManager = require('../utils/dmRelayManager');
+            if (interaction.customId.startsWith('appeal_lift_')) {
+                const targetUserId = interaction.customId.replace('appeal_lift_', '');
+                return dmRelayManager.handleDeveloperLiftAppeal(interaction, client, targetUserId);
+            } else if (interaction.customId.startsWith('appeal_deny_')) {
+                const targetUserId = interaction.customId.replace('appeal_deny_', '');
+                return dmRelayManager.handleDeveloperDenyAppeal(interaction, client, targetUserId);
+            }
+        }
+
+        // ⚖️ Suspension Appeal System: Administrator submits denial modal
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('appeal_deny_modal_')) {
+            const targetUserId = interaction.customId.replace('appeal_deny_modal_', '');
+            const reason = interaction.fields.getTextInputValue('deny_reason') || 'Appeal denied after staff review.';
+            const dmRelayManager = require('../utils/dmRelayManager');
+            return dmRelayManager.confirmDeveloperDenyAppeal(interaction, client, targetUserId, reason);
+        }
+
         // ---- Application Builder Interaction Handlers ----
         // 1. Handle Application Start button or Select menu selection
         if ((interaction.isButton() && interaction.customId.startsWith('app_start_')) || 

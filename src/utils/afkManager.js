@@ -28,6 +28,11 @@ async function loadAll() {
             afkCache.clear();
             for (const r of records) {
                 const data = r.toJSON ? r.toJSON() : r;
+                let mentions = [];
+                try {
+                    mentions = data.mentions ? JSON.parse(data.mentions) : [];
+                } catch (_) { mentions = []; }
+
                 afkCache.set(`${data.guildId}:${data.userId}`, {
                     userId: data.userId,
                     guildId: data.guildId,
@@ -35,7 +40,9 @@ async function loadAll() {
                     timestamp: Number(data.timestamp) || Date.now(),
                     expiresAt: data.expiresAt ? Number(data.expiresAt) : null,
                     originalNickname: data.originalNickname || null,
-                    autoNicknameChanged: !!data.autoNicknameChanged
+                    autoNicknameChanged: !!data.autoNicknameChanged,
+                    gifUrl: data.gifUrl || null,
+                    mentions: Array.isArray(mentions) ? mentions : []
                 });
             }
             isLoaded = true;
@@ -59,9 +66,10 @@ async function loadAll() {
  * @param {string|null} originalNickname 
  * @param {boolean} autoNicknameChanged 
  * @param {number|null} expiresAt
+ * @param {string|null} gifUrl
  * @returns {Promise<Object>}
  */
-async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, autoNicknameChanged = false, expiresAt = null) {
+async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, autoNicknameChanged = false, expiresAt = null, gifUrl = null) {
     await loadAll();
     const cleanStatus = (status && typeof status === 'string' && status.trim()) 
         ? status.trim().substring(0, 500) 
@@ -75,7 +83,9 @@ async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, 
         timestamp,
         expiresAt: expiresAt ? Number(expiresAt) : null,
         originalNickname: originalNickname || null,
-        autoNicknameChanged: !!autoNicknameChanged
+        autoNicknameChanged: !!autoNicknameChanged,
+        gifUrl: gifUrl || null,
+        mentions: '[]'
     };
 
     try {
@@ -91,8 +101,57 @@ async function setAfk(guildId, userId, status = 'AFK', originalNickname = null, 
     }
 
     const key = `${guildId}:${userId}`;
-    afkCache.set(key, recordData);
-    return recordData;
+    const cacheData = {
+        ...recordData,
+        mentions: []
+    };
+    afkCache.set(key, cacheData);
+    return cacheData;
+}
+
+/**
+ * Records a mention and message sent to an AFK user for the return AI briefing.
+ * @param {string} guildId 
+ * @param {string} userId 
+ * @param {Object} mentionData 
+ * @returns {Promise<boolean>}
+ */
+async function addMention(guildId, userId, mentionData) {
+    const key = `${guildId}:${userId}`;
+    const afkData = afkCache.get(key);
+    if (!afkData) return false;
+
+    if (!Array.isArray(afkData.mentions)) {
+        afkData.mentions = [];
+    }
+
+    afkData.mentions.push(mentionData);
+    if (afkData.mentions.length > 15) {
+        afkData.mentions.shift();
+    }
+
+    try {
+        await AfkUser.update(
+            { mentions: JSON.stringify(afkData.mentions) },
+            { where: { guildId, userId } }
+        );
+    } catch (e) {
+        console.error('[AFK Manager] DB Error recording mention:', e.message);
+    }
+
+    return true;
+}
+
+/**
+ * Gets all recorded mentions for an AFK user.
+ * @param {string} guildId 
+ * @param {string} userId 
+ * @returns {Array<Object>}
+ */
+function getMentions(guildId, userId) {
+    const key = `${guildId}:${userId}`;
+    const afkData = afkCache.get(key);
+    return afkData?.mentions || [];
 }
 
 /**
@@ -283,5 +342,7 @@ module.exports = {
     removeAfk,
     listAfk,
     checkMentionCooldown,
+    addMention,
+    getMentions,
     afkCache
 };

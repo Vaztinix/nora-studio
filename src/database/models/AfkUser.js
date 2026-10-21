@@ -36,6 +36,16 @@ const AfkUser = sequelize.define('AfkUser', {
     autoNicknameChanged: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    gifUrl: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    mentions: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: '[]'
     }
 }, {
     indexes: [

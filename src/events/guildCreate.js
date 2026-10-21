@@ -6,7 +6,10 @@ const { logEvent } = require('../utils/logistics');
 module.exports = {
     name: Events.GuildCreate,
     async execute(guild) {
-        // 🛡️ Permanent Exile Guard
+        // 🛡️ Permanent Exile & Revocation Guard
+        const ServerBlacklist = require('../database/models/ServerBlacklist');
+        const blacklistEntry = await ServerBlacklist.findOne({ where: { guildId: guild.id, isActive: true } }).catch(() => null);
+
         let global;
         try {
             const [result] = await GlobalSettings.findOrCreate({ where: { id: 1 } });
@@ -17,12 +20,42 @@ module.exports = {
         
         const bannedIds = JSON.parse(global?.bannedGuildIds || '[]');
         
-        if (bannedIds.includes(guild.id)) {
-            console.warn(`[Exile System] Detected illegal join attempt at Exiled Server: ${guild.name} (${guild.id}). Severing link instantly.`);
+        if (blacklistEntry || bannedIds.includes(guild.id)) {
+            const reason = blacklistEntry?.reason || 'This server was permanently revoked from using Nora by bot administrators.';
+            console.warn(`[PermRevoke Guard] Detected join attempt at Perm-Revoked Server: ${guild.name} (${guild.id}). DMing owner and severing link.`);
+            
+            // Send advisory DM to the server owner before leaving
+            try {
+                const owner = await guild.members.fetch(guild.ownerId).catch(() => null) 
+                           || await guild.client.users.fetch(guild.ownerId).catch(() => null);
+                if (owner) {
+                    const { EmbedBuilder } = require('discord.js');
+                    const exileEmbed = new EmbedBuilder()
+                        .setTitle('🚫 Server Access Denied: Permanent Revocation')
+                        .setColor(0xED4245)
+                        .setDescription(
+                            `Hello <@${guild.ownerId}>,\n\n` +
+                            `Nora was invited to **${guild.name}**, but could not join because this server has been **permanently revoked and blacklisted** from using Nora by the bot administrators.\n\n` +
+                            `**Reason for Permanent Revocation:**\n>>> ${reason}\n\n` +
+                            `Nora has automatically departed from your server.`
+                        )
+                        .addFields(
+                            { name: '🏰 Server', value: `${guild.name} (\`${guild.id}\`)`, inline: true },
+                            { name: '🛑 Status', value: 'Permanently Blacklisted', inline: true }
+                        )
+                        .setFooter({ text: 'Nora Platform Security & Blacklist Enforcement' })
+                        .setTimestamp();
+
+                    await owner.send({ embeds: [exileEmbed] }).catch(() => {});
+                }
+            } catch (dmErr) {
+                console.warn(`[PermRevoke Guard] Could not DM owner ${guild.ownerId}:`, dmErr.message);
+            }
+
             try {
                 await guild.leave();
             } catch (e) {
-                console.error(`[Exile System] Failed to physically sever link for server ${guild.id}:`, e);
+                console.error(`[PermRevoke Guard] Failed to physically sever link for server ${guild.id}:`, e);
             }
             return; // Exit immediately
         }

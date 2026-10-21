@@ -55,6 +55,10 @@ const StarboardEntry = sequelize.define('StarboardEntry', {
     tierEmoji: {
         type: DataTypes.STRING,
         defaultValue: '⭐'
+    },
+    aiSpotlight: {
+        type: DataTypes.TEXT,
+        allowNull: true
     }
 }, {
     indexes: [

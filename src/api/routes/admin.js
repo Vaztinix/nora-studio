@@ -630,15 +630,48 @@ router.post('/leave-server', requireOwner, async (req, res) => {
         if (!guildId) {
             return res.status(400).json({ error: 'Missing guildId' });
         }
+        if (!reason || !reason.trim()) {
+            return res.status(400).json({ error: 'A valid revocation reason is required.' });
+        }
 
         const guild = req.client.guilds.cache.get(guildId);
         if (!guild) {
             return res.status(404).json({ error: 'Server not found or bot not in server' });
         }
 
-        const cleanReason = reason || 'Unspecified administrative decision by the bot owner.';
+        const cleanReason = reason.trim();
         const guildName = guild.name;
         const ownerId = guild.ownerId;
+
+        // Attempt to DM the server owner before leaving
+        let dmDelivered = false;
+        try {
+            const ownerUser = await req.client.users.fetch(ownerId).catch(() => null);
+            if (ownerUser) {
+                const { EmbedBuilder } = require('discord.js');
+                const dmEmbed = new EmbedBuilder()
+                    .setTitle('⚠️ Notice: Nora Revoked from Server')
+                    .setColor(0xED4245)
+                    .setDescription(
+                        `Hello <@${ownerId}>,\n\n` +
+                        `Nora has been **revoked and removed** from your server **${guildName}** by the bot administrators.\n\n` +
+                        `**Revocation Reason:**\n>>> ${cleanReason}\n\n` +
+                        `If you believe this administrative action was taken in error, please reach out to the bot management team.`
+                    )
+                    .addFields(
+                        { name: '🏰 Server', value: `${guildName} (\`${guildId}\`)`, inline: true },
+                        { name: '🛑 Action', value: 'Administrative Revocation', inline: true },
+                        { name: '📅 Date', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false }
+                    )
+                    .setFooter({ text: 'Nora Platform Administration & Server Management' })
+                    .setTimestamp();
+
+                await ownerUser.send({ embeds: [dmEmbed] });
+                dmDelivered = true;
+            }
+        } catch (dmErr) {
+            console.warn(`[LeaveServer] Could not DM server owner ${ownerId}:`, dmErr.message);
+        }
 
         // Leave the guild
         await guild.leave();
@@ -654,11 +687,157 @@ router.post('/leave-server', requireOwner, async (req, res) => {
             isSpecial: true,
             isOwnerAction: true,
             serverName: guildName
-        });
+        }).catch(() => {});
 
-        res.json({ success: true, message: `Successfully removed bot from ${guildName} and notified owner.` });
+        res.json({ 
+            success: true, 
+            message: `Successfully removed bot from ${guildName}.${dmDelivered ? ' Server owner notified via DM.' : ' (Owner DMs closed)'}` 
+        });
     } catch (e) {
         console.error('Error leaving server:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/perm-revoke-server
+router.post('/perm-revoke-server', requireOwner, async (req, res) => {
+    try {
+        const { guildId, reason } = req.body;
+        if (!guildId) {
+            return res.status(400).json({ error: 'Missing guildId' });
+        }
+        if (!reason || !reason.trim()) {
+            return res.status(400).json({ error: 'A valid reason is required for permanent revocation.' });
+        }
+
+        const cleanReason = reason.trim();
+        const guild = req.client.guilds.cache.get(guildId);
+        const guildName = guild ? guild.name : (req.body.guildName || `Server (${guildId})`);
+        const ownerId = guild ? guild.ownerId : req.body.ownerId;
+
+        // 1. Attempt to DM the server owner before leaving
+        let dmDelivered = false;
+        if (ownerId) {
+            try {
+                const ownerUser = await req.client.users.fetch(ownerId).catch(() => null);
+                if (ownerUser) {
+                    const { EmbedBuilder } = require('discord.js');
+                    const exileEmbed = new EmbedBuilder()
+                        .setTitle('🚫 Notice: Server Permanently Revoked & Blacklisted')
+                        .setColor(0xED4245)
+                        .setDescription(
+                            `Hello <@${ownerId}>,\n\n` +
+                            `Your server **${guildName}** has been **permanently revoked and blacklisted** from using Nora by the bot administrators.\n\n` +
+                            `**Reason for Permanent Revocation:**\n>>> ${cleanReason}\n\n` +
+                            `Nora has departed from your server immediately. If Nora is re-invited in the future, she will automatically sever connection upon arrival.`
+                        )
+                        .addFields(
+                            { name: '🏰 Server', value: `${guildName} (\`${guildId}\`)`, inline: true },
+                            { name: '🛑 Status', value: 'Permanently Blacklisted', inline: true },
+                            { name: '📅 Date', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false }
+                        )
+                        .setFooter({ text: 'Nora Platform Security & Blacklist Enforcement' })
+                        .setTimestamp();
+
+                    await ownerUser.send({ embeds: [exileEmbed] });
+                    dmDelivered = true;
+                }
+            } catch (dmErr) {
+                console.warn(`[PermRevoke] Could not DM owner ${ownerId}:`, dmErr.message);
+            }
+        }
+
+        // 2. Add / Update ServerBlacklist record
+        const ServerBlacklist = require('../../database/models/ServerBlacklist');
+        await ServerBlacklist.upsert({
+            guildId,
+            guildName,
+            ownerId: ownerId || null,
+            reason: cleanReason,
+            revokedBy: req.user?.username || 'Owner',
+            revokedAt: new Date(),
+            isActive: true
+        });
+
+        // 3. Update GlobalSettings bannedGuildIds
+        const GlobalSettings = require('../../database/models/GlobalSettings');
+        let global;
+        try {
+            const [result] = await GlobalSettings.findOrCreate({ where: { id: 1 } });
+            global = result;
+        } catch (e) {
+            global = await GlobalSettings.findOne({ where: { id: 1 } });
+        }
+        const bannedIds = new Set(JSON.parse(global?.bannedGuildIds || '[]'));
+        bannedIds.add(guildId);
+        await global.update({ bannedGuildIds: JSON.stringify(Array.from(bannedIds)) });
+
+        // 4. Leave guild if bot is currently in it
+        if (guild) {
+            try {
+                await guild.leave();
+                console.log(`[Developer Panel] Bot permanently revoked and left guild ${guildName} (${guildId}).`);
+            } catch (leaveErr) {
+                console.warn(`[PermRevoke] Guild leave error:`, leaveErr.message);
+            }
+        }
+
+        // 5. Write notification
+        if (ownerId) {
+            const Notification = require('../../database/models/Notification');
+            await Notification.create({
+                userId: ownerId,
+                title: `Server Permanently Revoked: ${guildName}`,
+                content: `Your server "${guildName}" has been permanently revoked and blacklisted by the Bot Owner.\n\nReason: "${cleanReason}"`,
+                type: 'special',
+                isSpecial: true,
+                isOwnerAction: true,
+                serverName: guildName
+            }).catch(() => {});
+        }
+
+        res.json({
+            success: true,
+            message: `Server "${guildName}" has been permanently revoked and blacklisted.${dmDelivered ? ' Owner notified via DM.' : ''}`
+        });
+    } catch (e) {
+        console.error('Error permanently revoking server:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// GET /api/admin/blacklisted-servers
+router.get('/blacklisted-servers', requireOwner, async (req, res) => {
+    try {
+        const ServerBlacklist = require('../../database/models/ServerBlacklist');
+        const list = await ServerBlacklist.findAll({
+            where: { isActive: true },
+            order: [['revokedAt', 'DESC']]
+        });
+        res.json({ blacklisted: list });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/un-perm-revoke-server
+router.post('/un-perm-revoke-server', requireOwner, async (req, res) => {
+    try {
+        const { guildId } = req.body;
+        if (!guildId) return res.status(400).json({ error: 'Missing guildId' });
+
+        const ServerBlacklist = require('../../database/models/ServerBlacklist');
+        await ServerBlacklist.destroy({ where: { guildId } });
+
+        const GlobalSettings = require('../../database/models/GlobalSettings');
+        const global = await GlobalSettings.findOne({ where: { id: 1 } });
+        if (global) {
+            const bannedIds = JSON.parse(global.bannedGuildIds || '[]').filter(id => id !== guildId);
+            await global.update({ bannedGuildIds: JSON.stringify(bannedIds) });
+        }
+
+        res.json({ success: true, message: `Server ${guildId} removed from permanent blacklist.` });
+    } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
@@ -702,13 +881,110 @@ router.post('/ai-test-ping', requireOwner, async (req, res) => {
         }
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const startTime = Date.now();
-        const genAI = new GoogleGenerativeAI(available[0]);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const result = await model.generateContent('Return exactly the word "OPERATIONAL" and nothing else.');
-        const latencyMs = Date.now() - startTime;
-        const text = result.response.text();
-        geminiKeyManager.reportSuccess(available[0], text);
-        res.json({ success: true, latencyMs, response: text.trim() });
+
+        const candidateModels = [
+            'gemini-flash-lite-latest',
+            'gemini-3.5-flash',
+            'gemini-flash-latest',
+            'gemini-3.8-flash'
+        ];
+
+        let lastErr = null;
+        for (const apiKey of available) {
+            const genAI = new GoogleGenerativeAI(apiKey);
+            for (const modelName of candidateModels) {
+                try {
+                    const model = genAI.getGenerativeModel({ model: modelName });
+                    const result = await model.generateContent('Return exactly the word "OPERATIONAL" and nothing else.');
+                    const latencyMs = Date.now() - startTime;
+                    const text = result.response.text();
+                    geminiKeyManager.reportSuccess(apiKey, text);
+                    return res.json({ 
+                        success: true, 
+                        latencyMs, 
+                        model: modelName,
+                        response: text.trim() 
+                    });
+                } catch (mErr) {
+                    lastErr = mErr;
+                }
+            }
+        }
+
+        res.status(500).json({ error: lastErr ? lastErr.message : 'All model candidates failed.' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ==========================================
+// 🚨 STATUS FLAGS & INCIDENT DESK (vaztinix.dev/status)
+// ==========================================
+
+// GET /api/admin/status-flags
+router.get('/status-flags', requireOwner, async (req, res) => {
+    try {
+        const StatusFlag = require('../../database/models/StatusFlag');
+        const flags = await StatusFlag.findAll({
+            order: [['createdAt', 'DESC']],
+            limit: 50
+        });
+        res.json({ success: true, flags });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/status-flags
+router.post('/status-flags', requireOwner, async (req, res) => {
+    try {
+        const { title, message, severity, shardId } = req.body;
+        if (!title || !message) {
+            return res.status(400).json({ error: 'Title and message are required.' });
+        }
+        const StatusFlag = require('../../database/models/StatusFlag');
+        const flag = await StatusFlag.create({
+            title: title.trim(),
+            message: message.trim(),
+            severity: severity || 'info',
+            shardId: shardId !== undefined && shardId !== '' ? parseInt(shardId, 10) : 0,
+            author: req.user?.username || 'Owner',
+            isResolved: false
+        });
+        res.json({ success: true, flag, message: `Status flag #${flag.id} published to vaztinix.dev/status` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/status-flags/:id/resolve
+router.post('/status-flags/:id/resolve', requireOwner, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { resolutionNote } = req.body;
+        const StatusFlag = require('../../database/models/StatusFlag');
+        const flag = await StatusFlag.findByPk(id);
+        if (!flag) return res.status(404).json({ error: 'Status flag not found' });
+
+        await flag.update({
+            isResolved: true,
+            resolutionNote: resolutionNote || 'Operational status fully restored.',
+            resolvedAt: new Date()
+        });
+
+        res.json({ success: true, flag, message: `Status flag #${id} resolved.` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// DELETE /api/admin/status-flags/:id
+router.delete('/status-flags/:id', requireOwner, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const StatusFlag = require('../../database/models/StatusFlag');
+        await StatusFlag.destroy({ where: { id } });
+        res.json({ success: true, message: `Status flag #${id} deleted.` });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

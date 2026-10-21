@@ -127,31 +127,17 @@ module.exports = {
 
                         const targetAfk = afkManager.getAfk(message.guild.id, mentionedId);
                         if (targetAfk) {
-                            // Check 10s cooldown per user per channel
                             if (afkManager.checkMentionCooldown(message.guild.id, mentionedId, message.channel.id)) {
                                 const targetMember = message.guild.members.cache.get(mentionedId);
                                 const displayName = targetMember ? targetMember.displayName.replace(/^(\[AFK\]|\{AFK\]|\{AFK\})\s*/i, '') : mentionedUser.username;
                                 const timeTag = `<t:${Math.floor(targetAfk.timestamp / 1000)}:R>`;
                                 const backTag = targetAfk.expiresAt ? ` *(Back <t:${Math.floor(targetAfk.expiresAt / 1000)}:R>)*` : '';
-                                const urlRegex = /(https?:\/\/[^\s]+)/gi;
-                                const urls = (targetAfk.status || '').match(urlRegex);
-                                let noticeContent;
 
-                                if (!urls) {
-                                    noticeContent = `**${displayName}** is AFK: ${targetAfk.status} — Away ${timeTag}${backTag}`;
-                                } else {
-                                    const textOnly = (targetAfk.status || '').replace(urlRegex, '').replace(/\s+/g, ' ').trim();
-                                    const urlString = urls.join('\n');
-                                    if (!textOnly) {
-                                        noticeContent = `**${displayName}** is AFK (Away ${timeTag}${backTag}):\n${urlString}`;
-                                    } else {
-                                        noticeContent = `**${displayName}** is AFK: ${textOnly} — Away ${timeTag}${backTag}\n${urlString}`;
-                                    }
-                                }
+                                const noticeContent = `**${displayName}** is AFK: ${targetAfk.status} — Away ${timeTag}${backTag}`;
 
                                 const noticeMsg = await message.reply({
                                     content: noticeContent,
-                                    allowedMentions: { repliedUser: false, parse: [] } // Reply without pinging
+                                    allowedMentions: { repliedUser: false, parse: [] }
                                 }).catch(() => message.channel.send({
                                     content: noticeContent,
                                     allowedMentions: { parse: [] }
@@ -595,8 +581,8 @@ module.exports = {
                 const template = settings?.levelUpMessage;
                 let desc = template ? formatMessage(template, message.member || message.author, level) : `<@${message.author.id}> has reached level **${level}**. GG!`;
                 
-                // AI Level-Up Accolade for milestones or active servers
-                if (settings?.noraAiEnabled !== false && (level % 5 === 0 || level === 2 || level === 3 || level === 10)) {
+                // AI Enhance: Celebratory AI title/accolade on level up
+                if (settings?.noraAiEnabled !== false && settings?.levelingAiEnabled !== false) {
                     try {
                         const AIFeatureEnhancer = require('../utils/aiFeatureEnhancer');
                         const accolade = await AIFeatureEnhancer.getLevelUpAccolade(message.author.username, level);

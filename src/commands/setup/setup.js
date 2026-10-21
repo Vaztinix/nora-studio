@@ -260,7 +260,8 @@ module.exports = {
                         { name: 'Require Profile Picture', value: settings.requirePFP ? '**Required**' : '**Optional**', inline: true },
                         { name: 'Min Account Age', value: settings.minAccountAge > 0 ? `**${settings.minAccountAge} Day(s)**` : '**Disabled**', inline: true },
                         { name: 'Nickname Raid Filter', value: settings.nicknameRaidFilter ? '**Active**' : '**Disabled**', inline: true },
-                        { name: 'Raid Detection Action', value: `\`${settings.antiRaidAction || 'notify'}\``, inline: true }
+                        { name: 'Raid Detection Action', value: `\`${settings.antiRaidAction || 'notify'}\``, inline: true },
+                        { name: 'Quarantine Role', value: settings.quarantineRoleId ? `<@&${settings.quarantineRoleId}>` : '*Not Set*', inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -289,7 +290,15 @@ module.exports = {
                     ])
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+                const rowD = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder()
+                        .setCustomId('action_quarantine_role')
+                        .setPlaceholder('Select Quarantine / Isolation Role...')
+                        .setMinValues(0)
+                        .setMaxValues(1)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
             // ==========================================
@@ -408,6 +417,7 @@ module.exports = {
                         { name: 'Level-Up Alerts', value: settings.levelUpNotificationsEnabled !== false ? '**Active**' : '**Disabled**', inline: true },
                         { name: 'Alert Channel', value: settings.levelUpChannelId ? `<#${settings.levelUpChannelId}>` : '*Current Channel*', inline: true },
                         { name: 'DM Notification', value: settings.levelUpDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'AI Enhance', value: (settings.noraAiEnabled !== false && settings.levelingAiEnabled !== false) ? '✨ **Active**' : '❌ **Disabled**', inline: true },
                         { name: 'Rank Card Avatars', value: settings.levelingPfpEnabled !== false ? '**Shown**' : '**Hidden**', inline: true },
                         { name: 'Role Stacking', value: settings.roleRewardsStack !== false ? '**Stacking**' : '**Highest Only**', inline: true },
                         { name: 'Tier Status', value: isPremium ? '**Studio Plus** (Up to 10x XP & 25 Roles)' : '**Free Tier** (Up to 2x XP & 5 Roles)', inline: true }
@@ -416,7 +426,11 @@ module.exports = {
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_leveling_toggle').setLabel(settings.levelingEnabled ? 'Disable Leveling' : 'Enable Leveling').setStyle(settings.levelingEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('action_levelalert_toggle').setLabel(settings.levelUpNotificationsEnabled !== false ? 'Disable Alerts' : 'Enable Alerts').setStyle(settings.levelUpNotificationsEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_leveldm_toggle').setLabel(settings.levelUpDmEnabled ? 'Disable DM Alerts' : 'Enable DM Alerts').setStyle(settings.levelUpDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_leveldm_toggle').setLabel(settings.levelUpDmEnabled ? 'Disable DM Alerts' : 'Enable DM Alerts').setStyle(settings.levelUpDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                );
+
+                const rowA2 = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_leveling_ai_toggle').setLabel(settings.levelingAiEnabled !== false ? 'AI Enhance: ON' : 'AI Enhance: OFF').setStyle(settings.levelingAiEnabled !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_rolestack_toggle').setLabel(settings.roleRewardsStack !== false ? 'Stack Roles: ON' : 'Stack Roles: OFF').setStyle(ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_levelpfp_toggle').setLabel(settings.levelingPfpEnabled !== false ? 'Card Avatars: ON' : 'Card Avatars: OFF').setStyle(settings.levelingPfpEnabled !== false ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
@@ -437,7 +451,7 @@ module.exports = {
                     new ChannelSelectMenuBuilder().setCustomId('action_levelalert_channel').setPlaceholder('Select Dedicated Level-Up Channel...').setChannelTypes(ChannelType.GuildText)
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+                return { embeds: [embed], components: [rowA, rowA2, rowB, rowC, backRow] };
             }
 
             // ==========================================
@@ -618,6 +632,7 @@ module.exports = {
                         { name: 'Starboard Status', value: settings.starboardEnabled ? '🟢 **Enabled**' : '🔴 **Disabled**', inline: true },
                         { name: 'Starboard Channel', value: settings.starboardChannelId ? `<#${settings.starboardChannelId}>` : '*None (Disabled)*', inline: true },
                         { name: 'Threshold', value: `⭐ **${settings.starboardThreshold || 3} Stars**`, inline: true },
+                        { name: 'AI Spotlight', value: (settings.noraAiEnabled !== false && settings.starboardAiEnabled !== false) ? '✨ **Active**' : '❌ **Disabled**', inline: true },
                         { name: 'Self-Star Policy', value: settings.starboardSelfStar ? '**Allowed**' : '**Blocked (Fair Play)**', inline: true },
                         { name: 'Starboard XP Reward', value: `**+${settings.starboardAuthorRewardXp !== undefined ? settings.starboardAuthorRewardXp : 25} XP**`, inline: true },
                         { name: `Configured Role Rewards (${rewards.length}/20)`, value: rewardsListStr, inline: false }
@@ -625,6 +640,7 @@ module.exports = {
 
                 const row1 = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_starboard_toggle').setLabel(settings.starboardEnabled ? 'Disable Starboard' : 'Enable Starboard').setStyle(settings.starboardEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('action_starboard_ai_toggle').setLabel(settings.starboardAiEnabled !== false ? 'AI Spotlight: ON' : 'AI Spotlight: OFF').setStyle(settings.starboardAiEnabled !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_starboard_selfstar').setLabel(settings.starboardSelfStar ? 'Self-Star: ON' : 'Self-Star: OFF').setStyle(ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_starboard_clear_rewards').setLabel('Clear All Role Rewards').setStyle(ButtonStyle.Danger).setDisabled(rewards.length === 0),
                     new ButtonBuilder().setCustomId('view_games').setLabel('Games Hub').setStyle(ButtonStyle.Secondary)
@@ -948,7 +964,7 @@ module.exports = {
                 const isAiEnabled = settings.noraAiEnabled !== false;
                 const autoChannelText = settings.aiAutoRespondChannelId ? `<#${settings.aiAutoRespondChannelId}>` : '*None (Mentions/Replies Only)*';
                 const autoRespondActive = settings.aiAutoRespondEnabled !== false && settings.aiAutoRespondChannelId;
-                const currentModel = settings.aiModel || 'gemini-2.5-flash';
+                const currentModel = (settings.aiModel && settings.aiModel !== 'gemini-2.5-flash' && settings.aiModel !== 'gemini-2.0-flash' && settings.aiModel !== 'gemini-1.5-flash' && settings.aiModel !== 'gemini-1.5-pro') ? settings.aiModel : 'gemini-3.8-flash';
                 const currentTemplate = settings.aiPromptTemplate || 'classic';
 
                 let excludedList = '*None*';
@@ -1016,11 +1032,10 @@ module.exports = {
 
                 const row2 = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder().setCustomId('action_ai_model').setPlaceholder('Select Google Gemini Model (Google ONLY)...').addOptions([
-                        { label: 'Gemini 2.5 Flash (Default & Ultra-Fast)', value: 'gemini-2.5-flash', description: 'Recommended: lowest latency, high intelligence', default: currentModel === 'gemini-2.5-flash' },
-                        { label: 'Gemini 2.0 Flash (Next-Gen Multimodal)', value: 'gemini-2.0-flash', description: 'High-speed reasoning and vision', default: currentModel === 'gemini-2.0-flash' },
-                        { label: 'Gemini 1.5 Flash (Balanced Workhorse)', value: 'gemini-1.5-flash', description: 'Reliable and consistent daily chat', default: currentModel === 'gemini-1.5-flash' },
-                        { label: 'Gemini 1.5 Pro (Deep Complex Reasoning)', value: 'gemini-1.5-pro', description: 'Maximum contextual depth and logic', default: currentModel === 'gemini-1.5-pro' },
-                        { label: 'Gemini Flash Lite (Lightweight)', value: 'gemini-flash-lite-latest', description: 'Minimal quota consumption', default: currentModel === 'gemini-flash-lite-latest' }
+                        { label: 'Gemini 3.8 Flash (Default & Ultra-Fast)', value: 'gemini-3.8-flash', description: 'Recommended: lowest latency, next-gen reasoning', default: currentModel === 'gemini-3.8-flash' },
+                        { label: 'Gemini 3.5 Flash (Balanced Multimodal)', value: 'gemini-3.5-flash', description: 'High-speed reasoning and vision', default: currentModel === 'gemini-3.5-flash' },
+                        { label: 'Gemini Flash Latest (Continuously Updated)', value: 'gemini-flash-latest', description: 'Always points to latest production flash model', default: currentModel === 'gemini-flash-latest' },
+                        { label: 'Gemini Flash Lite (Ultra-Low Latency)', value: 'gemini-flash-lite-latest', description: 'Minimal quota consumption', default: currentModel === 'gemini-flash-lite-latest' }
                     ])
                 );
 
@@ -1068,6 +1083,7 @@ module.exports = {
                         { name: 'Mod Log Channel', value: modLogText, inline: true },
                         { name: 'Direct Message Notices', value: sendModDms ? '🟢 **Enabled (DMs Sent)**' : '⚪ **Disabled**', inline: true },
                         { name: 'Anti-Raid Enforcement', value: `\`${settings.antiRaidAction || 'notify'}\``, inline: true },
+                        { name: 'Quarantine Role', value: settings.quarantineRoleId ? `<@&${settings.quarantineRoleId}>` : '*Not Set*', inline: true },
                         { name: 'Autonomous Actions', value: '⚡ **Mute, Warn, Kick, Ban, Purge, Lock**', inline: false }
                     );
 
@@ -1095,7 +1111,15 @@ module.exports = {
                         .setEmoji('⚡')
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, backRow] };
+                const rowC = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder()
+                        .setCustomId('action_quarantine_role')
+                        .setPlaceholder('Select Quarantine / Isolation Role...')
+                        .setMinValues(0)
+                        .setMaxValues(1)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
             }
 
             // ==========================================
@@ -1116,6 +1140,16 @@ module.exports = {
                     } catch (_) {}
                 }
 
+                let ignoredRolesText = 'None (All Roles Affected)';
+                if (settings.adaptiveSlowmodeIgnoredRoles) {
+                    try {
+                        const parsed = JSON.parse(settings.adaptiveSlowmodeIgnoredRoles);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            ignoredRolesText = parsed.map(id => `<@&${id}>`).join(' ');
+                        }
+                    } catch (_) {}
+                }
+
                 embed.setTitle('⏱️ Adaptive Slowmode')
                     .setDescription(
                         'Automatically slows down chat during rapid message bursts or spam raids, then gracefully restores normal chat speed when conversation calms down.\n\n' +
@@ -1130,7 +1164,8 @@ module.exports = {
                         { name: 'Spam Trigger Speed', value: `\`${settings.adaptiveSlowmodeSmallThreshold ?? 5} msgs/sec\``, inline: true },
                         { name: 'Cooldown Reset Time', value: `\`${settings.adaptiveSlowmodeDecaySec ?? 20}s\` quiet chat`, inline: true },
                         { name: 'Emergency Raid Cap', value: `\`${settings.adaptiveSlowmodeSurgeSec ?? 10}s\``, inline: true },
-                        { name: 'Monitored Channels', value: channelListText, inline: false }
+                        { name: 'Monitored Channels', value: channelListText, inline: false },
+                        { name: 'Ignored Roles', value: ignoredRolesText, inline: false }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
@@ -1169,7 +1204,15 @@ module.exports = {
                         .setMaxValues(10)
                 );
 
-                return { embeds: [embed], components: [rowA, rowB, rowC, backRow] };
+                const rowD = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder()
+                        .setCustomId('action_adaptiveslowmode_roles')
+                        .setPlaceholder('Set Ignored / Bypass Roles for Adaptive Slowmode...')
+                        .setMinValues(0)
+                        .setMaxValues(10)
+                );
+
+                return { embeds: [embed], components: [rowA, rowB, rowC, rowD, backRow] };
             }
 
             // ==========================================
@@ -1245,6 +1288,7 @@ module.exports = {
                 if (i.customId === 'action_nickfilter_toggle') { settings.nicknameRaidFilter = !settings.nicknameRaidFilter; update = true; }
                 if (i.customId === 'action_accountage_minage') { settings.minAccountAge = parseInt(i.values[0]); update = true; }
                 if (i.customId === 'action_antiraid_action') { settings.antiRaidAction = i.values[0]; update = true; }
+                if (i.customId === 'action_quarantine_role') { settings.quarantineRoleId = i.values.length > 0 ? i.values[0] : null; update = true; }
 
                 // AutoMod
                 if (i.customId === 'action_automod_profanity') { settings.automodProfanity = !settings.automodProfanity; update = true; sync = 'profanity'; }
@@ -1273,6 +1317,7 @@ module.exports = {
 
                 // Leveling
                 if (i.customId === 'action_leveling_toggle') { settings.levelingEnabled = !settings.levelingEnabled; update = true; }
+                if (i.customId === 'action_leveling_ai_toggle') { settings.levelingAiEnabled = settings.levelingAiEnabled === false ? true : false; update = true; }
                 if (i.customId === 'action_levelalert_toggle') { settings.levelUpNotificationsEnabled = !settings.levelUpNotificationsEnabled; update = true; }
                 if (i.customId === 'action_leveldm_toggle') { settings.levelUpDmEnabled = !settings.levelUpDmEnabled; update = true; }
                 if (i.customId === 'action_rolestack_toggle') { settings.roleRewardsStack = settings.roleRewardsStack !== false ? false : true; update = true; }
@@ -1305,6 +1350,7 @@ module.exports = {
 
                 // Starboard & Role Rewards
                 if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }
+                if (i.customId === 'action_starboard_ai_toggle') { settings.starboardAiEnabled = settings.starboardAiEnabled === false ? true : false; update = true; }
                 if (i.customId === 'action_starboard_selfstar') { settings.starboardSelfStar = !settings.starboardSelfStar; update = true; }
                 if (i.customId === 'action_starboard_channel') { settings.starboardChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_starboard_reward_role') {
@@ -1682,6 +1728,10 @@ module.exports = {
                 }
                 if (i.customId === 'action_adaptiveslowmode_channels') {
                     settings.adaptiveSlowmodeChannels = JSON.stringify(i.values || []);
+                    update = true;
+                }
+                if (i.customId === 'action_adaptiveslowmode_roles') {
+                    settings.adaptiveSlowmodeIgnoredRoles = JSON.stringify(i.values || []);
                     update = true;
                 }
                 if (i.customId === 'action_selfroles_build') {

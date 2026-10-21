@@ -233,6 +233,10 @@ async function processMessageInternal(message, client) {
         const everyonePerms = message.channel?.permissionsFor ? message.channel.permissionsFor(message.guild.roles.everyone) : null;
         const isCurrentChannelStaffOnly = everyonePerms ? !everyonePerms.has(viewChannelPerm) : false;
 
+        // User and Member Identity resolution
+        const nameViewingEnabled = settings?.aiNameViewingEnabled !== false;
+        const authorDisplayName = nameViewingEnabled ? (message.member?.displayName || message.author.username) : 'Member';
+
         // 2. Fetch Recent Channel Messages (Only if Memory is enabled)
         let recentHistoryStr = '';
         if (memoryEnabled) {
@@ -264,8 +268,6 @@ async function processMessageInternal(message, client) {
         }
 
         // 4. Persistent User Memory & Insights (Only if Memory is enabled)
-        const nameViewingEnabled = settings?.aiNameViewingEnabled !== false;
-        const authorDisplayName = nameViewingEnabled ? (message.member?.displayName || message.author.username) : 'Member';
         let userMemoryStr = '';
         if (memoryEnabled) {
             try {
@@ -436,7 +438,7 @@ async function processMessageInternal(message, client) {
 
         const deviceSpecsContext = getSanitizedSpecsSummary();
 
-        const selectedModel = settings?.aiModel || 'gemini-2.5-flash';
+        const selectedModel = (settings?.aiModel && settings.aiModel !== 'gemini-2.5-flash' && settings.aiModel !== 'gemini-2.0-flash' && settings.aiModel !== 'gemini-1.5-flash' && settings.aiModel !== 'gemini-1.5-pro') ? settings.aiModel : 'gemini-3.8-flash';
         let customPrompt = settings?.aiSystemPrompt || '';
         if (!customPrompt.trim() && settings?.aiPromptTemplate && AI_PERSONA_TEMPLATES[settings.aiPromptTemplate]) {
             customPrompt = AI_PERSONA_TEMPLATES[settings.aiPromptTemplate];

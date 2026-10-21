@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 const TARGET_GUILD_ID = '1487342521133830174';
 const UNDERAGE_ROLE_ID = '1539395288811446302';
@@ -112,29 +112,43 @@ async function processUnderageMember(member, client) {
     try {
         console.log(`[Underage Sweep] [DM ATTEMPT] Dispatching advisory DM to ${user.tag} (${user.id})...`);
         const dmEmbed = new EmbedBuilder()
-            .setTitle('⚠️ Notice: Underage Account Policy Enforcement & Suspension')
+            .setTitle('⚠️ Notice: Account Age Policy Suspension')
             .setDescription(
                 `Hello <@${user.id}>,\n\n` +
-                `You have been removed and suspended from **${guild.name}** because you have been determined to be underage for Discord.\n\n` +
-                `The default suspension duration is **3 years** before you become eligible to rejoin. In accordance with Discord Terms of Service, you are strongly recommended to delete Discord and refrain from using the platform until you meet the required age.\n\n` +
+                `You have been removed and suspended from **${guild.name}** in accordance with Discord's minimum age policy.\n\n` +
+                `The default suspension duration is **3 years** before you become eligible to rejoin. In accordance with Discord Terms of Service, you are advised to refrain from using the platform until you meet the required age.\n\n` +
                 `⚖️ **How to Appeal Your Suspension:**\n` +
-                `If you believe your suspension is a mistake or you have proof of age, you can **reply directly to this bot in DMs**! Your message, username, and user ID will be sent directly to server administrator **Vaztinix** (<@1214048435632603137>) alongside your explanation.`
+                `If you believe your suspension is a mistake or you have proof of age, you can:\n` +
+                `1. **Click the "Submit Appeal" button below** to send an official appeal form (with explanation, details, and image/proof links), OR\n` +
+                `2. **Reply directly to this DM** with your explanation and **upload images or screenshots** directly!\n\n` +
+                `📸 **Add Images or Links to Help Us Verify:**\n` +
+                `• Paste image links (Imgur, Postimages, Google Drive, etc.) into the form OR send photos directly as attachments in this DM.\n` +
+                `• Clear proof or verification details help staff review and lift suspensions quickly!\n\n` +
+                `All appeals are forwarded directly to server administrator **Vaztinix** (<@1214048435632603137>) for review.`
             )
             .setColor(0xff4757)
             .addFields(
                 { name: '🏰 Server', value: guild.name, inline: true },
                 { name: '🛑 Action', value: 'Kick & 3-Year Suspension', inline: true },
                 { name: '⏳ Rejoin Eligibility', value: `<t:${rejoinUnix}:F>\n(<t:${rejoinUnix}:R>)`, inline: true },
-                { name: '📋 Reason', value: 'Determined underage for Discord (Recommended minimum age: 13)', inline: false },
-                { name: '📩 Direct Appeal', value: 'Send a DM reply to Nora with your explanation. It will be forwarded immediately to Vaztinix (`1214048435632603137`).', inline: false }
+                { name: '📋 Reason', value: 'Discord minimum age policy enforcement (Recommended minimum age: 13)', inline: false },
+                { name: '📸 Proof & Images', value: 'Submit image links via the form or upload photos directly in this DM. Forwarded directly to Vaztinix (`1214048435632603137`).', inline: false }
             )
             .setThumbnail(guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL())
-            .setFooter({ text: 'Discord Safety & Underage Policy Enforcement • Appeals via DM' })
+            .setFooter({ text: 'Discord Safety & Account Policy Enforcement • Appeals via DM' })
             .setTimestamp();
+
+        const dmRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('appeal_suspension_btn')
+                .setLabel('Submit Appeal')
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji('⚖️')
+        );
 
         // Ensure DM channel is open and send
         const dmChannel = await user.createDM();
-        await dmChannel.send({ embeds: [dmEmbed] });
+        await dmChannel.send({ embeds: [dmEmbed], components: [dmRow] });
         dmDelivered = true;
         console.log(`[Underage Sweep] [DM SUCCESS] Advisory DM successfully delivered to ${user.tag} (${user.id}). Waiting grace period before kick...`);
         
