@@ -11,7 +11,9 @@ oneWordStoryData.json
 scratch/
 .nora_neural_weights/
 .gemini/
+.agents
 .agents/
+.agents/**
 
 # Logs and backups
 *.pid

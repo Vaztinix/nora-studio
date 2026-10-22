@@ -2,170 +2,159 @@
 
 # ✨ Nora Studio
 
-### **Privacy-First AI & Next-Gen Moderation Ecosystem for Discord**
+### **The #1 Privacy-First AI & Next-Gen Moderation Ecosystem for Discord**
 
 <p align="center">
   <a href="https://vaztinix.dev"><img src="https://img.shields.io/badge/Website-vaztinix.dev-7C3AED?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website" /></a>
   <a href="https://top.gg/user/593420060990005248"><img src="https://img.shields.io/badge/Top.gg-Approved_Bot-FF3366?style=for-the-badge&logo=top.gg&logoColor=white" alt="Top.gg" /></a>
-  <a href="https://discord.com/users/1214048435632603137"><img src="https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" /></a>
-  <a href="https://github.com/Vaztinix/nora-studio"><img src="https://img.shields.io/badge/Version-2.6_Stable-10B981?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
-  <a href="#-privacy-first-philosophy"><img src="https://img.shields.io/badge/Privacy-Zero--Access-00B4D8?style=for-the-badge&logo=shield&logoColor=white" alt="Privacy" /></a>
+  <a href="https://discord.gg/m9WPYV287q"><img src="https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" /></a>
+  <a href="https://github.com/Vaztinix/nora-studio"><img src="https://img.shields.io/badge/Version-3.0_Production-10B981?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
+  <a href="#-the-1-top-privacy-bot-choice-for-discord"><img src="https://img.shields.io/badge/Privacy-Zero--Access%20Verified-00B4D8?style=for-the-badge&logo=shield&logoColor=white" alt="Privacy" /></a>
   <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=servers" alt="BotBoard" /></a>
-  <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=votes" alt="BotBoard" /></a>
-  <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=health" alt="BotBoard" /></a>
-  <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=rating" alt="BotBoard" /></a>
 </p>
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1200&color=A970FF&center=true&vCenter=true&width=600&lines=Moderation+made+simple;Prefix+(n!)+%26+Slash+Command+Support;4+Verification+Engines+(1-Click%2C+CAPTCHA%2C+React%2C+Roblox);AFK+Notifier+%26+Collaborative+Games;Built+for+modern+Discord+communities" alt="Typing Banner" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1200&color=A970FF&center=true&vCenter=true&width=600&lines=The+%231+Privacy-First+Discord+Bot;Universal+Prefix+(n!)+%26+Slash+Commands;Gemini+3.8+Flash+AI+Engine;4+Verification+Engines+(CAPTCHA%2C+1-Click%2C+Roblox);Engineered+by+Vaztinix+%26+Nora+Studio" alt="Typing Banner" />
 
 </div>
 
 ---
 
-## What is Nora?
+## 🌟 What is Nora?
 
-**Nora** is a high-performance, privacy-first Discord ecosystem engineered to provide elite community moderation, multi-mode member verification, Roblox identity linking, collaborative chat games, and server telemetry without compromising user privacy.
+**Nora** is a high-performance, enterprise-grade, privacy-first Discord ecosystem engineered by **Vaztinix** and the **Nora Studio Team**. Nora brings together next-generation AI conversational intelligence, forensic server security, multi-mode verification, Roblox identity synchronization, interactive community games, and an obsidian-styled real-time Web Dashboard—all built upon an uncompromising **Zero-Access Architecture**.
 
-Nora supports dual command execution: run any feature using native Discord Slash Commands (`/`) or standard chat prefixes (`n!`, `n?`, or `@Nora`).
+Nora supports seamless **Dual Command Routing**: run any feature using native Discord Slash Commands (`/`) or universal text chat prefixes (`n!`, `n?`, or `@Nora`).
 
-Unlike legacy Discord bots that hoard user data or spam permissions, Nora operates under a strict **Zero-Access Architecture**:
-- **No Permanent Message Storage:** Chat content is processed in volatile memory only for AutoMod, prefix commands, and game checks, then discarded instantly.
-- **Zero Developer Backdoors:** Developers have no backend overrides to inspect private chats, server logs, or member statistics.
-- **User Sovereignty:** Members can run `/mycard` or `n!mycard` to inspect their data and hit **Erase Data** for an immediate, irreversible wipe.
+```
+n!help        /verify        n!rank        /setup        n!afk        /starboard
+```
 
 ---
 
-## Key Feature Modules
+## 🛡️ The #1 Top Privacy Bot Choice for Discord
 
-| Module | Version | Description |
+Most Discord bots aggressively hoard server logs, scrape private messages for analytics, or sell server statistics to third-party brokers. **Nora was engineered from day one to reject this paradigm.** 
+
+Nora operates strictly under a verified **Zero-Access Privacy Architecture**:
+
+- 🔒 **Zero Permanent Message Storage**: Messages processed for AutoMod, prefixes, and collaborative games are parsed entirely in volatile RAM and immediately discarded. Nora never dumps chat logs or user text to disk.
+- 👤 **Total User Sovereignty**: Any user can execute `/mycard` or `n!mycard` to view every piece of metadata associated with their account and click **Erase Data** for an immediate, irreversible wipe.
+- 🚫 **Zero Developer Backdoors**: Developers have no administrative backdoors to inspect private channels, read guild logs, or harvest server member data.
+- 🔐 **End-to-End Credential Encryption**: Sensitive tokens, webhook URLs, and external credentials are cryptographically protected with **AES-256-GCM** encryption before reaching SQLite storage.
+- 💻 **100% Data Custody via Self-Hosting**: When you self-host Nora, you own your database entirely. Zero telemetry is sent home.
+- 🛡️ **Automated Safety Filters**: Nora's CI/CD pipeline runs `scripts/safety_filter.js` to ensure zero API keys, webhooks, or tokens ever leak into web builds or public distributions.
+
+---
+
+## 👥 Meet the Nora Studio Team
+
+Behind Nora is **Nora Studio**, a passionate collective of developers, community architects, and security enthusiasts dedicated to building respectful, authentic Discord software:
+
+| Member | Discord Handle | Role & Specialization |
+| :--- | :--- | :--- |
+| **Vaz** / **Vaztinix** | `vaztinix` (`1214048435632603137`) | **Founder, System Architect & Lead Developer** — Creator of Nora Bot, architect of the AuraAI V10 command engine, web dashboard, and database infrastructure. |
+| **strwberry** | `strawberry_angel0000` | **Co-Owner & Community Administrator** — Directs platform partnerships, community guidelines, and feature testing. |
+| **TheCasualEnderman** | `charlieisme` | **Lead Contributor & Developer** — Core systems programming, command engine optimization, and feature development. |
+| **solorads** | `solorads` | **Team Member & Staff** — Quality assurance, community moderation, and deployment oversight. |
+| **discounted_chaos** | `discounted_chaos` | **Team Member & Staff** — Bot operations, feature stress testing, and user feedback coordination. |
+| **Arya** | `poppys.ang3l` | **Team Member & Community Staff** — Community engagement, events, and support triage. |
+| **boris10106** | `boris10106` | **Team Member & Contributor** — Server integration testing and feature verification. |
+| **yunex0** | `yunex0` | **Team Member & Contributor** — Telemetry validation, community support, and bug reporting. |
+
+---
+
+## ⚡ Recent Updates & Key Feature Modules
+
+| Module | Version | Highlights & Capabilities |
 | :--- | :---: | :--- |
-| **Multi-Mode Verification** | `v2.6` | 4 Server verification engines: 1-Click Instant Button, Anti-Bot Visual CAPTCHA, Emoji Reactions, and Roblox Account Linking. |
-| **Universal Prefix (n!)** | `v2.6` | Full command parity with standard text prefix `n!<command>` (e.g. `n!afk`, `n!rank`, `n!setup`, `n!warn`, `n!story`). |
-| **AFK & Availability** | `v2.6` | Status broadcast system, auto `[AFK]` nickname prefixing, anti-ping notifications with auto-cleanup, and return detection. |
-| **Community Games** | `v2.5` | Sequential Counting with anti-cheat & XP rewards, plus collaborative One Word Story with milestone archives. |
-| **Security & Anti-Raid** | `v2.1` | Velocity join limiters, account age enforcement, avatar requirements, suspicious nickname filtering, and 1-click server lockdown. |
-| **Roblox Verification** | `v2.4` | Real-time Roblox identity linking, group rank role bindings, nickname sync, and server access gating. |
-| **Starboard System** | `v2.5` | Reaction voting highlights, custom emojis, star count thresholds, branded webhook posts, and **Ignored Channels filter**. |
-| **Leveling & Rank Cards** | `v2.3` | Voice & text XP algorithms, role rewards, leaderboards, and custom rank card design studio (custom colors, borders, image uploads). |
-| **Support Ticketing** | `v2.5` | Help desk reaction panels, staff routing, automated transcripts, and auto-category archiving. |
-| **AI & Autoresponder** | `v2.1` | Dual-AI engine (Local Aura V10 & Gemini/OpenAI), regex autoresponders, and smart intent classifier. |
-| **Nora Studio Dashboard** | `v2.6` | Web-based management portal with real-time sync, unsaved changes guards, and server telemetry. |
+| **Gemini 3.8 Flash AI** | `v3.0` | Upgraded to Google's next-gen Gemini 3.8 Flash with multi-key quota balancing (up to 10 pooled keys), dynamic mood matching, multimodal vision, and automatic rate-limit cascading. |
+| **Permanent Server Revoke & Blacklist** | `v3.0` | Comprehensive server blacklist engine in Owner Admin Desk with reason popups, automatic DM delivery to the evicted server owner, and auto-leave logic upon unauthorized re-invites. |
+| **4-Tier Verification Suite** | `v2.9` | 4 Server verification engines: 1-Click Instant Button, Anti-Bot Visual CAPTCHA, Reaction Emojis, and Roblox Account Linking with Group Rank synchronization. |
+| **Forensic Intelligence & Anti-Raid** | `v2.8` | Automated velocity join detection, account age verification, avatar requirements, phishing signature traps, and 1-click server lockdown. |
+| **Starboard Engine** | `v2.7` | Reaction highlights, threshold triggers, custom star emojis, webhook-rendered author embeds, and **Ignored Channels filter** to protect private channels. |
+| **AFK & Availability Manager** | `v2.7` | Status broadcast system, auto `[AFK]` nickname prefixing, anti-ping notifications with automatic cleanup, and return greetings. |
+| **Age Suspension & Appeal System** | `v3.0` | Automated age suspension enforcement (`/agesuspension`), forensic sweep utilities, and dedicated automated appeal notification dispatcher. |
+| **Leveling & Rank Card Studio** | `v2.8` | Text and voice XP algorithms, milestone role rewards, and rank card studio with live coordinate transforms and custom image uploads. |
+| **Collaborative Games** | `v2.6` | Sequential Counting with anti-cheat & XP rewards, plus collaborative One Word Story with milestone archives. |
+| **Web Dashboard** | `v3.0` | High-performance obsidian dark dashboard with real-time WebSocket telemetry, unsaved changes guards, and server controls. |
 
 ---
 
-## 🛠️ Core System Architecture
+## 🛠️ System Architecture
 
 ```mermaid
 flowchart TD
-    A["Discord API & Gateway"] --> B["Nora Core Router"]
-    B --> C{"Permission Hiding Check"}
-    C -->|"Staff Member"| D["Mod Commands (/warn, /case, /setup)"]
-    C -->|"Community Member"| E["Member Commands (/verify, /mycard, /rank)"]
-    B --> F["Real-Time AutoMod Engine"]
-    F -->|"Targeted Harassment"| G["Delete Message + Log DB Warning + Timeout Escalation"]
-    F -->|"Casual Expression"| H["Gentle Deletion + Ephemeral Notice"]
-    F -->|"Mention Limit Exceeded"| I["Immediate Deletion + Staff Alert Log"]
-    B --> J["Starboard Engine v2.5"]
-    J -->|"Check Ignored Channels"| K{"Is Channel Ignored?"}
-    K -->|"Yes"| L["Bypass Reaction Tracking"]
-    K -->|"No"| M["Post Branded Webhook Embed"]
+    A["Discord Gateway & Webhook Requests"] --> B["Nora Core Event Dispatcher"]
+    
+    B --> C{"Command Router"}
+    C -->|"Slash Commands (/)"| D["Interaction Router"]
+    C -->|"Prefix Commands (n!, n?, @Nora)"| E["Prefix Command Handler"]
+    
+    B --> F["Volatile AutoMod & Safety Filter"]
+    F -->|"Phishing / Malicious Link"| G["Immediate Purge + Forensic Staff Log"]
+    F -->|"Spam / Mention Velocity"| H["Adaptive Slowmode + Auto-Timeout"]
+    
+    B --> I["Verification Gatekeeper"]
+    I -->|"Visual Challenge"| J["Procedural CAPTCHA Engine"]
+    I -->|"Roblox Link"| K["Roblox API Group Rank Sync"]
+    I -->|"Instant"| L["1-Click Role Grant"]
+    
+    B --> M["AuraAI V10 Command Module"]
+    M --> N["Google Gemini 3.8 Flash Cluster (Multi-Key Pool)"]
+    N -->|"Response Generated"| O["Memory-Safe Ephemeral Delivery"]
+    
+    P["Owner Admin Desk"] --> Q["Server Blacklist Engine"]
+    Q -->|"Perm Revoke Triggered"| R["Direct Message Server Owner + Auto-Leave Guild"]
 ```
-
 
 ---
 
-## 🚀 Self-Hosting Guide
+## 🚀 Quick Self-Hosting
 
-For detailed documentation, see the full [SELF_HOSTING.md](SELF_HOSTING.md) guide.
+Nora is fully open-source and easy to self-host. For the complete, detailed step-by-step documentation, see [SELF_HOSTING.md](SELF_HOSTING.md).
 
 ### 📋 Prerequisites
 - **Node.js** `v18.0.0` or higher ([Node.js Download](https://nodejs.org/))
-- **Git** installed on your system
-- **Discord Bot Token** from [Discord Developer Portal](https://discord.com/developers/applications)
+- **Git**
+- **Discord Bot Token** from the [Discord Developer Portal](https://discord.com/developers/applications)
 
-### 🛠️ Quick Start
-
+### ⚡ 3-Step Setup
 ```bash
 # 1. Clone the repository
 git clone https://github.com/Vaztinix/nora-studio.git
 cd nora-studio
 
-# 2. Install dependencies
+# 2. Install dependencies & configure .env
 npm install
-
-# 3. Create environment file
 cp .env.example .env
-```
 
-Open `.env` in a text editor and fill in your Bot Token:
-```env
-PORT=3000
-TOKEN=your_discord_bot_token_here
-API_BASE_URL=http://localhost:3000
-```
-
-#### 4. Privileged Gateway Intents
-In the [Discord Developer Portal](https://discord.com/developers/applications), select your bot, go to **Bot** -> **Privileged Gateway Intents**, and turn ON:
-- [x] **Server Members Intent** (`GUILD_MEMBERS`)
-- [x] **Presence Intent** (`GUILD_PRESENCES`)
-- [x] **Message Content Intent** (`MESSAGE_CONTENT`)
-
-#### 5. Build and Launch
-```bash
-# Build production web dashboard assets
+# 3. Build web dashboard assets & start
 npm run build
-
-# Start Nora Bot & Dashboard
 npm start
 ```
-Once initialized, access your local dashboard at `http://localhost:3000`.
 
-#### 6. 24/7 Production Hosting with PM2
-```bash
-npm install -g pm2
-pm2 start src/index.js --name "nora-studio"
-pm2 save
-pm2 startup
-```
+Access your dashboard locally at `http://localhost:3000`.
 
 ---
 
-## Privacy-First Philosophy
-
-Nora is built around complete user sovereignty. Server administrators and individual members maintain total control over their data:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    NORA LIMITED ACCESSS DATA            │
-├─────────────────────────────────────────────────────────┤
-│ • Guild Settings : Stored securely per server ID        │
-│ • Level & XP     : Isolated to local guild context      │
-│ • Roblox Link    : Hashed ID association                │
-│ • Message Content: NEVER stored on disk                 │
-│ • User Control   : /mycard ➜ Instant "Erase Data" Wipe │
-└─────────────────────────────────────────────────────────┘
-```
-
----
-
-## Developer & Official Links
+## 🔗 Official Nora Studio Links
 
 <div align="center">
 
-### **Created with passion by Vaztinix**
+### **Engineered with passion by Vaztinix & Nora Studio**
 
-| Platform | Direct Link |
+| Platform | Official URL |
 | :--- | :--- |
-| **Archived Website** | [vaztinix.github.io/Nora](https://vaztinix.github.io/Nora) |
-| **Official Website** | [vaztinix.dev](https://vaztinix.dev) |
+| **Official Website** | [https://vaztinix.dev](https://vaztinix.dev) |
+| **Nora Team Page** | [https://vaztinix.dev/team](https://vaztinix.dev/team) |
+| **Discord Community** | [discord.gg/m9WPYV287q](https://discord.gg/m9WPYV287q) |
 | **Developer Profile** | [vaztinix.dev/me](https://vaztinix.dev/me) |
-| **Top.gg Profile** | [top.gg/user/593420060990005248](https://top.gg/user/593420060990005248) |
 | **GitHub Repository** | [github.com/Vaztinix/nora-studio](https://github.com/Vaztinix/nora-studio) |
-| **Discord Profile** | [discord.com/users/1214048435632603137](https://discord.com/users/1214048435632603137) |
-| **Contact me** | [vaztinixstudios@gmail.com](mailto:vaztinixstudios@gmail.com) |
+| **Top.gg Profile** | [top.gg/user/593420060990005248](https://top.gg/user/593420060990005248) |
+| **Contact Email** | [vaztinixstudios@gmail.com](mailto:vaztinixstudios@gmail.com) |
 
 <br>
 
-*Built with curiosity, precision, and a belief that privacy should always be the default.*
+*Built with curiosity, precision, and an unwavering belief that user privacy must always be absolute.*
 
 </div>
