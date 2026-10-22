@@ -78,17 +78,12 @@
             } catch(e) {}
         })();
 
-        // DYNAMIC GLASS THEME INITIALIZATION (Dark & Light)
+        // DYNAMIC GLASS THEME INITIALIZATION (Dark Glass Permanent)
         (function() {
             try {
-                const savedTheme = localStorage.getItem('nora_theme_mode') || 'dark';
-                if (savedTheme === 'light') {
-                    document.documentElement.classList.add('theme-light');
-                    document.documentElement.classList.remove('theme-dark');
-                } else {
-                    document.documentElement.classList.add('theme-dark');
-                    document.documentElement.classList.remove('theme-light');
-                }
+                localStorage.setItem('nora_theme_mode', 'dark');
+                document.documentElement.classList.add('theme-dark');
+                document.documentElement.classList.remove('theme-light');
             } catch(e) {}
         })();
     </script>
@@ -5169,7 +5164,7 @@
                     <i class="fas fa-bell"></i> <span>Notifications</span>
                     <span id="topbar-notif-badge" class="notif-badge" style="display: none; margin-left: 5px;">0</span>
                 </button>
-                <button onclick="showTab('prefs')" class="global-nav-btn" data-tab="prefs"><i class="fas fa-user-cog"></i> <span>Personal Settings & Entitlements</span></button>
+                <button onclick="showTab('prefs')" class="global-nav-btn" data-tab="prefs"><i class="fas fa-cog"></i> <span>Settings</span></button>
             </div>
 
             <!-- Topbar Right Actions: Consolidated, Clean & Advanced -->
@@ -5198,12 +5193,6 @@
                     </select>
                 </div>
 
-                <!-- Quick Theme Switcher Button -->
-                <button id="quick-theme-toggle" onclick="toggleTheme()" class="theme-toggle-pill" title="Toggle Light / Dark Mode">
-                    <i id="theme-toggle-icon" class="fas fa-moon" style="color: var(--primary);"></i>
-                    <span id="theme-toggle-label" class="hide-on-mobile">Dark</span>
-                </button>
-
                 <!-- Unified User Profile Menu Pill with Popover -->
                 <div class="user-menu-wrapper" id="user-menu-wrapper">
                     <button type="button" class="user-profile-pill" id="user-profile-btn" onclick="toggleUserDropdown(event)">
@@ -5221,7 +5210,7 @@
                             <div class="user-dropdown-sub" id="user-dropdown-sub" data-no-translate style="color: rgba(255,255,255,0.6); font-size: 0.78rem;">@user</div>
                         </div>
                         <div class="user-dropdown-divider"></div>
-                        <a href="javascript:void(0)" onclick="showTab('prefs');" class="user-dropdown-item" style="color: #c084fc; font-weight: 600;"><i class="fas fa-user-cog" style="color: #c084fc;"></i> Personal Settings & Entitlements</a>
+                        <a href="javascript:void(0)" onclick="showTab('prefs');" class="user-dropdown-item" style="color: #c084fc; font-weight: 600;"><i class="fas fa-cog" style="color: #c084fc;"></i> Settings</a>
                         <a href="/" class="user-dropdown-item"><i class="fas fa-home"></i> Home Page</a>
                         <a href="/docs" class="user-dropdown-item"><i class="fas fa-book"></i> Documentation</a>
                         <a href="/verify" class="user-dropdown-item"><i class="fas fa-user-check"></i> Roblox Verification</a>
@@ -5954,336 +5943,302 @@
                         <button class="config-btn" style="flex: 1;" onclick="document.getElementById('role-multipliers-modal').style.display = 'none'">Close & Save</button>
                     </div>
                 </div>
-            </div>            <div id="view-prefs" class="view-panel" style="display: none;">
-                <div class="hero-banner" style="background: rgba(18, 22, 34, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
-                    <h1 style="font-size: 1.85rem; font-weight: 700; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.02em;">Personal Settings & Entitlements</h1>
-                    <p style="color: rgba(255,255,255,0.65); font-size: 0.92rem; font-weight: 400; line-height: 1.5; margin: 0;">Manage your user profile, personal subscriptions, and bind your premium slots to your Discord servers.</p>
+            </div>            <div id="view-prefs" class="view-panel" style="display: none; width: 100%; box-sizing: border-box;">
+                <div class="hero-banner" style="background: rgba(18, 22, 34, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px 26px; margin-bottom: 20px; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                    <div>
+                        <h1 style="font-size: 1.75rem; font-weight: 800; color: #fff; margin: 0 0 4px 0; letter-spacing: -0.02em;">Settings</h1>
+                        <p style="color: rgba(255,255,255,0.65); font-size: 0.86rem; font-weight: 400; line-height: 1.4; margin: 0;">Manage your personal profile, bound server entitlements, notification rules, and privacy controls.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button type="button" onclick="loadUserEntitlements(); if(typeof loadUserProfile==='function') loadUserProfile();" class="btn-outline" style="font-size: 0.8rem; padding: 7px 14px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: #fff; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <i class="fas fa-sync-alt"></i> Refresh Settings
+                        </button>
+                    </div>
                 </div>
-                
-                <div style="max-width: 800px; margin: 0 auto;">
-                    <!-- 💎 Personal Settings & Entitlements Card (Bind Target Server) -->
-                    <div class="panel" style="margin-bottom: 24px; background: radial-gradient(circle at top right, rgba(168, 85, 247, 0.12) 0%, rgba(18, 22, 34, 0.75) 60%); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 20px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; box-shadow: 0 12px 36px rgba(0,0,0,0.35); position: relative; overflow: visible;">
-                        <div style="position: absolute; inset: 0; border-radius: 20px; overflow: hidden; pointer-events: none; z-index: 0;">
-                            <div style="position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: rgba(168, 85, 247, 0.15); border-radius: 50%; filter: blur(40px);"></div>
-                        </div>
-                        
-                        <div style="position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 14px;">
-                            <div style="display: flex; align-items: center; gap: 14px;">
-                                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.25) 100%); border: 1px solid rgba(168, 85, 247, 0.4); display: flex; align-items: center; justify-content: center; color: #c084fc; font-size: 1.3rem; box-shadow: 0 0 20px rgba(168,85,247,0.25);">
-                                    <i class="fas fa-gem"></i>
-                                </div>
-                                <div>
-                                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0 0 4px 0; display: flex; align-items: center; gap: 10px;">
-                                        Personal Entitlements & Server Binding
-                                        <span id="entitlement-tier-pill" style="font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 99px; background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.35); color: #ffd700;">Loading Tier...</span>
-                                    </h3>
-                                    <p style="font-size: 0.82rem; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.4;">Your personal booster subscription travels with you! Bind your active slot to any server you manage.</p>
-                                </div>
-                            </div>
-                            <button type="button" onclick="loadUserEntitlements()" class="btn-outline" style="font-size: 0.78rem; padding: 6px 14px; border-radius: 8px; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: #fff;">
-                                <i class="fas fa-sync-alt"></i> Refresh Slots
-                            </button>
-                        </div>
 
-                        <!-- Active Slot Binding Status Banner -->
-                        <div style="position: relative; z-index: 1; background: rgba(15, 17, 26, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-                            <div style="display: flex; align-items: center; gap: 14px;">
-                                <div id="bound-server-avatar-box" style="width: 42px; height: 42px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; overflow: hidden;">
-                                    <i class="fas fa-server"></i>
+                <!-- Wide 2-Column Responsive Layout -->
+                <div style="display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 20px; width: 100%; box-sizing: border-box; align-items: start;">
+                    
+                    <!-- Left Column: Entitlements, Account, Premium & Data -->
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- 💎 Server Entitlements Card -->
+                        <div class="panel" style="margin-bottom: 0; background: radial-gradient(circle at top right, rgba(168, 85, 247, 0.12) 0%, rgba(18, 22, 34, 0.75) 60%); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; overflow: visible;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.25) 100%); border: 1px solid rgba(168, 85, 247, 0.4); display: flex; align-items: center; justify-content: center; color: #c084fc; font-size: 1.15rem;">
+                                        <i class="fas fa-gem"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0 0 2px 0; display: flex; align-items: center; gap: 8px;">
+                                            Server Entitlements
+                                            <span id="entitlement-tier-pill" style="font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.35); color: #ffd700;">Loading Tier...</span>
+                                        </h3>
+                                        <p style="font-size: 0.78rem; color: rgba(255,255,255,0.65); margin: 0;">Bind your personal booster subscription to any server you manage.</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #a78bfa; margin-bottom: 2px;">Currently Bound Server Slot</div>
-                                    <div id="bound-server-name-display" style="font-size: 1rem; font-weight: 700; color: #fff;">No server currently bound</div>
-                                    <div id="bound-server-sub-display" style="font-size: 0.78rem; color: var(--muted); margin-top: 2px;">Select an administered server below to assign your perks.</div>
-                                </div>
-                            </div>
-                            <div id="bound-server-actions-box">
-                                <button id="btn-unbind-slot" type="button" onclick="unbindTargetServer()" class="btn-outline" style="display: none; font-size: 0.78rem; padding: 7px 14px; border-radius: 8px; color: #ff5555; border-color: rgba(255,85,85,0.3); background: rgba(255,85,85,0.06); cursor: pointer;">
-                                    <i class="fas fa-unlink"></i> Release Slot
+                                <button type="button" onclick="loadUserEntitlements()" class="btn-outline" style="font-size: 0.75rem; padding: 5px 12px; border-radius: 6px; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: #fff; cursor: pointer;">
+                                    <i class="fas fa-sync-alt"></i> Refresh Slots
                                 </button>
                             </div>
+
+                            <!-- Currently Bound Server Slot Status -->
+                            <div style="background: rgba(15, 17, 26, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div id="bound-server-avatar-box" style="width: 38px; height: 38px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; overflow: hidden;">
+                                        <i class="fas fa-server"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #a78bfa; margin-bottom: 2px;">Currently Bound Server Slot</div>
+                                        <div id="bound-server-name-display" style="font-size: 0.95rem; font-weight: 700; color: #fff;">No server currently bound</div>
+                                        <div id="bound-server-sub-display" style="font-size: 0.75rem; color: var(--muted); margin-top: 1px;">Select an administered server below to assign your perks.</div>
+                                    </div>
+                                </div>
+                                <div id="bound-server-actions-box">
+                                    <button id="btn-unbind-slot" type="button" onclick="unbindTargetServer()" class="btn-outline" style="display: none; font-size: 0.75rem; padding: 6px 12px; border-radius: 6px; color: #ff5555; border-color: rgba(255,85,85,0.3); background: rgba(255,85,85,0.06); cursor: pointer;">
+                                        <i class="fas fa-unlink"></i> Release Slot
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Bind Control -->
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 14px 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 0.8rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-arrow-right-arrow-left" style="color: #c084fc;"></i> Bind Target Server
+                                    </span>
+                                    <span style="font-size: 0.72rem; color: var(--muted);">Re-bindable anytime</span>
+                                </div>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                    <div style="flex: 1; min-width: 220px;">
+                                        <select id="entitlement-server-select" style="width: 100%; background: rgba(0,0,0,0.35); border: 1px solid rgba(168,85,247,0.3); color: #fff; padding: 9px 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.85rem; outline: none; font-weight: 500;">
+                                            <option value="" disabled selected>Loading administered servers...</option>
+                                        </select>
+                                    </div>
+                                    <button id="btn-bind-target-server" type="button" onclick="bindTargetServer()" class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: #fff; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35); border: none; cursor: pointer;">
+                                        <i class="fas fa-link"></i> Bind Slot
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Bind Target Server Control Group -->
-                        <div style="position: relative; z-index: 2; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 20px; margin-bottom: 6px; overflow: visible;">
-                            <label for="entitlement-server-select" style="display: block; font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-arrow-right-arrow-left" style="color: #c084fc;"></i> Bind Target Server
-                            </label>
-                            <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">
-                                Move your premium benefits between your Discord communities anytime. Once bound, the target server gains priority sub-4ms AutoMod scanning, 200 custom autoresponders, 25 role rewards, and custom GIF rank card unlocks instantly.
-                            </p>
-                            
-                            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-                                <div style="flex: 1; min-width: 260px;">
-                                    <select id="entitlement-server-select" style="width: 100%; background: rgba(0,0,0,0.35); border: 1px solid rgba(168,85,247,0.3); color: #fff; padding: 11px 14px; border-radius: 10px; box-sizing: border-box; font-size: 0.88rem; outline: none; font-weight: 500;">
-                                        <option value="" disabled selected>Loading your administered servers...</option>
+                        <!-- 👤 Account & Preferences Card -->
+                        <div class="panel" style="margin-bottom: 0; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-user-circle" style="color: var(--primary);"></i> Account Details
+                                </h3>
+                                <span style="font-size: 0.74rem; color: var(--muted);">Profile & System Settings</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Discord Account</label>
+                                    <input type="text" id="pref-username" data-no-translate readonly disabled style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: var(--muted); cursor: not-allowed; border-radius: 8px; padding: 8px 11px; font-size: 0.82rem;">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Display Name</label>
+                                    <input type="text" id="pref-display-name" data-no-translate placeholder="Display Name" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; border-radius: 8px; padding: 8px 11px; font-size: 0.82rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">System Language</label>
+                                    <select id="pref-language" onchange="syncAndSaveLanguage(this.value, 'pref-language')" style="width: 100%; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; padding: 8px 11px; border-radius: 8px; box-sizing: border-box; font-size: 0.82rem; outline: none;">
+                                        <option value="en">English (English)</option>
+                                        <option value="es">Español (Spanish)</option>
+                                        <option value="fr">Français (French)</option>
+                                        <option value="de">Deutsch (German)</option>
+                                        <option value="pt">Português (Portuguese)</option>
+                                        <option value="it">Italiano (Italian)</option>
+                                        <option value="ru">Русский (Russian)</option>
+                                        <option value="hi">हिन्दी (Hindi)</option>
+                                        <option value="ja">日本語 (Japanese)</option>
+                                        <option value="ko">한국어 (Korean)</option>
+                                        <option value="zh">中文 (Chinese)</option>
                                     </select>
                                 </div>
-                                <button id="btn-bind-target-server" type="button" onclick="bindTargetServer()" class="save-btn" style="width: auto; padding: 11px 22px; font-size: 0.85rem; background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: #fff; font-weight: 700; border-radius: 10px; box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35); border: none; cursor: pointer;">
-                                    <i class="fas fa-link"></i> Bind / Move Premium Slot
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Visual Theme & Transparency Customization Card -->
-                    <div class="panel" style="margin-bottom: 20px; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">
-                            Theme & Appearance
-                        </h3>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">Choose between Dark Glass and Light Glass visual styling.</p>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px;">
-                            <!-- Dark Mode Card -->
-                            <div id="theme-card-dark" onclick="selectThemeMode('dark')" style="border: 1px solid var(--primary); background: rgba(15, 23, 42, 0.7); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; backdrop-filter: blur(12px);" class="theme-select-card">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 0.95rem;">
-                                            <i class="fas fa-moon"></i>
-                                        </div>
-                                        <span style="font-size: 0.95rem; font-weight: 600; color: #fff;">Dark Glass</span>
-                                    </div>
-                                    <div id="theme-radio-dark" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid #38bdf8; background: #38bdf8; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-check" style="font-size: 0.6rem; color: #000;"></i>
-                                    </div>
+                                <div>
+                                    <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Auto-Refresh Pace</label>
+                                    <select id="setting-auto-refresh-pref" onchange="handleAutoRefreshChange(this.value)" style="width: 100%; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; padding: 8px 11px; border-radius: 8px; box-sizing: border-box; font-size: 0.82rem; outline: none;">
+                                        <option value="0">Off (Manual)</option>
+                                        <option value="5" id="opt-pref-refresh-5">5 Seconds (Instant 👑)</option>
+                                        <option value="10" id="opt-pref-refresh-10">10 Seconds (👑)</option>
+                                        <option value="15" id="opt-pref-refresh-15">15 Seconds (👑)</option>
+                                        <option value="30" selected>30 Seconds (Standard)</option>
+                                        <option value="60">1 Minute</option>
+                                        <option value="300">5 Minutes</option>
+                                        <option value="600">10 Minutes</option>
+                                    </select>
                                 </div>
-                                <p style="font-size: 0.78rem; color: var(--muted); margin: 0; line-height: 1.4;">Deep obsidian frosted glass with crisp accents and low-light contrast.</p>
                             </div>
 
-                            <!-- Light Mode Card -->
-                            <div id="theme-card-light" onclick="selectThemeMode('light')" style="border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; backdrop-filter: blur(12px);" class="theme-select-card">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(37, 99, 235, 0.25); display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 0.95rem;">
-                                            <i class="fas fa-sun"></i>
-                                        </div>
-                                        <span style="font-size: 0.95rem; font-weight: 600; color: #fff;">Light Glass</span>
-                                    </div>
-                                    <div id="theme-radio-light" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center;"></div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Membership Tier</label>
+                                <div id="pref-premium-status" data-no-translate style="padding: 9px 12px; font-weight: 600; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid var(--border); color: #fff; font-size: 0.82rem; display: flex; align-items: center; justify-content: space-between;">
+                                    <span>Nora Standard Member</span>
+                                    <i class="fab fa-discord" style="color: #fff; opacity: 0.7;"></i>
                                 </div>
-                                <p style="font-size: 0.78rem; color: var(--muted); margin: 0; line-height: 1.4;">Crisp daylight frosted glass with high contrast and clean readability.</p>
                             </div>
-                        </div>
-                    </div>
-                    <!-- Personal Identity Card -->
-                    <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Account & Language</h3>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">Manage your display name, system language, and polling frequencies.</p>
-                        
-                        <div class="row-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
-                            <div class="input-group" style="margin-bottom: 0;">
-                                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Discord User</label>
-                                <input type="text" id="pref-username" data-no-translate readonly disabled style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: var(--muted); cursor: not-allowed; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem;">
-                            </div>
-                            <div class="input-group" style="margin-bottom: 0;">
-                                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Display Name</label>
-                                <input type="text" id="pref-display-name" data-no-translate placeholder="Display Name" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
-                            </div>
+
+                            <button class="save-btn" style="width: 100%; padding: 10px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px; font-size: 0.82rem; cursor: pointer;" onclick="savePersonalPrefs()">Save Account Settings</button>
                         </div>
 
-                        <div style="margin-bottom: 14px;">
-                            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">System Language</label>
-                            <select id="pref-language" onchange="syncAndSaveLanguage(this.value, 'pref-language')" style="width: 100%; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.85rem; outline: none;">
-                                <option value="en">English (English)</option>
-                                <option value="es">Español (Spanish)</option>
-                                <option value="fr">Français (French)</option>
-                                <option value="de">Deutsch (German)</option>
-                                <option value="pt">Português (Portuguese)</option>
-                                <option value="it">Italiano (Italian)</option>
-                                <option value="ru">Русский (Russian)</option>
-                                <option value="hi">हिन्दी (Hindi)</option>
-                                <option value="ja">日本語 (Japanese)</option>
-                                <option value="ko">한국어 (Korean)</option>
-                                <option value="zh">中文 (Chinese)</option>
-                            </select>
-                        </div>
-
-                        <div style="margin-bottom: 18px;">
-                            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 6px;">Membership Status</label>
-                            <div id="pref-premium-status" data-no-translate style="padding: 10px 12px; font-weight: 600; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid var(--border); color: #fff; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
-                                <span>Nora Standard Member</span>
-                                <i class="fab fa-discord" style="color: #fff; opacity: 0.7;"></i>
+                        <!-- 👑 Nora Premium Center & Subscriptions Card -->
+                        <div id="profile-premium-center" class="panel" style="margin-bottom: 0; background: rgba(255, 215, 0, 0.02); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 16px; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: #ffd700; display: flex; align-items: center; gap: 8px; margin: 0;">
+                                    <i class="fas fa-crown"></i> Nora Premium Center
+                                </h3>
+                                <span style="font-size: 0.72rem; color: #e2b714; font-weight: 600;">VIP Automation</span>
                             </div>
-                        </div>
-
-                        <div style="margin-bottom: 18px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
-                            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Auto-Refresh & Polling Frequency</label>
-                            <p style="font-size: 0.76rem; color: var(--muted); margin-bottom: 10px;">Control how often dashboard statistics and live metrics refresh.</p>
-                            <select id="setting-auto-refresh-pref" onchange="handleAutoRefreshChange(this.value)" style="width: 100%; background: rgba(0,0,0,0.15); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; box-sizing: border-box; font-size: 0.85rem; outline: none;">
-                                <option value="0">Off (Manual Refresh Only)</option>
-                                <option value="5" id="opt-pref-refresh-5">5 Seconds (Instant / Live 👑)</option>
-                                <option value="10" id="opt-pref-refresh-10">10 Seconds (👑 Premium)</option>
-                                <option value="15" id="opt-pref-refresh-15">15 Seconds (👑 Premium)</option>
-                                <option value="30" selected>30 Seconds (Standard / Default)</option>
-                                <option value="60">1 Minute</option>
-                                <option value="300">5 Minutes</option>
-                                <option value="600">10 Minutes</option>
-                            </select>
-                        </div>
-
-                        <!-- Nora Premium Center Card in Settings -->
-                        <div id="profile-premium-center" class="panel" style="margin-bottom: 20px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; background: rgba(255, 215, 0, 0.02); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 16px; padding: 20px;">
-                            <h3 style="font-size: 1.05rem; font-weight: 700; color: #ffd700; display: flex; align-items: center; gap: 8px; margin: 0 0 6px 0;">
-                                <i class="fas fa-crown"></i> Nora Premium Center
-                            </h3>
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">Unlock priority automation, instant live sync limits, custom animated profile styles, and VIP features across all Nora nodes.</p>
+                            <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; line-height: 1.4;">Unlock instant live sync, priority scanning, custom animated cards, and VIP node performance.</p>
                             
-                            <div id="premium-center-status" data-no-translate style="padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.85rem; line-height: 1.4; color: #fff; font-weight: 600; margin-bottom: 14px;">Loading subscription details...</div>
+                            <div id="premium-center-status" data-no-translate style="padding: 10px 12px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 0.82rem; line-height: 1.4; color: #fff; font-weight: 600; margin-bottom: 12px;">Loading subscription details...</div>
                             
-                            <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
-                                <button class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; background: linear-gradient(135deg, #ffd700 0%, #ffa502 100%); color: #000; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">Open Discord Shop</button>
-                                <button class="config-btn" style="width: auto; padding: 9px 16px; font-size: 0.82rem; border-radius: 8px;" onclick="navigator.clipboard.writeText('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534'); showToast('Store link copied to clipboard!', 'success');">Copy Store Link</button>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 18px;">
-                            <h4 style="font-size: 0.92rem; color: #fff; margin-bottom: 6px; font-weight: 700;">
-                                Managing Subscription & Cancellations
-                            </h4>
-                            <p style="color: var(--muted); font-size: 0.8rem; margin-bottom: 12px; line-height: 1.5;">
-                                Premium upgrades and subscriptions for Nora Studio are handled directly through the Discord client using App Subscriptions.
-                            </p>
-                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.6; color: rgba(255,255,255,0.85); margin-bottom: 12px;">
-                                <ol style="margin: 0; padding-left: 20px;">
-                                    <li>Open Discord and navigate to <strong style="color: #fff;">User Settings</strong>.</li>
-                                    <li>Under <strong style="color: #fff;">Billing Settings</strong> on the sidebar, select <strong style="color: #fff;">Subscriptions</strong>.</li>
-                                    <li>Find your Nora Studio subscription and select <strong style="color: #fff;">Manage</strong> or <strong style="color: #fff;">Cancel Subscription</strong>.</li>
-                                </ol>
-                            </div>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <a href="https://support.discord.com/hc/en-us/articles/360017693772-Managing-Subscriptions-and-Billing-FAQ" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 7px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
-                                    <i class="fas fa-question-circle"></i> Discord Billing FAQ
-                                </a>
-                                <a href="https://support.discord.com/" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 7px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
-                                    <i class="fas fa-external-link-alt"></i> Discord Help Center
+                            <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+                                <button class="save-btn" style="width: auto; padding: 8px 14px; font-size: 0.78rem; background: linear-gradient(135deg, #ffd700 0%, #ffa502 100%); color: #000; font-weight: 700; border-radius: 6px; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2); cursor: pointer;" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')">Open Discord Shop</button>
+                                <button class="config-btn" style="width: auto; padding: 8px 12px; font-size: 0.78rem; border-radius: 6px; cursor: pointer;" onclick="navigator.clipboard.writeText('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534'); showToast('Store link copied to clipboard!', 'success');">Copy Link</button>
+                                <a href="https://support.discord.com/hc/en-us/articles/360017693772-Managing-Subscriptions-and-Billing-FAQ" target="_blank" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.76rem; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: #fff;">
+                                    <i class="fas fa-question-circle"></i> Billing FAQ
                                 </a>
                             </div>
+
+                            <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; font-size: 0.75rem; color: var(--muted); line-height: 1.4;">
+                                Manage or cancel subscriptions in Discord under <strong>User Settings &gt; Subscriptions</strong>.
+                            </div>
                         </div>
 
-                        <button class="save-btn" style="width: 100%; padding: 11px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px;" onclick="savePersonalPrefs()">Update Personal Details</button>
-                        
-                        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
-                            <h4 style="font-size: 0.9rem; color: #ff5555; margin-bottom: 4px; font-weight: 700;">Data Sovereignty</h4>
-                            <p style="color: var(--muted); font-size: 0.78rem; margin-bottom: 10px; line-height: 1.4;">Permanently wipe personal data records across all Nora automation nodes.</p>
-                            <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.2); background: rgba(255,85,85,0.02); font-size: 0.8rem;" onclick="clearGlobalData()">Purge My Global Data</button>
+                        <!-- 🛡️ Data Sovereignty Card -->
+                        <div class="panel" style="margin-bottom: 0; background: rgba(255, 85, 85, 0.02); border: 1px solid rgba(255, 85, 85, 0.15); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h4 style="font-size: 0.85rem; color: #ff6b6b; margin: 0 0 2px 0; font-weight: 700;">Data Sovereignty</h4>
+                                <p style="color: var(--muted); font-size: 0.75rem; margin: 0;">Permanently purge your personal records from all active Nora nodes.</p>
+                            </div>
+                            <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.25); background: rgba(255,85,85,0.04); font-size: 0.76rem; padding: 6px 12px; border-radius: 6px; cursor: pointer;" onclick="clearGlobalData()">Purge My Global Data</button>
                         </div>
+
                     </div>
 
-                    <!-- Notification & Push Notification Alerts Card -->
-                    <div class="panel" style="margin-top: 20px; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">
-                            Push Notifications & Alerts
-                        </h3>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">Configure real-time device push notifications, security alerts, and browser audio chime preferences.</p>
-
-                        <!-- Push Status Card inside Settings -->
-                        <div id="settings-push-status-card" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); display: flex; align-items: center; justify-content: center; color: #c084fc;">
-                                    <i class="fas fa-mobile-alt"></i>
-                                </div>
-                                <div style="display: flex; flex-direction: column;">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <strong style="font-size: 0.92rem; font-weight: 600; color: #fff;">Device Push Alerts</strong>
-                                        <span id="settings-push-status-badge"></span>
-                                    </div>
-                                    <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Mobile, Tablet & Desktop Real-Time Delivery</span>
-                                </div>
-                            </div>
-                            <div id="settings-push-actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <!-- Populated dynamically by updateSettingsPushUI -->
-                            </div>
-                        </div>
-
-                        <!-- Notification Category Toggles -->
-                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
-                            <!-- Toggle: System Announcements -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
-                                <div>
-                                    <strong style="font-size: 0.85rem; color: #fff;">System Announcements & Critical Alerts</strong>
-                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Receive broadcast alerts, maintenance warnings, and high-priority incident notifications.</p>
-                                </div>
-                                <input type="checkbox" id="pref-notif-system" checked onchange="saveNotificationToggles()" style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer;">
+                    <!-- Right Column: Notifications & Privacy -->
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- 🔔 Push Notifications & Alerts Card -->
+                        <div class="panel" style="margin-bottom: 0; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-bell" style="color: #38bdf8;"></i> Push Notifications
+                                </h3>
+                                <span style="font-size: 0.74rem; color: var(--muted);">Real-Time Delivery</span>
                             </div>
 
-                            <!-- Toggle: Moderation & Security -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
-                                <div>
-                                    <strong style="font-size: 0.85rem; color: #fff;">Moderation & Incident Events</strong>
-                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Get notified when AutoMod blocks unauthorized actions or triggers anti-raid lockdowns.</p>
-                                </div>
-                                <input type="checkbox" id="pref-notif-mod" checked onchange="saveNotificationToggles()" style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer;">
-                            </div>
-
-                            <!-- Toggle: Audio Chime -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
-                                <div>
-                                    <strong style="font-size: 0.85rem; color: #fff;">Audio Chimes</strong>
-                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Play a subtle chime sound when real-time updates and push alerts are delivered.</p>
-                                </div>
+                            <!-- Push Device Card -->
+                            <div id="settings-push-status-card" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <button type="button" onclick="playNoraChime(true)" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; border-radius: 6px; padding: 5px 12px; font-weight: 600; font-size: 0.74rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s;" title="Play Audio Chime">
-                                        <i class="fas fa-play" style="font-size: 0.6rem;"></i> Test
-                                    </button>
-                                    <input type="checkbox" id="pref-notif-sound" checked onchange="saveNotificationToggles()" style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer;">
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); display: flex; align-items: center; justify-content: center; color: #c084fc; font-size: 0.9rem;">
+                                        <i class="fas fa-mobile-alt"></i>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <strong style="font-size: 0.85rem; font-weight: 600; color: #fff;">Device Push Alerts</strong>
+                                            <span id="settings-push-status-badge"></span>
+                                        </div>
+                                        <span style="font-size: 0.72rem; color: #94a3b8; margin-top: 1px;">Mobile, Tablet & Desktop Delivery</span>
+                                    </div>
+                                </div>
+                                <div id="settings-push-actions" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;"></div>
+                            </div>
+
+                            <!-- Notification Toggles -->
+                            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; gap: 12px;">
+                                    <div>
+                                        <strong style="font-size: 0.82rem; color: #fff; display: block;">System Announcements</strong>
+                                        <span style="font-size: 0.72rem; color: var(--muted);">Broadcasts, maintenance, and critical incidents</span>
+                                    </div>
+                                    <input type="checkbox" id="pref-notif-system" checked onchange="saveNotificationToggles()" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; gap: 12px;">
+                                    <div>
+                                        <strong style="font-size: 0.82rem; color: #fff; display: block;">Moderation & Security Alerts</strong>
+                                        <span style="font-size: 0.72rem; color: var(--muted);">AutoMod blocks and anti-raid triggers</span>
+                                    </div>
+                                    <input type="checkbox" id="pref-notif-mod" checked onchange="saveNotificationToggles()" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; gap: 12px;">
+                                    <div>
+                                        <strong style="font-size: 0.82rem; color: #fff; display: block;">Audio Chimes</strong>
+                                        <span style="font-size: 0.72rem; color: var(--muted);">Subtle sound when alerts are delivered</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <button type="button" onclick="playNoraChime(true)" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; border-radius: 5px; padding: 4px 8px; font-weight: 600; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="Play Audio Chime">
+                                            <i class="fas fa-play" style="font-size: 0.55rem;"></i> Test
+                                        </button>
+                                        <input type="checkbox" id="pref-notif-sound" checked onchange="saveNotificationToggles()" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                                    </div>
                                 </div>
                             </div>
+
+                            <button class="save-btn" style="width: 100%; padding: 10px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px; font-size: 0.82rem; cursor: pointer;" onclick="saveNotificationPrefsAction()">Save Notification Rules</button>
                         </div>
 
-                        <button class="save-btn" style="width: 100%; padding: 11px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px;" onclick="saveNotificationPrefsAction()">Save Notification Settings</button>
-                    </div>
-
-                    <!-- Privacy & Community Visibility Card -->
-                    <div class="panel" style="margin-top: 20px; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">
-                            Privacy & Community Visibility
-                        </h3>
-                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">Control who can see your linked accounts, public profile card, and direct message notifications.</p>
-
-                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-                            <!-- Roblox Privacy Toggle -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
-                                <div>
-                                    <strong style="font-size: 0.85rem; color: #fff;">Roblox Profile Visibility</strong>
-                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Allow server members and team showcase visitors to see your linked Roblox profile.</p>
-                                </div>
-                                <label class="switch"><input type="checkbox" id="user-pref-robloxPublic" checked onchange="saveUserProfile()"><span class="slider"></span></label>
+                        <!-- 🔒 Privacy & Community Visibility Card -->
+                        <div class="panel" style="margin-bottom: 0; background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-shield-alt" style="color: #a78bfa;"></i> Privacy & Visibility
+                                </h3>
+                                <span style="font-size: 0.74rem; color: var(--muted);">Zero-Access Default</span>
                             </div>
 
-                            <!-- Public Profile Visibility Toggle -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
-                                <div>
-                                    <strong style="font-size: 0.85rem; color: #fff;">Public Nora Profile Card</strong>
-                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Display your verified user profile and badges when users view your profile.</p>
+                            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; gap: 12px;">
+                                    <div>
+                                        <strong style="font-size: 0.82rem; color: #fff; display: block;">Public Nora Profile Card</strong>
+                                        <span style="font-size: 0.72rem; color: var(--muted);">Display verified user badges and rank info</span>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="user-pref-profilePublic" checked onchange="saveUserProfile()"><span class="slider"></span></label>
                                 </div>
-                                <label class="switch"><input type="checkbox" id="user-pref-profilePublic" checked onchange="saveUserProfile()"><span class="slider"></span></label>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; gap: 12px;">
+                                    <div>
+                                        <strong style="font-size: 0.82rem; color: #fff; display: block;">Roblox Profile Visibility</strong>
+                                        <span style="font-size: 0.72rem; color: var(--muted);">Show linked Roblox credentials on your card</span>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="user-pref-robloxPublic" checked onchange="saveUserProfile()"><span class="slider"></span></label>
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; gap: 12px;">
+                                    <div>
+                                        <strong style="font-size: 0.82rem; color: #fff; display: block;">Discord Direct Message (DM) Alerts</strong>
+                                        <span style="font-size: 0.72rem; color: var(--muted);">Send bot notices directly to your Discord DMs</span>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" id="user-pref-dmNotificationsEnabled" onchange="saveUserProfile()"><span class="slider"></span></label>
+                                </div>
+
+                                <!-- DM Sub-options -->
+                                <div id="user-pref-dm-suboptions" style="padding: 10px 14px; background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 0.76rem; color: #cbd5e1;">Level-Up DM Alerts</span>
+                                        <input type="checkbox" id="user-pref-dmNotifLevels" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 0.76rem; color: #cbd5e1;">Moderation Logs & Infractions</span>
+                                        <input type="checkbox" id="user-pref-dmNotifModeration" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 0.76rem; color: #cbd5e1;">Bot Broadcasts & Updates</span>
+                                        <input type="checkbox" id="user-pref-dmNotifBroadcasts" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Direct Message (DM) Notification Toggles -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; gap: 14px;">
-                                <div>
-                                    <strong style="font-size: 0.85rem; color: #fff;">Direct Message (DM) Notifications</strong>
-                                    <p style="font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0;">Receive real-time Discord DMs for level-ups, moderation notices, and announcements.</p>
-                                </div>
-                                <label class="switch"><input type="checkbox" id="user-pref-dmNotificationsEnabled" onchange="saveUserProfile()"><span class="slider"></span></label>
-                            </div>
-
-                            <div id="user-pref-dm-suboptions" style="padding-left: 16px; display: flex; flex-direction: column; gap: 8px;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
-                                    <span style="font-size: 0.78rem; color: #cbd5e1;">Level-Up DM Alerts</span>
-                                    <input type="checkbox" id="user-pref-dmNotifLevels" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
-                                </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
-                                    <span style="font-size: 0.78rem; color: #cbd5e1;">Moderation Logs & Infractions</span>
-                                    <input type="checkbox" id="user-pref-dmNotifModeration" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
-                                </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
-                                    <span style="font-size: 0.78rem; color: #cbd5e1;">Bot Broadcasts & Updates</span>
-                                    <input type="checkbox" id="user-pref-dmNotifBroadcasts" onchange="saveUserProfile()" style="accent-color: #38bdf8;">
-                                </div>
-                            </div>
+                            <button class="save-btn" style="width: 100%; padding: 10px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px; font-size: 0.82rem; cursor: pointer;" onclick="saveUserProfile()">Save Privacy Rules</button>
                         </div>
 
-                        <button class="save-btn" style="width: 100%; padding: 11px; background: #ffffff; color: #000000; font-weight: 700; border-radius: 8px;" onclick="saveUserProfile()">Update Privacy Settings</button>
                     </div>
                 </div>
             </div>
@@ -27637,92 +27592,23 @@
 
 
 <script>
-// Global Theme Mode Manager (Dark / Light Glass)
-function applyThemeMode(mode, save = true) {
-    if (mode !== 'light' && mode !== 'dark') mode = 'dark';
-    
-    if (mode === 'light') {
-        document.body.classList.remove('theme-dark');
-        document.body.classList.add('theme-light');
-        document.documentElement.classList.remove('theme-dark');
-        document.documentElement.classList.add('theme-light');
-    } else {
+// Global Theme Mode Manager (Permanent Dark Glass)
+function applyThemeMode() {
+    try {
+        localStorage.setItem('nora_theme_mode', 'dark');
         document.body.classList.remove('theme-light');
         document.body.classList.add('theme-dark');
         document.documentElement.classList.remove('theme-light');
         document.documentElement.classList.add('theme-dark');
-    }
-    
-    if (save) {
-        localStorage.setItem('nora_theme_mode', mode);
-    }
-    
-    // Update topbar quick toggle icon & label
-    const toggleIcon = document.getElementById('theme-toggle-icon');
-    const toggleLabel = document.getElementById('theme-toggle-label');
-    if (toggleIcon) {
-        toggleIcon.className = mode === 'light' ? 'fas fa-sun' : 'fas fa-moon';
-        toggleIcon.style.color = mode === 'light' ? '#2563eb' : '#38bdf8';
-    }
-    if (toggleLabel) {
-        toggleLabel.textContent = mode === 'light' ? 'Light' : 'Dark';
-    }
-    
-    // Update Settings page selection cards if present
-    const darkCard = document.getElementById('theme-card-dark');
-    const lightCard = document.getElementById('theme-card-light');
-    const darkRadio = document.getElementById('theme-radio-dark');
-    const lightRadio = document.getElementById('theme-radio-light');
-    
-    if (darkCard && lightCard) {
-        if (mode === 'dark') {
-            darkCard.style.borderColor = '#38bdf8';
-            darkCard.style.background = 'rgba(15, 23, 42, 0.7)';
-            lightCard.style.borderColor = 'var(--border)';
-            lightCard.style.background = 'rgba(255, 255, 255, 0.03)';
-            if (darkRadio) {
-                darkRadio.style.background = '#38bdf8';
-                darkRadio.style.borderColor = '#38bdf8';
-                darkRadio.innerHTML = '<i class="fas fa-check" style="font-size:0.65rem;color:#000;"></i>';
-            }
-            if (lightRadio) {
-                lightRadio.style.background = 'transparent';
-                lightRadio.style.borderColor = 'var(--border)';
-                lightRadio.innerHTML = '';
-            }
-        } else {
-            lightCard.style.borderColor = '#2563eb';
-            lightCard.style.background = 'rgba(255, 255, 255, 0.95)';
-            darkCard.style.borderColor = 'var(--border)';
-            darkCard.style.background = 'rgba(0, 0, 0, 0.05)';
-            if (lightRadio) {
-                lightRadio.style.background = '#2563eb';
-                lightRadio.style.borderColor = '#2563eb';
-                lightRadio.innerHTML = '<i class="fas fa-check" style="font-size:0.65rem;color:#fff;"></i>';
-            }
-            if (darkRadio) {
-                darkRadio.style.background = 'transparent';
-                darkRadio.style.borderColor = 'var(--border)';
-                darkRadio.innerHTML = '';
-            }
-        }
-    }
+    } catch (_) {}
 }
 
 function toggleTheme() {
-    const currentMode = localStorage.getItem('nora_theme_mode') || 'dark';
-    const newMode = currentMode === 'light' ? 'dark' : 'light';
-    applyThemeMode(newMode, true);
-    if (typeof showToast === 'function') {
-        showToast(`Switched to ${newMode === 'light' ? 'Light Glass' : 'Dark Glass'} Mode`, 'info');
-    }
+    applyThemeMode();
 }
 
-function selectThemeMode(mode) {
-    applyThemeMode(mode, true);
-    if (typeof showToast === 'function') {
-        showToast(`Theme updated to ${mode === 'light' ? 'Light Glass' : 'Dark Glass'}`, 'success');
-    }
+function selectThemeMode() {
+    applyThemeMode();
 }
 
 // User Menu Dropdown Handler
@@ -27741,8 +27627,7 @@ document.addEventListener('click', function(e) {
 
 // Auto-sync theme on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('nora_theme_mode') || 'dark';
-    applyThemeMode(savedTheme, false);
+    applyThemeMode();
 });
 
 // =========================================================================
