@@ -869,7 +869,7 @@ app.use((req, res, next) => {
 // not a shared Cloudflare edge node (which would block ALL users on that edge).
 // ─────────────────────────────────────────────────────────────────────────────
 const fail2banMap = new Map(); // ip -> { count, firstSeen, bannedUntil }
-const FAIL2BAN_MAX_404S = 8;         // 8 consecutive 404s...
+const FAIL2BAN_MAX_404S = 40;         // 40 consecutive 404s on actual sensitive routes
 const FAIL2BAN_WINDOW_MS = 60000;    // ...within 60 seconds...
 const FAIL2BAN_BAN_DURATION_MS = 15 * 60 * 1000; // ...triggers a 15 minute ban
 
@@ -913,8 +913,11 @@ app.use((req, res, next) => {
 
 // Database IP Ban Check Middleware
 app.use(async (req, res, next) => {
+    if (typeof isLoopbackIP === 'function' && isLoopbackIP(req)) {
+        return next();
+    }
     const ip = getRealIP(req);
-    if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') {
+    if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost' || ip === '::ffff:127.0.0.1') {
         return next();
     }
     try {
@@ -934,7 +937,15 @@ app.use(async (req, res, next) => {
 });
 
 // Helper to record a 404 hit for Fail2ban (called inside the 404 handler)
-const recordFail2ban404 = (ip) => {
+const recordFail2ban404 = (ip, reqPath = '') => {
+    // Never ban localhost or loopback
+    if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost' || ip === '::ffff:127.0.0.1') return;
+
+    // Never ban for missing media, icons, stylesheets, scripts, or sourcemaps
+    if (reqPath && reqPath.match(/\.(png|jpe?g|gif|webp|svg|ico|css|js|map|woff2?|ttf|eot)$/i)) {
+        return;
+    }
+
     const now = Date.now();
     const entry = fail2banMap.get(ip) || { count: 0, firstSeen: now, bannedUntil: null };
 
@@ -948,7 +959,7 @@ const recordFail2ban404 = (ip) => {
     entry.count++;
     if (entry.count >= FAIL2BAN_MAX_404S) {
         entry.bannedUntil = now + FAIL2BAN_BAN_DURATION_MS;
-        console.warn(`[FAIL2BAN] IP ${ip} banned for 15 minutes after ${entry.count} consecutive 404 hits.`);
+        console.warn(`[FAIL2BAN] IP ${ip} banned for 15 minutes after ${entry.count} consecutive 404 hits on non-asset routes.`);
     }
     fail2banMap.set(ip, entry);
 };
@@ -966,10 +977,10 @@ app.use((req, res, next) => {
         res.setHeader('Content-Security-Policy',
             "default-src 'self' https://discord.com https://cdn.discordapp.com; " +
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
-            "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
-            "img-src 'self' data: blob: https://cdn.discordapp.com https://media.discordapp.net https://images-ext-1.discordapp.net https://images-ext-2.discordapp.net https://*.roblox.com https://thumbnails.roblox.com https://*.rbxcdn.com https://images.unsplash.com https://top.gg https://*.top.gg https://discord.do https://*.discord.do https://discord.com https://*.discord.com https://*.klipy.com https://static.klipy.com https://*.tenor.com https://media.tenor.com https://c.tenor.com https://*.giphy.com https://media.giphy.com https://i.giphy.com https://*.imgur.com https://i.imgur.com https://*.githubusercontent.com https://*.googleusercontent.com; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
-            "connect-src 'self' https://discord.com https://api.vaztinix.dev https://vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com https://api.klipy.com https://*.klipy.com https://tenor.googleapis.com https://api.giphy.com; " +
+            "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
+            "img-src 'self' data: blob: https:; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; " +
+            "connect-src 'self' https://discord.com https://cdn.discordapp.com https://api.vaztinix.dev https://vaztinix.dev https://*.vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com https://api.klipy.com https://*.klipy.com https://tenor.googleapis.com https://api.giphy.com https://api.lanyard.rest wss://api.lanyard.rest; " +
             "frame-ancestors 'self'; " +
             "frame-src 'none'; " +
             "object-src 'none';"
@@ -1358,6 +1369,18 @@ app.use(express.static(path.join(__dirname, 'web'), {
         res.setHeader('Cache-Control', 'public, max-age=86400');
     }
 }));
+
+// Fallback for missing avatar/media images to gracefully prevent 404s and broken image links
+app.use((req, res, next) => {
+    if (req.method === 'GET' && /\.(png|jpe?g|webp|gif|svg)$/i.test(req.path)) {
+        const fallbackPath = path.join(__dirname, 'web', 'nora.png');
+        if (fs.existsSync(fallbackPath)) {
+            res.setHeader('Content-Type', 'image/png');
+            return res.sendFile(fallbackPath);
+        }
+    }
+    next();
+});
 
 // Mount API Routers
 const notificationsRouter = require('./api/routes/notifications');
@@ -1994,7 +2017,7 @@ const TEAM_MEMBERS_DIRECTORY = [
         roleClass: "lead",
         defaultBio: "Hey, I’m Lunar! I love the outdoors and learning new things!! I am also a very friendly person so say hi, I don't bite... *usually*. :D\n \nThe world is a loving place so respect it.",
         defaultJoined: "Mar 2024",
-        defaultImage: "ReVaztinix.jpeg",
+        defaultImage: "nora.png",
         defaultLinks: {
             github: "https://github.com/Vaztinix",
             youtube: "https://www.youtube.com/@Vaztinix",
@@ -2011,7 +2034,7 @@ const TEAM_MEMBERS_DIRECTORY = [
         roleClass: "owner",
         defaultBio: "D1 Hater • Co-Owner & Executive Team Member",
         defaultJoined: "Apr 2025",
-        defaultImage: "waffles.png",
+        defaultImage: "nora.png",
         defaultLinks: {
             strawpage: "https://strawberryangel0000.straw.page/",
             other: "https://1angel1.straw.page/",
@@ -2067,7 +2090,7 @@ const TEAM_MEMBERS_DIRECTORY = [
         roleClass: "contributor",
         defaultBio: "Provides feature ideas, beta tests release candidates, and supports server integrations.",
         defaultJoined: "Feb 2022",
-        defaultImage: "solorads_pfp.png",
+        defaultImage: "nora.png",
         defaultLinks: {
             roblox: "https://www.roblox.com/users/2987228682/profile",
             discord: "https://discord.com/users/941084096673755188"
@@ -2081,7 +2104,7 @@ const TEAM_MEMBERS_DIRECTORY = [
         roleClass: "admin",
         defaultBio: "\"The dumbass\" • Community administrator.",
         defaultJoined: "Nov 2024",
-        defaultImage: "beecet.png",
+        defaultImage: "nora.png",
         defaultLinks: {
             discord: "https://discord.com/users/1301949827701149697"
         }
@@ -2094,7 +2117,7 @@ const TEAM_MEMBERS_DIRECTORY = [
         roleClass: "admin",
         defaultBio: "A very silly person • Staff Member",
         defaultJoined: "Apr 2025",
-        defaultImage: "aryarec.jpg",
+        defaultImage: "nora.png",
         defaultLinks: {
             strawpage: "https://poppys-ang3l.straw.page/",
             pronouns: "https://prns.cc/eprnd",
@@ -2109,7 +2132,7 @@ const TEAM_MEMBERS_DIRECTORY = [
         roleClass: "friend",
         defaultBio: "The cameras are on my big toe now.",
         defaultJoined: "Jun 2025",
-        defaultImage: "boris.png",
+        defaultImage: "nora.png",
         defaultLinks: {
             discord: "https://discord.com/users/1387499169870254230"
         }
@@ -4251,9 +4274,9 @@ app.get('/api/logs', ipRateLimiter, async (req, res) => {
 
 
 
-// Serve 404 page for unmatched routes (also feeds Fail2ban tracker)
+// Serve 404 page for unmatched routes (also feeds Fail2ban tracker for non-asset scans)
 app.use((req, res) => {
-    recordFail2ban404(getRealIP(req));
+    recordFail2ban404(getRealIP(req), req.path);
     res.status(404).sendFile(path.join(__dirname, 'web', '404.html'));
 });
 
