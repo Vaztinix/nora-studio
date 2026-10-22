@@ -2113,18 +2113,16 @@ const TEAM_MEMBERS_DIRECTORY = [
         }
     },
     {
-        id: "1364634555977564230",
-        username: "poppys.ang3l",
-        defaultName: "✦Arya/Vixen┆She/Fae/It✦",
-        defaultRole: "Administrator",
-        roleClass: "admin",
-        defaultBio: "A very silly person • Staff Member",
-        defaultJoined: "Apr 2025",
-        defaultImage: "nora.png",
+        id: "930089787052916797",
+        username: "thevoid_8095",
+        defaultName: "Mr. Void",
+        defaultRole: "Partner",
+        roleClass: "partner",
+        defaultBio: "Official Partner of Nora Studio.",
+        defaultJoined: "Jan 2022",
+        defaultImage: "https://cdn.discordapp.com/avatars/930089787052916797/60a4180d941c5b636b362e922c19ce6d.png?size=512",
         defaultLinks: {
-            strawpage: "https://poppys-ang3l.straw.page/",
-            pronouns: "https://prns.cc/eprnd",
-            discord: "https://discord.com/users/1364634555977564230"
+            discord: "https://discord.com/users/930089787052916797"
         }
     },
     {

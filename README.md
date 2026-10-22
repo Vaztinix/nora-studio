@@ -57,7 +57,7 @@ Behind Nora is **Nora Studio**, a passionate collective of developers, community
 | **TheCasualEnderman** | `charlieisme` | **Lead Contributor & Developer** — Core systems programming, command engine optimization, and feature development. |
 | **solorads** | `solorads` | **Team Member & Staff** — Quality assurance, community moderation, and deployment oversight. |
 | **discounted_chaos** | `discounted_chaos` | **Team Member & Staff** — Bot operations, feature stress testing, and user feedback coordination. |
-| **Arya** | `poppys.ang3l` | **Team Member & Community Staff** — Community engagement, events, and support triage. |
+| **Mr. Void** | `thevoid_8095` | **Partner** — Official partner of Nora Studio. |
 | **boris10106** | `boris10106` | **Team Member & Contributor** — Server integration testing and feature verification. |
 | **yunex0** | `yunex0` | **Team Member & Contributor** — Telemetry validation, community support, and bug reporting. |
 

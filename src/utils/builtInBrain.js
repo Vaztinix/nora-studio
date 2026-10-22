@@ -110,7 +110,7 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
   • **TheCasualEnderman** (\`charlieisme\`): Lead Contributor & Developer
   • **solorads** (\`solorads\`): Team Member & Staff
   • **discounted_chaos** (\`discounted_chaos\`): Team Member & Staff
-  • **Arya** (\`poppys.ang3l\`): Team Member & Community Staff
+  • **Mr. Void** (\`thevoid_8095\`): Partner
   • **boris10106** (\`boris10106\`): Team Member & Contributor
   • **yunex0** (\`yunex0\`): Team Member & Contributor
 - **Top Privacy Bot Choice for Discord**:
