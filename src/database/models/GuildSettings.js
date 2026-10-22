@@ -479,6 +479,26 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         defaultValue: 'gemini-3.8-flash'
     },
+    aiCreditsRemaining: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1000
+    },
+    aiCreditsUsed: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    aiDailyCreditLimit: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1000
+    },
+    aiRateLimitPerMinute: {
+        type: DataTypes.INTEGER,
+        defaultValue: 6
+    },
+    aiLastCreditReset: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
+    },
     managedBotId: {
         type: DataTypes.STRING,
         allowNull: true

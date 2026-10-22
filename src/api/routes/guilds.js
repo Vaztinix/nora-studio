@@ -19,9 +19,11 @@ const ActiveTicket = require('../../database/models/ActiveTicket');
 
 const TicketHistory = require('../../database/models/TicketHistory');
 const ActionLog = require('../../database/models/ActionLog');
+const StarboardEntry = require('../../database/models/StarboardEntry');
 const { logServerAction } = require('../../utils/actionLogger');
 const settingsCache = require('../../utils/settingsCache');
 const activityTracker = require('../../utils/activityTracker');
+const aiCreditManager = require('../../utils/aiCreditManager');
 
 // Short-term in-memory cache for aggregated dashboard data (15s TTL) to prevent repeated heavy queries
 const dashboardDataCache = new Map();
@@ -696,76 +698,83 @@ router.get('/analytics', async (req, res) => {
 
         }
 
+        const settings = await settingsCache.get(guildId) || await GuildSettings.findByPk(guildId);
 
+        // Nora AI Telemetry & Server Credits
+        const aiTelemetry = aiCreditManager.getGuildTelemetry(guildId, settings);
+
+        // Starboard Stats
+        const starboardTotal = await StarboardEntry.count({ where: { guildId } }).catch(() => 0);
+        const latestStarboard = await StarboardEntry.findOne({
+            where: { guildId },
+            order: [['createdAt', 'DESC']]
+        }).catch(() => null);
+
+        const starboardStats = {
+            enabled: Boolean(settings?.starboardEnabled),
+            channelId: settings?.starboardChannelId || null,
+            threshold: settings?.starboardThreshold || 3,
+            totalStars: starboardTotal,
+            latestPost: latestStarboard ? {
+                authorTag: latestStarboard.authorTag || 'User',
+                starCount: latestStarboard.starCount || 0,
+                tierEmoji: latestStarboard.tierEmoji || '⭐',
+                contentSnippet: (latestStarboard.content || '').substring(0, 60),
+                jumpUrl: latestStarboard.jumpUrl || null
+            } : null
+        };
+
+        // Slowmode Status across text channels
+        const textChannelsWithSlowmode = guild.channels.cache.filter(c => c.isTextBased && c.isTextBased() && (c.rateLimitPerUser || 0) > 0);
+        const highestSlowmode = textChannelsWithSlowmode.reduce((max, c) => Math.max(max, c.rateLimitPerUser || 0), 0);
+        const slowmodeStats = {
+            adaptiveEnabled: Boolean(settings?.adaptiveSlowmodeEnabled),
+            activeSlowmodeChannelsCount: textChannelsWithSlowmode.size,
+            highestSlowmodeSeconds: highestSlowmode,
+            adaptiveSurgeSec: settings?.adaptiveSlowmodeSurgeSec || 10
+        };
+
+        // Real-time Chat Velocity (Messages Per Minute)
+        const chatVelocity = activityTracker.getGuildVelocity(guildId);
 
         res.json({
-
             totalMembers: guild.memberCount,
-
             totalNoraUsers,
-
             totalVotes: activeGuildLevels.reduce((sum, r) => sum + (r.voteCount || 0), 0),
-
             totalTextActivity,
-
             totalVoiceActivity: Math.floor(weeklyXpSum * 0.15), // estimate voice minutes based on weekly XP (real data)
-
             avgTextActivity,
-
             avgVoiceActivity: totalNoraUsers > 0 ? Math.floor(Math.floor(weeklyXpSum * 0.15) / totalNoraUsers) : 0,
-
             activeVoiceUsers,
-
             activeCommunicators: activeCommunicators, // no fake fallback to 1
-
             peakHourUTC,
-
             topChannelName,
-
             peakActiveName,
-
             leastActiveName,
-
             chartData,
-
             activityTrend,
-
             topggVoteStats: {
-
                 daily: activeGuildLevels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 86400000)).length,
-
                 weekly: activeGuildLevels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 604800000)).length,
-
                 monthly: activeGuildLevels.filter(r => r.lastVoteTimestamp && (Date.now() - new Date(r.lastVoteTimestamp).getTime() < 2592000000)).length
-
             },
-
             openTickets: openTicketsCount,
-
             inProgressTickets: inProgressTicketsCount,
-
             closedTickets: closedTicketsCount,
-
             totalTickets: totalTicketsCount,
-
             autoModActions,
-
             levelsGained,
-
             commandInvocations: Math.max(0, Math.round(totalTextActivity * 0.15)),
-
             recentTickets: recentTicketsMapped,
-
             channelsCount: guild.channels.cache.size,
-
             rolesCount: guild.roles.cache.size,
-
             botsCount: guild.members.cache.filter(m => m.user && m.user.bot).size,
-
             emojisCount: guild.emojis.cache.size,
-
-            stickersCount: guild.stickers.cache.size
-
+            stickersCount: guild.stickers.cache.size,
+            aiTelemetry,
+            starboardStats,
+            slowmodeStats,
+            chatVelocity
         });
 
     } catch (e) {

@@ -280,6 +280,11 @@ router.post('/', settingsRateLimiter, async (req, res) => {
 
 
 
+        if (payload.aiRateLimitPerMinute !== undefined) {
+            const parsed = parseInt(payload.aiRateLimitPerMinute, 10);
+            payload.aiRateLimitPerMinute = (!isNaN(parsed) && parsed >= 1 && parsed <= 60) ? parsed : 6;
+        }
+
         // Update the settings model with the payload provided by the dashboard
         await settings.update(payload);
         settingsCache.invalidate(guildId);

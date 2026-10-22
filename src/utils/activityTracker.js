@@ -11,6 +11,7 @@ class ActivityTracker {
     constructor() {
         this.buffer = new Map(); // guildId -> { dateKey, messages, channels: {}, users: Set, hourly: [], joins, leaves }
         this.userMsgBuffer = new Map(); // "guildId:userId" -> count
+        this.recentTimestamps = new Map(); // guildId -> Array<number> for real-time messages-per-minute
         this.flushInterval = setInterval(() => this.flushAll(), 5000);
         this.bootstrappedGuilds = new Set(); // Prevent duplicate channel backfills in a single session
     }
@@ -76,10 +77,31 @@ class ActivityTracker {
         const userKey = `${guildId}:${userId}`;
         this.userMsgBuffer.set(userKey, (this.userMsgBuffer.get(userKey) || 0) + 1);
 
+        // 4. Real-time velocity tracking (sliding 60-second window)
+        const now = Date.now();
+        let ts = this.recentTimestamps.get(guildId) || [];
+        ts = ts.filter(t => now - t < 60000);
+        ts.push(now);
+        this.recentTimestamps.set(guildId, ts);
+
         // Immediate flush if buffer exceeds 50 messages to keep DB current
         if (buf.messages >= 50) {
             this.flushGuild(guildId).catch(err => console.error('[ActivityTracker] Flush error:', err.message));
         }
+    }
+
+    /**
+     * Get real-time message velocity (messages per minute)
+     * @param {string} guildId 
+     * @returns {number} messages in the last 60 seconds
+     */
+    getGuildVelocity(guildId) {
+        if (!guildId) return 0;
+        const now = Date.now();
+        let ts = this.recentTimestamps.get(guildId) || [];
+        ts = ts.filter(t => now - t < 60000);
+        this.recentTimestamps.set(guildId, ts);
+        return ts.length;
     }
 
     /**

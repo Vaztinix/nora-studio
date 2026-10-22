@@ -444,6 +444,24 @@ async function processMessageInternal(message, client) {
             customPrompt = AI_PERSONA_TEMPLATES[settings.aiPromptTemplate];
         }
 
+        // Enforce Server Rate Limit & Credit Balance
+        const aiCreditManager = require('../utils/aiCreditManager');
+        const creditResult = await aiCreditManager.checkAndConsume(message.guild.id, settings, selectedModel);
+        if (!creditResult.allowed) {
+            if (creditResult.reason === 'RATE_LIMIT') {
+                return message.reply({
+                    content: `⏳ **Server AI Rate Limit Exceeded**: This server has reached its limit of **${creditResult.maxPerMinute} AI requests per minute** to protect AI credits. Please wait **${creditResult.waitSeconds}s** before trying again.`,
+                    allowedMentions: { repliedUser: false }
+                }).catch(() => {});
+            }
+            if (creditResult.reason === 'OUT_OF_CREDITS') {
+                return message.reply({
+                    content: `⚠️ **Server AI Credits Depleted**: This server has consumed its available daily AI credits. Credits automatically replenish in **~${creditResult.resetInHours}h** (00:00 UTC). Server administrators can adjust credit limits and model tiers in the dashboard.`,
+                    allowedMentions: { repliedUser: false }
+                }).catch(() => {});
+            }
+        }
+
         const aiPayload = {
             promptText: plainContent,
             context: deepKnowledgeStr,
