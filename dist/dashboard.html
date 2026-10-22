@@ -24488,7 +24488,7 @@
                 });
                 if (!res.ok) throw new Error(`Server returned ${res.status}: ${res.statusText}`);
                 
-                s = await res.json();
+                s 9 await res.json();
                 logToTerminal(`Received settings for ${currentServerId}`, 'FETCH_SUCCESS', s);
                 if (window.dashboardCache && window.dashboardCache.settings) {
                     window.dashboardCache.settings.set(cacheKey, { timestamp: now, data: s });

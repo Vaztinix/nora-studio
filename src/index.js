@@ -430,6 +430,8 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAlwaysAutoStart` TINYINT(1) DEFAULT 0;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkRoleId` VARCHAR(255) NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `AfkUsers` ADD COLUMN `expiresAt` BIGINT NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `teamCardTextColor` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `teamCardGlowColor` VARCHAR(255) NULL;"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {
@@ -2303,6 +2305,8 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                 joined: (p && p.teamCardHideJoinDate) ? null : def.defaultJoined,
                 image: liveAvatar,
                 banner: (p && p.teamCardBanner) ? p.teamCardBanner : null,
+                textColor: (p && p.teamCardTextColor) ? p.teamCardTextColor : null,
+                glowColor: (p && p.teamCardGlowColor) ? p.teamCardGlowColor : null,
                 links: links,
                 hideRole: !!(p && p.teamCardHideRole),
                 hideJoinDate: !!(p && p.teamCardHideJoinDate),
@@ -2344,6 +2348,8 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                     joined: p.teamCardHideJoinDate ? null : (p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }) : 'Recently'),
                     image: liveAvatar,
                     banner: p.teamCardBanner || null,
+                    textColor: p.teamCardTextColor || null,
+                    glowColor: p.teamCardGlowColor || null,
                     links: links,
                     hideRole: !!p.teamCardHideRole,
                     hideJoinDate: !!p.teamCardHideJoinDate,
@@ -2438,6 +2444,8 @@ app.get('/api/team/my-card', async (req, res) => {
                 description: prefs.teamCardDescription !== null && prefs.teamCardDescription !== undefined ? prefs.teamCardDescription : def.defaultBio,
                 image: discordAvatar,
                 banner: prefs.teamCardBanner || "",
+                textColor: prefs.teamCardTextColor || null,
+                glowColor: prefs.teamCardGlowColor || null,
                 links: links || {},
                 hideRole: !!prefs.teamCardHideRole,
                 hideJoinDate: !!prefs.teamCardHideJoinDate,
@@ -2475,6 +2483,8 @@ app.post('/api/team/my-card', async (req, res) => {
             description,
             image,
             banner,
+            textColor,
+            glowColor,
             links,
             hideRole,
             hideJoinDate,
@@ -2499,6 +2509,12 @@ app.post('/api/team/my-card', async (req, res) => {
             } else {
                 prefs.teamCardBanner = banner ? String(banner).trim() : null;
             }
+        }
+        if (textColor !== undefined) {
+            prefs.teamCardTextColor = textColor ? String(textColor).trim().slice(0, 30) : null;
+        }
+        if (glowColor !== undefined) {
+            prefs.teamCardGlowColor = glowColor ? String(glowColor).trim().slice(0, 30) : null;
         }
         if (links !== undefined) {
             prefs.teamCardLinks = typeof links === 'object' ? JSON.stringify(links) : String(links);
@@ -2526,6 +2542,8 @@ app.post('/api/team/my-card', async (req, res) => {
                 description: prefs.teamCardDescription,
                 image: prefs.teamCardImage,
                 banner: prefs.teamCardBanner,
+                textColor: prefs.teamCardTextColor,
+                glowColor: prefs.teamCardGlowColor,
                 links: typeof prefs.teamCardLinks === 'string' ? JSON.parse(prefs.teamCardLinks || '{}') : prefs.teamCardLinks,
                 hideRole: prefs.teamCardHideRole,
                 hideJoinDate: prefs.teamCardHideJoinDate,

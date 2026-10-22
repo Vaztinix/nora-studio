@@ -213,6 +213,16 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    teamCardTextColor: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    teamCardGlowColor: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
     customCardShape: {
         type: DataTypes.STRING,
         defaultValue: 'default'
