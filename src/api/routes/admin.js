@@ -743,7 +743,7 @@ router.post('/perm-revoke-server', requireOwner, async (req, res) => {
                     dmDelivered = true;
                 }
             } catch (dmErr) {
-                console.warn(`[PermRevoke] Could not DM owner ${ownerId}:`, dmErr.message);
+                console.warn('[PermRevoke] Could not DM owner %s:', ownerId, dmErr.message);
             }
         }
 

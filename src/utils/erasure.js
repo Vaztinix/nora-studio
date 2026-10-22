@@ -74,16 +74,16 @@ async function performCascadingErasure(guildId) {
             if (countingData[guildId]) {
                 delete countingData[guildId];
                 await fs.writeFile(dataPath, JSON.stringify(countingData, null, 2), 'utf8');
-                console.log(`[Cascading Erasure] Erased counting logs for guild ${guildId} from countingData.json`);
+                console.log('[Cascading Erasure] Erased counting logs for guild %s from countingData.json', guildId);
             }
         } catch (e) {
             // File does not exist or is empty, skip
         }
 
-        console.log(`[Cascading Erasure] Absolute cascading erasure completed successfully for guild ${guildId}.`);
+        console.log('[Cascading Erasure] Absolute cascading erasure completed successfully for guild %s.', guildId);
         return true;
     } catch (error) {
-        console.error(`[Cascading Erasure Error] Failed during erasure sequence for guild ${String(guildId)}:`, error);
+        console.error('[Cascading Erasure Error] Failed during erasure sequence for guild %s:', String(guildId), error);
         throw error;
     }
 }

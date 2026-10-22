@@ -98,7 +98,7 @@ async function deliverVoteToDiscordChannel(client, channelId, embed, fallbackTex
             return { success: true, method: 'fallback_text' };
         }
     } catch (finalErr) {
-        console.error(`[Top.gg Delivery Error in ${channelId}]:`, finalErr.message);
+        console.error('[Top.gg Delivery Error in %s]:', channelId, finalErr.message);
         return { success: false, reason: finalErr.message };
     }
 }
@@ -680,10 +680,12 @@ module.exports = (client) => {
             if (!token) return res.status(400).json({ valid: false, error: 'Token is required' });
 
             const safeBotId = (typeof botId === 'string' && /^\d{17,20}$/.test(botId.trim()))
-                ? botId.trim()
+                ? encodeURIComponent(botId.trim())
                 : '593420060990005248';
-            const response = await axios.get(`https://top.gg/api/bots/${safeBotId}/stats`, {
-                headers: { Authorization: token },
+            const safeToken = typeof token === 'string' ? token.replace(/[\r\n]/g, '').trim() : '';
+            const topggEndpoint = new URL(`https://top.gg/api/bots/${safeBotId}/stats`);
+            const response = await axios.get(topggEndpoint.toString(), {
+                headers: { Authorization: safeToken },
                 timeout: 5000
             }).catch(err => {
                 return err.response ? err.response : { status: 500, data: { error: err.message } };

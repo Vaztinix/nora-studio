@@ -89,7 +89,7 @@ router.get('/', settingsRateLimiter, async (req, res) => {
             dbSync: 1
         });
     } catch (error) {
-        console.error(`Error fetching settings for guild ${req.params.guildId}:`, error);
+        console.error('Error fetching settings for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error while fetching settings.', details: error.message });
     }
 });
@@ -316,7 +316,7 @@ router.post('/', settingsRateLimiter, async (req, res) => {
         const { syncAllAutoModRules } = require('../../utils/automodSync');
         if (guild) {
             await syncAllAutoModRules(guild, settings).catch(err => {
-                console.error(`AutoMod Sync failed for guild ${guildId} on settings update:`, err);
+                console.error('AutoMod Sync failed for guild %s on settings update:', guildId, err);
             });
         }
 
@@ -352,12 +352,12 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             action: 'UPDATE_SETTINGS',
             details: detailsSummary
         }).catch(err => {
-            console.error(`[ActionLogger] Failed to record update settings action for guild ${guildId}:`, err?.message || err);
+            console.error('[ActionLogger] Failed to record update settings action for guild %s:', guildId, err?.message || err);
         });
 
         res.json({ success: true, settings });
     } catch (error) {
-        console.error(`Error updating settings for guild ${req.params.guildId}:`, error);
+        console.error('Error updating settings for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error while updating settings.' });
     }
 });
@@ -383,12 +383,12 @@ router.delete('/', settingsRateLimiter, async (req, res) => {
             action: 'RESET_SETTINGS',
             details: 'Performed a complete server configuration reset and data erasure.'
         }).catch(err => {
-            console.error(`[ActionLogger] Failed to record reset settings action for guild ${guildId}:`, err?.message || err);
+            console.error('[ActionLogger] Failed to record reset settings action for guild %s:', guildId, err?.message || err);
         });
         
         res.json({ success: true, message: 'Cascading settings reset successfully performed.' });
     } catch (error) {
-        console.error(`Error deleting settings for guild ${req.params.guildId}:`, error);
+        console.error('Error deleting settings for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error during settings reset.' });
     }
 });

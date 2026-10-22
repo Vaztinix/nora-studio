@@ -358,10 +358,10 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
                 if (errLower.includes('resource_exhausted') || errLower.includes('quota') || errLower.includes('429') || errLower.includes('rate limit')) {
                     hitQuota = true;
                     geminiKeyManager.reportQuotaLimit(apiKey, error);
-                    console.warn(`[Gemini Quota] Model ${modelName} on key ...${apiKey.slice(-6)} hit quota limit. Cascading to next available key/model.`);
+                    console.warn(`[Gemini Quota] Model ${modelName} hit quota limit on key pool slot. Cascading to next available key/model.`);
                     break; // break inner model loop to move to next key immediately
                 } else {
-                    console.warn(`[Gemini Engine] Model ${modelName} failed on key ...${apiKey.slice(-6)}: ${error.message}`);
+                    console.warn(`[Gemini Engine] Model ${modelName} failed on key pool slot: ${error.message}`);
                 }
             }
         }

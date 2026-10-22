@@ -3838,14 +3838,14 @@
             }
 
             function sanitizeUrl(url) {
-                if (!url) return '';
-                const u = String(url).trim();
-                if (u.startsWith('data:image/')) return u;
-                if (u.startsWith('/') && !u.startsWith('//') && !u.startsWith('/\\')) return u;
+                if (!url || typeof url !== 'string') return '';
+                const u = url.trim();
+                if (/^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(u)) return u;
+                if (/^\/(?!\/)[a-zA-Z0-9_\-./]+$/.test(u) || /^[a-zA-Z0-9_\-.]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(u)) return u;
                 try {
                     const parsed = new URL(u, window.location.origin);
                     if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-                        return parsed.href;
+                        return encodeURI(decodeURI(parsed.href));
                     }
                 } catch (e) {}
                 return '';
@@ -12048,14 +12048,14 @@
 
     <script>
         function sanitizeUrl(url) {
-            if (!url) return '';
-            const u = String(url).trim();
-            if (u.startsWith('data:image/')) return u;
-            if (u.startsWith('/') && !u.startsWith('//') && !u.startsWith('/\\')) return u;
+            if (!url || typeof url !== 'string') return '';
+            const u = url.trim();
+            if (/^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(u)) return u;
+            if (/^\/(?!\/)[a-zA-Z0-9_\-./]+$/.test(u) || /^[a-zA-Z0-9_\-.]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(u)) return u;
             try {
                 const parsed = new URL(u, window.location.origin);
                 if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-                    return parsed.href;
+                    return encodeURI(decodeURI(parsed.href));
                 }
             } catch (e) {}
             return '';
@@ -12080,7 +12080,7 @@
                     return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
                 }
             } catch (e) {}
-            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            return '';
         }
 
         let notifications = [];
@@ -15184,8 +15184,9 @@
                         bgLayer.innerHTML = '';
                         bgLayer.appendChild(bgImg);
                     }
-                    if (bgImg.src !== customBgUrl) {
-                        bgImg.src = customBgUrl;
+                    const safeCustomBg = sanitizeUrl(customBgUrl);
+                    if (safeCustomBg && bgImg.src !== safeCustomBg) {
+                        bgImg.src = safeCustomBg;
                     }
 
                     const updateImgFraming = function() {
@@ -17240,14 +17241,11 @@
                 const subPayload = sub && sub.toJSON ? sub.toJSON() : sub;
 
                 // Priority candidate endpoints to attempt
-                const candidateUrls = [];
-                if (apiBase) candidateUrls.push(apiBase + '/api/notifications/test-push');
-                if (!candidateUrls.includes('https://api.vaztinix.dev/api/notifications/test-push')) {
-                    candidateUrls.push('https://api.vaztinix.dev/api/notifications/test-push');
-                }
-                if (!candidateUrls.includes('http://localhost:3000/api/notifications/test-push')) {
-                    candidateUrls.push('http://localhost:3000/api/notifications/test-push');
-                }
+                const candidateSet = new Set();
+                if (apiBase) candidateSet.add(apiBase + '/api/notifications/test-push');
+                candidateSet.add('https://api.vaztinix.dev/api/notifications/test-push');
+                candidateSet.add('http://localhost:3000/api/notifications/test-push');
+                const candidateUrls = Array.from(candidateSet);
 
                 let lastErr = null;
                 let delivered = false;
@@ -18636,7 +18634,7 @@
             const currentDuration = document.getElementById('setting-adaptiveSlowmodeLargeSec')?.value || '6';
 
             if (velEl) velEl.innerHTML = `<span style="color: #ef4444; font-weight: 800;">14.8 msg/s</span> <span style="font-size: 0.72rem; color: #ef4444; font-weight: 700;">(SPIKE!)</span>`;
-            if (tierEl) tierEl.innerHTML = `<span style="color: #22d3ee; font-weight: 800;">Tier 2 (${currentDuration}s Slowmode Active)</span>`;
+            if (tierEl) tierEl.innerHTML = `<span style="color: #22d3ee; font-weight: 800;">Tier 2 (${escapeHtml(currentDuration)}s Slowmode Active)</span>`;
             if (dotEl) {
                 dotEl.style.background = '#ef4444';
                 dotEl.style.boxShadow = '0 0 12px #ef4444';
@@ -18680,7 +18678,7 @@
             const rawTemplate = (inputEl && inputEl.value.trim()) ? inputEl.value : 'Welcome {user} to {guild}! You are our {membercount}th member 🎉';
             const guildName = currentServerName || 'Nora Community';
             
-            let formatted = rawTemplate
+            let formatted = escapeHtml(rawTemplate)
                 .replace(/\{user\}/g, '<strong style="color: #60a5fa;">@NewMember</strong>')
                 .replace(/\{username\}/g, '<strong>NewMember</strong>')
                 .replace(/\{id\}/g, '<code>987654321012345678</code>')
@@ -18710,7 +18708,7 @@
             const rawTemplate = (inputEl && inputEl.value.trim()) ? inputEl.value : '{username} has left the server. We now have {membercount} members.';
             const guildName = currentServerName || 'Nora Community';
             
-            let formatted = rawTemplate
+            let formatted = escapeHtml(rawTemplate)
                 .replace(/\{user\}/g, '<strong style="color: #c084fc;">@DepartedUser</strong>')
                 .replace(/\{username\}/g, '<strong>DepartedUser</strong>')
                 .replace(/\{id\}/g, '<code>987654321012345678</code>')
@@ -18905,8 +18903,8 @@
                     statusBadge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
                 }
                 if (embed) embed.style.borderLeftColor = color;
-                if (title) title.innerHTML = `🛡️ AutoMod Triggered: ${triggeredRule}`;
-                if (desc) desc.innerHTML = `<strong>Violating Content:</strong> <code>${escapeHtml(text.substring(0, 100))}</code><br><br><strong>Infraction:</strong> ${triggeredRule}<br><strong>Action:</strong> ${actionText}`;
+                if (title) title.textContent = `🛡️ AutoMod Triggered: ${triggeredRule}`;
+                if (desc) desc.innerHTML = `<strong>Violating Content:</strong> <code>${escapeHtml(text.substring(0, 100))}</code><br><br><strong>Infraction:</strong> ${escapeHtml(triggeredRule)}<br><strong>Action:</strong> ${escapeHtml(actionText)}`;
                 if (footer) footer.textContent = `AutoMod Evaluation • ${new Date().toLocaleTimeString()}`;
             } else {
                 if (statusBadge) {
@@ -18916,7 +18914,7 @@
                     statusBadge.style.borderColor = 'rgba(34, 197, 94, 0.3)';
                 }
                 if (embed) embed.style.borderLeftColor = '#22c55e';
-                if (title) title.innerHTML = `✅ Message Passed All Filters`;
+                if (title) title.textContent = `✅ Message Passed All Filters`;
                 if (desc) desc.innerHTML = `<strong>Tested Content:</strong> <code>${escapeHtml(text.substring(0, 100))}</code><br><br>No active AutoMod rules were violated. This message would be delivered to server channels without disruption.`;
                 if (footer) footer.textContent = `AutoMod Evaluation • ${new Date().toLocaleTimeString()}`;
             }
@@ -22518,11 +22516,12 @@
                     emojiSpan.style.justifyContent = 'center';
 
                     const customMatch = emoji.match(/^<a?:([a-zA-Z0-9_]+):([0-9]+)>$/);
-                    if (customMatch) {
+                    if (customMatch && /^\d{17,20}$/.test(customMatch[2])) {
                         const anim = emoji.startsWith('<a:');
                         const ext = anim ? 'gif' : 'png';
+                        const emojiId = encodeURIComponent(customMatch[2]);
                         const img = document.createElement('img');
-                        img.src = `https://cdn.discordapp.com/emojis/${customMatch[2]}.${ext}`;
+                        img.src = `https://cdn.discordapp.com/emojis/${emojiId}.${ext}`;
                         img.style.width = '16px';
                         img.style.height = '16px';
                         img.style.verticalAlign = 'middle';
@@ -24488,7 +24487,7 @@
                 });
                 if (!res.ok) throw new Error(`Server returned ${res.status}: ${res.statusText}`);
                 
-                s 9 await res.json();
+                s = await res.json();
                 logToTerminal(`Received settings for ${currentServerId}`, 'FETCH_SUCCESS', s);
                 if (window.dashboardCache && window.dashboardCache.settings) {
                     window.dashboardCache.settings.set(cacheKey, { timestamp: now, data: s });
@@ -28237,7 +28236,10 @@ window.updateTopggPreview = function() {
         : '';
     const rewardsText = `+${xpVal} XP${roleText}`;
 
-    let formatted = rawTemplate
+    const safeRawTemplate = escapeHtml(rawTemplate);
+    const safeXpVal = escapeHtml(xpVal);
+
+    let formatted = safeRawTemplate
         .replace(/\{user\}/g, '<strong style="color: #60a5fa;">@TopVoter</strong>')
         .replace(/\{username\}/g, '<strong>TopVoter</strong>')
         .replace(/\{server\}/g, `<strong>${escapeHtml(guildName)}</strong>`)
@@ -28246,7 +28248,7 @@ window.updateTopggPreview = function() {
         .replace(/\{channel\}/g, '<code>#general</code>')
         .replace(/\{streak\}/g, '<strong style="color: #FF3366;">3</strong>')
         .replace(/\{rewards\}/g, `<strong>${rewardsText}</strong>`)
-        .replace(/\{xp\}/g, `<strong>${xpVal}</strong>`)
+        .replace(/\{xp\}/g, `<strong>${safeXpVal}</strong>`)
         .replace(/\{multiplier\}/g, wkEl?.checked ? '<strong style="color: #FFD166;">2x Weekend</strong>' : '<strong>1x Standard</strong>');
 
     previewEl.innerHTML = formatted;
@@ -28560,7 +28562,7 @@ function copyTopggWebhookUrl() {
 }
 
 function regenerateTopggAuthSecret() {
-    const newSecret = 'nora_auth_' + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
+    const newSecret = 'nora_auth_' + generateSecureRandomHex(12);
     const input = document.getElementById('setting-topggWebhookAuth');
     if (input) {
         input.value = newSecret;
@@ -29035,17 +29037,18 @@ try {
                     }
                 };
                 img.onerror = function() {
-                    if (srcToUse.startsWith('http://') || srcToUse.startsWith('https://')) {
+                    const safeClean = sanitizeUrl(srcToUse);
+                    if (safeClean && (safeClean.startsWith('http://') || safeClean.startsWith('https://'))) {
                         const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
                         img.onerror = function() {
                             if (typeof showToast === 'function') showToast('Failed to load image preview into crop modal.', 'error');
                         };
-                        img.src = `${apiBase}/api/proxy-image?url=${encodeURIComponent(srcToUse)}`;
+                        img.src = `${apiBase}/api/proxy-image?url=${encodeURIComponent(safeClean)}`;
                     } else {
                         if (typeof showToast === 'function') showToast('Failed to load image preview into crop modal.', 'error');
                     }
                 };
-                img.src = srcToUse;
+                img.src = sanitizeUrl(srcToUse) || '';
             }
         };
 

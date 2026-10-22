@@ -671,7 +671,7 @@ runPreSyncMigrations().then(() => {
 
     // Final check for token stability
     const cleanToken = (process.env.TOKEN || '').trim().replace(/^["']|["']$/g, '');
-    console.log(`[Token Debug] Attempting client.login with token length: ${cleanToken.length}, starts with: ${cleanToken.slice(0, 10)}...`);
+    console.log('[Token Debug] Attempting client.login with sanitized token...');
     client.login(cleanToken);
 }).catch(err => {
     console.error('Nora - Database Connection Failure:', err);
@@ -722,7 +722,8 @@ const ALLOWED_ORIGINS = [
     /^https:\/\/vaztinix\.github\.io$/,
     /^https:\/\/vaztinix\.dev$/,
     /^https:\/\/[a-zA-Z0-9-]+\.vaztinix\.dev$/,
-    /^https:\/\/[a-zA-Z0-9-]+\.pages\.dev$/,
+    /^https:\/\/nora-studio\.pages\.dev$/,
+    /^https:\/\/nora-bot\.pages\.dev$/,
     /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
     /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
     /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
@@ -2174,9 +2175,10 @@ function isRecognizedTeamMember(userId, prefs, discordClient) {
 // In-memory cache for live Discord user profiles on team directory to prevent rate limits
 const teamDiscordUserCache = new Map();
 async function fetchDiscordUserData(userId) {
-    if (!userId || String(userId) === '1375943730951098549') return null;
+    if (!userId || !/^\d{17,20}$/.test(String(userId).trim()) || String(userId).trim() === '1375943730951098549') return null;
+    const safeUserId = encodeURIComponent(String(userId).trim());
     const now = Date.now();
-    const cached = teamDiscordUserCache.get(String(userId));
+    const cached = teamDiscordUserCache.get(safeUserId);
     if (cached && cached.expires > now) {
         return cached.user;
     }
@@ -2185,7 +2187,7 @@ async function fetchDiscordUserData(userId) {
     // 1. Try Discord.js client if available
     if (typeof client !== 'undefined' && client && client.users) {
         try {
-            user = await client.users.fetch(String(userId), { force: false }).catch(() => null);
+            user = await client.users.fetch(safeUserId, { force: false }).catch(() => null);
         } catch (e) {}
     }
 
@@ -2194,7 +2196,8 @@ async function fetchDiscordUserData(userId) {
         try {
             const cleanToken = (process.env.TOKEN || '').trim().replace(/^["']|["']$/g, '');
             const fetch = require('node-fetch');
-            const r = await fetch(`https://discord.com/api/v10/users/${userId}`, {
+            const targetUrl = new URL(`https://discord.com/api/v10/users/${safeUserId}`);
+            const r = await fetch(targetUrl.toString(), {
                 headers: { Authorization: `Bot ${cleanToken}` },
                 timeout: 4000
             });

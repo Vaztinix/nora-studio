@@ -2147,6 +2147,31 @@
             return badges.map(b => `<span class="discord-badge" title="${b.name}">${b.emoji}</span>`).join('');
         }
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+                .replace(/`/g, '&#096;');
+        }
+
+        function sanitizeUrl(url) {
+            if (!url || typeof url !== 'string') return '';
+            const u = url.trim();
+            if (/^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(u)) return u;
+            if (/^\/(?!\/)[a-zA-Z0-9_\-./]+$/.test(u) || /^[a-zA-Z0-9_\-.]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(u)) return u;
+            try {
+                const parsed = new URL(u, window.location.origin);
+                if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                    return encodeURI(decodeURI(parsed.href));
+                }
+            } catch (e) {}
+            return '';
+        }
+
         function formatDiscordMarkdown(text) {
             if (!text || typeof text !== 'string') return '';
             // HTML escape first for safety
@@ -2391,10 +2416,14 @@
             const b = banner.trim();
             el.classList.add('has-custom-bg');
             if (b.startsWith('linear-gradient') || b.startsWith('radial-gradient')) {
-                el.style.setProperty('background', b, 'important');
+                if (!/[;{}]/.test(b)) {
+                    el.style.setProperty('background', b, 'important');
+                }
             } else {
-                const clean = b.replace(/^url\(["']?|["']?\)$/g, '');
-                el.style.setProperty('background', `linear-gradient(180deg, rgba(10, 12, 22, 0.55) 0%, rgba(10, 12, 22, 0.82) 100%), url('${clean}') center/cover no-repeat`, 'important');
+                const clean = sanitizeUrl(b.replace(/^url\(["']?|["']?\)$/g, ''));
+                if (clean) {
+                    el.style.setProperty('background', `linear-gradient(180deg, rgba(10, 12, 22, 0.55) 0%, rgba(10, 12, 22, 0.82) 100%), url('${clean}') center/cover no-repeat`, 'important');
+                }
             }
         }
 
@@ -2514,23 +2543,32 @@
             if (!links || typeof links !== 'object') links = {};
             const robloxSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg>';
             let html = '';
-            if (links.github) html += `<a href="${links.github}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-github"></i> GitHub</a>`;
-            if (links.youtube) html += `<a href="${links.youtube}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-youtube"></i> YouTube</a>`;
-            if (links.twitch) html += `<a href="${links.twitch}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-twitch"></i> Twitch</a>`;
-            if (links.roblox) html += `<a href="${links.roblox}" target="_blank" rel="noopener" class="social-btn">${robloxSvg} Roblox</a>`;
-            if (links.gunslol) html += `<a href="${links.gunslol}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> guns.lol</a>`;
-            if (links.strawpage) html += `<a href="${links.strawpage}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> Strawpage</a>`;
-            if (links.pronouns) html += `<a href="${links.pronouns}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-link"></i> pronouns.cc</a>`;
-            if (links.hackerone) html += `<a href="${links.hackerone}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-shield-alt"></i> HackerOne</a>`;
-            if (links.other && links.other !== links.strawpage) html += `<a href="${links.other}" target="_blank" rel="noopener" class="social-btn"><i class="fas fa-globe"></i> Link</a>`;
-            if (links.invite) html += `<a href="${links.invite}" class="social-btn"><i class="fab fa-discord"></i> Add to Discord</a>`;
-            if (links.docs) html += `<a href="${links.docs}" class="social-btn"><i class="fas fa-book"></i> Docs</a>`;
+
+            const addBtn = (rawUrl, iconHtml, label) => {
+                const safeUrl = sanitizeUrl(rawUrl);
+                if (safeUrl && (safeUrl.startsWith('http://') || safeUrl.startsWith('https://'))) {
+                    html += `<a href="${safeUrl}" target="_blank" rel="noopener" class="social-btn">${iconHtml} ${label}</a>`;
+                }
+            };
+
+            if (links.github) addBtn(links.github, '<i class="fab fa-github"></i>', 'GitHub');
+            if (links.youtube) addBtn(links.youtube, '<i class="fab fa-youtube"></i>', 'YouTube');
+            if (links.twitch) addBtn(links.twitch, '<i class="fab fa-twitch"></i>', 'Twitch');
+            if (links.roblox) addBtn(links.roblox, robloxSvg, 'Roblox');
+            if (links.gunslol) addBtn(links.gunslol, '<i class="fas fa-link"></i>', 'guns.lol');
+            if (links.strawpage) addBtn(links.strawpage, '<i class="fas fa-link"></i>', 'Strawpage');
+            if (links.pronouns) addBtn(links.pronouns, '<i class="fas fa-link"></i>', 'pronouns.cc');
+            if (links.hackerone) addBtn(links.hackerone, '<i class="fas fa-shield-alt"></i>', 'HackerOne');
+            if (links.other && links.other !== links.strawpage) addBtn(links.other, '<i class="fas fa-globe"></i>', 'Link');
+            if (links.invite) addBtn(links.invite, '<i class="fab fa-discord"></i>', 'Add to Discord');
+            if (links.docs) addBtn(links.docs, '<i class="fas fa-book"></i>', 'Docs');
 
             // Auto-generate Discord profile button strictly if NOT hidden
             if (!hideDiscord) {
-                const targetDiscord = links.discord || (userId && userId !== '1375943730951098549' ? `https://discord.com/users/${userId}` : null);
+                const cleanId = userId ? String(userId).replace(/[^0-9]/g, '') : null;
+                const targetDiscord = (links.discord && sanitizeUrl(links.discord)) || (cleanId && cleanId !== '1375943730951098549' ? `https://discord.com/users/${cleanId}` : null);
                 if (targetDiscord) {
-                    html += `<a href="${targetDiscord}" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-discord"></i> Discord</a>`;
+                    addBtn(targetDiscord, '<i class="fab fa-discord"></i>', 'Discord');
                 }
             }
 
@@ -2543,7 +2581,8 @@
             if (!wrap || !currentStaffCard) return;
 
             const name = document.getElementById('edit-display-name')?.value.trim() || currentStaffCard.displayName || 'Staff Member';
-            const avatarUrl = document.getElementById('edit-avatar-url')?.value.trim() || currentStaffUser?.avatar || currentStaffCard.image || 'nora.png';
+            const rawAvatar = document.getElementById('edit-avatar-url')?.value.trim() || currentStaffUser?.avatar || currentStaffCard.image || 'nora.png';
+            const avatarUrl = sanitizeUrl(rawAvatar) || 'nora.png';
             const bannerUrl = document.getElementById('edit-banner-url')?.value.trim() || currentStaffCard.banner || '';
             const textColor = document.getElementById('edit-text-color-hex')?.value.trim() || null;
             const glowColor = document.getElementById('edit-glow-color-hex')?.value.trim() || null;
@@ -2565,29 +2604,32 @@
                 other: document.getElementById('link-other')?.value.trim()
             };
             if (showDiscord) {
-                links.discord = `https://discord.com/users/${currentStaffUser?.id || currentStaffCard.id}`;
+                const sId = String(currentStaffUser?.id || currentStaffCard.id || '').replace(/[^0-9]/g, '');
+                if (sId) links.discord = `https://discord.com/users/${sId}`;
             }
 
-            const roleClass = currentStaffCard.roleClass || 'member';
-            const roleName = currentStaffCard.role || 'Staff Member';
+            const roleClass = escapeHtml(currentStaffCard.roleClass || 'member');
+            const roleName = escapeHtml(currentStaffCard.role || 'Staff Member');
+            const safeName = escapeHtml(name);
+            const safeUsername = escapeHtml(currentStaffUser?.username || currentStaffCard.username || 'member');
             const hasBg = !!bannerUrl;
 
             wrap.innerHTML = `
                 <article id="live-preview-card" class="team-card ${hasBg ? 'has-custom-bg' : ''}">
                     <div class="card-top">
                         <div class="avatar-wrap">
-                            <img class="avatar-img" src="${avatarUrl}" alt="${name}" onerror="this.onerror=null; this.src='nora.png';">
+                            <img class="avatar-img" src="${avatarUrl}" alt="${safeName}" onerror="this.onerror=null; this.src='nora.png';">
                             <span class="status-dot online"></span>
                         </div>
                         <div class="card-header-info">
                             ${!hideRole ? `<span class="role-pill ${roleClass}">${roleName}</span>` : ''}
-                            <h2 class="member-name">${name}</h2>
-                            <span class="member-handle">@${currentStaffUser?.username || currentStaffCard.username || 'member'}</span>
+                            <h2 class="member-name">${safeName}</h2>
+                            <span class="member-handle">@${safeUsername}</span>
                         </div>
                     </div>
                     <div class="discord-badges"></div>
                     ${formattedBio ? `<div class="member-bio">${formattedBio}</div>` : ''}
-                    ${!hideJoin ? `<span class="member-join-date">${getDiscordJoinDate(currentStaffCard.id)}</span>` : ''}
+                    ${!hideJoin ? `<span class="member-join-date">${escapeHtml(getDiscordJoinDate(currentStaffCard.id))}</span>` : ''}
                     ${renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, !showDiscord)}
                 </article>
             `;
@@ -2828,7 +2870,7 @@
                     if (loginBtn) loginBtn.style.display = 'none';
                     if (editorBtn) {
                         editorBtn.style.display = 'inline-flex';
-                        editorBtn.innerHTML = `<i class="fas fa-id-card"></i> Manage Card (@${data.user.username})`;
+                        editorBtn.innerHTML = `<i class="fas fa-id-card"></i> Manage Card (@${escapeHtml(data.user.username)})`;
                     }
                     if (logoutBtn) {
                         logoutBtn.style.display = 'inline-flex';
@@ -2893,7 +2935,7 @@
                     if (editorBtn) editorBtn.style.display = 'none';
                     if (loginBtn) {
                         loginBtn.style.display = 'inline-flex';
-                        loginBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> @${data.user?.username || 'user'} (Not Staff) — Switch Account`;
+                        loginBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> @${escapeHtml(data.user?.username || 'user')} (Not Staff) — Switch Account`;
                         loginBtn.onclick = logoutStaff;
                     }
                 } else {
@@ -2947,10 +2989,12 @@
                             }
                             applyCardTextAndGlow(card, m.textColor, m.glowColor);
 
-                            const avatarSrc = m.image || 'nora.png';
-                            const roleClass = m.roleClass || 'member';
-                            const roleHtml = (!m.hideRole && m.role) ? `<span class="role-pill ${roleClass}">${m.role}</span>` : '';
-                            const joinHtml = (!m.hideJoinDate && m.joined) ? `<span class="member-join-date">${m.joined}</span>` : '';
+                            const avatarSrc = sanitizeUrl(m.image) || 'nora.png';
+                            const roleClass = escapeHtml(m.roleClass || 'member');
+                            const roleName = escapeHtml(m.role || '');
+                            const roleHtml = (!m.hideRole && roleName) ? `<span class="role-pill ${roleClass}">${roleName}</span>` : '';
+                            const joinText = escapeHtml(m.joined || '');
+                            const joinHtml = (!m.hideJoinDate && joinText) ? `<span class="member-join-date">${joinText}</span>` : '';
                             const bioText = m.bio || m.description || '';
                             const bioHtml = bioText ? `<div class="member-bio">${formatDiscordMarkdown(bioText)}</div>` : '';
                             let linksObj = m.links;
@@ -2958,17 +3002,19 @@
                                 try { linksObj = JSON.parse(linksObj); } catch(e) { linksObj = {}; }
                             }
                             const linksHtml = renderSocialButtonsHtml(linksObj, m.id, !!m.hideDiscord);
+                            const safeDisplayName = escapeHtml(m.displayName || 'Staff Member');
+                            const safeUsername = escapeHtml(m.username || 'member');
 
                             card.innerHTML = `
                                 <div class="card-top">
                                     <div class="avatar-wrap">
-                                        <img class="avatar-img" src="${avatarSrc}" alt="${m.displayName}" onerror="this.onerror=null; this.src='nora.png';">
+                                        <img class="avatar-img" src="${avatarSrc}" alt="${safeDisplayName}" onerror="this.onerror=null; this.src='nora.png';">
                                         <span class="status-dot ${m.isApp ? 'online' : ''}"></span>
                                     </div>
                                     <div class="card-header-info">
                                         ${roleHtml}
-                                        <h2 class="member-name">${m.displayName}</h2>
-                                        <span class="member-handle">@${m.username}</span>
+                                        <h2 class="member-name">${safeDisplayName}</h2>
+                                        <span class="member-handle">@${safeUsername}</span>
                                     </div>
                                 </div>
                                 <div class="discord-badges"></div>

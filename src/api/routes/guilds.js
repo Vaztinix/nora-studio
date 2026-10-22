@@ -69,7 +69,7 @@ router.get('/action-logs', async (req, res) => {
             logs: rows
         });
     } catch (error) {
-        console.error(`Error fetching action logs for guild ${req.params.guildId}:`, error);
+        console.error('Error fetching action logs for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error while fetching action logs.' });
     }
 });
@@ -3000,7 +3000,7 @@ router.post('/reaction-roles/publish', async (req, res) => {
             });
 
             await targetMessage.react(emoji).catch(err => {
-                console.warn(`[Reaction Role Publish] Failed to react with ${emoji}:`, err.message);
+                console.warn('[Reaction Role Publish] Failed to react with %s:', emoji, err.message);
             });
         }
 
