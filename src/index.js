@@ -2146,6 +2146,71 @@ function isRecognizedTeamMember(userId, prefs, discordClient) {
     return false;
 }
 
+// In-memory cache for live Discord user profiles on team directory to prevent rate limits
+const teamDiscordUserCache = new Map();
+async function fetchDiscordUserData(userId) {
+    if (!userId || String(userId) === '1375943730951098549') return null;
+    const now = Date.now();
+    const cached = teamDiscordUserCache.get(String(userId));
+    if (cached && cached.expires > now) {
+        return cached.user;
+    }
+
+    let user = null;
+    // 1. Try Discord.js client if available
+    if (typeof client !== 'undefined' && client && client.users) {
+        try {
+            user = await client.users.fetch(String(userId), { force: false }).catch(() => null);
+        } catch (e) {}
+    }
+
+    // 2. Fallback to Discord REST API with bot token
+    if (!user && process.env.TOKEN) {
+        try {
+            const cleanToken = (process.env.TOKEN || '').trim().replace(/^["']|["']$/g, '');
+            const fetch = require('node-fetch');
+            const r = await fetch(`https://discord.com/api/v10/users/${userId}`, {
+                headers: { Authorization: `Bot ${cleanToken}` },
+                timeout: 4000
+            });
+            if (r.ok) {
+                user = await r.json();
+            }
+        } catch (e) {}
+    }
+
+    if (user) {
+        const id = String(user.id);
+        const username = user.username;
+        const globalName = user.global_name || user.globalName || user.username;
+        const avatarHash = user.avatar;
+        const isAnimated = typeof avatarHash === 'string' && avatarHash.startsWith('a_');
+        let avatarUrl;
+        if (typeof user.displayAvatarURL === 'function') {
+            avatarUrl = user.displayAvatarURL({ size: 256, extension: 'png', forceStatic: false });
+        } else if (avatarHash) {
+            avatarUrl = `https://cdn.discordapp.com/avatars/${id}/${avatarHash}.${isAnimated ? 'gif' : 'png'}?size=256`;
+        } else {
+            try {
+                const disc = (BigInt(id) >> 22n) % 6n;
+                avatarUrl = `https://cdn.discordapp.com/embed/avatars/${disc}.png`;
+            } catch (e) {
+                avatarUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
+            }
+        }
+
+        const result = { id, username, globalName, avatarUrl };
+        teamDiscordUserCache.set(String(userId), {
+            user: result,
+            expires: now + 10 * 60 * 1000 // 10 min cache
+        });
+        return result;
+    }
+    return null;
+}
+
+let teamImagesResetDone = false;
+
 // GET /api/team/cards — Returns full merged list of public team cards
 app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -2153,6 +2218,12 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
     res.setHeader('Expires', '0');
     try {
         const UserPrefs = require('./database/models/UserPrefs');
+        if (!teamImagesResetDone) {
+            teamImagesResetDone = true;
+            try {
+                await UserPrefs.update({ teamCardImage: null }, { where: {} });
+            } catch (e) {}
+        }
         const allPrefs = await UserPrefs.findAll().catch(() => []);
         const prefsMap = new Map();
         for (const p of allPrefs) {
@@ -2193,15 +2264,21 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                 bio = p.teamCardDescription;
             }
 
+            // Force pull straight from Discord (avatar, username, and default display name)
+            const discordUser = def.isApp ? null : await fetchDiscordUserData(def.id);
+            const liveUsername = discordUser?.username || def.username;
+            const liveDisplayName = (p && p.teamCardDisplayName) ? p.teamCardDisplayName : (discordUser?.globalName || def.defaultName || liveUsername);
+            const liveAvatar = def.isApp ? 'nora.png' : (discordUser?.avatarUrl || def.defaultImage || 'nora.png');
+
             cards.push({
                 id: def.id,
-                username: (p && (p.teamCardUsername || p.username)) ? (p.teamCardUsername || p.username) : def.username,
-                displayName: (p && p.teamCardDisplayName) ? p.teamCardDisplayName : def.defaultName,
+                username: liveUsername,
+                displayName: liveDisplayName,
                 role: (p && p.teamCardHideRole) ? null : ((p && p.teamCardRole) ? p.teamCardRole : def.defaultRole),
                 roleClass: def.roleClass,
                 bio: bio,
                 joined: (p && p.teamCardHideJoinDate) ? null : def.defaultJoined,
-                image: (p && p.teamCardImage) ? p.teamCardImage : def.defaultImage,
+                image: liveAvatar,
                 banner: (p && p.teamCardBanner) ? p.teamCardBanner : null,
                 links: links,
                 hideRole: !!(p && p.teamCardHideRole),
@@ -2229,15 +2306,20 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                 } else {
                     delete links.discord;
                 }
+                const discordUser = await fetchDiscordUserData(p.userId);
+                const liveUsername = discordUser?.username || p.teamCardUsername || p.username || 'staff';
+                const liveDisplayName = p.teamCardDisplayName || discordUser?.globalName || liveUsername || 'Team Member';
+                const liveAvatar = discordUser?.avatarUrl || 'nora.png';
+
                 cards.push({
                     id: p.userId,
-                    username: p.teamCardUsername || p.username || 'staff',
-                    displayName: p.teamCardDisplayName || p.username || 'Team Member',
+                    username: liveUsername,
+                    displayName: liveDisplayName,
                     role: p.teamCardHideRole ? null : (p.teamCardRole || 'Team Member'),
                     roleClass: 'member',
                     bio: p.teamCardDescription || '',
                     joined: p.teamCardHideJoinDate ? null : (p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }) : 'Recently'),
-                    image: p.teamCardImage || 'nora.png',
+                    image: liveAvatar,
                     banner: p.teamCardBanner || null,
                     links: links,
                     hideRole: !!p.teamCardHideRole,
@@ -2276,6 +2358,11 @@ app.get('/api/team/my-card', async (req, res) => {
             return res.json({ authenticated: true, isTeamMember: false, user: { id: user.id, username: user.username, global_name: user.global_name } });
         }
 
+        const isAnimated = user.avatar && user.avatar.startsWith('a_');
+        const discordAvatar = user.avatar 
+            ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`
+            : `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) >> 22n) % 6n}.png`;
+
         const def = TEAM_MEMBERS_DIRECTORY.find(m => m.id === String(user.id)) || {
             id: user.id,
             username: user.username,
@@ -2284,7 +2371,7 @@ app.get('/api/team/my-card', async (req, res) => {
             roleClass: "member",
             defaultBio: "",
             defaultJoined: "Joined: Recently",
-            defaultImage: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256` : 'nora.png',
+            defaultImage: discordAvatar,
             defaultLinks: { discord: `https://discord.com/users/${user.id}` }
         };
 
@@ -2317,16 +2404,16 @@ app.get('/api/team/my-card', async (req, res) => {
                 id: user.id,
                 username: user.username,
                 global_name: user.global_name,
-                avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256` : null
+                avatar: discordAvatar
             },
             card: {
                 id: user.id,
-                username: prefs.teamCardUsername || user.username || def.username,
+                username: user.username,
                 displayName: prefs.teamCardDisplayName || def.defaultName || user.global_name || user.username,
                 role: prefs.teamCardRole || def.defaultRole,
                 roleClass: def.roleClass,
                 description: prefs.teamCardDescription !== null && prefs.teamCardDescription !== undefined ? prefs.teamCardDescription : def.defaultBio,
-                image: prefs.teamCardImage || def.defaultImage || "",
+                image: discordAvatar,
                 banner: prefs.teamCardBanner || "",
                 links: links || {},
                 hideRole: !!prefs.teamCardHideRole,

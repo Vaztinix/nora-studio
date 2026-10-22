@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
     <title>Nora Studio Team & Staff — Official Developers, Owners & Contributors</title>
     <meta name="description" content="Meet the official team members of Nora Studio: Vaz (vaztinix), strwberry (strawberry_angel0000), TheCasualEnderman (charlieisme), solorads, discounted_chaos, Arya (poppys.ang3l), boris10106, and yunex0.">
     <link rel="icon" type="image/png" href="nora.png">
@@ -548,13 +549,14 @@
         }
 
         .team-card {
-            background: rgba(255, 255, 255, 0.02) !important;
-            backdrop-filter: blur(24px) !important;
-            -webkit-backdrop-filter: blur(24px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.4) !important;
-            border-radius: 1rem !important;
-            padding: 32px 24px !important;
+            background-color: rgba(14, 16, 26, 0.85);
+            background-image: none;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4);
+            border-radius: 1.15rem;
+            padding: 32px 24px;
             transition: transform 0.15s ease-out, border-color 0.25s ease, box-shadow 0.25s ease;
             display: flex;
             flex-direction: column;
@@ -563,8 +565,50 @@
             transform-style: preserve-3d;
         }
         .team-card:hover {
-            border-color: rgba(34, 211, 238, 0.35) !important;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(37, 99, 235, 0.2) !important;
+            border-color: rgba(34, 211, 238, 0.35);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(37, 99, 235, 0.2);
+        }
+
+        .bg-mode-tab {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #D1D5DB;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .bg-mode-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFFFFF;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        .bg-mode-tab.active-bg-tab {
+            background: rgba(88, 101, 242, 0.22) !important;
+            border-color: #5865F2 !important;
+            color: #FFFFFF !important;
+            font-weight: 700 !important;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.3) !important;
+        }
+        .preset-pill-btn {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            padding: 4px 12px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+        }
+        .preset-pill-btn:hover {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
         }
 
         .card-top {
@@ -667,16 +711,6 @@
             background-size: cover !important;
             background-position: center !important;
             background-repeat: no-repeat !important;
-        }
-        .team-card.has-custom-bg::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(11, 12, 18, 0.72) 0%, rgba(11, 12, 18, 0.92) 100%);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            pointer-events: none;
-            z-index: 0;
         }
         .team-card.has-custom-bg > * {
             position: relative;
@@ -1456,22 +1490,87 @@
                     </div>
 
                     <!-- Card Background & Styling Section -->
-                    <div class="form-group">
-                        <label class="form-label" for="edit-banner-url">
-                            <span>Card Background & Banner</span>
-                            <span class="form-hint">Upload device backdrop or enter URL</span>
-                        </label>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                            <input type="text" id="edit-banner-url" class="form-input" placeholder="https://... or choose background image" oninput="updateLivePreview()" style="flex: 1; min-width: 170px;">
-                            <label class="staff-pill-btn" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; margin: 0; flex-shrink: 0; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; border-radius: 8px;">
-                                <i class="fas fa-image"></i> Upload Background
-                                <input type="file" id="upload-banner-file" accept="image/*" style="display: none;" onchange="handleDeviceImageUpload(event, 'banner')">
-                            </label>
-                            <button type="button" class="staff-pill-btn" onclick="resetCardBackground()" title="Clear card background" style="padding: 8px 12px; flex-shrink: 0; border-radius: 8px;">
-                                <i class="fas fa-trash-alt"></i> Clear
-                            </button>
+                    <div class="form-group" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <span style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF; display: block;">Card Background & Styling</span>
+                                <span style="font-size: 0.72rem; color: var(--text-dim);">Choose custom wallpaper backdrop or dual-color gradient</span>
+                            </div>
+                            <!-- Mode Switcher Tabs -->
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button type="button" id="tab-bg-image" class="bg-mode-tab active-bg-tab" onclick="switchBgMode('image')">
+                                    <i class="fas fa-image"></i> Custom Image
+                                </button>
+                                <button type="button" id="tab-bg-gradient" class="bg-mode-tab" onclick="switchBgMode('gradient')">
+                                    <i class="fas fa-palette"></i> Color Gradient
+                                </button>
+                                <button type="button" class="staff-pill-btn" onclick="resetCardBackground()" title="Clear card background" style="padding: 7px 12px; font-size: 0.78rem; border-radius: 8px; color: #f87171; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08);">
+                                    <i class="fas fa-trash-alt"></i> Clear
+                                </button>
+                            </div>
                         </div>
-                        <div id="banner-file-name" style="font-size: 0.72rem; color: #c084fc; margin-top: 4px; display: none;"></div>
+
+                        <!-- Mode 1: Image Background -->
+                        <div id="panel-bg-image">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                <input type="text" id="edit-banner-url" class="form-input" placeholder="https://... or choose background image" oninput="updateLivePreview()" style="flex: 1; min-width: 170px;">
+                                <label class="staff-pill-btn" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; margin: 0; flex-shrink: 0; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; border-radius: 8px;">
+                                    <i class="fas fa-image"></i> Upload Background
+                                    <input type="file" id="upload-banner-file" accept="image/*" style="display: none;" onchange="handleDeviceImageUpload(event, 'banner')">
+                                </label>
+                            </div>
+                            <div id="banner-file-name" style="font-size: 0.72rem; color: #c084fc; margin-top: 6px; display: none;"></div>
+                        </div>
+
+                        <!-- Mode 2: Color Gradient (Color Graidence) -->
+                        <div id="panel-bg-gradient" style="display: none;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                <!-- Color 1 Box -->
+                                <div style="background: rgba(10, 12, 20, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px;">
+                                    <label style="font-size: 0.75rem; font-weight: 700; color: #c7d2fe; display: block; margin-bottom: 6px;">Color 1 (Start)</label>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <input type="color" id="gradient-color-1" value="#7c3aed" oninput="syncGradientColor(1, this.value)" style="width: 40px; height: 38px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
+                                        <input type="text" id="gradient-hex-1" value="#7c3aed" maxlength="9" oninput="syncGradientHex(1, this.value)" class="form-input" style="font-family: monospace; font-size: 0.82rem; padding: 6px 10px; flex: 1;">
+                                    </div>
+                                </div>
+                                <!-- Color 2 Box -->
+                                <div style="background: rgba(10, 12, 20, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px;">
+                                    <label style="font-size: 0.75rem; font-weight: 700; color: #c7d2fe; display: block; margin-bottom: 6px;">Color 2 (End)</label>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <input type="color" id="gradient-color-2" value="#2563eb" oninput="syncGradientColor(2, this.value)" style="width: 40px; height: 38px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
+                                        <input type="text" id="gradient-hex-2" value="#2563eb" maxlength="9" oninput="syncGradientHex(2, this.value)" class="form-input" style="font-family: monospace; font-size: 0.82rem; padding: 6px 10px; flex: 1;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gradient Direction / Spread Selector -->
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: #CBD5E1; display: block; margin-bottom: 6px;">Gradient Direction & Pattern</label>
+                                <select id="gradient-direction" class="form-input" onchange="applyGradientToCard()" style="cursor: pointer;">
+                                    <option value="expand-center">Expand from Center (Radial Out)</option>
+                                    <option value="edges-in">Come in from Edges (Radial In)</option>
+                                    <option value="to-bottom" selected>Top to Bottom</option>
+                                    <option value="to-top">Bottom to Top</option>
+                                    <option value="to-right">Left to Right</option>
+                                    <option value="to-left">Right to Left</option>
+                                    <option value="to-bottom-right">Diagonal (Top-Left to Bottom-Right)</option>
+                                    <option value="to-top-right">Diagonal (Bottom-Left to Top-Right)</option>
+                                </select>
+                            </div>
+
+                            <!-- Quick Presets -->
+                            <div>
+                                <label style="font-size: 0.72rem; font-weight: 600; color: var(--text-dim); display: block; margin-bottom: 6px;">Popular Color Presets</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                    <button type="button" class="preset-pill-btn" onclick="setGradientPreset('#7c3aed', '#2563eb')" style="background: linear-gradient(135deg, #7c3aed, #2563eb);">Cyber Violet</button>
+                                    <button type="button" class="preset-pill-btn" onclick="setGradientPreset('#ec4899', '#8b5cf6')" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">Neon Rose</button>
+                                    <button type="button" class="preset-pill-btn" onclick="setGradientPreset('#06b6d4', '#3b82f6')" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">Ocean Cyan</button>
+                                    <button type="button" class="preset-pill-btn" onclick="setGradientPreset('#10b981', '#065f46')" style="background: linear-gradient(135deg, #10b981, #065f46);">Emerald Forest</button>
+                                    <button type="button" class="preset-pill-btn" onclick="setGradientPreset('#f59e0b', '#dc2626')" style="background: linear-gradient(135deg, #f59e0b, #dc2626);">Sunset Flame</button>
+                                    <button type="button" class="preset-pill-btn" onclick="setGradientPreset('#18181b', '#3f3f46')" style="background: linear-gradient(135deg, #18181b, #3f3f46);">Obsidian Dark</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -2084,6 +2183,157 @@
             reader.readAsDataURL(file);
         }
 
+        let currentBgMode = 'image';
+
+        function switchBgMode(mode) {
+            currentBgMode = mode;
+            const tabImg = document.getElementById('tab-bg-image');
+            const tabGrad = document.getElementById('tab-bg-gradient');
+            const panelImg = document.getElementById('panel-bg-image');
+            const panelGrad = document.getElementById('panel-bg-gradient');
+
+            if (mode === 'gradient') {
+                if (tabGrad) tabGrad.classList.add('active-bg-tab');
+                if (tabImg) tabImg.classList.remove('active-bg-tab');
+                if (panelGrad) panelGrad.style.display = 'block';
+                if (panelImg) panelImg.style.display = 'none';
+                applyGradientToCard();
+            } else {
+                if (tabImg) tabImg.classList.add('active-bg-tab');
+                if (tabGrad) tabGrad.classList.remove('active-bg-tab');
+                if (panelImg) panelImg.style.display = 'block';
+                if (panelGrad) panelGrad.style.display = 'none';
+                const bannerInput = document.getElementById('edit-banner-url');
+                if (bannerInput && (bannerInput.value.startsWith('linear-gradient') || bannerInput.value.startsWith('radial-gradient'))) {
+                    bannerInput.value = '';
+                }
+                updateLivePreview();
+            }
+        }
+
+        function syncGradientColor(num, val) {
+            const hexInput = document.getElementById(`gradient-hex-${num}`);
+            if (hexInput) hexInput.value = val;
+            applyGradientToCard();
+        }
+
+        function syncGradientHex(num, val) {
+            if (!val.startsWith('#') && (val.length === 3 || val.length === 6)) {
+                val = '#' + val;
+            }
+            const colorInput = document.getElementById(`gradient-color-${num}`);
+            if (colorInput && /^#[0-9A-Fa-f]{6}$/.test(val)) {
+                colorInput.value = val;
+            }
+            applyGradientToCard();
+        }
+
+        function setGradientPreset(c1, c2) {
+            const col1 = document.getElementById('gradient-color-1');
+            const hex1 = document.getElementById('gradient-hex-1');
+            const col2 = document.getElementById('gradient-color-2');
+            const hex2 = document.getElementById('gradient-hex-2');
+            if (col1) col1.value = c1;
+            if (hex1) hex1.value = c1;
+            if (col2) col2.value = c2;
+            if (hex2) hex2.value = c2;
+            applyGradientToCard();
+        }
+
+        function generateGradientCss(c1, c2, dir) {
+            switch (dir) {
+                case 'expand-center':
+                    return `radial-gradient(circle at center, ${c1} 0%, ${c2} 100%)`;
+                case 'edges-in':
+                    return `radial-gradient(circle at center, ${c2} 0%, ${c1} 100%)`;
+                case 'to-bottom':
+                    return `linear-gradient(to bottom, ${c1}, ${c2})`;
+                case 'to-top':
+                    return `linear-gradient(to top, ${c1}, ${c2})`;
+                case 'to-right':
+                    return `linear-gradient(to right, ${c1}, ${c2})`;
+                case 'to-left':
+                    return `linear-gradient(to left, ${c1}, ${c2})`;
+                case 'to-bottom-right':
+                    return `linear-gradient(135deg, ${c1}, ${c2})`;
+                case 'to-top-right':
+                    return `linear-gradient(45deg, ${c1}, ${c2})`;
+                default:
+                    return `linear-gradient(to bottom, ${c1}, ${c2})`;
+            }
+        }
+
+        function applyGradientToCard() {
+            const c1 = document.getElementById('gradient-color-1')?.value || '#7c3aed';
+            const c2 = document.getElementById('gradient-color-2')?.value || '#2563eb';
+            const dir = document.getElementById('gradient-direction')?.value || 'to-bottom';
+            const grad = generateGradientCss(c1, c2, dir);
+
+            const bannerInput = document.getElementById('edit-banner-url');
+            if (bannerInput) {
+                bannerInput.value = grad;
+            }
+            updateLivePreview();
+        }
+
+        function parseGradientToInputs(gradStr) {
+            if (!gradStr) return false;
+            const s = gradStr.trim();
+            if (!s.startsWith('linear-gradient') && !s.startsWith('radial-gradient')) return false;
+
+            let dir = 'to-bottom';
+            if (s.includes('circle at center') && s.includes('0%')) {
+                dir = 'expand-center';
+            } else if (s.includes('circle at center')) {
+                dir = 'edges-in';
+            } else if (s.includes('to top')) {
+                dir = 'to-top';
+            } else if (s.includes('to right')) {
+                dir = 'to-right';
+            } else if (s.includes('to left')) {
+                dir = 'to-left';
+            } else if (s.includes('135deg')) {
+                dir = 'to-bottom-right';
+            } else if (s.includes('45deg')) {
+                dir = 'to-top-right';
+            }
+
+            const hexMatches = s.match(/#(?:[0-9a-fA-F]{3}){1,2}/g);
+            if (hexMatches && hexMatches.length >= 2) {
+                const c1 = hexMatches[0];
+                const c2 = hexMatches[1];
+                const col1 = document.getElementById('gradient-color-1');
+                const hex1 = document.getElementById('gradient-hex-1');
+                const col2 = document.getElementById('gradient-color-2');
+                const hex2 = document.getElementById('gradient-hex-2');
+                const dirEl = document.getElementById('gradient-direction');
+                if (col1) col1.value = c1;
+                if (hex1) hex1.value = c1;
+                if (col2) col2.value = c2;
+                if (hex2) hex2.value = c2;
+                if (dirEl) dirEl.value = dir;
+            }
+            return true;
+        }
+
+        function applyCardBackground(el, banner) {
+            if (!el) return;
+            if (!banner || !banner.trim()) {
+                el.classList.remove('has-custom-bg');
+                el.style.backgroundImage = '';
+                el.style.removeProperty('background');
+                return;
+            }
+            const b = banner.trim();
+            el.classList.add('has-custom-bg');
+            if (b.startsWith('linear-gradient') || b.startsWith('radial-gradient')) {
+                el.style.setProperty('background', b, 'important');
+            } else {
+                const clean = b.replace(/^url\(["']?|["']?\)$/g, '');
+                el.style.setProperty('background', `linear-gradient(180deg, rgba(10, 12, 22, 0.55) 0%, rgba(10, 12, 22, 0.82) 100%), url('${clean}') center/cover no-repeat`, 'important');
+            }
+        }
+
         function resetCardBackground() {
             const bannerInput = document.getElementById('edit-banner-url');
             if (bannerInput) bannerInput.value = '';
@@ -2093,6 +2343,9 @@
             if (nameEl) {
                 nameEl.style.display = 'none';
                 nameEl.textContent = '';
+            }
+            if (currentBgMode === 'gradient') {
+                switchBgMode('image');
             }
             updateLivePreview();
         }
@@ -2156,10 +2409,9 @@
             const roleClass = currentStaffCard.roleClass || 'member';
             const roleName = currentStaffCard.role || 'Staff Member';
             const hasBg = !!bannerUrl;
-            const bgStyle = hasBg ? `background-image: url('${bannerUrl}');` : '';
 
             wrap.innerHTML = `
-                <article class="team-card ${hasBg ? 'has-custom-bg' : ''}" style="${bgStyle} box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2) !important;">
+                <article id="live-preview-card" class="team-card ${hasBg ? 'has-custom-bg' : ''}" style="box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2) !important;">
                     <div class="card-top">
                         <div class="avatar-wrap">
                             <img class="avatar-img" src="${avatarUrl}" alt="${name}" onerror="this.onerror=null; this.src='nora.png';">
@@ -2177,6 +2429,11 @@
                     ${renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, !showDiscord)}
                 </article>
             `;
+
+            const previewCard = document.getElementById('live-preview-card');
+            if (previewCard && hasBg) {
+                applyCardBackground(previewCard, bannerUrl);
+            }
         }
 
         function useDiscordAvatar() {
@@ -2322,13 +2579,7 @@
 
                             // Banner styling
                             const finalBanner = data.card?.banner || payload.banner;
-                            if (finalBanner) {
-                                myCardEl.classList.add('has-custom-bg');
-                                myCardEl.style.backgroundImage = `url('${finalBanner}')`;
-                            } else {
-                                myCardEl.classList.remove('has-custom-bg');
-                                myCardEl.style.backgroundImage = '';
-                            }
+                            applyCardBackground(myCardEl, finalBanner);
 
                             // Social links
                             const linksHtml = renderSocialButtonsHtml(payload.links, myId, hideDiscord);
@@ -2415,6 +2666,17 @@
                     if (document.getElementById('edit-display-name')) document.getElementById('edit-display-name').value = card.displayName || '';
                     if (document.getElementById('edit-avatar-url')) document.getElementById('edit-avatar-url').value = card.image || '';
                     if (document.getElementById('edit-banner-url')) document.getElementById('edit-banner-url').value = card.banner || '';
+
+                    if (card.banner) {
+                        if (card.banner.startsWith('linear-gradient') || card.banner.startsWith('radial-gradient')) {
+                            switchBgMode('gradient');
+                            parseGradientToInputs(card.banner);
+                        } else {
+                            switchBgMode('image');
+                        }
+                    } else {
+                        switchBgMode('image');
+                    }
                     if (document.getElementById('edit-bio')) document.getElementById('edit-bio').value = card.description || '';
 
                     if (card.links) {
@@ -2480,6 +2742,8 @@
                                 const localOverride = localStorage.getItem('nora_team_override_' + m.id);
                                 if (localOverride) {
                                     const parsed = JSON.parse(localOverride);
+                                    delete parsed.image;
+                                    delete parsed.username;
                                     m = { ...m, ...parsed };
                                 }
                             } catch(e) {}
@@ -2488,11 +2752,11 @@
 
                             const card = document.createElement('article');
                             card.className = 'team-card' + (m.banner ? ' has-custom-bg' : '');
-                            if (m.banner) {
-                                card.style.backgroundImage = `url('${m.banner}')`;
-                            }
                             card.setAttribute('data-user', m.id);
                             if (m.username) card.id = m.username.replace(/[^a-zA-Z0-9_]/g, '');
+                            if (m.banner) {
+                                applyCardBackground(card, m.banner);
+                            }
 
                             const avatarSrc = m.image || 'nora.png';
                             const roleClass = m.roleClass || 'member';
@@ -2538,7 +2802,6 @@
         function attachLanyardAndTilt() {
             document.querySelectorAll('.team-card').forEach(card => {
                 const userId = card.getAttribute('data-user');
-                const img = card.querySelector('.avatar-img');
                 const badgeContainer = card.querySelector('.discord-badges');
                 const joinDateContainer = card.querySelector('.member-join-date');
                 const statusDot = card.querySelector('.status-dot');
@@ -2558,15 +2821,6 @@
                     .then(res => {
                         if (res.success && res.data) {
                             const user = res.data.discord_user;
-                            const isAnimated = user.avatar && user.avatar.startsWith('a_');
-                            const liveUrl = user.avatar
-                                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`
-                                : null;
-
-                            // Only fallback to live Lanyard avatar if the image is default or broken
-                            if (liveUrl && (img.src.includes('nora.png') || !img.src || img.src.includes('default'))) {
-                                img.src = liveUrl;
-                            }
 
                             if (badgeContainer && user.public_flags !== undefined) {
                                 badgeContainer.innerHTML = getBadges(user.public_flags);
