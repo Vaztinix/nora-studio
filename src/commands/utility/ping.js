@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, PermissionFlagsBits } = require('discord.js');
 const sequelize = require('../../database/db');
 
 module.exports = {
@@ -12,7 +12,7 @@ module.exports = {
 
     async execute(interaction) {
         const start = Date.now();
-        const wsPing = Math.max(1, Math.round(interaction.client.ws.ping || 20));
+        const wsPing = Math.max(1, Math.round(interaction.client.ws?.ping || 20));
 
         // Measure database query speed
         let dbLatency = 0;
@@ -24,26 +24,38 @@ module.exports = {
             dbLatency = -1;
         }
 
-        const buildEmbed = (apiRoundtrip, currentWs, currentDb) => {
+        // Check if the bot has permission to send embeds in the channel
+        const botMember = interaction.guild?.members?.me || (interaction.guild ? interaction.guild.members.cache.get(interaction.client.user?.id) : null);
+        const hasEmbedPerms = !interaction.guild || !interaction.channel?.permissionsFor || Boolean(interaction.channel.permissionsFor(botMember)?.has(PermissionFlagsBits.EmbedLinks));
+
+        const buildResponse = (apiRoundtrip, currentWs, currentDb) => {
             const mem = process.memoryUsage();
             const heapMB = (mem.heapUsed / 1024 / 1024).toFixed(1);
-            const totalGuilds = interaction.client.guilds.cache.size;
+            const totalGuilds = interaction.client.guilds?.cache?.size || 1;
 
             let qualityText = 'Operational';
             let qualityColor = 0x5865F2;
+            let qualityEmoji = '🟢';
 
             if (currentWs > 250 || apiRoundtrip > 350) {
                 qualityText = 'High Latency';
                 qualityColor = 0xED4245;
+                qualityEmoji = '🔴';
             } else if (currentWs > 120 || apiRoundtrip > 200) {
                 qualityText = 'Moderate';
                 qualityColor = 0xFEE75C;
+                qualityEmoji = '🟡';
             }
 
-            return new EmbedBuilder()
+            const dbFormatted = currentDb >= 0 ? `${currentDb}ms` : 'Unavailable';
+            const summaryText = `${qualityEmoji} 🏓 **Pong!** Gateway: \`${currentWs}ms\` • REST API: \`${apiRoundtrip}ms\` • Database: \`${dbFormatted}\``;
+
+            const userTag = interaction.user?.tag || interaction.user?.username || 'User';
+
+            const embed = new EmbedBuilder()
                 .setAuthor({ 
                     name: 'Nora Network Diagnostics', 
-                    iconURL: interaction.client.user.displayAvatarURL() 
+                    iconURL: interaction.client.user?.displayAvatarURL?.() || null
                 })
                 .setTitle('Latency & System Health')
                 .setColor(qualityColor)
@@ -80,8 +92,20 @@ module.exports = {
                         inline: true 
                     }
                 )
-                .setFooter({ text: `Requested by ${interaction.user.tag}` })
+                .setFooter({ text: `Requested by ${userTag}` })
                 .setTimestamp();
+
+            if (!hasEmbedPerms) {
+                const fallbackContent = 
+                    `${summaryText}\n\n` +
+                    `• **Memory:** \`${heapMB} MB\` (Heap Used)\n` +
+                    `• **Active Servers:** \`${totalGuilds}\` on Shard 0\n` +
+                    `• **Uptime:** <t:${Math.floor((Date.now() - (process.uptime() * 1000)) / 1000)}:R>\n\n` +
+                    `⚠️ *Note: Grant Nora the **Embed Links** permission in this channel to render the full diagnostics card.*`;
+                return { content: fallbackContent, embeds: [] };
+            }
+
+            return { content: summaryText, embeds: [embed] };
         };
 
         const buttons = new ActionRowBuilder().addComponents(
@@ -98,60 +122,63 @@ module.exports = {
         let initialReply;
         if (interaction.deferred || interaction.replied) {
             initialReply = await interaction.editReply({ 
-                content: 'Measuring latency...', 
+                content: '🏓 Measuring latency...', 
                 fetchReply: true 
             });
         } else {
             initialReply = await interaction.reply({ 
-                content: 'Measuring latency...', 
+                content: '🏓 Measuring latency...', 
                 fetchReply: true 
             });
         }
 
         const apiRoundtrip = Math.max(1, Date.now() - start);
-        const embed = buildEmbed(apiRoundtrip, wsPing, dbLatency);
+        const responseData = buildResponse(apiRoundtrip, wsPing, dbLatency);
 
         const responseMsg = await interaction.editReply({
-            content: null,
-            embeds: [embed],
+            content: responseData.content,
+            embeds: responseData.embeds,
             components: [buttons]
         });
 
         // Interactive collector for instant refresh
-        const collector = responseMsg.createMessageComponentCollector({
-            componentType: ComponentType.Button,
-            time: 60000
-        });
+        if (responseMsg && typeof responseMsg.createMessageComponentCollector === 'function') {
+            const collector = responseMsg.createMessageComponentCollector({
+                componentType: ComponentType.Button,
+                time: 60000
+            });
 
-        collector.on('collect', async (btnInt) => {
-            if (btnInt.customId === 'btn_ping_refresh') {
-                const refreshStart = Date.now();
-                await btnInt.deferUpdate();
+            collector.on('collect', async (btnInt) => {
+                if (btnInt.customId === 'btn_ping_refresh') {
+                    const refreshStart = Date.now();
+                    await btnInt.deferUpdate().catch(() => {});
 
-                let newDb = 0;
-                try {
-                    const dStart = Date.now();
-                    await sequelize.query('SELECT 1+1 AS result;');
-                    newDb = Date.now() - dStart;
-                } catch (e) {
-                    newDb = -1;
+                    let newDb = 0;
+                    try {
+                        const dStart = Date.now();
+                        await sequelize.query('SELECT 1+1 AS result;');
+                        newDb = Date.now() - dStart;
+                    } catch (e) {
+                        newDb = -1;
+                    }
+
+                    const newWs = Math.max(1, Math.round(interaction.client.ws?.ping || 20));
+                    const newRoundtrip = Math.max(1, Date.now() - refreshStart);
+                    const freshData = buildResponse(newRoundtrip, newWs, newDb);
+
+                    await interaction.editReply({
+                        content: freshData.content,
+                        embeds: freshData.embeds,
+                        components: [buttons]
+                    }).catch(() => {});
                 }
+            });
 
-                const newWs = Math.max(1, Math.round(interaction.client.ws.ping || 20));
-                const newRoundtrip = Math.max(1, Date.now() - refreshStart);
-                const updatedEmbed = buildEmbed(newRoundtrip, newWs, newDb);
-
-                await interaction.editReply({
-                    embeds: [updatedEmbed],
-                    components: [buttons]
-                });
-            }
-        });
-
-        collector.on('end', async () => {
-            const disabledButtons = ActionRowBuilder.from(buttons);
-            disabledButtons.components[0].setDisabled(true);
-            await interaction.editReply({ components: [disabledButtons] }).catch(() => {});
-        });
+            collector.on('end', async () => {
+                const disabledButtons = ActionRowBuilder.from(buttons);
+                disabledButtons.components[0].setDisabled(true);
+                await interaction.editReply({ components: [disabledButtons] }).catch(() => {});
+            });
+        }
     }
 };
