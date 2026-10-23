@@ -357,18 +357,26 @@ module.exports = {
                 const { parseRoleIds } = require('../../utils/roleUtils');
                 const currentRoles = parseRoleIds(settings.welcomeRoleId);
 
+                const welcomeTypeLabel = settings.welcomeType === 'text' ? '💬 Normal Text' : (settings.welcomeType === 'embed' ? '📑 Rich Embed' : '🖼️ Liquid Glass Card');
+                const goodbyeTypeLabel = settings.goodbyeType === 'text' ? '💬 Normal Text' : (settings.goodbyeType === 'embed' ? '📑 Rich Embed' : '🖼️ Liquid Glass Card');
+
+                const welcomeBtnLabel = settings.welcomeType === 'text' ? 'Join: 💬 Text' : (settings.welcomeType === 'embed' ? 'Join: 📑 Embed' : 'Join: 🖼️ Image');
+                const goodbyeBtnLabel = settings.goodbyeType === 'text' ? 'Exit: 💬 Text' : (settings.goodbyeType === 'embed' ? 'Exit: 📑 Embed' : 'Exit: 🖼️ Image');
+
                 embed.setTitle('Welcomer & Goodbye Configuration Suite')
                     .setDescription(
-                        `Configure dedicated welcome cards, goodbye announcements, and join auto-roles.\n` +
-                        `Welcomer (Joins) and Goodbye (Leaves) can be broadcast to distinct channels.`
+                        `Configure dedicated welcome cards, goodbye announcements, delivery formats, and auto-roles.\n` +
+                        `Choose between **Liquid Glass Image Cards**, **Rich Embeds**, or **Normal Text Messages**.`
                     )
                     .addFields(
                         { name: 'Welcome System', value: settings.welcomerEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Welcome Format', value: `**${welcomeTypeLabel}**`, inline: true },
                         { name: 'Welcome Channel', value: settings.welcomeChannelId ? `<#${settings.welcomeChannelId}>` : '*None*', inline: true },
-                        { name: 'Join DM Alert', value: settings.welcomeDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: 'Goodbye System', value: settings.goodbyeEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Goodbye Format', value: `**${goodbyeTypeLabel}**`, inline: true },
                         { name: 'Goodbye Channel', value: settings.goodbyeChannelId ? `<#${settings.goodbyeChannelId}>` : (settings.welcomeChannelId ? `<#${settings.welcomeChannelId}> *(Fallback)*` : '*None*'), inline: true },
-                        { name: 'Goodbye DM Alert', value: settings.goodbyeDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Join DM Alert', value: settings.welcomeDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
+                        { name: 'Leave DM Alert', value: settings.goodbyeDmEnabled ? '**Enabled**' : '**Disabled**', inline: true },
                         { name: `Starter Auto-Roles (${currentRoles.length}/${maxAutoRoles})`, value: currentRoles.length > 0 ? currentRoles.map(id => `<@&${id}>`).join(' ') : '*None*', inline: true },
                         { name: 'Quarantine Role', value: settings.unverifiedRoleId ? `<@&${settings.unverifiedRoleId}>` : '*None*', inline: true },
                         { name: 'Tier Status', value: isPremium ? '**Studio Plus (5 Roles Max)**' : '**Free Tier (3 Roles Max)**', inline: true }
@@ -376,9 +384,10 @@ module.exports = {
 
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_welcomer_toggle').setLabel(settings.welcomerEnabled ? 'Disable Welcome' : 'Enable Welcome').setStyle(settings.welcomerEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_welcomedm_toggle').setLabel(settings.welcomeDmEnabled ? 'Disable Join DM' : 'Enable Join DM').setStyle(settings.welcomeDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_welcome_format').setLabel(welcomeBtnLabel).setStyle(ButtonStyle.Primary),
                     new ButtonBuilder().setCustomId('action_goodbye_toggle').setLabel(settings.goodbyeEnabled ? 'Disable Goodbye' : 'Enable Goodbye').setStyle(settings.goodbyeEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_goodbyedm_toggle').setLabel(settings.goodbyeDmEnabled ? 'Disable Leave DM' : 'Enable Leave DM').setStyle(settings.goodbyeDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                    new ButtonBuilder().setCustomId('action_goodbye_format').setLabel(goodbyeBtnLabel).setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('action_welcomedm_toggle').setLabel(settings.welcomeDmEnabled ? 'Join DM: ON' : 'Join DM: OFF').setStyle(settings.welcomeDmEnabled ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
@@ -1302,9 +1311,23 @@ module.exports = {
 
                 // Welcomer, Goodbye & Auto-Roles
                 if (i.customId === 'action_welcomer_toggle') { settings.welcomerEnabled = !settings.welcomerEnabled; update = true; }
+                if (i.customId === 'action_welcome_format') {
+                    const formats = ['image', 'embed', 'text'];
+                    const cur = settings.welcomeType || 'image';
+                    const nextIdx = (formats.indexOf(cur) + 1) % formats.length;
+                    settings.welcomeType = formats[nextIdx];
+                    update = true;
+                }
                 if (i.customId === 'action_welcomedm_toggle') { settings.welcomeDmEnabled = !settings.welcomeDmEnabled; update = true; }
                 if (i.customId === 'action_welcome_channel') { settings.welcomeChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_goodbye_toggle') { settings.goodbyeEnabled = !settings.goodbyeEnabled; update = true; }
+                if (i.customId === 'action_goodbye_format') {
+                    const formats = ['image', 'embed', 'text'];
+                    const cur = settings.goodbyeType || 'image';
+                    const nextIdx = (formats.indexOf(cur) + 1) % formats.length;
+                    settings.goodbyeType = formats[nextIdx];
+                    update = true;
+                }
                 if (i.customId === 'action_goodbyedm_toggle') { settings.goodbyeDmEnabled = !settings.goodbyeDmEnabled; update = true; }
                 if (i.customId === 'action_goodbye_channel') { settings.goodbyeChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_welcome_role') {

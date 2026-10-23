@@ -1,7 +1,8 @@
-const { Events, EmbedBuilder } = require('discord.js');
+const { Events, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const { formatMessage } = require('../utils/messageFormatter');
 const activityTracker = require('../utils/activityTracker');
+const { generateWelcomeCard } = require('../utils/welcomeCardGenerator');
 
 module.exports = {
     name: Events.GuildMemberRemove,
@@ -57,21 +58,63 @@ module.exports = {
             const goodbyeChannelTargetId = settings.goodbyeChannelId || settings.welcomeChannelId;
             const template = settings.goodbyeMessage || settings.logLeaveMessage;
             const desc = template ? formatMessage(template, member) : `<@${member.id}> has left the server. See you later!`;
+            const goodbyeFormat = settings.goodbyeType || 'image';
 
             if (isGoodbyeActive && goodbyeChannelTargetId) {
                 let goodbyeChannel = member.guild.channels.cache.get(goodbyeChannelTargetId);
                 if (!goodbyeChannel) goodbyeChannel = await member.guild.channels.fetch(goodbyeChannelTargetId).catch(() => null);
                 
                 if (goodbyeChannel) {
-                    const embed = new EmbedBuilder()
-                        .setTitle(`Goodbye from ${member.guild.name}`)
-                        .setDescription(desc)
-                        .setColor(0x57acf2)
-                        .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
-                        .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
-                        .setTimestamp();
+                    if (goodbyeFormat === 'image') {
+                        try {
+                            const cardBuffer = await generateWelcomeCard({
+                                member,
+                                guild: member.guild,
+                                isExit: true,
+                                customMessage: template ? formatMessage(template, member) : null,
+                                customAccent: settings.goodbyeCardAccentColor,
+                                customBgUrl: settings.goodbyeCardBgUrl,
+                                memberCount: member.guild.memberCount
+                            });
+                            const attachment = new AttachmentBuilder(cardBuffer, { name: 'goodbye-card.png' });
+                            await goodbyeChannel.send({ content: desc, files: [attachment] }).catch(async (sendErr) => {
+                                console.error(`[Goodbye Error] Could not send exit card: ${sendErr.message}, falling back to embed...`);
+                                const fallbackEmbed = new EmbedBuilder()
+                                    .setTitle(`Goodbye from ${member.guild.name}`)
+                                    .setDescription(desc)
+                                    .setColor(0x57acf2)
+                                    .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+                                    .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
+                                    .setTimestamp();
+                                await goodbyeChannel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+                            });
+                        } catch (cardErr) {
+                            console.error('[Goodbye Error] Liquid glass exit card generation failed, falling back to embed:', cardErr.message);
+                            const fallbackEmbed = new EmbedBuilder()
+                                .setTitle(`Goodbye from ${member.guild.name}`)
+                                .setDescription(desc)
+                                .setColor(0x57acf2)
+                                .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+                                .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
+                                .setTimestamp();
+                            await goodbyeChannel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+                        }
+                    } else if (goodbyeFormat === 'text') {
+                        await goodbyeChannel.send({ content: desc }).catch((err) => {
+                            console.error(`[Goodbye Error] Could not send goodbye text in channel ${goodbyeChannelTargetId}:`, err.message);
+                        });
+                    } else {
+                        // Embed format
+                        const embed = new EmbedBuilder()
+                            .setTitle(`Goodbye from ${member.guild.name}`)
+                            .setDescription(desc)
+                            .setColor(0x57acf2)
+                            .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+                            .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
+                            .setTimestamp();
 
-                    await goodbyeChannel.send({ embeds: [embed] }).catch(() => {});
+                        await goodbyeChannel.send({ embeds: [embed] }).catch(() => {});
+                    }
                 }
             }
 

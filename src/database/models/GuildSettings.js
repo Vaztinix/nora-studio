@@ -35,6 +35,20 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    welcomeType: {
+        type: DataTypes.STRING,
+        defaultValue: 'image' // 'image' (Liquid Glass Card), 'embed' (Discord Embed), 'text' (Normal Message)
+    },
+    welcomeCardAccentColor: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    welcomeCardBgUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
     // ---- Goodbye / Member Leave Announcement System ----
     goodbyeEnabled: {
         type: DataTypes.BOOLEAN,
@@ -51,6 +65,20 @@ const GuildSettings = sequelize.define('GuildSettings', {
     goodbyeUseEmbed: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+    },
+    goodbyeType: {
+        type: DataTypes.STRING,
+        defaultValue: 'image' // 'image' (Liquid Glass Card), 'embed' (Discord Embed), 'text' (Normal Message)
+    },
+    goodbyeCardAccentColor: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    goodbyeCardBgUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
     },
     goodbyeDmEnabled: {
         type: DataTypes.BOOLEAN,

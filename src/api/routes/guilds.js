@@ -1333,20 +1333,61 @@ router.post('/action', async (req, res) => {
                 .replace(/\{membercount\}/g, String(guild.memberCount || 1))
                 .replace(/\{created_ago\}/g, 'Just now');
 
-            const { EmbedBuilder } = require('discord.js');
-            const testEmbed = new EmbedBuilder()
-                .setTitle(`👋 Welcome to ${guild.name}!`)
-                .setDescription(welcomeText)
-                .setColor('#10B981')
-                .setThumbnail(user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : req.client.user.displayAvatarURL())
-                .setFooter({ text: '🧪 Simulated Test Welcome • Nora Welcomer Hub' })
-                .setTimestamp();
+            const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+            const { generateWelcomeCard } = require('../../utils/welcomeCardGenerator');
+            const welcomeFormat = settings?.welcomeType || 'image';
 
-            await channel.send({ embeds: [testEmbed] }).catch(err => {
-                throw new Error(`Failed to send message to #${channel.name}: ${err.message}`);
-            });
+            if (welcomeFormat === 'image') {
+                try {
+                    const cardBuffer = await generateWelcomeCard({
+                        member: {
+                            user: {
+                                id: user?.id || req.client.user.id,
+                                username: user?.username || 'NewMember',
+                                displayName: user?.global_name || user?.username || 'New Member',
+                                avatar: user?.avatar || null,
+                                displayAvatarURL: () => user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256` : req.client.user.displayAvatarURL()
+                            }
+                        },
+                        guild,
+                        isExit: false,
+                        customMessage: rawTemplate ? welcomeText : null,
+                        customAccent: settings?.welcomeCardAccentColor,
+                        customBgUrl: settings?.welcomeCardBgUrl,
+                        memberCount: guild.memberCount || 1
+                    });
+                    const attachment = new AttachmentBuilder(cardBuffer, { name: 'welcome-card.png' });
+                    await channel.send({ content: welcomeText, files: [attachment] });
+                } catch (cardErr) {
+                    console.error('[Test Welcome Error] Card generation failed, falling back to embed:', cardErr.message);
+                    const testEmbed = new EmbedBuilder()
+                        .setTitle(`👋 Welcome to ${guild.name}!`)
+                        .setDescription(welcomeText)
+                        .setColor('#10B981')
+                        .setThumbnail(user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : req.client.user.displayAvatarURL())
+                        .setFooter({ text: '🧪 Simulated Test Welcome • Nora Welcomer Hub' })
+                        .setTimestamp();
+                    await channel.send({ embeds: [testEmbed] });
+                }
+            } else if (welcomeFormat === 'text') {
+                await channel.send({ content: welcomeText }).catch(err => {
+                    throw new Error(`Failed to send message to #${channel.name}: ${err.message}`);
+                });
+            } else {
+                const testEmbed = new EmbedBuilder()
+                    .setTitle(`👋 Welcome to ${guild.name}!`)
+                    .setDescription(welcomeText)
+                    .setColor('#10B981')
+                    .setThumbnail(user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : req.client.user.displayAvatarURL())
+                    .setFooter({ text: '🧪 Simulated Test Welcome • Nora Welcomer Hub' })
+                    .setTimestamp();
 
-            return res.json({ success: true, message: `Test welcome message sent to #${channel.name}!` });
+                await channel.send({ embeds: [testEmbed] }).catch(err => {
+                    throw new Error(`Failed to send message to #${channel.name}: ${err.message}`);
+                });
+            }
+
+            return res.json({ success: true, message: `Test welcome (${welcomeFormat.toUpperCase()}) sent to #${channel.name}!` });
         }
 
 

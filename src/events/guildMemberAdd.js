@@ -1,7 +1,8 @@
-const { Events, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { Events, EmbedBuilder, PermissionFlagsBits, AttachmentBuilder } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const { formatMessage } = require('../utils/messageFormatter');
 const activityTracker = require('../utils/activityTracker');
+const { generateWelcomeCard } = require('../utils/welcomeCardGenerator');
 
 // In-memory Join Tracker for Anti-Raid
 const joinLog = new Map();
@@ -306,22 +307,64 @@ module.exports = {
             const isWelcomerActive = settings.welcomerEnabled === true || settings.welcomerEnabled === 1 || settings.welcomerEnabled === 'true' || settings.welcomerEnabled === '1';
             const welcomeTemplate = settings.welcomeMessage || settings.logJoinMessage;
             const welcomeDesc = welcomeTemplate ? formatMessage(welcomeTemplate, member) : `Welcome, <@${member.id}>! We're glad you're here!`;
+            const welcomeFormat = settings.welcomeType || 'image';
 
             if (isWelcomerActive && settings.welcomeChannelId) {
                 let welcomeChannel = member.guild.channels.cache.get(settings.welcomeChannelId);
                 if (!welcomeChannel) welcomeChannel = await member.guild.channels.fetch(settings.welcomeChannelId).catch(() => null);
 
                 if (welcomeChannel) {
-                    const embed = new EmbedBuilder()
-                        .setTitle(`Welcome to ${member.guild.name}!`)
-                        .setDescription(welcomeDesc)
-                        .setColor(0xffffff) // Pure white theme for Nora Studio
-                        .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
-                        .setFooter({ text: `Member #${member.guild.memberCount}` })
-                        .setTimestamp();
-                    await welcomeChannel.send({ embeds: [embed] }).catch((err) => {
-                        console.error(`[Welcomer Error] Could not send welcome message in channel ${settings.welcomeChannelId}:`, err.message);
-                    });
+                    if (welcomeFormat === 'image') {
+                        try {
+                            const cardBuffer = await generateWelcomeCard({
+                                member,
+                                guild: member.guild,
+                                isExit: false,
+                                customMessage: welcomeTemplate ? formatMessage(welcomeTemplate, member) : null,
+                                customAccent: settings.welcomeCardAccentColor,
+                                customBgUrl: settings.welcomeCardBgUrl,
+                                memberCount: member.guild.memberCount
+                            });
+                            const attachment = new AttachmentBuilder(cardBuffer, { name: 'welcome-card.png' });
+                            await welcomeChannel.send({ content: welcomeDesc, files: [attachment] }).catch(async (sendErr) => {
+                                console.error(`[Welcomer Error] Could not send image card: ${sendErr.message}, trying fallback embed...`);
+                                const fallbackEmbed = new EmbedBuilder()
+                                    .setTitle(`Welcome to ${member.guild.name}!`)
+                                    .setDescription(welcomeDesc)
+                                    .setColor(0xffffff)
+                                    .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+                                    .setFooter({ text: `Member #${member.guild.memberCount}` })
+                                    .setTimestamp();
+                                await welcomeChannel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+                            });
+                        } catch (cardErr) {
+                            console.error('[Welcomer Error] Liquid glass card generation failed, falling back to embed:', cardErr.message);
+                            const fallbackEmbed = new EmbedBuilder()
+                                .setTitle(`Welcome to ${member.guild.name}!`)
+                                .setDescription(welcomeDesc)
+                                .setColor(0xffffff)
+                                .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+                                .setFooter({ text: `Member #${member.guild.memberCount}` })
+                                .setTimestamp();
+                            await welcomeChannel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+                        }
+                    } else if (welcomeFormat === 'text') {
+                        await welcomeChannel.send({ content: welcomeDesc }).catch((err) => {
+                            console.error(`[Welcomer Error] Could not send welcome text in channel ${settings.welcomeChannelId}:`, err.message);
+                        });
+                    } else {
+                        // Embed format
+                        const embed = new EmbedBuilder()
+                            .setTitle(`Welcome to ${member.guild.name}!`)
+                            .setDescription(welcomeDesc)
+                            .setColor(0xffffff) // Pure white theme for Nora Studio
+                            .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+                            .setFooter({ text: `Member #${member.guild.memberCount}` })
+                            .setTimestamp();
+                        await welcomeChannel.send({ embeds: [embed] }).catch((err) => {
+                            console.error(`[Welcomer Error] Could not send welcome message in channel ${settings.welcomeChannelId}:`, err.message);
+                        });
+                    }
                 }
             }
 
