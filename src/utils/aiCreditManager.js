@@ -238,14 +238,24 @@ class AICreditManager {
 
         return {
             remaining: creditState.remaining,
+            creditsRemaining: creditState.remaining,
             used: creditState.used,
+            creditsUsedToday: creditState.used,
             dailyAllowance: creditState.dailyAllowance,
+            dailyLimit: creditState.dailyAllowance,
             rateLimitPerMinute: settings?.aiRateLimitPerMinute || creditState.rateLimitPerMinute || DEFAULT_RATE_LIMIT_PER_MINUTE,
             requestsThisMinute: rateCheck.current,
             activeModel: modelName,
             activeModelCost: cost,
             modelCosts: this.getModelCostBreakdown()
         };
+    }
+
+    /**
+     * Alias for getGuildCreditInfo consumed by /api/guilds/:guildId/analytics route
+     */
+    getGuildTelemetry(guildId, settings) {
+        return this.getGuildCreditInfo(guildId, settings);
     }
 }
 

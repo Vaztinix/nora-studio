@@ -6488,7 +6488,7 @@
                                 <span>Active Voice Members</span>
                                 <i class="fas fa-microphone" style="color: var(--primary);"></i>
                             </div>
-                            <h2 id="overview-voice-users" data-no-translate style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">0</h2>
+                            <h2 id="overview-voice-users" data-no-translate style="font-size: 2.2rem; font-weight: 800; color: white; margin: 0;">-</h2>
                         </div>
                         <div class="panel" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04);">
                             <div style="display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
@@ -11956,7 +11956,7 @@
                                             <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Voice Activity (7D)</span>
                                             <h2 id="analytics-voice-count" data-no-translate style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">...</h2>
                                         </div>
-                                        <span id="analytics-voice-status" style="font-size: 0.75rem; color: #ff8e3c; font-weight: 700; background: rgba(255, 142, 60, 0.15); padding: 6px 10px; border-radius: 8px;">-- active</span>
+                                        <span id="analytics-voice-status" style="font-size: 0.75rem; color: #ff8e3c; font-weight: 700; background: rgba(255, 142, 60, 0.15); padding: 6px 10px; border-radius: 8px;">-</span>
                                     </div>
                                     <!-- Active Communicators -->
                                     <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'; this.style.borderColor='rgba(155,93,229,0.2)';" onmouseout="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.03)';">
@@ -20521,81 +20521,65 @@
             }
         }
 
-        async function fetchAnalytics(force = false) {
+        async function fetchAnalytics(force = false, silent = false) {
             const cacheKey = currentServerId;
             if (!cacheKey) return;
             const now = Date.now();
+            const ANALYTICS_CACHE_TTL = 15000; // 15s cache TTL for real-time overview analytics
             let data;
             let hasStaleCache = false;
             
             if (!force && window.dashboardCache && window.dashboardCache.analytics && window.dashboardCache.analytics.has(cacheKey)) {
                 const entry = window.dashboardCache.analytics.get(cacheKey);
                 data = entry.data;
-                hasStaleCache = true;
-                if (now - entry.timestamp < CACHE_TTL) {
-                    // Cache is still fresh, skip network fetch entirely
-                } else {
-                    // Stale cache — render it now, then revalidate in background
-                    data = entry.data;
+                if (data && !data.error) {
+                    hasStaleCache = true;
+                    if (now - entry.timestamp < ANALYTICS_CACHE_TTL) {
+                        _renderAnalytics(data);
+                        return;
+                    }
                 }
             }
             
             if (hasStaleCache) {
-                // Render stale data immediately (no spinner) if not already rendered
+                // Render cached data immediately
+                _renderAnalytics(data);
                 const tabOverview = document.getElementById('tab-overview');
                 const tabMembers = document.getElementById('tab-members');
-                const shouldRender = force || 
-                                     (tabOverview && !tabOverview.dataset.rendered) || 
-                                     (tabMembers && !tabMembers.dataset.rendered);
-                if (shouldRender) {
-                    _renderAnalytics(data);
-                    if (tabOverview) tabOverview.dataset.rendered = "true";
-                    if (tabMembers) tabMembers.dataset.rendered = "true";
-                }
-                // Background revalidation if stale
-                const entry = window.dashboardCache.analytics.get(cacheKey);
-                if (force || now - entry.timestamp >= CACHE_TTL) {
-                    const t = sessionStorage.getItem('discord_token');
-                    fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/analytics`, {
-                        headers: { 'Authorization': `Bearer ${t}` }
-                    }).then(res => res.json()).then(freshData => {
-                        window.dashboardCache.analytics.set(cacheKey, { timestamp: Date.now(), data: freshData });
-                        _renderAnalytics(freshData);
-                        if (tabOverview) tabOverview.dataset.rendered = "true";
-                        if (tabMembers) tabMembers.dataset.rendered = "true";
-                    }).catch(e => console.warn('Background analytics refresh failed:', e));
-                }
-                return;
+                if (tabOverview) tabOverview.dataset.rendered = "true";
+                if (tabMembers) tabMembers.dataset.rendered = "true";
+            } else if (!silent && force === 'SPINNER') {
+                toggleLoading(true);
             }
             
-            // No cache at all — show spinner and fetch
-            toggleLoading(true);
             const t = sessionStorage.getItem('discord_token');
             try {
                 const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/analytics`, {
                     headers: { 'Authorization': `Bearer ${t}` }
                 });
-                data = await res.json();
-                if (window.dashboardCache && window.dashboardCache.analytics) {
-                    window.dashboardCache.analytics.set(cacheKey, { timestamp: now, data });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const freshData = await res.json();
+                if (freshData && !freshData.error) {
+                    if (window.dashboardCache && window.dashboardCache.analytics) {
+                        window.dashboardCache.analytics.set(cacheKey, { timestamp: Date.now(), data: freshData });
+                    }
+                    _renderAnalytics(freshData);
+                    const tabOverview = document.getElementById('tab-overview');
+                    const tabMembers = document.getElementById('tab-members');
+                    if (tabOverview) tabOverview.dataset.rendered = "true";
+                    if (tabMembers) tabMembers.dataset.rendered = "true";
                 }
             } catch (e) {
                 console.error('Analytics Error:', e);
-                logErrorToTerminal(`Analytics Error: ${e.message}`, 'ERROR', { stack: e.stack });
-                toggleLoading(false);
-                return;
             } finally {
-                toggleLoading(false);
+                if (!silent && force === 'SPINNER') {
+                    toggleLoading(false);
+                }
             }
-            _renderAnalytics(data);
-            const tabOverview = document.getElementById('tab-overview');
-            const tabMembers = document.getElementById('tab-members');
-            if (tabOverview) tabOverview.dataset.rendered = "true";
-            if (tabMembers) tabMembers.dataset.rendered = "true";
         }
 
         function _renderAnalytics(data) {
-            if (!data) return;
+            if (!data || data.error) return;
             try {
                 // Populate Overview tab metrics
                 const ovMembers = document.getElementById('overview-total-members');
@@ -20605,7 +20589,10 @@
 
                 if (ovMembers) ovMembers.textContent = (data.totalMembers || 0).toLocaleString();
                 if (ovMessages) ovMessages.textContent = (data.totalTextActivity || 0).toLocaleString();
-                if (ovVoice) ovVoice.textContent = (data.activeVoiceUsers || 0).toLocaleString();
+                if (ovVoice) {
+                    const vCount = Number(data.activeVoiceUsers) || 0;
+                    ovVoice.textContent = vCount > 0 ? vCount.toLocaleString() : '-';
+                }
                 if (ovMod) ovMod.textContent = (data.autoModActions || 0).toLocaleString();
 
                 // Populate Overview Real-Time Telemetry cards
@@ -20718,8 +20705,8 @@
                 
                 const voiceStatusEl = document.getElementById('analytics-voice-status');
                 if (voiceStatusEl) {
-                    const activeCount = data.activeVoiceUsers || 0;
-                    voiceStatusEl.textContent = activeCount + (activeCount === 1 ? ' active member' : ' active members');
+                    const activeCount = Number(data.activeVoiceUsers) || 0;
+                    voiceStatusEl.textContent = activeCount > 0 ? (activeCount + (activeCount === 1 ? ' active member' : ' active members')) : '-';
                     voiceStatusEl.style.color = activeCount > 0 ? 'var(--primary)' : 'var(--muted)';
                 }
 
@@ -28231,6 +28218,17 @@ document.addEventListener('keydown', (e) => {
     }
     syncStatus();
     setInterval(syncStatus, 30000);
+
+    // Continuous Live Telemetry Pulse for Overview (updates quietly every 10 seconds while viewing Overview)
+    setInterval(() => {
+        const viewConfig = document.getElementById('view-config');
+        const tabOverview = document.getElementById('tab-overview');
+        if (viewConfig && viewConfig.style.display !== 'none' && tabOverview && tabOverview.classList.contains('active') && currentServerId) {
+            if (typeof fetchAnalytics === 'function') {
+                fetchAnalytics(true, true);
+            }
+        }
+    }, 10000);
 })();
 // ─────────────────────────────────────────────────────────────────────────────
 // 🚀 TOP.GG OFFICIAL INTEGRATION CONTROLLERS & TELEMETRY

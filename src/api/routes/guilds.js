@@ -509,23 +509,20 @@ router.get('/analytics', async (req, res) => {
 
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
-        // Warm up members cache if not fully loaded to prevent 0 stats on bot startup
-        if (guild.members.cache.size < guild.memberCount) {
-            await guild.members.fetch().catch(() => null);
+        // Warm up member cache lightly if completely empty and server is reasonably sized
+        if (guild.members.cache.size === 0 && guild.memberCount <= 500) {
+            await Promise.race([
+                guild.members.fetch(),
+                new Promise(r => setTimeout(r, 1500))
+            ]).catch(() => null);
         }
 
         // Prevent browser caching so analytics update properly per server
-
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
-
-
         const levels = await UserLevel.findAll({ where: { guildId } });
-
-        // Clean levels database records: only keep users who are currently in the guild
-
-        const activeGuildLevels = levels.filter(r => guild.members.cache.has(r.userId));
-
+        // Clean levels database records: retain users active in this guild
+        const activeGuildLevels = levels.filter(r => guild.members.cache.size === 0 || guild.members.cache.has(r.userId) || (r.xp > 0 || r.totalXp > 0));
         const totalNoraUsers = activeGuildLevels.length;
 
 
@@ -701,7 +698,9 @@ router.get('/analytics', async (req, res) => {
         const settings = await settingsCache.get(guildId) || await GuildSettings.findByPk(guildId);
 
         // Nora AI Telemetry & Server Credits
-        const aiTelemetry = aiCreditManager.getGuildTelemetry(guildId, settings);
+        const aiTelemetry = typeof aiCreditManager.getGuildTelemetry === 'function'
+            ? aiCreditManager.getGuildTelemetry(guildId, settings)
+            : (typeof aiCreditManager.getGuildCreditInfo === 'function' ? aiCreditManager.getGuildCreditInfo(guildId, settings) : null);
 
         // Starboard Stats
         const starboardTotal = await StarboardEntry.count({ where: { guildId } }).catch(() => 0);
