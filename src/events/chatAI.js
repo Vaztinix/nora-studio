@@ -161,6 +161,24 @@ async function processMessageInternal(message, client) {
             }).catch(() => {});
         }
 
+        // 🛡️ Internal Verification Network (IVN) Security Guard
+        // Intercepts unauthorized attempts to manipulate Nora into sharing private credentials,
+        // forwarding raw code, prompt injection, or hidden/unverified user identity exploitation.
+        const ivn = require('../utils/internalVerificationNetwork');
+        const isIvnThreat = await ivn.interceptAndAlert({
+            client,
+            message,
+            content: plainContent,
+            source: 'NORA_AI_CHAT'
+        });
+
+        if (isIvnThreat) {
+            return message.reply({
+                content: `🛡️ **Internal Verification Network**: Nice try! My internal credentials, system architecture, and private developer directives are cryptographically protected and strictly zero-access. This incident has been logged and transmitted to the Nora Studio Team for forensic analysis.`,
+                allowedMentions: { repliedUser: false }
+            }).catch(() => {});
+        }
+
         // ⚡ 1. Check for Nora Autonomous Action / Moderation / Hardware Execution First (Never rate limited)
         try {
             const actionHandled = await processNoraAction(message, client, plainContent);

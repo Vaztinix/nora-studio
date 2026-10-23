@@ -51,7 +51,8 @@ const COMMAND_ALIASES = {
     'agesuspend': 'agesuspension',
     'suspension': 'agesuspension',
     'underage': 'agesuspension',
-    'tv': 'roku'
+    'tv': 'roku',
+    'ivn': 'ivn'
 };
 
 /**

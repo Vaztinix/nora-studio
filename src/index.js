@@ -362,6 +362,7 @@ require('./database/models/MemberRolesHistory');
 require('./database/models/Notification');
 require('./database/models/IpBan');
 require('./database/models/AfkUser');
+require('./database/models/InternalVerificationUser');
 
 const client = new Client({
     rest: {
@@ -2158,6 +2159,10 @@ const TEAM_MEMBERS_DIRECTORY = [
 function isRecognizedTeamMember(userId, prefs, discordClient) {
     if (!userId) return false;
     const uid = String(userId);
+    try {
+        const ivn = require('./utils/internalVerificationNetwork');
+        if (ivn.isTeamMember(uid)) return true;
+    } catch (_) {}
     if (TEAM_MEMBERS_DIRECTORY.some(m => m.id === uid)) return true;
     if (prefs && (prefs.isTeamMember || prefs.hasTeamCard)) return true;
     const APP_OWNER_IDS = [process.env.APP_OWNER_ID || '1214048435632603137', '1366229304257544213'];
