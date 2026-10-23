@@ -427,6 +427,8 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyBtnEmoji` VARCHAR(255) DEFAULT '🔒';"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verificationLogChannelId` VARCHAR(255) NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `countingTopCounterRoleId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `countingFailRoleId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `countingFailThreshold` INTEGER DEFAULT 1;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `starboardRoleRewards` TEXT DEFAULT '[]';"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `oneWordStoryAlwaysAutoStart` TINYINT(1) DEFAULT 0;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `afkRoleId` VARCHAR(255) NULL;"); } catch (e) { }

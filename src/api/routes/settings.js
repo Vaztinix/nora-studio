@@ -224,6 +224,14 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             payload.countingTopCounterRoleId = normalizeRoleIds(payload.countingTopCounterRoleId, 1);
         }
 
+        // Sanitize counting fail role & threshold
+        if (payload.countingFailRoleId !== undefined) {
+            payload.countingFailRoleId = normalizeRoleIds(payload.countingFailRoleId, 1);
+        }
+        if (payload.countingFailThreshold !== undefined) {
+            payload.countingFailThreshold = Math.max(1, parseInt(payload.countingFailThreshold, 10) || 1);
+        }
+
         // Sanitize AFK role
         if (payload.afkRoleId !== undefined) {
             payload.afkRoleId = normalizeRoleIds(payload.afkRoleId, 1);

@@ -67,6 +67,7 @@ function buildStatsEmbed(guild, data, settings) {
             { name: 'Total Server Resets', value: `**${totalResets}**`, inline: true },
             { name: 'Server MVP Counter', value: topCounterText, inline: true },
             { name: 'XP Reward Per Count', value: `**+${xpReward} XP**`, inline: true },
+            { name: 'Fail Role Penalty', value: settings?.countingFailRoleId ? `<@&${settings.countingFailRoleId}> (${settings.countingFailThreshold || 1} fail limit)` : '*Disabled*', inline: true },
             { name: 'Record Status', value: currentCount >= highScore && highScore > 0 ? '🏆 **Record Breaking!**' : `\`${Math.max(0, highScore - currentCount)}\` counts to beat record`, inline: true }
         )
         .setFooter({ text: 'Nora Counting Engine • Type n!counting or /counting for info' })
@@ -105,19 +106,23 @@ function buildRulesEmbed() {
             `Nora's Counting Game is a real-time collaborative chat game designed to test your server's coordination.\n\n` +
             `**1. Sequential Progression:**\n` +
             `• Start counting at **1** and increment by **1** with each message.\n` +
-            `• Messages with regular chat, greetings, or pure emojis are ignored without resetting the count.\n\n` +
+            `• Regular chat messages, greetings, or pure emojis are ignored without resetting the count.\n\n` +
             `**2. Alternating Counters:**\n` +
             `• **You cannot count twice in a row!** Another member must count next before you can count again.\n` +
-            `• Counting twice in a row or entering the wrong number resets the count to **0**.\n\n` +
-            `**3. Advanced Math Sandbox:**\n` +
-            `• Nora features a sandboxed mathematical equation parser.\n` +
-            `• You can submit expressions like \`5 + 5\`, \`10 * 3\`, \`50 / 2\`, \`(8 - 2) * 4\`, or \`2^4\`!\n\n` +
-            `**4. Reactions & Milestones:**\n` +
+            `• Counting twice in a row or entering the wrong number resets the count to **0** and wipes the offender's personal score.\n\n` +
+            `**3. Super Advanced Math Sandbox:**\n` +
+            `• Nora features an advanced mathematical AST parser supporting algebra, roots, powers, and trigonometry.\n` +
+            `• Examples: \`sqrt(144)\`, \`2^4\`, \`factorial(5)\`, \`sin(pi/2)*5\`, \`gcd(24, 36)\`, \`cbrt(27)\`, \`round(cos(0)*10)\`!\n\n` +
+            `**4. Markdown & Formatting Edits:**\n` +
+            `• **You may edit your messages for formatting** (bold, italics, underline, spoilers, code) as long as no numbers or letters are added, removed, or altered.\n\n` +
+            `**5. Fail Role Penalty:**\n` +
+            `• Server administrators can configure a **Fail Role** via \`/setup counting\` or \`/counting failrole\`. If a user fails the count a set number of times, they are automatically assigned the role (e.g. Counting Blacklist).\n\n` +
+            `**6. Reactions & Milestones:**\n` +
             `• ✅ **Green Checkmark:** Correct count progressing towards the record.\n` +
             `• ☑️ **Blue Checkmark:** **New Server Record!** (Exceeds all-time high score).\n` +
             `• 💯 **Century Milestone:** Milestone reaction for reaching 100, 200, 300, etc.\n` +
-            `• 🎉 **Milestone Announcement:** Nora celebrates counts like 50, 100, 500, and 1000 in chat.\n\n` +
-            `**5. XP Rewards:**\n` +
+            `• 🎉 **Milestone Announcement:** Nora celebrates milestones like 50, 100, 500, and 1000 in chat.\n\n` +
+            `**7. XP Rewards:**\n` +
             `• Every successful count awards leveling experience to boost your server rank.`
         )
         .setColor(0x57F287)
@@ -159,6 +164,23 @@ module.exports = {
                 .addStringOption(opt =>
                     opt.setName('reason')
                         .setDescription('Reason for the calibration')
+                        .setRequired(false)))
+        .addSubcommand(sub =>
+            sub.setName('failrole')
+                .setDescription('Configure role assigned to members who fail to count (Manage Server only).')
+                .addRoleOption(opt =>
+                    opt.setName('role')
+                        .setDescription('The role to assign upon failing (e.g. Counting Blacklist or Mute)')
+                        .setRequired(false))
+                .addIntegerOption(opt =>
+                    opt.setName('threshold')
+                        .setDescription('Number of count fails before role is assigned (default: 1)')
+                        .setMinValue(1)
+                        .setMaxValue(100)
+                        .setRequired(false))
+                .addBooleanOption(opt =>
+                    opt.setName('clear')
+                        .setDescription('Set to true to disable and remove the fail role')
                         .setRequired(false))),
 
     async execute(interaction) {
@@ -186,6 +208,62 @@ module.exports = {
 
             return await interaction.reply({
                 content: `✅ Counting channel updated to <#${targetChannel.id}>!\n• Current Count: **${data.currentCount || 0}**\n• Next Number: **${nextCount}**\n• Server Record: **${data.highScore || 0}**`,
+                allowedMentions: { repliedUser: false }
+            });
+        }
+
+        // Admin Subcommand: Fail Role Configuration
+        if (subcommand === 'failrole') {
+            if (!member.permissions.has(PermissionFlagsBits.ManageGuild) && !member.permissions.has(PermissionFlagsBits.Administrator)) {
+                return await interaction.reply({
+                    content: '⛔ You need the **Manage Server** permission to configure the counting fail role.',
+                    ephemeral: true
+                });
+            }
+
+            const targetRole = interaction.options.getRole('role');
+            const threshold = interaction.options.getInteger('threshold');
+            const clear = interaction.options.getBoolean('clear');
+            const settings = await settingsCache.get(guild.id) || {};
+
+            if (clear) {
+                settings.countingFailRoleId = null;
+                await settings.save();
+                settingsCache.invalidate(guild.id);
+                return await interaction.reply({
+                    content: '✅ Counting Fail Role has been **disabled**.',
+                    allowedMentions: { repliedUser: false }
+                });
+            }
+
+            if (!targetRole && threshold === null && threshold === undefined) {
+                return await interaction.reply({
+                    content: `ℹ️ **Current Counting Fail Role Settings:**\n` +
+                        `• **Assigned Role:** ${settings.countingFailRoleId ? `<@&${settings.countingFailRoleId}>` : '*None (Disabled)*'}\n` +
+                        `• **Failure Limit:** **${settings.countingFailThreshold || 1}** fail(s) before assignment\n\n` +
+                        `*Use \`/counting failrole role:@Role\` to set a role or \`/counting failrole clear:True\` to disable.*`,
+                    allowedMentions: { repliedUser: false }
+                });
+            }
+
+            if (targetRole) {
+                settings.countingFailRoleId = targetRole.id;
+            }
+            if (threshold !== null && threshold !== undefined) {
+                settings.countingFailThreshold = threshold;
+            }
+
+            await settings.save();
+            settingsCache.invalidate(guild.id);
+
+            const activeRoleId = settings.countingFailRoleId;
+            const activeThreshold = settings.countingFailThreshold || 1;
+
+            return await interaction.reply({
+                content: `✅ **Counting Fail Role Configured!**\n` +
+                    `• **Assigned Role:** ${activeRoleId ? `<@&${activeRoleId}>` : '*None configured*'}\n` +
+                    `• **Failure Limit:** **${activeThreshold}** fail(s) before assignment\n\n` +
+                    `*When a member fails to count ${activeThreshold} time(s), this role will be automatically assigned.*`,
                 allowedMentions: { repliedUser: false }
             });
         }

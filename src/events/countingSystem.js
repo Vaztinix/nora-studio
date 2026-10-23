@@ -78,7 +78,8 @@ async function getGuildCountingData(guildId) {
         highScoreDate: data.highScoreDate || null,
         totalCorrectCounts: data.totalCorrectCounts || 0,
         totalResets: data.totalResets || 0,
-        userCounts: data.userCounts || {}
+        userCounts: data.userCounts || {},
+        userFails: data.userFails || {}
     };
 }
 
@@ -106,6 +107,50 @@ async function safeReplyOrSend(message, payload) {
     }
 }
 
+/**
+ * Checks and applies the fail role if user exceeds the failure limit
+ */
+async function checkAndApplyFailRole(guild, member, userId, settings, guildData) {
+    guildData.userFails = guildData.userFails || {};
+    guildData.userFails[userId] = (guildData.userFails[userId] || 0) + 1;
+    const failCount = guildData.userFails[userId];
+    const threshold = settings?.countingFailThreshold || 1;
+
+    if (!settings?.countingFailRoleId || failCount < threshold) {
+        return { failCount, threshold, roleAssigned: false, notice: '' };
+    }
+
+    try {
+        const { PermissionFlagsBits } = require('discord.js');
+        const me = guild.members.me;
+        if (!me || !me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+            return { failCount, threshold, roleAssigned: false, notice: '' };
+        }
+
+        const failRoleId = String(settings.countingFailRoleId).replace(/[^0-9]/g, '');
+        const failRole = guild.roles.cache.get(failRoleId) || await guild.roles.fetch(failRoleId).catch(() => null);
+        if (!failRole || failRole.position >= me.roles.highest.position || failRole.managed) {
+            return { failCount, threshold, roleAssigned: false, notice: '' };
+        }
+
+        const targetMember = member || await guild.members.fetch(userId).catch(() => null);
+        if (targetMember && !targetMember.roles.cache.has(failRoleId)) {
+            await targetMember.roles.add(failRole, `Counting: Exceeded failure limit (${failCount}/${threshold} fails)`).catch(() => {});
+            return {
+                failCount,
+                threshold,
+                roleAssigned: true,
+                roleId: failRoleId,
+                notice: `\n⛔ <@${userId}> has reached **${failCount}** failed count(s) (Limit: **${threshold}**) and has been assigned the <@&${failRoleId}> role!`
+            };
+        }
+    } catch (e) {
+        console.error('[Counting Fail Role Error]:', e.message);
+    }
+
+    return { failCount, threshold, roleAssigned: false, notice: '' };
+}
+
 function sendCountingHelpEmbed(message, guildData) {
     const { EmbedBuilder } = require('discord.js');
     const currentCount = guildData ? (guildData.currentCount || 0) : 0;
@@ -119,8 +164,9 @@ function sendCountingHelpEmbed(message, guildData) {
             `**📖 Rules:**\n` +
             `• Count up sequentially starting from **1** (or current number **${nextNumber}**).\n` +
             `• **You cannot count twice in a row!** Another member must count next.\n` +
-            `• Mathematical expressions are supported (e.g., \`1+1\`, \`5*2\`, \`10-3\`).\n` +
-            `• Making a mistake or double-counting resets the count to **0**, but preserves your server's high score best!\n\n` +
+            `• Super advanced math is fully supported (e.g. \`sqrt(144)\`, \`2^4\`, \`factorial(5)\`, \`sin(pi/2)*5\`, \`gcd(24, 36)\`).\n` +
+            `• **Formatting edits are allowed!** You may edit your message to add bolding, italics, or spoilers as long as no numbers or letters are changed.\n` +
+            `• Making a mistake or double-counting resets the server count to **0** and wipes the offender's personal count!\n\n` +
             `**⭐ Checkmark & Milestone Reactions:**\n` +
             `• 💯 **100 Milestone**: Special reaction when hitting **100**!\n` +
             `• ✅ **Green Checkmark**: Valid count (working towards server record).\n` +
@@ -198,21 +244,17 @@ module.exports = {
             return sendCountingHelpEmbed(message, guildData);
         }
 
-        // 3. Evaluate expression using evaluateCountingInput
+        // Evaluate expression using sandboxed advanced math engine
         const { evaluateCountingInput } = require('../bot/engines/counter');
         const evalResult = evaluateCountingInput(message.content.trim(), expectedNext);
 
         if (!evalResult.isValid) {
-            // Silently ignore non-counting content: pure emojis, text, or malformed expressions
-            // Only reset the count if someone deliberately typed a wrong number
-            if (evalResult.reason && (
-                evalResult.reason.includes("Security rejection") ||
-                evalResult.reason.includes("Non-counting content") ||
-                evalResult.reason.includes("Calculation error")
-            )) {
+            // Silently ignore regular chat, greetings, or pure emojis (non-counting content)
+            if (evalResult.isNonCounting) {
                 return;
             }
 
+            // A wrong count was submitted! Reset count, wipe offender's count, and check fail role
             const previousStreak = guildData.currentCount || 0;
             const highScore = guildData.highScore || 0;
             guildData.totalResets = (guildData.totalResets || 0) + 1;
@@ -221,26 +263,34 @@ module.exports = {
             guildData.lastMessageId = null;
             guildData.lastMessageContent = null;
             guildData.recentCountMessages = {};
+
+            // Actually reset the user's individual count!
+            guildData.userCounts = guildData.userCounts || {};
+            guildData.userCounts[message.author.id] = 0;
+            if (guildData.currentTopCounterId === message.author.id) {
+                guildData.currentTopCounterId = null;
+            }
+
+            // Check and apply fail role immediately (No AI latency)
+            const failInfo = await checkAndApplyFailRole(message.guild, message.member, message.author.id, settings, guildData);
+
             allData[message.guild.id] = guildData;
             queueSave();
 
-            let roastText = "";
-            try {
-                const AIFeatureEnhancer = require('../utils/aiFeatureEnhancer');
-                const roast = await AIFeatureEnhancer.getCountingRoast(message.author.username, message.content.slice(0, 30), expectedNext, previousStreak);
-                if (roast) roastText = `\n💬 *"${roast}"*\n`;
-            } catch (_) {}
-
+            const limitDisplay = settings.countingFailThreshold ? ` / \`${settings.countingFailThreshold}\`` : '';
             await safeReplyOrSend(message, { 
                 content: `❌ You broke the count, <@${message.author.id}>! The next number was **${expectedNext}**.\n` +
                     `• **Lost Streak:** \`${previousStreak}\`\n` +
-                    `• **Server Record:** \`${highScore}\`${roastText}\n` +
+                    `• **Server Record:** \`${highScore}\`\n` +
+                    `• **Your Personal Count:** Reset to \`0\`\n` +
+                    `• **Fail Count:** \`${failInfo.failCount}\`${limitDisplay}` +
+                    failInfo.notice + `\n\n` +
                     `The count has been reset to **0**. Start again at **1**!` 
             });
             return;
         }
 
-        // Rule: No double-counting in a row on this specific server
+        // Rule: No double-counting in a row
         if (guildData.lastUserId === message.author.id) {
             const previousStreak = guildData.currentCount || 0;
             const highScore = guildData.highScore || 0;
@@ -250,20 +300,28 @@ module.exports = {
             guildData.lastMessageId = null;
             guildData.lastMessageContent = null;
             guildData.recentCountMessages = {};
+
+            // Actually reset the user's individual count!
+            guildData.userCounts = guildData.userCounts || {};
+            guildData.userCounts[message.author.id] = 0;
+            if (guildData.currentTopCounterId === message.author.id) {
+                guildData.currentTopCounterId = null;
+            }
+
+            // Check and apply fail role immediately (No AI latency)
+            const failInfo = await checkAndApplyFailRole(message.guild, message.member, message.author.id, settings, guildData);
+
             allData[message.guild.id] = guildData;
             queueSave();
 
-            let roastText = "";
-            try {
-                const AIFeatureEnhancer = require('../utils/aiFeatureEnhancer');
-                const roast = await AIFeatureEnhancer.getCountingRoast(message.author.username, "counted twice in a row", expectedNext, previousStreak);
-                if (roast) roastText = `\n💬 *"${roast}"*\n`;
-            } catch (_) {}
-
+            const limitDisplay = settings.countingFailThreshold ? ` / \`${settings.countingFailThreshold}\`` : '';
             await safeReplyOrSend(message, { 
                 content: `❌ You cannot count twice in a row, <@${message.author.id}>!\n` +
                     `• **Lost Streak:** \`${previousStreak}\`\n` +
-                    `• **Server Record:** \`${highScore}\`${roastText}\n` +
+                    `• **Server Record:** \`${highScore}\`\n` +
+                    `• **Your Personal Count:** Reset to \`0\`\n` +
+                    `• **Fail Count:** \`${failInfo.failCount}\`${limitDisplay}` +
+                    failInfo.notice + `\n\n` +
                     `The count has been reset to **0**. Start again at **1**!` 
             });
             return;
@@ -366,26 +424,19 @@ module.exports = {
             await message.react('✅').catch(() => { });
         }
 
-        // Milestone Announcement for major accomplishments
+        // Milestone Announcement for major accomplishments (Fast, zero AI delay)
         if (expectedNext > 0 && (expectedNext === 50 || expectedNext % 100 === 0 || expectedNext === 500 || expectedNext === 1000)) {
             const { EmbedBuilder } = require('discord.js');
-            let cheer = null;
-            try {
-                const AIFeatureEnhancer = require('../utils/aiFeatureEnhancer');
-                cheer = await AIFeatureEnhancer.getCountingCheer(message.author.username, expectedNext);
-            } catch (_) {}
-
             const milestoneEmbed = new EmbedBuilder()
                 .setTitle(`🎉 Milestone Reached: ${expectedNext}!`)
                 .setDescription(
                     `Incredible teamwork! **${message.guild.name}** has reached **${expectedNext}**!\n\n` +
                     `• **Counted by:** <@${message.author.id}>\n` +
                     `• **Next Number:** **${expectedNext + 1}**\n` +
-                    `• **All-Time Server Record:** \`${guildData.highScore}\`` +
-                    (cheer ? `\n\n✨ **Nora's Cheer:** *"${cheer}"*` : '')
+                    `• **All-Time Server Record:** \`${guildData.highScore}\``
                 )
                 .setColor(0xFEE75C)
-                .setFooter({ text: 'Nora AI Counting Milestone' })
+                .setFooter({ text: 'Nora Counting Milestone' })
                 .setTimestamp();
 
             await message.channel.send({ embeds: [milestoneEmbed] }).catch(() => {});
@@ -446,7 +497,25 @@ async function handleCountingMessageEdit(oldMessage, newMessage, settings) {
         const hadCountContent = (oldEval && (oldEval.isValid || oldEval.result !== undefined)) || (newEval && (newEval.isValid || newEval.result !== undefined));
 
         if (isLastCount || isRecentCount || hadCountContent) {
-            // Remove checkmark reactions if present
+            // Check if no new numbers or letters were added (allowing markdown formatting like bold, italics, spoiler, etc.)
+            const oldAlphaNum = (oldContent.match(/[a-zA-Z0-9]/g) || []).join('');
+            const newAlphaNum = (newContent.match(/[a-zA-Z0-9]/g) || []).join('');
+
+            if (oldAlphaNum === newAlphaNum) {
+                // Formatting change only! (e.g. bolding **5**, italics *5*, underline __5__, spoiler ||5||)
+                // Numbers and letters are identical. Allow the edit without breaking the count!
+                if (isRecentCount) {
+                    guildData.recentCountMessages[newMessage.id].content = newContent;
+                }
+                if (isLastCount) {
+                    guildData.lastMessageContent = newContent;
+                }
+                allData[guild.id] = guildData;
+                queueSave();
+                return;
+            }
+
+            // Alphanumeric content was changed, added, or removed — ILLEGAL EDIT!
             try {
                 const reactions = newMessage.reactions.cache;
                 for (const r of reactions.values()) {
@@ -468,15 +537,31 @@ async function handleCountingMessageEdit(oldMessage, newMessage, settings) {
             guildData.lastMessageId = null;
             guildData.lastMessageContent = null;
             guildData.recentCountMessages = {};
+
+            // Actually reset the user's individual count!
+            guildData.userCounts = guildData.userCounts || {};
+            guildData.userCounts[author.id] = 0;
+            if (guildData.currentTopCounterId === author.id) {
+                guildData.currentTopCounterId = null;
+            }
+
+            // Check and apply fail role immediately (No AI latency)
+            const failInfo = await checkAndApplyFailRole(guild, newMessage.member, author.id, settings, guildData);
+
             allData[guild.id] = guildData;
             queueSave();
 
+            const limitDisplay = settings.countingFailThreshold ? ` / \`${settings.countingFailThreshold}\`` : '';
             await safeReplyOrSend(newMessage, {
-                content: `❌ <@${author.id}>, **you cannot edit your messages in the counting channel!**\n` +
+                content: `❌ <@${author.id}>, **you cannot change numbers or letters in the counting channel!**\n` +
+                    `*(Formatting edits such as bolding or italics are allowed, but numbers and letters cannot be altered)*\n\n` +
                     `• **Original:** \`${originalDisplay}\`\n` +
                     `• **Edited To:** \`${editedDisplay}\`\n` +
                     `• **Lost Streak:** \`${previousStreak}\`\n` +
-                    `• **Server Record:** \`${highScore}\`\n\n` +
+                    `• **Server Record:** \`${highScore}\`\n` +
+                    `• **Your Personal Count:** Reset to \`0\`\n` +
+                    `• **Fail Count:** \`${failInfo.failCount}\`${limitDisplay}` +
+                    failInfo.notice + `\n\n` +
                     `The count has been broken and reset to **0**. Start again at **1**!`
             });
         }
@@ -505,6 +590,7 @@ async function handleCountingMessageDelete(message, settings) {
             const previousStreak = guildData.currentCount || 0;
             const highScore = guildData.highScore || 0;
             const authorMention = author ? `<@${author.id}>` : (isRecentCount ? `<@${isRecentCount.authorId}>` : 'Someone');
+            const authorId = author ? author.id : (isRecentCount ? isRecentCount.authorId : null);
 
             guildData.totalResets = (guildData.totalResets || 0) + 1;
             guildData.currentCount = 0;
@@ -512,6 +598,19 @@ async function handleCountingMessageDelete(message, settings) {
             guildData.lastMessageId = null;
             guildData.lastMessageContent = null;
             guildData.recentCountMessages = {};
+
+            let failNotice = '';
+            if (authorId) {
+                guildData.userCounts = guildData.userCounts || {};
+                guildData.userCounts[authorId] = 0;
+                if (guildData.currentTopCounterId === authorId) {
+                    guildData.currentTopCounterId = null;
+                }
+                const failInfo = await checkAndApplyFailRole(message.guild, message.member, authorId, settings, guildData);
+                const limitDisplay = settings.countingFailThreshold ? ` / \`${settings.countingFailThreshold}\`` : '';
+                failNotice = `\n• **Personal Count:** Reset to \`0\`\n• **Fail Count:** \`${failInfo.failCount}\`${limitDisplay}${failInfo.notice}`;
+            }
+
             allData[message.guild.id] = guildData;
             queueSave();
 
@@ -519,7 +618,8 @@ async function handleCountingMessageDelete(message, settings) {
                 content: `❌ ${authorMention} **deleted their count (${deletedNumber}) in the counting channel!**\n` +
                     `Deleting counts ruins the channel count history.\n` +
                     `• **Lost Streak:** \`${previousStreak}\`\n` +
-                    `• **Server Record:** \`${highScore}\`\n\n` +
+                    `• **Server Record:** \`${highScore}\`` +
+                    failNotice + `\n\n` +
                     `The count has been reset to **0**. Start again at **1**!`
             }).catch(() => {});
         }

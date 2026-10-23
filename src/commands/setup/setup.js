@@ -682,19 +682,24 @@ module.exports = {
             }
 
             // ==========================================
-            // 🔢 SEQUENTIAL COUNTING & TOP COUNTER ROLE
+            // 🔢 SEQUENTIAL COUNTING & FAIL / TOP ROLES
             // ==========================================
             if (viewName === 'view_counting') {
-                embed.setTitle('🔢 Sequential Counting Game & Top Counter Role')
-                    .setDescription('Members count upward one number at a time without breaking sequence. Automatically awards and transfers a role to the #1 counter in the server.')
+                const failThreshold = settings.countingFailThreshold || 1;
+                embed.setTitle('🔢 Sequential Counting Game & Fail / Top Roles')
+                    .setDescription('Members count upward one number at a time without breaking sequence. Features sandboxed math expressions, formatting edit allowances, dynamic top counter leader roles, and automated fail role penalties.')
                     .addFields(
                         { name: 'Counting Channel', value: settings.countingChannelId ? `<#${settings.countingChannelId}>` : '*Disabled*', inline: true },
                         { name: 'Top Counter Role Reward', value: settings.countingTopCounterRoleId ? `<@&${settings.countingTopCounterRoleId}>` : '*None configured*', inline: true },
-                        { name: 'Dynamic Role Transfer', value: 'Automatically stripped from previous leader and awarded to the new #1 counter in real time with an announcement', inline: false }
+                        { name: 'Counting Fail Role', value: settings.countingFailRoleId ? `<@&${settings.countingFailRoleId}>` : '*None (Disabled)*', inline: true },
+                        { name: 'Fail Limit / Threshold', value: `**${failThreshold}** fail(s) before role assigned`, inline: true },
+                        { name: 'Fail Role Policy', value: 'Automatically assigned when a member exceeds the fail limit (e.g. Counting Blacklist or Mute role). When someone fails, the count resets to 0 and their personal score is wiped.', inline: false }
                     );
 
                 const row1 = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_counting_clear_top_role').setLabel('Clear Top Counter Role').setStyle(ButtonStyle.Danger).setDisabled(!settings.countingTopCounterRoleId),
+                    new ButtonBuilder().setCustomId('action_counting_clear_top_role').setLabel('Clear Top Role').setStyle(ButtonStyle.Danger).setDisabled(!settings.countingTopCounterRoleId),
+                    new ButtonBuilder().setCustomId('action_counting_clear_fail_role').setLabel('Clear Fail Role').setStyle(ButtonStyle.Danger).setDisabled(!settings.countingFailRoleId),
+                    new ButtonBuilder().setCustomId('action_counting_cycle_threshold').setLabel(`Fail Limit: ${failThreshold} fail${failThreshold > 1 ? 's' : ''}`).setStyle(ButtonStyle.Primary),
                     new ButtonBuilder().setCustomId('view_games').setLabel('Games Hub').setStyle(ButtonStyle.Secondary)
                 );
 
@@ -706,7 +711,11 @@ module.exports = {
                     new RoleSelectMenuBuilder().setCustomId('action_counting_top_role').setPlaceholder('Select Top Counter Role (Awarded to #1 counter)...').setMinValues(0).setMaxValues(1)
                 );
 
-                return { embeds: [embed], components: [row1, row2, row3, backRow] };
+                const row4 = new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder().setCustomId('action_counting_fail_role').setPlaceholder('Select Fail Role (Assigned to users who fail count, e.g. Blacklist)...').setMinValues(0).setMaxValues(1)
+                );
+
+                return { embeds: [embed], components: [row1, row2, row3, row4, backRow] };
             }
 
             // ==========================================
@@ -1366,10 +1375,19 @@ module.exports = {
                 if (i.customId === 'action_story_consecutive_toggle') { settings.oneWordStoryAllowConsecutive = !settings.oneWordStoryAllowConsecutive; update = true; }
                 if (i.customId === 'action_onewordstory_channel') { settings.oneWordStoryChannelId = i.values[0]; update = true; }
 
-                // Counting Game & Top Counter Role
+                // Counting Game & Top / Fail Roles
                 if (i.customId === 'action_counting_channel') { settings.countingChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_counting_top_role') { settings.countingTopCounterRoleId = i.values.length > 0 ? i.values[0] : null; update = true; }
                 if (i.customId === 'action_counting_clear_top_role') { settings.countingTopCounterRoleId = null; update = true; }
+                if (i.customId === 'action_counting_fail_role') { settings.countingFailRoleId = i.values.length > 0 ? i.values[0] : null; update = true; }
+                if (i.customId === 'action_counting_clear_fail_role') { settings.countingFailRoleId = null; update = true; }
+                if (i.customId === 'action_counting_cycle_threshold') {
+                    const current = settings.countingFailThreshold || 1;
+                    const cycle = [1, 2, 3, 5, 10];
+                    const idx = cycle.indexOf(current);
+                    settings.countingFailThreshold = (idx >= 0 && idx < cycle.length - 1) ? cycle[idx + 1] : 1;
+                    update = true;
+                }
 
                 // Starboard & Role Rewards
                 if (i.customId === 'action_starboard_toggle') { settings.starboardEnabled = !settings.starboardEnabled; update = true; }

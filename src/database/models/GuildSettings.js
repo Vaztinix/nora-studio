@@ -125,6 +125,15 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true,
         defaultValue: null
     },
+    countingFailRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    },
+    countingFailThreshold: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1
+    },
     roleRewards: {
         type: DataTypes.TEXT, // JSON-formatted string: { "level": "roleId" }
         allowNull: true,
