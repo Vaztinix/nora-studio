@@ -1,7 +1,38 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
 const UnderageSuspension = require('../database/models/UnderageSuspension');
 
 const DEVELOPER_ID = '1214048435632603137';
+
+/**
+ * Downloads and buffers an attachment so it can be re-uploaded reliably to Discord
+ * without hitting raw CDN url expiration or cross-domain fetch barriers.
+ * @param {import('discord.js').Attachment} attachment
+ * @param {string} defaultPrefix
+ * @returns {Promise<{ builder: AttachmentBuilder, name: string, isImage: boolean, size: number, url: string } | null>}
+ */
+async function bufferAttachment(attachment, defaultPrefix = 'attachment') {
+    try {
+        if (!attachment || !attachment.url) return null;
+        const res = await fetch(attachment.url);
+        if (!res.ok) return null;
+        const arrayBuf = await res.arrayBuffer();
+        const buffer = Buffer.from(arrayBuf);
+        const extMatch = (attachment.name || '').match(/\.(png|jpe?g|webp|gif|svg|bmp|pdf|txt|docx?)$/i);
+        const ext = extMatch ? extMatch[1].toLowerCase() : 'png';
+        const isImage = (attachment.contentType && attachment.contentType.startsWith('image/')) || /\.(png|jpe?g|webp|gif|svg|bmp)$/i.test(attachment.name || '') || /\.(png|jpe?g|webp|gif)($|\?)/i.test(attachment.url);
+        const cleanName = `${defaultPrefix}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        return {
+            builder: new AttachmentBuilder(buffer, { name: cleanName }),
+            name: cleanName,
+            isImage,
+            size: buffer.length,
+            url: attachment.url
+        };
+    } catch (e) {
+        console.error('[DMRelayManager] Failed to buffer attachment:', e.message);
+        return null;
+    }
+}
 
 class DMRelayManager {
     constructor() {
@@ -97,11 +128,11 @@ class DMRelayManager {
                 return await this.sendReplyToUser(message, client, targetUserId);
             }
 
-            // Check for manual command: !dm <userId> <message> or !reply <userId> <message>
-            const cmdMatch = message.content.match(/^!(?:reply|dm|msg|send)\s+(\d{17,20})\s+([\s\S]+)$/i);
+            // Check for manual command: !dm <userId> [message...] or !reply <userId> [message...]
+            const cmdMatch = message.content.match(/^!(?:reply|dm|msg|send)\s+(\d{17,20})(?:\s+([\s\S]*))?$/i);
             if (cmdMatch) {
                 const targetUserId = cmdMatch[1];
-                const contentToSend = cmdMatch[2];
+                const contentToSend = cmdMatch[2] ? cmdMatch[2].trim() : '';
                 return await this.sendReplyToUser(message, client, targetUserId, contentToSend);
             }
 
@@ -115,7 +146,7 @@ class DMRelayManager {
     }
 
     /**
-     * Forwards a regular user's DM to the developer (Vaztinix)
+     * Forwards a regular user's DM to the developer (Vaztinix) with full image & appeal support
      */
     async forwardUserDMToDeveloper(message, client) {
         try {
@@ -125,21 +156,45 @@ class DMRelayManager {
                 return false;
             }
 
-            // Check if this user has an active underage suspension record
+            // Check if this user has any underage suspension record (active, denied, or lifted)
             let suspension = null;
             try {
                 suspension = await UnderageSuspension.findOne({
-                    where: { userId: message.author.id, status: 'suspended' }
+                    where: { userId: message.author.id },
+                    order: [['createdAt', 'DESC']]
                 });
             } catch (err) {
                 console.error('[DMRelayManager] Error checking UnderageSuspension:', err.message);
             }
 
-            const isAppeal = Boolean(suspension);
+            const appealKeywords = /\b(appeal|unban|unmute|suspension|suspended|suspend|proof|dob|birthday|birthdate|age|underage|13|id|passport|license|reinstate|re-appeal)\b/i;
+            const hasAppealIntent = appealKeywords.test(message.content || '');
+            const hasAttachments = message.attachments && message.attachments.size > 0;
+            const isAppeal = Boolean(suspension) || hasAppealIntent;
             const createdUnix = Math.floor(message.author.createdTimestamp / 1000);
 
+            // Buffer attachments safely into memory so Discord can embed them cleanly
+            const processedFiles = [];
+            let firstImageName = null;
+            const rawUrls = [];
+
+            if (hasAttachments) {
+                let count = 1;
+                for (const att of message.attachments.values()) {
+                    rawUrls.push(att.url);
+                    const processed = await bufferAttachment(att, `user_proof_${count}`);
+                    if (processed) {
+                        processedFiles.push(processed.builder);
+                        if (processed.isImage && !firstImageName) {
+                            firstImageName = processed.name;
+                        }
+                        count++;
+                    }
+                }
+            }
+
             const relayEmbed = new EmbedBuilder()
-                .setTitle(isAppeal ? '⚖️ Underage Suspension Appeal Received' : '📩 Support DM / Inquiry Received')
+                .setTitle(isAppeal ? '⚖️ Underage Suspension Appeal / Proof Received' : '📩 Support DM / Inquiry Received')
                 .setColor(isAppeal ? 0xE67E22 : 0x3498DB)
                 .setThumbnail(message.author.displayAvatarURL({ dynamic: true, size: 256 }))
                 .addFields(
@@ -148,13 +203,17 @@ class DMRelayManager {
                     { name: '📅 Account Created', value: `<t:${createdUnix}:R>`, inline: true }
                 );
 
-            if (isAppeal) {
+            if (suspension) {
+                let statusLabel = 'Active (Suspended)';
+                if (suspension.status === 'denied') statusLabel = '⚠️ Previously Denied (Sending New Proof)';
+                else if (suspension.status === 'lifted') statusLabel = '🟢 Previously Lifted';
+
                 const kickedTime = suspension.kickedAt ? `<t:${Math.floor(new Date(suspension.kickedAt).getTime() / 1000)}:R>` : '*Recorded*';
                 const rejoinUnix = suspension.rejoinEligibleAt ? Math.floor(new Date(suspension.rejoinEligibleAt).getTime() / 1000) : null;
                 const rejoinTime = rejoinUnix ? `<t:${rejoinUnix}:F> (<t:${rejoinUnix}:R>)` : '*3 Years Default*';
 
                 relayEmbed.addFields(
-                    { name: '🛑 Suspension Status', value: 'Active (3 Years Default)', inline: true },
+                    { name: '🛑 Suspension Record', value: statusLabel, inline: true },
                     { name: '📅 Suspended Since', value: kickedTime, inline: true },
                     { name: '⏳ Rejoin Date', value: rejoinTime, inline: true }
                 );
@@ -162,27 +221,25 @@ class DMRelayManager {
 
             const messageText = message.content && message.content.trim().length > 0 
                 ? (message.content.length > 1000 ? message.content.slice(0, 1000) + '...' : message.content)
-                : '*[No text content - Media / attachment only]*';
+                : (processedFiles.length > 0 ? '*[Proof Attachment / Image only - preview below]*' : '*[No text content]*');
 
             relayEmbed.addFields({
-                name: isAppeal ? '📝 Appeal Explanation' : '💬 Message Content',
+                name: isAppeal ? '📝 Appeal / Proof Content' : '💬 Message Content',
                 value: `>>> ${messageText}`,
                 inline: false
             });
 
+            if (firstImageName) {
+                relayEmbed.setImage(`attachment://${firstImageName}`);
+            }
+
             relayEmbed.setFooter({
-                text: `User ID: ${message.author.id} • Reply to this message to send a response`
+                text: `User ID: ${message.author.id} • Reply to this message with text or images to respond`
             }).setTimestamp();
 
-            let contentNotice = `📩 **New ${isAppeal ? 'Appeal' : 'DM'} from ${message.author.tag} (<@${message.author.id}>)**\n*💡 Reply to this message to send your response back to them!*`;
-
-            const attachmentUrls = message.attachments ? Array.from(message.attachments.values()).map(a => a.url) : [];
-            if (attachmentUrls.length > 0) {
-                contentNotice += `\n**📎 Attachments (${attachmentUrls.length}):**\n` + attachmentUrls.join('\n');
-                const imageAttachment = message.attachments.find(a => (a.contentType && a.contentType.startsWith('image/')) || /\.(png|jpe?g|webp|gif)($|\?)/i.test(a.url));
-                if (imageAttachment) {
-                    relayEmbed.setImage(imageAttachment.url);
-                }
+            let contentNotice = `📩 **New ${isAppeal ? 'Appeal / Proof' : 'DM'} from ${message.author.tag} (<@${message.author.id}>)**\n*💡 Reply to this message to send your response back to them!*`;
+            if (rawUrls.length > 0) {
+                contentNotice += `\n**📎 Attachments (${rawUrls.length}):**\n` + rawUrls.slice(0, 5).join('\n');
             }
 
             const components = [];
@@ -207,10 +264,12 @@ class DMRelayManager {
                 forwardedMsg = await devUser.send({
                     content: contentNotice,
                     embeds: [relayEmbed],
-                    files: attachmentUrls.slice(0, 5),
+                    files: processedFiles,
                     components
                 });
             } catch (sendErr) {
+                console.error('[DMRelayManager] Send with attachments failed, retrying without files:', sendErr.message);
+                relayEmbed.setImage(null);
                 forwardedMsg = await devUser.send({
                     content: contentNotice,
                     embeds: [relayEmbed],
@@ -223,20 +282,31 @@ class DMRelayManager {
 
             // Acknowledge receipt to the user
             const ackEmbed = new EmbedBuilder()
-                .setTitle(isAppeal ? '⚖️ Appeal Message Forwarded' : '📨 Message Delivered')
+                .setTitle(isAppeal ? '⚖️ Appeal Message & Proof Forwarded' : '📨 Message Delivered')
                 .setColor(0x2ECC71)
                 .setDescription(
                     isAppeal
-                        ? `Your message and any attachments have been forwarded directly to server administrator **Vaztinix** (<@${DEVELOPER_ID}>) for review.\n\n` +
-                          `📸 **Have images, screenshots, or proof documents?**\n` +
-                          `You can upload and send image attachments or links directly here in this DM anytime! Providing clear proof helps staff review and lift suspensions quickly.\n\n` +
+                        ? `Your message and **${processedFiles.length > 0 ? `${processedFiles.length} proof attachment(s)` : 'details'}** have been forwarded directly to server administrator **Vaztinix** (<@${DEVELOPER_ID}>) for review.\n\n` +
+                          `📸 **Need to send more images or documents?**\n` +
+                          `You can upload and send more photos, documents, or screenshots directly here in this DM chat anytime.\n\n` +
                           `When staff responds, Nora will deliver their message directly to you here.`
                         : `Your message has been delivered directly to server administrator **Vaztinix** (<@${DEVELOPER_ID}>).\n\nWhen they reply, Nora will deliver their response back to you here.`
                 )
                 .setFooter({ text: 'You can reply to this DM anytime to send additional details, links, or image attachments.' })
                 .setTimestamp();
 
-            await message.reply({ embeds: [ackEmbed] }).catch(() => {});
+            const ackComponents = [];
+            if (isAppeal) {
+                ackComponents.push(new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('appeal_suspension_btn')
+                        .setLabel('Submit Formal Appeal Form')
+                        .setStyle(ButtonStyle.Primary)
+                        .setEmoji('⚖️')
+                ));
+            }
+
+            await message.reply({ embeds: [ackEmbed], components: ackComponents }).catch(() => {});
             return true;
         } catch (err) {
             console.error('[DMRelayManager] Error forwarding DM to developer:', err);
@@ -245,7 +315,7 @@ class DMRelayManager {
     }
 
     /**
-     * Sends the developer's reply directly to the target user's DMs
+     * Sends the developer's reply directly to the target user's DMs with image preview support
      */
     async sendReplyToUser(message, client, targetUserId, overrideContent = null) {
         try {
@@ -258,8 +328,28 @@ class DMRelayManager {
                 return true;
             }
 
-            const responseText = overrideContent || message.content;
-            if (!responseText && (!message.attachments || message.attachments.size === 0)) {
+            // Buffer developer's attachments safely
+            const devFiles = [];
+            let devPreviewName = null;
+            const devUrls = [];
+
+            if (message.attachments && message.attachments.size > 0) {
+                let count = 1;
+                for (const att of message.attachments.values()) {
+                    devUrls.push(att.url);
+                    const processed = await bufferAttachment(att, `staff_file_${count}`);
+                    if (processed) {
+                        devFiles.push(processed.builder);
+                        if (processed.isImage && !devPreviewName) {
+                            devPreviewName = processed.name;
+                        }
+                        count++;
+                    }
+                }
+            }
+
+            const responseText = overrideContent !== null ? overrideContent : message.content;
+            if ((!responseText || responseText.trim().length === 0) && devFiles.length === 0) {
                 await message.reply({
                     content: `⚠️ Please provide a message or attachment to send!`,
                     allowedMentions: { repliedUser: false }
@@ -274,26 +364,44 @@ class DMRelayManager {
                     name: 'Vaztinix (Server Administrator)',
                     iconURL: message.author.displayAvatarURL({ dynamic: true })
                 })
-                .setDescription(responseText ? `>>> ${responseText}` : '*[Attachment only]*')
-                .setFooter({ text: 'Reply to this DM anytime to continue your support conversation.' })
+                .setDescription(responseText && responseText.trim().length > 0 ? `>>> ${responseText}` : '*[Server Administrator attached image/document above]*')
+                .setFooter({ text: 'Reply to this DM anytime to continue your support conversation or submit proof.' })
                 .setTimestamp();
 
-            const attachmentFiles = message.attachments ? Array.from(message.attachments.values()).map(a => a.url) : [];
+            if (devPreviewName) {
+                replyEmbed.setImage(`attachment://${devPreviewName}`);
+            }
 
             // Attempt delivery to user
             let delivered = false;
             try {
                 await targetUser.send({
                     embeds: [replyEmbed],
-                    files: attachmentFiles
+                    files: devFiles
                 });
                 delivered = true;
             } catch (dmErr) {
-                await message.reply({
-                    content: `⚠️ **Delivery Failed**: Could not deliver message to <@${targetUserId}> (${targetUser.tag}). Their DMs may be closed or they have blocked the bot.\n*Error:* \`${dmErr.message || 'DMs closed'}\``,
-                    allowedMentions: { repliedUser: false }
-                }).catch(() => {});
-                return true;
+                // If delivery with files failed, try falling back to embed with link
+                if (devFiles.length > 0) {
+                    try {
+                        replyEmbed.setImage(null);
+                        replyEmbed.addFields({ name: '📎 Attachments', value: devUrls.join('\n') });
+                        await targetUser.send({ embeds: [replyEmbed] });
+                        delivered = true;
+                    } catch (fallbackErr) {
+                        await message.reply({
+                            content: `⚠️ **Delivery Failed**: Could not deliver message to <@${targetUserId}> (${targetUser.tag}). Their DMs may be closed or they have blocked the bot.\n*Error:* \`${dmErr.message || fallbackErr.message || 'DMs closed'}\``,
+                            allowedMentions: { repliedUser: false }
+                        }).catch(() => {});
+                        return true;
+                    }
+                } else {
+                    await message.reply({
+                        content: `⚠️ **Delivery Failed**: Could not deliver message to <@${targetUserId}> (${targetUser.tag}). Their DMs may be closed or they have blocked the bot.\n*Error:* \`${dmErr.message || 'DMs closed'}\``,
+                        allowedMentions: { repliedUser: false }
+                    }).catch(() => {});
+                    return true;
+                }
             }
 
             if (delivered) {
@@ -301,8 +409,9 @@ class DMRelayManager {
                 await message.react('✅').catch(() => {});
 
                 // Send confirmation receipt to developer
+                const fileInfo = devFiles.length > 0 ? ` with ${devFiles.length} attachment(s)` : '';
                 await message.reply({
-                    content: `📨 **Delivered to ${targetUser.tag}** (\`${targetUserId}\`)!`,
+                    content: `📨 **Delivered to ${targetUser.tag}** (\`${targetUserId}\`)${fileInfo}!`,
                     allowedMentions: { repliedUser: false }
                 }).catch(() => {});
             }
@@ -331,7 +440,8 @@ class DMRelayManager {
             let suspension = null;
             try {
                 suspension = await UnderageSuspension.findOne({
-                    where: { userId: interaction.user.id, status: 'suspended' }
+                    where: { userId: interaction.user.id },
+                    order: [['createdAt', 'DESC']]
                 });
             } catch (err) {
                 console.error('[DMRelayManager] Error checking UnderageSuspension:', err.message);
@@ -354,7 +464,7 @@ class DMRelayManager {
                 const rejoinTime = rejoinUnix ? `<t:${rejoinUnix}:F> (<t:${rejoinUnix}:R>)` : '*3 Years Default*';
 
                 relayEmbed.addFields(
-                    { name: '🛑 Suspension Status', value: 'Active (3 Years Default)', inline: true },
+                    { name: '🛑 Suspension Status', value: suspension.status === 'suspended' ? 'Active (3 Years Default)' : suspension.status, inline: true },
                     { name: '📅 Suspended Since', value: kickedTime, inline: true },
                     { name: '⏳ Rejoin Date', value: rejoinTime, inline: true }
                 );
@@ -367,15 +477,30 @@ class DMRelayManager {
                 { name: '🔗 Proof Images & Links', value: `>>> ${linksContent.slice(0, 1020)}`, inline: false }
             );
 
-            // If a direct image link was supplied, preview it on the embed
+            // If a direct image link was supplied, attempt to preview it on the embed
             const urlMatches = (links || '').match(/https?:\/\/[^\s]+/gi) || [];
             const directImage = urlMatches.find(u => /\.(png|jpe?g|webp|gif)($|\?)/i.test(u));
+            const modalFiles = [];
             if (directImage) {
-                relayEmbed.setImage(directImage);
+                try {
+                    const res = await fetch(directImage);
+                    if (res.ok) {
+                        const buf = Buffer.from(await res.arrayBuffer());
+                        const extMatch = directImage.match(/\.(png|jpe?g|webp|gif)($|\?)/i);
+                        const ext = extMatch ? extMatch[1].toLowerCase() : 'png';
+                        const fileName = `appeal_evidence.${ext}`;
+                        modalFiles.push(new AttachmentBuilder(buf, { name: fileName }));
+                        relayEmbed.setImage(`attachment://${fileName}`);
+                    } else {
+                        relayEmbed.setImage(directImage);
+                    }
+                } catch (e) {
+                    relayEmbed.setImage(directImage);
+                }
             }
 
             relayEmbed.setFooter({
-                text: `User ID: ${interaction.user.id} • Reply to this message or use the buttons below`
+                text: `User ID: ${interaction.user.id} • Reply to this message with text or images to respond`
             }).setTimestamp();
 
             const actionRow = new ActionRowBuilder().addComponents(
@@ -391,16 +516,27 @@ class DMRelayManager {
                     .setEmoji('🛑')
             );
 
-            let contentNotice = `📩 **New Suspension Appeal from ${interaction.user.tag} (<@${interaction.user.id}>)**\n*💡 Click Approve & Lift below, or reply to this message with text to respond!*`;
+            let contentNotice = `📩 **New Suspension Appeal from ${interaction.user.tag} (<@${interaction.user.id}>)**\n*💡 Click Approve & Lift below, or reply to this message with text or images to respond!*`;
             if (urlMatches.length > 0) {
                 contentNotice += `\n**🔗 Provided Links:**\n` + urlMatches.slice(0, 5).join('\n');
             }
 
-            const forwardedMsg = await devUser.send({
-                content: contentNotice,
-                embeds: [relayEmbed],
-                components: [actionRow]
-            });
+            let forwardedMsg;
+            try {
+                forwardedMsg = await devUser.send({
+                    content: contentNotice,
+                    embeds: [relayEmbed],
+                    files: modalFiles,
+                    components: [actionRow]
+                });
+            } catch (sendErr) {
+                relayEmbed.setImage(null);
+                forwardedMsg = await devUser.send({
+                    content: contentNotice,
+                    embeds: [relayEmbed],
+                    components: [actionRow]
+                });
+            }
 
             this.relayCache.set(forwardedMsg.id, interaction.user.id);
 
@@ -433,7 +569,8 @@ class DMRelayManager {
             const LOG_CHANNEL_ID = '1510677727206969625';
 
             let record = await UnderageSuspension.findOne({
-                where: { userId: targetUserId, status: 'suspended' }
+                where: { userId: targetUserId },
+                order: [['createdAt', 'DESC']]
             });
 
             const targetUser = await client.users.fetch(targetUserId).catch(() => null);
@@ -559,6 +696,19 @@ class DMRelayManager {
         try {
             const targetUser = await client.users.fetch(targetUserId).catch(() => null);
             let userNotified = false;
+
+            // Update database record if exists
+            let record = await UnderageSuspension.findOne({
+                where: { userId: targetUserId },
+                order: [['createdAt', 'DESC']]
+            });
+            if (record) {
+                await record.update({
+                    status: 'denied',
+                    staffNote: `[Denied by ${interaction.user.tag}]: ${reason}`
+                });
+            }
+
             if (targetUser) {
                 const denyEmbed = new EmbedBuilder()
                     .setTitle('⚠️ Suspension Appeal Decision')
@@ -568,12 +718,46 @@ class DMRelayManager {
                         `Your suspension appeal has been reviewed by server administrator **Vaztinix**.\n\n` +
                         `At this time, your suspension cannot be lifted.\n\n` +
                         `**Reason:**\n> ${reason}\n\n` +
-                        `You are advised to wait until your eligibility date before reapplying or contacting staff.`
+                        `📸 **Have additional verification or new proof to submit?**\n` +
+                        `If you have valid ID, proof of age, or clarifying documents, you can click **Submit Appeal / Proof** below or simply upload and send your proof images directly in this DM anytime.`
                     )
-                    .setFooter({ text: 'Discord Safety & Account Policy Enforcement' })
+                    .setFooter({ text: 'Discord Safety & Account Policy Enforcement • Nora DM Appeal Relay' })
                     .setTimestamp();
 
-                await targetUser.send({ embeds: [denyEmbed] }).then(() => { userNotified = true; }).catch(() => {});
+                const actionRow = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('appeal_suspension_btn')
+                        .setLabel('Submit Appeal / Proof')
+                        .setStyle(ButtonStyle.Primary)
+                        .setEmoji('⚖️')
+                );
+
+                await targetUser.send({ embeds: [denyEmbed], components: [actionRow] }).then(() => { userNotified = true; }).catch(() => {});
+            }
+
+            const TARGET_GUILD_ID = '1487342521133830174';
+            const LOG_CHANNEL_ID = '1510677727206969625';
+            const guild = client.guilds.cache.get(TARGET_GUILD_ID) || await client.guilds.fetch(TARGET_GUILD_ID).catch(() => null);
+            if (guild) {
+                try {
+                    const logChannel = client.channels.cache.get(LOG_CHANNEL_ID) || await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+                    if (logChannel && logChannel.isTextBased()) {
+                        const auditEmbed = new EmbedBuilder()
+                            .setTitle('🛑 Age Suspension Appeal Denied')
+                            .setColor(0xE74C3C)
+                            .setThumbnail(targetUser ? targetUser.displayAvatarURL({ dynamic: true }) : null)
+                            .setDescription(`Administrator <@${interaction.user.id}> denied the appeal for <@${targetUserId}> in DMs.`)
+                            .addFields(
+                                { name: '👤 Target User', value: `<@${targetUserId}> (\`${targetUserId}\`)`, inline: true },
+                                { name: '🛡️ Reviewed By', value: `<@${interaction.user.id}>`, inline: true },
+                                { name: '📝 Reason Given', value: `>>> ${reason}`, inline: false },
+                                { name: '📬 User DM Notice', value: userNotified ? '✅ Delivered to user' : '⚠️ DM failed (DMs closed)', inline: false }
+                            )
+                            .setFooter({ text: 'Age Suspension DM Appeal System' })
+                            .setTimestamp();
+                        await logChannel.send({ embeds: [auditEmbed] });
+                    }
+                } catch (e) {}
             }
 
             const disabledRow = new ActionRowBuilder().addComponents(
