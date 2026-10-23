@@ -11,7 +11,7 @@ function escapeXml(str) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&apos;');
+        .replace(/'/g, '&#39;');
 }
 
 /**
@@ -176,21 +176,26 @@ async function generateWelcomeCard({
     }
 
     // Text formatting
-    const safeDisplayName = escapeXml(displayName.length > 20 ? displayName.slice(0, 19) + '…' : displayName);
-    const safeUsername = escapeXml(username.length > 24 ? username.slice(0, 23) + '…' : username);
-    const safeGuildName = escapeXml(guildName.length > 28 ? guildName.slice(0, 27) + '…' : guildName);
-    
-    let subtext = customMessage 
-        ? escapeXml(customMessage.slice(0, 48)) 
+    const rawDisplayName = displayName.length > 20 ? displayName.slice(0, 19) + '…' : displayName;
+    const rawUsername = username.length > 24 ? username.slice(0, 23) + '…' : username;
+    const rawGuildName = guildName.length > 28 ? guildName.slice(0, 27) + '…' : guildName;
+    const rawSubtext = customMessage 
+        ? customMessage.slice(0, 48) 
         : (isExit ? 'We will miss you! Safe travels.' : 'We are delighted to have you here!');
 
-    const topBadgeText = isExit 
-        ? `FAREWELL FROM ${safeGuildName.toUpperCase()}`
-        : `WELCOME TO ${safeGuildName.toUpperCase()}`;
+    const safeDisplayName = escapeXml(rawDisplayName);
+    const safeUsername = escapeXml(rawUsername);
+    const safeGuildName = escapeXml(rawGuildName);
+    const subtext = escapeXml(rawSubtext);
+    const fallbackInitial = escapeXml((displayName || username || 'M').charAt(0).toUpperCase());
 
-    const memberPillText = isExit
+    const topBadgeText = isExit 
+        ? escapeXml(`FAREWELL FROM ${rawGuildName.toUpperCase()}`)
+        : escapeXml(`WELCOME TO ${rawGuildName.toUpperCase()}`);
+
+    const memberPillText = escapeXml(isExit
         ? `Members Remaining: ${totalMembers.toLocaleString()}`
-        : `Member #${totalMembers.toLocaleString()}`;
+        : `Member #${totalMembers.toLocaleString()}`);
 
     const themeTitle = isExit ? 'GOODBYE' : 'WELCOME';
 
@@ -331,7 +336,7 @@ async function generateWelcomeCard({
             ` : `
             <circle cx="165" cy="230" r="68" fill="${primaryHex}" />
             <text x="165" y="246" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="44" font-weight="900" fill="#ffffff" text-anchor="middle">
-                ${safeDisplayName.charAt(0).toUpperCase()}
+                ${fallbackInitial}
             </text>
             `}
 

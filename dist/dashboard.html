@@ -5226,6 +5226,7 @@
                         <a href="/status.html" class="user-dropdown-item"><i class="fas fa-signal"></i> System Status</a>
                         <a href="https://discord.gg/m9WPYV287q" target="_blank" class="user-dropdown-item"><i class="fab fa-discord"></i> Community Discord</a>
                         <div class="user-dropdown-divider"></div>
+                        <button onclick="switchDiscordAccount()" class="user-dropdown-item"><i class="fas fa-user-friends"></i> Switch Account</button>
                         <button onclick="performLogout()" class="user-dropdown-item item-danger"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
                     </div>
                 </div>
@@ -5397,6 +5398,10 @@
                 <i id="mobile-theme-icon" class="fas fa-moon"></i>
                 <span id="mobile-theme-text">Toggle Theme</span>
             </button>
+            <button class="mobile-drawer-logout-btn" onclick="switchDiscordAccount()" style="border-color: rgba(88, 101, 242, 0.4); color: #818cf8; margin-bottom: 6px;">
+                <i class="fas fa-user-friends"></i>
+                <span>Switch Account</span>
+            </button>
             <button class="mobile-drawer-logout-btn" onclick="performLogout()">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Sign Out</span>
@@ -5427,8 +5432,11 @@
                 <button class="v-tab" data-tab="prefs" onclick="showTab('prefs')"><i class="fas fa-cog"></i> <span>Settings</span></button>
             </div>
 
-            <!-- Logout Button in Sidebar -->
-            <button class="logout-btn" onclick="performLogout()" style="margin-top: auto; margin-bottom: 15px;">
+            <!-- Switch Account & Logout Buttons in Sidebar -->
+            <button class="logout-btn" onclick="switchDiscordAccount()" style="margin-top: auto; margin-bottom: 8px; border-color: rgba(88, 101, 242, 0.35); color: #818cf8;">
+                <i class="fas fa-user-friends"></i> <span>Switch Account</span>
+            </button>
+            <button class="logout-btn" onclick="performLogout()" style="margin-bottom: 15px;">
                 <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
             </button>
 
@@ -12951,17 +12959,28 @@
         );
         window.REDIRECT_URI = REDIRECT_URI;
 
-        function getDiscordLoginUrl() {
+        function getDiscordLoginUrl(forcePrompt = true) {
             const clientId = window.CLIENT_ID || CLIENT_ID || "1375943730951098549";
             const redirectUri = window.REDIRECT_URI || REDIRECT_URI;
-            return `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify+guilds`;
+            const promptParam = forcePrompt ? '&prompt=consent' : '';
+            return `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify+guilds${promptParam}`;
         }
 
         function redirectToDiscordLogin() {
-            window.location.href = getDiscordLoginUrl();
+            window.location.href = getDiscordLoginUrl(true);
         }
         window.redirectToDiscordLogin = redirectToDiscordLogin;
         window.getDiscordLoginUrl = getDiscordLoginUrl;
+
+        async function switchDiscordAccount() {
+            try {
+                if (typeof performLogout === 'function') {
+                    await performLogout(false);
+                }
+            } catch(e) {}
+            window.location.href = getDiscordLoginUrl(true);
+        }
+        window.switchDiscordAccount = switchDiscordAccount;
 
         window.translateText = function(text) {
             if (!text || typeof text !== 'string') return text || '';
@@ -13159,7 +13178,7 @@
             const loginBtn = document.getElementById('login-btn');
             if (loginBtn) loginBtn.onclick = () => window.redirectToDiscordLogin();
             const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) logoutBtn.onclick = () => { sessionStorage.clear(); localStorage.removeItem('nora_discord_token'); localStorage.removeItem('nora_last_user_id'); window.location.reload(); };
+            if (logoutBtn) logoutBtn.onclick = () => performLogout();
             const backToServersBtn = document.getElementById('back-to-servers');
             if (backToServersBtn) backToServersBtn.onclick = () => showTab('servers');
         });
@@ -14670,27 +14689,32 @@
     
 
         
-        async function performLogout() {
-            try {
-                const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('nora_auth_token');
-                if (t && typeof safeFetch === 'function') {
-                    await safeFetch('/api/user/sessions/expire-all', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` }
-                    }).catch(() => {});
-                }
-            } catch(e) {}
+        async function performLogout(shouldRedirect = true) {
+            const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('nora_auth_token') || localStorage.getItem('nora_discord_token');
 
-            sessionStorage.clear();
-            localStorage.removeItem('discord_token');
-            localStorage.removeItem('nora_discord_token');
-            localStorage.removeItem('nora_auth_token');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user_token');
-            localStorage.removeItem('nora_last_user_id');
-            localStorage.removeItem('discord_user');
-            localStorage.removeItem('currentUser');
+            // 1. Wipe all local credentials and storage keys synchronously first
+            try { sessionStorage.clear(); } catch(e) {}
+            try {
+                const authKeys = [
+                    'discord_token',
+                    'nora_discord_token',
+                    'discord_token_val',
+                    'discord_token_time',
+                    'nora_auth_token',
+                    'access_token',
+                    'token',
+                    'user_token',
+                    'nora_last_user_id',
+                    'discord_user',
+                    'currentUser',
+                    'nora_cached_guilds',
+                    'nora_user_is_premium'
+                ];
+                authKeys.forEach(k => {
+                    try { localStorage.removeItem(k); } catch(err) {}
+                    try { sessionStorage.removeItem(k); } catch(err) {}
+                });
+            } catch(e) {}
 
             try {
                 document.cookie.split(";").forEach(c => {
@@ -14699,10 +14723,36 @@
             } catch(e) {}
 
             window.currentUser = null;
-            // Clean redirect to login page (stops auto-login from cached URL tokens or reload loop)
-            window.location.href = '/install?logout=true';
+
+            // 2. Fire-and-forget backend session expiration (does not block redirect)
+            if (t && typeof safeFetch === 'function') {
+                safeFetch('/api/user/sessions/expire-all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` }
+                }).catch(() => {});
+            }
+
+            // 3. Clean reload back to dashboard showing the Discord login overlay directly
+            if (shouldRedirect) {
+                window.location.href = '/dashboard';
+            }
         }
         window.performLogout = performLogout;
+
+        // Verify active Discord session validity whenever the user switches back to this tab
+        window.addEventListener('focus', async () => {
+            const token = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token');
+            if (!token || !window.currentUser) return;
+            try {
+                const res = await fetch('https://discord.com/api/v10/users/@me', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.status === 401) {
+                    console.warn('[Nora Auth] Discord session invalidated externally. Logging out...');
+                    performLogout(true);
+                }
+            } catch(e) {}
+        });
 
 
         let _userProfileSaveDebounce = null;
