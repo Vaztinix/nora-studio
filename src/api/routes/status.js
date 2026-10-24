@@ -320,7 +320,7 @@ module.exports = function(client) {
                     <text x="269" y="40" fill="${b4.color}" font-size="11" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" text-anchor="middle">${b4.icon} ${b4.text}</text>
                 </g>
 
-                <text x="32" y="322" fill="#475569" font-size="11" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">norastudio.net/status • Automatic Sentinel Snapshot</text>
+                <text x="32" y="322" fill="#475569" font-size="11" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">vaztinix.dev/status • Automatic Sentinel Snapshot</text>
                 <text x="728" y="322" fill="#64748b" font-size="11" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" text-anchor="end">Click button below to open status page ➔</text>
             </svg>
             `;
@@ -384,8 +384,8 @@ module.exports = function(client) {
 
         embed.setColor(color)
             .setTitle(title)
-            .setURL('https://norastudio.net/status')
-            .setDescription(`${desc}\n\n👉 **[Click here to view live status on our website](https://norastudio.net/status)**`)
+            .setURL('https://vaztinix.dev/status')
+            .setDescription(`${desc}\n\n👉 **[Click here to view live status on our website](https://vaztinix.dev/status)**`)
             .setFooter({
                 text: 'Nora Status Monitor',
                 iconURL: client.user ? client.user.displayAvatarURL() : undefined
@@ -403,7 +403,7 @@ module.exports = function(client) {
             new ButtonBuilder()
                 .setLabel('View Live Status Page')
                 .setStyle(ButtonStyle.Link)
-                .setURL('https://norastudio.net/status')
+                .setURL('https://vaztinix.dev/status')
                 .setEmoji('🌐')
         );
 
