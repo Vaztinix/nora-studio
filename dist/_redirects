@@ -1,3 +1,6 @@
 /api/* https://api.vaztinix.dev/api/:splat 200
+/kite/showcase /kite/showcase.html 200
+/kite/showcase/ /kite/showcase.html 200
 /ai-studio /404.html 404
 /ai-studio/* /404.html 404
+

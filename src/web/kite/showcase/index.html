@@ -1,0 +1,1185 @@
+<!-- Re-export / identical mirror of kite/showcase.html for direct folder index routing -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kite Showcase — Nora Studio</title>
+    <meta name="description" content="Discover community bot creations, visual workflow flows, and next-generation Discord automations powered by Nora Studio and Kite.">
+    <link rel="icon" type="image/png" href="/nora.png">
+    
+    <!-- Modern Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/nora-sentinel.js?v=2.2" defer></script>
+
+    <style>
+        :root {
+            --bg-base: #07080C;
+            --bg-surface: rgba(14, 17, 28, 0.78);
+            --bg-surface-elevated: rgba(22, 26, 42, 0.9);
+            --bg-card: rgba(16, 20, 34, 0.65);
+            
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(88, 101, 242, 0.4);
+            --border-glow: rgba(88, 101, 242, 0.35);
+            
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            
+            --blurple: #5865F2;
+            --blurple-hover: #4752C4;
+            --blurple-glow: rgba(88, 101, 242, 0.35);
+            
+            --purple: #8B5CF6;
+            --cyan: #06B6D4;
+            --emerald: #10B981;
+            --amber: #F59E0B;
+            --rose: #F43F5E;
+            
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 22px;
+            --radius-xl: 28px;
+            --radius-full: 9999px;
+            
+            --transition-smooth: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.18) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 85% 60%, rgba(139, 92, 246, 0.12) 0%, transparent 60%),
+                radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 28px 28px;
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        /* ===== UNIFIED TOP NAVIGATION & DROPDOWNS ===== */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(7, 8, 12, 0.85);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: var(--transition-smooth);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #FFFFFF;
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        .brand img {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            box-shadow: 0 0 16px rgba(88, 101, 242, 0.35);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            list-style: none;
+        }
+
+        .nav-item-link, .nav-dropdown-trigger {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .nav-item-link:hover, .nav-dropdown-trigger:hover,
+        .nav-item-link.active, .nav-dropdown-trigger.active {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-dropdown-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .nav-arrow {
+            font-size: 0.72rem;
+            transition: transform 0.25s ease, color 0.25s ease;
+            opacity: 0.7;
+        }
+
+        .nav-dropdown-wrapper:hover .nav-arrow {
+            transform: rotate(180deg);
+            opacity: 1;
+            color: var(--blurple);
+        }
+
+        .nav-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            min-width: 300px;
+            background: rgba(14, 16, 26, 0.96);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(88, 101, 242, 0.15);
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-dropdown-wrapper:hover .nav-dropdown-menu,
+        .nav-dropdown-wrapper:focus-within .nav-dropdown-menu {
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #E2E8F0;
+            transition: all 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background: rgba(88, 101, 242, 0.12);
+            transform: translateX(3px);
+        }
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+            color: #818CF8;
+            flex-shrink: 0;
+        }
+        .dropdown-item-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .dropdown-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+        .dropdown-desc {
+            font-size: 0.76rem;
+            color: #94A3B8;
+            line-height: 1.3;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-nav-dashboard {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-dashboard:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-nav-invite {
+            background: linear-gradient(180deg, #5865F2 0%, #4752C4 100%);
+            color: #FFFFFF;
+            padding: 9px 22px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 4px 14px rgba(88, 101, 242, 0.25);
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-nav-invite:hover {
+            background: linear-gradient(180deg, #6470f5 0%, #4e59cf 100%);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 6px 20px rgba(88, 101, 242, 0.4);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: #FFFFFF;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+        }
+
+        /* ===== MOBILE DRAWER ===== */
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: min(340px, 86vw);
+            height: 100vh;
+            background: rgba(10, 12, 20, 0.98);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-left: 1px solid var(--border-subtle);
+            z-index: 2000;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+        }
+        .mobile-drawer.open { right: 0; }
+        .mobile-drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .mobile-drawer-close {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .mobile-drawer-nav { display: flex; flex-direction: column; gap: 8px; }
+        .mobile-drawer-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+        }
+        .mobile-drawer-link:hover, .mobile-drawer-link.active {
+            background: rgba(88, 101, 242, 0.12);
+            color: #FFFFFF;
+        }
+        .mobile-drawer-link i { color: #818CF8; width: 20px; text-align: center; }
+
+        /* ===== MAIN SHOWCASE AREA ===== */
+        main {
+            flex: 1;
+            padding: 40px 0 80px 0;
+            position: relative;
+        }
+
+        .showcase-header-wrapper {
+            margin-bottom: 32px;
+        }
+
+        .breadcrumb-trail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .breadcrumb-trail a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .breadcrumb-trail a:hover {
+            color: #FFFFFF;
+        }
+        .breadcrumb-separator {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+        .breadcrumb-current {
+            color: #A5B4FC;
+            font-weight: 600;
+        }
+
+        /* ===== NORA'S THEMED BLANK PAD ===== */
+        .showcase-pad-container {
+            width: 100%;
+            position: relative;
+        }
+
+        .blank-pad {
+            position: relative;
+            background: var(--bg-surface);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.65), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 0 50px rgba(88, 101, 242, 0.08);
+            min-height: 580px;
+            padding: 72px 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .blank-pad:hover {
+            border-color: rgba(88, 101, 242, 0.35);
+            box-shadow: 
+                0 35px 90px rgba(0, 0, 0, 0.7), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.14),
+                0 0 65px rgba(88, 101, 242, 0.14);
+        }
+
+        /* Ambient background glow inside pad */
+        .pad-ambient-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 380px;
+            background: radial-gradient(circle, rgba(88, 101, 242, 0.15) 0%, rgba(139, 92, 246, 0.08) 50%, transparent 75%);
+            filter: blur(50px);
+            pointer-events: none;
+            z-1;
+        }
+
+        .pad-grid-pattern {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 32px 32px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .pad-content {
+            position: relative;
+            z-index: 2;
+            max-width: 760px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        /* Interactive Beacon / Icon */
+        .beacon-wrapper {
+            position: relative;
+            width: 108px;
+            height: 108px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+
+        .beacon-ring-outer {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px dashed rgba(88, 101, 242, 0.35);
+            animation: rotateClockwise 22s linear infinite;
+        }
+
+        .beacon-ring-inner {
+            position: absolute;
+            inset: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        .beacon-orb {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.35) 0%, rgba(139, 92, 246, 0.25) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 25px rgba(88, 101, 242, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: #FFFFFF;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .blank-pad:hover .beacon-orb {
+            transform: scale(1.08) rotate(4deg);
+        }
+
+        @keyframes rotateClockwise {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                transform: scale(0.96);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.04);
+                opacity: 0.9;
+                border-color: rgba(99, 102, 241, 0.7);
+            }
+        }
+
+        /* Pill Badge */
+        .showcase-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(88, 101, 242, 0.12);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            padding: 6px 18px;
+            border-radius: var(--radius-full);
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #D2D8FC;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .showcase-pill i {
+            color: #818CF8;
+            font-size: 0.85rem;
+        }
+
+        /* Primary Headings */
+        .showcase-title {
+            font-size: clamp(2.4rem, 5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            color: #FFFFFF;
+        }
+
+        .showcase-highlight {
+            background: linear-gradient(135deg, #A5B4FC 0%, #818CF8 50%, #C084FC 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(129, 140, 248, 0.3);
+        }
+
+        .showcase-desc {
+            font-size: clamp(1rem, 1.8vw, 1.18rem);
+            color: var(--text-muted);
+            line-height: 1.68;
+            max-width: 660px;
+            margin: 0 auto;
+        }
+
+        .showcase-desc strong {
+            color: #F1F5F9;
+            font-weight: 600;
+        }
+
+        /* Feature Teasers inside Pad */
+        .pad-teasers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .pad-teasers-grid {
+                grid-template-columns: 1fr;
+            }
+            .blank-pad {
+                padding: 48px 20px;
+                min-height: 480px;
+            }
+        }
+
+        .teaser-card {
+            background: rgba(18, 22, 38, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: left;
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+
+        .teaser-card:hover {
+            border-color: rgba(88, 101, 242, 0.35);
+            background: rgba(22, 27, 46, 0.75);
+            transform: translateY(-2px);
+        }
+
+        .teaser-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(88, 101, 242, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #818CF8;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .teaser-card h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 6px;
+        }
+
+        .teaser-card p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* Pad Action Buttons */
+        .pad-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 12px;
+        }
+
+        .btn-primary-glow {
+            background: linear-gradient(180deg, #5865F2 0%, #4752C4 100%);
+            color: #FFFFFF;
+            padding: 12px 28px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.92rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .btn-primary-glow:hover {
+            background: linear-gradient(180deg, #6572f8 0%, #515cdb 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(88, 101, 242, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-secondary-glass {
+            background: rgba(255, 255, 255, 0.05);
+            color: #F8FAFC;
+            padding: 12px 26px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.92rem;
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-secondary-glass:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            color: #FFFFFF;
+        }
+
+        /* Pad Bottom Badge Note */
+        .pad-footer-note {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        .status-dot-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 10px #10B981;
+            animation: pulseGreen 2s infinite;
+        }
+
+        @keyframes pulseGreen {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* Toast notification */
+        .toast-notify {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(14, 18, 30, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(88, 101, 242, 0.4);
+            border-radius: var(--radius-md);
+            padding: 14px 22px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(88, 101, 242, 0.25);
+            color: #FFFFFF;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 3000;
+            transform: translateY(100px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast-notify.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ===== UNIFIED FOOTER ===== */
+        footer {
+            background: #040508;
+            border-top: 1px solid var(--border-subtle);
+            padding: 60px 0 36px 0;
+            margin-top: auto;
+            position: relative;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 48px;
+        }
+
+        @media (max-width: 900px) {
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 600px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin-top: 14px;
+            max-width: 320px;
+        }
+
+        .footer-col h4 {
+            color: #FFFFFF;
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.01em;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-col ul li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #FFFFFF;
+        }
+
+        .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 28px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            font-size: 0.82rem;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .live-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            color: #10B981;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Header -->
+    <header>
+        <div class="nav-container">
+            <a href="/" class="brand" aria-label="Nora Studio Home">
+                <img src="/nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
+            </a>
+
+            <nav class="nav-links" aria-label="Main Navigation">
+                <!-- Features Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/#features" class="nav-dropdown-trigger">
+                        <i class="fas fa-layer-group"></i> Features <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#features" class="dropdown-item">
+                            <i class="fas fa-shield-halved"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Core Systems</span>
+                                <span class="dropdown-desc">AutoMod, Roblox sync & Starboard</span>
+                            </div>
+                        </a>
+                        <a href="/#commands" class="dropdown-item">
+                            <i class="fas fa-terminal"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Commands Explorer</span>
+                                <span class="dropdown-desc">Slash command parameters & permissions</span>
+                            </div>
+                        </a>
+                        <a href="/kite/showcase" class="dropdown-item">
+                            <i class="fas fa-cubes"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Kite Showcase Hub</span>
+                                <span class="dropdown-desc">Community bot automations & visual flows</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Docs Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/docs" class="nav-dropdown-trigger">
+                        <i class="fas fa-book"></i> Docs <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/docs" class="dropdown-item">
+                            <i class="fas fa-rocket"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Documentation Hub</span>
+                                <span class="dropdown-desc">Full bot manual & quickstart guide</span>
+                            </div>
+                        </a>
+                        <a href="/docs#verification" class="dropdown-item">
+                            <i class="fas fa-user-check"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Roblox Verification</span>
+                                <span class="dropdown-desc">Sync ranks & automated role bindings</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="/status" class="nav-item-link">
+                    <i class="fas fa-chart-line"></i> Status
+                </a>
+
+                <a href="/team" class="nav-item-link">
+                    <i class="fas fa-users"></i> Team
+                </a>
+
+                <!-- Support Dropdown -->
+                <div class="nav-dropdown-wrapper">
+                    <a href="/support" class="nav-dropdown-trigger">
+                        <i class="fas fa-headset"></i> Support <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="/support" class="dropdown-item">
+                            <i class="fas fa-life-ring"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Support Hub</span>
+                                <span class="dropdown-desc">Guides, tutorials & tickets</span>
+                            </div>
+                        </a>
+                        <a href="/billing-faq" class="dropdown-item">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Billing & FAQ</span>
+                                <span class="dropdown-desc">Subscriptions & upgrade details</span>
+                            </div>
+                        </a>
+                        <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="dropdown-item">
+                            <i class="fab fa-discord"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">Official Discord</span>
+                                <span class="dropdown-desc">Join 95+ community server builders</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="/dashboard" class="btn-nav-dashboard"><i class="fas fa-sliders-h"></i> Dashboard</a>
+                <a href="/install" class="btn-nav-invite"><i class="fab fa-discord"></i> Invite Bot</a>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle navigation drawer">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMobileMenu()"></div>
+    <aside class="mobile-drawer" id="mobile-drawer">
+        <div class="mobile-drawer-header">
+            <a href="/" class="brand">
+                <img src="/nora.png" alt="Nora Logo">
+                <span>Nora Studio</span>
+            </a>
+            <button class="mobile-drawer-close" onclick="toggleMobileMenu()" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="/" class="mobile-drawer-link"><i class="fas fa-home"></i> Home</a>
+            <a href="/docs" class="mobile-drawer-link"><i class="fas fa-book"></i> Documentation</a>
+            <a href="/status" class="mobile-drawer-link"><i class="fas fa-chart-line"></i> Systems Status</a>
+            <a href="/team" class="mobile-drawer-link"><i class="fas fa-users"></i> Team & Staff</a>
+            <a href="/kite/showcase" class="mobile-drawer-link active"><i class="fas fa-cubes"></i> Kite Showcase</a>
+            <a href="/support" class="mobile-drawer-link"><i class="fas fa-headset"></i> Support Center</a>
+            <a href="/billing-faq" class="mobile-drawer-link"><i class="fas fa-credit-card"></i> Billing FAQ</a>
+            <a href="/legal" class="mobile-drawer-link"><i class="fas fa-shield-alt"></i> Legal & Privacy</a>
+        </nav>
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+            <a href="/dashboard" class="btn-nav-dashboard" style="justify-content: center;"><i class="fas fa-sliders-h"></i> Dashboard</a>
+            <a href="/install" class="btn-nav-invite" style="justify-content: center;"><i class="fab fa-discord"></i> Invite Bot</a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+        <div class="container">
+            <!-- Header & Breadcrumb -->
+            <div class="showcase-header-wrapper">
+                <div class="breadcrumb-trail">
+                    <a href="/">Home</a>
+                    <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+                    <a href="/#features">Ecosystem</a>
+                    <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+                    <span class="breadcrumb-current">Kite Showcase</span>
+                </div>
+            </div>
+
+            <!-- Nora Themed Blank Pad -->
+            <div class="showcase-pad-container">
+                <section class="blank-pad" id="showcase-pad" aria-labelledby="showcase-heading">
+                    <!-- Ambient Glow Effect & Grid Canvas -->
+                    <div class="pad-ambient-glow" aria-hidden="true"></div>
+                    <div class="pad-grid-pattern" aria-hidden="true"></div>
+
+                    <div class="pad-content">
+                        <!-- Holographic Beacon -->
+                        <div class="beacon-wrapper" aria-hidden="true">
+                            <div class="beacon-ring-outer"></div>
+                            <div class="beacon-ring-inner"></div>
+                            <div class="beacon-orb">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                            </div>
+                        </div>
+
+                        <!-- Pill Badge -->
+                        <div class="showcase-pill">
+                            <i class="fas fa-sparkles"></i> Kite & Nora Ecosystem
+                        </div>
+
+                        <!-- Main Heading Request: "New Showcases coming soon" -->
+                        <h1 class="showcase-title" id="showcase-heading">
+                            <span class="showcase-highlight">New Showcases</span> coming soon
+                        </h1>
+
+                        <!-- Context Description -->
+                        <p class="showcase-desc">
+                            We are currently preparing an interactive gallery spotlighting the next generation of <strong>Discord bot automations</strong>, <strong>Kite visual flows</strong>, and custom community architectures crafted with Nora's zero-access privacy foundation.
+                        </p>
+
+                        <!-- Preview Pillars inside Blank Pad -->
+                        <div class="pad-teasers-grid">
+                            <div class="teaser-card">
+                                <div class="teaser-icon">
+                                    <i class="fas fa-diagram-project"></i>
+                                </div>
+                                <h4>Visual Flow Blueprints</h4>
+                                <p>Interactive drag-and-drop bot flow templates ready to import directly into your server pipelines.</p>
+                            </div>
+
+                            <div class="teaser-card">
+                                <div class="teaser-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <h4>Community Highlights</h4>
+                                <p>Verified bots and inventive community automations built on top of the Nora and Kite ecosystems.</p>
+                            </div>
+
+                            <div class="teaser-card">
+                                <div class="teaser-icon">
+                                    <i class="fas fa-code-merge"></i>
+                                </div>
+                                <h4>Open Component Hub</h4>
+                                <p>Modular slash command routines, custom webhooks, and high-performance Roblox synchronization recipes.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="pad-actions">
+                            <button type="button" class="btn-primary-glow" onclick="notifyMe()">
+                                <i class="fas fa-bell"></i> Notify Me on Launch
+                            </button>
+                            <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="btn-secondary-glass">
+                                <i class="fab fa-discord"></i> Submit Your Showcase
+                            </a>
+                            <a href="/dashboard" class="btn-secondary-glass">
+                                <i class="fas fa-sliders-h"></i> Explore Dashboard
+                            </a>
+                        </div>
+
+                        <!-- Pad Status Footer Note -->
+                        <div class="pad-footer-note">
+                            <span class="status-dot-pulse"></span>
+                            <span>Development in active progress • Nora Studio Engineering</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Toast Popup -->
+    <div class="toast-notify" id="toast-notify" role="status" aria-live="polite">
+        <i class="fas fa-circle-check" style="color: #10B981; font-size: 1.15rem;"></i>
+        <span id="toast-message">You're on the list! We'll announce new showcases in our Discord server.</span>
+    </div>
+
+    <!-- Unified Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="brand">
+                        <img src="/nora.png" alt="Nora Studio Logo" style="width: 32px; height: 32px;">
+                        <span>Nora Studio</span>
+                    </a>
+                    <p>The next-generation Discord infrastructure bot powering automation, Roblox synchronization, moderation, and community engagement with 100% privacy custody.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/docs">Documentation</a></li>
+                        <li><a href="/dashboard">Web Dashboard</a></li>
+                        <li><a href="/status">Systems Status</a></li>
+                        <li><a href="/team">Team & Staff</a></li>
+                        <li><a href="/kite/showcase">Kite Showcase</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support & Help</h4>
+                    <ul>
+                        <li><a href="/support">Support Hub</a></li>
+                        <li><a href="/billing-faq">Billing FAQ</a></li>
+                        <li><a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener">Discord Server</a></li>
+                        <li><a href="https://github.com/Vaztinix" target="_blank" rel="noopener">GitHub Organization</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal & Trust</h4>
+                    <ul>
+                        <li><a href="/legal#terms">Terms of Service</a></li>
+                        <li><a href="/legal#privacy">Privacy Policy</a></li>
+                        <li><a href="/legal#roblox">Roblox Compliance</a></li>
+                        <li><a href="/legal#deletion">Data Erasure Protocol</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>&copy; 2026 Nora Studio. All rights reserved. Built with precision for modern Discord communities.</div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="live-status-pill">
+                        <span class="status-dot-pulse"></span>
+                        <span>Systems Operational</span>
+                    </div>
+                    <div>Server Time: <span id="server-time">UTC Live</span></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Drawer Toggle
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (drawer && backdrop) {
+                const isOpen = drawer.classList.contains('open');
+                if (isOpen) {
+                    drawer.classList.remove('open');
+                    backdrop.classList.remove('open');
+                    document.body.style.overflow = '';
+                } else {
+                    drawer.classList.add('open');
+                    backdrop.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+
+        // Live UTC Clock
+        function updateClock() {
+            const el = document.getElementById('server-time');
+            if (el) {
+                el.innerText = new Date().toUTCString().replace('GMT', 'UTC');
+            }
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // Toast feedback
+        function notifyMe() {
+            const toast = document.getElementById('toast-notify');
+            if (toast) {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 4000);
+            }
+        }
+    </script>
+</body>
+</html>

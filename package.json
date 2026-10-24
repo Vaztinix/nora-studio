@@ -54,10 +54,12 @@
     "xml2js": "^0.6.2"
   },
   "overrides": {
+    "follow-redirects": "^1.16.1",
+    "body-parser": "^2.4.0",
     "axios": "^1.20.0",
     "protobufjs": "^7.6.5",
-    "undici": "^6.29.0",
-    "ip-address": "^10.7.3",
+    "undici": "^6.29.1",
+    "ip-address": "^10.7.4",
     "uuid": "^11.1.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "tar": "^7.5.21",

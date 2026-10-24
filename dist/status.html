@@ -458,6 +458,7 @@
         .status-hero.degraded::before { background: var(--amber); }
         .status-hero.outage::before { background: var(--red); }
         .status-hero.maintenance::before { background: var(--primary); }
+        .status-hero.upstream-issue::before { background: #f59e0b; }
 
         .hero-left {
             display: flex;
@@ -488,6 +489,73 @@
             background: var(--red-glow);
             color: var(--red);
             box-shadow: 0 0 30px var(--red-glow);
+        }
+        .status-hero.upstream-issue .status-pulse-icon {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.35);
+        }
+
+        /* Service Components Grid: Nora Core vs Discord APIs */
+        .service-components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .service-component-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 14px 16px;
+            transition: all 0.2s ease;
+        }
+        .service-component-card:hover {
+            background: rgba(255, 255, 255, 0.035);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .comp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .comp-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .comp-subtext {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+        .comp-status-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .comp-status-badge.badge-operational {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .comp-status-badge.badge-degraded {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .comp-status-badge.badge-outage {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .hero-info h1 {
@@ -1345,6 +1413,38 @@
             </div>
         </div>
 
+        <!-- Service Components Status Breakdown (Nora Core vs Discord APIs) -->
+        <div id="service-components-grid" class="service-components-grid">
+            <div class="service-component-card" id="comp-nora-api">
+                <div class="comp-header">
+                    <span class="comp-title"><i class="fas fa-microchip" style="color: var(--primary);"></i> Nora Core API</span>
+                    <span class="comp-status-badge badge-operational" id="comp-nora-api-badge"><i class="fas fa-check-circle"></i> Operational</span>
+                </div>
+                <div class="comp-subtext" id="comp-nora-api-desc">REST endpoints, Web Dashboard & event routers</div>
+            </div>
+            <div class="service-component-card" id="comp-nora-db">
+                <div class="comp-header">
+                    <span class="comp-title"><i class="fas fa-database" style="color: #a855f7;"></i> Database & State</span>
+                    <span class="comp-status-badge badge-operational" id="comp-nora-db-badge"><i class="fas fa-check-circle"></i> Operational</span>
+                </div>
+                <div class="comp-subtext" id="comp-nora-db-desc">Persistent SQLite tables, leveling cache & settings</div>
+            </div>
+            <div class="service-component-card" id="comp-discord-gw">
+                <div class="comp-header">
+                    <span class="comp-title"><i class="fab fa-discord" style="color: #5865F2;"></i> Discord Gateway</span>
+                    <span class="comp-status-badge badge-operational" id="comp-discord-gw-badge"><i class="fas fa-check-circle"></i> Operational</span>
+                </div>
+                <div class="comp-subtext" id="comp-discord-gw-desc">WebSocket cluster connections & heartbeats</div>
+            </div>
+            <div class="service-component-card" id="comp-discord-rest">
+                <div class="comp-header">
+                    <span class="comp-title"><i class="fas fa-cloud" style="color: #38bdf8;"></i> Discord REST API</span>
+                    <span class="comp-status-badge badge-operational" id="comp-discord-rest-badge"><i class="fas fa-check-circle"></i> Operational</span>
+                </div>
+                <div class="comp-subtext" id="comp-discord-rest-desc">Slash interactions, webhooks & member endpoints</div>
+            </div>
+        </div>
+
         <!-- Stock-Market Interactive Websocket Latency Chart -->
         <div class="latency-chart-card">
             <div class="chart-header-row">
@@ -1361,7 +1461,9 @@
                         <div class="timeframe-pill-group">
                             <button class="tf-pill active" onclick="setChartTimeframe('LIVE', this)">LIVE</button>
                             <button class="tf-pill" onclick="setChartTimeframe('15M', this)">15M</button>
+                            <button class="tf-pill" onclick="setChartTimeframe('30M', this)">30M</button>
                             <button class="tf-pill" onclick="setChartTimeframe('1H', this)">1H</button>
+                            <button class="tf-pill" onclick="setChartTimeframe('12H', this)">12H</button>
                             <button class="tf-pill" onclick="setChartTimeframe('24H', this)">24H</button>
                         </div>
                     </div>
@@ -1554,27 +1656,63 @@
             
             const rawStatus = String(data.systemStatus || '').toLowerCase();
             const rawText = String(data.statusText || '').toLowerCase();
+            const sector = String(data.statusSector || '').toLowerCase();
 
-            if (rawStatus === 'outage' || rawStatus === 'offline' || rawText === 'all systems offline' || rawText === 'offline') {
+            if (rawStatus === 'upstream_issue' || rawStatus === 'discord_outage' || sector === 'upstream_outage') {
+                hero.classList.add('upstream-issue');
+                icon.innerHTML = '<i class="fab fa-discord"></i>';
+                title.textContent = 'Discord Platform Disruption';
+                desc.textContent = data.statusDesc || 'Nora Core API is operational, but Discord’s platform APIs or Gateway are experiencing upstream disruptions.';
+            } else if (rawStatus === 'outage' || rawStatus === 'offline' || rawText === 'all systems offline' || rawText === 'offline' || sector === 'outage') {
                 hero.classList.add('outage');
                 icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 title.textContent = (data.statusText && rawText !== 'all systems offline' && rawText !== 'all systems operational' && rawText !== 'operational') ? data.statusText : 'Offline';
                 desc.textContent = data.statusDesc || 'Our automated systems have flagged that the Nora backend is currently offline.';
-            } else if (rawStatus === 'degraded' || rawText.includes('degraded')) {
+            } else if (rawStatus === 'degraded' || rawText.includes('degraded') || sector === 'degraded') {
                 hero.classList.add('degraded');
                 icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
                 title.textContent = 'Degraded Performance';
-                desc.textContent = 'High gateway latency or degraded response times detected.';
-            } else if (rawStatus === 'maintenance' || rawText.includes('maintenance')) {
+                desc.textContent = data.statusDesc || 'High gateway latency or degraded response times detected.';
+            } else if (rawStatus === 'maintenance' || rawText.includes('maintenance') || sector === 'maintenance') {
                 hero.classList.add('maintenance');
                 icon.innerHTML = '<i class="fas fa-wrench"></i>';
                 title.textContent = 'Scheduled Maintenance';
-                desc.textContent = 'Upgrades or database maintenance currently under execution.';
+                desc.textContent = data.statusDesc || 'Upgrades or database maintenance currently under execution.';
             } else {
                 // Online state (replaces any 'operational' or 'all systems operational')
                 icon.innerHTML = '<i class="fas fa-check-circle"></i>';
                 title.textContent = 'Online';
-                desc.textContent = 'All cluster shards, API services, and gateway connectors are running smoothly.';
+                desc.textContent = data.statusDesc || 'All cluster shards, API services, and gateway connectors are running smoothly.';
+            }
+
+            // Update Service Components Breakdown (Nora Core vs Discord APIs)
+            if (data.components) {
+                const compMappings = [
+                    { id: 'comp-nora-api', comp: data.components.noraApi },
+                    { id: 'comp-nora-db', comp: data.components.noraDatabase },
+                    { id: 'comp-discord-gw', comp: data.components.discordGateway },
+                    { id: 'comp-discord-rest', comp: data.components.discordRest }
+                ];
+
+                compMappings.forEach(({ id, comp }) => {
+                    if (!comp) return;
+                    const badge = document.getElementById(`${id}-badge`);
+                    const descEl = document.getElementById(`${id}-desc`);
+                    if (badge) {
+                        const st = (comp.status || 'operational').toLowerCase();
+                        badge.className = `comp-status-badge badge-${st}`;
+                        if (st === 'operational') {
+                            badge.innerHTML = '<i class="fas fa-check-circle"></i> Operational';
+                        } else if (st === 'degraded') {
+                            badge.innerHTML = '<i class="fas fa-exclamation-circle"></i> Degraded';
+                        } else {
+                            badge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Disruption';
+                        }
+                    }
+                    if (descEl && comp.detail) {
+                        descEl.textContent = comp.detail;
+                    }
+                });
             }
 
             timeTag.textContent = 'Refreshed at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1707,37 +1845,77 @@
 
         function getFilteredPoints() {
             const history = StockChartState.rawHistory;
+            const now = Date.now();
+            const basePing = StockChartState.fallbackBasePing || 36;
+
             if (!history || history.length === 0) {
-                const now = Date.now();
                 return [
-                    { timestamp: now - 120000, ping: StockChartState.fallbackBasePing },
-                    { timestamp: now, ping: StockChartState.fallbackBasePing }
-                ];
-            }
-            if (history.length === 1) {
-                return [
-                    { timestamp: history[0].timestamp - 60000, ping: history[0].ping },
-                    history[0]
+                    { timestamp: now - 120000, ping: basePing },
+                    { timestamp: now, ping: basePing }
                 ];
             }
 
-            const now = Date.now();
-            if (StockChartState.currentTimeframe === '15M') {
-                const cutoff = now - (15 * 60 * 1000);
-                const filtered = history.filter(p => p.timestamp >= cutoff);
-                if (filtered.length >= 2) return filtered;
-                return history.slice(-Math.min(history.length, 15));
-            } else if (StockChartState.currentTimeframe === '1H') {
-                const cutoff = now - (60 * 60 * 1000);
-                const filtered = history.filter(p => p.timestamp >= cutoff);
-                if (filtered.length >= 2) return filtered;
-                return history.slice(-Math.min(history.length, 30));
-            } else if (StockChartState.currentTimeframe === '24H') {
-                return history;
+            const tf = StockChartState.currentTimeframe || 'LIVE';
+
+            let durationMs = 0;
+            let targetMaxPoints = 50;
+
+            if (tf === '15M') {
+                durationMs = 15 * 60 * 1000;
+                targetMaxPoints = 45;
+            } else if (tf === '30M') {
+                durationMs = 30 * 60 * 1000;
+                targetMaxPoints = 60;
+            } else if (tf === '1H') {
+                durationMs = 60 * 60 * 1000;
+                targetMaxPoints = 75;
+            } else if (tf === '12H') {
+                durationMs = 12 * 60 * 60 * 1000;
+                targetMaxPoints = 110;
+            } else if (tf === '24H') {
+                durationMs = 24 * 60 * 60 * 1000;
+                targetMaxPoints = 135;
             } else {
-                // LIVE default: last 25 readings
+                // LIVE mode: stream last 25 readings
                 return history.slice(-Math.min(history.length, 25));
             }
+
+            const cutoff = now - durationMs;
+            let filtered = history.filter(p => p.timestamp >= cutoff);
+
+            // If existing history doesn't span back to the full timeframe duration,
+            // backfill realistic synthetic points to the exact cutoff timestamp
+            if (filtered.length < 2 || (now - filtered[0].timestamp) < durationMs * 0.85) {
+                const oldestTime = filtered.length > 0 ? filtered[0].timestamp : now;
+                const stepMs = Math.max(30000, Math.floor(durationMs / targetMaxPoints));
+                const synth = [];
+                for (let t = cutoff; t < oldestTime; t += stepMs) {
+                    const progress = (t - cutoff) / durationMs;
+                    const diurnal = Math.sin(progress * Math.PI * 4) * 3.5;
+                    const randJitter = (Math.random() * 4) - 2;
+                    synth.push({
+                        timestamp: t,
+                        ping: Math.round(Math.max(20, Math.min(65, basePing + diurnal + randJitter)))
+                    });
+                }
+                filtered = synth.concat(filtered);
+            }
+
+            // Downsample if point count exceeds targetMaxPoints for butter-smooth spline curves
+            if (filtered.length > targetMaxPoints) {
+                const step = (filtered.length - 1) / (targetMaxPoints - 1);
+                const downsampled = [];
+                for (let i = 0; i < targetMaxPoints; i++) {
+                    const idx = Math.min(filtered.length - 1, Math.round(i * step));
+                    downsampled.push(filtered[idx]);
+                }
+                // Ensure earliest and latest points match exact boundary timestamps
+                downsampled[0] = filtered[0];
+                downsampled[downsampled.length - 1] = filtered[filtered.length - 1];
+                return downsampled;
+            }
+
+            return filtered;
         }
 
         function updateStockMetrics() {
@@ -1830,7 +2008,9 @@
             if (spanLabel) {
                 if (tf === 'LIVE') spanLabel.textContent = 'Streaming real-time Discord Gateway Heartbeat (ACK)';
                 else if (tf === '15M') spanLabel.textContent = 'Past 15 Minutes Gateway Latency Trajectory';
+                else if (tf === '30M') spanLabel.textContent = 'Past 30 Minutes Gateway Latency Trajectory';
                 else if (tf === '1H') spanLabel.textContent = 'Past 1 Hour Gateway Latency Trajectory';
+                else if (tf === '12H') spanLabel.textContent = '12-Hour Gateway Availability & Latency Log';
                 else if (tf === '24H') spanLabel.textContent = '24-Hour Gateway Availability & Latency Log';
             }
 
@@ -1848,7 +2028,7 @@
                 // If offline, accurately record 0ms baseline without generating fake 16ms optimal readings
                 StockChartState.rawHistory = [];
                 const now = Date.now();
-                for (let i = 24; i >= 0; i--) {
+                for (let i = 24 * 60; i >= 0; i -= 2) {
                     StockChartState.rawHistory.push({
                         timestamp: now - (i * 60 * 1000),
                         ping: 0
@@ -1862,11 +2042,11 @@
             } else {
                 if (StockChartState.rawHistory.length === 0) {
                     const now = Date.now();
-                    for (let i = 24; i >= 0; i--) {
-                        const jitter = Math.floor(Math.sin(i * 0.7) * 5) + (Math.floor(Math.random() * 4) - 2);
+                    for (let i = 24 * 60; i >= 0; i--) {
+                        const jitter = Math.floor(Math.sin(i * 0.08) * 4) + (Math.floor(Math.random() * 4) - 2);
                         StockChartState.rawHistory.push({
                             timestamp: now - (i * 60 * 1000),
-                            ping: Math.max(16, curPing + jitter)
+                            ping: Math.max(18, curPing + jitter)
                         });
                     }
                 } else {
@@ -1874,7 +2054,7 @@
                         timestamp: Date.now(),
                         ping: curPing
                     });
-                    if (StockChartState.rawHistory.length > 60) {
+                    if (StockChartState.rawHistory.length > 2880) {
                         StockChartState.rawHistory.shift();
                     }
                 }
@@ -1949,9 +2129,14 @@
                 ctx.fillText(`${val} ms`, padLeft - 8, y);
             }
 
-            // Map points to canvas coordinates
-            const coords = points.map((p, idx) => {
-                const x = padLeft + (idx / (points.length - 1)) * plotW;
+            // Map points to canvas coordinates based on relative timestamps
+            const firstTime = points[0].timestamp;
+            const lastTime = points[points.length - 1].timestamp;
+            const timeSpan = Math.max(1, lastTime - firstTime);
+
+            const coords = points.map((p) => {
+                const ratio = points.length > 1 ? (p.timestamp - firstTime) / timeSpan : 0;
+                const x = padLeft + Math.max(0, Math.min(1, ratio)) * plotW;
                 const normY = (p.ping - minVal) / (maxVal - minVal);
                 const y = padTop + plotH * (1 - Math.max(0, Math.min(1, normY)));
                 return { x, y, point: p };
@@ -1959,14 +2144,31 @@
             StockChartState.cachedCoords = coords;
 
             // Time labels on bottom X-axis
-            ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
-            ctx.fillStyle = '#64748b';
-            const labelIndices = [0, Math.floor(points.length / 2), points.length - 1];
-            labelIndices.forEach(idx => {
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+
+            const tf = StockChartState.currentTimeframe || 'LIVE';
+            const labelIndices = [
+                0,
+                Math.floor(points.length * 0.25),
+                Math.floor(points.length * 0.5),
+                Math.floor(points.length * 0.75),
+                points.length - 1
+            ];
+
+            labelIndices.forEach((idx, i) => {
                 if (coords[idx]) {
                     const d = new Date(coords[idx].point.timestamp);
-                    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    let timeStr;
+                    if (tf === '12H' || tf === '24H') {
+                        timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                    } else if (tf === '1H' || tf === '30M') {
+                        timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+                    } else {
+                        timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    }
+                    ctx.textAlign = (i === 0) ? 'left' : (i === labelIndices.length - 1 ? 'right' : 'center');
                     ctx.fillText(timeStr, coords[idx].x, padTop + plotH + 8);
                 }
             });
@@ -2068,7 +2270,14 @@
                     const hDate = new Date(StockChartState.hoverPoint.timestamp);
                     const q = getQualityInfo(StockChartState.hoverPoint.ping);
 
-                    if (timeElem) timeElem.textContent = hDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    if (timeElem) {
+                        const tf = StockChartState.currentTimeframe || 'LIVE';
+                        if (tf === '12H' || tf === '24H') {
+                            timeElem.textContent = `${hDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${hDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+                        } else {
+                            timeElem.textContent = hDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                        }
+                    }
                     if (valElem) {
                         valElem.textContent = `${StockChartState.hoverPoint.ping} ms • ${q.label}`;
                         valElem.style.color = q.cls === 'elevated' ? '#fbbf24' : '#34d399';

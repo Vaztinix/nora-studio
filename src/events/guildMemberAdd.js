@@ -323,6 +323,7 @@ module.exports = {
                                 customMessage: welcomeTemplate ? formatMessage(welcomeTemplate, member) : null,
                                 customAccent: settings.welcomeCardAccentColor,
                                 customBgUrl: settings.welcomeCardBgUrl,
+                                serverShape: settings.serverCardShape || 'rounded-rect',
                                 memberCount: member.guild.memberCount
                             });
                             const attachment = new AttachmentBuilder(cardBuffer, { name: 'welcome-card.png' });
@@ -331,22 +332,27 @@ module.exports = {
                                 const fallbackEmbed = new EmbedBuilder()
                                     .setTitle(`Welcome to ${member.guild.name}!`)
                                     .setDescription(welcomeDesc)
-                                    .setColor(0xffffff)
+                                    .setColor(0x5865F2)
                                     .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                                     .setFooter({ text: `Member #${member.guild.memberCount}` })
                                     .setTimestamp();
-                                await welcomeChannel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+                                await welcomeChannel.send({ embeds: [fallbackEmbed] }).catch(async () => {
+                                    // Ultimate fallback if EmbedLinks permission is restricted
+                                    await welcomeChannel.send({ content: welcomeDesc }).catch(() => {});
+                                });
                             });
                         } catch (cardErr) {
-                            console.error('[Welcomer Error] Liquid glass card generation failed, falling back to embed:', cardErr.message);
+                            console.error('[Welcomer Error] Card generation failed, falling back to embed:', cardErr.message);
                             const fallbackEmbed = new EmbedBuilder()
                                 .setTitle(`Welcome to ${member.guild.name}!`)
                                 .setDescription(welcomeDesc)
-                                .setColor(0xffffff)
+                                .setColor(0x5865F2)
                                 .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                                 .setFooter({ text: `Member #${member.guild.memberCount}` })
                                 .setTimestamp();
-                            await welcomeChannel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+                            await welcomeChannel.send({ embeds: [fallbackEmbed] }).catch(async () => {
+                                await welcomeChannel.send({ content: welcomeDesc }).catch(() => {});
+                            });
                         }
                     } else if (welcomeFormat === 'text') {
                         await welcomeChannel.send({ content: welcomeDesc }).catch((err) => {

@@ -1354,12 +1354,25 @@ router.post('/action', async (req, res) => {
                         customMessage: rawTemplate ? welcomeText : null,
                         customAccent: settings?.welcomeCardAccentColor,
                         customBgUrl: settings?.welcomeCardBgUrl,
+                        serverShape: settings?.serverCardShape || 'rounded-rect',
                         memberCount: guild.memberCount || 1
                     });
                     const attachment = new AttachmentBuilder(cardBuffer, { name: 'welcome-card.png' });
-                    await channel.send({ content: welcomeText, files: [attachment] });
+                    await channel.send({ content: welcomeText, files: [attachment] }).catch(async (sendErr) => {
+                        console.error('[Test Welcome Error] File send failed, falling back to embed/text:', sendErr.message);
+                        const testEmbed = new EmbedBuilder()
+                            .setTitle(`👋 Welcome to ${guild.name}!`)
+                            .setDescription(welcomeText)
+                            .setColor('#10B981')
+                            .setThumbnail(user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : req.client.user.displayAvatarURL())
+                            .setFooter({ text: '🧪 Simulated Test Welcome • Nora Welcomer Hub' })
+                            .setTimestamp();
+                        await channel.send({ embeds: [testEmbed] }).catch(async () => {
+                            await channel.send({ content: welcomeText });
+                        });
+                    });
                 } catch (cardErr) {
-                    console.error('[Test Welcome Error] Card generation failed, falling back to embed:', cardErr.message);
+                    console.error('[Test Welcome Error] Card generation failed, falling back to embed/text:', cardErr.message);
                     const testEmbed = new EmbedBuilder()
                         .setTitle(`👋 Welcome to ${guild.name}!`)
                         .setDescription(welcomeText)
@@ -1367,7 +1380,9 @@ router.post('/action', async (req, res) => {
                         .setThumbnail(user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : req.client.user.displayAvatarURL())
                         .setFooter({ text: '🧪 Simulated Test Welcome • Nora Welcomer Hub' })
                         .setTimestamp();
-                    await channel.send({ embeds: [testEmbed] });
+                    await channel.send({ embeds: [testEmbed] }).catch(async () => {
+                        await channel.send({ content: welcomeText });
+                    });
                 }
             } else if (welcomeFormat === 'text') {
                 await channel.send({ content: welcomeText }).catch(err => {

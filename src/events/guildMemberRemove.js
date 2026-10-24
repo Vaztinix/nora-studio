@@ -74,11 +74,12 @@ module.exports = {
                                 customMessage: template ? formatMessage(template, member) : null,
                                 customAccent: settings.goodbyeCardAccentColor,
                                 customBgUrl: settings.goodbyeCardBgUrl,
+                                serverShape: settings.serverCardShape || 'rounded-rect',
                                 memberCount: member.guild.memberCount
                             });
                             const attachment = new AttachmentBuilder(cardBuffer, { name: 'goodbye-card.png' });
                             await goodbyeChannel.send({ content: desc, files: [attachment] }).catch(async (sendErr) => {
-                                console.error(`[Goodbye Error] Could not send exit card: ${sendErr.message}, falling back to embed...`);
+                                console.error(`[Goodbye Error] Could not send exit card: ${sendErr.message}, falling back to embed/text...`);
                                 const fallbackEmbed = new EmbedBuilder()
                                     .setTitle(`Goodbye from ${member.guild.name}`)
                                     .setDescription(desc)
@@ -86,10 +87,12 @@ module.exports = {
                                     .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                                     .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
                                     .setTimestamp();
-                                await goodbyeChannel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+                                await goodbyeChannel.send({ embeds: [fallbackEmbed] }).catch(async () => {
+                                    await goodbyeChannel.send({ content: desc }).catch(() => {});
+                                });
                             });
                         } catch (cardErr) {
-                            console.error('[Goodbye Error] Liquid glass exit card generation failed, falling back to embed:', cardErr.message);
+                            console.error('[Goodbye Error] Exit card generation failed, falling back to embed/text:', cardErr.message);
                             const fallbackEmbed = new EmbedBuilder()
                                 .setTitle(`Goodbye from ${member.guild.name}`)
                                 .setDescription(desc)
@@ -97,7 +100,9 @@ module.exports = {
                                 .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                                 .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
                                 .setTimestamp();
-                            await goodbyeChannel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+                            await goodbyeChannel.send({ embeds: [fallbackEmbed] }).catch(async () => {
+                                await goodbyeChannel.send({ content: desc }).catch(() => {});
+                            });
                         }
                     } else if (goodbyeFormat === 'text') {
                         await goodbyeChannel.send({ content: desc }).catch((err) => {

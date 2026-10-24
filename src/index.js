@@ -435,6 +435,7 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `AfkUsers` ADD COLUMN `expiresAt` BIGINT NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `teamCardTextColor` VARCHAR(255) NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `teamCardGlowColor` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `serverCardShape` VARCHAR(255) DEFAULT 'rounded-rect';"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {
@@ -717,46 +718,39 @@ app.set('trust proxy', true);
 app.disable('x-powered-by');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 🌐 DYNAMIC CORS ORIGIN VALIDATOR
+// 🌐 STRICT CORS ORIGIN VALIDATOR — Secure Cross-Origin Resource Sharing
 // ─────────────────────────────────────────────────────────────────────────────
-const ALLOWED_ORIGINS = [
-    /^http:\/\/localhost(:\d+)?$/,
-    /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+const ALLOWED_ORIGIN_PATTERNS = [
     /^https:\/\/vaztinix\.github\.io$/,
     /^https:\/\/vaztinix\.dev$/,
     /^https:\/\/[a-zA-Z0-9-]+\.vaztinix\.dev$/,
     /^https:\/\/nora-studio\.pages\.dev$/,
     /^https:\/\/nora-bot\.pages\.dev$/,
-    /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
-    /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
-    /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
-    /^https?:\/\/[a-zA-Z0-9-]+\.local(:\d+)?$/
+    /^https:\/\/norastudio\.net$/,
+    /^https:\/\/[a-zA-Z0-9-]+\.norastudio\.net$/,
+    /^http:\/\/localhost(:\d+)?$/,
+    /^http:\/\/127\.0\.0\.1(:\d+)?$/
 ];
 
 function isAllowedOrigin(origin) {
     if (!origin || typeof origin !== 'string') return false;
-    return ALLOWED_ORIGINS.some(pattern => pattern.test(origin));
+    const trimmed = origin.trim();
+    if (trimmed === 'null' || trimmed === '*' || trimmed.startsWith('data:')) return false;
+    return ALLOWED_ORIGIN_PATTERNS.some(pattern => pattern.test(trimmed));
 }
 
-// Universal CORS Middleware — Must run FIRST before any route or security check
+// Universal CORS Middleware — Explicit origin whitelisting without insecure wildcards
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (origin && isAllowedOrigin(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Vary', 'Origin');
-    } else if (origin) {
-        res.setHeader('Access-Control-Allow-Origin', 'null');
-    } else {
-        res.setHeader('Access-Control-Allow-Origin', '*');
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
     const requestHeaders = req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma, X-Real-IP, CF-Connecting-IP';
     res.setHeader('Access-Control-Allow-Headers', requestHeaders);
     res.setHeader('Access-Control-Max-Age', '86400');
-    if (req.headers['access-control-request-private-network']) {
-        res.setHeader('Access-Control-Allow-Private-Network', 'true');
-    }
     if (req.method === 'OPTIONS') {
         return res.status(204).end();
     }
@@ -1288,6 +1282,19 @@ app.get(['/idtk', '/idtk.html'], ipRateLimiter, (req, res) => {
     const p = fs.existsSync(path.join(__dirname, 'web/idtk.html')) ? path.join(__dirname, 'web/idtk.html') : path.join(__dirname, '../dist/idtk.html');
     res.sendFile(p);
 });
+
+app.get(['/kite/showcase', '/kite/showcase.html', '/kite/showcase/'], ipRateLimiter, (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    const webPath = path.join(__dirname, 'web/kite/showcase.html');
+    const distPath = path.join(__dirname, '../dist/kite/showcase.html');
+    const p = fs.existsSync(webPath) ? webPath : distPath;
+    if (fs.existsSync(p)) {
+        res.sendFile(p);
+    } else {
+        res.status(404).send('Showcase page not found.');
+    }
+});
+
 
 app.get(['/billing', '/billing-faq', '/billing-faq.html'], ipRateLimiter, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -2601,7 +2608,47 @@ app.get('/api/klipy/search', async (req, res) => {
         res.json({ success: false, results: [], nextOffset: 0 });
     }
 });
-// Image Proxy to safely load external images (Discord CDN, Giphy, Tenor, Klipy, etc.) for canvas cropping without CORS taint
+// Image Proxy to safely load external images (Discord CDN, Giphy, Tenor, etc.) for canvas cropping without CORS taint
+const ALLOWED_IMAGE_PROXY_DOMAINS = [
+    'cdn.discordapp.com',
+    'media.discordapp.net',
+    'images-ext-1.discordapp.net',
+    'images-ext-2.discordapp.net',
+    'media.giphy.com',
+    'media0.giphy.com',
+    'media1.giphy.com',
+    'media2.giphy.com',
+    'media3.giphy.com',
+    'media4.giphy.com',
+    'i.giphy.com',
+    'tenor.com',
+    'media.tenor.com',
+    'c.tenor.com',
+    'i.imgur.com',
+    'imgur.com',
+    'avatars.githubusercontent.com',
+    'raw.githubusercontent.com',
+    'tr.rbxcdn.com',
+    't0.rbxcdn.com',
+    't1.rbxcdn.com',
+    't2.rbxcdn.com',
+    't3.rbxcdn.com',
+    't4.rbxcdn.com',
+    't5.rbxcdn.com',
+    't6.rbxcdn.com',
+    't7.rbxcdn.com',
+    'api.vaztinix.dev',
+    'vaztinix.dev',
+    'norabot.xyz',
+    'norastudio.net'
+];
+
+function isAllowedProxyImageDomain(hostname) {
+    if (!hostname || typeof hostname !== 'string') return false;
+    const lower = hostname.toLowerCase();
+    return ALLOWED_IMAGE_PROXY_DOMAINS.some(allowed => lower === allowed || lower.endsWith('.' + allowed));
+}
+
 app.get('/api/proxy-image', async (req, res) => {
     const rawUrl = req.query.url;
     if (!rawUrl || typeof rawUrl !== 'string') return res.status(400).send('Missing url parameter');
@@ -2610,10 +2657,25 @@ app.get('/api/proxy-image', async (req, res) => {
         if (!security.validateExternalUrl(rawUrl)) {
             return res.status(400).send('Invalid or prohibited target URL');
         }
+
         const parsed = new URL(rawUrl);
+        // Strictly require HTTPS protocol and no credentials/ports
+        if (parsed.protocol !== 'https:' || parsed.port || parsed.username || parsed.password) {
+            return res.status(400).send('Target resource must use standard HTTPS');
+        }
+
+        // Whitelist trusted image CDN hosts to prevent Server-Side Request Forgery (SSRF)
+        const host = parsed.hostname.toLowerCase();
+        if (!isAllowedProxyImageDomain(host)) {
+            return res.status(403).send('Target host is not permitted by image proxy policy');
+        }
+
+        // Reconstruct safe target URL from validated components
+        const safeTargetUrl = `https://${host}${parsed.pathname}${parsed.search}`;
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
-        const fetchRes = await fetch(parsed.href, {
+        const fetchRes = await fetch(safeTargetUrl, {
             signal: controller.signal,
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
         });

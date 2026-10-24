@@ -49,6 +49,11 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true,
         defaultValue: null
     },
+    serverCardShape: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'rounded-rect'
+    },
     // ---- Goodbye / Member Leave Announcement System ----
     goodbyeEnabled: {
         type: DataTypes.BOOLEAN,

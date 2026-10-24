@@ -1671,8 +1671,9 @@
                             <input type="url" id="link-twitch" class="form-input" placeholder="Twitch URL" oninput="updateLivePreview()">
                         </div>
                         <div class="form-row-2" style="margin-top: 8px;">
-                            <input type="url" id="link-other" class="form-input" placeholder="Strawpage / Portfolio / Website URL" oninput="updateLivePreview()">
+                            <input type="url" id="link-other" class="form-input" placeholder="Custom Link (TikTok, Nora Studios, YouTube, Portfolio, etc.)" oninput="updateLivePreview()">
                         </div>
+                        <div id="link-detected-preview" style="display: none; margin-top: 6px; font-size: 0.76rem; align-items: center; gap: 8px; flex-wrap: wrap;"></div>
                     </div>
 
                     <!-- Privacy & Visibility Toggles -->
@@ -2167,7 +2168,8 @@
             if (/^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(u)) return u;
             if (/^\/(?!\/)[a-zA-Z0-9_\-./]+$/.test(u) || /^[a-zA-Z0-9_\-.]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(u)) return u;
             try {
-                const parsed = new URL(u, window.location.origin);
+                const base = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://vaztinix.dev';
+                const parsed = new URL(u, base);
                 if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
                     return encodeURI(decodeURI(parsed.href));
                 }
@@ -2190,7 +2192,7 @@
             // Inline code `code`
             escaped = escaped.replace(/`([^`\n]+)`/g, '<code>$1</code>');
             // Discord Spoilers ||hidden text||
-            escaped = escaped.replace(/\|\|([\s\S]+?)\|\|/g, '<span class="discord-spoiler" onclick="this.classList.toggle(\'revealed\')" title="Click to reveal spoiler">$1</span>');
+            escaped = escaped.replace(/\|\|([\s\S]+?)\|\|/g, '<span class="discord-spoiler" data-spoiler="true" title="Click to reveal spoiler">$1</span>');
             // Bold italic ***text***
             escaped = escaped.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
             // Bold **text**
@@ -2204,7 +2206,10 @@
             // Strikethrough ~~text~~
             escaped = escaped.replace(/~~([^~]+)~~/g, '<del>$1</del>');
             // Markdown link [title](url)
-            escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, linkText, url) => {
+                const safe = sanitizeUrl(url);
+                return safe ? `<a href="${safe}" target="_blank" rel="noopener">${linkText}</a>` : linkText;
+            });
 
             // Handle blockquotes (> quote) line-by-line
             const lines = escaped.split('\n');
@@ -2542,14 +2547,565 @@
             updateLivePreview();
         }
 
+        // Link Detection Engine: Detects and names ALL links with branded icons and clean titles
+        function detectLinkInfo(rawUrl) {
+            if (!rawUrl || typeof rawUrl !== 'string') return null;
+            let clean = rawUrl.trim();
+            if (!clean) return null;
+
+            // If user typed without protocol (e.g. "vaztinix.dev" or "tiktok.com/@vaz"), prepend https://
+            if (!/^https?:\/\//i.test(clean)) {
+                clean = 'https://' + clean;
+            }
+
+            const safeUrl = sanitizeUrl(clean);
+            if (!safeUrl || (!safeUrl.startsWith('http://') && !safeUrl.startsWith('https://'))) {
+                return null;
+            }
+
+            let hostname = '';
+            let pathname = '';
+            try {
+                const parsed = new URL(safeUrl);
+                hostname = parsed.hostname.toLowerCase();
+                pathname = parsed.pathname.toLowerCase();
+            } catch (e) {
+                return null;
+            }
+
+            const robloxSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg>';
+
+            // 1. Nora Studios & Ecosystem (vaztinix.dev, norabot, norastudio, kite)
+            if (
+                hostname === 'vaztinix.dev' || hostname.endsWith('.vaztinix.dev') ||
+                hostname.includes('norabot') || hostname.includes('nora-bot') ||
+                hostname.includes('norastudio') || hostname.includes('nora-studio') ||
+                pathname.includes('/nora') || pathname.includes('/kite') || pathname.includes('/team')
+            ) {
+                return {
+                    title: 'Nora Studios',
+                    icon: '<i class="fas fa-globe"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 2. YouTube
+            if (hostname === 'youtube.com' || hostname.endsWith('.youtube.com') || hostname === 'youtu.be') {
+                return {
+                    title: 'YouTube',
+                    icon: '<i class="fab fa-youtube"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 3. TikTok
+            if (hostname === 'tiktok.com' || hostname.endsWith('.tiktok.com')) {
+                return {
+                    title: 'TikTok',
+                    icon: '<i class="fab fa-tiktok"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 4. Twitch
+            if (hostname === 'twitch.tv' || hostname.endsWith('.twitch.tv')) {
+                return {
+                    title: 'Twitch',
+                    icon: '<i class="fab fa-twitch"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 5. Discord
+            if (hostname === 'discord.com' || hostname.endsWith('.discord.com') || hostname === 'discord.gg' || hostname === 'discordapp.com') {
+                return {
+                    title: 'Discord',
+                    icon: '<i class="fab fa-discord"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 6. Roblox
+            if (hostname === 'roblox.com' || hostname.endsWith('.roblox.com')) {
+                return {
+                    title: 'Roblox',
+                    icon: robloxSvg,
+                    url: safeUrl
+                };
+            }
+
+            // 7. GitHub
+            if (hostname === 'github.com' || hostname.endsWith('.github.com') || hostname === 'github.io' || hostname.endsWith('.github.io')) {
+                return {
+                    title: 'GitHub',
+                    icon: '<i class="fab fa-github"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 8. Twitter / X
+            if (hostname === 'twitter.com' || hostname.endsWith('.twitter.com') || hostname === 'x.com' || hostname.endsWith('.x.com')) {
+                return {
+                    title: 'X / Twitter',
+                    icon: '<i class="fab fa-x-twitter"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 9. Instagram
+            if (hostname === 'instagram.com' || hostname.endsWith('.instagram.com') || hostname === 'instagr.am') {
+                return {
+                    title: 'Instagram',
+                    icon: '<i class="fab fa-instagram"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 10. Reddit
+            if (hostname === 'reddit.com' || hostname.endsWith('.reddit.com') || hostname === 'redd.it') {
+                return {
+                    title: 'Reddit',
+                    icon: '<i class="fab fa-reddit"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 11. Spotify
+            if (hostname === 'spotify.com' || hostname.endsWith('.spotify.com')) {
+                return {
+                    title: 'Spotify',
+                    icon: '<i class="fab fa-spotify"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 12. SoundCloud
+            if (hostname === 'soundcloud.com' || hostname.endsWith('.soundcloud.com')) {
+                return {
+                    title: 'SoundCloud',
+                    icon: '<i class="fab fa-soundcloud"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 13. Apple Music / Podcasts
+            if (hostname.includes('apple.com') && (hostname.includes('music') || pathname.includes('music') || pathname.includes('podcast'))) {
+                return {
+                    title: 'Apple Music',
+                    icon: '<i class="fab fa-apple"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 14. Steam
+            if (hostname === 'steamcommunity.com' || hostname === 'steampowered.com' || hostname === 's.team') {
+                return {
+                    title: 'Steam',
+                    icon: '<i class="fab fa-steam"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 15. Kick
+            if (hostname === 'kick.com' || hostname.endsWith('.kick.com')) {
+                return {
+                    title: 'Kick',
+                    icon: '<i class="fas fa-bolt"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 16. Bluesky
+            if (hostname === 'bsky.app' || hostname.endsWith('.bsky.app') || hostname.endsWith('.bsky.social')) {
+                return {
+                    title: 'Bluesky',
+                    icon: '<i class="fas fa-cloud"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 17. Threads
+            if (hostname === 'threads.net' || hostname.endsWith('.threads.net')) {
+                return {
+                    title: 'Threads',
+                    icon: '<i class="fab fa-threads"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 18. Mastodon
+            if (hostname === 'mastodon.social' || hostname.includes('mastodon')) {
+                return {
+                    title: 'Mastodon',
+                    icon: '<i class="fab fa-mastodon"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 19. Telegram
+            if (hostname === 't.me' || hostname === 'telegram.org' || hostname.endsWith('.telegram.org')) {
+                return {
+                    title: 'Telegram',
+                    icon: '<i class="fab fa-telegram"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 20. Pinterest
+            if (hostname === 'pinterest.com' || hostname.endsWith('.pinterest.com') || hostname === 'pin.it') {
+                return {
+                    title: 'Pinterest',
+                    icon: '<i class="fab fa-pinterest"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 21. Snapchat
+            if (hostname === 'snapchat.com' || hostname.endsWith('.snapchat.com')) {
+                return {
+                    title: 'Snapchat',
+                    icon: '<i class="fab fa-snapchat"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 22. LinkedIn
+            if (hostname === 'linkedin.com' || hostname.endsWith('.linkedin.com')) {
+                return {
+                    title: 'LinkedIn',
+                    icon: '<i class="fab fa-linkedin"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 23. Strawpage
+            if (hostname === 'straw.page' || hostname.endsWith('.straw.page')) {
+                return {
+                    title: 'Strawpage',
+                    icon: '<i class="fas fa-link"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 24. Carrd
+            if (hostname === 'carrd.co' || hostname.endsWith('.carrd.co')) {
+                return {
+                    title: 'Carrd',
+                    icon: '<i class="fas fa-id-card"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 25. Linktree
+            if (hostname === 'linktr.ee' || hostname.endsWith('.linktr.ee')) {
+                return {
+                    title: 'Linktree',
+                    icon: '<i class="fas fa-tree"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 26. guns.lol
+            if (hostname === 'guns.lol' || hostname.endsWith('.guns.lol')) {
+                return {
+                    title: 'guns.lol',
+                    icon: '<i class="fas fa-link"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 27. pronouns.cc / pronouns.page
+            if (hostname.includes('pronouns.cc') || hostname.includes('pronouns.page')) {
+                return {
+                    title: hostname.includes('cc') ? 'pronouns.cc' : 'pronouns.page',
+                    icon: '<i class="fas fa-link"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 28. Beacons
+            if (hostname === 'beacons.ai' || hostname.endsWith('.beacons.ai')) {
+                return {
+                    title: 'Beacons',
+                    icon: '<i class="fas fa-link"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 29. Bento
+            if (hostname === 'bento.me' || hostname.endsWith('.bento.me')) {
+                return {
+                    title: 'Bento',
+                    icon: '<i class="fas fa-box"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 30. Patreon
+            if (hostname === 'patreon.com' || hostname.endsWith('.patreon.com')) {
+                return {
+                    title: 'Patreon',
+                    icon: '<i class="fab fa-patreon"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 31. Ko-fi
+            if (hostname === 'ko-fi.com' || hostname.endsWith('.ko-fi.com')) {
+                return {
+                    title: 'Ko-fi',
+                    icon: '<i class="fas fa-coffee"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 32. Buy Me a Coffee
+            if (hostname === 'buymeacoffee.com' || hostname.endsWith('.buymeacoffee.com')) {
+                return {
+                    title: 'Buy Me a Coffee',
+                    icon: '<i class="fas fa-mug-hot"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 33. PayPal
+            if (hostname === 'paypal.me' || hostname === 'paypal.com' || hostname.endsWith('.paypal.com')) {
+                return {
+                    title: 'PayPal',
+                    icon: '<i class="fab fa-paypal"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 34. Cash App
+            if (hostname === 'cash.app' || hostname.endsWith('.cash.app')) {
+                return {
+                    title: 'Cash App',
+                    icon: '<i class="fas fa-dollar-sign"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 35. itch.io
+            if (hostname === 'itch.io' || hostname.endsWith('.itch.io')) {
+                return {
+                    title: 'itch.io',
+                    icon: '<i class="fab fa-itch-io"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 36. Game Jolt
+            if (hostname === 'gamejolt.com' || hostname.endsWith('.gamejolt.com')) {
+                return {
+                    title: 'Game Jolt',
+                    icon: '<i class="fas fa-gamepad"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 37. ArtStation
+            if (hostname === 'artstation.com' || hostname.endsWith('.artstation.com')) {
+                return {
+                    title: 'ArtStation',
+                    icon: '<i class="fab fa-artstation"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 38. DeviantArt
+            if (hostname === 'deviantart.com' || hostname.endsWith('.deviantart.com')) {
+                return {
+                    title: 'DeviantArt',
+                    icon: '<i class="fab fa-deviantart"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 39. Behance
+            if (hostname === 'behance.net' || hostname.endsWith('.behance.net')) {
+                return {
+                    title: 'Behance',
+                    icon: '<i class="fab fa-behance"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 40. Dribbble
+            if (hostname === 'dribbble.com' || hostname.endsWith('.dribbble.com')) {
+                return {
+                    title: 'Dribbble',
+                    icon: '<i class="fab fa-dribbble"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 41. Figma
+            if (hostname === 'figma.com' || hostname.endsWith('.figma.com')) {
+                return {
+                    title: 'Figma',
+                    icon: '<i class="fab fa-figma"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 42. Notion
+            if (hostname === 'notion.so' || hostname === 'notion.site' || hostname.endsWith('.notion.site')) {
+                return {
+                    title: 'Notion',
+                    icon: '<i class="fas fa-book-open"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 43. Medium
+            if (hostname === 'medium.com' || hostname.endsWith('.medium.com')) {
+                return {
+                    title: 'Medium',
+                    icon: '<i class="fab fa-medium"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 44. Substack
+            if (hostname === 'substack.com' || hostname.endsWith('.substack.com')) {
+                return {
+                    title: 'Substack',
+                    icon: '<i class="fas fa-bookmark"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 45. Dev.to
+            if (hostname === 'dev.to') {
+                return {
+                    title: 'DEV',
+                    icon: '<i class="fab fa-dev"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 46. HackerOne
+            if (hostname === 'hackerone.com') {
+                return {
+                    title: 'HackerOne',
+                    icon: '<i class="fas fa-shield-alt"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 47. Google Drive / Docs
+            if (hostname.includes('google.com') && (hostname.includes('drive') || hostname.includes('docs'))) {
+                return {
+                    title: 'Google Docs',
+                    icon: '<i class="fab fa-google-drive"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 48. Wikipedia
+            if (hostname === 'wikipedia.org' || hostname.endsWith('.wikipedia.org')) {
+                return {
+                    title: 'Wikipedia',
+                    icon: '<i class="fab fa-wikipedia-w"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 49. GitLab
+            if (hostname === 'gitlab.com' || hostname.endsWith('.gitlab.com')) {
+                return {
+                    title: 'GitLab',
+                    icon: '<i class="fab fa-gitlab"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 50. Top.gg
+            if (hostname === 'top.gg' || hostname.endsWith('.top.gg')) {
+                return {
+                    title: 'Top.gg',
+                    icon: '<i class="fas fa-award"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 51. Vercel
+            if (hostname === 'vercel.com' || hostname.endsWith('.vercel.app')) {
+                return {
+                    title: 'Vercel',
+                    icon: '<i class="fas fa-play" style="transform: rotate(-90deg); font-size: 0.7rem;"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 52. Cloudflare
+            if (hostname.includes('cloudflare')) {
+                return {
+                    title: 'Cloudflare',
+                    icon: '<i class="fab fa-cloudflare"></i>',
+                    url: safeUrl
+                };
+            }
+
+            // 53. UNIVERSAL DETECTOR & NAMER (ALL other arbitrary links)
+            let cleanHost = hostname.replace(/^(www\.|m\.|mobile\.|app\.|my\.|web\.)+/i, '');
+            // Strip multi-part TLDs
+            cleanHost = cleanHost.replace(/\.(co\.uk|com\.au|co\.jp|co\.nz|com\.br|co\.za|org\.uk|gov\.uk)$/i, '');
+            const parts = cleanHost.split('.');
+            let brand = '';
+            if (parts.length > 1) {
+                parts.pop(); // drop single TLD (.com, .net, .dev, .io, .org, .xyz, etc.)
+                if (parts.length === 1) {
+                    brand = parts[0];
+                } else if (['blog', 'docs', 'wiki', 'shop', 'store', 'news', 'app', 'status'].includes(parts[0])) {
+                    brand = parts[1] + ' ' + parts[0];
+                } else {
+                    brand = parts[parts.length - 1];
+                }
+            } else {
+                brand = parts[0] || 'Website';
+            }
+
+            const formattedTitle = brand
+                .replace(/[-_.]+/g, ' ')
+                .trim()
+                .split(' ')
+                .filter(Boolean)
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                .join(' ') || 'Website';
+
+            let iconHtml = '<i class="fas fa-globe"></i>';
+            if (/blog|press/i.test(cleanHost) || /blog|press/i.test(pathname)) iconHtml = '<i class="fas fa-blog"></i>';
+            else if (/shop|store|merch|buy/i.test(cleanHost) || /shop|store/i.test(pathname)) iconHtml = '<i class="fas fa-bag-shopping"></i>';
+            else if (/doc|wiki|guide/i.test(cleanHost) || /doc|wiki/i.test(pathname)) iconHtml = '<i class="fas fa-book"></i>';
+            else if (/photo|gallery|art|design/i.test(cleanHost) || /gallery|portfolio/i.test(pathname)) iconHtml = '<i class="fas fa-image"></i>';
+            else if (/game|play/i.test(cleanHost)) iconHtml = '<i class="fas fa-gamepad"></i>';
+            else if (/music|audio|sound|podcast/i.test(cleanHost)) iconHtml = '<i class="fas fa-music"></i>';
+            else if (/video|stream|tv/i.test(cleanHost)) iconHtml = '<i class="fas fa-video"></i>';
+            else if (/code|dev|git|api/i.test(cleanHost)) iconHtml = '<i class="fas fa-code"></i>';
+            else if (/forum|community/i.test(cleanHost)) iconHtml = '<i class="fas fa-comments"></i>';
+            else if (/secure|security|auth|privacy/i.test(cleanHost)) iconHtml = '<i class="fas fa-shield-alt"></i>';
+
+            return {
+                title: formattedTitle,
+                icon: iconHtml,
+                url: safeUrl
+            };
+        }
+
         function renderSocialButtonsHtml(links, userId, hideDiscord) {
             if (!links || typeof links !== 'object') links = {};
             const robloxSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg>';
             let html = '';
+            const addedUrls = new Set();
 
             const addBtn = (rawUrl, iconHtml, label) => {
                 const safeUrl = sanitizeUrl(rawUrl);
                 if (safeUrl && (safeUrl.startsWith('http://') || safeUrl.startsWith('https://'))) {
+                    const normKey = safeUrl.replace(/\/+$/, '').toLowerCase();
+                    if (addedUrls.has(normKey)) return;
+                    addedUrls.add(normKey);
                     html += `<a href="${safeUrl}" target="_blank" rel="noopener" class="social-btn">${iconHtml} ${label}</a>`;
                 }
             };
@@ -2562,7 +3118,29 @@
             if (links.strawpage) addBtn(links.strawpage, '<i class="fas fa-link"></i>', 'Strawpage');
             if (links.pronouns) addBtn(links.pronouns, '<i class="fas fa-link"></i>', 'pronouns.cc');
             if (links.hackerone) addBtn(links.hackerone, '<i class="fas fa-shield-alt"></i>', 'HackerOne');
-            if (links.other && links.other !== links.strawpage) addBtn(links.other, '<i class="fas fa-globe"></i>', 'Link');
+
+            // Handle Custom Link(s) with Universal Link Detection (detects and names ALL links)
+            const handleCustomUrl = (rawVal) => {
+                if (!rawVal) return;
+                const items = Array.isArray(rawVal) ? rawVal : String(rawVal).split(/[\n,]+/);
+                items.forEach(item => {
+                    const trimmed = item.trim();
+                    if (!trimmed) return;
+                    const meta = detectLinkInfo(trimmed);
+                    if (meta && meta.url) {
+                        addBtn(meta.url, '<i class="fas fa-globe"></i>', meta.title);
+                    }
+                });
+            };
+
+            if (links.other) handleCustomUrl(links.other);
+            if (links.custom) handleCustomUrl(links.custom);
+            if (links.website && links.website !== links.other) handleCustomUrl(links.website);
+            if (links.portfolio && links.portfolio !== links.other) handleCustomUrl(links.portfolio);
+            if (Array.isArray(links.customLinks)) {
+                links.customLinks.forEach(handleCustomUrl);
+            }
+
             if (links.invite) addBtn(links.invite, '<i class="fab fa-discord"></i>', 'Add to Discord');
             if (links.docs) addBtn(links.docs, '<i class="fas fa-book"></i>', 'Docs');
 
@@ -2598,6 +3176,25 @@
 
             const hiddenTag = document.getElementById('preview-hidden-tag');
             if (hiddenTag) hiddenTag.style.display = hideCard ? 'inline-block' : 'none';
+
+            // Real-time Link Detection indicator under Custom Link input
+            const otherVal = document.getElementById('link-other')?.value.trim();
+            const detectPill = document.getElementById('link-detected-preview');
+            if (detectPill) {
+                if (otherVal) {
+                    const rawParts = otherVal.split(/[\n,]+/);
+                    const metas = rawParts.map(p => detectLinkInfo(p.trim())).filter(Boolean);
+                    if (metas.length > 0) {
+                        detectPill.style.display = 'flex';
+                        detectPill.innerHTML = `<span style="color: #94a3b8; font-weight: 600;"><i class="fas fa-globe"></i> Detected:</span> ` +
+                            metas.map(m => `<span class="social-btn" style="padding: 2px 10px; font-size: 0.74rem; pointer-events: none;"><i class="fas fa-globe"></i> ${m.title}</span>`).join(' ');
+                    } else {
+                        detectPill.style.display = 'none';
+                    }
+                } else {
+                    detectPill.style.display = 'none';
+                }
+            }
 
             const links = {
                 github: document.getElementById('link-github')?.value.trim(),
@@ -2680,6 +3277,8 @@
             document.getElementById('link-twitch').value = '';
             document.getElementById('link-roblox').value = '';
             document.getElementById('link-other').value = '';
+            const detectPill = document.getElementById('link-detected-preview');
+            if (detectPill) detectPill.style.display = 'none';
             document.getElementById('toggle-show-discord').checked = true;
             document.getElementById('toggle-hide-role').checked = false;
             document.getElementById('toggle-hide-join').checked = false;
