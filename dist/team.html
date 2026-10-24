@@ -739,10 +739,74 @@
         .member-bio {
             color: var(--text-muted);
             font-size: 0.92rem;
-            line-height: 1.6;
+            line-height: 1.5;
             margin: 10px 0 16px 0;
             flex-grow: 1;
             word-break: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 6.2em;
+        }
+
+        .link-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .link-input-row:first-child {
+            margin-top: 0;
+        }
+        .link-input-row .form-input {
+            flex: 1;
+        }
+        .link-hide-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 12px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .link-hide-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.22);
+            color: #e2e8f0;
+        }
+        .link-hide-toggle input[type="checkbox"] {
+            accent-color: #ef4444;
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
+            margin: 0;
+        }
+        .link-hide-toggle:has(input:checked) {
+            background: rgba(239, 68, 68, 0.14);
+            border-color: rgba(239, 68, 68, 0.38);
+            color: #fca5a5;
+        }
+        .custom-link-preview-pill {
+            margin-top: 5px;
+            margin-bottom: 6px;
+            font-size: 0.76rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         .member-bio blockquote {
             border-left: 3px solid #5865F2;
@@ -1643,37 +1707,106 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="edit-bio">
-                            <span>Description / Bio</span>
-                            <span class="form-hint" id="bio-hint">Supports Discord Markdown: **bold**, *italic*, __underline__, ~~strike~~, > quote, `code`, ||spoiler||</span>
-                        </label>
-                        <textarea id="edit-bio" class="form-textarea" placeholder="Tell the community about yourself, your role, or what you work on..." maxlength="400" oninput="updateLivePreview()"></textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                            <label class="form-label" for="edit-bio" style="margin-bottom: 0;">
+                                <span>Description / Bio</span>
+                            </label>
+                            <span id="bio-char-counter" style="font-size: 0.78rem; font-weight: 700; color: #94a3b8;">0 / 200 (Max 4 lines)</span>
+                        </div>
+                        <div class="form-hint" id="bio-hint" style="margin-bottom: 6px;">Supports Discord Markdown: **bold**, *italic*, __underline__, ~~strike~~, &gt; quote, `code`, ||spoiler|| (Max 200 characters &amp; 4 lines)</div>
+                        <textarea id="edit-bio" class="form-textarea" placeholder="Tell the community about yourself, your role, or what you work on..." maxlength="200" rows="3" oninput="handleBioInput(this)"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">
                             <span>Social & Community Links</span>
-                            <span class="form-hint">Leave blank to exclude any link</span>
+                            <span class="form-hint">Leave blank to exclude. Check "Hide" to keep saved while hidden from public view.</span>
                         </label>
+
+                        <!-- Discord Profile Auto-linked -->
                         <div style="margin-bottom: 10px; padding: 10px 14px; background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                             <div style="font-size: 0.8rem; color: #c7d2fe; display: flex; align-items: center; gap: 8px;">
                                 <i class="fab fa-discord" style="color: #5865F2; font-size: 1rem;"></i>
                                 <span>Discord Profile: <strong style="color: #fff;">Auto-linked to your account</strong></span>
                             </div>
-                            <span style="font-size: 0.72rem; color: #818cf8; background: rgba(88, 101, 242, 0.15); padding: 2px 8px; border-radius: 4px; font-weight: 700;">Automatic</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 0.72rem; color: #818cf8; background: rgba(88, 101, 242, 0.15); padding: 2px 8px; border-radius: 4px; font-weight: 700;">Automatic</span>
+                                <label class="link-hide-toggle" title="Hide Discord profile link from your public card" style="height: 30px; padding: 0 8px; font-size: 0.74rem;">
+                                    <input type="checkbox" id="hide-link-discord" onchange="syncDiscordHideToggle(this.checked); updateLivePreview()">
+                                    <span><i class="fas fa-eye-slash"></i> Hide</span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="form-row-2">
+
+                        <!-- Standard Social Links with Individual Hide Toggles -->
+                        <div class="link-input-row">
                             <input type="url" id="link-github" class="form-input" placeholder="GitHub URL (https://github.com/...)" oninput="updateLivePreview()">
+                            <label class="link-hide-toggle" title="Hide GitHub link from card">
+                                <input type="checkbox" id="hide-link-github" onchange="updateLivePreview()">
+                                <span><i class="fas fa-eye-slash"></i> Hide</span>
+                            </label>
+                        </div>
+
+                        <div class="link-input-row">
                             <input type="url" id="link-roblox" class="form-input" placeholder="Roblox Profile URL (https://www.roblox.com/...)" oninput="updateLivePreview()">
+                            <label class="link-hide-toggle" title="Hide Roblox link from card">
+                                <input type="checkbox" id="hide-link-roblox" onchange="updateLivePreview()">
+                                <span><i class="fas fa-eye-slash"></i> Hide</span>
+                            </label>
                         </div>
-                        <div class="form-row-2" style="margin-top: 8px;">
-                            <input type="url" id="link-youtube" class="form-input" placeholder="YouTube URL" oninput="updateLivePreview()">
-                            <input type="url" id="link-twitch" class="form-input" placeholder="Twitch URL" oninput="updateLivePreview()">
+
+                        <div class="link-input-row">
+                            <input type="url" id="link-youtube" class="form-input" placeholder="YouTube URL (https://youtube.com/...)" oninput="updateLivePreview()">
+                            <label class="link-hide-toggle" title="Hide YouTube link from card">
+                                <input type="checkbox" id="hide-link-youtube" onchange="updateLivePreview()">
+                                <span><i class="fas fa-eye-slash"></i> Hide</span>
+                            </label>
                         </div>
-                        <div class="form-row-2" style="margin-top: 8px;">
-                            <input type="url" id="link-other" class="form-input" placeholder="Custom Link (TikTok, Nora Studios, YouTube, Portfolio, etc.)" oninput="updateLivePreview()">
+
+                        <div class="link-input-row">
+                            <input type="url" id="link-twitch" class="form-input" placeholder="Twitch URL (https://twitch.tv/...)" oninput="updateLivePreview()">
+                            <label class="link-hide-toggle" title="Hide Twitch link from card">
+                                <input type="checkbox" id="hide-link-twitch" onchange="updateLivePreview()">
+                                <span><i class="fas fa-eye-slash"></i> Hide</span>
+                            </label>
                         </div>
-                        <div id="link-detected-preview" style="display: none; margin-top: 6px; font-size: 0.76rem; align-items: center; gap: 8px; flex-wrap: wrap;"></div>
+
+                        <!-- 3 Custom Links each independently hideable with Universal Link Detection -->
+                        <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+                            <span style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 6px;">
+                                <i class="fas fa-globe" style="color: #38bdf8;"></i> Custom Links (Up to 3, Auto-Detected &amp; Independently Hideable)
+                            </span>
+
+                            <!-- Custom Link 1 -->
+                            <div class="link-input-row">
+                                <input type="url" id="link-other" class="form-input" placeholder="Custom Link 1 (vaztinix.dev, TikTok, Portfolio, Website...)" oninput="handleCustomLinkInput(1); updateLivePreview()">
+                                <label class="link-hide-toggle" title="Hide Custom Link 1 from card">
+                                    <input type="checkbox" id="hide-link-other" onchange="updateLivePreview()">
+                                    <span><i class="fas fa-eye-slash"></i> Hide</span>
+                                </label>
+                            </div>
+                            <div id="link-detected-preview-1" class="custom-link-preview-pill" style="display: none;"></div>
+
+                            <!-- Custom Link 2 -->
+                            <div class="link-input-row">
+                                <input type="url" id="link-other2" class="form-input" placeholder="Custom Link 2 (Instagram, Patreon, Steam, Blog...)" oninput="handleCustomLinkInput(2); updateLivePreview()">
+                                <label class="link-hide-toggle" title="Hide Custom Link 2 from card">
+                                    <input type="checkbox" id="hide-link-other2" onchange="updateLivePreview()">
+                                    <span><i class="fas fa-eye-slash"></i> Hide</span>
+                                </label>
+                            </div>
+                            <div id="link-detected-preview-2" class="custom-link-preview-pill" style="display: none;"></div>
+
+                            <!-- Custom Link 3 -->
+                            <div class="link-input-row">
+                                <input type="url" id="link-other3" class="form-input" placeholder="Custom Link 3 (Beacons, Carrd, SoundCloud, Shop...)" oninput="handleCustomLinkInput(3); updateLivePreview()">
+                                <label class="link-hide-toggle" title="Hide Custom Link 3 from card">
+                                    <input type="checkbox" id="hide-link-other3" onchange="updateLivePreview()">
+                                    <span><i class="fas fa-eye-slash"></i> Hide</span>
+                                </label>
+                            </div>
+                            <div id="link-detected-preview-3" class="custom-link-preview-pill" style="display: none;"></div>
+                        </div>
                     </div>
 
                     <!-- Privacy & Visibility Toggles -->
@@ -1684,7 +1817,7 @@
                                 <span class="toggle-sub">Automatically shows a direct link button to your Discord profile on your card</span>
                             </div>
                             <div class="switch-wrap">
-                                <input type="checkbox" id="toggle-show-discord" checked onchange="updateLivePreview()">
+                                <input type="checkbox" id="toggle-show-discord" checked onchange="syncShowDiscordToggle(this.checked); updateLivePreview()">
                                 <span class="switch-slider"></span>
                             </div>
                         </label>
@@ -2177,10 +2310,73 @@
             return '';
         }
 
+        function handleBioInput(el) {
+            if (!el) return;
+            let val = el.value || '';
+            const lines = val.split(/\r?\n/);
+            if (lines.length > 4) {
+                val = lines.slice(0, 4).join('\n');
+                el.value = val;
+            }
+            if (val.length > 200) {
+                val = val.slice(0, 200);
+                el.value = val;
+            }
+            const counter = document.getElementById('bio-char-counter');
+            if (counter) {
+                const lineCount = val ? val.split(/\r?\n/).length : 0;
+                counter.textContent = `${val.length} / 200 (${lineCount}/4 lines)`;
+                if (val.length >= 200 || lineCount >= 4) {
+                    counter.style.color = '#f87171';
+                } else if (val.length >= 170) {
+                    counter.style.color = '#fbbf24';
+                } else {
+                    counter.style.color = '#94a3b8';
+                }
+            }
+            updateLivePreview();
+        }
+
+        function handleCustomLinkInput(idx) {
+            const inputId = idx === 1 ? 'link-other' : `link-other${idx}`;
+            const pillId = `link-detected-preview-${idx}`;
+            const val = document.getElementById(inputId)?.value.trim();
+            const pillEl = document.getElementById(pillId);
+            if (!pillEl) return;
+
+            if (val) {
+                const meta = detectLinkInfo(val);
+                if (meta && meta.url) {
+                    pillEl.style.display = 'flex';
+                    pillEl.innerHTML = `<span style="color: #94a3b8; font-weight: 600;"><i class="fas fa-globe"></i> Detected:</span> ` +
+                        `<span class="social-btn" style="padding: 2px 10px; font-size: 0.74rem; pointer-events: none;"><i class="fas fa-globe"></i> ${meta.title}</span>`;
+                } else {
+                    pillEl.style.display = 'none';
+                }
+            } else {
+                pillEl.style.display = 'none';
+            }
+        }
+
+        function syncDiscordHideToggle(isHideChecked) {
+            const showToggle = document.getElementById('toggle-show-discord');
+            if (showToggle) showToggle.checked = !isHideChecked;
+        }
+
+        function syncShowDiscordToggle(isShowChecked) {
+            const hideCheckbox = document.getElementById('hide-link-discord');
+            if (hideCheckbox) hideCheckbox.checked = !isShowChecked;
+        }
+
         function formatDiscordMarkdown(text) {
             if (!text || typeof text !== 'string') return '';
+            let raw = text.slice(0, 200);
+            const rawLines = raw.split(/\r?\n/);
+            if (rawLines.length > 4) {
+                raw = rawLines.slice(0, 4).join('\n');
+            }
             // HTML escape first for safety
-            let escaped = text
+            let escaped = raw
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
@@ -3100,6 +3296,17 @@
             let html = '';
             const addedUrls = new Set();
 
+            const isHidden = (key) => {
+                if (!links) return false;
+                if (links.hidden && typeof links.hidden === 'object') {
+                    if (links.hidden[key] === true) return true;
+                }
+                if (links['hide_' + key] === true || links['hide' + key.charAt(0).toUpperCase() + key.slice(1)] === true) {
+                    return true;
+                }
+                return false;
+            };
+
             const addBtn = (rawUrl, iconHtml, label) => {
                 const safeUrl = sanitizeUrl(rawUrl);
                 if (safeUrl && (safeUrl.startsWith('http://') || safeUrl.startsWith('https://'))) {
@@ -3110,18 +3317,19 @@
                 }
             };
 
-            if (links.github) addBtn(links.github, '<i class="fab fa-github"></i>', 'GitHub');
-            if (links.youtube) addBtn(links.youtube, '<i class="fab fa-youtube"></i>', 'YouTube');
-            if (links.twitch) addBtn(links.twitch, '<i class="fab fa-twitch"></i>', 'Twitch');
-            if (links.roblox) addBtn(links.roblox, robloxSvg, 'Roblox');
-            if (links.gunslol) addBtn(links.gunslol, '<i class="fas fa-link"></i>', 'guns.lol');
-            if (links.strawpage) addBtn(links.strawpage, '<i class="fas fa-link"></i>', 'Strawpage');
-            if (links.pronouns) addBtn(links.pronouns, '<i class="fas fa-link"></i>', 'pronouns.cc');
-            if (links.hackerone) addBtn(links.hackerone, '<i class="fas fa-shield-alt"></i>', 'HackerOne');
+            if (links.github && !isHidden('github')) addBtn(links.github, '<i class="fab fa-github"></i>', 'GitHub');
+            if (links.youtube && !isHidden('youtube')) addBtn(links.youtube, '<i class="fab fa-youtube"></i>', 'YouTube');
+            if (links.twitch && !isHidden('twitch')) addBtn(links.twitch, '<i class="fab fa-twitch"></i>', 'Twitch');
+            if (links.roblox && !isHidden('roblox')) addBtn(links.roblox, robloxSvg, 'Roblox');
+            if (links.gunslol && !isHidden('gunslol')) addBtn(links.gunslol, '<i class="fas fa-link"></i>', 'guns.lol');
+            if (links.strawpage && !isHidden('strawpage')) addBtn(links.strawpage, '<i class="fas fa-link"></i>', 'Strawpage');
+            if (links.pronouns && !isHidden('pronouns')) addBtn(links.pronouns, '<i class="fas fa-link"></i>', 'pronouns.cc');
+            if (links.hackerone && !isHidden('hackerone')) addBtn(links.hackerone, '<i class="fas fa-shield-alt"></i>', 'HackerOne');
 
             // Handle Custom Link(s) with Universal Link Detection (detects and names ALL links)
-            const handleCustomUrl = (rawVal) => {
+            const handleCustomUrl = (rawVal, hideKey) => {
                 if (!rawVal) return;
+                if (hideKey && isHidden(hideKey)) return;
                 const items = Array.isArray(rawVal) ? rawVal : String(rawVal).split(/[\n,]+/);
                 items.forEach(item => {
                     const trimmed = item.trim();
@@ -3133,19 +3341,25 @@
                 });
             };
 
-            if (links.other) handleCustomUrl(links.other);
-            if (links.custom) handleCustomUrl(links.custom);
-            if (links.website && links.website !== links.other) handleCustomUrl(links.website);
-            if (links.portfolio && links.portfolio !== links.other) handleCustomUrl(links.portfolio);
+            if (links.other) handleCustomUrl(links.other, 'other');
+            if (links.other2) handleCustomUrl(links.other2, 'other2');
+            if (links.other3) handleCustomUrl(links.other3, 'other3');
+            if (links.custom) handleCustomUrl(links.custom, 'custom');
+            if (links.website && links.website !== links.other) handleCustomUrl(links.website, 'website');
+            if (links.portfolio && links.portfolio !== links.other) handleCustomUrl(links.portfolio, 'portfolio');
             if (Array.isArray(links.customLinks)) {
-                links.customLinks.forEach(handleCustomUrl);
+                links.customLinks.forEach((item, idx) => {
+                    const hKey = idx === 0 ? 'other' : `other${idx + 1}`;
+                    handleCustomUrl(item, hKey);
+                });
             }
 
             if (links.invite) addBtn(links.invite, '<i class="fab fa-discord"></i>', 'Add to Discord');
             if (links.docs) addBtn(links.docs, '<i class="fas fa-book"></i>', 'Docs');
 
             // Auto-generate Discord profile button strictly if NOT hidden
-            if (!hideDiscord) {
+            const isDiscordHidden = hideDiscord || isHidden('discord');
+            if (!isDiscordHidden) {
                 const cleanId = userId ? String(userId).replace(/[^0-9]/g, '') : null;
                 const targetDiscord = (links.discord && sanitizeUrl(links.discord)) || (cleanId && cleanId !== '1375943730951098549' ? `https://discord.com/users/${cleanId}` : null);
                 if (targetDiscord) {
@@ -3177,33 +3391,33 @@
             const hiddenTag = document.getElementById('preview-hidden-tag');
             if (hiddenTag) hiddenTag.style.display = hideCard ? 'inline-block' : 'none';
 
-            // Real-time Link Detection indicator under Custom Link input
-            const otherVal = document.getElementById('link-other')?.value.trim();
-            const detectPill = document.getElementById('link-detected-preview');
-            if (detectPill) {
-                if (otherVal) {
-                    const rawParts = otherVal.split(/[\n,]+/);
-                    const metas = rawParts.map(p => detectLinkInfo(p.trim())).filter(Boolean);
-                    if (metas.length > 0) {
-                        detectPill.style.display = 'flex';
-                        detectPill.innerHTML = `<span style="color: #94a3b8; font-weight: 600;"><i class="fas fa-globe"></i> Detected:</span> ` +
-                            metas.map(m => `<span class="social-btn" style="padding: 2px 10px; font-size: 0.74rem; pointer-events: none;"><i class="fas fa-globe"></i> ${m.title}</span>`).join(' ');
-                    } else {
-                        detectPill.style.display = 'none';
-                    }
-                } else {
-                    detectPill.style.display = 'none';
-                }
-            }
+            // Real-time Link Detection indicators for all 3 custom links
+            handleCustomLinkInput(1);
+            handleCustomLinkInput(2);
+            handleCustomLinkInput(3);
+
+            const hiddenMap = {
+                discord: document.getElementById('hide-link-discord')?.checked || !showDiscord || false,
+                github: document.getElementById('hide-link-github')?.checked || false,
+                roblox: document.getElementById('hide-link-roblox')?.checked || false,
+                youtube: document.getElementById('hide-link-youtube')?.checked || false,
+                twitch: document.getElementById('hide-link-twitch')?.checked || false,
+                other: document.getElementById('hide-link-other')?.checked || false,
+                other2: document.getElementById('hide-link-other2')?.checked || false,
+                other3: document.getElementById('hide-link-other3')?.checked || false
+            };
 
             const links = {
                 github: document.getElementById('link-github')?.value.trim(),
                 youtube: document.getElementById('link-youtube')?.value.trim(),
                 twitch: document.getElementById('link-twitch')?.value.trim(),
                 roblox: document.getElementById('link-roblox')?.value.trim(),
-                other: document.getElementById('link-other')?.value.trim()
+                other: document.getElementById('link-other')?.value.trim(),
+                other2: document.getElementById('link-other2')?.value.trim(),
+                other3: document.getElementById('link-other3')?.value.trim(),
+                hidden: hiddenMap
             };
-            if (showDiscord) {
+            if (!hiddenMap.discord) {
                 const sId = String(currentStaffUser?.id || currentStaffCard.id || '').replace(/[^0-9]/g, '');
                 if (sId) links.discord = `https://discord.com/users/${sId}`;
             }
@@ -3273,7 +3487,7 @@
                 article.appendChild(joinSpan);
             }
 
-            const linksHtml = renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, !showDiscord);
+            const linksHtml = renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, hiddenMap.discord);
             if (linksHtml) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = linksHtml;
@@ -3320,13 +3534,29 @@
             resetGlowColor();
 
             document.getElementById('edit-bio').value = '';
+            const counter = document.getElementById('bio-char-counter');
+            if (counter) {
+                counter.textContent = '0 / 200 (Max 4 lines)';
+                counter.style.color = '#94a3b8';
+            }
+
             document.getElementById('link-github').value = '';
             document.getElementById('link-youtube').value = '';
             document.getElementById('link-twitch').value = '';
             document.getElementById('link-roblox').value = '';
             document.getElementById('link-other').value = '';
-            const detectPill = document.getElementById('link-detected-preview');
-            if (detectPill) detectPill.style.display = 'none';
+            document.getElementById('link-other2').value = '';
+            document.getElementById('link-other3').value = '';
+            for (let i = 1; i <= 3; i++) {
+                const p = document.getElementById(`link-detected-preview-${i}`);
+                if (p) p.style.display = 'none';
+            }
+
+            ['discord', 'github', 'roblox', 'youtube', 'twitch', 'other', 'other2', 'other3'].forEach(k => {
+                const cb = document.getElementById(`hide-link-${k}`);
+                if (cb) cb.checked = false;
+            });
+
             document.getElementById('toggle-show-discord').checked = true;
             document.getElementById('toggle-hide-role').checked = false;
             document.getElementById('toggle-hide-join').checked = false;
@@ -3344,19 +3574,34 @@
                 return;
             }
 
-            const links = {};
+            const hiddenMap = {
+                discord: document.getElementById('hide-link-discord')?.checked || !document.getElementById('toggle-show-discord')?.checked || false,
+                github: document.getElementById('hide-link-github')?.checked || false,
+                roblox: document.getElementById('hide-link-roblox')?.checked || false,
+                youtube: document.getElementById('hide-link-youtube')?.checked || false,
+                twitch: document.getElementById('hide-link-twitch')?.checked || false,
+                other: document.getElementById('hide-link-other')?.checked || false,
+                other2: document.getElementById('hide-link-other2')?.checked || false,
+                other3: document.getElementById('hide-link-other3')?.checked || false
+            };
+
+            const links = { hidden: hiddenMap };
             const gh = document.getElementById('link-github')?.value.trim();
             const yt = document.getElementById('link-youtube')?.value.trim();
             const tw = document.getElementById('link-twitch')?.value.trim();
             const rb = document.getElementById('link-roblox')?.value.trim();
-            const ot = document.getElementById('link-other')?.value.trim();
+            const ot1 = document.getElementById('link-other')?.value.trim();
+            const ot2 = document.getElementById('link-other2')?.value.trim();
+            const ot3 = document.getElementById('link-other3')?.value.trim();
             if (gh) links.github = gh;
             if (yt) links.youtube = yt;
             if (tw) links.twitch = tw;
             if (rb) links.roblox = rb;
-            if (ot) links.other = ot;
+            if (ot1) links.other = ot1;
+            if (ot2) links.other2 = ot2;
+            if (ot3) links.other3 = ot3;
 
-            const hideDiscord = !document.getElementById('toggle-show-discord')?.checked;
+            const hideDiscord = hiddenMap.discord;
             const payload = {
                 displayName: document.getElementById('edit-display-name')?.value.trim() || null,
                 description: document.getElementById('edit-bio')?.value.trim(),
@@ -3557,7 +3802,11 @@
                         resetGlowColor();
                     }
 
-                    if (document.getElementById('edit-bio')) document.getElementById('edit-bio').value = card.description || '';
+                    const bioInput = document.getElementById('edit-bio');
+                    if (bioInput) {
+                        bioInput.value = card.description || '';
+                        handleBioInput(bioInput);
+                    }
 
                     if (card.links) {
                         const l = typeof card.links === 'string' ? JSON.parse(card.links || '{}') : card.links;
@@ -3566,9 +3815,23 @@
                         if (document.getElementById('link-twitch')) document.getElementById('link-twitch').value = l.twitch || '';
                         if (document.getElementById('link-roblox')) document.getElementById('link-roblox').value = l.roblox || '';
                         if (document.getElementById('link-other')) document.getElementById('link-other').value = l.other || l.strawpage || l.pronouns || l.hackerone || '';
+                        if (document.getElementById('link-other2')) document.getElementById('link-other2').value = l.other2 || '';
+                        if (document.getElementById('link-other3')) document.getElementById('link-other3').value = l.other3 || '';
+
+                        const h = (l && typeof l.hidden === 'object') ? l.hidden : {};
+                        if (document.getElementById('hide-link-github')) document.getElementById('hide-link-github').checked = !!h.github;
+                        if (document.getElementById('hide-link-roblox')) document.getElementById('hide-link-roblox').checked = !!h.roblox;
+                        if (document.getElementById('hide-link-youtube')) document.getElementById('hide-link-youtube').checked = !!h.youtube;
+                        if (document.getElementById('hide-link-twitch')) document.getElementById('hide-link-twitch').checked = !!h.twitch;
+                        if (document.getElementById('hide-link-other')) document.getElementById('hide-link-other').checked = !!h.other;
+                        if (document.getElementById('hide-link-other2')) document.getElementById('hide-link-other2').checked = !!h.other2;
+                        if (document.getElementById('hide-link-other3')) document.getElementById('hide-link-other3').checked = !!h.other3;
+
+                        const isDiscordHidden = !!card.hideDiscord || !!h.discord;
+                        if (document.getElementById('hide-link-discord')) document.getElementById('hide-link-discord').checked = isDiscordHidden;
+                        if (document.getElementById('toggle-show-discord')) document.getElementById('toggle-show-discord').checked = !isDiscordHidden;
                     }
 
-                    if (document.getElementById('toggle-show-discord')) document.getElementById('toggle-show-discord').checked = !card.hideDiscord;
                     if (document.getElementById('toggle-hide-role')) document.getElementById('toggle-hide-role').checked = !!card.hideRole;
                     if (document.getElementById('toggle-hide-join')) document.getElementById('toggle-hide-join').checked = !!card.hideJoinDate;
                     if (document.getElementById('toggle-hide-card')) document.getElementById('toggle-hide-card').checked = !!card.hideCard;

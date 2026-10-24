@@ -2510,7 +2510,18 @@ app.post('/api/team/my-card', async (req, res) => {
         const { saveBase64Image } = require('./utils/imageSaver');
 
         if (displayName !== undefined) prefs.teamCardDisplayName = displayName ? String(displayName).trim().slice(0, 60) : null;
-        if (description !== undefined) prefs.teamCardDescription = description !== null ? String(description).slice(0, 400) : null;
+        if (description !== undefined) {
+            if (description === null || description === '') {
+                prefs.teamCardDescription = null;
+            } else {
+                let cleanBio = String(description).slice(0, 200);
+                const bioLines = cleanBio.split(/\r?\n/);
+                if (bioLines.length > 4) {
+                    cleanBio = bioLines.slice(0, 4).join('\n');
+                }
+                prefs.teamCardDescription = cleanBio;
+            }
+        }
         if (image !== undefined) {
             if (image && typeof image === 'string' && image.startsWith('data:image/')) {
                 prefs.teamCardImage = saveBase64Image(image, 'team_avatar');
