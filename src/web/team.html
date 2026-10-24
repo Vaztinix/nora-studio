@@ -647,15 +647,72 @@
             position: absolute;
             bottom: -2px;
             right: -2px;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             border: 3px solid #0B0C12;
-            background: #9CA3AF;
+            background: #747F8D;
+            cursor: pointer;
+            z-index: 10;
+            outline: none;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
         }
-        .status-dot.online { background: #10B981; }
-        .status-dot.idle { background: #F59E0B; }
-        .status-dot.dnd { background: #EF4444; }
+        .status-dot:hover,
+        .status-dot:focus-visible,
+        .status-dot.active-tooltip {
+            transform: scale(1.25);
+        }
+        .status-dot.online { background: #10B981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.55); }
+        .status-dot.idle { background: #F59E0B; box-shadow: 0 0 10px rgba(245, 158, 11, 0.55); }
+        .status-dot.dnd { background: #EF4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.55); }
+        .status-dot.offline { background: #747F8D; }
+
+        /* Status Tooltip on hover (PC) or click/tap (mobile) */
+        .status-dot::after {
+            content: attr(data-status-label);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: rgba(15, 17, 26, 0.95);
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 60;
+        }
+        .status-dot::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(15, 17, 26, 0.95);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 61;
+        }
+        .status-dot:hover::after,
+        .status-dot:focus-visible::after,
+        .status-dot.active-tooltip::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .status-dot:hover::before,
+        .status-dot:focus-visible::before,
+        .status-dot.active-tooltip::before {
+            opacity: 1;
+        }
 
         .card-header-info {
             display: flex;
@@ -1541,6 +1598,17 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
+            <!-- Delegation Card Switcher -->
+            <div id="card-switcher-container" style="display: none; margin-bottom: 20px; padding: 14px 18px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-layer-group" style="color: #818cf8; font-size: 1.15rem;"></i>
+                    <div>
+                        <div style="font-size: 0.88rem; font-weight: 700; color: #FFFFFF;">Switch Active Card</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">You have permission to edit multiple directory cards</div>
+                    </div>
+                </div>
+                <select id="target-card-selector" class="form-input" style="width: auto; min-width: 240px; padding: 8px 12px; font-size: 0.85rem;" onchange="switchTargetCard(this.value)">
+                </select>
             </div>
 
             <div class="editor-grid">
@@ -1886,8 +1954,8 @@
             <article class="team-card" data-user="1214048435632603137" id="lunarzlynz">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="nora.png" alt="Demi" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="nora.png" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill lead">Founder & Lead Dev</span>
@@ -1911,8 +1979,8 @@
             <article class="team-card" data-user="1366229304257544213" id="strawberry_angel0000">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="nora.png" alt="strwberry !!" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="nora.png" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill owner">Co-Owner</span>
@@ -1930,15 +1998,15 @@
                 </div>
             </article>
 
-            <!-- angel (Alt) -->
+            <!-- angel -->
             <article class="team-card" data-user="1377095101116973187" id="strawberry_alt">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="https://cdn.discordapp.com/avatars/1377095101116973187/9262e8d71d3c92248e7871ae21b4694f.webp?size=512" alt="angel" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="https://cdn.discordapp.com/avatars/1377095101116973187/9262e8d71d3c92248e7871ae21b4694f.webp?size=512" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
-                        <span class="role-pill owner">Co-Owner (Alt)</span>
+                        <span class="role-pill owner">Co-Owner</span>
                         <h2 class="member-name">angel📼🪱</h2>
                         <span class="member-handle">@strawberry._0000</span>
                     </div>
@@ -1955,8 +2023,8 @@
             <article class="team-card" data-user="914530504718561351" id="charlieisme">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="nora.png" alt="TheCasualEnderman" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="nora.png" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill admin">Administrator</span>
@@ -1976,8 +2044,8 @@
             <article class="team-card" data-user="1375943730951098549">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="nora.png" alt="Nora Studio">
-                        <span class="status-dot online"></span>
+                        <img class="avatar-img" src="nora.png" alt="">
+                        <span class="status-dot online" data-status-label="Online" role="status" aria-label="Online" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill app">Privacy-First App</span>
@@ -1998,8 +2066,8 @@
             <article class="team-card" data-user="941084096673755188" id="solorads">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="nora.png" alt="solorads" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="nora.png" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill">Tester & Contributor</span>
@@ -2020,8 +2088,8 @@
             <article class="team-card" data-user="1301949827701149697" id="discounted_chaos">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="nora.png" alt="discounted_chaos" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="nora.png" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill admin">Administrator</span>
@@ -2041,8 +2109,8 @@
             <article class="team-card" data-user="930089787052916797" id="thevoid_8095">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="https://cdn.discordapp.com/avatars/930089787052916797/60a4180d941c5b636b362e922c19ce6d.png?size=512" alt="Mr. Void" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="https://cdn.discordapp.com/avatars/930089787052916797/60a4180d941c5b636b362e922c19ce6d.png?size=512" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill partner">Partner</span>
@@ -2062,8 +2130,8 @@
             <article class="team-card" data-user="1387499169870254230" id="boris10106">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="nora.png" alt="boris10106" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="nora.png" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill">Community Friend</span>
@@ -2083,8 +2151,8 @@
             <article class="team-card" data-user="1127254357059047546" id="yunex0">
                 <div class="card-top">
                     <div class="avatar-wrap">
-                        <img class="avatar-img" src="https://cdn.discordapp.com/avatars/1127254357059047546/bd55efa05d2a138febea64b9fee3dca8.webp?size=512" alt="yunex0" onerror="this.onerror=null; this.src='nora.png';">
-                        <span class="status-dot"></span>
+                        <img class="avatar-img" src="https://cdn.discordapp.com/avatars/1127254357059047546/bd55efa05d2a138febea64b9fee3dca8.webp?size=512" alt="" onerror="this.onerror=null; this.src='nora.png';">
+                        <span class="status-dot offline" data-status-label="Offline" role="status" aria-label="Offline" tabindex="0"></span>
                     </div>
                     <div class="card-header-info">
                         <span class="role-pill">Security Bug Hunter</span>
@@ -3537,10 +3605,11 @@
             const img = document.createElement('img');
             img.className = 'avatar-img';
             img.src = avatarUrl;
-            img.alt = name;
+            img.alt = '';
             img.onerror = function() { this.onerror = null; this.src = 'nora.png'; };
             const statusDot = document.createElement('span');
             statusDot.className = 'status-dot online';
+            statusDot.setAttribute('data-status-label', 'Online');
             avatarWrap.appendChild(img);
             avatarWrap.appendChild(statusDot);
 
@@ -3658,6 +3727,104 @@
             updateLivePreview();
         }
 
+        let currentTargetCardId = null;
+
+        function populateEditorForm(card) {
+            if (!card) return;
+            if (document.getElementById('edit-display-name')) document.getElementById('edit-display-name').value = card.displayName || '';
+
+            const avatarInput = document.getElementById('edit-avatar-url');
+            if (avatarInput) avatarInput.value = card.image || '';
+            const avatarFileName = document.getElementById('avatar-file-name');
+            if (avatarFileName) { avatarFileName.style.display = 'none'; avatarFileName.textContent = ''; }
+
+            const bannerInput = document.getElementById('edit-banner-url');
+            if (bannerInput) bannerInput.value = card.banner || '';
+            const bannerFileName = document.getElementById('banner-file-name');
+            if (bannerFileName) { bannerFileName.style.display = 'none'; bannerFileName.textContent = ''; }
+
+            if (card.banner) {
+                if (card.banner.startsWith('linear-gradient') || card.banner.startsWith('radial-gradient')) {
+                    switchBgMode('gradient');
+                    parseGradientToInputs(card.banner);
+                } else {
+                    switchBgMode('image');
+                }
+            } else {
+                switchBgMode('image');
+            }
+
+            if (card.textColor) {
+                if (document.getElementById('edit-text-color-hex')) document.getElementById('edit-text-color-hex').value = card.textColor;
+                if (document.getElementById('edit-text-color')) document.getElementById('edit-text-color').value = card.textColor;
+            } else {
+                resetTextColor();
+            }
+
+            if (card.glowColor) {
+                if (document.getElementById('edit-glow-color-hex')) document.getElementById('edit-glow-color-hex').value = card.glowColor;
+                if (document.getElementById('edit-glow-color')) document.getElementById('edit-glow-color').value = card.glowColor;
+            } else {
+                resetGlowColor();
+            }
+
+            const bioInput = document.getElementById('edit-bio');
+            if (bioInput) {
+                bioInput.value = card.description || '';
+                handleBioInput(bioInput);
+            }
+
+            if (card.links) {
+                const l = typeof card.links === 'string' ? JSON.parse(card.links || '{}') : card.links;
+                if (document.getElementById('link-github')) document.getElementById('link-github').value = l.github || '';
+                if (document.getElementById('link-youtube')) document.getElementById('link-youtube').value = l.youtube || '';
+                if (document.getElementById('link-twitch')) document.getElementById('link-twitch').value = l.twitch || '';
+                if (document.getElementById('link-roblox')) document.getElementById('link-roblox').value = l.roblox || '';
+                if (document.getElementById('link-other')) document.getElementById('link-other').value = l.other || l.strawpage || l.pronouns || l.hackerone || '';
+                if (document.getElementById('link-other2')) document.getElementById('link-other2').value = l.other2 || '';
+                if (document.getElementById('link-other3')) document.getElementById('link-other3').value = l.other3 || '';
+
+                const h = (l && typeof l.hidden === 'object') ? l.hidden : {};
+                if (document.getElementById('hide-link-github')) document.getElementById('hide-link-github').checked = !!h.github;
+                if (document.getElementById('hide-link-roblox')) document.getElementById('hide-link-roblox').checked = !!h.roblox;
+                if (document.getElementById('hide-link-youtube')) document.getElementById('hide-link-youtube').checked = !!h.youtube;
+                if (document.getElementById('hide-link-twitch')) document.getElementById('hide-link-twitch').checked = !!h.twitch;
+                if (document.getElementById('hide-link-other')) document.getElementById('hide-link-other').checked = !!h.other;
+                if (document.getElementById('hide-link-other2')) document.getElementById('hide-link-other2').checked = !!h.other2;
+                if (document.getElementById('hide-link-other3')) document.getElementById('hide-link-other3').checked = !!h.other3;
+
+                const isDiscordHidden = !!card.hideDiscord || !!h.discord;
+                if (document.getElementById('hide-link-discord')) document.getElementById('hide-link-discord').checked = isDiscordHidden;
+                if (document.getElementById('toggle-show-discord')) document.getElementById('toggle-show-discord').checked = !isDiscordHidden;
+            }
+
+            if (document.getElementById('toggle-hide-role')) document.getElementById('toggle-hide-role').checked = !!card.hideRole;
+            if (document.getElementById('toggle-hide-join')) document.getElementById('toggle-hide-join').checked = !!card.hideJoinDate;
+            if (document.getElementById('toggle-hide-card')) document.getElementById('toggle-hide-card').checked = !!card.hideCard;
+
+            updateLivePreview();
+        }
+
+        async function switchTargetCard(targetId) {
+            currentTargetCardId = String(targetId);
+            const token = getStoredDiscordToken();
+            if (!token) return;
+            try {
+                const res = await fetch(`${getApiBaseUrl()}/api/team/my-card?targetCardId=${encodeURIComponent(targetId)}&_t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.authenticated && data.card) {
+                        currentStaffCard = data.card;
+                        populateEditorForm(data.card);
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to switch target card:', e);
+            }
+        }
+
         async function saveTeamCard(event) {
             event.preventDefault();
             const btn = document.getElementById('btn-save-card');
@@ -3667,6 +3834,8 @@
                 alert('Please log in with Discord first to update your card.');
                 return;
             }
+
+            const targetId = currentTargetCardId || currentStaffCard?.id || currentStaffUser?.id;
 
             const hiddenMap = {
                 discord: document.getElementById('hide-link-discord')?.checked || !document.getElementById('toggle-show-discord')?.checked || false,
@@ -3697,6 +3866,7 @@
 
             const hideDiscord = hiddenMap.discord;
             const payload = {
+                targetCardId: targetId,
                 displayName: document.getElementById('edit-display-name')?.value.trim() || null,
                 description: document.getElementById('edit-bio')?.value.trim(),
                 image: document.getElementById('edit-avatar-url')?.value.trim() || null,
@@ -3732,10 +3902,8 @@
                     // Update local reference & live preview
                     if (data.card) {
                         currentStaffCard = { ...currentStaffCard, ...data.card, hideDiscord };
-                        // Persist to local storage so page reload instantly reflects changes
                         try {
-                            const myId = currentStaffUser?.id || currentStaffCard.id;
-                            localStorage.setItem('nora_team_override_' + myId, JSON.stringify({
+                            localStorage.setItem('nora_team_override_' + targetId, JSON.stringify({
                                 ...currentStaffCard,
                                 hideDiscord: hideDiscord
                             }));
@@ -3744,9 +3912,7 @@
                     updateLivePreview();
 
                     // Apply updates immediately to existing DOM card on the page grid
-                    const myId = currentStaffUser?.id || currentStaffCard?.id;
-                    const myCardEl = (myId ? document.querySelector(`.team-card[data-user="${myId}"]`) : null) ||
-                                     document.getElementById(currentStaffUser?.username || 'lunarzlynz');
+                    const myCardEl = document.querySelector(`.team-card[data-user="${targetId}"]`);
                     if (myCardEl) {
                         if (payload.hideCard) {
                             myCardEl.style.display = 'none';
@@ -3759,10 +3925,6 @@
                             const nameEl = myCardEl.querySelector('.member-name');
                             if (nameEl && payload.displayName) {
                                 nameEl.textContent = payload.displayName;
-                            }
-                            const handleEl = myCardEl.querySelector('.member-handle');
-                            if (handleEl && currentStaffUser?.username) {
-                                handleEl.textContent = '@' + currentStaffUser.username;
                             }
                             let bioEl = myCardEl.querySelector('.member-bio');
                             if (payload.description) {
@@ -3787,7 +3949,7 @@
 
                             // Social links
                             let socialWrap = myCardEl.querySelector('.social-links');
-                            const newSocialDiv = renderSocialButtonsElement(payload.links, myId, hideDiscord);
+                            const newSocialDiv = renderSocialButtonsElement(payload.links, targetId, hideDiscord);
                             if (socialWrap) {
                                 if (newSocialDiv) {
                                     socialWrap.replaceWith(newSocialDiv);
@@ -3851,6 +4013,7 @@
                 if (data.authenticated && data.isTeamMember) {
                     currentStaffUser = data.user;
                     currentStaffCard = data.card;
+                    currentTargetCardId = data.activeCardId || data.card?.id || data.user?.id;
 
                     if (loginBtn) loginBtn.style.display = 'none';
                     if (editorBtn) {
@@ -3865,72 +4028,27 @@
                         logoutBtn.style.display = 'inline-flex';
                     }
 
-                    // Populate Editor Form
-                    const card = data.card;
-                    if (document.getElementById('edit-display-name')) document.getElementById('edit-display-name').value = card.displayName || '';
-                    if (document.getElementById('edit-avatar-url')) document.getElementById('edit-avatar-url').value = card.image || '';
-                    if (document.getElementById('edit-banner-url')) document.getElementById('edit-banner-url').value = card.banner || '';
-
-                    if (card.banner) {
-                        if (card.banner.startsWith('linear-gradient') || card.banner.startsWith('radial-gradient')) {
-                            switchBgMode('gradient');
-                            parseGradientToInputs(card.banner);
-                        } else {
-                            switchBgMode('image');
+                    // Multi-card switcher UI
+                    const switcher = document.getElementById('card-switcher-container');
+                    const selector = document.getElementById('target-card-selector');
+                    if (data.editableCards && Array.isArray(data.editableCards) && data.editableCards.length > 1) {
+                        if (switcher && selector) {
+                            switcher.style.display = 'flex';
+                            selector.innerHTML = '';
+                            data.editableCards.forEach(c => {
+                                const opt = document.createElement('option');
+                                opt.value = c.id;
+                                opt.textContent = c.label || c.name || c.id;
+                                if (String(c.id) === String(currentTargetCardId)) opt.selected = true;
+                                selector.appendChild(opt);
+                            });
                         }
-                    } else {
-                        switchBgMode('image');
+                    } else if (switcher) {
+                        switcher.style.display = 'none';
                     }
 
-                    if (card.textColor) {
-                        if (document.getElementById('edit-text-color-hex')) document.getElementById('edit-text-color-hex').value = card.textColor;
-                        if (document.getElementById('edit-text-color')) document.getElementById('edit-text-color').value = card.textColor;
-                    } else {
-                        resetTextColor();
-                    }
-
-                    if (card.glowColor) {
-                        if (document.getElementById('edit-glow-color-hex')) document.getElementById('edit-glow-color-hex').value = card.glowColor;
-                        if (document.getElementById('edit-glow-color')) document.getElementById('edit-glow-color').value = card.glowColor;
-                    } else {
-                        resetGlowColor();
-                    }
-
-                    const bioInput = document.getElementById('edit-bio');
-                    if (bioInput) {
-                        bioInput.value = card.description || '';
-                        handleBioInput(bioInput);
-                    }
-
-                    if (card.links) {
-                        const l = typeof card.links === 'string' ? JSON.parse(card.links || '{}') : card.links;
-                        if (document.getElementById('link-github')) document.getElementById('link-github').value = l.github || '';
-                        if (document.getElementById('link-youtube')) document.getElementById('link-youtube').value = l.youtube || '';
-                        if (document.getElementById('link-twitch')) document.getElementById('link-twitch').value = l.twitch || '';
-                        if (document.getElementById('link-roblox')) document.getElementById('link-roblox').value = l.roblox || '';
-                        if (document.getElementById('link-other')) document.getElementById('link-other').value = l.other || l.strawpage || l.pronouns || l.hackerone || '';
-                        if (document.getElementById('link-other2')) document.getElementById('link-other2').value = l.other2 || '';
-                        if (document.getElementById('link-other3')) document.getElementById('link-other3').value = l.other3 || '';
-
-                        const h = (l && typeof l.hidden === 'object') ? l.hidden : {};
-                        if (document.getElementById('hide-link-github')) document.getElementById('hide-link-github').checked = !!h.github;
-                        if (document.getElementById('hide-link-roblox')) document.getElementById('hide-link-roblox').checked = !!h.roblox;
-                        if (document.getElementById('hide-link-youtube')) document.getElementById('hide-link-youtube').checked = !!h.youtube;
-                        if (document.getElementById('hide-link-twitch')) document.getElementById('hide-link-twitch').checked = !!h.twitch;
-                        if (document.getElementById('hide-link-other')) document.getElementById('hide-link-other').checked = !!h.other;
-                        if (document.getElementById('hide-link-other2')) document.getElementById('hide-link-other2').checked = !!h.other2;
-                        if (document.getElementById('hide-link-other3')) document.getElementById('hide-link-other3').checked = !!h.other3;
-
-                        const isDiscordHidden = !!card.hideDiscord || !!h.discord;
-                        if (document.getElementById('hide-link-discord')) document.getElementById('hide-link-discord').checked = isDiscordHidden;
-                        if (document.getElementById('toggle-show-discord')) document.getElementById('toggle-show-discord').checked = !isDiscordHidden;
-                    }
-
-                    if (document.getElementById('toggle-hide-role')) document.getElementById('toggle-hide-role').checked = !!card.hideRole;
-                    if (document.getElementById('toggle-hide-join')) document.getElementById('toggle-hide-join').checked = !!card.hideJoinDate;
-                    if (document.getElementById('toggle-hide-card')) document.getElementById('toggle-hide-card').checked = !!card.hideCard;
-
-                    updateLivePreview();
+                    // Populate form
+                    populateEditorForm(data.card);
 
                     // Automatically open editor when recognized user logs in
                     const container = document.getElementById('team-manage-container');
@@ -3968,7 +4086,15 @@
             }
         }
 
-        // Load & Render All Team Cards from API
+        // Status label mapping
+        const DISCORD_STATUS_LABELS = {
+            online: 'Online',
+            idle: 'Idle',
+            dnd: 'Do Not Disturb',
+            offline: 'Offline'
+        };
+
+        // Load & Render All Team Cards from API (Direct Discord Public Data & Presence)
         async function loadTeamCards() {
             const grid = document.getElementById('team-cards-grid');
             if (!grid) return;
@@ -4013,10 +4139,25 @@
                             const avatarImg = document.createElement('img');
                             avatarImg.className = 'avatar-img';
                             avatarImg.src = avatarSrc;
-                            avatarImg.alt = m.displayName || 'Staff Member';
+                            avatarImg.alt = '';
                             avatarImg.onerror = function() { this.onerror = null; this.src = 'nora.png'; };
+
+                            const rawStatus = (m.isApp ? 'online' : (m.status || 'offline')).toLowerCase();
+                            const statusLabel = DISCORD_STATUS_LABELS[rawStatus] || 'Offline';
+
                             const statusDot = document.createElement('span');
-                            statusDot.className = 'status-dot' + (m.isApp ? ' online' : '');
+                            statusDot.className = `status-dot ${rawStatus}`;
+                            statusDot.setAttribute('data-status-label', statusLabel);
+                            statusDot.setAttribute('role', 'status');
+                            statusDot.setAttribute('aria-label', statusLabel);
+                            statusDot.setAttribute('tabindex', '0');
+                            statusDot.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const wasActive = statusDot.classList.contains('active-tooltip');
+                                document.querySelectorAll('.status-dot.active-tooltip').forEach(d => d.classList.remove('active-tooltip'));
+                                if (!wasActive) statusDot.classList.add('active-tooltip');
+                            });
+
                             avatarWrap.appendChild(avatarImg);
                             avatarWrap.appendChild(statusDot);
 
@@ -4043,6 +4184,9 @@
 
                             const badgesDiv = document.createElement('div');
                             badgesDiv.className = 'discord-badges';
+                            if (m.public_flags !== undefined) {
+                                renderBadges(badgesDiv, m.public_flags);
+                            }
                             card.appendChild(badgesDiv);
 
                             const bioText = m.bio || m.description || '';
@@ -4074,50 +4218,24 @@
                     }
                 }
             } catch (e) {
-                // If API fails, keep initial server-rendered markup
+                // Keep initial server-rendered markup if API fails
             }
 
-            attachLanyardAndTilt();
+            attachCardTiltAndInteractions();
         }
 
-        // Attach Lanyard presence and 3D card tilt
-        function attachLanyardAndTilt() {
+        // 3D card tilt & interaction handler (Lanyard free)
+        function attachCardTiltAndInteractions() {
             document.querySelectorAll('.team-card').forEach(card => {
                 const userId = card.getAttribute('data-user');
-                const badgeContainer = card.querySelector('.discord-badges');
                 const joinDateContainer = card.querySelector('.member-join-date');
-                const statusDot = card.querySelector('.status-dot');
 
-                if (!userId) return;
-
-                if (joinDateContainer && !joinDateContainer.textContent.includes('Online') && userId !== '1375943730951098549') {
+                if (userId && joinDateContainer && !joinDateContainer.textContent.includes('Online') && userId !== '1375943730951098549') {
                     if (!joinDateContainer.textContent) {
                         joinDateContainer.textContent = getDiscordJoinDate(userId);
                     }
                 }
 
-                if (userId === '1375943730951098549') return;
-
-                fetch(`https://api.lanyard.rest/v1/users/${userId}`)
-                    .then(response => response.json())
-                    .then(res => {
-                        if (res.success && res.data) {
-                            const user = res.data.discord_user;
-
-                            if (badgeContainer && user.public_flags !== undefined) {
-                                renderBadges(badgeContainer, user.public_flags);
-                            }
-
-                            if (statusDot && res.data.discord_status) {
-                                statusDot.className = `status-dot ${res.data.discord_status}`;
-                            }
-                        }
-                    })
-                    .catch(() => {});
-            });
-
-            // 3D Tilt Card Interaction
-            document.querySelectorAll('.team-card').forEach(card => {
                 card.onmousemove = e => {
                     const rect = card.getBoundingClientRect();
                     const x = e.clientX - rect.left;
@@ -4134,6 +4252,13 @@
                 };
             });
         }
+
+        // Close mobile/active status tooltips when clicking anywhere else
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.status-dot')) {
+                document.querySelectorAll('.status-dot.active-tooltip').forEach(d => d.classList.remove('active-tooltip'));
+            }
+        });
 
         // Initialize on load
         loadTeamCards();

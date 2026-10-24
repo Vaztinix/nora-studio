@@ -980,7 +980,7 @@ app.use((req, res, next) => {
             "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
             "img-src 'self' data: blob: https:; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; " +
-            "connect-src 'self' https://discord.com https://cdn.discordapp.com https://api.vaztinix.dev https://vaztinix.dev https://*.vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com https://api.klipy.com https://*.klipy.com https://tenor.googleapis.com https://api.giphy.com https://api.lanyard.rest wss://api.lanyard.rest; " +
+            "connect-src 'self' https://discord.com https://cdn.discordapp.com https://api.vaztinix.dev https://vaztinix.dev https://*.vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com https://api.klipy.com https://*.klipy.com https://tenor.googleapis.com https://api.giphy.com; " +
             "frame-ancestors 'self'; " +
             "frame-src 'none'; " +
             "object-src 'none';"
@@ -2058,7 +2058,7 @@ const TEAM_MEMBERS_DIRECTORY = [
         id: "1377095101116973187",
         username: "strawberry._0000",
         defaultName: "angel📼🪱",
-        defaultRole: "Co-Owner (Alt)",
+        defaultRole: "Co-Owner",
         roleClass: "owner",
         defaultBio: "Secondary account of strawberry_angel0000.",
         defaultJoined: "May 2025",
@@ -2239,7 +2239,16 @@ async function fetchDiscordUserData(userId) {
             }
         }
 
-        const result = { id, username, globalName, avatarUrl };
+        let flags = 0;
+        if (user.flags && typeof user.flags.bitfield === 'number') {
+            flags = user.flags.bitfield;
+        } else if (typeof user.public_flags === 'number') {
+            flags = user.public_flags;
+        } else if (typeof user.flags === 'number') {
+            flags = user.flags;
+        }
+
+        const result = { id, username, globalName, avatarUrl, public_flags: flags };
         teamDiscordUserCache.set(String(userId), {
             user: result,
             expires: now + 10 * 60 * 1000 // 10 min cache
@@ -2247,6 +2256,55 @@ async function fetchDiscordUserData(userId) {
         return result;
     }
     return null;
+}
+
+// Live Discord presence lookup across bot's mutual servers
+function getDiscordUserStatus(userId) {
+    if (!userId) return 'offline';
+    const uid = String(userId).trim();
+    if (uid === '1375943730951098549') return 'online'; // Nora Bot is online
+    if (typeof client !== 'undefined' && client && client.guilds) {
+        for (const guild of client.guilds.cache.values()) {
+            const pres = guild.presences?.cache?.get(uid);
+            if (pres && pres.status) return pres.status;
+            const mem = guild.members?.cache?.get(uid);
+            if (mem?.presence?.status) return mem.presence.status;
+        }
+    }
+    return 'offline';
+}
+
+// Delegation permission verification for team card editing
+function canEditTeamCard(authedUserId, targetCardId) {
+    if (!authedUserId || !targetCardId) return false;
+    const aId = String(authedUserId).trim();
+    const tId = String(targetCardId).trim();
+    if (aId === tId) return true;
+    // User 1377095101116973187 (strwberry alt) can edit both her card and 1366229304257544213 (main) and vice-versa
+    if ((aId === '1377095101116973187' || aId === '1366229304257544213') &&
+        (tId === '1377095101116973187' || tId === '1366229304257544213')) {
+        return true;
+    }
+    // Vaztinix (1214048435632603137) can edit Nora's bot card (1375943730951098549)
+    if (aId === '1214048435632603137' && tId === '1375943730951098549') {
+        return true;
+    }
+    return false;
+}
+
+function getEditableTeamCards(authedUserId, authedUserName) {
+    const aId = String(authedUserId).trim();
+    const list = [
+        { id: aId, label: `${authedUserName || 'My Card'} (${aId})` }
+    ];
+    if (aId === '1377095101116973187') {
+        list.push({ id: '1366229304257544213', label: 'Demi (1366229304257544213)' });
+    } else if (aId === '1366229304257544213') {
+        list.push({ id: '1377095101116973187', label: 'angel (1377095101116973187)' });
+    } else if (aId === '1214048435632603137') {
+        list.push({ id: '1375943730951098549', label: 'Nora (Bot Card - 1375943730951098549)' });
+    }
+    return list;
 }
 
 let teamImagesResetDone = false;
@@ -2269,6 +2327,16 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
         for (const p of allPrefs) {
             prefsMap.set(String(p.userId), p);
         }
+
+        // Opportunistically warm up team member presences across guilds
+        try {
+            if (typeof client !== 'undefined' && client && client.guilds) {
+                const teamIds = TEAM_MEMBERS_DIRECTORY.filter(m => !m.isApp).map(m => m.id);
+                for (const guild of client.guilds.cache.values()) {
+                    guild.members.fetch({ user: teamIds, withPresences: true }).catch(() => {});
+                }
+            }
+        } catch (_) {}
 
         const cards = [];
         const seenIds = new Set();
@@ -2309,6 +2377,7 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
             const liveUsername = discordUser?.username || def.username;
             const liveDisplayName = (p && p.teamCardDisplayName) ? p.teamCardDisplayName : (discordUser?.globalName || def.defaultName || liveUsername);
             const liveAvatar = def.isApp ? 'nora.png' : (discordUser?.avatarUrl || def.defaultImage || 'nora.png');
+            const status = def.isApp ? 'online' : getDiscordUserStatus(def.id);
 
             cards.push({
                 id: def.id,
@@ -2323,6 +2392,8 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                 textColor: (p && p.teamCardTextColor) ? p.teamCardTextColor : null,
                 glowColor: (p && p.teamCardGlowColor) ? p.teamCardGlowColor : null,
                 links: links,
+                status: status,
+                public_flags: discordUser?.public_flags || 0,
                 hideRole: !!(p && p.teamCardHideRole),
                 hideJoinDate: !!(p && p.teamCardHideJoinDate),
                 hideCard: !!(p && p.teamCardHideCard),
@@ -2366,6 +2437,8 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                     textColor: p.teamCardTextColor || null,
                     glowColor: p.teamCardGlowColor || null,
                     links: links,
+                    status: getDiscordUserStatus(p.userId),
+                    public_flags: discordUser?.public_flags || 0,
                     hideRole: !!p.teamCardHideRole,
                     hideJoinDate: !!p.teamCardHideJoinDate,
                     hideCard: !!p.teamCardHideCard,
@@ -2382,7 +2455,7 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
     }
 });
 
-// GET /api/team/my-card — Staff member self-inspects their own card
+// GET /api/team/my-card — Staff member inspects card (with delegation support)
 app.get('/api/team/my-card', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     const authHeader = req.headers.authorization;
@@ -2395,29 +2468,44 @@ app.get('/api/team/my-card', async (req, res) => {
         if (!user || !user.id) return res.status(401).json({ authenticated: false, error: 'Invalid Discord token' });
 
         const UserPrefs = require('./database/models/UserPrefs');
-        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+        const [userPrefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
 
-        const isTeam = isRecognizedTeamMember(user.id, prefs, req.client || (typeof client !== 'undefined' ? client : null));
+        const isTeam = isRecognizedTeamMember(user.id, userPrefs, req.client || (typeof client !== 'undefined' ? client : null));
         if (!isTeam) {
             return res.json({ authenticated: true, isTeamMember: false, user: { id: user.id, username: user.username, global_name: user.global_name } });
         }
+
+        const targetCardId = String(req.query.targetCardId || req.query.targetUserId || user.id);
+        if (!canEditTeamCard(user.id, targetCardId)) {
+            return res.status(403).json({ success: false, error: 'Permission denied to edit this card.' });
+        }
+
+        const [prefs] = (targetCardId === String(user.id))
+            ? [userPrefs]
+            : await UserPrefs.findOrCreate({ where: { userId: targetCardId } });
 
         const isAnimated = user.avatar && user.avatar.startsWith('a_');
         const discordAvatar = user.avatar 
             ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${isAnimated ? 'gif' : 'png'}?size=256`
             : `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) >> 22n) % 6n}.png`;
 
-        const def = TEAM_MEMBERS_DIRECTORY.find(m => m.id === String(user.id)) || {
-            id: user.id,
-            username: user.username,
-            defaultName: user.global_name || user.username,
+        const def = TEAM_MEMBERS_DIRECTORY.find(m => m.id === targetCardId) || {
+            id: targetCardId,
+            username: targetCardId,
+            defaultName: 'Staff Member',
             defaultRole: "Team Member",
             roleClass: "member",
             defaultBio: "",
             defaultJoined: "Joined: Recently",
-            defaultImage: discordAvatar,
-            defaultLinks: { discord: `https://discord.com/users/${user.id}` }
+            defaultImage: targetCardId === '1375943730951098549' ? 'nora.png' : discordAvatar,
+            defaultLinks: targetCardId === '1375943730951098549' ? { invite: '/install', docs: '/docs' } : { discord: `https://discord.com/users/${targetCardId}` }
         };
+
+        let cardImage = targetCardId === '1375943730951098549' ? 'nora.png' : discordAvatar;
+        if (targetCardId !== String(user.id) && !def.isApp) {
+            const discTarget = await fetchDiscordUserData(targetCardId);
+            if (discTarget?.avatarUrl) cardImage = discTarget.avatarUrl;
+        }
 
         let links = def.defaultLinks ? { ...def.defaultLinks } : {};
         if (prefs.teamCardLinks) {
@@ -2431,19 +2519,23 @@ app.get('/api/team/my-card', async (req, res) => {
 
         const showDiscord = !prefs.teamCardHideDiscord && !def.isApp;
         if (showDiscord) {
-            links.discord = links.discord || `https://discord.com/users/${user.id}`;
+            links.discord = links.discord || `https://discord.com/users/${targetCardId}`;
         } else {
             delete links.discord;
         }
 
-        if (user.username && prefs.teamCardUsername !== user.username) {
+        if (targetCardId === String(user.id) && user.username && prefs.teamCardUsername !== user.username) {
             prefs.teamCardUsername = user.username;
             await prefs.save().catch(() => {});
         }
 
+        const editableCards = getEditableTeamCards(user.id, user.global_name || user.username);
+
         res.json({
             authenticated: true,
             isTeamMember: true,
+            editableCards,
+            activeCardId: targetCardId,
             user: {
                 id: user.id,
                 username: user.username,
@@ -2451,13 +2543,13 @@ app.get('/api/team/my-card', async (req, res) => {
                 avatar: discordAvatar
             },
             card: {
-                id: user.id,
-                username: user.username,
-                displayName: prefs.teamCardDisplayName || def.defaultName || user.global_name || user.username,
+                id: targetCardId,
+                username: targetCardId === String(user.id) ? user.username : (prefs.teamCardUsername || def.username),
+                displayName: prefs.teamCardDisplayName || def.defaultName || (targetCardId === String(user.id) ? (user.global_name || user.username) : def.defaultName),
                 role: prefs.teamCardRole || def.defaultRole,
                 roleClass: def.roleClass,
                 description: prefs.teamCardDescription !== null && prefs.teamCardDescription !== undefined ? prefs.teamCardDescription : def.defaultBio,
-                image: discordAvatar,
+                image: prefs.teamCardImage || cardImage,
                 banner: prefs.teamCardBanner || "",
                 textColor: prefs.teamCardTextColor || null,
                 glowColor: prefs.teamCardGlowColor || null,
@@ -2465,7 +2557,8 @@ app.get('/api/team/my-card', async (req, res) => {
                 hideRole: !!prefs.teamCardHideRole,
                 hideJoinDate: !!prefs.teamCardHideJoinDate,
                 hideCard: !!prefs.teamCardHideCard,
-                hideDiscord: !!prefs.teamCardHideDiscord
+                hideDiscord: !!prefs.teamCardHideDiscord,
+                isApp: !!def.isApp
             }
         });
     } catch (e) {
@@ -2474,7 +2567,7 @@ app.get('/api/team/my-card', async (req, res) => {
     }
 });
 
-// POST /api/team/my-card — Staff member saves changes to their own card only
+// POST /api/team/my-card — Staff member saves changes to card (with delegation support)
 app.post('/api/team/my-card', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -2486,12 +2579,21 @@ app.post('/api/team/my-card', async (req, res) => {
         if (!user || !user.id) return res.status(401).json({ success: false, error: 'Invalid Discord token' });
 
         const UserPrefs = require('./database/models/UserPrefs');
-        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
+        const [userPrefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
 
-        const isTeam = isRecognizedTeamMember(user.id, prefs, req.client || (typeof client !== 'undefined' ? client : null));
+        const isTeam = isRecognizedTeamMember(user.id, userPrefs, req.client || (typeof client !== 'undefined' ? client : null));
         if (!isTeam) {
             return res.status(403).json({ success: false, error: 'You do not have permission to manage a team card.' });
         }
+
+        const targetCardId = String(req.body.targetCardId || req.body.targetUserId || user.id);
+        if (!canEditTeamCard(user.id, targetCardId)) {
+            return res.status(403).json({ success: false, error: 'You do not have permission to edit this card.' });
+        }
+
+        const [prefs] = (targetCardId === String(user.id))
+            ? [userPrefs]
+            : await UserPrefs.findOrCreate({ where: { userId: targetCardId } });
 
         const {
             displayName,
@@ -2550,7 +2652,7 @@ app.post('/api/team/my-card', async (req, res) => {
         if (hideCard !== undefined) prefs.teamCardHideCard = !!hideCard;
         if (hideDiscord !== undefined) prefs.teamCardHideDiscord = !!hideDiscord;
 
-        if (user.username) {
+        if (targetCardId === String(user.id) && user.username) {
             prefs.teamCardUsername = user.username;
             prefs.username = user.username;
         }
@@ -2560,10 +2662,11 @@ app.post('/api/team/my-card', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Your team card has been updated successfully!',
+            message: 'Team card updated successfully!',
+            targetCardId: targetCardId,
             card: {
-                id: user.id,
-                username: prefs.teamCardUsername || user.username,
+                id: targetCardId,
+                username: prefs.teamCardUsername || (targetCardId === String(user.id) ? user.username : targetCardId),
                 displayName: prefs.teamCardDisplayName,
                 description: prefs.teamCardDescription,
                 image: prefs.teamCardImage,
