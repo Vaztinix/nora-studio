@@ -2609,7 +2609,7 @@ app.get('/api/klipy/search', async (req, res) => {
     }
 });
 // Image Proxy to safely load external images (Discord CDN, Giphy, Tenor, etc.) for canvas cropping without CORS taint
-const ALLOWED_IMAGE_PROXY_DOMAINS = [
+const ALLOWED_IMAGE_HOSTS = new Set([
     'cdn.discordapp.com',
     'media.discordapp.net',
     'images-ext-1.discordapp.net',
@@ -2641,42 +2641,29 @@ const ALLOWED_IMAGE_PROXY_DOMAINS = [
     'vaztinix.dev',
     'norabot.xyz',
     'norastudio.net'
-];
-
-function isAllowedProxyImageDomain(hostname) {
-    if (!hostname || typeof hostname !== 'string') return false;
-    const lower = hostname.toLowerCase();
-    return ALLOWED_IMAGE_PROXY_DOMAINS.some(allowed => lower === allowed || lower.endsWith('.' + allowed));
-}
+]);
 
 app.get('/api/proxy-image', async (req, res) => {
     const rawUrl = req.query.url;
     if (!rawUrl || typeof rawUrl !== 'string') return res.status(400).send('Missing url parameter');
     try {
-        const security = require('./utils/security');
-        if (!security.validateExternalUrl(rawUrl)) {
-            return res.status(400).send('Invalid or prohibited target URL');
-        }
-
         const parsed = new URL(rawUrl);
-        // Strictly require HTTPS protocol and no credentials/ports
+        // Strictly require HTTPS protocol and standard ports only
         if (parsed.protocol !== 'https:' || parsed.port || parsed.username || parsed.password) {
             return res.status(400).send('Target resource must use standard HTTPS');
         }
 
         // Whitelist trusted image CDN hosts to prevent Server-Side Request Forgery (SSRF)
         const host = parsed.hostname.toLowerCase();
-        if (!isAllowedProxyImageDomain(host)) {
+        if (!ALLOWED_IMAGE_HOSTS.has(host)) {
             return res.status(403).send('Target host is not permitted by image proxy policy');
         }
 
-        // Reconstruct safe target URL from validated components
-        const safeTargetUrl = `https://${host}${parsed.pathname}${parsed.search}`;
-
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
-        const fetchRes = await fetch(safeTargetUrl, {
+        const fetchRes = await fetch(parsed.toString(), {
             signal: controller.signal,
+            redirect: 'error',
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
         });
         clearTimeout(timeoutId);

@@ -2578,9 +2578,9 @@
             // 1. Nora Studios & Ecosystem (vaztinix.dev, norabot, norastudio, kite)
             if (
                 hostname === 'vaztinix.dev' || hostname.endsWith('.vaztinix.dev') ||
-                hostname.includes('norabot') || hostname.includes('nora-bot') ||
-                hostname.includes('norastudio') || hostname.includes('nora-studio') ||
-                pathname.includes('/nora') || pathname.includes('/kite') || pathname.includes('/team')
+                hostname === 'norabot.xyz' || hostname.endsWith('.norabot.xyz') ||
+                hostname === 'norastudio.net' || hostname.endsWith('.norastudio.net') ||
+                pathname.startsWith('/nora') || pathname.startsWith('/kite') || pathname.startsWith('/team')
             ) {
                 return {
                     title: 'Nora Studios',
@@ -2689,7 +2689,7 @@
             }
 
             // 13. Apple Music / Podcasts
-            if (hostname.includes('apple.com') && (hostname.includes('music') || pathname.includes('music') || pathname.includes('podcast'))) {
+            if ((hostname === 'music.apple.com' || hostname === 'podcasts.apple.com' || hostname.endsWith('.apple.com')) && (pathname.startsWith('/music') || pathname.startsWith('/podcast') || hostname.startsWith('music.') || hostname.startsWith('podcasts.'))) {
                 return {
                     title: 'Apple Music',
                     icon: '<i class="fab fa-apple"></i>',
@@ -2734,7 +2734,7 @@
             }
 
             // 18. Mastodon
-            if (hostname === 'mastodon.social' || hostname.includes('mastodon')) {
+            if (hostname === 'mastodon.social' || hostname === 'mstdn.social' || hostname.endsWith('.mastodon.social')) {
                 return {
                     title: 'Mastodon',
                     icon: '<i class="fab fa-mastodon"></i>',
@@ -2815,9 +2815,9 @@
             }
 
             // 27. pronouns.cc / pronouns.page
-            if (hostname.includes('pronouns.cc') || hostname.includes('pronouns.page')) {
+            if (hostname === 'pronouns.cc' || hostname.endsWith('.pronouns.cc') || hostname === 'pronouns.page' || hostname.endsWith('.pronouns.page')) {
                 return {
-                    title: hostname.includes('cc') ? 'pronouns.cc' : 'pronouns.page',
+                    title: (hostname === 'pronouns.cc' || hostname.endsWith('.pronouns.cc')) ? 'pronouns.cc' : 'pronouns.page',
                     icon: '<i class="fas fa-link"></i>',
                     url: safeUrl
                 };
@@ -2995,7 +2995,7 @@
             }
 
             // 47. Google Drive / Docs
-            if (hostname.includes('google.com') && (hostname.includes('drive') || hostname.includes('docs'))) {
+            if (hostname === 'drive.google.com' || hostname === 'docs.google.com' || (hostname.endsWith('.google.com') && (pathname.startsWith('/drive') || pathname.startsWith('/document')))) {
                 return {
                     title: 'Google Docs',
                     icon: '<i class="fab fa-google-drive"></i>',
@@ -3040,7 +3040,7 @@
             }
 
             // 52. Cloudflare
-            if (hostname.includes('cloudflare')) {
+            if (hostname === 'cloudflare.com' || hostname.endsWith('.cloudflare.com') || hostname === 'dash.cloudflare.com') {
                 return {
                     title: 'Cloudflare',
                     icon: '<i class="fab fa-cloudflare"></i>',
@@ -3214,25 +3214,73 @@
             const safeUsername = escapeHtml(currentStaffUser?.username || currentStaffCard.username || 'member');
             const hasBg = !!bannerUrl;
 
-            wrap.innerHTML = `
-                <article id="live-preview-card" class="team-card ${hasBg ? 'has-custom-bg' : ''}">
-                    <div class="card-top">
-                        <div class="avatar-wrap">
-                            <img class="avatar-img" src="${avatarUrl}" alt="${safeName}" onerror="this.onerror=null; this.src='nora.png';">
-                            <span class="status-dot online"></span>
-                        </div>
-                        <div class="card-header-info">
-                            ${!hideRole ? `<span class="role-pill ${roleClass}">${roleName}</span>` : ''}
-                            <h2 class="member-name">${safeName}</h2>
-                            <span class="member-handle">@${safeUsername}</span>
-                        </div>
-                    </div>
-                    <div class="discord-badges"></div>
-                    ${formattedBio ? `<div class="member-bio">${formattedBio}</div>` : ''}
-                    ${!hideJoin ? `<span class="member-join-date">${escapeHtml(getDiscordJoinDate(currentStaffCard.id))}</span>` : ''}
-                    ${renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, !showDiscord)}
-                </article>
-            `;
+            wrap.innerHTML = '';
+            const article = document.createElement('article');
+            article.id = 'live-preview-card';
+            article.className = 'team-card' + (hasBg ? ' has-custom-bg' : '');
+
+            const cardTop = document.createElement('div');
+            cardTop.className = 'card-top';
+
+            const avatarWrap = document.createElement('div');
+            avatarWrap.className = 'avatar-wrap';
+            const img = document.createElement('img');
+            img.className = 'avatar-img';
+            img.src = avatarUrl;
+            img.alt = name;
+            img.onerror = function() { this.onerror = null; this.src = 'nora.png'; };
+            const statusDot = document.createElement('span');
+            statusDot.className = 'status-dot online';
+            avatarWrap.appendChild(img);
+            avatarWrap.appendChild(statusDot);
+
+            const headerInfo = document.createElement('div');
+            headerInfo.className = 'card-header-info';
+            if (!hideRole) {
+                const rolePill = document.createElement('span');
+                rolePill.className = 'role-pill ' + roleClass;
+                rolePill.textContent = roleName;
+                headerInfo.appendChild(rolePill);
+            }
+            const h2 = document.createElement('h2');
+            h2.className = 'member-name';
+            h2.textContent = name;
+            const handle = document.createElement('span');
+            handle.className = 'member-handle';
+            handle.textContent = '@' + (currentStaffUser?.username || currentStaffCard.username || 'member');
+            headerInfo.appendChild(h2);
+            headerInfo.appendChild(handle);
+
+            cardTop.appendChild(avatarWrap);
+            cardTop.appendChild(headerInfo);
+            article.appendChild(cardTop);
+
+            const badges = document.createElement('div');
+            badges.className = 'discord-badges';
+            article.appendChild(badges);
+
+            if (formattedBio) {
+                const bioDiv = document.createElement('div');
+                bioDiv.className = 'member-bio';
+                bioDiv.innerHTML = formattedBio;
+                article.appendChild(bioDiv);
+            }
+
+            if (!hideJoin) {
+                const joinSpan = document.createElement('span');
+                joinSpan.className = 'member-join-date';
+                joinSpan.textContent = getDiscordJoinDate(currentStaffCard.id);
+                article.appendChild(joinSpan);
+            }
+
+            const linksHtml = renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, !showDiscord);
+            if (linksHtml) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = linksHtml;
+                if (tempDiv.firstElementChild) article.appendChild(tempDiv.firstElementChild);
+            }
+
+            wrap.appendChild(article);
 
             const previewCard = document.getElementById('live-preview-card');
             if (previewCard) {
@@ -3367,7 +3415,7 @@
                             myCardEl.style.display = '';
                             const avatarEl = myCardEl.querySelector('.avatar-img');
                             if (avatarEl && (data.card?.image || payload.image)) {
-                                avatarEl.src = data.card?.image || payload.image;
+                                avatarEl.src = sanitizeUrl(data.card?.image || payload.image) || 'nora.png';
                             }
                             const nameEl = myCardEl.querySelector('.member-name');
                             if (nameEl && payload.displayName) {
